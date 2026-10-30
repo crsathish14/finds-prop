@@ -43,7 +43,7 @@ describe("G-09 check-client-bundle", () => {
   });
 
   it("fails when the value of a server secret is in the client bundle", () => {
-    const secret = "sb_secret_0123456789abcdefghij";
+    const secret = "sb_secret_0123456789abcdefghij"; // gitleaks:allow (fake value for the scanner test)
     const result = scanBundle({
       root: tree({ "chunks/app.js": `fetch('${secret}')` }),
       env: { MSG91_AUTH_KEY: secret },
