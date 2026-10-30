@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+coverage
+playwright-report
+test-results
+package-lock.json
+public
+*.sql
+supabase/.temp
+supabase/.branches
+src/types/database.types.ts
+docs/ux

@@ -1,0 +1,11 @@
+# One line-ending convention for Windows, macOS and Linux contributors and for CI.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
