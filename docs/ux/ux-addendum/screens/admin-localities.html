@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Homepage sections and localities · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+</head>
+<body data-default="default" data-ai-off>
+<fp-portal role="admin" active="cms-homepage">
+  <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-11 · Proposed.</b> Adds a <b>localities editor</b> to the approved Homepage tab. It replaces the hard-coded 12 localities (architecture: nobody supplies a list; places come from the address search). The first few also become the <i>Popular</i> chips in the search card (<b>DEC-13</b>). States: default · add · errors · empty · max · saving · saved.</div></div></div>
+
+  <div class="phead"><div><h1>Homepage sections</h1><p>Choose which sections appear below the hero, and which localities are featured.</p></div></div>
+  <nav class="tabs ptabs" aria-label="Site content"><a class="tab" href="admin-cms.html#header">Header</a><a class="tab" href="admin-sponsors.html">Hero</a><a class="tab on" href="#default" aria-current="page">Homepage</a><a class="tab" href="admin-cms.html#footer">Footer</a></nav>
+
+  <div class="cms-grid">
+    <div class="stack-6">
+      <section class="panel panel-pad"><h2 class="title mb-2">Sections</h2><p class="small muted mb-2">Turn sections on or off. A hidden section is not rendered at all.</p>
+        <div class="tgl-row"><div><b>Featured listings</b><span class="d">Up to six featured homes.</span></div><label class="switch"><input type="checkbox" checked aria-label="Featured listings"></label></div>
+        <div class="tgl-row"><div><b>Browse by what matters</b><span class="d">Featured, Prime, Budget and locality entry points.</span></div><label class="switch"><input type="checkbox" checked aria-label="Project types"></label></div>
+        <div class="tgl-row"><div><b>Explore by locality</b><span class="d">The locality tiles below. Needs at least one locality.</span></div><label class="switch"><input type="checkbox" checked aria-label="Explore by locality"></label></div>
+        <div class="tgl-row"><div><b>Why Find Prop</b><span class="d">Three short value points.</span></div><label class="switch"><input type="checkbox" checked aria-label="Why us"></label></div>
+        <div class="tgl-row"><div><b>Post-property call to action</b><span class="d">The closing banner.</span></div><label class="switch"><input type="checkbox" aria-label="Call to action"></label></div></section>
+    </div>
+
+    <aside class="preview-card" aria-label="Preview" style="position:sticky;top:84px"><span class="pv-label">Preview</span>
+      <div data-hide="empty">
+        <p class="caption muted mb-2">Popular chips in the search card</p>
+        <div class="chip-row mb-4"><span class="chip chip--sm">Adyar</span><span class="chip chip--sm">Velachery</span><span class="chip chip--sm">Anna Nagar</span><span class="chip chip--sm">OMR Sholinganallur</span></div>
+        <p class="caption muted mb-2">Explore by locality</p>
+        <div class="loc-tiles"><div class="loc-tile">Adyar<small>Chennai</small></div><div class="loc-tile">Velachery<small>Chennai</small></div><div class="loc-tile">Anna Nagar<small>Chennai</small></div><div class="loc-tile">OMR Sholinganallur<small>Chennai</small></div><div class="loc-tile">Porur<small>Chennai</small></div></div>
+      </div>
+      <div class="empty-note" role="status" data-show="empty" style="background:var(--c-surface)"><fp-icon n="info"></fp-icon><div class="grow"><b>Section hidden</b><div class="small muted mt-1">With no localities, visitors see the search card followed directly by Featured homes.</div></div></div>
+    </aside>
+  </div>
+
+  <!-- LOCALITIES: full width so each row can show label, place, radius and actions side by side -->
+  <div class="mt-5">
+      <section class="panel panel-pad" aria-labelledby="lc-h">
+        <div class="row between wrap" style="align-items:flex-start;gap:12px"><div><h2 class="title" id="lc-h">Explore by locality</h2><p class="small muted mt-1">Tiles shown under the search. The <b>first 4</b> also appear as Popular chips in the search card. Visitors who click one see homes within the radius.</p></div>
+          <button class="btn btn--primary btn--sm" type="button" data-hide="max"><fp-icon n="plus"></fp-icon>Add locality</button><button class="btn btn--primary btn--sm" type="button" disabled data-show="max"><fp-icon n="plus"></fp-icon>Add locality</button></div>
+
+        <div class="alert alert--neutral mt-4" role="status" data-show="max"><fp-icon n="info"></fp-icon><div class="grow"><b>You've reached the limit of 8 localities</b>Remove one to add another. <span class="flag">Limit to confirm</span></div></div>
+        <div class="alert alert--danger mt-4" role="alert" data-show="errors"><fp-icon n="alert"></fp-icon><div class="grow"><b>2 things need fixing before you can save</b>Row 3 has no place. Two rows use the label “Adyar”.</div></div>
+
+        <div class="sg-host mt-4" id="loc-host">
+          <div class="loc-list" id="loc-default" data-show="default saving saved"></div>
+          <div class="loc-list" id="loc-add" data-show="add"></div>
+          <div class="loc-list" id="loc-errors" data-show="errors"></div>
+          <div class="loc-list" id="loc-max" data-show="max"></div>
+          <div class="empty-note" data-show="empty" role="status"><fp-icon n="pin"></fp-icon><div class="grow"><b>No localities yet</b><div class="small muted mt-1">The "Explore by locality" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.</div><button class="btn btn--primary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add locality</button></div></div>
+          <div data-show="add"><div data-sg="results" data-q="Poru" data-for=".loc-new .loc-place" data-min="420"></div></div>
+        </div>
+        <p class="caption muted mt-3" data-hide="empty">Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches. <span class="flag">Default radius to confirm</span></p>
+      </section>
+  </div>
+
+  <div class="savebar"><span class="small muted">Saved changes appear on the public site straight away.</span><div class="row"><button class="btn btn--secondary" type="button">Discard</button><button class="btn btn--primary" type="button" data-hide="saving errors">Save changes</button><button class="btn btn--primary is-loading" type="button" data-show="saving" aria-busy="true">Saving</button><button class="btn btn--primary" type="button" disabled data-show="errors">Save changes</button></div></div>
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="saved"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Localities saved</b>The homepage and the search card are updated.</div></div></div>
+</fp-portal>
+
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+<script>
+/* Rows are drawn from data so the five lists (default, add, errors, max, and the new-row variant) stay consistent. */
+(function () {
+  const I = (n) => `<fp-icon n="${n}"></fp-icon>`;
+  const BASE = [['Adyar', 'Adyar, Chennai', '600020', 3], ['Velachery', 'Velachery, Chennai', '600042', 3], ['Anna Nagar', 'Anna Nagar, Chennai', '600040', 3], ['OMR Sholinganallur', 'Sholinganallur, Chennai', '600119', 4], ['Porur', 'Porur, Chennai', '600116', 4]];
+  const EXTRA = [['Guindy', 'Guindy, Chennai', '600032', 3], ['Medavakkam', 'Medavakkam, Chennai', '600100', 4], ['T Nagar', 'T Nagar, Chennai', '600017', 2]];
+  let uid = 0;
+  const row = (r, i, n, o) => {
+    o = o || {};
+    const id = 'lr' + (++uid);
+    const label = o.label !== undefined ? o.label : r[0];
+    const err = o.err || {};
+    const placeBlock = o.newRow
+      ? `<div class="input-wrap loc-place">${I('pin')}<input id="${id}-p" class="input is-focus" role="combobox" aria-expanded="true" aria-autocomplete="list" autocomplete="off" value="Poru" aria-label="Place for locality ${i + 1}"></div>`
+      : err.place
+        ? `<div class="input-wrap loc-place">${I('pin')}<input id="${id}-p" class="input is-error" placeholder="Search for a place" aria-invalid="true" aria-describedby="${id}-pe" aria-label="Place for locality ${i + 1}"></div><div class="error" id="${id}-pe">${I('alert')}Choose a place from the list.</div>`
+        : `<div class="place-card loc-place" style="padding:8px 12px;gap:10px"><span class="ic" style="width:30px;height:30px;font-size:16px">${I('pin')}</span><div style="min-width:0"><div class="t" style="font-size:14.5px">${r[1]}</div><div class="s" style="font-size:13px">Tamil Nadu ${r[2]}</div></div><button class="btn btn--ghost btn--sm" type="button">Change</button></div>`;
+    const labelBlock = err.label
+      ? `<input id="${id}-l" class="input is-error" aria-invalid="true" aria-describedby="${id}-le" value="${label}" aria-label="Label for locality ${i + 1}"><div class="error" id="${id}-le">${I('alert')}Another row already uses “${label}”.</div>`
+      : `<input id="${id}-l" class="input" value="${label}" aria-label="Label for locality ${i + 1}">`;
+    return `<div class="loc-row${o.newRow ? ' loc-new' : ''}"><span class="grip" aria-hidden="true">${I('grip')}</span><div class="cols">
+      <div class="field"><span class="label">Label${i === 0 ? '' : ''}</span>${labelBlock}</div>
+      <div class="field"><span class="label">Place</span>${placeBlock}</div>
+      <div class="field"><span class="label" id="${id}-rl">Radius</span><select class="select" aria-labelledby="${id}-rl"><option>2 km</option><option${r[3] === 3 ? ' selected' : ''}>3 km</option><option${r[3] === 4 ? ' selected' : ''}>4 km</option><option>5 km</option></select></div></div>
+      <div class="acts"><button class="icon-btn" type="button" aria-label="Move ${label || 'locality'} up"${i === 0 ? ' disabled' : ''}>${I('arrow-up')}</button><button class="icon-btn" type="button" aria-label="Move ${label || 'locality'} down"${i === n - 1 ? ' disabled' : ''}>${I('arrow-down')}</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)">${I('trash')}Remove</button></div></div>`;
+  };
+  const fill = (id, rows, opts) => { const el = document.getElementById(id); if (el) el.innerHTML = rows.map((r, i) => row(r, i, rows.length, opts && opts[i])).join(''); };
+  fill('loc-default', BASE);
+  fill('loc-add', BASE.concat([['', '', '', 4]]), [null, null, null, null, null, { newRow: true, label: 'Porur' }]);
+  fill('loc-errors', [BASE[0], BASE[1], ['Adyar', '', '', 3], BASE[3], BASE[4]], [{ err: { label: true } }, null, { err: { place: true, label: true }, label: 'Adyar' }, null, null]);
+  fill('loc-max', BASE.concat(EXTRA));
+})();
+</script>
+</body>
+</html>

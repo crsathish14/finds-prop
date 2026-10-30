@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legal page template · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+</head>
+<body data-default="privacy" data-hdr="line" data-ai-off>
+<fp-header role="visitor"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-12 · Proposed.</b> One reading layout for Privacy Policy, Terms of Use and Cookie information. <b>All text is placeholder</b>: your drafted legal text replaces it (<b>DEC-25</b>). Highlighted sentences show where your words go. States: privacy · terms · cookies · toc-open (phone contents list).</div></div></div>
+
+    <div class="legal">
+      <!-- Contents: sticky list at laptop and up, a disclosure on smaller screens -->
+      <aside class="toc hide-t" aria-label="On this page">
+        <h2>On this page</h2>
+        <ol data-show="privacy"><li><a class="on" href="#privacy">Who we are</a></li><li><a href="#privacy">What we collect</a></li><li><a href="#privacy">How we use it</a></li><li><a href="#privacy">Who we share it with</a></li><li><a href="#privacy">How long we keep it</a></li><li><a href="#privacy">Your choices</a></li><li><a href="#privacy">Cookies</a></li><li><a href="#privacy">Security</a></li><li><a href="#privacy">Changes</a></li><li><a href="#privacy">Contact us</a></li></ol>
+        <ol data-show="terms"><li><a class="on" href="#terms">Using Find Prop</a></li><li><a href="#terms">Your account</a></li><li><a href="#terms">Listings and content</a></li><li><a href="#terms">Enquiries</a></li><li><a href="#terms">Builders and sponsors</a></li><li><a href="#terms">What you must not do</a></li><li><a href="#terms">Our responsibility</a></li><li><a href="#terms">Changes</a></li><li><a href="#terms">Governing law</a></li><li><a href="#terms">Contact us</a></li></ol>
+        <ol data-show="cookies"><li><a class="on" href="#cookies">What cookies are</a></li><li><a href="#cookies">What we use</a></li><li><a href="#cookies">Your choices</a></li><li><a href="#cookies">Contact us</a></li></ol>
+        <div class="mt-6" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start"><a class="link small" href="#privacy" data-hide="privacy">Privacy Policy</a><a class="link small" href="#terms" data-hide="terms">Terms of Use</a><a class="link small" href="#cookies" data-hide="cookies">Cookie information</a></div>
+      </aside>
+      <div class="only-t">
+        <details class="toc-mobile" data-hide="toc-open"><summary>On this page<fp-icon n="chev"></fp-icon></summary><div class="toc"><ol><li><a href="#privacy">Who we are</a></li><li><a href="#privacy">What we collect</a></li><li><a href="#privacy">How we use it</a></li><li><a href="#privacy">Who we share it with</a></li><li><a href="#privacy">How long we keep it</a></li><li><a href="#privacy">Your choices</a></li></ol></div></details>
+        <details class="toc-mobile" open data-show="toc-open"><summary>On this page<fp-icon n="chev-up"></fp-icon></summary><div class="toc"><ol><li><a class="on" href="#privacy">Who we are</a></li><li><a href="#privacy">What we collect</a></li><li><a href="#privacy">How we use it</a></li><li><a href="#privacy">Who we share it with</a></li><li><a href="#privacy">How long we keep it</a></li><li><a href="#privacy">Your choices</a></li><li><a href="#privacy">Cookies</a></li><li><a href="#privacy">Security</a></li><li><a href="#privacy">Changes</a></li><li><a href="#privacy">Contact us</a></li></ol></div></details>
+      </div>
+
+      <article class="prose" aria-labelledby="lg-h">
+        <!-- PRIVACY -->
+        <div data-show="privacy toc-open">
+          <header class="legal-head"><span class="overline" style="color:var(--c-accent-text)">Legal</span><h1 class="h1 mt-2" id="lg-h">Privacy Policy</h1>
+            <div class="meta"><span>Last updated: <span class="ph-text">[date]</span></span><span>Version <span class="ph-text">[0.1 draft]</span></span></div>
+            <p class="lead">A short plain-language summary goes here: what we ask for, why, and who sees it. <span class="ph-text">[Your summary]</span></p></header>
+          <h2 id="p-who">1. Who we are</h2><p><span class="ph-text">[Company name, registered address, how to reach you.]</span> This sentence only shows line length and spacing in the reading column.</p>
+          <h2 id="p-collect">2. What we collect</h2><p><span class="ph-text">[Introductory sentence.]</span> The table shows how a list of data can be laid out.</p>
+          <div class="tbl-x"><table><thead><tr><th>Data</th><th>Why we ask</th><th>Who sees it</th><th>How long</th></tr></thead><tbody>
+            <tr><td>Mobile number</td><td><span class="ph-text">[Purpose]</span></td><td><span class="ph-text">[Recipients]</span></td><td><span class="ph-text">[Period]</span></td></tr>
+            <tr><td>Email address</td><td><span class="ph-text">[Purpose]</span></td><td><span class="ph-text">[Recipients]</span></td><td><span class="ph-text">[Period]</span></td></tr>
+            <tr><td>Enquiry details</td><td><span class="ph-text">[Purpose]</span></td><td><span class="ph-text">[Recipients]</span></td><td><span class="ph-text">[Period]</span></td></tr>
+            <tr><td>Listing details and photos</td><td><span class="ph-text">[Purpose]</span></td><td><span class="ph-text">[Recipients]</span></td><td><span class="ph-text">[Period]</span></td></tr>
+          </tbody></table></div>
+          <h2 id="p-use">3. How we use it</h2><ul><li><span class="ph-text">[Purpose one]</span></li><li><span class="ph-text">[Purpose two]</span></li><li><span class="ph-text">[Purpose three]</span></li></ul>
+          <h2 id="p-share">4. Who we share it with</h2><p><span class="ph-text">[Owners and builders you contact; service providers for text messages, email, maps and hosting.]</span> <a href="#privacy">Provider names and links</a> can be listed here.</p>
+          <h3>Address suggestions</h3><p><span class="ph-text">[One short paragraph about the map provider and what is sent to it.]</span></p>
+          <h2 id="p-keep">5. How long we keep it</h2><p><span class="ph-text">[Retention periods.]</span></p>
+          <h2 id="p-rights">6. Your choices</h2><p><span class="ph-text">[How to access, correct or delete your data, and how to withdraw consent.]</span></p>
+          <h2 id="p-cookies">7. Cookies</h2><p>See our <a href="#cookies">Cookie information</a>.</p>
+          <h2 id="p-sec">8. Security</h2><p><span class="ph-text">[Short statement.]</span></p>
+          <h2 id="p-chg">9. Changes</h2><p><span class="ph-text">[How you will be told.]</span></p>
+          <h2 id="p-contact">10. Contact us</h2><p><span class="ph-text">[Email address and postal address.]</span></p>
+        </div>
+
+        <!-- TERMS -->
+        <div data-show="terms">
+          <header class="legal-head"><span class="overline" style="color:var(--c-accent-text)">Legal</span><h1 class="h1 mt-2">Terms of Use</h1>
+            <div class="meta"><span>Last updated: <span class="ph-text">[date]</span></span><span>Version <span class="ph-text">[0.1 draft]</span></span></div>
+            <p class="lead">A short plain-language summary goes here. <span class="ph-text">[Your summary]</span></p></header>
+          <h2>1. Using Find Prop</h2><p><span class="ph-text">[Text.]</span> This sentence only shows line length and spacing in the reading column.</p>
+          <h2>2. Your account</h2><p><span class="ph-text">[Text.]</span></p>
+          <h2>3. Listings and content</h2><p><span class="ph-text">[Text: accuracy, rights to advertise, review before publication.]</span></p>
+          <h2>4. Enquiries</h2><p><span class="ph-text">[Text.]</span></p>
+          <h2>5. Builders and sponsors</h2><p><span class="ph-text">[Text: sponsored content, who is responsible for what is inside a banner.]</span></p>
+          <h2>6. What you must not do</h2><ul><li><span class="ph-text">[Rule one]</span></li><li><span class="ph-text">[Rule two]</span></li></ul>
+          <h2>7. Our responsibility</h2><p><span class="ph-text">[Text.]</span></p>
+          <h2>8. Changes</h2><p><span class="ph-text">[Text.]</span></p>
+          <h2>9. Governing law</h2><p><span class="ph-text">[Text.]</span></p>
+          <h2>10. Contact us</h2><p><span class="ph-text">[Text.]</span></p>
+        </div>
+
+        <!-- COOKIE INFORMATION (information page; a banner is only needed if non-essential cookies are used) -->
+        <div data-show="cookies">
+          <header class="legal-head"><span class="overline" style="color:var(--c-accent-text)">Legal</span><h1 class="h1 mt-2">Cookie information</h1>
+            <div class="meta"><span>Last updated: <span class="ph-text">[date]</span></span></div>
+            <p class="lead">What we store in your browser and why. <span class="ph-text">[Your summary]</span></p></header>
+          <h2>1. What cookies are</h2><p><span class="ph-text">[Short explanation.]</span></p>
+          <h2>2. What we use</h2><div class="tbl-x"><table><thead><tr><th>Name or purpose</th><th>Why</th><th>Kind</th><th>How long</th></tr></thead><tbody>
+            <tr><td>Sign-in session</td><td>Keeps you signed in</td><td>Essential</td><td><span class="ph-text">[Period]</span></td></tr>
+            <tr><td>Compare list (browser storage)</td><td>Remembers homes you chose to compare</td><td>Essential</td><td>Until you clear it</td></tr>
+            <tr><td><span class="ph-text">[Analytics, if any]</span></td><td><span class="ph-text">[Purpose]</span></td><td>Optional</td><td><span class="ph-text">[Period]</span></td></tr>
+          </tbody></table></div>
+          <h2>3. Your choices</h2><p><span class="ph-text">[How to change settings.]</span> <a href="consent-snippets.html#prefs">Change cookie settings</a> (shown only if optional cookies are used).</p>
+          <h2>4. Contact us</h2><p><span class="ph-text">[Text.]</span></p>
+        </div>
+      </article>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

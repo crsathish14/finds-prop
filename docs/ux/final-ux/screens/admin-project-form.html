@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Project form · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- Same form for admin and builder. Proposed: sectioned layout with a section nav (Phase 1: one dense page). States: default · errors · saving · saved · media-error · drawer -->
+<fp-portal role="admin" active="projects">
+  <div class="phead"><div><nav class="crumbs mb-2" aria-label="Breadcrumb"><a href="admin-projects.html">Projects</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Kadal Vista</span></nav><h1>Edit project</h1></div></div>
+  
+  <div class="alert alert--danger mb-4" role="alert" data-show="errors"><fp-icon n="alert"></fp-icon><div class="grow"><b>2 things need attention</b>Add a project name and a slug before saving.</div></div>
+
+  <div class="pform with-side">
+    <nav class="section-nav hide-t" aria-label="Form sections"><a class="on" href="#basics"><fp-icon n="tag"></fp-icon>Basics<fp-icon n="check-circle" class="st"></fp-icon></a><a href="#location"><fp-icon n="pin"></fp-icon>Location<fp-icon n="check-circle" class="st"></fp-icon></a><a href="#rera"><fp-icon n="verified"></fp-icon>RERA<fp-icon n="check-circle" class="st"></fp-icon></a><a href="#details"><fp-icon n="doc"></fp-icon>Details</a><a href="#media"><fp-icon n="image"></fp-icon>Media</a><a href="#seo"><fp-icon n="search"></fp-icon>SEO</a></nav>
+
+    <div>
+      <section class="fsec" id="basics"><header><div><h2>Basics</h2><p>The essentials buyers see first.</p></div></header>
+        <div class="form-grid two">
+          <div class="field span-2" data-show="errors"><label class="label" for="pn-e">Project name<span class="req">*</span></label><input id="pn-e" class="input is-error" aria-invalid="true" aria-describedby="pn-ee"><div class="error" id="pn-ee"><fp-icon n="alert"></fp-icon>Project name is required.</div></div>
+          <div class="field span-2" data-hide="errors"><label class="label" for="pn">Project name<span class="req">*</span></label><input id="pn" class="input" value="Kadal Vista"></div>
+          <div class="field"><label class="label" for="pb">Builder<span class="req">*</span></label><select id="pb" class="select"><option>Kadal Homes</option><option>Nila Habitats</option><option>Thendral Estates</option></select><span class="hint">Only admins can assign a project to a builder.</span></div>
+          <div class="field"><label class="label" for="ptp">Project type</label><select id="ptp" class="select"><option>Residential</option><option>Commercial</option><option>Plotted layout</option></select></div>
+          <div class="field"><label class="label" for="ppt">Property type</label><select id="ppt" class="select"><option>Apartment</option><option>Villa</option></select></div>
+          <div class="field"><label class="label" for="pst">Status</label><select id="pst" class="select"><option>New launch</option><option selected>Under construction</option><option>Ready to move</option></select></div>
+          <div class="field"><label class="label" for="pmin">Price from (₹)</label><input id="pmin" class="input num" value="7800000"></div><div class="field"><label class="label" for="pmax">Price to (₹)</label><input id="pmax" class="input num" value="14200000"></div>
+          <div class="field span-2"><span class="label">BHK options</span><div class="row wrap" style="gap:18px"><label class="check"><input type="checkbox">1</label><label class="check"><input type="checkbox" checked>2</label><label class="check"><input type="checkbox" checked>3</label><label class="check"><input type="checkbox">4</label></div></div>
+          <div class="field"><label class="label" for="pla">Land area (acres)</label><input id="pla" class="input num" value="4.2"></div><div class="field"><label class="label" for="ptu">Total units</label><input id="ptu" class="input num" value="320"></div>
+          <div class="field"><label class="label" for="ppo">Possession</label><div class="input-wrap"><input id="ppo" class="input" value="Dec 2028"><fp-icon n="calendar" class="end"></fp-icon></div></div><div class="field"><label class="label" for="pph">Contact phone</label><input id="pph" class="input" value="+91 90000 00000"></div>
+        </div></section>
+
+      <section class="fsec" id="location"><header><div><h2>Location</h2><p>Where the project is and what is nearby.</p></div></header>
+        <div class="form-grid two"><div class="field"><label class="label" for="ploc">Locality<span class="req">*</span></label><select id="ploc" class="select"><option>OMR Navalur</option></select></div><div class="field"><label class="label" for="padr">Address</label><input id="padr" class="input" value="Rajiv Gandhi Salai, Navalur"></div>
+          <div class="field"><label class="label" for="plat">Latitude</label><input id="plat" class="input num" value="12.8451"></div><div class="field"><label class="label" for="plng">Longitude</label><input id="plng" class="input num" value="80.2262"></div>
+          <div class="field span-2"><span class="label">Location advantages</span><div class="chips-input"><span class="chip chip--sm chip--remove">5 min to the IT corridor<fp-icon n="x"></fp-icon></span><span class="chip chip--sm chip--remove">Near the beach road<fp-icon n="x"></fp-icon></span><input placeholder="Add another and press Enter" aria-label="Add location advantage"></div></div>
+          <div class="field span-2"><span class="label">Nearby places</span><div class="chips-input"><span class="chip chip--sm chip--remove">Navalur junction<fp-icon n="x"></fp-icon></span><input placeholder="Add another and press Enter" aria-label="Add nearby place"></div></div></div></section>
+
+      <section class="fsec" id="rera"><header><div><h2>RERA</h2><p>Registration details for this project.</p></div></header>
+        <div class="form-stack col" style="gap:16px"><label class="switch"><input type="checkbox" checked>RERA applicable</label><div class="field" style="max-width:420px"><label class="label" for="prn">RERA number</label><input id="prn" class="input" value="TN/SAMPLE/0000"></div></div></section>
+
+      <section class="fsec" id="details"><header><div><h2>Details</h2><p>Description, specifications and amenities.</p></div></header>
+        <div class="form-stack col" style="gap:16px"><div class="field"><label class="label" for="pds">Description</label><textarea id="pds" class="textarea" style="min-height:130px">A gated community of mid-rise towers around landscaped courtyards.</textarea></div><div class="field"><label class="label" for="psp">Specifications</label><textarea id="psp" class="textarea">RCC framed structure. Vitrified tiles in living areas.</textarea></div>
+          <div class="field"><span class="label">Amenities</span><div class="chip-row"><button class="chip on" type="button">Clubhouse</button><button class="chip on" type="button">Swimming Pool</button><button class="chip on" type="button">Gym</button><button class="chip" type="button">Near Metro</button><button class="chip on" type="button">24x7 Security</button><button class="chip" type="button">Near Beach</button></div></div></div></section>
+
+      <section class="fsec" id="media"><header><div><h2>Media</h2><p>Images, floor plans, elevations and the brochure. JPG, PNG, WEBP or PDF, up to 10 MB each.</p></div></header>
+        <div class="drop"><span class="ic"><fp-icon n="upload"></fp-icon></span><b>Drag files here, or choose files</b><span>Project images</span></div>
+        <div class="photos"><div class="photo"><fp-art kind="twin" v="1"></fp-art><span class="cover">Cover</span><button class="rm" type="button" aria-label="Remove"><fp-icon n="x"></fp-icon></button></div><div class="photo"><fp-art kind="living" v="1"></fp-art><button class="rm" type="button" aria-label="Remove"><fp-icon n="x"></fp-icon></button></div><div class="photo"><fp-art kind="floorplan" v="0"></fp-art><button class="rm" type="button" aria-label="Remove"><fp-icon n="x"></fp-icon></button></div><div class="photo is-error" data-show="media-error"><fp-art kind="balcony" v="1"></fp-art><div class="err">Too large (14 MB). Max 10 MB.</div></div></div>
+        <div class="form-grid two mt-4"><div class="field"><span class="label">Brochure (PDF)</span><div class="panel panel-pad row" style="padding:12px 16px"><fp-icon n="file"></fp-icon><span class="grow small"><b>kadal-vista-brochure.pdf</b></span><button class="btn btn--ghost btn--sm" type="button">Replace</button></div></div><div class="field"><span class="label">Videos</span><div class="chips-input"><span class="chip chip--sm chip--remove">Project walkthrough<fp-icon n="x"></fp-icon></span><input placeholder="Paste a video link" aria-label="Add video link"></div></div></div></section>
+
+      <section class="fsec" id="seo"><header><div><h2>SEO</h2><p>How the project appears in search engines.</p></div></header>
+        <div class="form-grid two"><div class="field span-2"><label class="label" for="sti">Page title</label><input id="sti" class="input" value="Kadal Vista, 2 and 3 BHK homes in OMR Navalur"></div>
+          <div class="field" data-show="errors"><label class="label" for="ssl-e">Slug<span class="req">*</span></label><input id="ssl-e" class="input is-error" aria-invalid="true" aria-describedby="ssl-ee"><div class="error" id="ssl-ee"><fp-icon n="alert"></fp-icon>Slug is required.</div></div><div class="field" data-hide="errors"><label class="label" for="ssl">Slug<span class="req">*</span></label><input id="ssl" class="input" value="kadal-vista"><span class="hint">Page address: /projects/kadal-vista</span></div>
+          <div class="field span-2"><label class="label" for="sde">Meta description</label><textarea id="sde" class="textarea" style="min-height:88px">Gated homes with a clubhouse and pool, a few minutes from the IT corridor.</textarea></div></div></section>
+    </div>
+    <aside class="stack-6" aria-label="Admin settings">
+        <div class="panel panel-pad"><h2 class="title mb-2">Enquiry form</h2><p class="small muted mb-3">Which form buyers see on the project page. If none is chosen, the standard enquiry form is used.</p><select class="select" aria-label="Enquiry form"><option>Standard enquiry form</option><option>Kadal Vista site-visit form</option></select></div>
+        <div class="panel panel-pad"><h2 class="title mb-2">Price trends</h2><p class="small muted mb-3">Monthly price per sq.ft shown as a chart on the project page.</p>
+          <table class="tbl" style="min-width:0"><thead><tr><th>Month</th><th class="r">₹ per sq.ft</th><th></th></tr></thead><tbody><tr><td>Oct 2026</td><td class="num r">8,350</td><td class="r"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove Oct 2026"><fp-icon n="trash"></fp-icon></button></td></tr><tr><td>Sep 2026</td><td class="num r">8,230</td><td class="r"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove Sep 2026"><fp-icon n="trash"></fp-icon></button></td></tr></tbody></table>
+          <button class="btn btn--secondary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add month</button></div></aside>
+  </div>
+
+  <div class="savebar"><span class="small muted">Admins can save without re-approval.</span><div class="row"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--primary" type="button" data-hide="saving">Save project</button><button class="btn btn--primary is-loading" type="button" data-show="saving" aria-busy="true">Saving</button></div></div>
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:110;width:min(440px,calc(100% - 32px))" data-show="saved"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Project saved</b>The changes are live.</div></div></div>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="admin" active="projects"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

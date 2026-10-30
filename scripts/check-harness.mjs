@@ -15,6 +15,7 @@ const RUNTIME_ONLY = [
   /^node_modules\//,
   /^\.env\.local$/,
   /^\.claude\/settings\.local\.json$/,
+  /^CLAUDE\.local\.md$/, // named in instructions precisely because it must not exist
 ];
 const PATHISH = /\.(md|mjs|json|ts|tsx|sql|ya?ml|toml)$/;
 
@@ -139,6 +140,8 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
       }
       if (!looksLikeRepoPath(span)) continue;
       if (RUNTIME_ONLY.some((re) => re.test(span))) continue;
+      // a module specifier such as next/image: the first segment is an installed package
+      if (exists(`node_modules/${span.split("/")[0]}`)) continue;
       const candidates = [span, path.posix.join(path.posix.dirname(file), span)];
       if (!candidates.some(exists))
         findings.push(finding(file, 0, "H-PATH", `mentions ${span} which does not exist`));

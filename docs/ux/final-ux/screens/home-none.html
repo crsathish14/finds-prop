@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homepage · No-sponsor fallback · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default" data-bottombar>
+<fp-header role="visitor"></fp-header>
+
+<main id="main">
+  <!-- Approved fallback: Concept 1's search-first layout with no banner. Nothing is rendered where an ad would be:
+       no empty container, no broken image, no placeholder. The next section simply moves up. -->
+  <section class="hero hero-a no-ad" aria-labelledby="hero-h1">
+    <fp-arches></fp-arches>
+    <div class="container">
+      <h1 id="hero-h1" class="display">Find the place that fits<br class="hide-m"> your life in <em>Chennai</em>.</h1>
+      <p class="sub">Shortlist, compare and enquire directly.</p>
+      <div style="position:relative">
+        <fp-search layout="wide"></fp-search>
+        <div class="ann ann-box" data-dim="Search card" data-target=".search"><b></b></div>
+      </div>
+    </div>
+  </section>
+
+  <fp-homebelow></fp-homebelow>
+</main>
+
+<div class="ann ann-fold d-only" style="top:630px"><b>1366×768 laptop fold ≈ y 630</b></div>
+<div class="ann ann-fold d-only" style="top:780px"><b>1440×900 laptop fold ≈ y 780</b></div>
+<div class="ann ann-fold m-only" style="top:560px"><b>small phone fold ≈ y 560</b></div>
+<div class="ann ann-fold m-only" style="top:660px"><b>typical phone fold ≈ y 660</b></div>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="home"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

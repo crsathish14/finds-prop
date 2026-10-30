@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Builder · Insights · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- Full insights with project filter and timelines. States: default · hover · drawer -->
+<fp-portal role="builder" active="insights">
+  <fp-insightspage ></fp-insightspage>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="builder" active="insights"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+<script>document.addEventListener("DOMContentLoaded", FP.insightsCharts);</script>
+</body>
+</html>

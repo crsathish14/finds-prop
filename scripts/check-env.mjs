@@ -87,17 +87,10 @@ export function checkEnv({ root = repoRoot, files = listFiles(root) } = {}) {
 
   // process.env only in the two env modules
   for (const file of files) {
-    if (!/\.(ts|tsx|mjs|js|mts)$/.test(file)) continue;
+    // application source only: tooling (scripts, configs, hooks, docs copies) may read the environment
+    if (!file.startsWith("src/") || !/\.(ts|tsx|mjs|js|mts)$/.test(file)) continue;
     if (ENV_MODULES.includes(file)) continue;
-    if (
-      file.startsWith("scripts/") ||
-      file.startsWith(".claude/") ||
-      file.endsWith(".config.ts") ||
-      file.endsWith(".config.mjs") ||
-      file.endsWith(".config.mts")
-    )
-      continue;
-    if (/(\.test\.|\.spec\.|\/__tests__\/|^e2e\/|^tests\/)/.test(file)) continue;
+    if (/(\.test\.|\.spec\.|\/__tests__\/)/.test(file)) continue;
     const text = readText(root, file);
     if (text === null) continue;
     for (const match of text.matchAll(PROCESS_ENV)) {

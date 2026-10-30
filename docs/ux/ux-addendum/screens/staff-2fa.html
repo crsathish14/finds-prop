@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second factor for builders and administrators · Find Prop UX addendum</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="enrol" data-hdr="line" data-ai-off>
+<fp-header role="visitor"></fp-header>
+
+<main id="main" class="auth">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-05 · Proposed.</b> Second step after email/password or Google. <b>Variant A</b> = authenticator app (recommended, free). <b>Variant B</b> = code by SMS (billed add-on; <b>DEC-05</b>). Both are designed so neither choice waits. States: enrol · enrol-wrong · recovery · challenge · wrong · locked · use-recovery · lost · sms · sms-wrong · sms-add-phone · admin-challenge.</div></div></div>
+    <div class="auth-grid mt-4">
+      <aside class="auth-aside hide-t" aria-label="Why a second step">
+        <div><span class="tag-line">Find Prop portals</span><h2 class="mt-3">Two steps keep your work <em>safe</em>.</h2></div>
+        <ul><li><span class="ic"><fp-icon n="shield"></fp-icon></span>Protects leads and unpublished projects</li><li><span class="ic"><fp-icon n="key"></fp-icon></span>A stolen password alone is not enough</li><li><span class="ic"><fp-icon n="clock"></fp-icon></span>Takes a few seconds each time you sign in</li></ul>
+      </aside>
+
+      <section class="auth-main" aria-label="Second step">
+        <div class="auth-card">
+          <span class="role-tag" data-hide="admin-challenge"><fp-icon n="briefcase"></fp-icon>Builder portal</span>
+          <span class="role-tag" data-show="admin-challenge"><fp-icon n="layers"></fp-icon>Administrator</span>
+
+          <!-- ───── A · SET UP THE AUTHENTICATOR APP (first sign-in) ───── -->
+          <div data-show="enrol enrol-wrong">
+            <h1>Set up your authenticator app</h1>
+            <p class="lead-in">Add a second step to sign-in. You'll enter a code from the app each time you sign in.</p>
+            <ol class="num-list">
+              <li><div><b>Install an authenticator app</b><span>Any app that supports time-based codes works, for example Google Authenticator or Microsoft Authenticator.</span></div></li>
+              <li><div><b>Scan this code with the app</b>
+                <div class="setup-grid mt-3">
+                  <div class="qr" role="img" aria-label="Set-up QR code (sample)"><svg data-qr aria-hidden="true"></svg></div>
+                  <div class="col">
+                    <span class="small muted">Can't scan? Enter this key in the app instead:</span>
+                    <div class="keybox"><b>JBSW Y3DP EHPK 3PXP</b><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="copy"></fp-icon>Copy</button></div>
+                    <span class="caption muted">Sample key and QR code, for layout only.</span>
+                  </div></div></div></li>
+              <li><div><b>Enter the 6-digit code from the app</b>
+                <div class="field mt-3" style="gap:10px">
+                  <label class="label sr-only" for="t-code">6-digit code</label>
+                  <div class="otp" data-hide="enrol-wrong"><input class="otp-input" id="t-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"><div class="otp-cells" aria-hidden="true"><div class="otp-cell is-focus"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                  <div class="otp is-error shake" data-show="enrol-wrong"><input class="otp-input" id="t-code-e" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="204815" aria-invalid="true" aria-describedby="t-code-ee"><div class="otp-cells" aria-hidden="true"><div class="otp-cell">2</div><div class="otp-cell">0</div><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">1</div><div class="otp-cell">5</div></div></div>
+                  <div class="error" id="t-code-ee" data-show="enrol-wrong"><fp-icon n="alert"></fp-icon>That code didn't match. Check that the time on your phone is automatic, then try the next code.</div>
+                </div></div></li>
+            </ol>
+            <button class="btn btn--primary btn--lg btn--block mt-6" type="button">Turn on and continue</button>
+          </div>
+
+          <!-- ───── A · RECOVERY CODES (shown once, right after set-up) ───── -->
+          <div data-show="recovery">
+            <div class="alert alert--success mb-4" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Authenticator app is on</b>Next, save your recovery codes.</div></div>
+            <h1>Save your recovery codes</h1>
+            <p class="lead-in">If you lose your phone, each code lets you sign in once. Keep them somewhere safe, not only on the same phone. We show them only now.</p>
+            <ul class="codes" aria-label="Recovery codes">
+              <li><span>1</span>7F3K-92QX</li><li><span>2</span>M4TD-8LNB</li><li><span>3</span>XQ29-HV6P</li><li><span>4</span>B8RW-3KJD</li><li><span>5</span>ZN5C-70YA</li><li><span>6</span>K2PL-QD94</li><li><span>7</span>V6HG-5TME</li><li><span>8</span>3XDU-NB8R</li><li><span>9</span>FJ72-LC4W</li><li><span>10</span>8SQA-P6ZK</li>
+            </ul>
+            <div class="row wrap mt-4"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="copy"></fp-icon>Copy codes</button><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="download"></fp-icon>Download</button></div>
+            <p class="caption muted mt-2">Sample codes, for layout only.</p>
+            <label class="check mt-4"><input type="checkbox"> I have saved these codes somewhere safe</label>
+            <button class="btn btn--primary btn--lg btn--block mt-4" type="button" disabled>Continue to the portal</button>
+          </div>
+
+          <!-- ───── A · CHALLENGE (every sign-in) ───── -->
+          <div data-show="challenge wrong locked admin-challenge">
+            <h1>Enter your code</h1>
+            <p class="lead-in">Open your authenticator app and enter the 6-digit code for Find Prop.</p>
+            <div class="alert alert--danger mb-4" role="alert" data-show="wrong"><fp-icon n="alert"></fp-icon><div class="grow"><b>That code isn't right</b>Codes change every 30 seconds. Try the current one. You have 3 attempts left.</div></div>
+            <div class="alert alert--danger mb-4" role="alert" data-show="locked"><fp-icon n="lock"></fp-icon><div class="grow"><b>Too many wrong codes</b>For your security, entering codes is paused. Try again in 15 minutes, or use a recovery code.</div></div>
+            <form class="form-stack" novalidate>
+              <div class="field">
+                <label class="label" for="c-code" id="c-l">Authenticator code</label>
+                <div class="otp" data-show="challenge admin-challenge"><input class="otp-input" id="c-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-labelledby="c-l"><div class="otp-cells" aria-hidden="true"><div class="otp-cell is-focus"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                <div class="otp is-error shake" data-show="wrong"><input class="otp-input" id="c-code-e" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="204815" aria-invalid="true" aria-labelledby="c-l"><div class="otp-cells" aria-hidden="true"><div class="otp-cell">2</div><div class="otp-cell">0</div><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">1</div><div class="otp-cell">5</div></div></div>
+                <div class="otp is-off" data-show="locked"><input class="otp-input" id="c-code-l" inputmode="numeric" maxlength="6" disabled aria-labelledby="c-l"><div class="otp-cells" aria-hidden="true"><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+              </div>
+              <button class="btn btn--primary btn--lg btn--block" type="button" data-hide="locked">Verify and sign in</button>
+              <button class="btn btn--primary btn--lg btn--block" type="button" disabled data-show="locked">Verify and sign in</button>
+            </form>
+            <div class="auth-foot"><a href="#use-recovery">Use a recovery code</a><a href="#lost">Lost your device?</a></div>
+          </div>
+
+          <!-- ───── A · USE A RECOVERY CODE ───── -->
+          <div data-show="use-recovery">
+            <h1>Use a recovery code</h1>
+            <p class="lead-in">Enter one of the recovery codes you saved when you set up your authenticator app. Each code works once.</p>
+            <form class="form-stack" novalidate>
+              <div class="field"><label class="label" for="rc">Recovery code</label><input id="rc" class="input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="7F3K-92QX" value="M4TD-8LNB"><span class="hint">Looks like <b>7F3K-92QX</b>. You have 9 codes left.</span></div>
+              <button class="btn btn--primary btn--lg btn--block" type="button">Use recovery code</button>
+            </form>
+            <div class="auth-foot"><a href="#challenge"><fp-icon n="arrow-l"></fp-icon> Back to the app code</a></div>
+          </div>
+
+          <!-- ───── A · LOST DEVICE ───── -->
+          <div data-show="lost">
+            <span class="icon-disc warning"><fp-icon n="key"></fp-icon></span>
+            <h1 class="mt-4">Lost your device?</h1>
+            <p class="lead-in">If you have a recovery code, use it to sign in and set up a new device. If not, Find Prop can reset your second step after confirming it's you.</p>
+            <a class="btn btn--primary btn--lg btn--block" href="#use-recovery">I have a recovery code</a>
+            <a class="btn btn--secondary btn--lg btn--block mt-3" href="mailto:support@findprop.example"><fp-icon n="mail"></fp-icon>Ask Find Prop to reset it</a>
+            <div class="alert alert--info mt-4"><fp-icon n="info"></fp-icon><div class="grow">After a reset you'll set up the app again the next time you sign in. <span class="flag">Process to confirm</span></div></div>
+            <div class="auth-foot"><a href="#challenge"><fp-icon n="arrow-l"></fp-icon> Back</a></div>
+          </div>
+
+          <!-- ───── B · CODE BY SMS (variant) ───── -->
+          <div data-show="sms sms-wrong">
+            <h1>Enter the code we texted you</h1>
+            <p class="lead-in">We sent a 6-digit code to your registered phone <b>+91 98••• ••412</b>.</p>
+            <div class="alert alert--danger mb-4" role="alert" data-show="sms-wrong"><fp-icon n="alert"></fp-icon><div class="grow"><b>That code isn't right</b>Check the message and try again. You have 3 attempts left.</div></div>
+            <form class="form-stack" novalidate>
+              <div class="field">
+                <label class="label" for="s-code" id="s-l">Code from the text message</label>
+                <div class="otp" data-show="sms"><input class="otp-input" id="s-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-labelledby="s-l"><div class="otp-cells" aria-hidden="true"><div class="otp-cell is-focus"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                <div class="otp is-error shake" data-show="sms-wrong"><input class="otp-input" id="s-code-e" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="204815" aria-invalid="true" aria-labelledby="s-l"><div class="otp-cells" aria-hidden="true"><div class="otp-cell">2</div><div class="otp-cell">0</div><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">1</div><div class="otp-cell">5</div></div></div>
+              </div>
+              <button class="btn btn--primary btn--lg btn--block" type="button">Verify and sign in</button>
+              <div class="resend"><span>Resend code in <b>0:42</b></span><button class="btn-link" type="button" disabled>Resend code</button></div>
+            </form>
+            <div class="auth-foot"><a href="#lost">Can't get texts? Get help</a></div>
+          </div>
+
+          <!-- ───── B · ADD YOUR PHONE FIRST (first sign-in) ───── -->
+          <div data-show="sms-add-phone">
+            <h1>Add your phone number</h1>
+            <p class="lead-in">We'll text you a code each time you sign in to the portal. Use a number only you have access to.</p>
+            <form class="form-stack" novalidate>
+              <div class="field"><label class="label" for="sp">Mobile number</label>
+                <div class="phone"><input id="sp" class="input" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="98765 43210" value="98765 43210"><span class="cc"><fp-icon n="phone"></fp-icon>+91</span></div>
+                <span class="hint">We'll send a code to confirm it's yours.</span></div>
+              <button class="btn btn--primary btn--lg btn--block" type="button">Send code</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

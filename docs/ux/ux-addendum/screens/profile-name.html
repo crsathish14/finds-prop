@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What should we call you? · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="default" data-hdr="line" data-ai-off>
+<fp-header role="user"></fp-header>
+
+<main id="main" class="auth">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-04 · Proposed.</b> One short step after the first successful code entry. Name is required before posting or enquiring, never before browsing. States: default · error · saving · required-post · required-enquire.</div></div></div>
+    <div class="gate-wrap">
+      <div class="auth-card">
+        <span class="icon-disc success" data-show="default error saving"><fp-icon n="user"></fp-icon></span>
+        <span class="icon-disc info" data-show="required-post required-enquire"><fp-icon n="user"></fp-icon></span>
+
+        <h1 class="mt-4"><span data-show="default error saving">What should we call you?</span><span data-show="required-post">Add your name to post a property</span><span data-show="required-enquire">Add your name to contact the owner</span></h1>
+        <p class="lead-in"><span data-show="default error saving">Your name appears on the enquiries you send and on the listings you post. You can change it later.</span><span data-show="required-post">Your name appears on your listing's enquiries. It takes a few seconds.</span><span data-show="required-enquire">The owner sees your name, phone number and message when you enquire.</span></p>
+
+        <form class="form-stack" novalidate>
+          <div class="field" data-hide="error">
+            <div class="row between"><label class="label" for="nm">Full name<span class="req">*</span></label><span class="counter">12 / 80</span></div>
+            <input id="nm" class="input" autocomplete="name" placeholder="Priya Raman" value="Priya Raman" aria-required="true">
+          </div>
+          <div class="field is-error" data-show="error">
+            <div class="row between"><label class="label" for="nm-e">Full name<span class="req">*</span></label><span class="counter">1 / 80</span></div>
+            <input id="nm-e" class="input is-error" autocomplete="name" aria-invalid="true" aria-describedby="nm-ee" aria-required="true" value="P">
+            <div class="error" id="nm-ee"><fp-icon n="alert"></fp-icon>Enter your name, at least 2 characters.</div>
+          </div>
+          <button class="btn btn--accent btn--lg btn--block" type="button" data-hide="saving">Continue</button>
+          <button class="btn btn--accent btn--lg btn--block is-loading" type="button" data-show="saving" aria-busy="true">Saving</button>
+        </form>
+        <div class="auth-foot" data-show="default error saving"><a href="home-a.html">Skip for now</a><span class="caption muted">You'll be asked again before you post or enquire.</span></div>
+        <div class="auth-foot" data-show="required-post required-enquire"><a href="home-a.html"><fp-icon n="arrow-l"></fp-icon> Back</a></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

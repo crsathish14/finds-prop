@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add and verify your email · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="entry" data-hdr="line" data-ai-off>
+<fp-header role="user"></fp-header>
+
+<main id="main" class="auth">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-03 · Proposed.</b> Customers also verify an email (architecture). Sign-in needs only the phone code; a verified email is required to post a property (<b>DEC-07</b>, default). States: entry · invalid · sending · sent · resent · verified · expired · taken.</div></div></div>
+    <div class="auth-grid mt-4">
+      <aside class="auth-aside hide-t" aria-label="Why we ask">
+        <div><span class="tag-line">Your account</span>
+          <h2 class="mt-3">One more step to keep your account <em>safe</em>.</h2></div>
+        <ul><li><span class="ic"><fp-icon n="mail"></fp-icon></span>Updates when your listing is reviewed</li><li><span class="ic"><fp-icon n="shield"></fp-icon></span>A second way to reach you</li><li><span class="ic"><fp-icon n="building"></fp-icon></span>Needed before you post a property</li></ul>
+      </aside>
+
+      <section class="auth-main" aria-label="Verify your email">
+        <div class="auth-card">
+
+          <!-- ENTRY / INVALID / SENDING / TAKEN -->
+          <div data-show="entry invalid sending taken">
+            <h1>Add your email</h1>
+            <p class="lead-in">We'll send you a link to confirm it. You need a verified email to post a property. Saving homes and sending enquiries work without it.</p>
+            <form class="form-stack" novalidate>
+              <div class="field" data-hide="invalid taken">
+                <label class="label" for="em">Email address</label>
+                <input id="em" class="input" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="priya.raman@example.com">
+              </div>
+              <div class="field is-error" data-show="invalid">
+                <label class="label" for="em-e">Email address</label>
+                <input id="em-e" class="input is-error" type="email" inputmode="email" autocomplete="email" aria-invalid="true" aria-describedby="em-ee" value="priya.raman@example">
+                <div class="error" id="em-ee"><fp-icon n="alert"></fp-icon>Enter a valid email address, like name@example.com.</div>
+              </div>
+              <div class="field is-error" data-show="taken">
+                <label class="label" for="em-t">Email address</label>
+                <input id="em-t" class="input is-error" type="email" inputmode="email" autocomplete="email" aria-invalid="true" aria-describedby="em-te" value="priya.raman@example.com">
+                <div class="error" id="em-te"><fp-icon n="alert"></fp-icon>We couldn't use that email. Try a different address.</div>
+                <span class="hint">We don't say why, to protect other people's accounts. <span class="flag">Wording to confirm</span></span>
+              </div>
+              <button class="btn btn--accent btn--lg btn--block" type="button" data-hide="sending">Send verification link</button>
+              <button class="btn btn--accent btn--lg btn--block is-loading" type="button" data-show="sending" aria-busy="true">Sending link</button>
+            </form>
+            <div class="auth-foot"><a href="dashboard.html">Not now, take me to my dashboard</a></div>
+          </div>
+
+          <!-- LINK SENT / SENT AGAIN -->
+          <div data-show="sent resent" role="status">
+            <span class="icon-disc success"><fp-icon n="mail"></fp-icon></span>
+            <h1 class="mt-4">Check your email</h1>
+            <p class="lead-in">We sent a link to <b>priya.raman@example.com</b>. Open it on this phone or computer to finish.</p>
+            <div class="alert alert--success mb-4" data-show="resent"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>We sent it again</b>Use the newest email. Older links stop working.</div></div>
+            <div class="alert alert--info"><fp-icon n="info"></fp-icon><div class="grow">Can't see it? Look in your spam folder. The link works for 1 hour. <span class="flag">Duration to confirm</span></div></div>
+            <div class="resend mt-4"><span>Send again in <b>0:45</b></span><button class="btn-link" type="button" disabled>Send the link again</button></div>
+            <div class="auth-foot"><a href="#entry">Use a different email</a></div>
+          </div>
+
+          <!-- VERIFIED -->
+          <div data-show="verified" role="status" style="text-align:center">
+            <span class="icon-disc success" style="margin-inline:auto"><fp-icon n="verified"></fp-icon></span>
+            <h1 class="mt-4">Email verified</h1>
+            <p class="lead-in">Thanks, <b>priya.raman@example.com</b> is confirmed. You can post a property and we can tell you when it is reviewed.</p>
+            <a class="btn btn--accent btn--lg btn--block" href="post-property.html">Continue to post a property</a>
+            <div class="auth-foot"><a href="dashboard.html">Go to my dashboard</a></div>
+          </div>
+
+          <!-- EXPIRED OR ALREADY USED -->
+          <div data-show="expired" role="alert" style="text-align:center">
+            <span class="icon-disc warning" style="margin-inline:auto"><fp-icon n="clock"></fp-icon></span>
+            <h1 class="mt-4">This link has expired or was already used</h1>
+            <p class="lead-in">Links work once and for a short time. Send yourself a new one to continue.</p>
+            <button class="btn btn--accent btn--lg btn--block" type="button">Send a new link</button>
+            <div class="auth-foot"><a href="dashboard.html">Go to my dashboard</a></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system · Sponsored banner container · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+<style>
+  .mk { position: absolute; z-index: 5; width: 26px; height: 26px; border-radius: 50%; background: #FF1493; color: #fff; font: 700 13px/26px ui-sans-serif, system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 3px #fff; }
+  .wf { position: relative; aspect-ratio: 16 / 10; background: var(--c-bg); border: 1px solid var(--c-border-strong); border-radius: 12px; overflow: hidden; }
+  .wf i { position: absolute; display: block; border-radius: 4px; background: var(--c-border); } .wf i.s { background: #fff; border: 1px solid var(--c-border-strong); } .wf i.ad { background: var(--c-ink); opacity: .78; } .wf i.h { background: var(--c-primary-tint); }
+  .legend-list { display: grid; gap: 10px; margin-top: 16px; } .legend-list li { display: flex; gap: 12px; align-items: flex-start; font: 500 14.5px/1.5 var(--font-ui); color: var(--c-muted); } .legend-list li b { color: var(--c-ink); } .legend-list .n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #FF1493; color: #fff; font: 700 12.5px/24px ui-sans-serif, system-ui, sans-serif; text-align: center; }
+  .ratio-box { background: var(--c-bg-sunken); border: 1px dashed var(--c-border-input); border-radius: 12px; display: grid; place-items: center; font: 700 12px/1.3 var(--font-ui); color: var(--c-muted); text-align: center; }
+</style>
+</head>
+<body data-default="default">
+<fp-header role="visitor"></fp-header>
+<main id="main" class="board"><div class="container">
+  <span class="overline" style="color:var(--c-accent-text)">Design system</span>
+  <h1 class="h1">Sponsored banner container</h1>
+  <p class="intro">Advertisers supply a <b>finished banner image</b>. Find Prop owns the frame, the label and the controls; the advertiser owns everything inside the image. All banners on this page are fictional samples with placeholder copy. Campaign logic, booking, billing and reporting are out of scope and listed in <code>design-handoff.md</code>.</p>
+
+  <section class="bsec"><h2>Anatomy</h2><h3>What the platform owns</h3>
+    <div class="row wrap" style="align-items:flex-start;gap:36px"><div style="position:relative;flex:1 1 560px;max-width:720px;padding:14px 0 0">
+        <fp-sponsor format="strip" creative="a" n="3" i="1"></fp-sponsor>
+        <span class="mk" style="left:-8px;top:2px">1</span><span class="mk" style="left:190px;top:-6px">2</span><span class="mk" style="right:140px;top:-6px">3</span><span class="mk" style="right:2px;top:2px">4</span><span class="mk" style="left:14px;bottom:-8px">5</span></div>
+      <ol class="legend-list" style="flex:1 1 320px"><li><span class="n">1</span><div><b>“Sponsored” label</b> in 11 px caps, always visible, never inside the image. The dashed “Sample ad” tag is a design-review mark and is removed in production.</div></li>
+        <li><span class="n">2</span><div><b>About this ad</b> opens a short explanation (wording to be approved). Keyboard reachable.</div></li>
+        <li><span class="n">3</span><div><b>Pager</b>, only when more than one ad is available: previous, “1 / 3”, next. Manual first; automatic rotation is not assumed.</div></li>
+        <li><span class="n">4</span><div><b>Neutral frame</b>: 1 px stone border, no shadow or fill, so it never looks like a listing card or like part of the search card.</div></li>
+        <li><span class="n">5</span><div><b>Advertiser image</b>: one link, opens the advertiser's page in a new tab with <code>rel="sponsored noopener"</code>. The accessible name comes from advertiser-supplied alt text.</div></li></ol></div></section>
+
+  <section class="bsec"><h2>Formats</h2><h3>Two layouts, two images each</h3>
+    <div class="tscroll"><table class="spec-table"><thead><tr><th>Slot</th><th>Shown at</th><th>Display size</th><th>Ratio</th><th>Supply at 2×</th><th>Used by</th></tr></thead><tbody>
+      <tr><td><b>Strip</b></td><td>≥ 1024 px</td><td class="num">970 × 90</td><td class="num">10.8 : 1</td><td class="num">1940 × 180</td><td>Variation A (under the search card), in-results and mid-page banners</td></tr>
+      <tr><td><b>Strip, compact</b></td><td>&lt; 1024 px</td><td class="num">320 × 100 up to 560 wide</td><td class="num">3.2 : 1</td><td class="num">640 × 200</td><td>Variation A on tablet and phone</td></tr>
+      <tr><td><b>Panel</b></td><td>≥ 1024 px</td><td class="num">524 × 494 inside a 540 × 510 frame</td><td class="num">1.06 : 1</td><td class="num">1048 × 988</td><td>Variation B (right of the search card)</td></tr>
+      <tr><td><b>Panel, compact</b></td><td>&lt; 1024 px</td><td class="num">640 × 320 at most, full width</td><td class="num">2 : 1</td><td class="num">1280 × 640</td><td>Variation B on tablet and phone</td></tr>
+    </tbody></table></div>
+    <p class="small muted mt-3">Delivered as <code>&lt;picture&gt;</code> with a media query, so the browser downloads one image. A campaign needs the pair for the layout that is live; if the live layout needs a format the campaign did not supply, the page shows the no-sponsor layout rather than stretching the wrong image. File weight and accepted file types are a development decision (suggestion: JPG, PNG, WEBP up to 150 KB).</p></section>
+
+  <section class="bsec"><h2>Fitting</h2><h3>Never distorted</h3>
+    <div class="demo-grid wide">
+      <div><div class="demo-cap">Matches the slot <span>fills the frame (object-fit: cover)</span></div><fp-sponsor format="strip" creative="b"></fp-sponsor></div>
+      <div><div class="demo-cap">Near miss (970 × 120 for a 970 × 90 slot) <span>shown whole on a neutral ground (contain)</span></div><fp-sponsor format="strip" contain src="../assets/ads/near-miss-strip-970x120.svg" src-m="../assets/ads/near-miss-strip-970x120.svg"></fp-sponsor></div>
+      <div><div class="demo-cap">Extreme mismatch <span>rejected when supplied, never shown</span></div><div class="ratio-box" style="aspect-ratio:970/90;padding:8px">Example: a 4:3 photo (1.33 : 1) for a 10.8 : 1 slot would shrink to a thumbnail. It fails the ratio check and the campaign falls back to the no-sponsor layout.</div></div>
+    </div>
+    <div class="note-row"><div><b>Rule</b>If the image's ratio is within about 8 % of the slot's, it fills the frame and may lose a sliver at the edges. If it is further off but still within about 30 %, it is shown whole, centred, on the parchment ground (letterboxed). Anything further is rejected when supplied.</div><div><b>Safe zone</b>Keep headline, logo and button at least 5 % inside every edge, because phones crop slightly differently.</div><div><b>Limits</b>Never stretched. Never enlarged beyond 1.5× its supplied size. Text smaller than 11 px at display size is the advertiser's risk and is flagged in review.</div></div></section>
+
+  <section class="bsec"><h2>Several ads</h2><h3>Multiple placements and a manual pager</h3>
+    <div class="demo-grid wide"><div><div class="demo-cap">Strip with 3 ads <span>2 / 3</span></div><fp-sponsor format="strip" creative="c" n="3" i="2"></fp-sponsor></div>
+      <div><div class="demo-cap">Panel with 3 ads <span>1 / 3</span></div><div style="max-width:420px"><fp-sponsor format="panel" creative="b" n="3" i="1"></fp-sponsor></div></div></div>
+    <div class="note-row"><div><b>Not decided</b>Whether ads rotate automatically, how often, and who decides the order are campaign decisions. The container supports a list of any length with manual paging and no autoplay.</div><div><b>If rotation is chosen</b>Add a pause control, stop on hover and focus, never advance in under 8 seconds, and respect reduced motion (WCAG 2.2.2).</div><div><b>One ad</b>No pager, no “1 / 1”.</div></div></section>
+
+  <section class="bsec"><h2>Placements</h2><h3>Where a banner can live without hurting the page</h3>
+    <div class="demo-grid">
+      <div><div class="demo-cap">1 · Hero strip <span>Variation A · decided</span></div><div class="wf"><i class="h" style="left:20%;right:20%;top:12%;height:12%"></i><i class="s" style="left:14%;right:14%;top:30%;height:26%"></i><i class="ad" style="left:14%;right:14%;top:60%;height:8%"></i><i style="left:6%;width:20%;top:78%;height:14%"></i><i style="left:30%;width:20%;top:78%;height:14%"></i><i style="left:54%;width:20%;top:78%;height:14%"></i></div></div>
+      <div><div class="demo-cap">2 · Hero panel <span>Variation B · decided</span></div><div class="wf"><i class="h" style="left:6%;width:44%;top:12%;height:14%"></i><i class="s" style="left:6%;width:44%;top:32%;height:34%"></i><i class="ad" style="left:58%;width:36%;top:10%;height:60%"></i><i style="left:6%;width:20%;top:78%;height:14%"></i><i style="left:30%;width:20%;top:78%;height:14%"></i></div></div>
+      <div><div class="demo-cap">3 · In search results <span>proposed</span></div><div class="wf"><i style="left:6%;width:27%;top:8%;height:26%"></i><i style="left:36%;width:27%;top:8%;height:26%"></i><i style="left:66%;width:27%;top:8%;height:26%"></i><i class="ad" style="left:6%;right:6%;top:41%;height:8%"></i><i style="left:6%;width:27%;top:58%;height:26%"></i><i style="left:36%;width:27%;top:58%;height:26%"></i><i style="left:66%;width:27%;top:58%;height:26%"></i></div><p class="small muted mt-2">After the second row of results, full width of the results column. Never between filters and the first row.</p></div>
+      <div><div class="demo-cap">4 · Home, between sections <span>proposed</span></div><div class="wf"><i class="h" style="left:6%;right:6%;top:6%;height:22%"></i><i style="left:6%;width:27%;top:34%;height:22%"></i><i style="left:36%;width:27%;top:34%;height:22%"></i><i style="left:66%;width:27%;top:34%;height:22%"></i><i class="ad" style="left:14%;right:14%;top:64%;height:8%"></i><i style="left:6%;right:6%;top:80%;height:12%"></i></div></div>
+    </div>
+    <div class="demo-cap mt-8">In search results, live <span>after the sixth card</span></div><div class="demo-frame" style="padding:20px"><fp-sponsor format="inline" creative="b"></fp-sponsor></div>
+    <div class="note-row"><div class="dont"><b>Not recommended</b>Next to the enquiry form on property and project pages, inside dashboards or portals, or anywhere a click could be mistaken for an enquiry.</div><div><b>Budget tiers</b>Placements are separate slots, so different budgets can buy different positions without changing the container. Pricing and inventory are out of scope.</div></div></section>
+
+  <section class="bsec"><h2>Who owns what</h2><h3>Platform and advertiser</h3>
+    <div class="tscroll"><table class="spec-table"><thead><tr><th>Platform</th><th>Advertiser</th></tr></thead><tbody>
+      <tr><td>“Sponsored” label, “About this ad”, pager, frame, spacing and position</td><td>Everything inside the image: logo, headline, price claims, regulatory line, button</td></tr>
+      <tr><td>The link behaviour (new tab, <code>rel="sponsored noopener"</code>) and the fallback when no ad is available</td><td>Destination address and the alt text</td></tr>
+      <tr><td>Which layout is live and which formats it needs</td><td>Supplying the right sizes for the live layout</td></tr>
+    </tbody></table></div>
+    <div class="note-row"><div class="do"><b>Do</b>Keep the label visible and outside the image. Keep the frame neutral. Reserve the slot size so the page doesn't jump.</div><div class="dont"><b>Don't</b>Style an ad like a property card, add fake close buttons, hide the label on small screens, or let the image cover the search card.</div><div><b>No sponsor</b>Render nothing: no empty frame, no broken image, no “your ad here”. The next section moves up and the search card stays centred. See the fallback home page.</div></div></section>
+
+  <section class="bsec"><h2>States</h2><h3>Slot states</h3>
+    <div class="demo-grid wide"><div><div class="demo-cap">Hover <span>border darkens to forest</span></div><div class="sp sp--strip"><div class="sp-meta"><span class="sp-label">Sponsored<span class="sample">Sample ad</span></span></div><a class="sp-frame" style="border-color:var(--c-primary)" href="#"><img src="../assets/ads/strip-970x90-a.svg" alt="Sample banner"></a></div></div>
+      <div><div class="demo-cap">Keyboard focus <span>standard focus ring on the frame</span></div><div class="sp sp--strip"><div class="sp-meta"><span class="sp-label">Sponsored<span class="sample">Sample ad</span></span></div><a class="sp-frame is-focus" href="#"><img src="../assets/ads/strip-970x90-b.svg" alt="Sample banner"></a></div></div>
+      <div><div class="demo-cap">“About this ad” open</div><div style="position:relative;padding-bottom:70px"><fp-sponsor format="strip" creative="c" info></fp-sponsor></div></div></div></section>
+</div></main>
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

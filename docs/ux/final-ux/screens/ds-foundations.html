@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system · Foundations · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+
+</head>
+<body data-default="default" data-bottombar-off>
+<fp-header role="visitor"></fp-header>
+<main id="main" class="board"><div class="container">
+  <span class="overline" style="color:var(--c-accent-text)">Design system</span>
+  <h1 class="h1">Foundations</h1>
+  <p class="intro">Concept 1 (Search Desk) with the Grove palette, Fraunces and Figtree. Brand values are carried over unchanged from the approved exploration; the additions (status colours, dark surface, chart series, focus ring, scales) are marked <b>New</b>. Everything on this page is rendered from <code>assets/tokens.css</code>.</p>
+
+  <section class="bsec"><h2>Colour</h2><h3>Brand and neutrals</h3><div class="sw-grid" id="sw-brand"></div></section>
+  <section class="bsec"><h2>Colour</h2><h3>Status, dark surfaces and charts <span class="flag">New</span></h3><div class="sw-grid" id="sw-new"></div></section>
+  <section class="bsec"><h2>Accessibility</h2><h3>Measured contrast (WCAG 2.1)</h3><div class="tbl-wrap"><div class="tscroll"><table class="spec-table"><thead><tr><th>Pair</th><th>Foreground</th><th>Background</th><th>Ratio</th><th>Use</th></tr></thead><tbody id="ct"></tbody></table></div></div>
+    <p class="small muted mt-3">Small copper text must use <code>--c-accent-text</code> (#9A4A20). The brand copper #B4592A is 4.42:1 on ivory, so it is for button fills and display-size text only. Disabled controls are exempt from contrast rules but are never the only cue.</p></section>
+
+  <section class="bsec"><h2>Typography</h2><h3>Fraunces for display, Figtree for interface</h3><div id="ty"></div>
+    <div class="ty"><div class="k"><b>Tamil fallback</b>Noto Sans Tamil</div><div style="font:400 18px/1.6 var(--font-ui)" lang="ta">வேளச்சேரியில் 3 BHK வீடு, ₹1.25 கோடி</div></div>
+    <div class="ty"><div class="k"><b>Numerals</b>lining, tabular in tables</div><div class="num" style="font:600 28px/1.3 var(--font-display)">₹1,25,00,000 · ₹92 L · ₹32,000/mo · 1,420 sq.ft</div></div></section>
+
+  <section class="bsec"><h2>Space and shape</h2><h3>Spacing, radii, elevation</h3>
+    <div class="row wrap" style="align-items:flex-start;gap:48px"><div id="sp" style="min-width:260px"></div>
+      <div class="el grow" style="background:var(--c-bg-sunken);padding:24px;border-radius:24px">
+        <div style="border-radius:6px;box-shadow:var(--shadow-card)">Radius xs 6<small>Tags</small></div><div style="border-radius:10px;box-shadow:var(--shadow-card)">Radius sm 10<small>Small buttons, menu items</small></div><div style="border-radius:14px;box-shadow:var(--shadow-card)">Radius md 14<small>Buttons, inputs</small></div><div style="border-radius:18px;box-shadow:var(--shadow-card)">Radius lg 18<small>Grouped fields</small></div><div style="border-radius:24px;box-shadow:var(--shadow-card)">Radius xl 24<small>Cards, search card</small></div>
+        <div style="box-shadow:var(--shadow-card)">Shadow card<small>Resting cards</small></div><div style="box-shadow:var(--shadow-hover)">Shadow hover<small>Lifted on hover</small></div><div style="box-shadow:var(--shadow-float)">Shadow float<small>Hero search card only</small></div><div style="box-shadow:var(--shadow-pop)">Shadow pop<small>Menus, popovers</small></div><div style="box-shadow:var(--shadow-modal)">Shadow modal<small>Dialogs, drawers</small></div></div></div></section>
+
+  <section class="bsec"><h2>Layout</h2><h3>Breakpoints and containers</h3>
+    <div class="bp"><div><b>Mobile</b>&lt; 768 px<br>Gutter 16 · bottom bar · single column</div><div><b>Tablet</b>768 to 1023 px<br>Gutter 32 · rail navigation in portals · 2 columns</div><div><b>Laptop</b>1024 to 1279 px<br>Gutter 40 · full header · filter rail</div><div><b>Desktop</b>≥ 1280 px<br>Gutter 56 · content 1328 px max</div></div>
+    <p class="small muted mt-3">Headings step down at 1024 and 768 px (display 58 / 46 / 30). Layouts reflow rather than scale, and nothing relies on a fixed width below 1024 px. Touch targets are at least 44 px; the only smaller controls are 36 px dense buttons on desktop.</p></section>
+
+  <section class="bsec"><h2>Interaction</h2><h3>Focus ring and motion</h3>
+    <div class="row wrap" style="gap:24px"><button class="btn btn--primary is-focus" type="button">Focused button</button><input class="input is-focus" style="max-width:260px" value="Focused field"><a class="chip is-focus" href="#">Focused chip</a></div>
+    <p class="small muted mt-3">One ring everywhere: 3 px forest outline with a 2 px offset (2 px inside fields, where the border also darkens). It is an outline, so it survives high-contrast mode. On dark surfaces the ring is light copper. Motion is 120 to 200 ms ease-out and is removed when the visitor prefers reduced motion.</p></section>
+
+  <section class="bsec"><h2>Iconography</h2><h3>Stroke icons, 24 px grid, 2 px line</h3><div class="icons" id="ic"></div></section>
+</div></main>
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+<script>
+(function () {
+  const s = (name, token, hex, note, border) => `<div class="sw"><div class="chip-c" style="background:${hex}${border ? ';box-shadow:inset 0 0 0 1px var(--c-border)' : ''}"></div><div class="meta"><b>${name}</b><code>${token}</code> ${hex}<br>${note}</div></div>`;
+  document.getElementById('sw-brand').innerHTML = [
+    ['Ivory', '--c-bg', '#FAF6EE', 'Page canvas'], ['Parchment', '--c-bg-sunken', '#F1EADB', 'Secondary canvas, segmented tracks'], ['White', '--c-surface', '#FFFFFF', 'Cards, inputs, dialogs'],
+    ['Forest', '--c-primary', '#1F4A38', 'Identity, selected, secondary actions'], ['Forest hover', '--c-primary-hover', '#163829', 'Hover and footer'], ['Forest tint', '--c-primary-tint', '#E2ECE5', 'Selected fills, soft chips'],
+    ['Copper', '--c-accent', '#B4592A', 'Conversion action, selected highlight (fill only)'], ['Copper hover', '--c-accent-hover', '#9A4A20', 'Hover'], ['Copper text', '--c-accent-text', '#9A4A20', 'Small copper text'], ['Copper tint', '--c-accent-tint', '#F7E6D8', 'Featured badge, AI hint'],
+    ['Ink', '--c-ink', '#1C2A23', 'Body text'], ['Muted', '--c-muted', '#55635A', 'Secondary text'], ['Subtle', '--c-subtle', '#626F67', 'Placeholders'],
+    ['Border', '--c-border', '#E2D9C7', 'Dividers, card edges'], ['Border strong', '--c-border-strong', '#CBBFA6', 'Chip edges, table rules'], ['Input border', '--c-border-input', '#829086', 'Field outlines (3.34:1)'],
+  ].map((a) => s(...a, a[2] === '#FFFFFF' || a[2] === '#FAF6EE')).join('');
+  document.getElementById('sw-new').innerHTML = [
+    ['Success', '--c-success', '#1E6B47', 'on #E1F1E7 · 5.52:1'], ['Warning', '--c-warning', '#7A4F00', 'on #FBEBC8 · 6.05:1'], ['Danger', '--c-danger', '#A62A1B', 'on #FBE2DD · 5.74:1'], ['Info', '--c-info', '#24566F', 'on #E0EEF4 · 6.72:1'], ['Neutral', '--c-neutral', '#3D4A43', 'on #E9E2D0 · 7.20:1'],
+    ['Dark green', '--c-dark', '#163829', 'Footer and portal sidebar'], ['Dark active', '--c-dark-active', '#2E6450', 'Active sidebar item'],
+    ['Series 1 · green', '--c-series-1', '#1F7A55', 'Shortlists, views'], ['Series 2 · ochre', '--c-series-2', '#B7791F', 'Leads'], ['Series 3 · blue', '--c-series-3', '#2F7FB0', 'Enquiries'], ['Series 4 · copper', '--c-series-4', '#B4592A', 'Visitors'], ['Other', '--c-series-other', '#7A857E', 'Folded tail'],
+  ].map((a) => s(...a)).join('');
+  const ct = JSON.parse('[["Ink on ivory","#1C2A23","#FAF6EE",13.87,"Body text"],["Ink on parchment","#1C2A23","#F1EADB",12.48,"Text on tracks"],["Muted on ivory","#55635A","#FAF6EE",5.87,"Secondary text"],["Muted on white","#55635A","#FFFFFF",6.33,"Secondary text on cards"],["Muted on parchment","#55635A","#F1EADB",5.28,"Secondary text on tracks"],["Subtle on white","#626F67","#FFFFFF",5.26,"Placeholders"],["Forest on ivory","#1F4A38","#FAF6EE",9.3,"Headings, links"],["Forest on tint","#1F4A38","#E2ECE5",8.29,"Selected chips"],["White on forest","#FFFFFF","#1F4A38",10.02,"Primary button"],["White on copper","#FFFFFF","#B4592A",4.77,"Accent button"],["White on copper hover","#FFFFFF","#9A4A20",6.22,"Accent button hover"],["Copper text on ivory","#9A4A20","#FAF6EE",5.77,"Small copper text"],["Copper text on white","#9A4A20","#FFFFFF",6.22,"Small copper text on cards"],["Copper text on copper tint","#9A4A20","#F7E6D8",5.12,"Featured badge"],["Success on tint","#1E6B47","#E1F1E7",5.52,"Live badge"],["Warning on tint","#7A4F00","#FBEBC8",6.05,"Pending badge"],["Danger on tint","#A62A1B","#FBE2DD",5.74,"Error text and badge"],["Info on tint","#24566F","#E0EEF4",6.72,"New badge"],["Neutral on tint","#3D4A43","#E9E2D0",7.2,"Sold badge"],["Ivory on dark green","#FAF6EE","#163829",11.94,"Footer text"],["Muted ivory on dark","#B9CBC0","#163829",7.58,"Footer secondary"],["Input border on white","#829086","#FFFFFF",3.34,"Non-text, needs 3:1"]]');
+  document.getElementById('ct').innerHTML = ct.map(([n, f, b, r, u]) => `<tr><td><b>${n}</b></td><td><span class="sw-dot" style="display:inline-block;width:14px;height:14px;border-radius:4px;background:${f};vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)"></span>${f}</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:${b};vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)"></span>${b}</td><td class="num pass">${r.toFixed(2)}:1</td><td>${u}</td></tr>`).join('');
+  document.getElementById('ty').innerHTML = [
+    ['Display', 'var(--t-display) Fraunces 500', 'font:var(--display-weight) var(--t-display)/var(--t-display-lh) var(--font-display);letter-spacing:-.02em;color:var(--c-primary)', 'Find the place that fits your <em style="font-weight:400;color:var(--c-accent)">life</em>'],
+    ['Heading 1', '40 / 46 · 36 / 42 · 28 / 33', 'font:500 var(--t-h1)/var(--t-h1-lh) var(--font-display);color:var(--c-primary);letter-spacing:-.02em', 'Apartments for sale in Velachery'],
+    ['Heading 2', '30 / 36 · 28 / 34 · 23 / 29', 'font:500 var(--t-h2)/var(--t-h2-lh) var(--font-display);color:var(--c-primary);letter-spacing:-.02em', 'Featured homes'],
+    ['Heading 3', '22 / 28 · 21 / 27 · 19 / 25', 'font:500 var(--t-h3)/var(--t-h3-lh) var(--font-display);color:var(--c-primary)', 'Send an enquiry'],
+    ['Title', 'Figtree 700 17 / 22', 'font:700 17px/1.3 var(--font-ui)', 'Card and panel titles'],
+    ['Price', 'Figtree 700 20 · Fraunces 600 34 on detail', 'font:700 20px/1.2 var(--font-ui)', '₹1.25 Cr'],
+    ['Lead', 'Figtree 400 18 / 28', 'font:400 18px/28px var(--font-ui);color:var(--c-muted)', 'Supporting text under a page heading.'],
+    ['Body', 'Figtree 400 16 / 25', 'font:400 16px/25px var(--font-ui)', 'A bright east-facing apartment on a high floor in a gated community.'],
+    ['Small', 'Figtree 400 14 / 20', 'font:400 14px/20px var(--font-ui);color:var(--c-muted)', 'Hints, table text, secondary lines'],
+    ['Caption', 'Figtree 400 12.5 / 17', 'font:400 12.5px/17px var(--font-ui);color:var(--c-muted)', 'Smallest permitted UI text (ads: 11 px)'],
+    ['Overline', 'Figtree 700 11.5 caps +0.07em', 'font:700 11.5px/1 var(--font-ui);letter-spacing:.07em;text-transform:uppercase;color:var(--c-muted)', 'Property type'],
+  ].map(([k, sz, st, ex]) => `<div class="ty"><div class="k"><b>${k}</b>${sz}</div><div style="${st}">${ex}</div></div>`).join('');
+  document.getElementById('sp').innerHTML = [['1', 4], ['2', 8], ['3', 12], ['4', 16], ['5', 20], ['6', 24], ['8', 32], ['10', 40], ['14', 56], ['18', 72], ['24', 96]].map(([k, v]) => `<div class="sp-row"><span style="width:64px;color:var(--c-muted)">--s-${k}</span><i style="width:${v * 2}px"></i>${v}px</div>`).join('');
+  document.getElementById('ic').innerHTML = Object.keys(FP.ICONS).map((k) => `<div>${FP.icon(k)}${k}</div>`).join('');
+})();
+</script>
+</body>
+</html>

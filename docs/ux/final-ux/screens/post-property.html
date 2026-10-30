@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post a property · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="step1" data-wiz data-hdr="line">
+<fp-header role="user"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <!-- Steps: step1 Basics · step2 Details · step3 Photos (upload, proposed) · step3-sample (existing sample-photo picker) · step4 Description · step5 Review
+         States: errors (step4) · submitting · failed · draft (toast, proposed) -->
+    <div class="page-head"><h1 class="h1">Post your <em>property</em></h1><p class="page-sub">Your listing is reviewed before it goes live. It takes about five minutes.</p></div>
+
+    <div class="wiz">
+      <aside class="wiz-steps hide-t" aria-label="Progress">
+        <div class="stepper" id="stepper">
+          <div class="step" data-n="1"><span class="n">1</span><div><b>Basics</b><small>Type, locality, address</small></div></div>
+          <div class="step" data-n="2"><span class="n">2</span><div><b>Details</b><small>Size, price, amenities</small></div></div>
+          <div class="step" data-n="3"><span class="n">3</span><div><b>Photos</b><small>Up to 6 photos</small></div></div>
+          <div class="step" data-n="4"><span class="n">4</span><div><b>Description</b><small>Title and details</small></div></div>
+          <div class="step" data-n="5"><span class="n">5</span><div><b>Review and submit</b><small>Check everything</small></div></div>
+        </div>
+        <p class="mini-note mt-4"><fp-icon n="info"></fp-icon><span>Draft saving and the five-step flow are proposed; today this is a single form.</span></p>
+      </aside>
+
+      <section aria-label="Listing form">
+        <div class="wiz-mobile-head"><div class="progress" id="mprog" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p class="small muted mt-2" id="mlabel"></p></div>
+
+        <div class="wiz-card">
+          <div class="alert alert--danger mb-4" role="alert" data-show="failed"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't submit your listing</b>Your answers are saved on this page. Check your connection and try again.</div></div>
+
+          <!-- STEP 1 -->
+          <div data-show="step1"><h2>What are you listing?</h2><p class="lead-in">Start with the basics. You can change these later in the form.</p>
+            <div class="form-stack col" style="gap:20px">
+              <div class="field"><span class="label" id="lt">I want to</span><div class="seg-cards" role="radiogroup" aria-labelledby="lt"><button class="seg-card on" type="button" role="radio" aria-checked="true"><b>Sell</b><span>List a home for sale</span></button><button class="seg-card" type="button" role="radio" aria-checked="false"><b>Rent out</b><span>List a home for rent</span></button></div></div>
+              <div class="form-grid two"><div class="field"><label class="label" for="pt">Property type</label><select id="pt" class="select"><option>Apartment</option><option>Villa</option><option>Independent House</option><option>Plot / Land</option><option>Commercial</option></select></div>
+                <div class="field"><label class="label" for="pl">Locality</label><select id="pl" class="select"><option>Select a locality</option><option selected>Velachery</option><option>Adyar</option><option>OMR Sholinganallur</option></select></div></div>
+              <div class="field"><label class="label" for="pa">Address <span class="opt">(optional)</span></label><input id="pa" class="input" value="12, Second Cross Street, Velachery"><span class="hint">Shown to people viewing your listing. Up to 300 characters.</span></div>
+            </div></div>
+
+          <!-- STEP 2 -->
+          <div data-show="step2"><h2>Tell us about the home</h2><p class="lead-in">Accurate size and price help buyers find it.</p>
+            <div class="form-stack col" style="gap:20px">
+              <div class="form-grid three"><div class="field"><label class="label" for="bh">Bedrooms (BHK)</label><select id="bh" class="select"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></div><div class="field"><label class="label" for="ba">Bathrooms</label><select id="ba" class="select"><option>1</option><option selected>2</option><option>3</option></select></div><div class="field"><label class="label" for="ar">Area (sq.ft)</label><input id="ar" class="input num" inputmode="numeric" value="1420"></div></div>
+              <div class="form-grid two"><div class="field"><label class="label" for="pr">Price (₹)</label><div class="input-wrap"><span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--c-primary)">₹</span><input id="pr" class="input num" style="padding-left:34px" inputmode="numeric" value="12500000"></div><span class="hint">₹1.25 Cr. For rentals, enter the monthly rent.</span></div>
+                <div class="field"><label class="label" for="fu">Furnishing</label><select id="fu" class="select"><option>Unfurnished</option><option selected>Semi-furnished</option><option>Fully furnished</option></select></div></div>
+              <div class="field"><span class="label">Amenities <span class="opt">(choose any)</span></span><div class="chip-row" role="group" aria-label="Amenities"><button class="chip on" type="button" aria-pressed="true">Gym</button><button class="chip" type="button" aria-pressed="false">Swimming Pool</button><button class="chip on" type="button" aria-pressed="true">24x7 Security</button><button class="chip on" type="button" aria-pressed="true">Car Park</button><button class="chip on" type="button" aria-pressed="true">Lift</button><button class="chip on" type="button" aria-pressed="true">Power Backup</button><button class="chip" type="button" aria-pressed="false">Children Play Area</button><button class="chip on" type="button" aria-pressed="true">Clubhouse</button><button class="chip" type="button" aria-pressed="false">Modular Kitchen</button><button class="chip" type="button" aria-pressed="false">Fully Furnished</button><button class="chip" type="button" aria-pressed="false">Near Metro</button><button class="chip" type="button" aria-pressed="false">Near Beach</button></div></div>
+            </div></div>
+
+          <!-- STEP 3 (proposed upload) -->
+          <div data-show="step3"><h2>Add photos <span class="flag">Upload proposed</span></h2><p class="lead-in">Good photos get more enquiries. Add up to 6. The first one is the cover.</p>
+            <div class="drop"><span class="ic"><fp-icon n="upload"></fp-icon></span><b>Drag photos here, or choose files</b><span>JPG, PNG or WEBP. Up to 10 MB each.</span><button class="btn btn--secondary btn--sm mt-2" type="button">Choose photos</button></div>
+            <div class="photos" aria-label="Uploaded photos">
+              <div class="photo"><fp-art kind="apartment" v="1"></fp-art><span class="cover">Cover</span><button class="rm" type="button" aria-label="Remove photo"><fp-icon n="x"></fp-icon></button></div>
+              <div class="photo"><fp-art kind="living" v="1"></fp-art><button class="rm" type="button" aria-label="Remove photo"><fp-icon n="x"></fp-icon></button></div>
+              <div class="photo"><fp-art kind="bedroom" v="0"></fp-art><div class="prog"><i style="width:62%"></i></div></div>
+              <div class="photo is-error"><fp-art kind="kitchen" v="0"></fp-art><div class="err">Too large (12 MB). Max 10 MB.</div></div>
+            </div>
+            <p class="counter mt-3" style="margin-left:0">3 of 6 photos</p></div>
+
+          <!-- STEP 3 (existing: sample photos) -->
+          <div data-show="step3-sample"><h2>Choose photos</h2><p class="lead-in">Pick up to 3 photos for your listing. <span class="flag">Today's behaviour: sample photos only</span></p>
+            <div class="photos" style="grid-template-columns:repeat(4,1fr)" role="group" aria-label="Sample photos">
+              <button class="photo pick on" type="button" aria-pressed="true"><fp-art kind="apartment" v="1"></fp-art><span class="tick"><fp-icon n="check"></fp-icon></span></button><button class="photo pick" type="button" aria-pressed="false"><fp-art kind="villa" v="0"></fp-art><span class="tick"></span></button><button class="photo pick on" type="button" aria-pressed="true"><fp-art kind="living" v="1"></fp-art><span class="tick"><fp-icon n="check"></fp-icon></span></button><button class="photo pick" type="button" aria-pressed="false"><fp-art kind="house" v="2"></fp-art><span class="tick"></span></button>
+              <button class="photo pick" type="button" aria-pressed="false"><fp-art kind="plot" v="2"></fp-art><span class="tick"></span></button><button class="photo pick on" type="button" aria-pressed="true"><fp-art kind="balcony" v="1"></fp-art><span class="tick"><fp-icon n="check"></fp-icon></span></button><button class="photo pick" type="button" aria-pressed="false"><fp-art kind="commercial" v="1"></fp-art><span class="tick"></span></button><button class="photo pick" type="button" aria-pressed="false"><fp-art kind="bedroom" v="0"></fp-art><span class="tick"></span></button></div>
+            <p class="counter mt-3" style="margin-left:0">3 of 3 chosen</p></div>
+
+          <!-- STEP 4 -->
+          <div data-show="step4 errors"><h2>Describe your home</h2><p class="lead-in">A clear title and a few sentences are enough.</p>
+            <div class="form-stack col" style="gap:20px">
+              <div class="field" data-show="errors"><div class="row between"><label class="label" for="ti-e">Title</label><span class="counter is-over num">4 / 140</span></div><input id="ti-e" class="input is-error" aria-invalid="true" aria-describedby="ti-e-e" value="Flat"><div class="error" id="ti-e-e"><fp-icon n="alert"></fp-icon>Make the title at least 8 characters.</div></div>
+              <div class="field" data-hide="errors"><div class="row between"><label class="label" for="ti">Title</label><span class="counter num">52 / 140</span></div><input id="ti" class="input" value="3 BHK apartment with clubhouse and covered parking"><span class="hint">8 to 140 characters. Mention the type, size and one standout feature.</span></div>
+              <div class="field"><label class="label" for="de">Description <span class="opt">(optional)</span></label><textarea id="de" class="textarea" style="min-height:160px">A bright east-facing apartment on a high floor in a gated community, a short walk from the Velachery MRTS station.</textarea></div>
+            </div></div>
+
+          <!-- STEP 5 -->
+          <div data-show="step5 submitting"><h2>Review and submit</h2><p class="lead-in">Check your details. You can go back to change anything.</p>
+            <dl class="review-list">
+              <div class="rv"><dt>Listing</dt><dd>For sale · Apartment</dd><a class="link small" href="#step1">Edit</a></div>
+              <div class="rv"><dt>Locality</dt><dd>Velachery, Chennai</dd><a class="link small" href="#step1">Edit</a></div>
+              <div class="rv"><dt>Size</dt><dd>3 BHK · 2 bath · 1,420 sq.ft</dd><a class="link small" href="#step2">Edit</a></div>
+              <div class="rv"><dt>Price</dt><dd class="num">₹1.25 Cr</dd><a class="link small" href="#step2">Edit</a></div>
+              <div class="rv"><dt>Photos</dt><dd>3 photos</dd><a class="link small" href="#step3">Edit</a></div>
+              <div class="rv"><dt>Title</dt><dd>3 BHK apartment with clubhouse and covered parking</dd><a class="link small" href="#step4">Edit</a></div>
+            </dl>
+            <div class="next-box mt-4"><span class="ic"><fp-icon n="clock"></fp-icon></span><div><b>What happens next</b><div class="small muted mt-1">Your listing is saved as pending. It stays hidden until it is approved, then goes live. You can follow its status in My listings.</div></div></div></div>
+
+          <div class="wiz-foot hide-t">
+            <div class="row"><button class="btn btn--ghost" type="button" data-hide="step1"><fp-icon n="arrow-l"></fp-icon>Back</button><button class="btn btn--ghost" type="button">Save draft <span class="flag">Proposed</span></button></div>
+            <button class="btn btn--accent btn--lg" type="button" data-show="step5 failed">Submit for review</button>
+            <button class="btn btn--accent btn--lg is-loading" type="button" data-show="submitting" aria-busy="true">Submitting</button>
+            <button class="btn btn--primary btn--lg" type="button" data-hide="step5 submitting failed">Continue<fp-icon n="arrow"></fp-icon></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="draft"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Draft saved</b>Pick up where you left off from My listings. <span class="flag" style="margin-left:4px">Proposed</span></div></div></div>
+</main>
+
+<div class="wiz-sticky"><button class="btn btn--secondary" type="button" data-hide="step1" style="flex:0 0 auto;min-width:92px">Back</button><button class="btn btn--accent" type="button" data-show="step5 failed">Submit for review</button><button class="btn btn--primary" type="button" data-hide="step5 submitting failed">Continue</button></div>
+
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+<script>
+(function () {
+  const names = ['Basics', 'Details', 'Photos', 'Description', 'Review and submit'];
+  function mark() {
+    const t = document.documentElement.dataset.tokens.split(' ');
+    let cur = 1;
+    t.forEach((k) => { const m = /^step(\d)/.exec(k); if (m) cur = +m[1]; });
+    if (t.includes('errors')) cur = 4;
+    if (t.includes('submitting') || t.includes('failed')) cur = 5;
+    document.querySelectorAll('#stepper .step').forEach((s) => { const n = +s.dataset.n; s.classList.toggle('done', n < cur); s.classList.toggle('on', n === cur); s.classList.toggle('is-error', t.includes('errors') && n === 4); const nn = s.querySelector('.n'); nn.innerHTML = n < cur && !(t.includes('errors') && n === 4) ? FP.icon('check') : n; });
+    document.querySelectorAll('#mprog i').forEach((i, k) => { i.className = k + 1 < cur ? 'done' : k + 1 === cur ? 'on' : ''; });
+    document.getElementById('mlabel').textContent = `Step ${cur} of 5 · ${names[cur - 1]}`;
+  }
+  document.addEventListener('DOMContentLoaded', mark); window.addEventListener('hashchange', mark);
+})();
+</script>
+</body>
+</html>

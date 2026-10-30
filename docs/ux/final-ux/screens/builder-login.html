@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Builder sign in · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="signin" data-hdr="line">
+<fp-header role="visitor"></fp-header>
+
+<main id="main" class="auth">
+  <div class="container">
+    <!-- States: signin (default) · denied (not an active builder) · errors · forgot · forgotsent · busy -->
+    <div class="auth-grid">
+      <aside class="auth-aside hide-t" aria-label="About the builder portal">
+        <div><span class="tag-line">Builder portal</span><h2 class="mt-3">Manage your projects, units and <em>leads</em>.</h2></div>
+        <ul><li><span class="ic"><fp-icon n="building"></fp-icon></span>Publish and update your projects</li><li><span class="ic"><fp-icon n="layers"></fp-icon></span>Keep unit availability current</li><li><span class="ic"><fp-icon n="inbox"></fp-icon></span>Follow up on every lead</li><li><span class="ic"><fp-icon n="chart"></fp-icon></span>See how your projects perform</li></ul>
+      </aside>
+
+      <section class="auth-main" aria-label="Builder sign in">
+        <div class="auth-card">
+          <span class="role-tag"><fp-icon n="briefcase"></fp-icon>Builder portal</span>
+
+          <div data-show="forgot forgotsent">
+            <h1>Reset your password</h1><p class="lead-in">Enter your login email and we will send you a link to set a new password.</p>
+            <div class="alert alert--success mb-4" role="status" data-show="forgotsent"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Check your email</b>A reset link is on its way to that address.</div></div>
+            <form class="form-stack" novalidate><div class="field"><label class="label" for="b-fmail">Login email</label><input id="b-fmail" class="input" inputmode="email" value="sales@kadalhomes.example"></div>
+              <button class="btn btn--accent btn--lg btn--block" type="button">Send reset link</button></form>
+            <div class="auth-foot"><a href="#signin"><fp-icon n="arrow-l"></fp-icon> Back to sign in</a></div></div>
+
+          <div data-hide="forgot forgotsent">
+            <h1>Builder sign in</h1><p class="lead-in">Use the email and password from your invitation.</p>
+            <div class="alert alert--danger mb-4" role="alert" data-show="denied"><fp-icon n="alert"></fp-icon><div class="grow"><b>This account doesn't have active builder access</b>If you think this is a mistake, contact Find Prop. You have been signed out.</div></div>
+            <div class="alert alert--danger mb-4" role="alert" data-show="errors"><fp-icon n="alert"></fp-icon><div class="grow"><b>That email and password don't match</b>Check them and try again, or reset your password.</div></div>
+            <form class="form-stack" novalidate>
+              <div class="field"><label class="label" for="b-mail">Email</label><input id="b-mail" class="input" inputmode="email" autocomplete="username" value="sales@kadalhomes.example"></div>
+              <div class="field"><div class="row between"><label class="label" for="b-pw">Password</label><a class="link small" href="#forgot">Forgot password?</a></div><div class="input-wrap has-end"><input id="b-pw" class="input" type="password" autocomplete="current-password" value="correct-horse-battery"><button class="pw-toggle" type="button" aria-label="Show password"><fp-icon n="eye"></fp-icon></button></div></div>
+              <button class="btn btn--primary btn--lg btn--block" type="button" data-hide="busy">Sign in</button>
+              <button class="btn btn--primary btn--lg btn--block is-loading" type="button" data-show="busy" aria-busy="true">Signing in</button>
+            </form>
+            <div class="alert alert--neutral mt-4"><fp-icon n="info"></fp-icon><div class="grow">Builder accounts are created by invitation only. There is no sign-up here.</div></div>
+            <div class="auth-foot"><a href="auth.html">Looking for a buyer or owner account?</a></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

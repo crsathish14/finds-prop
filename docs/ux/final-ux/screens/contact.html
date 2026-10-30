@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default" data-bottombar data-hdr="line">
+<fp-header role="visitor" active="contact"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head">
+      <nav class="crumbs hide-t" aria-label="Breadcrumb"><a href="home-a.html">Home</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Contact</span></nav>
+      <a class="backlink only-t" href="home-a.html"><fp-icon n="arrow-l"></fp-icon>Home</a>
+      <h1 class="h1">Talk to <em>us</em></h1>
+      <p class="page-sub">Questions about a listing, a project or your account? Send us a message.</p>
+    </div>
+
+    <!-- States: default · errors · uploading · success · ratelimit · loadfail. The fields come from the active "contact" form in the admin form builder. -->
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div data-show="loadfail" role="alert"><div class="alert alert--danger"><fp-icon n="alert"></fp-icon><div class="grow"><b>Could not load the contact form</b>Please refresh the page. You can also reach us on the phone number or email beside this form.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Refresh</button></div></div>
+
+        <div class="success-box" data-show="success" role="status" style="padding:12px 0"><span class="icon-disc success"><fp-icon n="check-circle"></fp-icon></span><h2 class="h2" style="font-size:26px">Thank you, we have your message</h2><p class="muted">We will reply on the phone number or email you gave. The success text comes from the form definition.</p><a class="btn btn--secondary" href="home-a.html">Back to home</a></div>
+
+        <form class="form-grid two" novalidate data-hide="success loadfail">
+          <div class="alert alert--warning span-2" role="alert" data-show="ratelimit"><fp-icon n="clock"></fp-icon><div class="grow"><b>You have reached the limit for now</b>You can send a limited number of messages per hour. Please try again a little later.</div></div>
+
+          <div class="field" data-show="errors"><label class="label" for="c-name">Your name<span class="req">*</span></label><input id="c-name" class="input is-error" aria-invalid="true" aria-describedby="c-name-e"><div class="error" id="c-name-e"><fp-icon n="alert"></fp-icon>Your name is required.</div></div>
+          <div class="field" data-hide="errors"><label class="label" for="c-name2">Your name<span class="req">*</span></label><input id="c-name2" class="input" autocomplete="name" value="Priya Raman"></div>
+          <div class="field" data-show="errors"><label class="label" for="c-ph">Mobile<span class="req">*</span></label><input id="c-ph" class="input is-error" aria-invalid="true" aria-describedby="c-ph-e" value="98x"><div class="error" id="c-ph-e"><fp-icon n="alert"></fp-icon>Enter a valid mobile number.</div></div>
+          <div class="field" data-hide="errors"><label class="label" for="c-ph2">Mobile<span class="req">*</span></label><input id="c-ph2" class="input" inputmode="tel" autocomplete="tel" value="98400 12345"></div>
+          <div class="field"><label class="label" for="c-mail">Email <span class="opt">(optional)</span></label><input id="c-mail" class="input" inputmode="email" autocomplete="email" placeholder="you@example.com"></div>
+          <div class="field"><label class="label" for="c-topic">I'm interested in</label><select id="c-topic" class="select"><option>A home to buy</option><option>A home to rent</option><option>A new project</option><option>Listing my property</option><option>Something else</option></select></div>
+          <div class="field span-2"><label class="label" for="c-msg">Message</label><textarea id="c-msg" class="textarea" placeholder="How can we help?"></textarea></div>
+          <div class="field span-2"><span class="label">Attachment <span class="opt">(optional)</span></span>
+            <div class="drop" style="padding:20px" data-hide="uploading"><span class="ic"><fp-icon n="upload"></fp-icon></span><b>Add a file</b><span>PDF, JPG, PNG, DOC or DOCX. Up to 3 files, 5 MB each.</span></div>
+            <div data-show="uploading" class="col" style="gap:8px"><div class="panel panel-pad row" style="padding:12px 16px"><span class="ic" style="color:var(--c-primary);font-size:22px"><fp-icon n="file"></fp-icon></span><div class="grow"><b class="small">site-plan.pdf</b><div class="progress" style="margin-top:6px"><i class="on" style="background:linear-gradient(90deg,var(--c-primary) 60%,var(--c-border-strong) 60%)"></i></div></div><span class="small muted num">60%</span></div></div>
+          </div>
+          <div class="span-2"><button class="btn btn--accent btn--lg" type="button">Send message</button></div>
+        </form>
+      </div>
+
+      <aside aria-label="Contact details" class="stack-6">
+        <div class="contact-card"><h2 class="title" style="margin-bottom:16px">Reach us directly</h2>
+          <ul class="ci-list"><li><span class="ic"><fp-icon n="phone"></fp-icon></span><div><b>Phone</b><span>+91 90000 00000</span></div></li><li><span class="ic"><fp-icon n="mail"></fp-icon></span><div><b>Email</b><span>hello@findprop.example</span></div></li><li><span class="ic"><fp-icon n="pin"></fp-icon></span><div><b>Address</b><span>Chennai, Tamil Nadu</span></div></li></ul>
+          <p class="mini-note mt-4"><fp-icon n="info"></fp-icon><span>These details come from the Footer CMS settings.</span></p></div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="home"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

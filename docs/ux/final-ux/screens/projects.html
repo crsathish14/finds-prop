@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects listing · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default" data-bottombar data-hdr="line">
+<fp-header role="visitor" active="projects"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head project-head">
+      <nav class="crumbs hide-t" aria-label="Breadcrumb"><a href="home-a.html">Home</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Projects</span></nav>
+      <a class="backlink only-t" href="home-a.html"><fp-icon n="arrow-l"></fp-icon>Home</a>
+      <span class="overline accent-text" style="color:var(--c-accent-text)">New launches</span>
+      <h1 class="h1">Projects in <em>Chennai</em></h1>
+      <p class="page-sub">New developments from developers on Find Prop. Only approved and published projects are shown.</p>
+    </div>
+
+    <!-- Locality filter: the data layer can already filter projects by locality and featured (BR-94); a UI for it is proposed -->
+    <div class="pill-row chip-row single mt-4" data-hide="empty" role="group" aria-label="Filter by locality">
+      <button class="chip on" type="button" aria-pressed="true">All localities</button><button class="chip" type="button">OMR Navalur</button><button class="chip" type="button">OMR Siruseri</button><button class="chip" type="button">Medavakkam</button><button class="chip" type="button">Porur</button><button class="chip" type="button">Velachery</button><button class="chip" type="button">Guindy</button>
+      <span class="flag" style="margin-left:6px">Proposed filter</span>
+    </div>
+
+    <!-- States: default · loading · empty · error -->
+    <section class="section tight" data-show="default"><fp-projects ids="1,2,3,4,5,6" cols="c3"></fp-projects></section>
+    <section class="section tight" data-show="loading" aria-busy="true"><div class="cards c3"><div class="jcard"><div class="jcard-media"><div class="sk" style="height:100%;border-radius:0"></div></div><div class="jcard-body"><div class="sk line" style="width:40%"></div><div class="sk line l" style="width:70%"></div><div class="sk line" style="width:55%"></div></div></div><div class="jcard"><div class="jcard-media"><div class="sk" style="height:100%;border-radius:0"></div></div><div class="jcard-body"><div class="sk line" style="width:40%"></div><div class="sk line l" style="width:70%"></div><div class="sk line" style="width:55%"></div></div></div><div class="jcard hide-m"><div class="jcard-media"><div class="sk" style="height:100%;border-radius:0"></div></div><div class="jcard-body"><div class="sk line" style="width:40%"></div><div class="sk line l" style="width:70%"></div><div class="sk line" style="width:55%"></div></div></div></div></section>
+    <section class="empty-wrap" data-show="empty"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div>
+      <h3>New projects are coming soon</h3><p>No projects are live right now. In the meantime, browse homes that are available today.</p><a class="btn btn--primary" href="search.html">Browse homes<fp-icon n="arrow"></fp-icon></a></div></section>
+    <section class="empty-wrap" data-show="error"><div class="alert alert--danger" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't load projects</b>Check your connection and try again.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div></section>
+  </div>
+  <div style="height:40px"></div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="search"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

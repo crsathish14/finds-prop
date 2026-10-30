@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Prop · Final UX package · Review gallery</title>
+<link rel="stylesheet" href="assets/fp.css">
+<style>
+  .hubhead { padding: 40px 0 8px; }
+  .hubhead p { max-width: 74ch; }
+  .hub-tools { position: sticky; top: 0; z-index: 30; background: rgba(250, 246, 238, .95); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--c-border); padding: 12px 0; margin-top: 18px; }
+  .hub-tools .container { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  .grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); padding: 28px 0 64px; }
+  .scr { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; }
+  .scr .thumb { display: block; aspect-ratio: 16 / 10; background: var(--c-bg-sunken); overflow: hidden; border-bottom: 1px solid var(--c-border); }
+  .scr .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .scr .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .scr h2 { font: 700 17px/1.3 var(--font-ui); } .scr p { color: var(--c-muted); font-size: 14px; line-height: 1.5; }
+  .scr .routes { display: flex; flex-wrap: wrap; gap: 6px; } .scr .routes code { font: 500 12px ui-monospace, Consolas, monospace; background: var(--c-bg-sunken); padding: 3px 7px; border-radius: 6px; }
+  .scr .states { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; }
+  .scr .states a { font: 600 12px/1 var(--font-ui); padding: 7px 10px; border-radius: 999px; background: var(--c-bg-sunken); color: var(--c-ink); } .scr .states a:hover { background: var(--c-primary-tint); color: var(--c-primary); }
+  .scr .vp { display: flex; gap: 6px; align-items: center; font: 600 12px/1 var(--font-ui); color: var(--c-muted); } .scr .vp a { padding: 6px 9px; border: 1px solid var(--c-border-strong); border-radius: 8px; color: var(--c-primary); } .scr .vp a:hover { background: var(--c-primary-tint); }
+  .gh { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; margin-top: 14px; } .gh h2 { font: var(--display-weight) 28px/1.2 var(--font-display); color: var(--c-primary); } .gh span { color: var(--c-muted); font-size: 14px; }
+  .docs { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); margin-top: 22px; } .docs a { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 16px; padding: 14px 16px; font: 700 14px/1.3 var(--font-ui); color: var(--c-primary); display: block; } .docs a span { display: block; font: 400 13px/1.4 var(--font-ui); color: var(--c-muted); margin-top: 3px; } .docs a:hover { border-color: var(--c-primary); }
+</style>
+</head>
+<body data-default="all" data-hdr="line">
+<header class="hdr line"><div class="container"><a class="logo" href="index.html"><svg class="mark" aria-hidden="true"><use href="#logo-mark"/></svg><span>Find <b>Prop</b></span></a><span class="role-chip" style="margin-left:6px">Final UX · review</span><div class="hdr-r"><a class="signin" href="README.md">Read me</a></div></div></header>
+<main id="main"><div class="container">
+  <div class="hubhead"><span class="overline" style="color:var(--c-accent-text)">Phase 2 · complete UX package</span><h1 class="h1">Every screen, in every state</h1>
+    <p class="lead mt-2">Concept 1 (Search Desk) in the Grove palette, applied to all 33 routes. Open a screen to use the working prototype (it reflows at any window width), or open its rendered images. The state chips switch the same page into loading, empty, error, success and confirmation states.</p>
+    <div class="docs"><a href="README.md">README<span>How to use this package</span></a><a href="design-system.md">Design system<span>Tokens and components</span></a><a href="navigation-and-information-architecture.md">Navigation and IA<span>Hierarchy and behaviour</span></a><a href="screen-inventory.md">Screen inventory<span>Routes mapped to designs</span></a><a href="interaction-specifications.md">Interactions<span>Flows and responsive rules</span></a><a href="homepage-ad-variations.md">Homepage ad variations<span>A, B and the fallback</span></a><a href="design-handoff.md">Design handoff<span>Open decisions</span></a></div></div>
+</div>
+<div class="hub-tools"><div class="container"><div class="chip-row single" id="filters"></div><div class="search-input" style="flex:1 1 220px;max-width:340px"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input class="input" id="q" type="search" placeholder="Search screens or routes" style="min-height:44px" aria-label="Search screens or routes"></div><span class="small muted" id="count"></span></div></div>
+<div class="container"><div class="grid" id="grid"></div></div></main>
+<script src="assets/manifest.js"></script>
+<script src="assets/fp.js"></script>
+<script>
+(function () {
+  const M = window.FP_MANIFEST, G = window.FP_GROUPS;
+  const vpName = { d: 'Desktop 1440', t: 'Tablet 820', m: 'Mobile 390' };
+  let group = 'all', q = '';
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  function card(s) {
+    const first = s.states[0];
+    const vps = ['d', 't', 'm'].filter((v) => first.vps.includes(v));
+    const thumb = `renders/${s.id}--${first.key}--d.webp`;
+    const hash = (k) => (k && k !== 'default' ? '#' + k : '');
+    return `<article class="scr"><a class="thumb" href="screens/${s.file}${hash(first.key)}"><img src="${thumb}" alt="${esc(s.title)}, desktop" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ratio-box',style:'height:100%',textContent:'Render pending'}))"></a>
+      <div class="body"><h2>${esc(s.title)} ${s.flags && s.flags.includes('proposed') ? '<span class="flag">Proposed</span>' : ''}</h2><p>${esc(s.note)}</p>
+        ${s.routes.length ? `<div class="routes">${s.routes.map((r) => `<code>${esc(r)}</code>`).join('')}</div>` : ''}
+        <div class="vp"><span>Images</span>${vps.map((v) => `<a href="renders/${s.id}--${first.key}--${v}.webp" target="_blank">${vpName[v]}</a>`).join('')}</div>
+        <div class="states">${s.states.map((st) => `<a href="screens/${s.file}${hash(st.key)}" title="Open ${esc(st.label)}">${esc(st.label)}</a>`).join('')}</div></div></article>`;
+  }
+  function render() {
+    const list = M.filter((s) => (group === 'all' || s.group === group) && (!q || (s.title + ' ' + s.note + ' ' + s.routes.join(' ')).toLowerCase().includes(q)));
+    let html = '', last = '';
+    list.forEach((s) => { if (s.group !== last) { last = s.group; html += `<div class="gh"><h2>${G[s.group]}</h2><span>${M.filter((x) => x.group === s.group).length} screens</span></div>`; } html += card(s); });
+    document.getElementById('grid').innerHTML = html || '<p class="muted">No screens match.</p>';
+    document.getElementById('count').textContent = `${list.length} of ${M.length} screens`;
+  }
+  document.getElementById('filters').innerHTML = ['all'].concat(Object.keys(G)).map((k) => `<button class="chip chip--sm${k === group ? ' on' : ''}" type="button" data-g="${k}">${k === 'all' ? 'All' : G[k]}</button>`).join('');
+  document.getElementById('filters').addEventListener('click', (e) => { const b = e.target.closest('[data-g]'); if (b) { group = b.dataset.g; render(); } });
+  document.getElementById('q').addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

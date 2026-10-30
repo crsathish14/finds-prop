@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My dashboard · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="saved" data-bottombar data-hdr="line">
+<fp-header role="user"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <!-- Tabs are the first token (#saved #listings #received #sent). Combine with states, e.g. #listings,confirm-delete.
+         States: *-empty · loading · failed · confirm-sold · confirm-delete · toast-sold -->
+    <div class="dash-head">
+      <div><h1 class="h1">My dashboard</h1><p>Priya Raman · homes you saved, listings you manage and your enquiries.</p></div>
+      <a class="btn btn--accent" href="post-property.html"><fp-icon n="plus"></fp-icon>Post a property</a>
+    </div>
+
+    <nav class="tabs" aria-label="Dashboard sections">
+      <a class="tab" href="#saved" data-tab="saved">Saved<span class="count">3</span></a>
+      <a class="tab" href="#listings" data-tab="listings">My listings<span class="count">5</span></a>
+      <a class="tab" href="#received" data-tab="received">Enquiries received<span class="count new">1 new</span></a>
+      <a class="tab" href="#sent" data-tab="sent">My enquiries<span class="count">2</span></a>
+    </nav>
+
+    <div class="dash-body">
+      <div class="alert alert--danger dash-note" role="alert" data-show="failed"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't update that listing</b>Nothing was changed. Check your connection and try again.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div>
+
+      <!-- LOADING -->
+      <div data-show="loading" aria-busy="true"><fp-skeletons n="3" cols="c3"></fp-skeletons></div>
+
+      <!-- SAVED -->
+      <section data-show="saved" aria-label="Saved homes"><fp-cards ids="1,6,9" saved="1,6,9" cols="c3"></fp-cards></section>
+      <section data-show="saved-empty"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div><h3>You haven't shortlisted any homes yet</h3><p>Tap the heart on a home to save it here, then compare your favourites.</p><a class="btn btn--primary" href="search.html">Browse properties<fp-icon n="arrow"></fp-icon></a></div></section>
+
+      <!-- LISTINGS -->
+      <section data-show="listings" aria-label="My listings">
+        <div class="lrow"><div class="th"><fp-art kind="apartment" v="1"></fp-art></div>
+          <div class="main"><div class="t"><a href="property.html">3 BHK apartment with clubhouse and covered parking</a></div><div class="m"><b class="num">₹1.25 Cr</b><span>Velachery</span><span>Posted 2 days ago</span></div><div class="row gap-2"><span class="badge badge--type badge--sm">For sale</span></div></div>
+          <div class="side"><span class="badge badge--success dot">Live</span><div class="btns"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="check-circle"></fp-icon>Mark as sold</button><button class="btn btn--ghost btn--sm" type="button" aria-label="Edit listing"><fp-icon n="edit"></fp-icon>Edit <span class="flag">Proposed</span></button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)" aria-label="Delete listing"><fp-icon n="trash"></fp-icon>Delete</button></div></div></div>
+        <div class="lrow"><div class="th"><fp-art kind="lowrise" v="1"></fp-art></div>
+          <div class="main"><div class="t"><a href="property.html">3 BHK semi-furnished flat with east-facing balcony</a></div><div class="m"><b class="num">₹48,000/mo</b><span>Velachery</span><span>Posted 3 days ago</span></div><div class="row gap-2"><span class="badge badge--type badge--sm">For rent</span></div></div>
+          <div class="side"><span class="badge badge--success dot">Live</span><div class="btns"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="check-circle"></fp-icon>Mark as rented</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)"><fp-icon n="trash"></fp-icon>Delete</button></div></div></div>
+        <div class="lrow"><div class="th"><fp-art kind="villa" v="0"></fp-art></div>
+          <div class="main"><div class="t"><a href="property.html">Independent villa with private garden and terrace</a></div><div class="m"><b class="num">₹2.85 Cr</b><span>OMR Sholinganallur</span><span>Posted today</span></div><div class="row gap-2"><span class="badge badge--type badge--sm">For sale</span></div></div>
+          <div class="side"><span class="badge badge--warning dot">Pending review</span><div class="btns"><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)"><fp-icon n="trash"></fp-icon>Delete</button></div></div>
+          <div class="note mini-note"><fp-icon n="clock"></fp-icon><span>Waiting for review. It will appear on Find Prop once it is approved.</span></div></div>
+        <div class="lrow"><div class="th"><fp-art kind="house" v="2"></fp-art></div>
+          <div class="main"><div class="t"><a href="property.html">2 BHK independent house near the beach</a></div><div class="m"><b class="num">₹1.65 Cr</b><span>Besant Nagar</span><span>Posted 3 weeks ago</span></div><div class="row gap-2"><span class="badge badge--type badge--sm">For sale</span></div></div>
+          <div class="side"><span class="badge badge--neutral dot">Sold</span><div class="btns"><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)"><fp-icon n="trash"></fp-icon>Delete</button></div></div></div>
+        <div class="lrow"><div class="th"><fp-art kind="twin" v="4"></fp-art></div>
+          <div class="main"><div class="t"><a href="property.html">Spacious 2 BHK for rent with covered parking</a></div><div class="m"><b class="num">₹26,000/mo</b><span>Guindy</span><span>Posted 2 months ago</span></div><div class="row gap-2"><span class="badge badge--type badge--sm">For rent</span></div></div>
+          <div class="side"><span class="badge badge--neutral dot">Rented out</span><div class="btns"><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)"><fp-icon n="trash"></fp-icon>Delete</button></div></div></div>
+        <p class="mini-note mt-4"><fp-icon n="info"></fp-icon><span>Only approved listings can be marked as sold or rented. A sold or rented home is removed from search.</span></p>
+      </section>
+      <section data-show="listings-empty"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div><h3>You have no listings yet</h3><p>Post a home and it will show here with its status while it is reviewed.</p><a class="btn btn--accent" href="post-property.html"><fp-icon n="plus"></fp-icon>Post your property</a></div></section>
+
+      <!-- ENQUIRIES RECEIVED -->
+      <section data-show="received" aria-label="Enquiries received">
+        <div class="erow"><div class="top"><div class="who"><b>Arjun Menon</b><div class="contact"><a href="#"><fp-icon n="phone"></fp-icon>98410 55512</a><a href="#"><fp-icon n="mail"></fp-icon>arjun.menon@example.com</a></div></div><span class="badge badge--info dot">New</span></div>
+          <div class="re">About <a href="property.html">3 BHK apartment with clubhouse and covered parking</a> · 2 hours ago</div><blockquote class="quote">Is the apartment still available? I can visit this weekend.</blockquote>
+          <div class="btns"><button class="btn btn--primary btn--sm" type="button">Mark contacted</button><button class="btn btn--secondary btn--sm" type="button">Close enquiry</button></div></div>
+        <div class="erow"><div class="top"><div class="who"><b>Divya Krishnan</b><div class="contact"><a href="#"><fp-icon n="phone"></fp-icon>98840 21098</a></div></div><span class="badge badge--primary dot">Contacted</span></div>
+          <div class="re">About <a href="property.html">3 BHK semi-furnished flat with east-facing balcony</a> · Yesterday</div><blockquote class="quote">Could you share the maintenance charges?</blockquote>
+          <div class="btns"><button class="btn btn--secondary btn--sm" type="button">Close enquiry</button></div></div>
+        <div class="erow"><div class="top"><div class="who"><b>Karthik S</b><div class="contact"><a href="#"><fp-icon n="phone"></fp-icon>97890 44120</a><a href="#"><fp-icon n="mail"></fp-icon>karthik@example.com</a></div></div><span class="badge badge--neutral dot">Closed</span></div>
+          <div class="re">About <a href="property.html">2 BHK independent house near the beach</a> · 2 weeks ago</div><blockquote class="quote">Interested. Please call me.</blockquote></div>
+      </section>
+      <section data-show="received-empty"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div><h3>No enquiries yet</h3><p>When someone enquires about one of your listings, you will see their details here.</p><a class="btn btn--accent" href="post-property.html"><fp-icon n="plus"></fp-icon>Post your property</a></div></section>
+
+      <!-- ENQUIRIES SENT -->
+      <section data-show="sent" aria-label="My enquiries">
+        <div class="erow"><div class="top"><div class="who"><b><a href="property.html" class="link">3 BHK apartment with clubhouse and covered parking</a></b><div class="re mt-1">Sent 2 hours ago</div></div><span class="status-line"><fp-icon n="clock"></fp-icon>Waiting for owner</span></div><blockquote class="quote">Is the apartment still available? I can visit this weekend.</blockquote></div>
+        <div class="erow"><div class="top"><div class="who"><b><a href="property.html" class="link">Bright 2 BHK, a short walk from the river</a></b><div class="re mt-1">Sent 4 days ago</div></div><span class="badge badge--primary dot">Contacted</span></div><blockquote class="quote">Please share the floor plan.</blockquote></div>
+      </section>
+      <section data-show="sent-empty"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div><h3>You haven't contacted any owners yet</h3><p>Send an enquiry from a home's page and its reply status will show here.</p><a class="btn btn--primary" href="search.html">Browse properties<fp-icon n="arrow"></fp-icon></a></div></section>
+    </div>
+  </div>
+
+  <!-- Feedback and confirmations -->
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:110;width:min(440px,calc(100% - 32px))" data-show="toast-sold"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Marked as sold</b>It no longer shows in search results.</div><button class="x" type="button" aria-label="Dismiss"><fp-icon n="x"></fp-icon></button></div></div>
+</main>
+
+<div class="scrim" data-show="confirm-sold" role="alertdialog" aria-modal="true" aria-labelledby="cs-t"><div class="dialog"><span class="icon-disc warning"><fp-icon n="alert"></fp-icon></span><h2 id="cs-t">Mark this home as sold?</h2><p>"3 BHK apartment with clubhouse and covered parking" will be removed from search results. You can't undo this.</p><div class="actions"><button class="btn btn--secondary" type="button">Keep it live</button><button class="btn btn--primary" type="button">Mark as sold</button></div></div></div>
+<div class="scrim" data-show="confirm-delete" role="alertdialog" aria-modal="true" aria-labelledby="cd-t"><div class="dialog"><span class="icon-disc danger"><fp-icon n="trash"></fp-icon></span><h2 id="cd-t">Delete this listing?</h2><p>"Independent villa with private garden and terrace" will be permanently deleted, along with any enquiries on it. This can't be undone.</p><div class="actions"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--danger" type="button"><fp-icon n="trash"></fp-icon>Delete listing</button></div></div></div>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="me"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

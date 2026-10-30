@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search results without AI search · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-ai-off data-default="empty" data-bottombar data-hdr="line">
+<fp-header role="visitor" active="buy"></fp-header>
+<div class="container add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-10 · Proposed.</b> Same approved results page. The no-matches state offers only &ldquo;Clear all filters&rdquo;. Copy of the approved screen with only the AI entry points removed (AI search is deferred).</div></div></div>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head">
+      <nav class="crumbs hide-t" aria-label="Breadcrumb"><a href="home-a.html">Home</a><fp-icon n="chev-r"></fp-icon><a href="search.html">Properties</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Velachery</span></nav>
+      <a class="backlink only-t" href="home-a.html"><fp-icon n="arrow-l"></fp-icon>Home</a>
+      <h1 class="h1">Apartments for sale in <em>Velachery</em></h1>
+      <p class="page-sub" data-hide="empty loading error"><b>48 homes</b> found in Velachery, Chennai</p>
+      <p class="page-sub" data-show="empty"><b>0 homes</b> match these filters</p>
+    </div>
+
+    <div class="results-layout">
+      <aside class="filters-rail hide-t" aria-label="Filters"><fp-filters intent="buy" loc="Velachery" type="Apartment" bhk="3" budget="Up to ₹1.5 Cr"></fp-filters></aside>
+
+      <section class="results" aria-label="Results">
+        <div class="rbar">
+          <div class="rbar-top">
+            <div class="left only-t"><button class="btn btn--secondary btn--sm filters-btn" type="button"><fp-icon n="sliders"></fp-icon>Filters<span class="n">4</span></button></div>
+            <div class="right">
+              <div class="sortsel"><span class="lbl-t">Sort by</span>
+                <select class="select" aria-label="Sort by"><option>Newest</option><option>Price: low to high</option><option>Price: high to low</option><option>Largest first</option></select>
+                <div class="listbox" data-show="sort" style="position:absolute;right:0;top:50px;width:240px;z-index:20">
+                  <div class="opt on">Newest<fp-icon n="check"></fp-icon></div><div class="opt">Price: low to high</div><div class="opt">Price: high to low</div><div class="opt">Largest first</div>
+                </div>
+              </div>
+              <div class="seg seg--sm view-toggle hide-m" role="group" aria-label="View"><button type="button" class="on" data-off="list" aria-label="Grid view"><fp-icon n="grid"></fp-icon></button><button type="button" data-tab="list" aria-label="List view"><fp-icon n="list"></fp-icon></button></div>
+            </div>
+          </div>
+          <div class="active-chips" aria-label="Active filters">
+            <button class="chip chip--sm chip--remove" type="button" aria-label="Remove filter: Velachery">Velachery<fp-icon n="x"></fp-icon></button>
+            <button class="chip chip--sm chip--remove" type="button" aria-label="Remove filter: Apartment">Apartment<fp-icon n="x"></fp-icon></button>
+            <button class="chip chip--sm chip--remove" type="button" aria-label="Remove filter: 3 BHK">3 BHK<fp-icon n="x"></fp-icon></button>
+            <button class="chip chip--sm chip--remove" type="button" aria-label="Remove filter: Up to ₹1.5 Cr">Up to ₹1.5 Cr<fp-icon n="x"></fp-icon></button>
+            <a class="link small" href="#" style="margin-left:4px">Clear all</a>
+            <span class="flag hide-m" style="margin-left:6px">Proposed</span>
+          </div>
+          <div class="pill-row chip-row single" role="group" aria-label="Quick label filter"><span class="lead-in">Show</span><button class="chip chip--sm on" type="button" aria-pressed="true">All</button><button class="chip chip--sm" type="button" aria-pressed="false">Featured</button><button class="chip chip--sm" type="button" aria-pressed="false">Prime</button><button class="chip chip--sm" type="button" aria-pressed="false">Budget</button></div>
+        </div>
+
+        <!-- States: default · sponsored · list · loading · empty · error · sort · filters (sheet, below 1024 px) -->
+        <div data-show="default sort filters"><fp-cards ids="1,2,3,4,5,6,7,8,9" saved="2" compared="1,6"></fp-cards><fp-loadmore shown="9" total="48"></fp-loadmore></div>
+        <div data-show="sponsored"><fp-cards ids="1,2,3,4,5,6,7,8,9" saved="2" compared="1,6" ad-after="6" ad-creative="b"></fp-cards></div>
+        <div data-show="list"><fp-cards ids="1,2,3,4" saved="2" list></fp-cards></div>
+        <div data-show="loading" aria-busy="true" aria-label="Loading homes"><fp-skeletons n="6"></fp-skeletons></div>
+        <div data-show="empty">
+          <div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div>
+            <h3>No homes match your filters</h3><p>Try widening your budget or removing a filter to see more homes.</p>
+            <div class="row wrap" style="justify-content:center"><button class="btn btn--primary" type="button">Clear all filters</button></div></div>
+        </div>
+        <div data-show="error">
+          <div class="alert alert--danger res-error" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't load homes just now</b>Your filters are saved. Check your connection and try again.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div data-show="default sponsored list sort"><fp-cmpbar ids="1,6"></fp-cmpbar></div>
+</main>
+
+<!-- Mobile filter sheet -->
+<div class="scrim bottom only-t" data-show="filters" role="dialog" aria-modal="true" aria-label="Filters">
+  <div class="sheet"><div class="sheet-head"><h2>Filters</h2><button class="icon-btn" type="button" aria-label="Close filters"><fp-icon n="x"></fp-icon></button></div>
+    <fp-filters intent="buy" loc="Velachery" type="Apartment" bhk="3" budget="Up to ₹1.5 Cr" sheet></fp-filters>
+    <div class="row" style="margin-top:18px"><button class="btn btn--ghost" type="button">Clear all</button><button class="btn btn--accent grow" type="button">Show 48 homes</button></div></div>
+</div>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="search"></fp-bottombar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

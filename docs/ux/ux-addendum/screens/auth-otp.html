@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enter the 6-digit code · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="default" data-hdr="line" data-ai-off>
+<fp-header role="visitor"></fp-header>
+
+<main id="main" class="auth">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-02 · Proposed.</b> Code entry after ADD-01. One real input (screen readers hear one field) drawn as six cells; paste fills all cells; the sixth digit submits. States: default · typing · filled · verifying · wrong · expired · locked · resend · resent · ratelimited · unavailable · success.</div></div></div>
+    <div class="auth-grid mt-4">
+      <aside class="auth-aside hide-t" aria-label="About Find Prop">
+        <div><span class="tag-line">Find Prop</span>
+          <h2 class="mt-3">Nearly there. One code and you're <em>in</em>.</h2></div>
+        <ul><li><span class="ic"><fp-icon n="shield"></fp-icon></span>Your number stays private</li><li><span class="ic"><fp-icon n="msg"></fp-icon></span>Owners see it only when you enquire</li><li><span class="ic"><fp-icon n="lock"></fp-icon></span>No password to remember</li></ul>
+      </aside>
+
+      <section class="auth-main" aria-label="Verify your number">
+        <div class="auth-card">
+          <div data-hide="success">
+            <h1>Enter the 6-digit code</h1>
+            <p class="lead-in">We sent a text message to <b>+91 98••• ••412</b>. <a class="link" href="auth-phone.html">Change number</a></p>
+
+            <!-- Problems -->
+            <div class="alert alert--danger mb-4" role="alert" data-show="wrong"><fp-icon n="alert"></fp-icon><div class="grow"><b>That code isn't right</b>Check the message and try again. You have 3 attempts left.</div></div>
+            <div class="alert alert--warning mb-4" role="alert" data-show="expired"><fp-icon n="clock"></fp-icon><div class="grow"><b>This code has expired</b>Codes work for 5 minutes. Request a new one to continue.</div></div>
+            <div class="alert alert--danger mb-4" role="alert" data-show="locked"><fp-icon n="lock"></fp-icon><div class="grow"><b>Too many wrong codes</b>For your security, entering codes is paused. Try again in 15 minutes, or <a href="auth-phone.html">use a different number</a>.</div></div>
+            <div class="alert alert--success mb-4" role="status" data-show="resent"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>New code sent</b>It may take a minute to arrive. Use the newest message.</div></div>
+            <div class="alert alert--warning mb-4" role="alert" data-show="ratelimited"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many codes requested</b>Please wait 14 minutes before asking for another one.</div></div>
+            <div class="alert alert--danger mb-4" role="alert" data-show="unavailable"><fp-icon n="alert"></fp-icon><div class="grow"><b>We can't check codes right now</b>Nothing is wrong with your code. Please try again in a few minutes.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div>
+
+            <form class="form-stack" novalidate>
+              <div class="field">
+                <label class="label" for="otp" id="otp-l">Verification code</label>
+                <!-- a11y: ONE input (id=otp, autocomplete=one-time-code, inputmode=numeric, maxlength=6) overlays six aria-hidden cells.
+                     Typing and pasting fill the cells; the caret cell is the next empty one; the sixth digit submits automatically. -->
+                <div class="otp is-off" data-show="locked expired">
+                  <input class="otp-input" id="otp-off" inputmode="numeric" autocomplete="one-time-code" maxlength="6" disabled aria-labelledby="otp-l">
+                  <div class="otp-cells" aria-hidden="true"><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                <div class="otp is-error shake" data-show="wrong" role="group">
+                  <input class="otp-input" id="otp-wrong" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="482915" aria-invalid="true" aria-labelledby="otp-l" aria-describedby="otp-we">
+                  <div class="otp-cells" aria-hidden="true"><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">2</div><div class="otp-cell">9</div><div class="otp-cell">1</div><div class="otp-cell">5</div></div></div>
+                <div class="otp" data-show="filled verifying">
+                  <input class="otp-input" id="otp-full" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="482916" aria-labelledby="otp-l">
+                  <div class="otp-cells" aria-hidden="true"><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">2</div><div class="otp-cell">9</div><div class="otp-cell">1</div><div class="otp-cell">6</div></div></div>
+                <div class="otp" data-show="typing">
+                  <input class="otp-input" id="otp-typing" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="482" aria-labelledby="otp-l">
+                  <div class="otp-cells" aria-hidden="true"><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">2</div><div class="otp-cell is-focus"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                <div class="otp" data-show="default resend resent ratelimited unavailable">
+                  <input class="otp-input" id="otp-empty" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-labelledby="otp-l">
+                  <div class="otp-cells" aria-hidden="true"><div class="otp-cell is-focus"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div></div></div>
+                <div class="error" id="otp-we" data-show="wrong"><fp-icon n="alert"></fp-icon>Enter the code from your text message.</div>
+                <span class="hint" data-hide="wrong locked expired">Tip: you can paste the whole code. On many phones the code appears above your keyboard.</span>
+              </div>
+
+              <button class="btn btn--accent btn--lg btn--block" type="button" data-hide="verifying locked expired">Verify and continue</button>
+              <button class="btn btn--accent btn--lg btn--block is-loading" type="button" data-show="verifying" aria-busy="true">Verifying</button>
+              <button class="btn btn--accent btn--lg btn--block" type="button" disabled data-show="locked expired">Verify and continue</button>
+
+              <!-- Resend row. a11y: the countdown is announced politely at 30 s, 10 s and when it ends, not every second -->
+              <div class="resend" data-show="default typing filled verifying wrong"><span>Resend code in <b>0:42</b></span><button class="btn-link" type="button" disabled>Resend code</button></div>
+              <div class="resend" data-show="resend expired unavailable"><span>Didn't get a code?</span><button class="btn-link" type="button"><fp-icon n="refresh"></fp-icon>Resend code</button></div>
+              <div class="resend" data-show="resent"><span>Resend code in <b>0:58</b></span><button class="btn-link" type="button" disabled>Resend code</button></div>
+              <div class="resend" data-show="ratelimited locked"><span>Try again in <b>14:00</b></span><button class="btn-link" type="button" disabled>Resend code</button></div>
+            </form>
+            <div class="auth-foot"><a href="auth-phone.html"><fp-icon n="arrow-l"></fp-icon> Use a different number</a></div>
+          </div>
+
+          <!-- SUCCESS -->
+          <div data-show="success" role="status" style="text-align:center">
+            <span class="icon-disc success" style="margin-inline:auto"><fp-icon n="check-circle"></fp-icon></span>
+            <h1 class="mt-4">Number verified</h1>
+            <p class="lead-in">Welcome to Find Prop. Taking you back to what you were doing…</p>
+            <div class="otp is-ok" style="max-width:420px;margin:0 auto 18px"><div class="otp-cells" aria-hidden="true"><div class="otp-cell">4</div><div class="otp-cell">8</div><div class="otp-cell">2</div><div class="otp-cell">9</div><div class="otp-cell">1</div><div class="otp-cell">6</div></div></div>
+            <a class="btn btn--primary btn--lg btn--block" href="profile-name.html">Continue</a>
+            <p class="caption muted mt-4">New accounts are asked for their name next (ADD-04). Returning users go straight back.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>
