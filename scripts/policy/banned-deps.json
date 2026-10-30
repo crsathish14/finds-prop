@@ -1,0 +1,35 @@
+[
+  { "name": "bun", "reason": "npm is the only package manager (DEC-02, R-GEN-01)" },
+  { "name": "pnpm", "reason": "npm is the only package manager (DEC-02, R-GEN-01)" },
+  { "name": "yarn", "reason": "npm is the only package manager (DEC-02, R-GEN-01)" },
+  { "name": "storybook", "reason": "The in-repo Design Lab replaces Storybook (ADR-020)" },
+  { "prefix": "@storybook/", "reason": "The in-repo Design Lab replaces Storybook (ADR-020)" },
+  { "name": "redux", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  { "name": "@reduxjs/toolkit", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  { "name": "zustand", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  { "name": "jotai", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  { "name": "recoil", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  { "name": "mobx", "reason": "No global state library (plan 05 section 8, R-FE-18)" },
+  {
+    "name": "styled-components",
+    "reason": "Tailwind and tokens are the styling system (ADR-004, R-FE-18)"
+  },
+  {
+    "prefix": "@emotion/",
+    "reason": "Tailwind and tokens are the styling system (ADR-004, R-FE-18)"
+  },
+  { "prefix": "@mui/", "reason": "shadcn/ui on Radix is the component base (ADR-004, R-FE-18)" },
+  {
+    "prefix": "@chakra-ui/",
+    "reason": "shadcn/ui on Radix is the component base (ADR-004, R-FE-18)"
+  },
+  { "name": "antd", "reason": "shadcn/ui on Radix is the component base (ADR-004, R-FE-18)" },
+  {
+    "name": "bootstrap",
+    "reason": "Tailwind and tokens are the styling system (ADR-004, R-FE-18)"
+  },
+  { "name": "prisma", "reason": "No ORM over Supabase (plan 03 section 2)" },
+  { "name": "@prisma/client", "reason": "No ORM over Supabase (plan 03 section 2)" },
+  { "name": "drizzle-orm", "reason": "No ORM over Supabase (plan 03 section 2)" },
+  { "name": "typeorm", "reason": "No ORM over Supabase (plan 03 section 2)" }
+]

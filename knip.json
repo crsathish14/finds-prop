@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["scripts/*.mjs", ".claude/hooks/*.mjs", "scripts/__tests__/*.test.mjs"],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", ".claude/**/*.mjs", "tests/**/*.ts"],
+  "ignore": ["src/types/database.types.ts"],
+  "ignoreDependencies": ["tailwindcss", "client-only"]
+}
