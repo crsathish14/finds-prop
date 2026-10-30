@@ -22,7 +22,7 @@ Not yet shown: a signed-in Supabase session refreshing in the proxy, a cookie-le
 
 ## S1-SPK-02 · Content Security Policy with the prerendered shell
 
-**Status: done. Result: a conflict that needs your decision (proposed DEC-37).**
+**Status: done. Result: a conflict, decided on 31 Oct 2026 as DEC-37, option A.**
 
 - Next.js documents that nonce-based CSP requires dynamic rendering of every page, and that **Partial Prerendering is incompatible** with nonces because the static shell cannot carry a per-request nonce.
 - Tested the alternative the docs offer, experimental Subresource Integrity (`experimental.sri`, sha256), with a strict `script-src 'self'` in a report-only header: on the prerendered home page, **8 of 17 scripts are inline** (Next.js bootstrap and flight data) and every one violates `script-src 'self'`; SRI added `integrity` to the 5 external scripts but does not cover inline scripts. So a strict script policy without nonces is not achievable today.
@@ -36,7 +36,7 @@ Not yet shown: a signed-in Supabase session refreshing in the proxy, a cookie-le
 | B                          | Nonce-based `strict-dynamic`; every page rendered dynamically                                                               | Loses Cache Components and the static shell, CDN caching and most of the performance plan; more server load                                                                    |
 | C                          | Hash-based CSP through experimental SRI                                                                                     | Not viable now (inline scripts); revisit when Next.js supports it                                                                                                              |
 
-Until decided, the header stays Report-Only with `'unsafe-inline'`, as implemented in `src/proxy.ts`.
+**Decision (31 Oct 2026): option A.** The header stays Report-Only with `'unsafe-inline'`, as implemented in `src/proxy.ts`, and is switched to enforcing after Stage 4 once an E2E check confirms no violations on the main flows. Revisit when Next.js supports hashes for inline scripts.
 
 ## S1-SPK-03 · Trustworthy client IP header on Vercel
 
