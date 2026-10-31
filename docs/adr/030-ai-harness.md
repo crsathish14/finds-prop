@@ -33,4 +33,4 @@ Run on 31 Oct 2026 against `chore/s1-harness` (H1-T10). Criteria are from the ha
 | A-09 | Partly | Hooks, commit-msg and pre-commit ran on every commit from a path with spaces inside OneDrive; LF enforced; `doctor` warns about the path and OneDrive. A fresh clone on a path with spaces not repeated |
 | A-10 | Open   | Ten canary evals are manual and need fresh agent sessions on a clean branch                                                                                                                             |
 
-Findings fixed during the run: none needed in instructions. Known gaps: Docker is not installed on the development machine, so database checks (`check:db`, pgTAP, integration) have not run locally.
+Findings fixed during the run: none needed in instructions. Known gaps: Docker cannot run on the development machine (no WSL), so database checks (`check:db`, pgTAP, integration) do not run locally. The owner chose on 31 Oct 2026 to work against a hosted dev project instead (ADR-034); CI runs those checks on every pull request.

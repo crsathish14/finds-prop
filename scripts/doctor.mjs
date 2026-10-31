@@ -49,10 +49,10 @@ export function doctor() {
   if (docker) add("OK", "Docker", `running (${docker})`);
   else
     add(
-      "WARN",
+      "INFO",
       "Docker",
-      "not running or not installed",
-      "Needed for the local Supabase stack: database, pgTAP and integration checks cannot run without it. Say so in PRs; CI runs them",
+      "not running (optional, ADR-034)",
+      "Without it check:db and test:integration cannot run here; CI runs them. Say so in PRs",
     );
   const supa = run("supabase", ["--version"]);
   if (supa) add("OK", "Supabase CLI", supa);
@@ -61,7 +61,7 @@ export function doctor() {
       "WARN",
       "Supabase CLI",
       "not found on PATH",
-      "Install the Supabase CLI (scoop or npm install -g supabase); CI uses the setup-cli action",
+      "The owner needs it for `supabase link` and `db push` to the dev project (ADR-034): scoop install supabase, or run `npx supabase@2.122.0 <command>`. CI has its own copy",
     );
 
   // secret scanning

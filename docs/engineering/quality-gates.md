@@ -14,23 +14,23 @@ Gates `G-01` to `G-20`, the local layers `L-01` to `L-04`, the npm scripts, the 
 
 `package.json` scripts (names are the contract; flags are internal). All scripts are Node-based and run on Windows, macOS and Linux with no POSIX-only syntax.
 
-| Script                              | Runs                                                                                                               | Target time | Needs         |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------- | ------------- |
-| `format` · `format:check`           | Prettier write · check                                                                                             | seconds     |               |
-| `lint`                              | ESLint, zero warnings allowed                                                                                      | < 40 s      |               |
-| `typecheck`                         | `tsc --noEmit`                                                                                                     | < 40 s      |               |
-| `test`                              | Vitest unit and component tests                                                                                    | < 40 s      |               |
-| `policy`                            | `check-hygiene`, `check-env`, `check-deps`, `check-harness`, and from Stage 2 `check-tokens`                       | < 10 s      |               |
-| **`check`**                         | `format:check` + `lint` + `typecheck` + `test` + `policy`                                                          | **< 2 min** | none          |
-| `db:start` · `db:stop` · `db:reset` | Local Supabase stack                                                                                               |             | Docker        |
-| `check:db`                          | `db:reset`, `supabase db lint --level error`, `supabase test db` (pgTAP), generated-types diff, `check-migrations` | < 3 min     | Docker        |
-| `gen:types`                         | `supabase gen types typescript --local` into `src/types/database.types.ts`                                         |             | Docker        |
-| `test:integration`                  | Vitest against the local stack with fake adapters                                                                  | minutes     | Docker        |
-| `test:ds`                           | Playwright on the Design Lab: axe plus visual at 390, 820, 1440                                                    | minutes     | build         |
-| `test:e2e:smoke`                    | Playwright `@smoke` journeys                                                                                       | minutes     | build, Docker |
-| **`verify`**                        | `check` + `check:db` + `test:integration` + `build` + `test:ds` + `test:e2e:smoke`                                 | CI parity   | Docker        |
-| `harness:check`                     | `check-harness` plus the harness and script tests                                                                  | seconds     |               |
-| `doctor`                            | Environment diagnosis (§6)                                                                                         | seconds     |               |
+| Script                              | Runs                                                                                                               | Target time | Needs                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------ |
+| `format` · `format:check`           | Prettier write · check                                                                                             | seconds     |                          |
+| `lint`                              | ESLint, zero warnings allowed                                                                                      | < 40 s      |                          |
+| `typecheck`                         | `tsc --noEmit`                                                                                                     | < 40 s      |                          |
+| `test`                              | Vitest unit and component tests                                                                                    | < 40 s      |                          |
+| `policy`                            | `check-hygiene`, `check-env`, `check-deps`, `check-harness`, and from Stage 2 `check-tokens`                       | < 10 s      |                          |
+| **`check`**                         | `format:check` + `lint` + `typecheck` + `test` + `policy`                                                          | **< 2 min** | none                     |
+| `db:start` · `db:stop` · `db:reset` | Local Supabase stack                                                                                               |             | Docker                   |
+| `check:db`                          | `db:reset`, `supabase db lint --level error`, `supabase test db` (pgTAP), generated-types diff, `check-migrations` | < 3 min     | Docker (optional)        |
+| `gen:types`                         | `supabase gen types typescript --local` into `src/types/database.types.ts`                                         |             | Docker (optional)        |
+| `test:integration`                  | Vitest against the local stack with fake adapters                                                                  | minutes     | Docker (optional)        |
+| `test:ds`                           | Playwright on the Design Lab: axe plus visual at 390, 820, 1440                                                    | minutes     | build                    |
+| `test:e2e:smoke`                    | Playwright `@smoke` journeys                                                                                       | minutes     | build, Docker (optional) |
+| **`verify`**                        | `check` + `check:db` + `test:integration` + `build` + `test:ds` + `test:e2e:smoke`                                 | CI parity   | Docker (optional)        |
+| `harness:check`                     | `check-harness` plus the harness and script tests                                                                  | seconds     |                          |
+| `doctor`                            | Environment diagnosis (§6)                                                                                         | seconds     |                          |
 
 ---
 
@@ -149,7 +149,7 @@ Run first by a new developer or agent. Prints OK, WARN or FAIL per item and says
 | Node version           | Below the `.nvmrc` and `engines` value                      |                                                                                                                                                         |
 | npm                    | Not npm (for example run through another manager)           |                                                                                                                                                         |
 | Dependencies installed | `node_modules` missing or lockfile newer                    |                                                                                                                                                         |
-| Docker                 |                                                             | Not running (database checks cannot run; say so in PRs)                                                                                                 |
+| Docker                 |                                                             | Not running (optional, ADR-034: database checks then run in CI; say so in PRs)                                                                          |
 | Supabase CLI           |                                                             | Not available through `npx`                                                                                                                             |
 | `gitleaks`             |                                                             | Not installed (hook skipped; CI still scans)                                                                                                            |
 | Git                    | `core.autocrlf` not `false` or `input`; hooks not installed |                                                                                                                                                         |

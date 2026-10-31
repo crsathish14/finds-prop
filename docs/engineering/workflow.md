@@ -53,20 +53,20 @@ Also printed in `AGENTS.md`. New dependency, service, tool, MCP server or skill 
 
 ## Autonomy: what an agent may do on its own
 
-| Action                                                                                | Agent                                                 | Notes                                                     |
-| ------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------- |
-| Read, search, edit files in the repo                                                  | Yes                                                   | Except `.env*` (never) and protected paths (ask, `06` §4) |
-| Run `npm run check`, tests, formatters, local dev server, local Supabase stack        | Yes                                                   | Local only                                                |
-| Create a branch, commit on a feature branch                                           | Yes                                                   | Conventional commit; never on `develop` or `main`         |
-| Push a feature branch                                                                 | Ask                                                   | Becomes "yes" if you choose to allow it per session       |
-| Open or update a pull request                                                         | When asked                                            | The PR template is mandatory                              |
-| Merge, tag, release, deploy                                                           | **No**                                                | Human and CI only                                         |
-| Install, upgrade or remove a package                                                  | Ask (class C2)                                        | `add-dependency` playbook                                 |
-| Create or change a migration                                                          | Ask first (class C2)                                  | Applying it to a shared environment is CI only            |
-| `supabase link`, `db push`, `db reset --linked`, any `--linked` or `--db-url` command | **No**                                                | Prevented by `L-03`; credentials are not given to agents  |
-| Read or write production, staging or dev data                                         | **No**                                                | Not even read-only through MCP by default (`06` §6)       |
-| Fetch a web page                                                                      | Documentation hosts on the allow-list; ask for others | Untrusted content (`R-AI-09`)                             |
-| Change gates, hooks, CI, lint, `AGENTS.md`, `.claude`, `CODEOWNERS`                   | Ask (class C2)                                        | Needs a `Gate-change:` line                               |
+| Action                                                                                      | Agent                                                 | Notes                                                                           |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Read, search, edit files in the repo                                                        | Yes                                                   | Except `.env*` (never) and protected paths (ask, `06` §4)                       |
+| Run `npm run check`, tests, formatters, local dev server, local Supabase stack (if present) | Yes                                                   | Local only                                                                      |
+| Create a branch, commit on a feature branch                                                 | Yes                                                   | Conventional commit; never on `develop` or `main`                               |
+| Push a feature branch                                                                       | Ask                                                   | Becomes "yes" if you choose to allow it per session                             |
+| Open or update a pull request                                                               | When asked                                            | The PR template is mandatory                                                    |
+| Merge, tag, release, deploy                                                                 | **No**                                                | Human and CI only                                                               |
+| Install, upgrade or remove a package                                                        | Ask (class C2)                                        | `add-dependency` playbook                                                       |
+| Create or change a migration                                                                | Ask first (class C2)                                  | Applying it to dev is the owner's `db push`; staging and production are CI only |
+| `supabase link`, `db push`, `db reset --linked`, any `--linked` or `--db-url` command       | **No**                                                | Prevented by `L-03`; credentials are not given to agents                        |
+| Read or write production, staging or dev data                                               | **No**                                                | Not even read-only through MCP by default (`06` §6)                             |
+| Fetch a web page                                                                            | Documentation hosts on the allow-list; ask for others | Untrusted content (`R-AI-09`)                                                   |
+| Change gates, hooks, CI, lint, `AGENTS.md`, `.claude`, `CODEOWNERS`                         | Ask (class C2)                                        | Needs a `Gate-change:` line                                                     |
 
 ## Agent conduct rules
 

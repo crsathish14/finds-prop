@@ -14,7 +14,7 @@ Read [AGENTS.md](AGENTS.md) (rules, commands, router) and [CONTRIBUTING.md](CONT
 | --------------------------- | ------------------------------------------------------------------------------- |
 | Node.js 24 (see `.nvmrc`)   | Runs the app and scripts                                                        |
 | npm 10.9 or newer           | The only package manager                                                        |
-| Docker Desktop              | The local Supabase stack, pgTAP and integration tests (`npm run db:start`)      |
+| Docker Desktop (optional)   | A local Supabase stack for pgTAP and integration tests; without it CI runs them |
 | Supabase CLI                | `scoop install supabase` or `npm install -g supabase`; CI uses its setup action |
 | gitleaks (optional locally) | Pre-commit secret scan: `winget install gitleaks`. CI always scans              |
 
@@ -24,22 +24,21 @@ Run `npm run doctor` to see what is missing on your machine and how to fix it.
 
 ```bash
 npm ci
-cp .env.example .env.local        # fill in local values; never commit this file
-npm run db:start                  # needs Docker
+cp .env.example .env.local        # fill in the dev project's URL and keys; never commit this file
 npm run dev                       # http://localhost:3000
 ```
 
 ## Commands
 
-| Command                              | What it does                                                               |
-| ------------------------------------ | -------------------------------------------------------------------------- |
-| `npm run check`                      | Format, lint, types, unit tests and policy checks (run after every change) |
-| `npm run check:db`                   | Apply migrations from empty, lint, pgTAP, generated-types diff (Docker)    |
-| `npm run test:integration`           | Integration tests against the local stack (Docker)                         |
-| `npm run test:ds` · `test:e2e:smoke` | Design Lab checks · end-to-end smoke (build first)                         |
-| `npm run verify`                     | Everything CI runs, locally                                                |
-| `npm run harness:check`              | Instruction files, hooks and policy scripts                                |
-| `npm run doctor`                     | Diagnose the local environment                                             |
+| Command                              | What it does                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `npm run check`                      | Format, lint, types, unit tests and policy checks (run after every change)            |
+| `npm run check:db`                   | Apply migrations from empty, lint, pgTAP, generated-types diff (Docker; CI otherwise) |
+| `npm run test:integration`           | Integration tests against the local stack (Docker; CI otherwise)                      |
+| `npm run test:ds` · `test:e2e:smoke` | Design Lab checks · end-to-end smoke (build first)                                    |
+| `npm run verify`                     | Everything CI runs, locally                                                           |
+| `npm run harness:check`              | Instruction files, hooks and policy scripts                                           |
+| `npm run doctor`                     | Diagnose the local environment                                                        |
 
 ## Layout
 
@@ -54,7 +53,7 @@ scripts/          policy checks, doctor, tests           e2e/                Pla
 
 ## Environments
 
-Local stack (Docker) for daily work and CI. `findsprop-dev` and `findsprop-prod` Supabase projects with Vercel Preview and Production; a staging project is added before launch. Shared-environment credentials live only in Vercel, GitHub Environments and the Supabase dashboard, never on a developer machine used with AI agents. Variable names are in `.env.example`.
+Daily work runs against the hosted `findsprop-dev` Supabase project; the owner applies migrations to it with `supabase db push` (ADR-034). CI builds a throwaway stack from empty on every pull request. `findsprop-prod` and a staging project (added before launch) receive migrations only through CI from `main`. Production and staging credentials live only in Vercel, GitHub Environments and the Supabase dashboard, never on a developer machine used with AI agents. The dev project holds no real data. Variable names are in `.env.example`.
 
 ## Windows and OneDrive
 

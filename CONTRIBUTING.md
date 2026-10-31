@@ -1,6 +1,6 @@
 # Contributing
 
-1. Set up: `npm ci`, `npm run doctor`, `npm run db:start` (Docker required), `npm run dev`. See `README.md` for accounts and environment variables (names only; values come from the owner).
+1. Set up: `npm ci`, `npm run doctor`, `npm run dev`. Docker is optional (ADR-034); CI runs the database checks. See `README.md` for accounts and environment variables (names only; values come from the owner).
 2. Work from `develop`: `feat/…`, `fix/…`, `chore/…`, `docs/…`. Open a pull request into `develop`. Conventional commit titles.
 3. Before pushing run `npm run check`. The pull request template lists what else to run.
 4. Rules are in `AGENTS.md` and `docs/engineering/`. They apply equally to people and AI agents.
