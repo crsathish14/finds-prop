@@ -6,6 +6,7 @@
  *   iconEnd (an Icon), asChild (render a link or other element with the button look; then give it
  *   its own content, as loading and the icon slots do not apply), plus every native button prop.
  * Responsive: heights are touch sizes on every screen; dense 36 px portal buttons are a later size.
+ *   A label too long for the screen is cut with an ellipsis, never allowed to widen the page.
  * Accessibility: a native button; focus ring comes from the global rule. Loading keeps the label
  *   (so the width holds), sets aria-busy and ignores clicks and Enter. Disabled looks flat and
  *   keeps its label. One accent button per view; portals use primary (R-FE-08).
@@ -21,7 +22,7 @@ import { Spinner } from "./spinner";
 
 const buttonVariants = cva(
   [
-    "relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap select-none",
+    "relative inline-flex max-w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap select-none",
     "rounded-md border-[length:var(--bw-field)] border-transparent font-bold",
     "transition-colors duration-(--dur-fast) ease-standard active:translate-y-px",
     "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-tint disabled:text-subtle disabled:active:translate-y-0",
@@ -96,9 +97,9 @@ function Button({
       ) : (
         <>
           {loading ? <Spinner className="absolute" /> : null}
-          <span className={cn("inline-flex items-center gap-2", loading && "opacity-0")}>
+          <span className={cn("inline-flex min-w-0 items-center gap-2", loading && "opacity-0")}>
             {iconStart}
-            {children}
+            <span className="min-w-0 truncate">{children}</span>
             {iconEnd}
           </span>
         </>

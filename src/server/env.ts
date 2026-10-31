@@ -46,3 +46,13 @@ export function parseServerEnv(source: Record<string, string | undefined>): Serv
 }
 
 export const env: ServerEnv = parseServerEnv(process.env);
+
+/**
+ * The Design Lab (ADR-020) is for development and review. It needs DESIGN_LAB=1 and is never
+ * served by a production deployment, whatever the flag says.
+ */
+export function isDesignLabEnabled(settings: Pick<ServerEnv, "DESIGN_LAB" | "APP_ENV">): boolean {
+  return settings.DESIGN_LAB && settings.APP_ENV !== "production";
+}
+
+export const designLabEnabled: boolean = isDesignLabEnabled(env);

@@ -67,7 +67,12 @@ function AvatarMenu({
       >
         <Avatar className="size-10 md:size-9.5">
           {imageSrc ? <AvatarImage src={imageSrc} alt="" /> : null}
-          <AvatarFallback className="bg-primary text-on-primary">{initials}</AvatarFallback>
+          {/* The initials are drawn by CSS, not written as text: the button is named by its label, and a
+              visible text that differs from the name would fail WCAG 2.5.3 (label in name). */}
+          <AvatarFallback
+            data-initials={initials}
+            className="bg-primary text-on-primary before:content-[attr(data-initials)]"
+          />
         </Avatar>
         <Icon icon={ChevronDown} className="hidden text-muted md:block" />
       </DropdownMenuTrigger>

@@ -4,7 +4,7 @@
  * SegmentedControl: a short row of options where exactly one is selected.
  * Purpose: Buy / Rent, All / Buy / Rent, enquiry type, date presets. Owner: design system.
  *   Wraps Radix ToggleGroup, which gives arrow-key movement. One option stays selected: pressing
- *   the selected option does nothing.
+ *   the selected option does nothing. As with native radio buttons, the arrow keys select as they move.
  * Props: options ({ value, label, count? } or { href, label } for a link-tab that navigates instead
  *   of selecting, such as "New projects"), value or defaultValue, onValueChange, aria-label
  *   (required, already-translated), size ("md" | "sm"), block (full width, equal parts).
@@ -68,17 +68,18 @@ function SegmentedControl({
   // Radix clears the value when the selected item is pressed again; a segmented control never does.
   const [ownValue, setOwnValue] = useState(defaultValue ?? "");
   const current = value ?? ownValue;
+  function choose(next: string) {
+    if (!next || next === current) return;
+    setOwnValue(next);
+    onValueChange?.(next);
+  }
   return (
     <ToggleGroup.Root
       type="single"
       data-slot="segmented-control"
       aria-label={ariaLabel}
       value={current}
-      onValueChange={(next) => {
-        if (!next) return;
-        setOwnValue(next);
-        onValueChange?.(next);
-      }}
+      onValueChange={choose}
       className={cn(trackStyles({ block }), className)}
     >
       {options.map((option) =>
@@ -95,6 +96,8 @@ function SegmentedControl({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
+            // Items are radios to a screen reader, so like native radios the arrow keys select as they move.
+            onFocus={() => choose(option.value)}
             className={itemStyles({ size, block })}
           >
             {option.label}
