@@ -12,9 +12,10 @@ import tseslint from "typescript-eslint";
 
 // Next.js special files must have a default export, and the error boundaries must be client components.
 const NEXT_SPECIAL_FILES = [
-  "src/app/**/{page,layout,loading,error,global-error,not-found,template,default}.tsx",
+  "src/app/**/{page,layout,loading,error,global-error,not-found,global-not-found,template,default}.tsx",
   "src/app/**/{opengraph-image,twitter-image,icon,apple-icon}.tsx",
   "src/app/**/{sitemap,robots,manifest}.ts",
+  "src/i18n/request.ts", // next-intl requires a default export
 ];
 const SRC_CODE = ["src/**/*.{ts,tsx}"];
 const TEST_FILES = [

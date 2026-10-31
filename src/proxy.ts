@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import createIntlProxy from "next-intl/middleware";
+import { NextRequest, NextResponse } from "next/server";
+import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
 import { env } from "@/server/env";
 
@@ -28,15 +30,16 @@ const CSP_REPORT_ONLY = [
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co http://127.0.0.1:54321 ws://127.0.0.1:54321",
 ].join("; ");
 
+type CookieOptions = NonNullable<Parameters<NextResponse["cookies"]["set"]>[2]>;
+
+const handleLanguage = createIntlProxy(routing);
+
 export async function proxy(request: NextRequest) {
   const incoming = request.headers.get("x-request-id");
   const requestId = incoming && REQUEST_ID.test(incoming) ? incoming : crypto.randomUUID();
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-request-id", requestId);
-
-  let response = NextResponse.next({ request: { headers: requestHeaders } });
-
+  // 1. Session refresh first, so the language routing below sees the refreshed cookies.
+  const refreshed: { name: string; value: string; options: CookieOptions }[] = [];
   const supabase = createServerClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
     publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -44,9 +47,10 @@ export async function proxy(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (toSet) => {
-          for (const { name, value } of toSet) request.cookies.set(name, value);
-          response = NextResponse.next({ request: { headers: requestHeaders } });
-          for (const { name, value, options } of toSet) response.cookies.set(name, value, options);
+          for (const { name, value, options } of toSet) {
+            request.cookies.set(name, value);
+            refreshed.push({ name, value, options: options ?? {} });
+          }
         },
       },
     },
@@ -55,6 +59,15 @@ export async function proxy(request: NextRequest) {
   // Verifies the token signature and refreshes the cookies when needed. Do not run other
   // Supabase calls between creating the client and this line.
   await supabase.auth.getClaims();
+
+  // 2. Language routing (rewrite or redirect). Route handlers under /api have no language.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-request-id", requestId);
+  const response = request.nextUrl.pathname.startsWith("/api")
+    ? NextResponse.next({ request: { headers: requestHeaders } })
+    : handleLanguage(new NextRequest(request, { headers: requestHeaders }));
+
+  for (const { name, value, options } of refreshed) response.cookies.set(name, value, options);
 
   response.headers.set("x-request-id", requestId);
   response.headers.set("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY);

@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "title": "Find Prop",
+    "titleTemplate": "%s · Find Prop",
+    "description": "Find homes, plots and new projects in Tamil Nadu."
+  },
+  "common": {
+    "loading": "Loading…",
+    "tryAgain": "Try again",
+    "goHome": "Go to the home page",
+    "reference": "Reference: {id}"
+  },
+  "home": {
+    "title": "Find Prop",
+    "tagline": "Homes, plots and new projects in Tamil Nadu. We are getting ready."
+  },
+  "notFound": {
+    "title": "We couldn't find that page",
+    "body": "The link may be old, or the page may have moved."
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "body": "Please try again. If it keeps happening, tell us the reference below."
+  }
+}
