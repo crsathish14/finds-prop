@@ -17,8 +17,8 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/cn";
 
 type LabelProps = ComponentProps<typeof LabelPrimitive.Root> & {
-  required?: boolean;
-  optionalLabel?: string;
+  required?: boolean | undefined;
+  optionalLabel?: string | undefined;
 };
 
 function Label({ className, required, optionalLabel, children, ...props }: LabelProps) {
