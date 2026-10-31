@@ -12,3 +12,11 @@ paths = [
   '''^docs/ux/''',
   '''^package-lock\.json$''',
 ]
+
+[[allowlists]]
+description = "Made-up values used as fixtures in the bundle-scan, env-scan and log-redaction tests"
+stopwords = [
+  "sb_secret_0123456789abcdefghij",
+  "aB3dE5gH7jK9mN1pQ3sT5vX7zA9cE1fG3hJ5kL7",
+  "dummysignaturevalue",
+]
