@@ -29,18 +29,19 @@ If Docker is unavailable (the owner's machine runs without it, ADR-034), say so 
 
 ## Router: read before you work in that area
 
-| Area                               | Read                                                                                    |
-| ---------------------------------- | --------------------------------------------------------------------------------------- |
-| UI, components, styling            | `src/components/AGENTS.md`, `docs/engineering/design-system.md`, `docs/ux-reference.md` |
-| Pages, features, forms, URL state  | `src/features/AGENTS.md`, `docs/engineering/frontend.md`                                |
-| Actions, handlers, auth, adapters  | `src/server/AGENTS.md`, `docs/engineering/backend.md`, `docs/engineering/security.md`   |
-| Database, RLS, storage, migrations | `supabase/AGENTS.md`, `docs/engineering/database.md`                                    |
-| Tests                              | `docs/engineering/testing.md`                                                           |
-| Git, pull requests, change classes | `docs/engineering/workflow.md`                                                          |
-| New dependency or technology       | `docs/engineering/dependencies.md`                                                      |
-| Any Next.js API                    | `node_modules/next/dist/docs/` (not memory)                                             |
-| Why something is the way it is     | `docs/adr/`                                                                             |
-| What to build, acceptance criteria | `docs/requirements/`                                                                    |
+| Area                                | Read                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------- |
+| UI, components, styling             | `src/components/AGENTS.md`, `docs/engineering/design-system.md`, `docs/ux-reference.md` |
+| Pages, features, forms, URL state   | `src/features/AGENTS.md`, `docs/engineering/frontend.md`                                |
+| Actions, handlers, auth, adapters   | `src/server/AGENTS.md`, `docs/engineering/backend.md`, `docs/engineering/security.md`   |
+| Database, RLS, storage, migrations  | `supabase/AGENTS.md`, `docs/engineering/database.md`                                    |
+| Tests                               | `docs/engineering/testing.md`                                                           |
+| Git, pull requests, change classes  | `docs/engineering/workflow.md`                                                          |
+| New dependency or technology        | `docs/engineering/dependencies.md`                                                      |
+| Any Next.js API                     | `node_modules/next/dist/docs/` (not memory)                                             |
+| Why something is the way it is      | `docs/adr/`                                                                             |
+| Where the project stands, next task | `docs/status.md` (read first in a new session)                                          |
+| What to build, acceptance criteria  | `docs/requirements/`                                                                    |
 
 Procedures: `docs/engineering/playbooks/` (new-slice, new-migration, new-action, new-component, add-a-language, add-dependency, review-change).
 
