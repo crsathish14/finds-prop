@@ -81,7 +81,11 @@ Recorded in the component's Design Lab page and in a short header comment:
 | `/design-system/feedback`    | `ds-feedback`    | Alerts, toasts, dialogs, sheets, empty/loading states, validation                                                                |
 | `/design-system/ads`         | `ds-ads`         | Sponsor slot anatomy, formats, fitting, multi-ad, placements, fallback                                                           |
 
-Each section renders from a typed registry so adding a component without a lab entry fails a unit test.
+Each section renders from a typed registry so adding a component without a lab entry fails a unit test (`src/design-lab/registry.test.tsx`).
+
+**Running it.** Set `DESIGN_LAB=1` in `.env.local` (it is off by default, and a production deployment never serves it whatever the flag says), start the app, and open `/design-system`. Screens that change with the width (header, bottom bar, footer, portal shell, hero placements) are shown as real pages in frames at 390, 820 and 1280 px; the same pages are served at `/design-system/preview/<name>` and listed in `src/design-lab/preview-names.ts`.
+
+**Browser checks.** `npm run build` then `npm run test:ds` (which starts the production build with the lab on) runs, for every board and preview at 390, 820 and 1440 px: zero serious or critical axe violations, no sideways scrolling of the page, and a full-page screenshot attached to the test report for review. `e2e/design-lab/keyboard.spec.ts` covers what jsdom cannot show: the combobox keeps the cursor in its box, menus, dialogs and sheets return focus, toasts appear, and the header, bottom bar and portal change at the right widths. Set `DESIGN_LAB_VISUAL=compare` to also compare screenshots with stored baselines (none are stored yet; see the sign-off step below).
 
 **Review workflow**
 

@@ -212,7 +212,7 @@ describe("AvatarMenu", () => {
 
   it("shows initials as the picture when there is no photo", () => {
     render(<AvatarMenu {...props} />);
-    expect(screen.getByText("PR")).toBeInTheDocument();
+    expect(document.querySelector("[data-initials=PR]")).toBeInTheDocument();
   });
 });
 

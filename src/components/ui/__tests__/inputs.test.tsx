@@ -44,6 +44,13 @@ describe("Button: loading and icons", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("cuts a label that is too long instead of widening the page", () => {
+    render(<Button>A very long label that does not fit on a narrow phone screen at all</Button>);
+    const button = screen.getByRole("button");
+    expect(button).toHaveClass("max-w-full");
+    expect(button.querySelector(".truncate")).toBeInTheDocument();
+  });
+
   it("works normally when not loading", async () => {
     const onClick = vi.fn();
     render(<Button onClick={onClick}>Send</Button>);
@@ -226,11 +233,22 @@ describe("SegmentedControl", () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  it("moves between options with the arrow keys", async () => {
-    render(<SegmentedControl aria-label="Listing type" options={options} defaultValue="all" />);
+  it("selects as the arrow keys move, like native radio buttons", async () => {
+    const onValueChange = vi.fn();
+    render(
+      <SegmentedControl
+        aria-label="Listing type"
+        options={options}
+        defaultValue="all"
+        onValueChange={onValueChange}
+      />,
+    );
     await userEvent.tab();
     await userEvent.keyboard("{ArrowRight}");
     expect(screen.getByRole("radio", { name: /Buy/ })).toHaveFocus();
+    expect(screen.getByRole("radio", { name: /Buy/ })).toBeChecked();
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+    expect(onValueChange).toHaveBeenCalledWith("buy");
   });
 
   it("shows a link-tab that navigates instead of selecting", () => {

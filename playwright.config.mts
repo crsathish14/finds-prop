@@ -25,6 +25,8 @@ export default defineConfig({
   webServer: {
     command: `npx next start -p ${PORT}`,
     url: `http://localhost:${PORT}/api/health`,
+    // The Design Lab (ADR-020) is served only with DESIGN_LAB=1; the tests need it.
+    env: { DESIGN_LAB: "1" },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

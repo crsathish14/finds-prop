@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { parsePublicEnv } from "@/lib/public-env";
-import { parseServerEnv } from "@/server/env";
+import { isDesignLabEnabled, parseServerEnv } from "@/server/env";
+
+describe("UT-env: the Design Lab switch (ADR-020)", () => {
+  it.each([
+    [{}, false],
+    [{ DESIGN_LAB: "1" }, true],
+    [{ DESIGN_LAB: "1", APP_ENV: "dev" }, true],
+    [{ DESIGN_LAB: "1", APP_ENV: "staging" }, true],
+    [{ DESIGN_LAB: "1", APP_ENV: "production" }, false],
+    [{ DESIGN_LAB: "0", APP_ENV: "dev" }, false],
+  ])("%j gives %s", (settings, expected) => {
+    expect(isDesignLabEnabled(parseServerEnv(settings))).toBe(expected);
+  });
+});
 
 describe("UT-env: server environment", () => {
   it("applies safe defaults: local environment, every flag off", () => {
