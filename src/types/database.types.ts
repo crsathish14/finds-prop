@@ -37,6 +37,46 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"enquiries": {
+                  Row: {
+                    "created_at": string,"email": string | null,"id": string,"message": string | null,"name": string,"phone": string,"property_id": string,"status": string,"status_changed_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"message"?: string | null,"name": string,"phone": string,"property_id": string,"status"?: string,"status_changed_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"message"?: string | null,"name"?: string,"phone"?: string,"property_id"?: string,"status"?: string,"status_changed_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "enquiries_property_id_fkey"
+      columns: ["property_id"]
+isOneToOne: false
+      referencedRelation: "properties"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_media": {
+                  Row: {
+                    "alt_text": string | null,"bytes": number,"created_at": string,"height": number,"id": string,"is_cover": boolean,"listing_id": string,"mime": string,"position": number,"storage_path": string,"width": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "alt_text"?: string | null,"bytes": number,"created_at"?: string,"height": number,"id"?: string,"is_cover"?: boolean,"listing_id": string,"mime": string,"position"?: number,"storage_path": string,"width": number
+                  }
+                  Update: {
+                    "alt_text"?: string | null,"bytes"?: number,"created_at"?: string,"height"?: number,"id"?: string,"is_cover"?: boolean,"listing_id"?: string,"mime"?: string,"position"?: number,"storage_path"?: string,"width"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_media_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "properties"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"email_verified_at": string | null,"full_name": string | null,"id": string,"phone": string | null,"updated_at": string
@@ -50,6 +90,40 @@ export type Database = {
                   }
                   Relationships: [
                     
+                  ]
+                },"properties": {
+                  Row: {
+                    "address": string | null,"amenities": (string)[],"area_sqft": number | null,"available_from": string | null,"bathrooms": number | null,"bhk": number | null,"city": string | null,"closed_at": string | null,"created_at": string,"description": string | null,"featured": boolean,"furnishing": string | null,"id": string,"listing_type": string | null,"locality": string | null,"location": unknown,"moderated_at": string | null,"moderated_by": string | null,"owner_id": string,"pincode": string | null,"price": number | null,"property_type": string | null,"public_location": unknown,"published_at": string | null,"rejection_reason": string | null,"search_vector": unknown,"short_id": string,"slug": string,"state": string | null,"status": string,"submitted_at": string | null,"title": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address"?: string | null,"amenities"?: (string)[],"area_sqft"?: number | null,"available_from"?: string | null,"bathrooms"?: number | null,"bhk"?: number | null,"city"?: string | null,"closed_at"?: string | null,"created_at"?: string,"description"?: string | null,"featured"?: boolean,"furnishing"?: string | null,"id"?: string,"listing_type"?: string | null,"locality"?: string | null,"location"?: unknown,"moderated_at"?: string | null,"moderated_by"?: string | null,"owner_id"?: string,"pincode"?: string | null,"price"?: number | null,"property_type"?: string | null,"public_location"?: never,"published_at"?: string | null,"rejection_reason"?: string | null,"search_vector"?: never,"short_id": string,"slug": string,"state"?: string | null,"status"?: string,"submitted_at"?: string | null,"title"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "address"?: string | null,"amenities"?: (string)[],"area_sqft"?: number | null,"available_from"?: string | null,"bathrooms"?: number | null,"bhk"?: number | null,"city"?: string | null,"closed_at"?: string | null,"created_at"?: string,"description"?: string | null,"featured"?: boolean,"furnishing"?: string | null,"id"?: string,"listing_type"?: string | null,"locality"?: string | null,"location"?: unknown,"moderated_at"?: string | null,"moderated_by"?: string | null,"owner_id"?: string,"pincode"?: string | null,"price"?: number | null,"property_type"?: string | null,"public_location"?: never,"published_at"?: string | null,"rejection_reason"?: string | null,"search_vector"?: never,"short_id"?: string,"slug"?: string,"state"?: string | null,"status"?: string,"submitted_at"?: string | null,"title"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"saved_properties": {
+                  Row: {
+                    "created_at": string,"id": string,"property_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"property_id": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"property_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saved_properties_property_id_fkey"
+      columns: ["property_id"]
+isOneToOne: false
+      referencedRelation: "properties"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"site_settings": {
                   Row: {
@@ -85,7 +159,52 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            "has_role":
+            "admin_properties":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "address": string | null,
+"amenities": (string)[],
+"area_sqft": number | null,
+"available_from": string | null,
+"bathrooms": number | null,
+"bhk": number | null,
+"city": string | null,
+"closed_at": string | null,
+"created_at": string,
+"description": string | null,
+"featured": boolean,
+"furnishing": string | null,
+"id": string,
+"listing_type": string | null,
+"locality": string | null,
+"location": unknown,
+"moderated_at": string | null,
+"moderated_by": string | null,
+"owner_id": string,
+"pincode": string | null,
+"price": number | null,
+"property_type": string | null,
+"public_location": unknown,
+"published_at": string | null,
+"rejection_reason": string | null,
+"search_vector": unknown,
+"short_id": string,
+"slug": string,
+"state": string | null,
+"status": string,
+"submitted_at": string | null,
+"title": string | null,
+"updated_at": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "properties"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"build_property_slug":
+{ Args: { "locality": string,"title": string }; Returns: string
+                           },
+"has_role":
 { Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
                            },
 "has_verified_phone":
@@ -94,11 +213,65 @@ export type Database = {
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"listing_is_editable":
+{ Args: { "target_property": string }; Returns: boolean
+                           },
+"listing_is_public":
+{ Args: { "target_property": string }; Returns: boolean
+                           },
+"my_properties":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "address": string | null,
+"amenities": (string)[],
+"area_sqft": number | null,
+"available_from": string | null,
+"bathrooms": number | null,
+"bhk": number | null,
+"city": string | null,
+"closed_at": string | null,
+"created_at": string,
+"description": string | null,
+"featured": boolean,
+"furnishing": string | null,
+"id": string,
+"listing_type": string | null,
+"locality": string | null,
+"location": unknown,
+"moderated_at": string | null,
+"moderated_by": string | null,
+"owner_id": string,
+"pincode": string | null,
+"price": number | null,
+"property_type": string | null,
+"public_location": unknown,
+"published_at": string | null,
+"rejection_reason": string | null,
+"search_vector": unknown,
+"short_id": string,
+"slug": string,
+"state": string | null,
+"status": string,
+"submitted_at": string | null,
+"title": string | null,
+"updated_at": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "properties"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "normalise_phone":
 { Args: { "raw_phone": string }; Returns: string
                            },
+"owns_property":
+{ Args: { "target_property": string }; Returns: boolean
+                           },
 "reserved_admin_email":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"slugify":
+{ Args: { "input": string }; Returns: string
                            }
           }
           Enums: {
