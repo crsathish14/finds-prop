@@ -7,7 +7,7 @@
  * Responsive: fixed size on every screen.
  * Accessibility: plain inline text, so screen readers read the words the formatter produced.
  * States: none. Dependencies: cva, cn, tokens (text-price, text-price-lg).
- * Tests: typography.test.tsx, Design Lab "Type" (S2-T07).
+ * Tests: typography.test.tsx, Design Lab "Typography" (S2-T07).
  * UX reference: ds-foundations, Type; price styles in c-cards.css.
  */
 import { cva, type VariantProps } from "class-variance-authority";

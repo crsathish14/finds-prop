@@ -8,7 +8,7 @@
  * Responsive: fixed type size; the per-sq.ft line wraps under the price when space is short.
  * Accessibility: plain text. Tabular, lining numerals keep prices aligned in lists.
  * States: none. Dependencies: Price, format helpers, next-intl.
- * Tests: display.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: display.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, price (c-cards.css .price, .price-lg).
  */
 import { useLocale, useTranslations } from "next-intl";

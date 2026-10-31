@@ -2,7 +2,8 @@
 
 /**
  * Popover: a small floating panel anchored to a button (a filter's options, a short explanation).
- * Purpose: wraps Radix Popover. Owner: design system. For a list of actions use DropdownMenu; for
+ * Purpose: a panel that opens next to what it belongs to and holds a little content, built on Radix
+ *   Popover so focus and Escape work. Owner: design system. For a list of actions use DropdownMenu; for
  *   a hint use Tooltip; for anything long use a Sheet.
  * Props: Popover (root), PopoverTrigger (use asChild), PopoverAnchor (position it from another
  *   element, as Combobox does), PopoverContent (align, side, sideOffset),

@@ -52,6 +52,20 @@ The addendum screens (`docs/ux/ux-addendum/`) replace or extend the approved scr
 | new           | `sitemap.xml` · `robots.txt` · `opengraph-image`                         | —                                         | none (see addendum or `DEC-25`)                                                                                           | S4                |
 | —             | `not-found.tsx` · `error.tsx` · `global-error.tsx`                       | `errors`                                  | `docs/ux/final-ux/screens/errors.html`                                                                                    | S1/S3             |
 
+## Design system boards
+
+The five approved design-system boards are built in the Design Lab (ADR-020) with the real components. Open it with `DESIGN_LAB=1` and go to `/design-system`. Each entry on a lab page names the component files it shows; the list of entries is `src/design-lab/registry.ts`, and a test fails if a shared component has no entry.
+
+| Lab page                     | UX board                                       | Shows                                                                                                          |
+| ---------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `/design-system/foundations` | `docs/ux/final-ux/screens/ds-foundations.html` | Colour with measured contrast, type, spacing, shape, elevation, focus, icons, layout helpers                   |
+| `/design-system/components`  | `docs/ux/final-ux/screens/ds-components.html`  | Buttons, links, fields, form fields, combobox, upload, chips, badges and statuses, card parts, sortable rows   |
+| `/design-system/navigation`  | `docs/ux/final-ux/screens/ds-navigation.html`  | Header, avatar menu, drawer, bottom bar, footer, portal shell, tabs, menus, breadcrumb, stepper, error screens |
+| `/design-system/feedback`    | `docs/ux/final-ux/screens/ds-feedback.html`    | Alerts, toasts, confirm dialogs, sheets, popover and tooltip, empty states, loading                            |
+| `/design-system/ads`         | `docs/ux/final-ux/screens/ds-ads.html`         | Sponsor slot anatomy and formats, near-miss fit, several ads, the three hero placements                        |
+
+Whole-page previews of the layout components at 390, 820 and 1280 px are served at `/design-system/preview/<name>` (names in `src/design-lab/preview-names.ts`).
+
 ## Addendum screens
 
 | Addendum item | Screen                                        | Routes                       | File                                                |

@@ -9,7 +9,7 @@
  * Accessibility: use the "accent" tone for small copper text (it maps to the AA-safe text-cta-text,
  *   never the copper fill colour). Nothing below 11 px (overline) or 12.5 px (sentence case).
  * States: none. Dependencies: cva, cn, tokens (text-body to text-overline).
- * Tests: typography.test.tsx (tag, variant, tone), Design Lab "Type" (S2-T07).
+ * Tests: typography.test.tsx (tag, variant, tone), Design Lab "Typography" (S2-T07).
  * UX reference: ds-foundations, Type.
  */
 import { cva } from "class-variance-authority";

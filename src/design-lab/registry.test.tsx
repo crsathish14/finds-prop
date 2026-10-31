@@ -68,6 +68,35 @@ describe("Design Lab registry", () => {
   });
 });
 
+describe("Design Lab and docs/ux-reference.md", () => {
+  const reference = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "docs", "ux-reference.md"),
+    "utf8",
+  );
+
+  it.each(LAB_BOARDS.map((board) => [board.id, board.uxBoard] as const))(
+    "lists the %s board, its route and its UX board file (%s)",
+    (id, uxBoard) => {
+      expect(reference).toContain(`/design-system/${id}`);
+      expect(reference).toContain(`docs/ux/final-ux/screens/${uxBoard}.html`);
+    },
+  );
+
+  it.each(LAB_BOARDS.map((board) => board.uxBoard))("the UX board file %s exists", (uxBoard) => {
+    const file = path.resolve(
+      __dirname,
+      "..",
+      "..",
+      "docs",
+      "ux",
+      "final-ux",
+      "screens",
+      `${uxBoard}.html`,
+    );
+    expect(fs.existsSync(file)).toBe(true);
+  });
+});
+
 describe("Design Lab demos", () => {
   it.each(allEntries.map(({ board, entry }) => [`${board.id}/${entry.id}`, entry] as const))(
     "%s renders",

@@ -8,7 +8,7 @@
  * Accessibility: label and value are plain text in reading order. "Needs attention" must also be
  *   said in the note or label, never by the tint alone.
  * States: default, attention. Dependencies: cva, cn.
- * Tests: display.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: display.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, stat tile (c-cards.css .stat).
  */
 import { cva } from "class-variance-authority";

@@ -11,7 +11,7 @@
  *   a real progress element named by the count. After loading, the page moves keyboard focus to the
  *   first new item (UX section 2); that is done by the list, not here.
  * States: default, loading, complete. Dependencies: Button.
- * Tests: display.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: display.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, show more (interaction-specifications section 2).
  */
 import { Button } from "@/components/ui/button";

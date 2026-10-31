@@ -2,7 +2,8 @@
 
 /**
  * Tabs: switch between views of the same page (Listings, Enquiries, Saved...).
- * Purpose: wraps Radix Tabs. Owner: design system. To make a tab deep-linkable, control it from the
+ * Purpose: a row of tabs that each show their own panel, built on Radix Tabs so the keyboard and
+ *   screen reader behaviour is right. Owner: design system. To make a tab deep-linkable, control it from the
  *   URL: pass `value` from `?tab=` and change the URL in `onValueChange`.
  * Props: Tabs (value or defaultValue, onValueChange), TabsList (aria-label, required, already-
  *   translated), TabsTrigger (value, count, countTone "default" | "new"), TabsContent (value).

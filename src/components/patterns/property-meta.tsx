@@ -6,7 +6,7 @@
  * Responsive: wraps onto a second line on narrow cards.
  * Accessibility: a list of plain text items; the dots between them are decoration.
  * States: none. Dependencies: format helpers, next-intl.
- * Tests: display.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: display.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, property card (c-cards.css).
  */
 import { useLocale, useTranslations } from "next-intl";

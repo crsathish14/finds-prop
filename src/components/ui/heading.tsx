@@ -8,7 +8,7 @@
  * Responsive: sizes step up at md and lg through the --t-* tokens; nothing to set here.
  * Accessibility: renders the real h1 to h6 element. Do not skip levels.
  * States: none. Dependencies: cva, cn, tokens (text-display, text-h1 to text-h3, em-accent).
- * Tests: typography.test.tsx (tag, size, merge), Design Lab "Type" (S2-T07).
+ * Tests: typography.test.tsx (tag, size, merge), Design Lab "Typography" (S2-T07).
  * UX reference: ds-foundations, Type.
  */
 import { cva, type VariantProps } from "class-variance-authority";
