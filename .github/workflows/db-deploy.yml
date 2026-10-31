@@ -1,0 +1,75 @@
+# Applies the committed migrations to the hosted dev database (findsprop-dev).
+# Decision: ADR-034, amended 1 Nov 2026. Migrations reach dev only through this workflow, never
+# through `supabase db push` on a machine. Staging and production stay CI-only from `main`.
+# Properties: runs only from `develop`, waits for the CI result of the same commit, least-privilege
+# permissions, third-party actions pinned by commit SHA, the one secret lives in the `dev`
+# environment and is exposed only to the steps that need it, never printed.
+name: Deploy database to dev
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "supabase/migrations/**"
+  # Retry after a failed run (for example a network error), from `develop` only.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: read
+
+# One deploy at a time; a newer run waits and applies everything the older one would have.
+concurrency:
+  group: db-deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: apply migrations to findsprop-dev
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.122.0
+      - name: Migrations policy (G-13)
+        run: node scripts/check-migrations.mjs
+        env:
+          CI: "true"
+      - name: Wait for the CI result of this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/check-runs?per_page=100" \
+              --jq '[.check_runs[] | select(.name == "all-checks-passed")] | if length == 0 then "missing" else (.[0].status + ":" + (.[0].conclusion // "")) end')
+            echo "CI state for ${GITHUB_SHA}: ${state} (attempt ${attempt})"
+            case "${state}" in
+              completed:success) exit 0 ;;
+              completed:*) echo "CI did not pass for this commit; nothing was applied."; exit 1 ;;
+            esac
+            sleep 30
+          done
+          echo "Timed out waiting for CI."
+          exit 1
+      - name: Show the migrations that will be applied (dry run)
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: supabase db push --db-url "$DATABASE_URL" --dry-run
+      - name: Apply the migrations
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: supabase db push --db-url "$DATABASE_URL"
+      - name: Show the applied migrations
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: supabase migration list --db-url "$DATABASE_URL"
