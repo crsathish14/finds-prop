@@ -47,6 +47,30 @@ const NO_ENUM = syntax(
   "TSEnumDeclaration",
   "Do not use enum; use an `as const` object or a string union. R-GEN-02",
 );
+// R-FE-21 (ADR-035): visitor-facing text lives in src/i18n/messages/en.json, not in components.
+// A string counts as text when it has a letter in any script (Latin, Tamil, ...); punctuation,
+// numbers and symbols alone are fine. Text kept in plain variables is caught by the pseudo-language
+// smoke test, not here.
+const LETTER = "[A-Za-z\u00C0-\u1FFF\u2C00-\uFFFF]";
+const TEXT_PROPS = "alt|title|aria-label|aria-description|aria-roledescription|placeholder|label";
+const NO_LITERAL_TEXT_MESSAGE =
+  "Visitor-facing text belongs in src/i18n/messages/en.json; use t('key'). R-FE-21";
+const NO_LITERAL_TEXT = [
+  syntax(`JSXText[value=/${LETTER}/]`, NO_LITERAL_TEXT_MESSAGE),
+  syntax(`JSXExpressionContainer > Literal[value=/${LETTER}/]`, NO_LITERAL_TEXT_MESSAGE),
+  syntax(
+    `JSXExpressionContainer > TemplateLiteral > TemplateElement[value.raw=/${LETTER}/]`,
+    NO_LITERAL_TEXT_MESSAGE,
+  ),
+  syntax(
+    `JSXAttribute[name.name=/^(${TEXT_PROPS})$/] > Literal[value=/${LETTER}/]`,
+    NO_LITERAL_TEXT_MESSAGE,
+  ),
+  syntax(
+    `VariableDeclarator[id.name='metadata'] Literal[value=/${LETTER}/]`,
+    "Page titles and descriptions come from en.json through generateMetadata. R-FE-21",
+  ),
+];
 // R-GEN-07: environment access only in the two env modules.
 const NO_PROCESS_ENV = syntax(
   "MemberExpression[object.name='process'][property.name='env']",
@@ -190,6 +214,7 @@ const eslintConfig = defineConfig([
         USE_CLIENT,
         USE_SERVER,
         RAW_ELEMENTS,
+        ...NO_LITERAL_TEXT,
         ...NO_SELECT_STAR,
       ],
     },
@@ -197,7 +222,23 @@ const eslintConfig = defineConfig([
   {
     // client islands and Next.js error boundaries may carry 'use client'
     files: ["src/app/**/error.tsx", "src/app/global-error.tsx", "src/**/*.client.tsx"],
-    rules: { "no-restricted-syntax": ["error", NO_ENUM, NO_PROCESS_ENV, USE_SERVER, RAW_ELEMENTS] },
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        NO_ENUM,
+        NO_PROCESS_ENV,
+        USE_SERVER,
+        RAW_ELEMENTS,
+        ...NO_LITERAL_TEXT,
+      ],
+    },
+  },
+  {
+    // shared components: raw elements are allowed here, literal text is not
+    files: ["src/components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": ["error", NO_ENUM, NO_PROCESS_ENV, USE_SERVER, ...NO_LITERAL_TEXT],
+    },
   },
   {
     // server actions: only defineAction exports, and the 'use server' directive is allowed here

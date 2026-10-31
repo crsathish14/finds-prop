@@ -192,6 +192,54 @@ describe("G-02 lint: restricted syntax", () => {
     ).toBe(false);
   });
 
+  it("R-FE-21 rejects literal visitor-facing text in JSX, text props and metadata", async () => {
+    const violations = [
+      ["text child", "export function X() { return <p>Save changes</p>; }\n"],
+      ["text in an expression", "export function X() { return <p>{'Save changes'}</p>; }\n"],
+      ["text in a template", "export function X(n) { return <p>{`Hello ${n}`}</p>; }\n"],
+      ["aria-label", "export function X() { return <nav aria-label='Main menu' />; }\n"],
+      ["placeholder", "export function X() { return <nav placeholder='Search' />; }\n"],
+      ["alt text", "export function X() { return <img alt='A flat' src='/a.png' />; }\n"],
+      ["Tamil text", "export function X() { return <p>வீடு</p>; }\n"],
+    ];
+    for (const [name, code] of violations) {
+      for (const file of [
+        "src/features/zz-lint-fixture/components/x.tsx",
+        "src/app/x/page.tsx",
+        "src/components/ui/x.tsx",
+        "src/features/zz-lint-fixture/components/x.client.tsx",
+      ]) {
+        expect(
+          has(await lint(code, file), "no-restricted-syntax", "R-FE-21"),
+          `${name} in ${file}`,
+        ).toBe(true);
+      }
+    }
+    expect(
+      has(
+        await lint("export const metadata = { title: 'Find Prop' };\n", "src/app/x/layout.tsx"),
+        "no-restricted-syntax",
+        "R-FE-21",
+      ),
+    ).toBe(true);
+  });
+
+  it("R-FE-21 allows text from en.json, numbers, punctuation, symbols and non-text props", async () => {
+    const allowed = [
+      "export function X({ t }) { return <p>{t('home.title')}</p>; }\n",
+      "export function X() { return <p>{'·'} 12 {'₹'} — / →</p>; }\n",
+      "export function X() { return <img alt='' src='/a.png' className='h-4 w-4' />; }\n",
+      "export function X() { return <a href='/search' id='main' className='underline' />; }\n",
+      "export function X({ n }) { return <p>{n}</p>; }\n",
+    ];
+    for (const code of allowed) {
+      expect(
+        has(await lint(code, "src/app/x/page.tsx"), "no-restricted-syntax", "R-FE-21"),
+        code,
+      ).toBe(false);
+    }
+  });
+
   it("R-GEN-02 rejects enums", async () => {
     expect(
       has(
