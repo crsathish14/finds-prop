@@ -29,5 +29,11 @@
     "@img/sharp-*",
     "@img/sharp-libvips-*"
   ],
-  "installScriptAllowedPackages": ["fsevents", "lefthook", "unrs-resolver"]
+  "installScriptAllowedPackages": [
+    "fsevents",
+    "lefthook",
+    "unrs-resolver",
+    "@swc/core",
+    "@parcel/watcher"
+  ]
 }

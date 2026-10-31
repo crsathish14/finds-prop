@@ -50,7 +50,7 @@ New dependency: none
 
 ## Docs
 
-- [ ] Docs, ADR, traceability updated - [ ] .env.example updated - [ ] Not applicable
+- [ ] Docs, ADR, traceability updated - [ ] .env.example updated - [ ] All visitor-facing text is in `en.json` - [ ] Not applicable
 
 ## AI assistance
 

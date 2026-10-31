@@ -42,7 +42,7 @@ If Docker is unavailable (the owner's machine runs without it, ADR-034), say so 
 | Why something is the way it is     | `docs/adr/`                                                                             |
 | What to build, acceptance criteria | `docs/requirements/`                                                                    |
 
-Procedures: `docs/engineering/playbooks/` (new-slice, new-migration, new-action, new-component, add-dependency, review-change).
+Procedures: `docs/engineering/playbooks/` (new-slice, new-migration, new-action, new-component, add-a-language, add-dependency, review-change).
 
 ## Architecture in brief
 
@@ -54,7 +54,7 @@ Each is enforced by a check unless marked Review. The ID points to the full rule
 
 1. Server Components by default. `"use client"` only in `*.client.tsx` leaves. (R-FE-01)
 2. Shared components and tokens only: no raw `<button>`, `<input>`, `<a>`, no hex colours, no arbitrary pixel values, no default Tailwind palette. Search `src/components/` and the Design Lab before creating anything. (R-FE-06, R-FE-07, R-DS-02)
-3. One copper (`accent`) button per view. (Review)
+3. One copper (`accent`) button per view (Review). All visitor-facing text comes from `src/i18n/messages/en.json` via `t('key')`; never type it into a component. (R-FE-21)
 4. Every mutation is a Server Action built with `defineAction`. Machine callers use Route Handlers that verify signature or token first. (R-BE-01)
 5. Never take user id, role, owner, status or price flags from client input. A foreign id returns `NOT_FOUND`. (R-BE-03, R-BE-04)
 6. Reads name their columns; no `.select('*')`. The service role is used only in allow-listed modules. (R-BE-06, R-BE-07)
@@ -74,7 +74,7 @@ Each is enforced by a check unless marked Review. The ID points to the full rule
 - Cacheable public reads use the cookie-less `publicAnon` client inside `"use cache"`. Anything reading cookies, headers or search params sits under `<Suspense>`.
 - Check identity with `getClaims()`. Refresh sessions only in `src/proxy.ts`. Never trust `getSession()` on the server.
 - shadcn's `--accent` is a hover surface, not Grove copper. Copper is `cta`.
-- Money is integer rupees, formatted only by the shared format helpers. Property URLs are `/properties/{slug}-{shortId}`.
+- Money is integer rupees, formatted only by `src/lib/format.ts`. Property URLs are `/properties/{slug}-{shortId}`.
 - AI search, map view and PG/hostels sit behind `FLAG_*` (off by default) and are absent from navigation when off.
 - Windows and OneDrive: LF line endings, no symlinks, short paths, pause sync during `npm ci`.
 - Reuse a running dev server (`.next/dev/lock`); do not start a second one.

@@ -1,6 +1,7 @@
-import { z } from "zod";
+import type { z } from "zod";
 import type { ActionResult } from "@/types/action";
 import { createLogger, type Logger } from "../logger";
+import { toFieldErrors } from "./field-errors";
 import { ActionError, toFailure } from "./normalise-error";
 
 /**
@@ -103,10 +104,11 @@ export function createDefineAction(deps: ActionDeps) {
       const started = Date.now();
       try {
         // 1 parse
-        const parsed = config.input.safeParse(toInputObject(raw));
+        const submitted = toInputObject(raw);
+        const parsed = config.input.safeParse(submitted);
         if (!parsed.success) {
-          throw new ActionError("VALIDATION", "Please check the highlighted fields.", {
-            fieldErrors: z.flattenError(parsed.error).fieldErrors as Record<string, string[]>,
+          throw new ActionError("VALIDATION", "Input failed validation", {
+            fieldErrors: toFieldErrors(parsed.error, submitted),
           });
         }
         const input = parsed.data as z.infer<S>;

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 /**
  * Static security headers (plan 07 section 8). Environment-dependent headers (noindex, CSP) are
@@ -20,6 +21,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // A top-level [locale] segment cannot compose a root 404 page (Next.js docs: not-found).
+  experimental: { globalNotFound: true },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
@@ -33,4 +36,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

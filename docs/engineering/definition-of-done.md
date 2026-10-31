@@ -31,7 +31,7 @@ A slice is done only when **all** of the following exist:
 
 - [ ] Matches the approved UX screen(s) at 390 / 820 / 1440 (and 1024 / 1280 without overflow), reviewed against `final-ux/renders/`.
 - [ ] Every designed state implemented: default, loading, empty, no matches, validation error, success, failed action, auth required, confirmation, rate limited, not found, long text, missing optional data (where the screen has it).
-- [ ] Copy matches the UX; any new wording is flagged to you.
+- [ ] Copy matches the UX; any new wording is flagged to you. All visitor-facing text is in `en.json` (R-FE-21) and `npm run policy` is green.
 - [ ] Proposed items are included only if approved (`DEC-*`); otherwise they are absent, not hidden-but-live.
 
 **Frontend**
