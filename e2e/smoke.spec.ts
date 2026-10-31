@@ -12,6 +12,18 @@ test.describe("@smoke app boots", () => {
     await expect(page).toHaveTitle(en.meta.title);
   });
 
+  test("the skip link is the first thing the Tab key reaches and jumps to the main content", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.keyboard.press("Tab");
+    const skipLink = page.getByRole("link", { name: en.common.skipToContent });
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toHaveAttribute("href", "#main");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#main$/);
+  });
+
   test("health probe is ok and uncached", async ({ request }) => {
     const response = await request.get("/api/health");
     expect(response.status()).toBe(200);

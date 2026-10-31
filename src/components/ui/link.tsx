@@ -39,8 +39,8 @@ const linkStyles = cva("rounded-xs transition-colors duration-(--dur-fast)", {
 type LinkProps = Omit<ComponentProps<"a">, "ref" | "href" | "target" | "rel"> &
   VariantProps<typeof linkStyles> & {
     href: string;
-    current?: boolean;
-    sponsored?: boolean;
+    current?: boolean | undefined;
+    sponsored?: boolean | undefined;
   } & ({ external?: false; newTabLabel?: never } | { external: true; newTabLabel: string });
 
 function Link({

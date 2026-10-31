@@ -269,3 +269,8 @@
   letter-spacing: -0.02em;
   font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* Space for the fixed bottom bar on phones: add to the page, with md:pb-0 */
+@utility pb-bottombar {
+  padding-bottom: var(--bottombar-h);
+}

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Toaster } from "@/components/patterns/toaster";
+import { SkipLink } from "@/components/ui/skip-link";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 import { fontVariables } from "@/styles/fonts";
@@ -18,13 +21,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// The site chrome arrives in Stage 2 (S2-T06).
+// The header, footer and bottom bar are shared components (src/components/layout); each page group
+// adds the ones it needs. What every page gets: the skip link, tooltips and the toast area.
 export default async function RootLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await getLocale();
+  const translate = await getTranslations();
   return (
     <html lang={locale} className={cn(fontVariables, "h-full antialiased")}>
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <SkipLink>{translate("common.skipToContent")}</SkipLink>
+        <NextIntlClientProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster
+            closeLabel={translate("common.close")}
+            containerLabel={translate("toast.container")}
+          />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
