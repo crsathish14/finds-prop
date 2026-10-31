@@ -4,7 +4,7 @@ Read `docs/engineering/design-system.md` and the matching screen in `docs/ux-ref
 Layers, importing downward only: ui (atoms) → patterns (molecules) → layout, domain, charts (organisms). Features consume these; they never define shared UI.
 
 1. Search this folder and the Design Lab registry before creating a component. When a second feature needs one, move it here in the same PR. (R-DS-02)
-2. Style only through tokens (the tokens file in src/styles, from Stage 2, used through theme classes). No hex, rgb or hsl; no `p-[13px]`; no `bg-gray-*`; no spacing step outside the scale; no Tailwind default breakpoints. (R-FE-07, R-DS-07)
+2. Style only through tokens (src/styles/tokens.css, used through the theme classes in theme.css; `npm run policy` runs check-tokens and check-token-parity). No hex, rgb or hsl; no `p-[13px]`; no `bg-gray-*`; no spacing step outside the scale; no Tailwind default breakpoints. (R-FE-07, R-DS-07)
 3. Type props. Variants through `cva`. Forward `className` with `cn`. No `style` pass-through.
 4. A shared component ships with: header comment (purpose, props, responsive, accessibility, states, dependencies, tests, UX reference), Design Lab entry, registry test, axe pass, baselines at 390, 820 and 1440. (R-DS-03)
 5. States belong to the component: default, hover, focus, pressed, disabled, loading (width held), error, empty where relevant.

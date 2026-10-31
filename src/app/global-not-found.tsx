@@ -1,4 +1,4 @@
-import "./globals.css";
+import "@/styles/globals.css";
 import Link from "next/link";
 import en from "@/i18n/messages/en.json";
 
@@ -10,7 +10,7 @@ export default function GlobalNotFound() {
       <body className="min-h-full flex flex-col">
         <main
           id="main"
-          className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-16"
+          className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-14"
         >
           <h1 className="text-2xl font-semibold">{en.notFound.title}</h1>
           <p>{en.notFound.body}</p>

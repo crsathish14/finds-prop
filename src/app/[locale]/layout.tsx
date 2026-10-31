@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import "../globals.css";
+import "@/styles/globals.css";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Fonts, tokens and the site chrome arrive in Stage 2 (design system).
+// Fonts and the site chrome arrive in Stage 2 (S2-T02, S2-T06).
 export default async function RootLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await getLocale();
   return (

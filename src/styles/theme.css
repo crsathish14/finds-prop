@@ -1,0 +1,232 @@
+/* Tailwind bridge (plan 04 sections 2.3 to 2.9): exposes the tokens as utilities.
+   Tailwind's default palette, radii, shadows and breakpoints are removed so a class such as
+   bg-gray-100, rounded-2xl or sm:flex cannot be used by accident. `inline` makes each utility read
+   the token variable directly instead of copying its value. */
+@theme inline {
+  /* Colour: only the names below exist */
+  --color-*: initial;
+  --color-canvas: var(--c-bg);
+  --color-canvas-sunken: var(--c-bg-sunken);
+  --color-surface: var(--c-surface);
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-primary-deep: var(--c-primary-deep);
+  --color-primary-tint: var(--c-primary-tint);
+  --color-primary-tint-2: var(--c-primary-tint-2);
+  --color-on-primary: var(--c-on-primary);
+  --color-cta: var(--c-accent);
+  --color-cta-hover: var(--c-accent-hover);
+  --color-cta-text: var(--c-accent-text);
+  --color-cta-tint: var(--c-accent-tint);
+  --color-cta-tint-2: var(--c-accent-tint-2);
+  --color-on-cta: var(--c-on-accent);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
+  --color-line: var(--c-border);
+  --color-line-strong: var(--c-border-strong);
+  --color-line-input: var(--c-border-input);
+  --color-success: var(--c-success);
+  --color-success-tint: var(--c-success-bg);
+  --color-warning: var(--c-warning);
+  --color-warning-tint: var(--c-warning-bg);
+  --color-danger: var(--c-danger);
+  --color-danger-tint: var(--c-danger-bg);
+  --color-info: var(--c-info);
+  --color-info-tint: var(--c-info-bg);
+  --color-neutral: var(--c-neutral);
+  --color-neutral-tint: var(--c-neutral-bg);
+  --color-dark: var(--c-dark);
+  --color-on-dark: var(--c-on-dark);
+  --color-on-dark-muted: var(--c-on-dark-muted);
+  --color-on-dark-accent: var(--c-on-dark-accent);
+  --color-dark-line: var(--c-dark-line);
+  --color-dark-hover: var(--c-dark-hover);
+  --color-dark-active: var(--c-dark-active);
+  --color-focus: var(--c-focus);
+  --color-focus-on-dark: var(--c-focus-on-dark);
+
+  /* Breakpoints: md, lg, xl and the portal sidebar. There is no sm and no 2xl. */
+  --breakpoint-*: initial;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-portal: 1100px;
+  --breakpoint-xl: 1280px;
+
+  /* Shape and elevation */
+  --radius-*: initial;
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-pill: var(--r-pill);
+  --shadow-*: initial;
+  --shadow-card: var(--shadow-card);
+  --shadow-hover: var(--shadow-hover);
+  --shadow-float: var(--shadow-float);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-modal: var(--shadow-modal);
+
+  /* Type families, motion */
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+  --ease-standard: var(--ease);
+}
+
+/* shadcn/ui reads these names. They point at the Grove tokens so generated components keep working.
+   shadcn "accent" is a quiet hover surface, never copper (copper is "cta"). */
+:root {
+  --background: var(--c-bg);
+  --foreground: var(--c-ink);
+  --card: var(--c-surface);
+  --card-foreground: var(--c-ink);
+  --popover: var(--c-surface);
+  --popover-foreground: var(--c-ink);
+  --primary: var(--c-primary);
+  --primary-foreground: var(--c-on-primary);
+  --secondary: var(--c-bg-sunken);
+  --secondary-foreground: var(--c-ink);
+  --muted: var(--c-bg-sunken);
+  --muted-foreground: var(--c-muted);
+  --accent: var(--c-primary-tint);
+  --accent-foreground: var(--c-primary);
+  --destructive: var(--c-danger);
+  --border: var(--c-border);
+  --input: var(--c-border-input);
+  --ring: var(--c-focus);
+  --radius: var(--r-md);
+}
+
+/* Type and price styles. Each sets family, size, line height and tracking together so a
+   heading cannot be half-styled. Colour is left to the component. */
+@utility text-display {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--t-display);
+  line-height: var(--t-display-lh);
+  letter-spacing: var(--display-tracking);
+  text-wrap: balance;
+}
+@utility text-h1 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--t-h1);
+  line-height: var(--t-h1-lh);
+  letter-spacing: var(--display-tracking);
+  text-wrap: balance;
+}
+@utility text-h2 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--t-h2);
+  line-height: var(--t-h2-lh);
+  letter-spacing: var(--display-tracking);
+  text-wrap: balance;
+}
+@utility text-h3 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--t-h3);
+  line-height: var(--t-h3-lh);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+@utility text-body {
+  font-family: var(--font-ui);
+  font-size: var(--t-body);
+  line-height: var(--t-body-lh);
+}
+@utility text-small {
+  font-family: var(--font-ui);
+  font-size: var(--t-small);
+  line-height: var(--t-small-lh);
+}
+@utility text-caption {
+  font-family: var(--font-ui);
+  font-size: var(--t-caption);
+  line-height: var(--t-caption-lh);
+}
+@utility text-title {
+  font-family: var(--font-ui);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+@utility text-title-sm {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+@utility text-lead {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  line-height: 28px;
+  text-wrap: pretty;
+}
+@utility text-overline {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+@utility text-price {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+@utility text-price-lg {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* Italic emphasis inside a display heading. Display sizes only. */
+@utility em-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--c-accent);
+}
+
+/* Layout helpers built on the layout tokens */
+@utility py-section {
+  padding-block: var(--section-y-sm);
+  @media (min-width: 768px) {
+    padding-block: var(--section-y-md);
+  }
+  @media (min-width: 1024px) {
+    padding-block: var(--section-y-lg);
+  }
+}
+@utility px-gutter {
+  padding-inline: var(--gutter);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-menu {
+  z-index: var(--z-menu);
+}
+@utility z-drawer {
+  z-index: var(--z-drawer);
+}
+@utility z-dialog {
+  z-index: var(--z-dialog);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+@utility z-skip-link {
+  z-index: var(--z-skip-link);
+}

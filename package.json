@@ -11,7 +11,7 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "policy": "node scripts/check-hygiene.mjs && node scripts/check-env.mjs && node scripts/check-deps.mjs && node scripts/check-messages.mjs && node scripts/check-harness.mjs",
+    "policy": "node scripts/check-hygiene.mjs && node scripts/check-env.mjs && node scripts/check-deps.mjs && node scripts/check-messages.mjs && node scripts/check-tokens.mjs && node scripts/check-token-parity.mjs && node scripts/check-harness.mjs",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run policy",
     "harness:check": "node scripts/check-harness.mjs && vitest run scripts .claude",
     "doctor": "node scripts/doctor.mjs",

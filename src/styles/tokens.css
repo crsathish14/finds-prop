@@ -1,0 +1,264 @@
+/* Find Prop design tokens: the only place visual values are defined (plan 04 section 2).
+   Block 1 holds primitives (--p-*). Block 2 holds semantic and component tokens, which use the
+   same names as the approved UX file docs/ux/final-ux/assets/tokens.css so a diff is mechanical.
+   Nothing outside this file refers to a primitive. scripts/check-token-parity.mjs compares the two
+   files and lists every intended difference in scripts/policy/token-parity.json. */
+
+/* 1. Primitives ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Ivory and white */
+  --p-ivory-50: #faf6ee;
+  --p-ivory-100: #f1eadb;
+  --p-white: #ffffff;
+
+  /* Forest green */
+  --p-forest-950: #163829;
+  --p-forest-800: #1f4a38;
+  --p-forest-700: #2e6450;
+  --p-forest-200: #c9ddd0;
+  --p-forest-100: #e2ece5;
+
+  /* Copper */
+  --p-copper-700: #9a4a20;
+  --p-copper-600: #b4592a;
+  --p-copper-400: #e8b98f;
+  --p-copper-300: #f2c9a3;
+  --p-copper-200: #edcdb4;
+  --p-copper-100: #f7e6d8;
+
+  /* Ink, sand, sage, mist */
+  --p-ink-900: #1c2a23;
+  --p-ink-700: #55635a;
+  --p-ink-600: #626f67;
+  --p-sand-300: #cbbfa6;
+  --p-sand-200: #e2d9c7;
+  --p-sand-100: #e9e2d0;
+  --p-sage-500: #829086;
+  --p-mist-300: #b9cbc0;
+
+  /* Status */
+  --p-green-700: #1e6b47;
+  --p-green-100: #e1f1e7;
+  --p-amber-800: #7a4f00;
+  --p-amber-100: #fbebc8;
+  --p-red-700: #a62a1b;
+  --p-red-100: #fbe2dd;
+  --p-blue-800: #24566f;
+  --p-blue-100: #e0eef4;
+  --p-slate-700: #3d4a43;
+
+  /* Chart series */
+  --p-series-green: #1f7a55;
+  --p-series-ochre: #b7791f;
+  --p-series-blue: #2f7fb0;
+  --p-series-other: #7a857e;
+}
+
+/* 2. Semantic and component tokens ────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --c-bg: var(--p-ivory-50);
+  --c-bg-sunken: var(--p-ivory-100);
+  --c-surface: var(--p-white);
+
+  /* Forest green: identity, selected state, primary action in portals */
+  --c-primary: var(--p-forest-800);
+  --c-primary-hover: var(--p-forest-950);
+  --c-primary-deep: var(--p-forest-950);
+  --c-on-primary: var(--p-white);
+  --c-primary-tint: var(--p-forest-100);
+  --c-primary-tint-2: var(--p-forest-200);
+
+  /* Copper: the conversion action. Fill only; small copper text uses --c-accent-text (AA). */
+  --c-accent: var(--p-copper-600);
+  --c-accent-hover: var(--p-copper-700);
+  --c-on-accent: var(--p-white);
+  --c-accent-text: var(--p-copper-700);
+  --c-accent-tint: var(--p-copper-100);
+  --c-accent-tint-2: var(--p-copper-200);
+
+  /* Text and lines */
+  --c-ink: var(--p-ink-900);
+  --c-muted: var(--p-ink-700);
+  --c-subtle: var(--p-ink-600);
+  --c-border: var(--p-sand-200);
+  --c-border-strong: var(--p-sand-300);
+  --c-border-input: var(--p-sage-500);
+
+  /* Status (always paired with a word and a dot or icon) */
+  --c-success: var(--p-green-700);
+  --c-success-bg: var(--p-green-100);
+  --c-warning: var(--p-amber-800);
+  --c-warning-bg: var(--p-amber-100);
+  --c-danger: var(--p-red-700);
+  --c-danger-bg: var(--p-red-100);
+  --c-info: var(--p-blue-800);
+  --c-info-bg: var(--p-blue-100);
+  --c-neutral: var(--p-slate-700);
+  --c-neutral-bg: var(--p-sand-100);
+
+  /* Dark surfaces: footer and portal sidebar */
+  --c-dark: var(--p-forest-950);
+  --c-on-dark: var(--p-ivory-50);
+  --c-on-dark-muted: var(--p-mist-300);
+  --c-dark-line: color-mix(in srgb, var(--p-ivory-50) 16%, transparent);
+  --c-dark-hover: color-mix(in srgb, var(--p-ivory-50) 10%, transparent);
+  --c-dark-active: var(--p-forest-700);
+  --c-on-dark-accent: var(--p-copper-400);
+
+  /* Chart series: fixed order, pinned to the entity, drawn on white */
+  --c-series-1: var(--p-series-green);
+  --c-series-2: var(--p-series-ochre);
+  --c-series-3: var(--p-series-blue);
+  --c-series-4: var(--p-copper-600);
+  --c-series-other: var(--p-series-other);
+
+  /* Focus ring: an outline, so it survives forced-colors. The UX hard-codes the on-dark colour. */
+  --c-focus: var(--c-primary);
+  --c-focus-on-dark: var(--p-copper-300);
+  --focus-w: 3px;
+  --focus-offset: 2px;
+
+  /* Type */
+  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --font-ui: "Figtree", "Noto Sans Tamil", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-weight: 500;
+  --display-tracking: -0.02em;
+
+  /* Type scale for the smallest screens; larger screens override below. Size, then line height. */
+  --t-display: 30px;
+  --t-display-lh: 34px;
+  --t-h1: 28px;
+  --t-h1-lh: 33px;
+  --t-h2: 23px;
+  --t-h2-lh: 29px;
+  --t-h3: 19px;
+  --t-h3-lh: 25px;
+  --t-body: 16px;
+  --t-body-lh: 25px;
+  --t-small: 14px;
+  --t-small-lh: 20px;
+  --t-caption: 12.5px;
+  --t-caption-lh: 17px;
+
+  /* Spacing (4 px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-14: 56px;
+  --s-18: 72px;
+  --s-24: 96px;
+
+  /* Section rhythm (the UX uses 36, 52 and 64, which are not on the scale) */
+  --section-y-sm: 36px;
+  --section-y-md: 52px;
+  --section-y-lg: 64px;
+
+  /* Radii */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* Border widths */
+  --bw-hair: 1px;
+  --bw-field: 1.5px;
+  --bw-error: 2px;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgba(28, 42, 35, 0.05), 0 10px 28px -16px rgba(28, 42, 35, 0.22);
+  --shadow-hover: 0 2px 4px rgba(28, 42, 35, 0.06), 0 18px 36px -16px rgba(28, 42, 35, 0.3);
+  --shadow-float: 0 28px 60px -28px rgba(31, 74, 56, 0.38), 0 2px 6px rgba(28, 42, 35, 0.06);
+  --shadow-pop: 0 4px 8px rgba(28, 42, 35, 0.08), 0 24px 48px -12px rgba(28, 42, 35, 0.28);
+  --shadow-modal: 0 32px 80px -24px rgba(22, 56, 41, 0.55);
+
+  /* Layout */
+  --container: 1328px;
+  --container-mid: 1100px;
+  --container-narrow: 760px;
+  --gutter: 16px;
+  --header-h: 56px;
+  --bottombar-h: 66px;
+  --sidebar-w: 256px;
+  --rail-w: 76px;
+  --w-search-card: 970px;
+  --w-sponsor-strip: 970px;
+  --w-sponsor-panel: 540px;
+
+  /* Component sizes */
+  --size-touch-min: 44px;
+  --size-control: 52px;
+  --size-btn: 48px;
+  --size-btn-lg: 54px;
+  --size-btn-sm: 40px;
+  --size-btn-sm-dense: 36px;
+  --size-icon-btn: 44px;
+  --size-chip: 40px;
+  --size-chip-sm: 34px;
+  --size-badge: 26px;
+  --size-check: 22px;
+  --size-switch-w: 48px;
+  --size-switch-h: 28px;
+  --size-tab: 52px;
+
+  /* Stacking */
+  --z-sticky: 40;
+  --z-header: 50;
+  --z-menu: 60;
+  --z-drawer: 80;
+  --z-dialog: 100;
+  --z-toast: 110;
+  --z-skip-link: 200;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+}
+
+/* Breakpoints: mobile < 768, tablet 768 to 1023, laptop 1024 to 1279, desktop 1280 and up.
+   The portal sidebar appears at 1100 (theme.css). */
+@media (min-width: 768px) {
+  :root {
+    --t-display: 46px;
+    --t-display-lh: 50px;
+    --t-h1: 36px;
+    --t-h1-lh: 42px;
+    --t-h2: 28px;
+    --t-h2-lh: 34px;
+    --t-h3: 21px;
+    --t-h3-lh: 27px;
+    --gutter: 32px;
+    --header-h: 64px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --t-display: 58px;
+    --t-display-lh: 62px;
+    --t-h1: 40px;
+    --t-h1-lh: 46px;
+    --t-h2: 30px;
+    --t-h2-lh: 36px;
+    --t-h3: 22px;
+    --t-h3-lh: 28px;
+    --gutter: 40px;
+    --header-h: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 56px;
+  }
+}

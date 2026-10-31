@@ -2,7 +2,7 @@
 
 > Source: distilled from the approved implementation plan and AI harness design (30 Oct 2026). References such as `plan 07 §4.2`, `03` §10 or `ADR-009` point to the archived plan, the harness design documents, or `docs/adr/`. From Stage 1 (S1-T12) this repository is authoritative (HD-11).
 
-The approved UX package is in `docs/ux/` (text, HTML and CSS; renders are not copied) and is indexed by `docs/ux-reference.md`. Tokens live in `src/styles/tokens.css` from Stage 2.
+The approved UX package is in `docs/ux/` (text, HTML and CSS; renders are not copied) and is indexed by `docs/ux-reference.md`. Tokens live in `src/styles/tokens.css`.
 
 ## Rules
 
