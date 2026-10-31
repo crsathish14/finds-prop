@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Navigation board without AI search · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="default" data-ai-off>
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-10 · Proposed.</b> Navigation board with AI search deferred (architecture decision). Everything else is exactly the approved navigation: the same components render here, with the AI entry points removed.</div></div></div>
+    <div class="board">
+
+      <section>
+        <span class="overline" style="color:var(--c-accent-text)">ADD-10 · Navigation</span>
+        <h1 class="h1 mt-2">Navigation without AI search</h1>
+        <p class="lead mt-2">Four main links everywhere. No "Describe it in words" link in the search card, no AI link in the footer or drawer, no AI link in the empty-results state.</p>
+        <ul class="diff mt-4">
+          <li class="removed"><fp-icon n="x-circle"></fp-icon><span><b>Removed:</b> header link "✦ AI Search" · drawer link "AI Search" · footer link "AI search" · search-card link "Describe it in words" · "Describe it in words" button in the no-matches state</span></li>
+          <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>Kept unchanged:</b> Buy · Rent · Projects · Contact · Post property · Sign in · account menu · bottom bar (Home, Search, Post, Saved, Me) · portal navigation</span></li>
+          <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>When AI search returns:</b> the same components render the original links again (one flag), so nothing needs redesign.</span></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Header · visitor</h2>
+        <p class="cap">Buy · Rent · Projects · Contact on the left, Post property and Sign in on the right. With one fewer link the spacing stays as approved (links are not stretched).</p>
+        <div class="frame"><fp-header role="visitor" active="buy"></fp-header></div>
+      </section>
+
+      <section>
+        <h2>Header · signed in, account menu open</h2>
+        <p class="cap">Unchanged apart from the main links.</p>
+        <div class="frame" style="min-height:560px"><fp-header role="user" menu></fp-header></div>
+      </section>
+
+      <section class="two-col">
+        <div>
+          <h2>Mobile menu drawer · visitor</h2>
+          <p class="cap">Large links: Buy, Rent, Projects, Contact.</p>
+          <div class="frame frame--drawer"><fp-drawer role="visitor" active="buy"></fp-drawer></div>
+        </div>
+        <div>
+          <h2>Mobile menu drawer · signed in</h2>
+          <p class="cap">Account and workspace groups unchanged.</p>
+          <div class="frame frame--drawer"><fp-drawer role="builder"></fp-drawer></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Search card · wide (homepage A, results)</h2>
+        <p class="cap">Buy · Rent · New projects tabs only. The right side of the tab row is empty, so the tabs sit alone on the left.</p>
+        <div class="frame frame-pad"><fp-search layout="wide"></fp-search></div>
+      </section>
+
+      <section class="two-col">
+        <div>
+          <h2>Search card · stacked (homepage B)</h2>
+          <div class="frame frame-pad"><fp-search layout="stacked"></fp-search></div>
+        </div>
+        <div>
+          <h2>Mobile bottom bar</h2>
+          <p class="cap">Not changed: Home · Search · Post · Saved · Me.</p>
+          <div class="frame"><fp-bottombar active="home"></fp-bottombar></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Footer</h2>
+        <p class="cap">"Explore" lists Buy a home, Rent a home, New projects. The "AI search" row is gone.</p>
+        <div class="frame"><fp-footer></fp-footer></div>
+      </section>
+    </div>
+  </div>
+</main>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

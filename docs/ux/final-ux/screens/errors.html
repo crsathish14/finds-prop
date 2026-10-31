@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found and error pages · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+<style>
+  .err-page { min-height: 60vh; display: grid; place-items: center; padding: 56px 0 72px; text-align: center; position: relative; overflow: hidden; }
+  .err-page .code { font: 700 12px/1 var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--c-accent-text); }
+  .err-page h1 { margin-top: 10px; }
+  .err-page p { margin: 12px auto 0; max-width: 46ch; color: var(--c-muted); font-size: 17px; }
+  .err-art { width: 120px; height: 150px; margin: 0 auto 22px; }
+  .err-detail { margin: 22px auto 0; max-width: 520px; text-align: left; }
+</style>
+</head>
+<body data-default="notfound" data-hdr="line" data-bottombar>
+<!-- Global 404 and error screens (root layout). States: notfound (default) · error · forbidden-note -->
+<fp-header role="visitor"></fp-header>
+<main id="main" class="err-page">
+  <fp-arches></fp-arches>
+  <div class="container narrow" style="position:relative;z-index:2">
+    <svg class="err-art" viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="3.2" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3" fill="#1F4A38"/></svg>
+
+    <div data-show="notfound"><span class="code">Error 404</span><h1 class="h1">This page isn't <em>here</em></h1><p>The link may be old or mistyped. Let's get you back to finding a home.</p>
+      <div class="row wrap mt-6" style="justify-content:center"><a class="btn btn--primary btn--lg" href="home-a.html"><fp-icon n="home"></fp-icon>Go home</a><a class="btn btn--secondary btn--lg" href="search.html">Browse properties</a></div></div>
+
+    <div data-show="error"><span class="code">Something went wrong</span><h1 class="h1">We couldn't load <em>this page</em></h1><p>It's on our side, not yours. Try again, or go back home.</p>
+      <div class="row wrap mt-6" style="justify-content:center"><button class="btn btn--primary btn--lg" type="button"><fp-icon n="refresh"></fp-icon>Try again</button><a class="btn btn--secondary btn--lg" href="home-a.html">Go home</a></div>
+      <details class="err-detail panel panel-pad"><summary class="link small" style="cursor:pointer">Technical details</summary><p class="small muted mt-2" style="text-align:left;margin-inline:0"><code>Error: failed to load properties (server returned 500)</code></p></details></div>
+  </div>
+</main>
+<fp-footer></fp-footer>
+<fp-bottombar active="home"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

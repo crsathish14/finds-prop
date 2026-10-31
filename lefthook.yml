@@ -1,0 +1,21 @@
+# L-01 local git hooks (docs/engineering/quality-gates.md). They give fast feedback and are NOT the
+# authority: CI repeats every check. Installed by `npm run prepare` on developer machines only.
+# No auto-fixing hooks and no pre-push hook (CI covers them; they hide changes and slow pushes).
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.{ts,tsx,js,mjs,mts,json,md,css,yml,yaml}"
+      run: npx --no-install prettier --check {staged_files}
+    lint:
+      glob: "*.{ts,tsx,mjs,mts}"
+      run: npx --no-install eslint --max-warnings 0 --no-warn-ignored {staged_files}
+    hygiene:
+      run: node scripts/check-hygiene.mjs --staged
+    secrets:
+      run: node scripts/run-gitleaks.mjs --staged
+
+commit-msg:
+  commands:
+    conventional:
+      run: npx --no-install commitlint --edit {1}

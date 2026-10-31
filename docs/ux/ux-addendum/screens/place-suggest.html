@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Address and place suggestions · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+</head>
+<body data-default="results" data-hdr="line" data-ai-off data-bottombar>
+<fp-header role="visitor"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-07 · Proposed.</b> Replaces the 12-locality list with place suggestions (architecture decision). One combobox used in the search card (wide and stacked), the results filter rail and, on phones, a full-screen sheet. The provider's attribution is required and always visible. States: idle · typing · loading · results · noresults · degraded · ratelimited · selected · stacked · rail.</div></div></div>
+  </div>
+
+  <!-- ═══ WIDE SEARCH CARD (homepage A) ═══ -->
+  <section class="hero hero-a" aria-labelledby="hero-h1" data-show="idle typing loading results noresults degraded ratelimited selected">
+    <fp-arches></fp-arches>
+    <div class="container">
+      <h1 id="hero-h1" class="display">Find the place that fits<br class="hide-m"> your life in <em>Chennai</em>.</h1>
+      <p class="sub">Shortlist, compare and enquire directly.</p>
+
+      <div class="sg-host" data-show="idle"><fp-search layout="wide" focus="loc"></fp-search><div data-sg="idle" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="typing"><fp-search layout="wide" focus="loc" loc="Ve"></fp-search><div data-sg="typing" data-q="Ve" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="loading"><fp-search layout="wide" focus="loc" loc="Vel"></fp-search><div data-sg="loading" data-q="Vel" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="results"><fp-search layout="wide" focus="loc" loc="Vel"></fp-search><div data-sg="results" data-q="Vel" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="noresults"><fp-search layout="wide" focus="loc" loc="Velxy"></fp-search><div data-sg="noresults" data-q="Velxy" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="degraded"><fp-search layout="wide" focus="loc" loc="Velachery"></fp-search><div data-sg="degraded" data-q="Velachery" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="ratelimited"><fp-search layout="wide" focus="loc" loc="Vel"></fp-search><div data-sg="ratelimited" data-q="Vel" data-for=".sf-loc" data-min="480"></div></div>
+      <div class="sg-host" data-show="selected" data-clear><fp-search layout="wide" loc="Velachery, Chennai"></fp-search></div>
+    </div>
+  </section>
+
+  <!-- ═══ STACKED SEARCH CARD (homepage B) ═══ -->
+  <section class="hero hero-b" aria-labelledby="hero-h1b" data-show="stacked">
+    <div class="container"><div class="split">
+      <div>
+        <span class="eyebrow"><fp-icon n="pin"></fp-icon>Tamil Nadu · Homes, plots &amp; new projects</span>
+        <h1 id="hero-h1b" class="display mt-3">Find the place that fits your life in <em>Chennai</em>.</h1>
+        <p class="sub">Shortlist, compare and enquire directly.</p>
+        <div class="sg-host"><fp-search layout="stacked" focus="loc" loc="Vel"></fp-search><div data-sg="results" data-q="Vel" data-for=".sf-loc" data-min="380"></div></div>
+      </div>
+      <div><fp-sponsor format="panel" creative="a"></fp-sponsor></div>
+    </div></div>
+  </section>
+
+  <!-- ═══ RESULTS PAGE FILTER RAIL ═══ -->
+  <div class="container" data-show="rail">
+    <div class="page-head"><h1 class="h1">Homes for sale in <em>Chennai</em></h1></div>
+    <div class="rail-demo sg-host">
+      <aside class="filters-rail" aria-label="Filters">
+        <div class="filter-panel">
+          <div class="row between"><h2 class="title">Filters</h2><a class="link small" href="#rail">Clear all</a></div>
+          <div class="field"><span class="label">Looking to</span><div class="seg seg--block" role="tablist"><button type="button" role="tab" class="">All</button><button type="button" role="tab" class="on">Buy</button><button type="button" role="tab" class="">Rent</button></div></div>
+          <div class="field"><label class="label" for="r-loc">Locality</label>
+            <div class="input-wrap f-loc"><fp-icon n="pin"></fp-icon><input id="r-loc" class="input is-focus" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="r-list" autocomplete="off" value="Vel"></div>
+            <span class="hint">Tamil Nadu only for now.</span></div>
+          <div class="field"><label class="label" for="r-type">Property type</label><select id="r-type" class="select"><option>Apartment</option></select></div>
+          <div class="field"><span class="label">Bedrooms (BHK)</span><div class="chip-row single grid5"><button type="button" class="chip" aria-pressed="false">Any</button><button type="button" class="chip" aria-pressed="false">1</button><button type="button" class="chip" aria-pressed="false">2</button><button type="button" class="chip on" aria-pressed="true">3</button><button type="button" class="chip" aria-pressed="false">4</button></div></div>
+        </div>
+      </aside>
+      <div data-sg="results" data-q="Vel" data-for=".f-loc" data-min="400"></div>
+      <div><fp-cards ids="1,2,3,4" cols="c2"></fp-cards></div>
+    </div>
+  </div>
+
+  <div data-show="idle typing loading results noresults degraded ratelimited selected stacked"><fp-homebelow></fp-homebelow></div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="home"></fp-bottombar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

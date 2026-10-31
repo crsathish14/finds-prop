@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homepage B without AI search · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-ai-off data-default="default" data-bottombar>
+<fp-header role="visitor"></fp-header>
+<div class="container add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-10 · Proposed.</b> Same approved Split layout. AI entry points removed. Copy of the approved screen with only the AI entry points removed (AI search is deferred).</div></div></div>
+
+<main id="main">
+  <section class="hero hero-b" aria-labelledby="hero-h1">
+    <fp-arches pos="right"></fp-arches>
+    <div class="container">
+      <div class="split">
+        <div class="left">
+          <span class="eyebrow"><fp-icon n="pin"></fp-icon>Chennai · Homes, plots &amp; new projects</span>
+          <h1 id="hero-h1" class="display">Find the place that fits your life in <em>Chennai</em>.</h1>
+          <p class="sub">Shortlist, compare and enquire directly.</p>
+
+          <div style="position:relative">
+            <fp-search layout="stacked"></fp-search>
+            <div class="ann ann-box" data-dim="Search card" data-target=".search"><b></b></div>
+          </div>
+
+          <div class="trust">
+            <div><span class="ic"><fp-icon n="shield"></fp-icon></span>Approved listings only</div>
+            <div><span class="ic"><fp-icon n="msg"></fp-icon></span>Enquire directly</div>
+            <div><span class="ic"><fp-icon n="cols"></fp-icon></span>Compare up to 3 homes</div>
+          </div>
+        </div>
+
+        <!-- Sponsored panel. States: default · multi · contain · info -->
+        <div class="right" style="position:relative">
+          <div data-show="default spec"><fp-sponsor format="panel" creative="a"></fp-sponsor>
+            <div class="ann ann-box" data-dim="Ad slot (frame)" data-target=".sp-frame"><b></b></div></div>
+          <div data-show="multi"><fp-sponsor format="panel" creative="b" n="3" i="2"></fp-sponsor></div>
+          <div data-show="contain"><fp-sponsor format="panel" contain src="../../final-ux/assets/ads/near-miss-panel-524x600.svg" src-m="../../final-ux/assets/ads/near-miss-panel-524x600.svg"></fp-sponsor></div>
+          <div data-show="info"><fp-sponsor format="panel" creative="c" info></fp-sponsor></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <fp-homebelow></fp-homebelow>
+</main>
+
+<div class="ann ann-fold d-only" style="top:630px"><b>1366×768 laptop fold ≈ y 630</b></div>
+<div class="ann ann-fold d-only" style="top:780px"><b>1440×900 laptop fold ≈ y 780</b></div>
+<div class="ann ann-fold m-only" style="top:560px"><b>small phone fold ≈ y 560</b></div>
+<div class="ann ann-fold m-only" style="top:660px"><b>typical phone fold ≈ y 660</b></div>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="home"></fp-bottombar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

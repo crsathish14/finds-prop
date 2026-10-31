@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Find Prop (`findsprop`)
 
-## Getting Started
+Property listing platform for Tamil Nadu: a Next.js 16 app on Vercel with Supabase (Postgres + PostGIS, Auth, Storage). Customers sign in with a phone code; builders and the administrator sign in with email or Google plus a second step.
 
-First, run the development server:
+**Status:** Stage 1 (project foundation). The app is a placeholder home page, a health probe, the quality gates and the server skeleton. Features arrive stage by stage; see the roadmap in the planning documents.
+
+## Rules for everyone, human or AI
+
+Read [AGENTS.md](AGENTS.md) (rules, commands, router) and [CONTRIBUTING.md](CONTRIBUTING.md). Detail is in [docs/engineering/](docs/engineering/README.md). The same standards apply to every contributor, and CI enforces them.
+
+## Prerequisites
+
+| Tool                        | Why                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| Node.js 24 (see `.nvmrc`)   | Runs the app and scripts                                                        |
+| npm 10.9 or newer           | The only package manager                                                        |
+| Docker Desktop (optional)   | A local Supabase stack for pgTAP and integration tests; without it CI runs them |
+| Supabase CLI                | `scoop install supabase` or `npm install -g supabase`; CI uses its setup action |
+| gitleaks (optional locally) | Pre-commit secret scan: `winget install gitleaks`. CI always scans              |
+
+Run `npm run doctor` to see what is missing on your machine and how to fix it.
+
+## First run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+cp .env.example .env.local        # fill in the dev project's URL and keys; never commit this file
+npm run dev                       # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command                              | What it does                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `npm run check`                      | Format, lint, types, unit tests and policy checks (run after every change)            |
+| `npm run check:db`                   | Apply migrations from empty, lint, pgTAP, generated-types diff (Docker; CI otherwise) |
+| `npm run test:integration`           | Integration tests against the local stack (Docker; CI otherwise)                      |
+| `npm run test:ds` · `test:e2e:smoke` | Design Lab checks · end-to-end smoke (build first)                                    |
+| `npm run verify`                     | Everything CI runs, locally                                                           |
+| `npm run harness:check`              | Instruction files, hooks and policy scripts                                           |
+| `npm run doctor`                     | Diagnose the local environment                                                        |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
+```
+src/app/          routes only (compose, no rules)        docs/engineering/   the rules, written once
+src/features/     one folder per module                  docs/adr/           decisions and why
+src/components/   shared UI (from Stage 2)               docs/requirements/  what to build
+src/server/       server-only infrastructure             docs/ux/            approved UX reference (read-only)
+src/lib/          pure helpers, public env               supabase/           migrations, tests, config
+scripts/          policy checks, doctor, tests           e2e/                Playwright
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environments
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Daily work runs against the hosted `findsprop-dev` Supabase project; the owner applies migrations to it with `supabase db push` (ADR-034). CI builds a throwaway stack from empty on every pull request. `findsprop-prod` and a staging project (added before launch) receive migrations only through CI from `main`. Production and staging credentials live only in Vercel, GitHub Environments and the Supabase dashboard, never on a developer machine used with AI agents. The dev project holds no real data. Variable names are in `.env.example`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Windows and OneDrive
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+LF line endings are enforced (`.gitattributes`). If the repository lives inside OneDrive, pause sync during `npm ci` and builds, and keep the path short; OneDrive can lock `node_modules` and `.next`.

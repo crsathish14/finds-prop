@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Builders · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- Builder accounts are created by invitation only. States: default · menu (row actions) · new (invite drawer) · blocked (reserved email) · toast-invited · confirm-deactivate · empty · drawer (mobile navigation) -->
+<fp-portal role="admin" active="builders">
+  <div class="phead"><div><h1>Builders</h1><p>Invite builders and manage their access. Accounts are created by invitation only.</p></div><div class="actions"><button class="btn btn--primary" type="button"><fp-icon n="plus"></fp-icon>New builder</button></div></div>
+
+  <div class="tbl-wrap" data-hide="empty"><div class="tbl-scroll"><table class="tbl tbl--stack"><thead><tr><th>Company</th><th>Status</th><th class="r">Projects</th><th class="r">Leads</th><th>Last sign-in</th><th class="r"><span class="sr-only">Actions</span></th></tr></thead><tbody>
+    <tr><td class="main"><div class="cell"><span class="mono">KH</span><div><b>Kadal Homes</b><small>sales@kadalhomes.example</small></div></div></td><td data-label="Status"><span class="badge badge--success dot">Active</span></td><td data-label="Projects" class="num r">4</td><td data-label="Leads" class="num r">148</td><td data-label="Last sign-in" class="nw">Today, 09:40</td><td class="acts-td"><div class="mod-actions"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="edit"></fp-icon>Edit</button><span class="menu-anchor"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-haspopup="menu" aria-label="More actions"><fp-icon n="more"></fp-icon></button><div class="menu" role="menu" data-show="menu"><a href="#" role="menuitem"><fp-icon n="mail"></fp-icon>Send password link</a><a href="#" role="menuitem"><fp-icon n="edit"></fp-icon>Edit details</a><div class="sep"></div><button type="button" role="menuitem"><fp-icon n="x-circle"></fp-icon>Deactivate</button></div></span></div></td></tr>
+    <tr><td class="main"><div class="cell"><span class="mono copper">NH</span><div><b>Nila Habitats</b><small>office@nilahabitats.example</small></div></div></td><td data-label="Status"><span class="badge badge--success dot">Active</span></td><td data-label="Projects" class="num r">3</td><td data-label="Leads" class="num r">33</td><td data-label="Last sign-in" class="nw">3 days ago</td><td class="acts-td"><div class="mod-actions"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="edit"></fp-icon>Edit</button><span class="menu-anchor"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-haspopup="menu" aria-label="More actions"><fp-icon n="more"></fp-icon></button></span></div></td></tr>
+    <tr><td class="main"><div class="cell"><span class="mono sand">TE</span><div><b>Thendral Estates</b><small>hello@thendralestates.example</small></div></div></td><td data-label="Status"><span class="badge badge--warning dot">Invited</span></td><td data-label="Projects" class="num r">0</td><td data-label="Leads" class="num r">0</td><td data-label="Last sign-in" class="nw"><span class="muted">Hasn't signed in yet</span></td><td class="acts-td"><div class="mod-actions"><button class="btn btn--primary btn--sm" type="button"><fp-icon n="mail"></fp-icon>Resend invitation</button><span class="menu-anchor"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-haspopup="menu" aria-label="More actions"><fp-icon n="more"></fp-icon></button></span></div></td></tr>
+    <tr><td class="main"><div class="cell"><span class="mono">AC</span><div><b>Arivu Constructions</b><small>info@arivuconstructions.example</small></div></div></td><td data-label="Status"><span class="badge badge--neutral dot">Inactive</span></td><td data-label="Projects" class="num r">2</td><td data-label="Leads" class="num r">96</td><td data-label="Last sign-in" class="nw">2 months ago</td><td class="acts-td"><div class="mod-actions"><button class="btn btn--primary btn--sm" type="button">Activate</button><span class="menu-anchor"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-haspopup="menu" aria-label="More actions"><fp-icon n="more"></fp-icon></button></span></div></td></tr>
+  </tbody></table></div><div class="tbl-foot"><span>12 builders</span><span class="small">Builders can be deactivated but not deleted.</span></div></div>
+  <div class="empty" data-show="empty" role="status"><h3>No builders yet</h3><p>Invite a builder and they will get an email to set a password.</p><button class="btn btn--primary" type="button"><fp-icon n="plus"></fp-icon>New builder</button></div>
+
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:110;width:min(460px,calc(100% - 32px))" data-show="toast-invited"><div class="toast toast--success" role="status"><fp-icon n="mail"></fp-icon><div class="grow"><b>Invitation sent</b>hello@thendralestates.example can now set a password.</div></div></div>
+
+  <div class="scrim right" data-show="new blocked" role="dialog" aria-modal="true" aria-labelledby="nb-t"><div class="drawer-side"><header><h2 class="h3" id="nb-t">New builder</h2><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></header>
+    <div class="body"><p class="small muted mb-4">We email an invitation with a link to set a password. They then sign in at the builder portal.</p>
+      <form class="form-grid" novalidate>
+        <div class="field"><label class="label" for="nb-c">Company name<span class="req">*</span></label><input id="nb-c" class="input" value="Thendral Estates"></div>
+        <div class="field" data-show="blocked"><label class="label" for="nb-e1">Login email<span class="req">*</span></label><input id="nb-e1" class="input is-error" aria-invalid="true" aria-describedby="nb-e1e" value="support@drizzlemarketings.com"><div class="error" id="nb-e1e"><fp-icon n="alert"></fp-icon>This email can't be used for a builder account.</div></div>
+        <div class="field" data-hide="blocked"><label class="label" for="nb-e">Login email<span class="req">*</span></label><input id="nb-e" class="input" inputmode="email" value="hello@thendralestates.example"></div>
+        <div class="form-grid two"><div class="field"><label class="label" for="nb-p">Contact person</label><input id="nb-p" class="input" value="Meenakshi R"></div><div class="field"><label class="label" for="nb-ph">Phone</label><input id="nb-ph" class="input" value="+91 90000 11111"></div></div>
+        <div class="form-grid two"><div class="field"><label class="label" for="nb-l">Logo link</label><input id="nb-l" class="input" placeholder="https://"></div><div class="field"><label class="label" for="nb-w">Website</label><input id="nb-w" class="input" placeholder="https://"></div></div>
+        <div class="field"><label class="label" for="nb-d">About</label><textarea id="nb-d" class="textarea" style="min-height:96px">Ready-to-move apartments in west Chennai.</textarea></div>
+      </form></div>
+    <footer><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--primary" type="button"><fp-icon n="send"></fp-icon>Send invitation</button></footer></div></div>
+
+  <div class="scrim" data-show="confirm-deactivate" role="alertdialog" aria-modal="true" aria-labelledby="dc-t"><div class="dialog"><span class="icon-disc warning"><fp-icon n="alert"></fp-icon></span><h2 id="dc-t">Deactivate Kadal Homes?</h2><p>They will lose access to the builder portal and will no longer appear in the developer showcase on the home page. You can activate them again at any time.</p><div class="actions"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--primary" type="button">Deactivate</button></div></div></div>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="admin" active="builders"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

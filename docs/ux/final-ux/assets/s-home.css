@@ -1,0 +1,82 @@
+/* Find Prop — homepage: hero layouts A (Search Desk), B (Split), and the shared sections below the hero. */
+
+.hero { position: relative; overflow: hidden; }
+.hero > .container { position: relative; z-index: 2; }
+.hero .arches { z-index: 0; }
+.hero h1 { font: var(--display-weight) var(--t-display)/var(--t-display-lh) var(--font-display); letter-spacing: var(--display-tracking); color: var(--c-primary); text-wrap: balance; }
+.hero h1 em { font-style: italic; font-weight: 400; color: var(--c-accent); }
+.hero .sub { margin-top: 10px; font: 400 15px/22px var(--font-ui); color: var(--c-muted); max-width: 840px; text-wrap: pretty; }
+@media (min-width: 768px) { .hero .sub { font-size: 18px; line-height: 28px; margin-top: 12px; } }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--c-primary-tint); color: var(--c-primary); font: 700 13px/1 var(--font-ui); padding: 9px 14px; border-radius: var(--r-pill); }
+.eyebrow .i { font-size: 15px; }
+
+/* Variation A — Search Desk: centred search with the sponsored strip attached underneath */
+.hero-a { padding: 8px 0 8px; }
+.hero-a .search { margin-top: 16px; }
+.hero-a .sp, .hero-a .sp-slot { margin-top: 14px; }
+@media (min-width: 768px) {
+  .hero-a { padding: 16px 0 8px; text-align: center; }
+  .hero-a .sub { margin-inline: auto; }
+  .hero-a .search { max-width: 970px; margin: 22px auto 0; }
+  .hero-a .sp { margin-top: 12px; }
+  .hero-a .sp-meta { min-height: 20px; margin-bottom: 5px; }
+}
+@media (min-width: 1024px) { .hero-a .search, .hero-a .sp { width: 970px; max-width: 100%; } .hero-a .sp { margin-inline: auto; } }
+
+/* Variation B — Split: headline and search on the left, sponsored panel on the right */
+.hero-b { padding: 8px 0 8px; }
+.hero-b .split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.hero-b .eyebrow { display: none; }
+.hero-b .search { margin-top: 18px; }
+.hero-b .trust { display: none; }
+.hero-b .sp { margin-top: 4px; }
+@media (min-width: 768px) {
+  .hero-b { padding: 36px 0 12px; }
+  .hero-b .eyebrow { display: inline-flex; margin-bottom: 16px; }
+  .hero-b .split { gap: 28px; }
+  .hero-b .trust { display: flex; flex-wrap: wrap; gap: 14px 26px; margin-top: 22px; }
+}
+@media (min-width: 1024px) {
+  .hero-b { padding: 40px 0 8px; }
+  .hero-b .split { grid-template-columns: minmax(0, 1fr) clamp(380px, 38vw, 540px); gap: clamp(32px, 4vw, 56px); align-items: start; }
+  .hero-b h1 { font-size: clamp(40px, 3.8vw, 54px); line-height: 1.07; }
+  .hero-b .sp { margin-top: 0; }
+  .hero-b .sp-meta { margin-top: 4px; }
+}
+.trust > div { display: inline-flex; align-items: center; gap: 9px; font: 700 13.5px/1.2 var(--font-ui); color: var(--c-primary); }
+.trust .ic { width: 30px; height: 30px; border-radius: 50%; background: var(--c-primary-tint); display: grid; place-items: center; color: var(--c-primary); font-size: 16px; flex: none; }
+
+/* No-sponsor fallback: Concept 1 without a banner. No container, no placeholder: the page simply continues. */
+.hero-a.no-ad { padding-bottom: 24px; }
+
+/* Shared sections below the hero */
+.sect-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+@media (min-width: 768px) { .sect-head { margin-bottom: 24px; } }
+.section.tight { padding-block: 24px; }
+@media (min-width: 1024px) { .section.tight { padding-block: 32px; } }
+.band { background: var(--c-bg-sunken); }
+.hscroll { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x proximity; padding: 4px var(--gutter) 14px; margin-inline: calc(var(--gutter) * -1); scrollbar-width: thin; }
+.hscroll > .pcard { flex: 0 0 min(300px, 78vw); scroll-snap-align: start; }
+.cat-grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
+.catcard { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 22px 22px 20px; border-radius: var(--r-xl); min-height: 164px; transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
+.catcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.catcard:nth-child(1) { background: linear-gradient(160deg, #F7E6D8, #EDCDB4); } .catcard:nth-child(2) { background: linear-gradient(160deg, #E2ECE5, #C9DDD0); }
+.catcard:nth-child(3) { background: linear-gradient(160deg, #E9E3CF, #D9D0B0); } .catcard:nth-child(4) { background: linear-gradient(160deg, #DCE8E1, #BFD5C8); }
+.catcard > .i:first-child { font-size: 26px; color: var(--c-primary); margin-bottom: 14px; }
+.catcard b { font: var(--display-weight) 22px/1.2 var(--font-display); color: var(--c-primary); letter-spacing: -.01em; }
+.catcard span { font: 500 14.5px/1.4 var(--font-ui); color: var(--c-muted); max-width: 26ch; }
+.catcard .go { position: absolute; right: 18px; bottom: 18px; font-size: 22px; color: var(--c-primary); transition: transform var(--dur-fast); }
+.catcard:hover .go { transform: translateX(3px); }
+.value-grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .value-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+.valuecard { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-xl); padding: 24px; }
+.valuecard .ic { width: 46px; height: 46px; border-radius: 14px; background: var(--c-primary-tint); color: var(--c-primary); display: grid; place-items: center; font-size: 24px; margin-bottom: 16px; }
+.valuecard b { display: block; font: 700 18px/1.3 var(--font-ui); margin-bottom: 6px; }
+.valuecard p { color: var(--c-muted); font-size: 15px; line-height: 1.55; }
+.ctaband { position: relative; overflow: hidden; background: var(--c-primary); color: #fff; border-radius: 28px; padding: 32px 24px; display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+.ctaband p { color: #D3E2D9; margin-top: 8px; font-size: 16px; }
+.ctaband::after { content: ''; position: absolute; right: -60px; bottom: -120px; width: 320px; height: 320px; border-radius: 50% 50% 0 0; border: 2px solid rgba(255, 255, 255, .12); box-shadow: 0 0 0 40px rgba(255, 255, 255, .04), 0 0 0 80px rgba(255, 255, 255, .03); pointer-events: none; }
+.ctaband > * { position: relative; z-index: 1; }
+@media (min-width: 768px) { .ctaband { flex-direction: row; align-items: center; justify-content: space-between; padding: 40px 48px; } }

@@ -1,0 +1,22 @@
+# Secret scanning (gate G-12). The default ruleset applies; only known-safe fakes are allow-listed.
+title = "findsprop gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Names-only environment file, fictional test OTP numbers, and the read-only UX reference copy"
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''^supabase/config\.toml$''',
+  '''^docs/ux/''',
+  '''^package-lock\.json$''',
+]
+
+[[allowlists]]
+description = "Made-up values used as fixtures in the bundle-scan, env-scan and log-redaction tests"
+stopwords = [
+  "sb_secret_0123456789abcdefghij",
+  "aB3dE5gH7jK9mN1pQ3sT5vX7zA9cE1fG3hJ5kL7",
+  "dummysignaturevalue",
+]

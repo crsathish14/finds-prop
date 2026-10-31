@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI search · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default" data-bottombar data-hdr="line">
+<fp-header role="visitor" active="ai"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <!-- States: default · filled · loading · results · few (lead form highlighted) · ratelimit · daily · error · leadsent -->
+    <section class="ai-hero">
+      <span class="ai-mark"><fp-icon n="sparkle"></fp-icon></span>
+      <h1 class="h1">Describe the home <em>you want</em></h1>
+      <p class="lead mt-2" style="max-width:56ch;margin-inline:auto">Write it the way you would say it, in English, Tamil or Tanglish. We turn it into a search.</p>
+
+      <div class="ai-box">
+        <label class="sr-only" for="ai-q">Describe the home you want</label>
+        <textarea id="ai-q" class="textarea" placeholder="For example: 2 BHK near OMR under 80 lakh, ready to move" data-show="default ratelimit daily error"></textarea>
+        <textarea id="ai-q2" class="textarea" data-hide="default ratelimit daily error" aria-label="Your description">3 BHK apartment in Velachery for sale, up to 1.5 crore, near the MRTS</textarea>
+        <div class="foot"><span class="hint">Your description is used to run a search. Don't include personal details here.</span>
+          <button class="btn btn--accent btn--lg" type="button" data-hide="loading"><fp-icon n="sparkle"></fp-icon>Find homes</button>
+          <button class="btn btn--accent btn--lg is-loading" type="button" data-show="loading" aria-busy="true"><fp-icon n="sparkle"></fp-icon>Finding homes</button></div>
+      </div>
+      <div class="ai-ex" aria-label="Example searches"><span class="lead-in">Try one of these</span>
+        <button class="chip" type="button">2 BHK near OMR under 80 lakh</button><button class="chip" type="button">Furnished flat for rent in Adyar</button><button class="chip" type="button" lang="ta">வேளச்சேரியில் 3 BHK வீடு</button><button class="chip" type="button">Adyar la 2 BHK rent ku venum</button></div>
+    </section>
+
+    <div class="mt-6" style="max-width:820px;margin-inline:auto">
+      <div class="alert alert--warning" role="alert" data-show="ratelimit"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many searches in a short time</b>Please try again in 45 seconds. You can keep browsing with filters meanwhile.</div><a class="btn btn--secondary btn--sm" href="search.html">Use filters</a></div>
+      <div class="alert alert--info" role="status" data-show="daily"><fp-icon n="info"></fp-icon><div class="grow"><b>AI search is unavailable right now</b>It has reached its limit for today. Search by locality, type, bedrooms and budget instead.</div><a class="btn btn--secondary btn--sm" href="search.html">Search with filters</a></div>
+      <div class="alert alert--danger" role="alert" data-show="error"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't run that search</b>Something went wrong on our side. Your description is still here, so you can try again.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div>
+    </div>
+
+    <!-- LOADING -->
+    <section class="section tight" data-show="loading" aria-busy="true" aria-label="Searching">
+      <div class="sk" style="height:76px;border-radius:18px;max-width:820px;margin:0 auto 24px"></div><fp-skeletons n="3" cols="c3"></fp-skeletons></section>
+
+    <!-- RESULTS -->
+    <section class="section tight" data-show="results few leadsent">
+      <div class="ai-summary" role="status" style="max-width:820px;margin-inline:auto"><span class="ic"><fp-icon n="sparkle"></fp-icon></span>
+        <p data-show="results leadsent"><b>5 homes match</b> a 3 BHK apartment in Velachery for sale, up to ₹1.5 Cr, near the MRTS. The closest matches are first.</p>
+        <p data-show="few"><b>2 homes match closely</b> a 3 BHK apartment in Velachery for sale, up to ₹1.5 Cr. A few more are similar, and you can leave your requirement below.</p></div>
+
+      <div class="sect-head mt-8"><h2 class="h2">Matching homes</h2><a class="link-arrow" href="search.html">Browse all properties<fp-icon n="arrow"></fp-icon></a></div>
+      <div data-show="results leadsent"><fp-cards ids="1,13,9" cols="c3"></fp-cards></div>
+      <div data-show="few"><fp-cards ids="1,13" cols="c3"></fp-cards></div>
+
+      <div class="sect-head mt-10"><h2 class="h2">You may also like</h2></div>
+      <fp-cards ids="2,6,11" cols="c3"></fp-cards>
+
+      <div class="mt-10" style="max-width:820px;margin-inline:auto">
+        <div class="lead-card" data-show="results few">
+          <div data-show="few" class="row mb-4"><span class="badge badge--featured"><fp-icon n="info"></fp-icon>Fewer than 3 matches</span></div>
+          <h2>Didn't find it? Tell us what you need</h2><p class="muted mt-2">Leave your requirement and we will get back to you. It isn't shared with other buyers.</p>
+          <form class="form-grid two mt-6" novalidate>
+            <div class="field"><label class="label" for="l-name">Your name<span class="req">*</span></label><input id="l-name" class="input" autocomplete="name"></div>
+            <div class="field"><label class="label" for="l-ph">Phone<span class="req">*</span></label><input id="l-ph" class="input" inputmode="tel" autocomplete="tel"></div>
+            <div class="field"><label class="label" for="l-mail">Email <span class="opt">(optional)</span></label><input id="l-mail" class="input" inputmode="email"></div>
+            <div class="field"><label class="label" for="l-loc">Preferred locality</label><select id="l-loc" class="select"><option>Any locality</option><option>Velachery</option><option>Adyar</option><option>OMR Sholinganallur</option></select></div>
+            <div class="field span-2"><label class="label" for="l-req">Your requirement</label><textarea id="l-req" class="textarea">3 BHK apartment in Velachery for sale, up to 1.5 crore, near the MRTS</textarea></div>
+            <div class="span-2"><button class="btn btn--accent btn--lg" type="button">Send my requirement</button></div>
+          </form>
+        </div>
+        <div class="lead-card" data-show="leadsent" role="status"><div class="success-box"><span class="icon-disc success"><fp-icon n="check-circle"></fp-icon></span><h2>Thanks, we have your requirement</h2><p class="muted">We will get in touch on the phone number you gave. Meanwhile you can keep browsing.</p><a class="btn btn--primary" href="search.html">Browse all properties<fp-icon n="arrow"></fp-icon></a></div></div>
+      </div>
+    </section>
+  </div>
+  <div style="height:56px"></div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="search"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

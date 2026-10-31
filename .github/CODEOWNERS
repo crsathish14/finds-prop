@@ -1,0 +1,18 @@
+# With one human maintainer every line names the same owner. The groups exist so that adding a
+# second person later is a one-line change per group, and so GitHub shows which files are protected.
+*                                  @crsathish14
+/AGENTS.md                         @crsathish14
+/**/AGENTS.md                      @crsathish14
+/.claude/                          @crsathish14
+/.mcp.json                         @crsathish14
+/.github/                          @crsathish14
+/lefthook.yml                      @crsathish14
+/commitlint.config.mjs             @crsathish14
+/eslint.config.mjs                 @crsathish14
+/knip.json                         @crsathish14
+/scripts/                          @crsathish14
+/docs/engineering/                 @crsathish14
+/supabase/                         @crsathish14
+/src/server/                       @crsathish14
+/src/components/                   @crsathish14
+/src/styles/                       @crsathish14

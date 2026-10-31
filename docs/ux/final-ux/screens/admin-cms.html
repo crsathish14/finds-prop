@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Site content (header, hero, homepage, footer) · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="hero">
+<!-- One editor template for the four CMS routes /admin/header, /hero, /homepage, /footer. Tokens: header · hero · homepage · footer. States: errors · saved · saving · drawer -->
+<fp-portal role="admin" active="cms-hero">
+  <div class="phead"><div><h1><span data-show="header">Header</span><span data-show="hero">Hero</span><span data-show="homepage">Homepage sections</span><span data-show="footer">Footer</span></h1><p><span data-show="header">The navigation across the top of every public page.</span><span data-show="hero">The first thing visitors see on the home page.</span><span data-show="homepage">Choose which sections appear below the hero.</span><span data-show="footer">The text, contact details and links at the bottom of every page.</span></p></div></div>
+  <nav class="tabs ptabs" aria-label="Site content"><a class="tab" href="#header" data-tab="header">Header</a><a class="tab" href="#hero" data-tab="hero">Hero</a><a class="tab" href="#homepage" data-tab="homepage">Homepage</a><a class="tab" href="#footer" data-tab="footer">Footer</a></nav>
+
+  <div class="cms-grid">
+    <div class="stack-6">
+
+      <!-- HEADER -->
+      <div data-show="header" class="stack-6">
+        <section class="panel panel-pad"><h2 class="title mb-4">Brand</h2><div class="form-grid"><div class="field"><label class="label" for="h-n">Site name</label><input id="h-n" class="input" value="Find Prop"></div>
+          <div class="field"><label class="label" for="h-l">Logo link</label><input id="h-l" class="input" placeholder="https://"><span class="hint">The public header uses the Find Prop brand mark. This link is kept but not shown.</span></div></div></section>
+        <section class="panel panel-pad"><h2 class="title mb-4">Navigation links</h2><div class="stack-4">
+          <div class="kvrow"><input class="input" value="Buy" aria-label="Label"><input class="input" value="/properties?listingType=sale" aria-label="Link"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove Buy"><fp-icon n="trash"></fp-icon></button></div>
+          <div class="kvrow"><input class="input" value="Rent" aria-label="Label"><input class="input" value="/properties?listingType=rent" aria-label="Link"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove Rent"><fp-icon n="trash"></fp-icon></button></div>
+          <div class="kvrow"><input class="input" value="Projects" aria-label="Label"><input class="input" value="/projects" aria-label="Link"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove Projects"><fp-icon n="trash"></fp-icon></button></div></div>
+          <button class="btn btn--secondary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add link</button></section>
+        <section class="panel panel-pad"><h2 class="title mb-4">Call to action</h2><div class="form-grid two"><div class="field"><label class="label" for="h-cl">Button label</label><input id="h-cl" class="input" value="Post property"></div><div class="field"><label class="label" for="h-ch">Button link</label><input id="h-ch" class="input" value="/post-property"></div></div></section>
+      </div>
+
+      <!-- HERO -->
+      <div data-show="hero" class="stack-6">
+        <section class="panel panel-pad"><h2 class="title mb-4">Text</h2><div class="form-grid">
+          <div class="field"><label class="label" for="hr-e">Eyebrow <span class="opt">(optional)</span></label><input id="hr-e" class="input" value="Chennai · Homes, plots &amp; new projects"><span class="hint">A small line above the headline. Shown in the Split layout.</span></div>
+          <div class="field" data-show="errors"><label class="label" for="hr-te">Headline<span class="req">*</span></label><input id="hr-te" class="input is-error" aria-invalid="true" aria-describedby="hr-tee"><div class="error" id="hr-tee"><fp-icon n="alert"></fp-icon>Add a headline.</div></div>
+          <div class="field" data-hide="errors"><label class="label" for="hr-t">Headline<span class="req">*</span></label><input id="hr-t" class="input" value="Find the place that fits your life in Chennai."></div>
+          <div class="field"><label class="label" for="hr-s">Subtitle</label><input id="hr-s" class="input" value="Shortlist, compare and enquire directly."></div></div></section>
+        <section class="panel panel-pad"><h2 class="title mb-1">Layout <span class="flag">Proposed setting</span></h2><p class="small muted mb-4">Both layouts use the same text, search and header. If no sponsor is booked, the page shows Search Desk without a banner.</p>
+          <div class="layout-cards" role="radiogroup" aria-label="Hero layout">
+            <button class="lcard on" type="button" role="radio" aria-checked="true"><span class="thumb"><span class="mini-search" style="left:18%;right:18%;top:34%;height:28%"></span><span class="mini-ad" style="left:18%;right:18%;top:68%;height:9%"></span></span><b>Search Desk</b><span class="d">Centred search with a banner strip underneath.</span></button>
+            <button class="lcard" type="button" role="radio" aria-checked="false"><span class="thumb"><span class="mini-search" style="left:6%;width:46%;top:28%;height:44%"></span><span class="mini-ad" style="left:58%;width:34%;top:14%;height:72%"></span></span><b>Split</b><span class="d">Search on the left and a larger sponsored image on the right.</span></button></div></section>
+        <section class="panel panel-pad"><h2 class="title mb-1">Background image <span class="flag">To decide</span></h2><p class="small muted mb-4">The existing hero has a background image. Neither approved layout uses one, so this field has no effect unless it is kept for a campaign hero.</p><div class="field"><label class="label" for="hr-b">Image link</label><input id="hr-b" class="input" placeholder="https://"></div></section>
+      </div>
+
+      <!-- HOMEPAGE -->
+      <div data-show="homepage" class="stack-6">
+        <section class="panel panel-pad"><h2 class="title mb-2">Sections</h2><p class="small muted mb-2">Turn sections on or off. A hidden section is not rendered at all.</p>
+          <div class="tgl-row"><div><b>Featured listings</b><span class="d">Up to six featured homes.</span></div><label class="switch"><input type="checkbox" checked aria-label="Featured listings"></label></div>
+          <div class="tgl-row"><div><b>Browse by what matters</b><span class="d">Featured, Prime, Budget and locality entry points.</span></div><label class="switch"><input type="checkbox" checked aria-label="Project types"></label></div>
+          <div class="tgl-row"><div><b>Explore by locality</b><span class="d">Locality tiles.</span></div><label class="switch"><input type="checkbox" checked aria-label="Discovery"></label></div>
+          <div class="tgl-row"><div><b>Why Find Prop</b><span class="d">Three short value points.</span></div><label class="switch"><input type="checkbox" checked aria-label="Why us"></label></div>
+          <div class="tgl-row"><div><b>Post-property call to action</b><span class="d">The closing banner.</span></div><label class="switch"><input type="checkbox" aria-label="Call to action"></label></div></section>
+        <section class="panel panel-pad"><h2 class="title mb-4">Text</h2><div class="field"><label class="label" for="hp-f">Featured section title</label><input id="hp-f" class="input" value="Featured homes"></div></section>
+      </div>
+
+      <!-- FOOTER -->
+      <div data-show="footer" class="stack-6">
+        <section class="panel panel-pad"><h2 class="title mb-4">About and contact</h2><div class="form-grid two"><div class="field span-2"><label class="label" for="f-a">About text</label><textarea id="f-a" class="textarea" style="min-height:96px">Search, shortlist and compare homes across Chennai, and enquire directly with owners and builders.</textarea></div>
+          <div class="field"><label class="label" for="f-p">Phone</label><input id="f-p" class="input" value="+91 90000 00000"></div><div class="field"><label class="label" for="f-e">Email</label><input id="f-e" class="input" value="hello@findprop.example"></div><div class="field span-2"><label class="label" for="f-ad">Address</label><input id="f-ad" class="input" value="Chennai, Tamil Nadu"></div></div></section>
+        <section class="panel panel-pad"><h2 class="title mb-4">Links</h2><div class="stack-4"><div class="kvrow"><input class="input" value="Contact us" aria-label="Label"><input class="input" value="/contact" aria-label="Link"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove"><fp-icon n="trash"></fp-icon></button></div><div class="kvrow"><input class="input" value="Builder sign in" aria-label="Label"><input class="input" value="/builder/login" aria-label="Link"><button class="btn btn--ghost btn--sm btn--icon" type="button" aria-label="Remove"><fp-icon n="trash"></fp-icon></button></div></div><button class="btn btn--secondary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add link</button>
+          <div class="field mt-6"><label class="label" for="f-c">Copyright line</label><input id="f-c" class="input" value="© 2026 Find Prop"></div></section>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <aside class="preview-card" aria-label="Preview" style="position:sticky;top:84px"><span class="pv-label">Preview</span>
+      <div data-show="header"><div style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap"><span class="logo"><svg class="mark" aria-hidden="true"><use href="#logo-mark"/></svg><span>Find <b>Prop</b></span></span><span class="small">Buy</span><span class="small">Rent</span><span class="small">Projects</span><span class="btn btn--secondary btn--sm btn--pill" style="margin-left:auto">+ Post property</span></div></div>
+      <div data-show="hero"><div style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:14px;padding:22px 18px;text-align:center"><div class="display" style="font-size:26px;line-height:30px">Find the place that fits your life in <em>Chennai</em>.</div><p class="small muted mt-2">Shortlist, compare and enquire directly.</p><div style="margin:14px auto 0;background:#fff;border:1px solid var(--c-border);border-radius:12px;height:46px;max-width:300px"></div></div></div>
+      <div data-show="homepage"><div class="stack-4" style="--stack:10px"><div class="panel" style="padding:12px 14px;font-weight:700">Hero and search</div><div class="panel" style="padding:12px 14px">Explore by locality <span class="badge badge--success badge--sm" style="float:right">On</span></div><div class="panel" style="padding:12px 14px">Featured homes <span class="badge badge--success badge--sm" style="float:right">On</span></div><div class="panel" style="padding:12px 14px">Browse by what matters <span class="badge badge--success badge--sm" style="float:right">On</span></div><div class="panel" style="padding:12px 14px">Why Find Prop <span class="badge badge--success badge--sm" style="float:right">On</span></div><div class="panel" style="padding:12px 14px;opacity:.55">Call to action <span class="badge badge--neutral badge--sm" style="float:right">Off</span></div></div></div>
+      <div data-show="footer"><div style="background:var(--c-dark);color:#fff;border-radius:14px;padding:18px"><div class="logo" style="color:#fff"><svg class="mark" style="--lg-bg:#FAF6EE;--lg-fg:#163829" aria-hidden="true"><use href="#logo-mark"/></svg><span>Find <b>Prop</b></span></div><p class="small" style="color:#B9CBC0;margin-top:10px">Search, shortlist and compare homes across Chennai.</p><p class="small" style="color:#DCE6E0;margin-top:10px">+91 90000 00000 · hello@findprop.example</p></div></div>
+    </aside>
+  </div>
+
+  <div class="savebar"><span class="small muted">Saved changes appear on the public site straight away.</span><div class="row"><button class="btn btn--secondary" type="button">Discard</button><button class="btn btn--primary" type="button" data-hide="saving">Save changes</button><button class="btn btn--primary is-loading" type="button" data-show="saving" aria-busy="true">Saving</button></div></div>
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="saved"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Changes saved</b></div></div></div>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="admin" active="cms-hero"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

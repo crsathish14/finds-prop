@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Hero layout and sponsors · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+<style>
+  .drawer-wide .drawer-side { width: min(680px, 100%); }
+  .drawer-side .slots { grid-template-columns: minmax(0, 1fr); }
+</style>
+</head>
+<body data-default="hero" data-ai-off>
+<fp-portal role="admin" active="cms-hero">
+  <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-11 · Proposed.</b> Extends the approved Hero editor (<code>admin-cms#hero</code>) with the layout setting made real, a <b>sponsor manager</b> and a live preview. No rotation, scheduling, billing or reports (out of scope). Banners are finished images supplied by advertisers; <b>SVG is not accepted</b> (the sample banners here are only stand-ins). States: hero · layout-split · no-eligible · empty · drawer · drawer-edit · drawer-near · drawer-bad · confirm-delete · saving · saved.</div></div></div>
+
+  <div class="phead"><div><h1>Hero</h1><p>The first thing visitors see on the home page, and the sponsored banner that can sit with it.</p></div></div>
+  <nav class="tabs ptabs" aria-label="Site content"><a class="tab" href="admin-cms.html#header">Header</a><a class="tab on" href="#hero" aria-current="page">Hero</a><a class="tab" href="admin-localities.html">Homepage</a><a class="tab" href="admin-cms.html#footer">Footer</a></nav>
+
+  <div class="cms-grid">
+    <div class="stack-6">
+
+      <section class="panel panel-pad"><h2 class="title mb-4">Text</h2><div class="form-grid">
+        <div class="field"><label class="label" for="hr-e">Eyebrow <span class="opt">(optional)</span></label><input id="hr-e" class="input" value="Tamil Nadu · Homes, plots &amp; new projects"><span class="hint">A small line above the headline. Shown in the Split layout.</span></div>
+        <div class="field"><label class="label" for="hr-t">Headline<span class="req">*</span></label><input id="hr-t" class="input" value="Find the place that fits your life in Chennai."></div>
+        <div class="field"><label class="label" for="hr-s">Subtitle</label><input id="hr-s" class="input" value="Shortlist, compare and enquire directly."></div></div></section>
+
+      <!-- LAYOUT SETTING -->
+      <section class="panel panel-pad"><h2 class="title mb-1">Layout</h2><p class="small muted mb-4">Both layouts use the same text, search and header. A sponsor must supply the <b>matching format</b>; if none does, visitors see Search Desk without a banner.</p>
+        <div class="layout-cards" role="radiogroup" aria-label="Hero layout">
+          <button class="lcard" type="button" role="radio" aria-checked="true" data-hide="layout-split no-eligible"><span class="thumb"><span class="mini-search" style="left:18%;right:18%;top:34%;height:28%"></span><span class="mini-ad" style="left:18%;right:18%;top:68%;height:9%"></span></span><b>Search Desk</b><span class="d">Centred search with a banner strip underneath. Needs the <b>Strip</b> format.</span></button>
+          <button class="lcard on" type="button" role="radio" aria-checked="true" data-show="layout-split no-eligible"><span class="thumb"><span class="mini-search" style="left:18%;right:18%;top:34%;height:28%"></span><span class="mini-ad" style="left:18%;right:18%;top:68%;height:9%"></span></span><b>Search Desk</b><span class="d">Centred search with a banner strip underneath. Needs the <b>Strip</b> format.</span></button>
+          <button class="lcard on" type="button" role="radio" aria-checked="true" data-hide="layout-split no-eligible"><span class="thumb"><span class="mini-search" style="left:6%;width:46%;top:28%;height:44%"></span><span class="mini-ad" style="left:58%;width:34%;top:14%;height:72%"></span></span><b>Split</b><span class="d">Search on the left and a larger sponsored image on the right. Needs the <b>Panel</b> format.</span></button>
+          <button class="lcard" type="button" role="radio" aria-checked="false" data-show="layout-split no-eligible"><span class="thumb"><span class="mini-search" style="left:6%;width:46%;top:28%;height:44%"></span><span class="mini-ad" style="left:58%;width:34%;top:14%;height:72%"></span></span><b>Split</b><span class="d">Search on the left and a larger sponsored image on the right. Needs the <b>Panel</b> format.</span></button>
+        </div>
+        <p class="caption muted mt-3">Live layout: <b data-hide="layout-split no-eligible">Search Desk</b><b data-show="layout-split no-eligible">Split</b>. Changes apply on the next page load after you save.</p>
+        <div class="alert alert--warning mt-4" role="status" data-show="layout-split"><fp-icon n="alert"></fp-icon><div class="grow"><b>2 of 3 sponsors don't have the Split format</b>They won't be shown while Split is live. Add a Panel image to each in Sponsors below.</div></div>
+        <div class="alert alert--warning mt-4" role="status" data-show="no-eligible"><fp-icon n="alert"></fp-icon><div class="grow"><b>No sponsor can be shown in Split</b>Visitors will see the Search Desk homepage without a banner until a sponsor supplies the Panel format.</div></div>
+      </section>
+    </div>
+
+    <!-- LIVE PREVIEW -->
+    <aside class="preview-card" aria-label="Preview" style="position:sticky;top:84px"><span class="pv-label">Live preview</span>
+      <div class="seg seg--sm mb-3" role="tablist" aria-label="Preview size"><button type="button" role="tab" class="on" aria-selected="true">Desktop</button><button type="button" role="tab" aria-selected="false">Phone</button></div>
+
+      <!-- Search Desk with a sponsor -->
+      <div data-show="hero saving saved confirm-delete drawer drawer-edit drawer-near drawer-bad" class="live-prev">
+        <div class="lp-bar"><span class="badge badge--primary badge--sm">Search Desk</span><span class="caption muted">Sample Developer · first of 2 active</span></div>
+        <div class="lp-card" aria-hidden="true"></div>
+        <span class="overline">Sponsored</span>
+        <div style="margin-top:6px;aspect-ratio:970/90;border-radius:12px;overflow:hidden;border:1px solid var(--c-border)"><img src="../../final-ux/assets/ads/strip-970x90-a.svg" alt="Sample banner" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="row gap-4 mt-4" style="align-items:flex-start"><div style="width:130px;flex:none"><span class="caption muted">Phone</span><div style="margin-top:6px;aspect-ratio:320/100;border-radius:10px;overflow:hidden;border:1px solid var(--c-border)"><img src="../../final-ux/assets/ads/strip-m-320x100-a.svg" alt="" style="width:100%;height:100%;object-fit:cover"></div></div><p class="caption muted" style="margin:0">The phone image is used below 1024 px. Nothing is stretched.</p></div>
+      </div>
+
+      <!-- Split with a panel sponsor -->
+      <div data-show="layout-split" class="live-prev">
+        <div class="lp-bar"><span class="badge badge--primary badge--sm">Split</span><span class="caption muted">Only sponsors with a Panel image appear</span></div>
+        <div class="row gap-3" style="align-items:flex-start"><div class="lp-card" style="flex:1;height:120px;margin:0" aria-hidden="true"></div><div style="width:44%"><span class="overline">Sponsored</span><div style="margin-top:6px;aspect-ratio:524/494;border-radius:14px;overflow:hidden;border:1px solid var(--c-border)"><img src="../../final-ux/assets/ads/panel-524x494-a.svg" alt="Sample panel banner" style="width:100%;height:100%;object-fit:cover"></div></div></div>
+      </div>
+
+      <!-- Nothing to show -->
+      <div data-show="no-eligible empty" class="live-prev">
+        <div class="lp-bar"><span class="badge badge--neutral badge--sm" data-show="no-eligible">Split → Search Desk</span><span class="badge badge--neutral badge--sm" data-show="empty">No sponsors</span></div>
+        <div class="lp-card" aria-hidden="true"></div>
+        <div class="empty-note" role="status" style="background:var(--c-surface)"><fp-icon n="info"></fp-icon><div class="grow"><b>No banner is shown</b><div class="small muted mt-1">Visitors see the search card and then the next section. No frame, label or gap.</div></div></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- SPONSORS: full width so every column and the Edit action are visible -->
+  <div class="mt-5">
+      <section class="panel" aria-labelledby="sp-h">
+        <div class="panel-head" style="padding-bottom:6px"><div><h2 id="sp-h">Sponsors</h2><p>Shown in this order, with a manual pager when there is more than one. There is no automatic rotation.</p></div><button class="btn btn--primary btn--sm" type="button"><fp-icon n="plus"></fp-icon>Add sponsor</button></div>
+        <div class="tbl-wrap" style="border:0;border-radius:0 0 20px 20px" data-hide="empty">
+          <div class="tbl-scroll"><table class="tbl tbl--stack sp-table" style="min-width:680px"><thead><tr><th>Advertiser</th><th>Status</th><th>Strip</th><th>Panel</th><th>Order</th><th class="r"><span class="sr-only">Actions</span></th></tr></thead><tbody>
+            <tr><td data-label="Advertiser"><div class="adv"><span class="mono">SD</span><div><b>Sample Developer</b><div class="small muted">Booking: new launch, Velachery</div></div></div></td><td><span class="badge badge--success dot">Active</span></td>
+              <td><span class="fmt-ok"><fp-icon n="check-circle"></fp-icon>Ready</span></td><td><span class="fmt-ok" data-hide="layout-split no-eligible"><fp-icon n="check-circle"></fp-icon>Ready</span><span class="fmt-no" data-show="layout-split no-eligible"><fp-icon n="x-circle"></fp-icon>Missing</span></td>
+              <td><div class="row gap-1"><button class="icon-btn" type="button" aria-label="Move Sample Developer up" disabled><fp-icon n="arrow-up"></fp-icon></button><button class="icon-btn" type="button" aria-label="Move Sample Developer down"><fp-icon n="arrow-down"></fp-icon></button></div></td>
+              <td class="r"><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="edit"></fp-icon>Edit</button></td></tr>
+            <tr><td data-label="Advertiser"><div class="adv"><span class="mono">SB</span><div><b>Sample Builder</b><div class="small muted">Booking: plots, OMR</div></div></div></td><td><span class="badge badge--success dot">Active</span></td>
+              <td><span class="fmt-ok"><fp-icon n="check-circle"></fp-icon>Ready</span></td><td><span class="fmt-no"><fp-icon n="x-circle"></fp-icon>Missing</span></td>
+              <td><div class="row gap-1"><button class="icon-btn" type="button" aria-label="Move Sample Builder up"><fp-icon n="arrow-up"></fp-icon></button><button class="icon-btn" type="button" aria-label="Move Sample Builder down"><fp-icon n="arrow-down"></fp-icon></button></div></td>
+              <td class="r"><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="edit"></fp-icon>Edit</button></td></tr>
+            <tr><td data-label="Advertiser"><div class="adv"><span class="mono">SF</span><div><b>Sample Finance</b><div class="small muted">Booking: home loans</div></div></div></td><td><span class="badge badge--warning dot">Needs images</span></td>
+              <td><span class="fmt-no"><fp-icon n="alert"></fp-icon>Phone image missing</span></td><td><span class="fmt-no"><fp-icon n="x-circle"></fp-icon>Missing</span></td>
+              <td><div class="row gap-1"><button class="icon-btn" type="button" aria-label="Move Sample Finance up"><fp-icon n="arrow-up"></fp-icon></button><button class="icon-btn" type="button" aria-label="Move Sample Finance down" disabled><fp-icon n="arrow-down"></fp-icon></button></div></td>
+              <td class="r"><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="edit"></fp-icon>Edit</button></td></tr>
+          </tbody></table></div>
+          <div class="tbl-foot"><span>3 sponsors · 2 active</span><span class="small">A campaign needs both the desktop and the phone image of a format.</span></div>
+        </div>
+        <div style="padding:20px" data-show="empty"><div class="empty-note" role="status"><fp-icon n="image"></fp-icon><div class="grow"><b>No sponsors yet</b><div class="small muted mt-1">The homepage shows no banner and no empty space. Add a sponsor to show a banner under the search (Search Desk) or beside it (Split).</div><button class="btn btn--primary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add sponsor</button></div></div></div>
+      </section>
+  </div>
+
+  <div class="savebar"><span class="small muted">Saved changes appear on the public site straight away.</span><div class="row"><button class="btn btn--secondary" type="button">Discard</button><button class="btn btn--primary" type="button" data-hide="saving">Save changes</button><button class="btn btn--primary is-loading" type="button" data-show="saving" aria-busy="true">Saving</button></div></div>
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="saved"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Sponsor saved</b>It appears on the homepage straight away.</div></div></div>
+
+  <!-- ADD / EDIT SPONSOR DRAWER -->
+  <div class="drawer-wide" data-show="drawer drawer-edit drawer-near drawer-bad">
+    <div class="scrim right" role="dialog" aria-modal="true" aria-labelledby="sp-t"><div class="drawer-side">
+      <header><h2 class="h3" id="sp-t"><span data-show="drawer">Add sponsor</span><span data-show="drawer-edit drawer-near drawer-bad">Edit sponsor</span></h2><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></header>
+      <div class="body stack-6">
+        <div class="form-grid">
+          <div class="field" data-hide="drawer-bad"><label class="label" for="s-adv">Advertiser name<span class="req">*</span></label><input id="s-adv" class="input" value="" placeholder="Name shown to staff only" data-show="drawer"><input id="s-adv2" class="input" value="Sample Developer" data-hide="drawer"></div>
+          <div class="field is-error" data-show="drawer-bad"><label class="label" for="s-adv-e">Advertiser name<span class="req">*</span></label><input id="s-adv-e" class="input" value="Sample Developer"></div>
+          <div class="field" data-hide="drawer-bad"><label class="label" for="s-alt">Alt text<span class="req">*</span></label><input id="s-alt" class="input" value="" placeholder="Describe the banner for screen readers" data-show="drawer"><input id="s-alt2" class="input" value="Sample Developer: new launch apartments in Velachery. Learn more." data-hide="drawer"><span class="hint">Read aloud by screen readers. Describe what the banner says, not just "banner".</span></div>
+          <div class="field is-error" data-show="drawer-bad"><label class="label" for="s-alt-e">Alt text<span class="req">*</span></label><input id="s-alt-e" class="input is-error" aria-invalid="true" aria-describedby="s-alt-ee" value=""><div class="error" id="s-alt-ee"><fp-icon n="alert"></fp-icon>Add alt text so everyone can read the banner.</div></div>
+          <div class="field" data-hide="drawer-bad"><label class="label" for="s-url">Destination link<span class="req">*</span></label><input id="s-url" class="input" value="" placeholder="https://" data-show="drawer"><input id="s-url2" class="input" value="https://sampledeveloper.example/velachery" data-hide="drawer"><span class="hint">Opens in a new tab. Must start with https://.</span></div>
+          <div class="field is-error" data-show="drawer-bad"><label class="label" for="s-url-e">Destination link<span class="req">*</span></label><input id="s-url-e" class="input is-error" aria-invalid="true" aria-describedby="s-url-ee" value="http://sampledeveloper.example"><div class="error" id="s-url-ee"><fp-icon n="alert"></fp-icon>The link must start with https://.</div></div>
+          <div class="tgl-row" style="border-top:0;padding:4px 0"><div><b>Active</b><span class="d">Inactive sponsors are never shown.</span></div><label class="switch"><input type="checkbox" checked aria-label="Active"></label></div>
+        </div>
+
+        <div>
+          <h3 class="title mb-1">Banner images</h3>
+          <p class="small muted mb-3">Finished images supplied by the advertiser. Supply each at twice the size for sharp screens. <b>JPG, PNG or WEBP only</b>, up to 150 KB each. <span class="flag">Limits to confirm · DEC-15</span></p>
+          <div class="slots">
+            <!-- 1 STRIP DESKTOP -->
+            <div class="slot is-filled" data-hide="drawer drawer-bad"><div class="slot-h"><b>Strip · desktop</b><span>Shown at 970 × 90 · supply 1940 × 180</span></div>
+              <div class="slot-prev" style="--ratio:970/90"><img src="../../final-ux/assets/ads/strip-970x90-a.svg" alt="Strip desktop banner (sample)"></div>
+              <div class="slot-st ok"><fp-icon n="check-circle"></fp-icon><div><b>Fills the slot</b>1940 × 180 · WEBP · 96 KB</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Replace</button><button class="btn btn--ghost btn--sm" type="button">Remove</button></div></div>
+            <div class="slot" data-show="drawer"><div class="slot-h"><b>Strip · desktop</b><span>Shown at 970 × 90 · supply 1940 × 180</span></div><div class="slot-prev" style="--ratio:970/90"><div class="slot-empty"><fp-icon n="upload"></fp-icon><b>Drop an image here</b>or choose a file</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose file</button></div></div>
+            <div class="slot is-bad" data-show="drawer-bad"><div class="slot-h"><b>Strip · desktop</b><span>Shown at 970 × 90 · supply 1940 × 180</span></div>
+              <div class="slot-prev" style="--ratio:970/90"><img src="../../final-ux/assets/ads/near-miss-panel-524x600.svg" alt="Rejected image preview (sample)" style="object-fit:contain"></div>
+              <div class="slot-st bad" role="alert"><fp-icon n="x-circle"></fp-icon><div><b>Rejected: wrong shape</b>This image is much taller than the slot (about 1 : 1.1, the slot is about 10.8 : 1). Supply a wide banner.</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose another file</button></div></div>
+
+            <!-- 2 STRIP PHONE -->
+            <div class="slot is-filled" data-hide="drawer drawer-near drawer-bad"><div class="slot-h"><b>Strip · phone</b><span>Shown at 320 × 100 · supply 640 × 200</span></div>
+              <div class="slot-prev" style="--ratio:320/100"><img src="../../final-ux/assets/ads/strip-m-320x100-a.svg" alt="Strip phone banner (sample)"></div>
+              <div class="slot-st ok"><fp-icon n="check-circle"></fp-icon><div><b>Fills the slot</b>640 × 200 · WEBP · 41 KB</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Replace</button><button class="btn btn--ghost btn--sm" type="button">Remove</button></div></div>
+            <div class="slot" data-show="drawer"><div class="slot-h"><b>Strip · phone</b><span>Shown at 320 × 100 · supply 640 × 200</span></div><div class="slot-prev" style="--ratio:320/100"><div class="slot-empty"><fp-icon n="upload"></fp-icon><b>Drop an image here</b>or choose a file</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose file</button></div></div>
+            <div class="slot is-near" data-show="drawer-near"><div class="slot-h"><b>Strip · phone</b><span>Shown at 320 × 100 · supply 640 × 200</span></div>
+              <div class="slot-prev contain" style="--ratio:320/100"><img src="../../final-ux/assets/ads/near-miss-strip-970x120.svg" alt="Near-miss banner preview (sample)"></div>
+              <div class="slot-st near" role="status"><fp-icon n="alert"></fp-icon><div><b>Will be shown whole on a plain background</b>The shape is 8 to 30 percent away from the slot, so we don't crop it. For the best result supply 640 × 200.</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Replace</button><button class="btn btn--ghost btn--sm" type="button">Keep as is</button></div></div>
+            <div class="slot is-bad" data-show="drawer-bad"><div class="slot-h"><b>Strip · phone</b><span>Shown at 320 × 100 · supply 640 × 200</span></div>
+              <div class="slot-prev" style="--ratio:320/100"><div class="slot-empty"><fp-icon n="file"></fp-icon><b>banner-mobile.svg</b></div></div>
+              <div class="slot-st bad" role="alert"><fp-icon n="x-circle"></fp-icon><div><b>Rejected: SVG isn't accepted</b>Upload a JPG, PNG or WEBP instead. SVG files can contain scripts.</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose another file</button></div></div>
+
+            <!-- 3 PANEL DESKTOP -->
+            <div class="slot is-filled" data-hide="drawer drawer-bad"><div class="slot-h"><b>Panel · desktop</b><span>Shown at 524 × 494 · supply 1048 × 988</span></div>
+              <div class="slot-prev" style="--ratio:524/494"><img src="../../final-ux/assets/ads/panel-524x494-a.svg" alt="Panel desktop banner (sample)"></div>
+              <div class="slot-st ok"><fp-icon n="check-circle"></fp-icon><div><b>Fills the slot</b>1048 × 988 · WEBP · 118 KB</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Replace</button><button class="btn btn--ghost btn--sm" type="button">Remove</button></div></div>
+            <div class="slot" data-show="drawer"><div class="slot-h"><b>Panel · desktop</b><span>Shown at 524 × 494 · supply 1048 × 988</span></div><div class="slot-prev" style="--ratio:524/494"><div class="slot-empty"><fp-icon n="upload"></fp-icon><b>Drop an image here</b>or choose a file</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose file</button></div></div>
+            <div class="slot is-bad" data-show="drawer-bad"><div class="slot-h"><b>Panel · desktop</b><span>Shown at 524 × 494 · supply 1048 × 988</span></div>
+              <div class="slot-prev" style="--ratio:524/494"><img src="../../final-ux/assets/ads/panel-524x494-b.svg" alt="Oversize image preview (sample)"></div>
+              <div class="slot-st bad" role="alert"><fp-icon n="x-circle"></fp-icon><div><b>Rejected: 412 KB is too large</b>The limit is 150 KB. Compress the image and try again.</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose another file</button></div></div>
+
+            <!-- 4 PANEL PHONE -->
+            <div class="slot is-filled" data-hide="drawer drawer-bad"><div class="slot-h"><b>Panel · phone</b><span>Shown at 640 × 320 · supply 1280 × 640</span></div>
+              <div class="slot-prev" style="--ratio:2/1"><img src="../../final-ux/assets/ads/panel-m-640x320-a.svg" alt="Panel phone banner (sample)"></div>
+              <div class="slot-st ok"><fp-icon n="check-circle"></fp-icon><div><b>Fills the slot</b>1280 × 640 · WEBP · 83 KB</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Replace</button><button class="btn btn--ghost btn--sm" type="button">Remove</button></div></div>
+            <div class="slot" data-show="drawer"><div class="slot-h"><b>Panel · phone</b><span>Shown at 640 × 320 · supply 1280 × 640</span></div><div class="slot-prev" style="--ratio:2/1"><div class="slot-empty"><fp-icon n="upload"></fp-icon><b>Drop an image here</b>or choose a file</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose file</button></div></div>
+            <div class="slot is-bad" data-show="drawer-bad"><div class="slot-h"><b>Panel · phone</b><span>Shown at 640 × 320 · supply 1280 × 640</span></div>
+              <div class="slot-prev" style="--ratio:2/1"><div class="slot-empty"><fp-icon n="image"></fp-icon><b>small-banner.png · 300 × 150</b></div></div>
+              <div class="slot-st bad" role="alert"><fp-icon n="x-circle"></fp-icon><div><b>Rejected: too small</b>This is 300 × 150. Supply at least 1280 × 640 so it stays sharp on high-density screens.</div></div><div class="acts"><button class="btn btn--secondary btn--sm" type="button">Choose another file</button></div></div>
+          </div>
+          <p class="caption muted mt-3">Supplying both the desktop and phone image of a format makes it <b>ready</b>. A sponsor with no ready format is never shown.</p>
+        </div>
+      </div>
+      <footer><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--primary" type="button">Save sponsor</button></footer>
+    </div></div>
+  </div>
+
+  <!-- CONFIRM DELETE -->
+  <div class="scrim" data-show="confirm-delete" role="alertdialog" aria-modal="true" aria-labelledby="sd-t"><div class="dialog"><span class="icon-disc danger"><fp-icon n="trash"></fp-icon></span><h2 id="sd-t">Delete Sample Builder?</h2><p>This removes the sponsor and its images. Visitors stop seeing it straight away. This can't be undone.</p><div class="actions"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--danger" type="button"><fp-icon n="trash"></fp-icon>Delete sponsor</button></div></div></div>
+</fp-portal>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

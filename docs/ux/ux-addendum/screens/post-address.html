@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post a property · address and location pin · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+</head>
+<body data-default="selected" data-wiz data-hdr="line" data-ai-off>
+<fp-header role="user"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-08 · Proposed.</b> Replaces the <i>Locality</i> and <i>Address</i> fields in step 1 of the approved wizard. Everything else in the wizard is unchanged. The public wording about the pin has two versions pending <b>DEC-35</b>. States: search · results · selected · selected-approx · manual · pin-outside · map-failed · unavailable · errors · step5 (review).</div></div></div>
+
+    <div class="page-head"><h1 class="h1">Post your <em>property</em></h1><p class="page-sub">Your listing is reviewed before it goes live. It takes about five minutes.</p></div>
+
+    <div class="wiz">
+      <aside class="wiz-steps hide-t" aria-label="Progress">
+        <div class="stepper" id="stepper">
+          <div class="step" data-n="1"><span class="n">1</span><div><b>Basics</b><small>Type, address, location</small></div></div>
+          <div class="step" data-n="2"><span class="n">2</span><div><b>Details</b><small>Size, price, amenities</small></div></div>
+          <div class="step" data-n="3"><span class="n">3</span><div><b>Photos</b><small>Up to 6 photos</small></div></div>
+          <div class="step" data-n="4"><span class="n">4</span><div><b>Description</b><small>Title and details</small></div></div>
+          <div class="step" data-n="5"><span class="n">5</span><div><b>Review and submit</b><small>Check everything</small></div></div>
+        </div>
+      </aside>
+
+      <section aria-label="Listing form">
+        <div class="wiz-mobile-head"><div class="progress" id="mprog" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p class="small muted mt-2" id="mlabel"></p></div>
+
+        <div class="wiz-card">
+          <!-- ── STEP 1 · BASICS (with address and location) ── -->
+          <div data-hide="step5">
+            <h2>What are you listing?</h2><p class="lead-in">Start with the basics. You can change these later in the form.</p>
+
+            <div class="alert alert--danger mb-4" role="alert" data-show="errors"><fp-icon n="alert"></fp-icon><div class="grow"><b>Please fix 3 things before you continue</b><a href="#errors">Address</a> · <a href="#errors">Pincode</a> · <a href="#errors">Location pin</a></div></div>
+
+            <div class="form-stack col" style="gap:20px">
+              <div class="field"><span class="label" id="lt">I want to</span><div class="seg-cards" role="radiogroup" aria-labelledby="lt"><button class="seg-card on" type="button" role="radio" aria-checked="true"><b>Sell</b><span>List a home for sale</span></button><button class="seg-card" type="button" role="radio" aria-checked="false"><b>Rent out</b><span>List a home for rent</span></button></div></div>
+              <div class="field"><label class="label" for="pt">Property type</label><select id="pt" class="select"><option>Apartment</option><option>Villa</option><option>Independent House</option><option>Plot / Land</option><option>Commercial</option></select></div>
+
+              <!-- Where is the property? (combobox, ADD-07) -->
+              <div class="field sg-host" data-show="search results unavailable">
+                <label class="label" for="pa-q">Where is the property?</label>
+                <div class="input-wrap pa-input"><fp-icon n="pin"></fp-icon><input id="pa-q" class="input is-focus" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search for the area, street or landmark" value=""></div>
+                <span class="hint">Start typing and choose from the list. Tamil Nadu only for now.</span>
+                <div class="suggest-slot" data-show="results"><div data-sg="results" data-q="Vel" data-for=".pa-input" data-min="360"></div></div>
+                <div class="suggest-slot" data-show="unavailable"><div data-sg="degraded" data-q="Velachery" data-for=".pa-input" data-min="360"></div></div>
+                <p class="consent mt-1">Suggestions come from Ola Maps. What you type is sent to them to find matching places. <a href="legal-page.html#privacy">Privacy Policy</a></p>
+                <p class="mt-1"><a class="btn-link" href="#manual">I can't find it. Enter the address myself</a></p>
+              </div>
+
+              <!-- Chosen place -->
+              <div class="field" data-show="selected selected-approx pin-outside map-failed errors">
+                <span class="label">Where is the property?</span>
+                <div class="place-card"><span class="ic"><fp-icon n="pin"></fp-icon></span><div><div class="t">Velachery, Chennai</div><div class="s">Tamil Nadu 600042</div></div><button class="btn btn--secondary btn--sm" type="button">Change</button></div>
+              </div>
+              <div data-show="manual">
+                <div class="alert alert--neutral mb-4"><fp-icon n="info"></fp-icon><div class="grow"><b>Entering the address yourself</b>Fill in the fields below, then place the pin on the map. <a href="#search">Search for it instead</a></div></div>
+              </div>
+
+              <!-- Address fields (editable, prefilled from the place) -->
+              <div class="form-grid two" data-show="selected selected-approx pin-outside map-failed manual errors">
+                <div class="field span-2" data-hide="errors"><label class="label" for="ad">Address <span class="opt">(optional)</span></label><input id="ad" class="input" value="12, Second Cross Street, Velachery"><span class="hint">Up to 300 characters. <span data-show="selected-approx">Visitors see the locality, not this line.</span><span data-hide="selected-approx">Shown to people viewing your listing.</span></span></div>
+                <div class="field span-2 is-error" data-show="errors"><label class="label" for="ad-e">Address<span class="req">*</span></label><input id="ad-e" class="input is-error" aria-invalid="true" aria-describedby="ad-ee" value=""><div class="error" id="ad-ee"><fp-icon n="alert"></fp-icon>Add the street or building.</div></div>
+                <div class="field"><label class="label" for="lc">Locality<span class="req">*</span></label><input id="lc" class="input" value="Velachery"></div>
+                <div class="field"><label class="label" for="ci">City<span class="req">*</span></label><input id="ci" class="input" value="Chennai"></div>
+                <div class="field field-ro"><label class="label" for="st">State</label><input id="st" class="input" value="Tamil Nadu" readonly aria-describedby="st-h"><span class="hint" id="st-h">Tamil Nadu only for now.</span></div>
+                <div class="field" data-hide="errors"><label class="label" for="pc">Pincode<span class="req">*</span></label><input id="pc" class="input num" inputmode="numeric" autocomplete="postal-code" maxlength="6" value="600042"></div>
+                <div class="field is-error" data-show="errors"><label class="label" for="pc-e">Pincode<span class="req">*</span></label><input id="pc-e" class="input is-error num" inputmode="numeric" aria-invalid="true" aria-describedby="pc-ee" value="6000"><div class="error" id="pc-ee"><fp-icon n="alert"></fp-icon>Enter the 6-digit pincode.</div></div>
+              </div>
+
+              <!-- Location pin -->
+              <div class="field" data-show="selected selected-approx pin-outside map-failed manual errors">
+                <span class="label" id="loc-l">Confirm the location</span>
+                <span class="hint" data-hide="map-failed manual">Drag the pin to the exact entrance if it is in the wrong place. Use the + and − buttons to zoom.</span>
+                <span class="hint" data-show="manual">Zoom in and tap the map to place the pin.</span>
+
+                <div class="alert alert--danger mt-2" role="alert" data-show="pin-outside"><fp-icon n="alert"></fp-icon><div class="grow"><b>That spot is outside Tamil Nadu</b>We only list homes in Tamil Nadu for now. Move the pin, or check the address above.</div></div>
+                <div class="alert alert--danger mt-2" role="alert" data-show="errors"><fp-icon n="alert"></fp-icon><div class="grow"><b>Place the pin on the map</b>We need a location to show your home on the map.</div></div>
+
+                <div class="mapbox pinpick" role="application" aria-labelledby="loc-l" aria-describedby="loc-h" data-hide="map-failed">
+                  <svg class="map" data-map data-seed="11" data-zoom="1.6" data-labels="false"></svg>
+                  <div class="dpin" style="left:52%;top:62%" data-hide="manual errors pin-outside"><span class="halo" aria-hidden="true"></span><fp-icon n="pin"></fp-icon></div>
+                  <div class="dpin" style="left:8%;top:30%" data-show="pin-outside"><span class="halo" aria-hidden="true"></span><fp-icon n="pin"></fp-icon></div>
+                  <div class="mnote" data-show="manual errors"><div class="alert alert--info"><fp-icon n="pin"></fp-icon><div class="grow"><b>No pin yet</b>Tap the map where the property is.</div></div></div>
+                  <div class="mctl"><button type="button" aria-label="Zoom in"><fp-icon n="plus"></fp-icon></button><button type="button" aria-label="Zoom out"><fp-icon n="minus"></fp-icon></button></div>
+                  <div class="mattr">MapLibre · OpenFreeMap © OpenMapTiles · Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></div>
+                </div>
+                <div class="empty-note mt-2" data-show="map-failed"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't load the map</b><div class="small muted mt-1">You can continue without a pin. Your listing will not appear on the map view until you add one.</div><button class="btn btn--secondary btn--sm mt-3" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div></div>
+                <span class="sr-only" id="loc-h">The pin can also be moved with the arrow keys when it is focused. Press Enter to confirm.</span>
+
+                <!-- What visitors will see (two wordings pending DEC-35) -->
+                <div class="vis-note mt-2" data-show="selected pin-outside manual errors"><fp-icon n="eye"></fp-icon><div><b>What visitors see</b>The pin shows exactly where you place it. Drag it to the entrance, or to the nearest road if you'd rather not show the exact spot. <span class="flag">Wording A · DEC-35</span></div></div>
+                <div class="vis-note mt-2" data-show="selected-approx"><fp-icon n="eye"></fp-icon><div><b>What visitors see</b>Visitors see the area, not the exact spot: the pin is shown within about 100 metres of where you place it. Your phone number is never shown. <span class="flag">Wording B · DEC-35</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── STEP 5 · REVIEW (address rows) ── -->
+          <div data-show="step5"><h2>Review and submit</h2><p class="lead-in">Check your details. You can go back to change anything.</p>
+            <dl class="review-list">
+              <div class="rv"><dt>Listing</dt><dd>For sale · Apartment</dd><a class="link small" href="#selected">Edit</a></div>
+              <div class="rv"><dt>Address</dt><dd>12, Second Cross Street, Velachery, Chennai, Tamil Nadu 600042</dd><a class="link small" href="#selected">Edit</a></div>
+              <div class="rv"><dt>Location</dt><dd style="width:min(100%,320px)"><div class="mapbox" style="height:120px;border-radius:14px"><svg class="map" data-map data-seed="11" data-zoom="1.6" data-labels="false"></svg><div class="dpin" style="left:52%;top:70%;font-size:34px"><fp-icon n="pin"></fp-icon></div></div></dd><a class="link small" href="#selected">Edit</a></div>
+              <div class="rv"><dt>Size</dt><dd>3 BHK · 2 bath · 1,420 sq.ft</dd><a class="link small" href="#selected">Edit</a></div>
+              <div class="rv"><dt>Price</dt><dd class="num">₹1.25 Cr</dd><a class="link small" href="#selected">Edit</a></div>
+              <div class="rv"><dt>Photos</dt><dd>3 photos</dd><a class="link small" href="#selected">Edit</a></div>
+            </dl>
+            <div class="next-box mt-4"><span class="ic"><fp-icon n="clock"></fp-icon></span><div><b>What happens next</b><div class="small muted mt-1">Your listing is saved as pending. It stays hidden until it is approved, then goes live.</div></div></div>
+          </div>
+
+          <div class="wiz-foot hide-t">
+            <div class="row"><button class="btn btn--ghost" type="button" data-hide="step1">Back</button><button class="btn btn--ghost" type="button">Save draft</button></div>
+            <button class="btn btn--accent btn--lg" type="button" data-show="step5">Submit for review</button>
+            <button class="btn btn--primary btn--lg" type="button" data-hide="step5">Continue<fp-icon n="arrow"></fp-icon></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="wiz-sticky"><button class="btn btn--secondary" type="button" style="flex:0 0 auto;min-width:92px" data-show="step5">Back</button><button class="btn btn--accent" type="button" data-show="step5">Submit for review</button><button class="btn btn--primary" type="button" data-hide="step5">Continue</button></div>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+<script>
+(function () {
+  const names = ['Basics', 'Details', 'Photos', 'Description', 'Review and submit'];
+  function mark() {
+    const t = document.documentElement.dataset.tokens.split(' ');
+    const cur = t.includes('step5') ? 5 : 1;
+    document.querySelectorAll('#stepper .step').forEach((s) => { const n = +s.dataset.n; s.classList.toggle('done', n < cur); s.classList.toggle('on', n === cur); const nn = s.querySelector('.n'); nn.innerHTML = n < cur ? FP.icon('check') : n; });
+    document.querySelectorAll('#mprog i').forEach((i, k) => { i.className = k + 1 < cur ? 'done' : k + 1 === cur ? 'on' : ''; });
+    document.getElementById('mlabel').textContent = `Step ${cur} of 5 · ${names[cur - 1]}`;
+  }
+  document.addEventListener('DOMContentLoaded', mark); window.addEventListener('hashchange', mark);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Builder · Projects · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- Same component as admin-projects with mode="builder": no approve, reject, publish, feature or delete. States: default · toast · empty · drawer -->
+<fp-portal role="builder" active="projects">
+  <fp-projectspage mode="builder"></fp-projectspage>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="builder" active="projects"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

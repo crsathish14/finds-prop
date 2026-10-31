@@ -1,0 +1,50 @@
+[
+  {
+    "id": "demo-brand",
+    "pattern": "chennai-estates-compare|Chennai Estates",
+    "message": "Demo brand string. The earlier demo app is a reference for business rules and pages only (R-GEN-10); use findsprop:compare:v1 and the name Find Prop.",
+    "exclude": [
+      "AGENTS.md",
+      "docs/**",
+      "scripts/policy/**",
+      "scripts/check-hygiene.mjs",
+      "scripts/__tests__/**",
+      ".claude/**",
+      "eslint.config.mjs"
+    ]
+  },
+  {
+    "id": "demo-path",
+    "pattern": "property-pal",
+    "message": "Reference to the demo app in code. Never copy or import from it (R-GEN-10).",
+    "include": ["src/**", "e2e/**", "tests/**", "supabase/**"]
+  },
+  {
+    "id": "provider-host-ola",
+    "pattern": "olamaps\\.io",
+    "message": "Provider hostnames appear only inside the adapter (src/server/places). R-BE-09",
+    "include": ["src/**"],
+    "exclude": ["src/server/places/**", "src/**/__tests__/**"]
+  },
+  {
+    "id": "provider-host-msg91",
+    "pattern": "msg91\\.com",
+    "message": "Provider hostnames appear only inside the adapter (src/server/sms). R-BE-09",
+    "include": ["src/**"],
+    "exclude": ["src/server/sms/**", "src/**/__tests__/**"]
+  },
+  {
+    "id": "provider-host-resend",
+    "pattern": "api\\.resend\\.com",
+    "message": "Provider hostnames appear only inside the adapter (src/server/mail). R-BE-09",
+    "include": ["src/**"],
+    "exclude": ["src/server/mail/**", "src/**/__tests__/**"]
+  },
+  {
+    "id": "service-role-name",
+    "pattern": "SUPABASE_SERVICE_ROLE_KEY",
+    "message": "The service-role variable is read only by src/server/env.ts and src/server/supabase/admin.server.ts. R-BE-07",
+    "include": ["src/**"],
+    "exclude": ["src/server/env.ts", "src/server/supabase/admin.server.ts", "src/**/__tests__/**"]
+  }
+]

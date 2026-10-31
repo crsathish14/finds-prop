@@ -1,0 +1,50 @@
+/* Find Prop — design-system boards (foundations, components, navigation, feedback, ads). */
+
+.board { padding: 36px 0 80px; }
+.board h1 { margin-bottom: 6px; }
+.board .intro { color: var(--c-muted); max-width: 70ch; }
+.bsec { margin-top: 56px; }
+.bsec > h2 { font: 700 13px/1 var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--c-accent-text); margin-bottom: 6px; }
+.bsec > h3 { font: var(--display-weight) 28px/1.2 var(--font-display); color: var(--c-primary); margin-bottom: 18px; letter-spacing: -.01em; }
+.sw-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.sw { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 16px; overflow: hidden; }
+.sw .chip-c { height: 74px; border-bottom: 1px solid var(--c-border); }
+.sw .meta { padding: 10px 12px 12px; font: 500 12.5px/1.45 var(--font-ui); color: var(--c-muted); }
+.sw .meta b { display: block; color: var(--c-ink); font: 700 14px/1.3 var(--font-ui); }
+.sw .meta code { font-size: 12px; color: var(--c-ink); }
+.spec-table { width: 100%; font-size: 14.5px; } .spec-table th { text-align: left; font: 700 11.5px/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); padding: 10px 12px; background: var(--c-bg-sunken); }
+.spec-table td { padding: 10px 12px; border-top: 1px solid var(--c-border); vertical-align: middle; }
+.spec-table code, code { font: 500 12.5px ui-monospace, Consolas, monospace; background: var(--c-bg-sunken); padding: 2px 6px; border-radius: 5px; }
+.pass { color: var(--c-success); font-weight: 700; }
+.ty { display: grid; grid-template-columns: 170px 1fr; gap: 8px 24px; align-items: baseline; padding: 18px 0; border-top: 1px solid var(--c-border); }
+.ty .k { font: 600 12.5px/1.4 var(--font-ui); color: var(--c-muted); } .ty .k b { display: block; color: var(--c-ink); font-size: 14px; }
+.sp-row { display: flex; align-items: center; gap: 14px; margin: 6px 0; font: 600 13px var(--font-ui); } .sp-row i { display: block; height: 14px; background: var(--c-primary); border-radius: 3px; }
+.el { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } .el > div { background: var(--c-surface); border-radius: 18px; padding: 22px 16px; font: 700 13.5px/1.4 var(--font-ui); } .el small { display: block; font-weight: 500; color: var(--c-muted); margin-top: 4px; }
+.icons { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.icons div { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 14px; padding: 14px 6px 10px; text-align: center; font: 500 11.5px/1.2 var(--font-ui); color: var(--c-muted); } .icons .i { font-size: 26px; color: var(--c-primary); margin: 0 auto 8px; }
+.bp { display: grid; gap: 14px; grid-template-columns: repeat(4, 1fr); } @media (max-width: 767px) { .bp { grid-template-columns: 1fr 1fr; } }
+.bp > div { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 16px; padding: 16px; font: 500 13.5px/1.5 var(--font-ui); } .bp b { display: block; font-size: 16px; }
+.tscroll { overflow-x: auto; }
+
+/* Demo frames: show real components inside a board without their fixed/sticky behaviour */
+.demo-frame { position: relative; border: 1px solid var(--c-border-strong); border-radius: 20px; overflow: hidden; background: var(--c-bg); }
+.demo-frame .hdr { position: relative; top: auto; }
+.demo-frame .scrim { position: relative; inset: auto; min-height: 560px; z-index: 1; }
+.demo-frame .bottombar { position: relative; }
+.demo-frame .cmpbar { position: relative; transform: none; left: auto; bottom: auto; margin: 16px auto; }
+.demo-frame .sidebar { position: relative; height: auto; min-height: 620px; display: flex; }
+.demo-frame .toast, .demo-frame .dialog { position: relative; }
+.demo-cap { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; font: 700 13px/1.3 var(--font-ui); color: var(--c-ink); }
+.demo-cap span { font-weight: 500; color: var(--c-muted); }
+.demo-grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); align-items: start; }
+.demo-grid.wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); }
+.state-matrix { width: 100%; border-collapse: separate; border-spacing: 0 12px; } .state-matrix th { text-align: left; font: 700 11.5px/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); padding: 0 12px 4px 0; } .state-matrix td { padding-right: 12px; vertical-align: middle; } .state-matrix td:first-child { font: 700 13.5px var(--font-ui); width: 130px; }
+.note-row { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 18px; } .note-row > div { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 16px; padding: 16px 18px; font: 500 14px/1.55 var(--font-ui); color: var(--c-muted); } .note-row b { display: block; color: var(--c-ink); margin-bottom: 4px; font-size: 15px; }
+.do { border-left: 4px solid var(--c-success) !important; } .dont { border-left: 4px solid var(--c-danger) !important; }
+.m-only-board { display: block; } @media (min-width: 768px) { .m-only-board { display: none; } } .d-only-board { display: none; } @media (min-width: 768px) { .d-only-board { display: block; } }
+.demo-grid .cards { grid-template-columns: 1fr !important; max-width: 340px; }
+#card-hover { max-width: 340px; }
+
+.demo-frame .hdr-menu { position: static; width: auto; margin: 14px; box-shadow: none; }
+.demo-frame .sidebar.static { width: 100%; }
+.menu-demos { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-items: start; }

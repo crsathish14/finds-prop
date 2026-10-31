@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compare homes · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default" data-bottombar data-hdr="line">
+<fp-header role="visitor" active="buy"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head">
+      <nav class="crumbs hide-t" aria-label="Breadcrumb"><a href="home-a.html">Home</a><fp-icon n="chev-r"></fp-icon><a href="search.html">Properties</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Compare</span></nav>
+      <a class="backlink only-t" href="search.html"><fp-icon n="arrow-l"></fp-icon>Back to results</a>
+      <h1 class="h1">Compare <em>homes</em></h1>
+      <p class="page-sub">Side by side, up to three at a time. Your selection is kept on this device.</p>
+    </div>
+
+    <!-- States: default (3 homes) · two · empty (fewer than 2) · loading · removed (undo toast) -->
+    <div data-show="default removed"><div id="cmp-3"></div></div>
+    <div data-show="two"><div id="cmp-2"></div></div>
+    <div data-show="loading" aria-busy="true"><div class="cmp-wrap"><div class="shell"><div class="sk" style="height:520px;border-radius:0"></div></div></div></div>
+    <div data-show="empty" class="empty-wrap">
+      <div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div>
+        <h3>Choose at least two homes to compare</h3><p>You have 1 home selected. Add another from the search results and it will appear here.</p>
+        <a class="btn btn--primary" href="search.html">Browse homes<fp-icon n="arrow"></fp-icon></a></div>
+    </div>
+    <div class="cmp-note mt-4 hide-m" data-hide="empty loading"><fp-icon n="info"></fp-icon>Tip: remove a home to make room for another. You can compare up to 3.</div>
+  </div>
+
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="removed" class="removed-toast">
+    <div class="toast toast--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>Removed from compare</b>Arivu Heights flat, Velachery</div><button class="act" type="button">Undo</button></div></div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="search"></fp-bottombar>
+<script src="../assets/fp.js"></script>
+<script>
+(function () {
+  const D = FP.data, I = FP.icon;
+  const AM = { 1: ['Gym', 'Swimming Pool', '24x7 Security', 'Car Park', 'Lift', 'Power Backup', 'Clubhouse', 'Near Metro'], 2: ['24x7 Security', 'Car Park', 'Lift', 'Power Backup', 'Near Beach'], 7: ['Gym', '24x7 Security', 'Car Park', 'Lift', 'Modular Kitchen', 'Fully Furnished'] };
+  const yes = `<span class="yes">${I('check-circle')}Yes</span>`, no = `<span class="no">${I('minus')}Not listed</span>`;
+  function table(ids) {
+    const P = ids.map((id) => FP.byId(D.props, id));
+    const cols = P.length;
+    const row = (label, fn, cls = '') => `<tr class="${cls}"><th class="rowh" scope="row">${label}</th>${P.map((p) => `<td>${fn(p)}</td>`).join('')}</tr>`;
+    const head = `<tr class="head"><th class="rowh corner" scope="col"><span class="sr-only">Home</span></th>${P.map((p) => `<td><div class="cmp-col"><div class="ph">${FP.art(p.art[0], p.art[1], 'Illustrated placeholder for ' + p.t)}</div>
+      <div><span class="badge badge--type">${p.lt === 'sale' ? 'For sale' : 'For rent'}</span></div><h3>${p.t}</h3><div class="price num">${p.price}${p.per ? `<span class="per">${p.per}</span>` : ''}</div>
+      <div class="btns"><a class="btn btn--primary btn--sm" href="property.html">View home</a><button class="btn btn--ghost btn--sm" type="button">${I('x')}Remove</button></div></div></td>`).join('')}</tr>`;
+    const all = [...new Set(P.flatMap((p) => AM[p.id] || []))];
+    const sect = (t) => `<tr><th class="rowh" scope="row" style="background:var(--c-primary-tint);color:var(--c-primary)">${t}</th><td colspan="${cols}" style="background:var(--c-primary-tint);padding:8px 16px"></td></tr>`;
+    return `<div class="cmp-wrap"><div class="shell"><table class="cmp-table" style="--cols:${cols}" aria-label="Comparison of ${cols} homes"><colgroup><col style="width:150px">${P.map(() => '<col>').join('')}</colgroup><thead>${head}</thead><tbody>
+      ${sect('Overview')}
+      ${row('Price', (p) => `<b class="num">${p.price}${p.per || ''}</b>`)}
+      ${row('Per sq.ft', (p) => p.ppsf || '<span class="no">Not applicable</span>')}
+      ${row('Property type', (p) => p.pt)}
+      ${sect('Facts')}
+      ${row('Locality', (p) => p.loc + ', Chennai')}
+      ${row('Area', (p) => p.area ? p.area + ' sq.ft' : no)}
+      ${row('Bedrooms', (p) => p.bhk ? p.bhk + ' BHK' : no)}
+      ${row('Bathrooms', (p) => p.bath || no)}
+      ${row('Furnishing', (p) => p.furn || no)}
+      ${sect('Amenities')}
+      ${all.map((a) => row(a, (p) => (AM[p.id] || []).includes(a) ? yes : no)).join('')}
+    </tbody></table></div></div>`;
+  }
+  document.getElementById('cmp-3').innerHTML = table([1, 2, 7]);
+  document.getElementById('cmp-2').innerHTML = table([1, 2]);
+})();
+</script>
+</body>
+</html>

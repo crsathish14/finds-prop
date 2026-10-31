@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email prompt, reminder and posting gate · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+</head>
+<body data-default="prompt" data-hdr="line" data-bottombar data-ai-off>
+<fp-header role="user"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-03 · Proposed.</b> Where a person without a verified email meets the request. States: prompt (dashboard card) · banner (persistent reminder) · gate (before posting a property) · gate-sent.</div></div></div>
+
+    <!-- DASHBOARD CONTEXT -->
+    <div data-show="prompt banner">
+      <div class="dash-head">
+        <div><h1 class="h1">My dashboard</h1><p>Priya Raman · homes you saved, listings you manage and your enquiries. <span class="badge badge--warning dot" data-show="banner">Email not verified</span></p></div>
+        <a class="btn btn--accent" href="post-property.html"><fp-icon n="plus"></fp-icon>Post a property</a>
+      </div>
+
+      <!-- Prompt: shown once after first sign-in, dismissible, never blocks browsing, saving or enquiring -->
+      <section class="prompt-card" aria-labelledby="pc-t" data-show="prompt">
+        <div><h2 id="pc-t">Add your email to post a property and get updates</h2><p>We'll send a link to confirm it. It takes a minute.</p></div>
+        <form class="inline-form" novalidate><div class="field"><label class="label sr-only" for="pc-em">Email address</label><input id="pc-em" class="input" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"></div><button class="btn btn--accent" type="button">Send link</button><button class="btn btn--ghost" type="button">Later</button></form>
+      </section>
+
+      <!-- Reminder: persistent until verified; appears when a link was requested but not yet used -->
+      <div class="alert alert--warning dash-note" role="status" data-show="banner"><fp-icon n="mail"></fp-icon><div class="grow"><b>Verify your email to post a property</b>We sent a link to priya.raman@example.com. Open it to finish.</div><button class="btn btn--secondary btn--sm" type="button">Send the link again</button></div>
+
+      <nav class="tabs" aria-label="Dashboard sections">
+        <a class="tab on" href="#prompt" aria-current="page">Saved<span class="count">3</span></a>
+        <a class="tab" href="dashboard.html#listings">My listings<span class="count">5</span></a>
+        <a class="tab" href="dashboard.html#received">Enquiries received<span class="count new">1 new</span></a>
+        <a class="tab" href="dashboard.html#sent">My enquiries<span class="count">2</span></a>
+      </nav>
+      <div class="dash-body"><section aria-label="Saved homes"><fp-cards ids="1,6,9" saved="1,6,9" cols="c3"></fp-cards></section></div>
+    </div>
+
+    <!-- GATE: shown instead of the wizard when someone without a verified email chooses "Post a property" -->
+    <div class="gate-wrap" data-show="gate gate-sent">
+      <div class="auth-card">
+        <div data-show="gate">
+          <span class="icon-disc info"><fp-icon n="mail"></fp-icon></span>
+          <h1 class="mt-4">Verify your email to post a property</h1>
+          <p class="lead-in">We use it to tell you when your listing is reviewed and to keep your account safe. It takes a minute.</p>
+          <form class="form-stack" novalidate>
+            <div class="field"><label class="label" for="g-em">Email address</label><input id="g-em" class="input" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="priya.raman@example.com"></div>
+            <button class="btn btn--accent btn--lg btn--block" type="button">Send verification link</button>
+          </form>
+          <div class="saved-note"><fp-icon n="check-circle"></fp-icon>Nothing you've entered is lost. You'll come back to this step of your listing.</div>
+          <div class="auth-foot"><a href="home-a.html">Not now, back to browsing</a></div>
+        </div>
+        <div data-show="gate-sent" role="status">
+          <span class="icon-disc success"><fp-icon n="mail"></fp-icon></span>
+          <h1 class="mt-4">Check your email</h1>
+          <p class="lead-in">We sent a link to <b>priya.raman@example.com</b>. Open it, then come back here to keep going.</p>
+          <div class="alert alert--info"><fp-icon n="info"></fp-icon><div class="grow">This page updates by itself once the email is verified.</div></div>
+          <div class="resend mt-4"><span>Send again in <b>0:45</b></span><button class="btn-link" type="button" disabled>Send the link again</button></div>
+          <div class="saved-note"><fp-icon n="check-circle"></fp-icon>Your draft is saved. You can close this tab and return later.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="me" data-hide="gate gate-sent"></fp-bottombar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

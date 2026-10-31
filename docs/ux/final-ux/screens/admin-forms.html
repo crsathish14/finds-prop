@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Forms · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- Form builder. States: default (list) · edit · dragging · errors (duplicate key) · confirm-delete · toast · drawer (mobile navigation) -->
+<fp-portal role="admin" active="forms">
+
+  <!-- LIST -->
+  <div data-show="default confirm-delete toast">
+    <div class="phead"><div><h1>Forms</h1><p>Forms shown on project pages and the contact page.</p></div><div class="actions"><a class="btn btn--primary" href="#edit"><fp-icon n="plus"></fp-icon>New form</a></div></div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl tbl--stack"><thead><tr><th>Name</th><th>Slug</th><th class="r">Fields</th><th>Placement</th><th>CRM</th><th>Active</th><th class="r"><span class="sr-only">Actions</span></th></tr></thead><tbody>
+      <tr><td class="main"><b>Standard enquiry form</b><small class="muted" style="display:block">Enquiry</small></td><td data-label="Slug"><code>enquiry</code></td><td data-label="Fields" class="num r">4</td><td data-label="Placement">None (fallback)</td><td data-label="CRM">Not linked</td><td data-label="Active"><label class="switch"><input type="checkbox" checked aria-label="Active"></label></td><td class="acts-td"><div class="acts"><a class="btn btn--ghost btn--sm" href="#edit"><fp-icon n="edit"></fp-icon>Edit</a><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="copy"></fp-icon>Duplicate</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)" aria-label="Delete form"><fp-icon n="trash"></fp-icon></button></div></td></tr>
+      <tr><td class="main"><b>Contact</b><small class="muted" style="display:block">Contact</small></td><td data-label="Slug"><code>contact</code></td><td data-label="Fields" class="num r">5</td><td data-label="Placement">Contact page</td><td data-label="CRM">Sample CRM</td><td data-label="Active"><label class="switch"><input type="checkbox" checked aria-label="Active"></label></td><td class="acts-td"><div class="acts"><a class="btn btn--ghost btn--sm" href="#edit"><fp-icon n="edit"></fp-icon>Edit</a><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="copy"></fp-icon>Duplicate</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)" aria-label="Delete form"><fp-icon n="trash"></fp-icon></button></div></td></tr>
+      <tr><td class="main"><b>Kadal Vista site visit</b><small class="muted" style="display:block">Site visit</small></td><td data-label="Slug"><code>kadal-vista-visit</code></td><td data-label="Fields" class="num r">6</td><td data-label="Placement">Kadal Vista only</td><td data-label="CRM">Sample CRM</td><td data-label="Active"><label class="switch"><input type="checkbox" checked aria-label="Active"></label></td><td class="acts-td"><div class="acts"><a class="btn btn--ghost btn--sm" href="#edit"><fp-icon n="edit"></fp-icon>Edit</a><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="copy"></fp-icon>Duplicate</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)" aria-label="Delete form"><fp-icon n="trash"></fp-icon></button></div></td></tr>
+      <tr><td class="main"><b>Brochure download</b><small class="muted" style="display:block">Brochure</small></td><td data-label="Slug"><code>brochure</code></td><td data-label="Fields" class="num r">3</td><td data-label="Placement">All projects</td><td data-label="CRM">Not linked</td><td data-label="Active"><label class="switch"><input type="checkbox" aria-label="Active"></label></td><td class="acts-td"><div class="acts"><a class="btn btn--ghost btn--sm" href="#edit"><fp-icon n="edit"></fp-icon>Edit</a><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="copy"></fp-icon>Duplicate</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)" aria-label="Delete form"><fp-icon n="trash"></fp-icon></button></div></td></tr>
+    </tbody></table></div></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div data-show="edit dragging errors">
+    <div class="phead"><div><nav class="crumbs mb-2" aria-label="Breadcrumb"><a href="#default">Forms</a><fp-icon n="chev-r"></fp-icon><span aria-current="page">Contact</span></nav><h1>Edit form</h1></div></div>
+    <div class="cms-grid">
+      <div class="stack-6">
+        <section class="panel panel-pad" aria-labelledby="fs-h"><h2 class="title mb-4" id="fs-h">Settings</h2>
+          <div class="form-grid two">
+            <div class="field"><label class="label" for="f-name">Name<span class="req">*</span></label><input id="f-name" class="input" value="Contact"></div><div class="field"><label class="label" for="f-slug">Slug<span class="req">*</span></label><input id="f-slug" class="input" value="contact"></div>
+            <div class="field"><label class="label" for="f-kind">Kind</label><select id="f-kind" class="select"><option>Enquiry</option><option>Site visit</option><option>Brochure</option><option>Callback</option><option selected>Contact</option><option>WhatsApp</option></select></div>
+            <div class="field"><label class="label" for="f-place">Placement</label><select id="f-place" class="select"><option>None</option><option>Project pages</option><option>One project</option><option selected>Contact page</option></select></div>
+            <div class="field"><label class="label" for="f-proj">Project</label><select id="f-proj" class="select" disabled><option>Not needed for this placement</option></select></div>
+            <div class="field"><label class="label" for="f-crm">CRM integration</label><select id="f-crm" class="select"><option>Not linked</option><option selected>Sample CRM</option></select></div>
+            <div class="field"><label class="label" for="f-btn">Button text</label><input id="f-btn" class="input" value="Send message"></div>
+            <div class="field"><span class="label">Status</span><label class="switch" style="min-height:52px"><input type="checkbox" checked>Active</label></div>
+            <div class="field span-2"><label class="label" for="f-ok">Success message</label><input id="f-ok" class="input" value="Thank you, we have your message."></div>
+          </div></section>
+
+        <section class="panel panel-pad" aria-labelledby="ff-h"><div class="row between wrap mb-2"><h2 class="title" id="ff-h">Fields</h2><span class="drag-hint"><fp-icon n="grip"></fp-icon>Drag to reorder, or use the move buttons</span></div>
+          <p class="small muted mb-2">Quick add</p><div class="chip-row mb-4"><button class="chip chip--sm" type="button">+ Name</button><button class="chip chip--sm" type="button">+ Mobile</button><button class="chip chip--sm" type="button">+ Email</button><button class="chip chip--sm" type="button">+ City</button><button class="chip chip--sm" type="button">+ Budget</button><button class="chip chip--sm" type="button">+ BHK</button></div>
+
+          <div class="dnd"><div class="dnd-head"><span class="grip" aria-hidden="true"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Name</b></div><span class="badge badge--neutral">text</span><span class="badge badge--primary">required</span><button class="icon-btn" type="button" aria-label="Edit field Name"><fp-icon n="chev"></fp-icon></button></div></div>
+          <div class="dnd" data-hide="dragging"><div class="dnd-head"><span class="grip" aria-hidden="true"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Mobile</b></div><span class="badge badge--neutral">text</span><span class="badge badge--primary">required</span><button class="icon-btn" type="button" aria-label="Collapse field Mobile"><fp-icon n="chev-up"></fp-icon></button></div>
+            <div class="dnd-body"><div class="form-grid two"><div class="field"><label class="label" for="fd-l">Label</label><input id="fd-l" class="input" value="Mobile"></div>
+              <div class="field" data-show="errors"><label class="label" for="fd-ke">Key</label><input id="fd-ke" class="input is-error" aria-invalid="true" aria-describedby="fd-kee" value="name"><div class="error" id="fd-kee"><fp-icon n="alert"></fp-icon>Key "name" is already used by another field.</div></div><div class="field" data-hide="errors"><label class="label" for="fd-k">Key</label><input id="fd-k" class="input" value="mobile"></div>
+              <div class="field"><label class="label" for="fd-t">Type</label><select id="fd-t" class="select"><option>Text</option><option>Number</option><option>Email</option><option>Dropdown</option><option>Radio</option><option>Checkbox</option><option>Textarea</option><option>Date</option><option>File</option></select></div><div class="field"><label class="label" for="fd-p">Placeholder</label><input id="fd-p" class="input" value="98400 12345"></div></div>
+              <div class="row between wrap"><label class="switch"><input type="checkbox" checked>Required</label><div class="row wrap gap-2"><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="arrow-up"></fp-icon>Move up</button><button class="btn btn--ghost btn--sm" type="button"><fp-icon n="arrow-down"></fp-icon>Move down</button><button class="btn btn--ghost btn--sm" type="button" style="color:var(--c-danger)"><fp-icon n="trash"></fp-icon>Remove</button></div></div></div></div>
+          <div data-show="dragging"><div class="dnd is-dragging"><div class="dnd-head"><span class="grip" style="cursor:grabbing"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Mobile</b></div><span class="badge badge--neutral">text</span><span class="badge badge--primary">required</span></div></div><div class="drop-line" aria-hidden="true"></div></div>
+          <div class="dnd"><div class="dnd-head"><span class="grip" aria-hidden="true"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Email</b></div><span class="badge badge--neutral">email</span><button class="icon-btn" type="button" aria-label="Edit field Email"><fp-icon n="chev"></fp-icon></button></div></div>
+          <div class="dnd"><div class="dnd-head"><span class="grip" aria-hidden="true"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Message</b></div><span class="badge badge--neutral">textarea</span><button class="icon-btn" type="button" aria-label="Edit field Message"><fp-icon n="chev"></fp-icon></button></div></div>
+          <button class="btn btn--secondary btn--sm mt-3" type="button"><fp-icon n="plus"></fp-icon>Add field</button></section>
+      </div>
+
+      <aside class="preview-card" aria-label="Live preview" style="position:sticky;top:84px"><span class="pv-label">Live preview (read only)</span>
+        <div class="col" style="gap:14px"><div class="field"><span class="label">Name<span class="req">*</span></span><div class="input" style="display:flex;align-items:center;color:var(--c-subtle)">Your name</div></div><div class="field"><span class="label">Mobile<span class="req">*</span></span><div class="input" style="display:flex;align-items:center;color:var(--c-subtle)">98400 12345</div></div><div class="field"><span class="label">Email</span><div class="input" style="display:flex;align-items:center;color:var(--c-subtle)">you@example.com</div></div><div class="field"><span class="label">Message</span><div class="textarea" style="color:var(--c-subtle)">How can we help?</div></div><span class="btn btn--accent">Send message</span></div></aside>
+    </div>
+    <div class="savebar"><span class="small muted">Submissions are checked against these fields on the server.</span><div class="row"><a class="btn btn--secondary" href="#default">Cancel</a><button class="btn btn--primary" type="button">Save form</button></div></div>
+  </div>
+
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="toast"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Form saved</b></div></div></div>
+  <div class="scrim" data-show="confirm-delete" role="alertdialog" aria-modal="true" aria-labelledby="fdel-t"><div class="dialog"><span class="icon-disc danger"><fp-icon n="trash"></fp-icon></span><h2 id="fdel-t">Delete "Brochure download"?</h2><p>Project pages that use it will fall back to the standard enquiry form. Past submissions are kept. This can't be undone.</p><div class="actions"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--danger" type="button">Delete form</button></div></div></div>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="admin" active="forms"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system · Navigation · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<main id="main" class="board"><div class="container">
+  <span class="overline" style="color:var(--c-accent-text)">Design system</span>
+  <h1 class="h1">Navigation</h1>
+  <p class="intro">One public header for everyone, a role-aware account menu, and one portal shell for admin and builder. Navigation only reflects roles and permissions that exist in Phase 1; agent navigation is shown as a proposal.</p>
+
+  <!-- ═══ DESKTOP AND TABLET ═══ -->
+  <div class="d-only-board">
+    <section class="bsec"><h2>Principle</h2><h3>Who sees what</h3>
+      <div class="tscroll"><table class="spec-table"><thead><tr><th>Role</th><th>Main navigation</th><th>Right side of the header</th><th>Account menu adds</th><th>Where their work lives</th></tr></thead><tbody>
+        <tr><td><b>Visitor</b></td><td>Buy · Rent · Projects · AI Search · Contact</td><td>Post property · Sign in</td><td>—</td><td>Public pages</td></tr>
+        <tr><td><b>Customer</b> (buyer or owner)</td><td>Same</td><td>Post property · Saved · avatar menu</td><td>Saved homes, My listings, Enquiries received (with a “new” count), My enquiries, Post a property, Sign out</td><td>Dashboard tabs, Post property</td></tr>
+        <tr><td><b>Builder</b></td><td>Same</td><td>Same as customer</td><td>Customer items + <b>Builder portal</b></td><td>Portal shell with 6 items</td></tr>
+        <tr><td><b>Super admin</b></td><td>Same</td><td>Same as customer</td><td>Customer items + <b>Admin portal</b></td><td>Portal shell with 11 items (+ Listings, proposed)</td></tr>
+        <tr><td><b>Agent</b> <span class="flag">Proposed</span></td><td>Same</td><td>Same as customer</td><td>Customer items + Agent workspace, only if an agent portal is approved</td><td>Not designed (no routes or permissions exist today)</td></tr>
+      </tbody></table></div>
+      <div class="note-row"><div class="do"><b>Consistent</b>The main navigation never changes with role. Roles add one entry to the account menu and, inside /admin and /builder, swap the public header for the portal shell.</div><div class="do"><b>Honest</b>Nothing appears that the person cannot use. A signed-out visitor who taps Saved or Post property is sent to sign-in and returned afterwards.</div><div class="dont"><b>Avoided</b>No role switcher, no separate “agent” header, no admin links in the public header.</div></div></section>
+
+    <section class="bsec"><h2>Public header</h2><h3>Signed out and signed in</h3>
+      <div class="demo-cap">Visitor <span>“Buy” is the current section: bold, forest, copper underline</span></div><div class="demo-frame"><fp-header role="visitor" active="buy"></fp-header></div>
+      <div class="demo-cap mt-6">Signed in <span>Post property pill, saved count, avatar</span></div><div class="demo-frame"><fp-header role="user" active="projects"></fp-header></div>
+      <div class="demo-cap mt-6">Link states <span>default · hover · current · keyboard focus</span></div>
+      <div class="demo-frame" style="padding:22px 28px"><nav class="nav" style="display:flex;gap:34px"><a href="#">Default</a><a href="#" style="color:var(--c-primary)">Hover</a><a href="#" aria-current="page">Current</a><a href="#" class="is-focus">Focus</a><a href="#" class="ai"><fp-icon n="sparkle"></fp-icon>AI Search</a></nav></div></section>
+
+    <section class="bsec"><h2>Avatar menu</h2><h3>Role-aware dropdown</h3>
+      <div class="menu-demos">
+        <div><div class="demo-cap">Customer</div><div class="demo-frame"><fp-accountmenu role="user"></fp-accountmenu></div></div>
+        <div><div class="demo-cap">Builder <span>adds Builder portal</span></div><div class="demo-frame"><fp-accountmenu role="builder"></fp-accountmenu></div></div>
+        <div><div class="demo-cap">Super admin <span>adds Admin portal</span></div><div class="demo-frame"><fp-accountmenu role="admin"></fp-accountmenu></div></div>
+        <div><div class="demo-cap">Agent <span class="flag">Proposed</span></div><div class="demo-frame"><fp-accountmenu role="agent"></fp-accountmenu></div></div>
+      </div>
+      <p class="small muted mt-3">Opens on click or Enter, closes on Escape or outside click, and returns focus to the avatar. Items are a menu (arrow keys move, Home and End jump). The “1 new” count on Enquiries received is the only copper badge in the menu.</p></section>
+
+    <section class="bsec"><h2>Portal shell</h2><h3>Admin and builder</h3>
+      <div class="demo-grid wide">
+        <div><div class="demo-cap">Admin <span>grouped: Moderation · Inventory · Leads and CRM · Site content</span></div><div class="demo-frame" style="max-width:340px"><fp-sidebar role="admin" active="projects"></fp-sidebar></div></div>
+        <div><div class="demo-cap">Builder <span>one flat list of six</span></div><div class="demo-frame" style="max-width:340px"><fp-sidebar role="builder" active="units"></fp-sidebar></div></div>
+      </div>
+      <div class="note-row"><div><b>Desktop ≥ 1100 px</b>256 px forest sidebar, sticky, with group labels, counts and “View public site”. The current page has a lighter fill and a copper marker on the left edge.</div><div><b>Tablet 768 to 1099 px</b>The sidebar collapses to a 76 px icon rail. Labels become tooltips; counts become small dots. See any portal screen rendered at 820 px.</div><div><b>Mobile &lt; 768 px</b>The sidebar becomes a left drawer opened from the menu button in the top bar. Tables become stacked cards, forms stay single column.</div></div></section>
+
+    <section class="bsec"><h2>Wayfinding</h2><h3>Breadcrumbs, tabs and back links</h3>
+      <div class="demo-grid wide"><div><div class="demo-cap">Breadcrumb <span>laptop and up</span></div><nav class="crumbs"><a href="#">Home</a><fp-icon n="chev-r"></fp-icon><a href="#">Properties</a><fp-icon n="chev-r"></fp-icon><a href="#" aria-current="page">Velachery</a></nav></div>
+        <div><div class="demo-cap">Page tabs <span>dashboard, leads, CRM, CMS</span></div><div class="tabs"><a class="tab on" href="#">Project leads<span class="count">862</span></a><a class="tab" href="#">Form submissions<span class="count">1,104</span></a></div></div></div></section>
+  </div>
+
+  <!-- ═══ MOBILE ═══ -->
+  <div class="m-only-board">
+    <section class="bsec"><h2>Mobile header</h2><h3>Signed out and signed in</h3>
+      <div class="demo-cap">Visitor</div><div class="demo-frame"><fp-header role="visitor"></fp-header></div>
+      <div class="demo-cap mt-4">Signed in</div><div class="demo-frame"><fp-header role="user"></fp-header></div></section>
+    <section class="bsec"><h2>Menu drawer</h2><h3>Secondary links and account</h3>
+      <div class="demo-cap">Visitor</div><div class="demo-frame" style="min-height:700px;background:rgba(22,40,31,.5)"><fp-drawer role="visitor" active="buy"></fp-drawer></div>
+      <div class="demo-cap mt-4">Builder <span>adds Builder portal</span></div><div class="demo-frame" style="min-height:820px;background:rgba(22,40,31,.5)"><fp-drawer role="builder"></fp-drawer></div></section>
+    <section class="bsec"><h2>Bottom bar</h2><h3>Five destinations, one raised action</h3>
+      <div class="demo-cap">Home current</div><div class="demo-frame"><fp-bottombar active="home"></fp-bottombar></div>
+      <div class="demo-cap mt-3">Search current</div><div class="demo-frame"><fp-bottombar active="search"></fp-bottombar></div>
+      <div class="demo-cap mt-3">Me current</div><div class="demo-frame"><fp-bottombar active="me"></fp-bottombar></div>
+      <div class="note-row"><div><b>Shown on</b>Home, search, projects, compare, AI search, contact, dashboard, auth-free pages.</div><div><b>Hidden on</b>Property and project detail (the sticky enquiry bar replaces it), the post-property steps (Back and Continue replace it), and the admin and builder portals.</div><div><b>Signed out</b>Saved and Me lead to sign-in, then return to where the person was heading.</div></div></section>
+    <section class="bsec"><h2>Portal</h2><h3>Top bar and drawer</h3>
+      <div class="demo-cap">Navigation drawer (admin)</div><div class="demo-frame" style="min-height:760px;background:rgba(22,40,31,.5)"><fp-portaldrawer role="admin" active="projects"></fp-portaldrawer></div></section>
+  </div>
+
+  <section class="bsec"><h2>Responsive behaviour</h2><h3>Summary</h3>
+    <div class="tscroll"><table class="spec-table"><thead><tr><th>Element</th><th>Mobile &lt; 768</th><th>Tablet 768 to 1023</th><th>Laptop and desktop ≥ 1024</th></tr></thead><tbody>
+      <tr><td><b>Public header</b></td><td>Logo, Sign in, menu button</td><td>Logo, Post property, Sign in, menu button</td><td>Logo, five links, Post property, Sign in or avatar</td></tr>
+      <tr><td><b>Main links</b></td><td>In the drawer</td><td>In the drawer</td><td>Inline</td></tr>
+      <tr><td><b>Primary navigation</b></td><td>Bottom bar</td><td>Header only</td><td>Header only</td></tr>
+      <tr><td><b>Portal sidebar</b></td><td>Drawer</td><td>Icon rail</td><td>Full sidebar (≥ 1100)</td></tr>
+      <tr><td><b>Breadcrumbs</b></td><td>“← Back” link</td><td>“← Back” link</td><td>Full breadcrumb</td></tr>
+      <tr><td><b>Dashboard tabs</b></td><td>Scrolling tab row</td><td>Tab row</td><td>Tab row</td></tr>
+    </tbody></table></div></section>
+</div></main>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

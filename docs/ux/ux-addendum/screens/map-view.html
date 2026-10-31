@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map view for search results · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+<style>
+  /* The List / Map switch is visible at every size; below 1024 px it chooses which of the two is shown. */
+  .mv-toggle { display: flex; justify-content: flex-start; }
+  @media (min-width: 1024px) { .mv-toggle { display: flex; } }
+  @media (max-width: 1023px) {
+    .mv-map { display: none; }
+    html[data-tokens~="m-map"] .mv-map { display: block; }
+    html[data-tokens~="m-map"] .mv-list { display: none; }
+    .mv-map .mapbox { height: 600px; }
+  }
+  html[data-tokens~="selected"] .mv-list .pcard:first-child { border-color: var(--c-primary); box-shadow: var(--shadow-hover); }
+  .skip-map { display: inline-flex; margin-bottom: 8px; }
+</style>
+</head>
+<body data-default="default" data-hdr="line" data-ai-off data-bottombar>
+<fp-header role="visitor" active="buy"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-09 · Proposed, optional.</b> Map view for <code>/properties</code> (<b>DEC-34</b>: after the core build; needs the India-boundary check, <b>RISK-28</b>). The list is the accessible equivalent: nothing exists only on the map. The map here is illustrated placeholder art, not real geography. States: default · selected · approx · search-area · cluster · loading · tiles-failed · no-results · too-many · outside · m-list · m-map.</div></div></div>
+
+    <div class="page-head"><h1 class="h1">Homes for sale in <em>Chennai</em></h1>
+      <div class="mv-bar mt-3">
+        <p class="small" role="status"><b data-hide="no-results too-many outside loading">48 homes</b><b data-show="no-results outside">0 homes</b><b data-show="too-many">500+ homes</b><b data-show="loading">Loading…</b> <span class="muted" data-hide="search-area">in this map area</span><span class="muted" data-show="search-area">· map moved: results are for the previous area</span></p>
+        <div class="mv-toggle"><div class="seg seg--sm" role="tablist" aria-label="Show results as"><button type="button" role="tab" class="on" aria-selected="true" data-hide="m-list"><fp-icon n="map"></fp-icon>Map</button><button type="button" role="tab" aria-selected="false" data-hide="m-list"><fp-icon n="list"></fp-icon>List</button>
+          <button type="button" role="tab" aria-selected="false" data-show="m-list"><fp-icon n="map"></fp-icon>Map</button><button type="button" role="tab" class="on" aria-selected="true" data-show="m-list"><fp-icon n="list"></fp-icon>List</button></div></div>
+      </div>
+    </div>
+
+    <div class="mv">
+      <!-- LIST: always complete, same homes and count as the map -->
+      <section class="mv-list" id="list" aria-label="Homes in this area">
+        <div data-hide="loading no-results outside too-many"><fp-cards ids="1,2,3,4" saved="2" cols="c2"></fp-cards></div>
+        <div data-show="loading" aria-busy="true"><fp-skeletons n="4"></fp-skeletons></div>
+        <div data-show="no-results outside"><div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div>
+          <h3>No homes in this area</h3><p>Zoom out or move the map to see more homes, or clear some filters.</p><button class="btn btn--primary" type="button">Clear all filters</button></div></div>
+        <div data-show="too-many"><div class="alert alert--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>Too many homes to list here</b>Zoom in on the map to narrow it down, or add a filter such as bedrooms or budget.</div></div></div>
+      </section>
+
+      <!-- MAP -->
+      <section class="mv-map" aria-label="Map of homes">
+        <a class="link small skip-map hide-t" href="#list">Skip the map and go to the list</a>
+        <div class="mapbox" role="application" aria-label="Map of homes. The list shows the same homes.">
+          <svg class="map" data-map data-seed="5" data-zoom="1.25" data-show="default selected approx search-area loading no-results too-many outside m-map m-list tiles-failed"></svg>
+          <svg class="map" data-map data-seed="9" data-zoom="0.7" data-show="cluster"></svg>
+
+          <!-- Individual price pins -->
+          <div data-show="default search-area loading m-map m-list">
+            <span class="mpin" style="left:42%;top:36%">₹92 L</span><span class="mpin is-featured" style="left:58%;top:30%">₹1.25 Cr</span><span class="mpin" style="left:32%;top:58%">₹38 L</span>
+            <span class="mpin" style="left:68%;top:52%">₹48k/mo</span><span class="mpin" style="left:50%;top:72%">₹2.85 Cr</span><span class="mpin is-featured" style="left:78%;top:34%">₹3.4 Cr</span>
+            <span class="mpin" style="left:22%;top:34%">₹26k/mo</span><span class="mpin is-project" style="left:60%;top:62%"><fp-icon n="building"></fp-icon>Kadal Vista</span><span class="mcl" style="left:84%;top:66%;width:46px;height:46px">12</span>
+          </div>
+          <div data-show="selected">
+            <span class="mpin" style="left:42%;top:36%">₹92 L</span><span class="mpin is-sel" style="left:58%;top:30%">₹1.25 Cr</span><span class="mpin" style="left:32%;top:58%">₹38 L</span>
+            <span class="mpin" style="left:68%;top:52%">₹48k/mo</span><span class="mpin" style="left:50%;top:72%">₹2.85 Cr</span><span class="mpin is-featured" style="left:78%;top:34%">₹3.4 Cr</span>
+            <span class="mpin is-project" style="left:60%;top:62%"><fp-icon n="building"></fp-icon>Kadal Vista</span><span class="mcl" style="left:84%;top:66%;width:46px;height:46px">12</span>
+          </div>
+          <!-- Approximate positions for owner listings (wording B, DEC-35); projects stay exact -->
+          <div data-show="approx">
+            <span class="parea" style="left:42%;top:34%;width:90px;height:90px"></span><span class="mpin is-approx" style="left:42%;top:36%">₹92 L</span>
+            <span class="parea" style="left:58%;top:28%;width:90px;height:90px"></span><span class="mpin is-approx is-featured" style="left:58%;top:30%">₹1.25 Cr</span>
+            <span class="parea" style="left:32%;top:56%;width:90px;height:90px"></span><span class="mpin is-approx" style="left:32%;top:58%">₹38 L</span>
+            <span class="mpin is-project" style="left:60%;top:62%"><fp-icon n="building"></fp-icon>Kadal Vista</span>
+          </div>
+          <!-- Clusters when zoomed out -->
+          <div data-show="cluster">
+            <span class="mcl" style="left:36%;top:40%;width:62px;height:62px">24</span><span class="mcl" style="left:62%;top:34%;width:50px;height:50px">12</span><span class="mcl" style="left:54%;top:64%;width:44px;height:44px">8</span>
+            <span class="mcl" style="left:26%;top:68%;width:38px;height:38px">5</span><span class="mcl" style="left:80%;top:58%;width:40px;height:40px">6</span><span class="mpin" style="left:72%;top:78%">₹1.1 Cr</span>
+          </div>
+          <div data-show="too-many"><span class="mcl" style="left:36%;top:40%;width:78px;height:78px">212</span><span class="mcl" style="left:64%;top:36%;width:70px;height:70px">148</span><span class="mcl" style="left:52%;top:68%;width:64px;height:64px">96</span><span class="mcl" style="left:80%;top:62%;width:52px;height:52px">44</span></div>
+
+          <!-- Controls -->
+          <div class="mfloat" data-show="search-area"><button class="btn btn--primary btn--sm btn--pill" type="button"><fp-icon n="search"></fp-icon>Search this area</button></div>
+          <div class="mctl"><button type="button" aria-label="Zoom in"><fp-icon n="plus"></fp-icon></button><button type="button" aria-label="Zoom out"><fp-icon n="minus"></fp-icon></button></div>
+
+          <!-- Notes -->
+          <div class="mdim" data-show="loading tiles-failed" aria-hidden="true"></div>
+          <div class="mnote" data-show="loading"><div class="alert alert--neutral" role="status" aria-busy="true"><fp-icon n="refresh"></fp-icon><div class="grow">Loading homes in this area…</div></div></div>
+          <div class="mnote" data-show="tiles-failed"><div class="alert alert--danger" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't load the map</b>The list still works. Check your connection and try again.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div></div>
+          <div class="mnote" data-show="no-results"><div class="alert alert--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>No homes in this area</b>Zoom out or move the map.</div></div></div>
+          <div class="mnote" data-show="too-many" style="top:auto;bottom:70px;transform:translateX(-50%)"><div class="alert alert--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>Too many homes to show as pins</b>Zoom in to see them one by one.</div></div></div>
+          <div class="mnote" data-show="outside"><div class="alert alert--warning" role="status"><fp-icon n="pin"></fp-icon><div class="grow"><b>This area is outside Tamil Nadu</b>We only list homes in Tamil Nadu for now.<div class="mt-2"><button class="btn btn--secondary btn--sm" type="button">Back to Tamil Nadu</button></div></div></div></div>
+
+          <!-- Selected home -->
+          <div class="mcard" data-show="selected m-map" role="dialog" aria-label="Selected home">
+            <div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div>
+            <div class="b"><div class="p">₹1.25 Cr</div><div class="tt">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · 3 BHK · 1,420 sq.ft</div><div class="dots" aria-label="Home 1 of 6"><i class="on"></i><i></i><i></i><i></i></div></div>
+            <button class="pcard-save" type="button" aria-pressed="false" aria-label="Save to shortlist"><fp-icon n="heart"></fp-icon></button>
+          </div>
+
+          <div class="mattr">MapLibre · OpenFreeMap © OpenMapTiles · Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></div>
+        </div>
+        <p class="caption muted mt-2">Pins in a dashed outline show an approximate area, not an exact spot (wording pending <b>DEC-35</b>). Projects are always exact.</p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-bottombar active="search"></fp-bottombar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

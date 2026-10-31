@@ -1,0 +1,2 @@
+-- Fictional development data goes here from Stage 3 (S3-T13). Never real people, phone numbers or
+-- prices. Seed scripts refuse to run against anything but the local stack or an allow-listed dev URL.

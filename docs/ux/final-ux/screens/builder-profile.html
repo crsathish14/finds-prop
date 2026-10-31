@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Builder · Profile · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<!-- States: default · errors · saving · saved · drawer (mobile navigation) -->
+<fp-portal role="builder" active="profile">
+  <div class="phead"><div><h1>Company profile</h1><p>How your company appears on Find Prop.</p></div></div>
+  <div class="dash-grid two">
+    <section class="panel panel-pad" aria-labelledby="bp-h"><h2 class="title mb-4" id="bp-h">Details</h2>
+      <form class="form-grid two" novalidate>
+        <div class="field span-2"><label class="label" for="bp-e">Login email</label><input id="bp-e" class="input" value="sales@kadalhomes.example" readonly aria-describedby="bp-e-h"><span class="hint" id="bp-e-h">Only a Find Prop admin can change your login email.</span></div>
+        <div class="field span-2" data-show="errors"><label class="label" for="bp-ce">Company name<span class="req">*</span></label><input id="bp-ce" class="input is-error" aria-invalid="true" aria-describedby="bp-ce-e"><div class="error" id="bp-ce-e"><fp-icon n="alert"></fp-icon>Company name is required.</div></div>
+        <div class="field span-2" data-hide="errors"><label class="label" for="bp-c">Company name<span class="req">*</span></label><input id="bp-c" class="input" value="Kadal Homes"></div>
+        <div class="field"><label class="label" for="bp-p">Contact person</label><input id="bp-p" class="input" value="Rajesh K"></div><div class="field"><label class="label" for="bp-ph">Phone</label><input id="bp-ph" class="input" value="+91 90000 22222"></div>
+        <div class="field"><label class="label" for="bp-l">Logo link</label><input id="bp-l" class="input" placeholder="https://"></div><div class="field"><label class="label" for="bp-w">Website</label><input id="bp-w" class="input" value="https://kadalhomes.example"></div>
+        <div class="field span-2"><label class="label" for="bp-d">About</label><textarea id="bp-d" class="textarea">Mid-rise apartment communities along the OMR corridor.</textarea></div>
+        <div class="span-2 row"><button class="btn btn--primary" type="button" data-hide="saving">Save profile</button><button class="btn btn--primary is-loading" type="button" data-show="saving" aria-busy="true">Saving</button><span class="small muted">Changes to your profile don't need approval.</span></div>
+      </form></section>
+    <section class="panel panel-pad" aria-label="Preview"><span class="pv-label overline">How it looks to buyers</span>
+      <div class="bcard" style="margin-top:12px"><div class="head"><span class="mono">KH</span><div><b>Kadal Homes</b><span>4 projects</span></div></div><p>Mid-rise apartment communities along the OMR corridor.</p></div>
+      <p class="mini-note mt-3"><fp-icon n="info"></fp-icon><span>This card appears in the developer showcase on the home page while your account is active.</span></p></section>
+  </div>
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:110;width:min(420px,calc(100% - 32px))" data-show="saved"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Profile saved</b></div></div></div>
+</fp-portal>
+<div data-show="drawer"><fp-portaldrawer role="builder" active="profile"></fp-portaldrawer></div>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

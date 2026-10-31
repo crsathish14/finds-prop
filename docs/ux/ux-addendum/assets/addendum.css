@@ -1,0 +1,112 @@
+/* Find Prop · UX addendum components.
+   Everything here is built from the tokens and components in final-ux/assets (tokens.css, base.css, c-*.css, s-*.css).
+   It defines NO new colour, font, radius, shadow or breakpoint: only layout and a few new component shapes.
+   Load order in a screen: ../../final-ux/assets/fp.css, then this file. */
+
+/* ── Review aid: addendum banner (mirrors final-ux .review-note; never ships) ── */
+.add-banner { margin: 12px 0 0; }
+.add-banner + .phead { margin-top: 18px; }
+
+/* ── Phone field: fixed +91 prefix inside the standard .input ── */
+.phone { position: relative; }
+.phone .cc {
+  position: absolute; left: 1.5px; top: 1.5px; bottom: 1.5px; display: flex; align-items: center; gap: 8px; padding: 0 14px;
+  background: var(--c-bg-sunken); border-right: 1.5px solid var(--c-border-strong); border-radius: calc(var(--r-md) - 2px) 0 0 calc(var(--r-md) - 2px);
+  font: 700 16px/1 var(--font-ui); color: var(--c-ink); pointer-events: none;
+}
+.phone .cc .i { font-size: 18px; color: var(--c-primary); }
+.phone .input { padding-left: 98px; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.phone .input.is-error + .cc, .phone .is-error ~ .cc { border-right-color: var(--c-danger); }
+
+/* ── One-time code: ONE real input (visually hidden) + six display cells ── */
+.otp { position: relative; }
+.otp-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: text; font-size: 16px; }
+.otp-cells { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 768px) { .otp-cells { gap: 12px; } }
+.otp-cell {
+  height: 60px; display: grid; place-items: center; border: 1.5px solid var(--c-border-input); border-radius: var(--r-md);
+  background: var(--c-surface); font: 700 26px/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--c-ink);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.otp-cell.is-focus { border-color: var(--c-primary); outline: 2px solid var(--c-primary); outline-offset: 1px; }
+.otp-cell.is-focus:empty::after { content: ''; width: 2px; height: 28px; background: var(--c-primary); animation: caret 1.05s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.otp.is-error .otp-cell { border-color: var(--c-danger); border-width: 2px; }
+.otp.is-ok .otp-cell { border-color: var(--c-success); background: var(--c-success-bg); color: var(--c-success); }
+.otp.is-off .otp-cell { background: var(--c-bg-sunken); border-color: var(--c-border-strong); color: var(--c-muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .otp.is-error.shake .otp-cells { animation: shake .36s var(--ease) 1; }
+  @keyframes shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+}
+.resend { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font: 500 15px/1.4 var(--font-ui); color: var(--c-muted); }
+.resend b { color: var(--c-ink); font-variant-numeric: tabular-nums; }
+.btn-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; font: 700 15px/1 var(--font-ui); color: var(--c-primary); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.btn-link:hover { text-decoration-color: var(--c-primary); }
+.btn-link[disabled] { color: var(--c-muted); text-decoration: none; cursor: not-allowed; }
+
+/* ── Human-check widget placeholder (provider widget; shown for placement and states only) ── */
+.captcha { display: flex; align-items: center; gap: 12px; min-height: 65px; max-width: 320px; padding: 0 14px; border: 1.5px solid var(--c-border-strong); border-radius: var(--r-sm); background: var(--c-surface); font: 600 14px/1.3 var(--font-ui); color: var(--c-ink); }
+.captcha .bx { width: 26px; height: 26px; flex: none; border: 2px solid var(--c-border-input); border-radius: var(--r-xs); display: grid; place-items: center; font-size: 18px; }
+.captcha small { margin-left: auto; text-align: right; font: 500 11px/1.25 var(--font-ui); color: var(--c-muted); }
+.captcha.is-busy .bx { border-radius: 50%; border-color: var(--c-primary-tint-2); border-top-color: var(--c-primary); animation: spin .8s linear infinite; }
+.captcha.is-ok .bx { background: var(--c-success); border-color: var(--c-success); color: #fff; }
+.captcha.is-fail { border-color: var(--c-danger); }
+.captcha.is-fail .bx { border-color: var(--c-danger); color: var(--c-danger); }
+
+/* ── Numbered steps ── */
+.num-list { counter-reset: n; display: grid; gap: 18px; }
+.num-list > li { counter-increment: n; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; align-items: start; }
+.num-list > li::before { content: counter(n); width: 32px; height: 32px; border-radius: 50%; background: var(--c-primary-tint); color: var(--c-primary); display: grid; place-items: center; font: 700 15px/1 var(--font-ui); }
+.num-list > li > div > b { display: block; font: 700 15.5px/1.35 var(--font-ui); margin-bottom: 2px; }
+.num-list > li > div > span { color: var(--c-muted); font-size: 14.5px; line-height: 1.5; }
+
+/* ── Authenticator set-up: QR, manual key, recovery codes ── */
+.setup-grid { display: grid; gap: 20px; align-items: start; }
+@media (min-width: 768px) { .setup-grid { grid-template-columns: 188px minmax(0, 1fr); } }
+.qr { width: 188px; max-width: 100%; aspect-ratio: 1; padding: 10px; background: var(--c-surface); border: 1.5px solid var(--c-border-strong); border-radius: var(--r-lg); color: var(--c-ink); }
+.qr svg { width: 100%; height: 100%; display: block; }
+.keybox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 12px 12px 14px; border: 1.5px dashed var(--c-border-strong); border-radius: var(--r-md); background: var(--c-bg-sunken); }
+.keybox b { flex: 1 1 100%; min-width: 0; font: 700 15px/1.45 var(--font-ui); letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+.codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; padding: 18px; background: var(--c-bg-sunken); border-radius: var(--r-lg); border: 1px solid var(--c-border); }
+.codes li { font: 700 16px/1.3 var(--font-ui); letter-spacing: .08em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.codes li span { display: inline-block; width: 28px; color: var(--c-muted); font-weight: 500; letter-spacing: 0; }
+@media (max-width: 480px) { .codes { padding: 16px 14px; gap: 10px 8px; } .codes li { font-size: 14.5px; letter-spacing: .05em; } .codes li span { width: 26px; } }
+
+/* ── Context chip: what the person was doing before sign-in ── */
+.ctx { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--c-border); border-radius: var(--r-lg); background: var(--c-bg); margin-bottom: 18px; }
+.ctx .th { width: 64px; height: 48px; flex: none; border-radius: var(--r-sm); overflow: hidden; background: var(--c-bg-sunken); }
+.ctx .th svg { width: 100%; height: 100%; object-fit: cover; }
+.ctx .t { font: 700 14.5px/1.3 var(--font-ui); } .ctx .m { font: 500 13px/1.4 var(--font-ui); color: var(--c-muted); }
+
+/* ── In-context email prompt, centered gate card ── */
+.prompt-card { display: grid; gap: 14px; padding: 20px; border: 1.5px solid var(--c-primary-tint-2); border-radius: var(--r-xl); background: var(--c-surface); margin-bottom: 18px; }
+@media (min-width: 1024px) { .prompt-card { grid-template-columns: minmax(0, 1fr) minmax(440px, 540px); align-items: center; gap: 24px; } .prompt-card .inline-form { flex-wrap: nowrap; } .prompt-card .inline-form .field { min-width: 0; } .prompt-card .inline-form .btn { flex: none; } }
+.prompt-card h2 { font: 700 18px/1.3 var(--font-ui); } .prompt-card p { color: var(--c-muted); font-size: 15px; margin-top: 2px; }
+.prompt-card .inline-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.prompt-card .inline-form .field { flex: 1 1 240px; }
+.gate-wrap { display: grid; place-items: start center; padding: 24px 0 64px; }
+.gate-wrap .auth-card { width: min(580px, 100%); }
+.saved-note { display: flex; gap: 10px; align-items: center; margin-top: 18px; padding: 12px 14px; background: var(--c-primary-tint); border-radius: var(--r-md); color: var(--c-primary); font: 600 14px/1.4 var(--font-ui); }
+.saved-note .i { font-size: 20px; flex: none; }
+.warn-chip { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ── Quiet sign-in (administrator) ── */
+.quiet { padding: 36px 0 72px; }
+.quiet .auth-card { margin-inline: auto; width: min(480px, 100%); }
+.quiet .quiet-note { text-align: center; margin: 16px 0 0; color: var(--c-muted); font-size: 14px; }
+
+/* ── Navigation board ── */
+.board { padding: 28px 0 64px; display: grid; gap: 32px; }
+.board h2 { font: var(--display-weight) 26px/1.2 var(--font-display); color: var(--c-primary); letter-spacing: -.015em; }
+.board .cap { color: var(--c-muted); font-size: 14.5px; margin: 4px 0 14px; max-width: 70ch; }
+.frame { border: 1px solid var(--c-border); border-radius: var(--r-lg); overflow: hidden; background: var(--c-bg); position: relative; }
+.frame--drawer { background: var(--c-primary-deep); min-height: 640px; display: flex; justify-content: flex-end; align-items: stretch; }
+.frame--drawer .navdrawer { height: auto; min-height: 640px; }
+.frame .bottombar { position: relative; display: grid; max-width: 420px; margin: 0 auto; }
+.frame-pad { padding: 22px; }
+.two-col { display: grid; gap: 24px; }
+@media (min-width: 1024px) { .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.diff { display: grid; gap: 8px; }
+.diff li { display: flex; gap: 10px; align-items: flex-start; font: 500 15px/1.5 var(--font-ui); }
+.diff li .i { font-size: 18px; margin-top: 2px; flex: none; }
+.diff li.removed .i { color: var(--c-danger); } .diff li.kept .i { color: var(--c-success); }

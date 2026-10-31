@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system · Components · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<fp-header role="visitor"></fp-header>
+<main id="main" class="board"><div class="container">
+  <span class="overline" style="color:var(--c-accent-text)">Design system</span>
+  <h1 class="h1">Components</h1>
+  <p class="intro">Each component is defined once (<code>assets/c-*.css</code>, <code>assets/js/fp-ui.js</code>) and used everywhere. The same component never changes look or behaviour between unrelated screens; where portals use denser sizes it is a documented size, not a new component.</p>
+
+  <section class="bsec"><h2>Actions</h2><h3>Buttons</h3>
+    <p class="small muted mb-4"><b>Copper</b> is the single conversion action on a public screen (Search, Send enquiry, Submit listing, Sign in). <b>Forest</b> is the primary action in portals and for secondary navigation actions. Never two copper buttons in one view.</p>
+    <div class="tscroll"><table class="state-matrix"><thead><tr><th></th><th>Default</th><th>Hover</th><th>Focus</th><th>Pressed</th><th>Disabled</th><th>Loading</th></tr></thead><tbody>
+      <tr><td>Accent (copper)</td><td><button class="btn btn--accent" type="button">Search</button></td><td><button class="btn btn--accent is-hover" type="button">Search</button></td><td><button class="btn btn--accent is-focus" type="button">Search</button></td><td><button class="btn btn--accent is-active" type="button">Search</button></td><td><button class="btn btn--accent" type="button" disabled>Search</button></td><td><button class="btn btn--accent is-loading" type="button">Search</button></td></tr>
+      <tr><td>Primary (forest)</td><td><button class="btn btn--primary" type="button">Save</button></td><td><button class="btn btn--primary is-hover" type="button">Save</button></td><td><button class="btn btn--primary is-focus" type="button">Save</button></td><td><button class="btn btn--primary is-active" type="button">Save</button></td><td><button class="btn btn--primary" type="button" disabled>Save</button></td><td><button class="btn btn--primary is-loading" type="button">Save</button></td></tr>
+      <tr><td>Secondary</td><td><button class="btn btn--secondary" type="button">Compare</button></td><td><button class="btn btn--secondary is-hover" type="button">Compare</button></td><td><button class="btn btn--secondary is-focus" type="button">Compare</button></td><td><button class="btn btn--secondary is-active" type="button">Compare</button></td><td><button class="btn btn--secondary" type="button" disabled>Compare</button></td><td><button class="btn btn--secondary is-loading" type="button">Compare</button></td></tr>
+      <tr><td>Ghost</td><td><button class="btn btn--ghost" type="button">Cancel</button></td><td><button class="btn btn--ghost is-hover" type="button">Cancel</button></td><td><button class="btn btn--ghost is-focus" type="button">Cancel</button></td><td><button class="btn btn--ghost is-active" type="button">Cancel</button></td><td><button class="btn btn--ghost" type="button" disabled>Cancel</button></td><td>·</td></tr>
+      <tr><td>Danger</td><td><button class="btn btn--danger" type="button">Delete</button></td><td><button class="btn btn--danger is-hover" type="button">Delete</button></td><td><button class="btn btn--danger is-focus" type="button">Delete</button></td><td><button class="btn btn--danger is-active" type="button">Delete</button></td><td><button class="btn btn--danger" type="button" disabled>Delete</button></td><td>·</td></tr>
+      <tr><td>Danger outline</td><td><button class="btn btn--danger-outline" type="button">Reject</button></td><td><button class="btn btn--danger-outline is-hover" type="button">Reject</button></td><td><button class="btn btn--danger-outline is-focus" type="button">Reject</button></td><td>·</td><td><button class="btn btn--danger-outline" type="button" disabled>Reject</button></td><td>·</td></tr>
+    </tbody></table></div>
+    <div class="row wrap mt-4" style="gap:14px"><button class="btn btn--primary btn--sm" type="button">Small 36 (portal, desktop)</button><button class="btn btn--primary" type="button">Default 48</button><button class="btn btn--primary btn--lg" type="button">Large 54</button><button class="btn btn--secondary btn--pill" type="button"><fp-icon n="plus"></fp-icon>Pill, header only</button><button class="btn btn--secondary btn--icon" type="button" aria-label="Filters"><fp-icon n="sliders"></fp-icon></button><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></div></section>
+
+  <section class="bsec"><h2>Forms</h2><h3>Fields and controls</h3>
+    <div class="demo-grid">
+      <div class="field"><label class="label" for="a1">Default</label><input id="a1" class="input" placeholder="Placeholder"><span class="hint">Helper text sits under the field.</span></div>
+      <div class="field"><label class="label" for="a2">Hover</label><input id="a2" class="input is-hover" value="Filled"></div>
+      <div class="field"><label class="label" for="a3">Focus</label><input id="a3" class="input is-focus" value="Priya Raman"></div>
+      <div class="field is-error"><label class="label" for="a4">Error <span class="req">*</span></label><input id="a4" class="input" aria-invalid="true" value="A"><div class="error"><fp-icon n="alert"></fp-icon>Enter your name (2 to 80 characters).</div></div>
+      <div class="field"><label class="label" for="a5">Disabled</label><input id="a5" class="input" value="Not available" disabled></div>
+      <div class="field"><label class="label" for="a6">Read only</label><input id="a6" class="input" value="sales@kadalhomes.example" readonly></div>
+      <div class="field"><label class="label" for="a7">Select</label><select id="a7" class="select"><option>Apartment</option></select></div>
+      <div class="field"><div class="row between"><label class="label" for="a8">Textarea</label><span class="counter num">52 / 140</span></div><textarea id="a8" class="textarea" style="min-height:92px">3 BHK apartment with clubhouse</textarea></div>
+      <div class="field"><label class="label" for="a9">With icon</label><div class="input-wrap"><fp-icon n="search"></fp-icon><input id="a9" class="input" placeholder="Search a locality"></div></div>
+    </div>
+    <div class="row wrap mt-6" style="gap:32px;align-items:flex-start">
+      <div class="col"><label class="check"><input type="checkbox"> Unchecked</label><label class="check"><input type="checkbox" checked> Checked</label><label class="check"><input type="checkbox" disabled> Disabled</label></div>
+      <div class="col"><label class="radio"><input type="radio" name="r"> Unselected</label><label class="radio"><input type="radio" name="r" checked> Selected</label></div>
+      <div class="col"><label class="switch"><input type="checkbox"> Off</label><label class="switch"><input type="checkbox" checked> On</label></div>
+      <div class="col" style="gap:14px"><div class="chip-row"><button class="chip" type="button">Gym</button><button class="chip is-hover" type="button">Hover</button><button class="chip on" type="button">Selected</button><button class="chip is-focus" type="button">Focus</button></div>
+        <div class="seg" role="tablist"><button class="on" type="button">Buy</button><button type="button">Rent</button><button type="button">New projects</button></div></div>
+    </div>
+    <div class="tabs mt-6" style="max-width:640px"><a class="tab on" href="#">My listings<span class="count">5</span></a><a class="tab" href="#">Enquiries received<span class="count new">1 new</span></a><a class="tab" href="#">My enquiries<span class="count">2</span></a></div>
+    <p class="small muted mt-3">Selected states never rely on colour alone: chips add a check and a tinted fill, segmented controls fill solid, tabs add a copper underline.</p></section>
+
+  <section class="bsec"><h2>Status</h2><h3>Badges and status language</h3>
+    <div class="demo-grid">
+      <div><div class="demo-cap">Listing label <span>on cards</span></div><div class="chip-row"><span class="badge badge--type">For sale</span><span class="badge badge--type">For rent</span><span class="badge badge--featured">Featured</span><span class="badge badge--prime">Prime</span><span class="badge badge--budget">Budget</span></div></div>
+      <div><div class="demo-cap">Listing status <span>owner dashboard</span></div><div class="chip-row"><span class="badge badge--success dot">Live</span><span class="badge badge--warning dot">Pending review</span><span class="badge badge--neutral dot">Sold</span><span class="badge badge--neutral dot">Rented out</span><span class="badge badge--danger dot">Not approved</span> <span class="flag">Wording to confirm</span></div></div>
+      <div><div class="demo-cap">Enquiry <span>received and sent</span></div><div class="chip-row"><span class="badge badge--info dot">New</span><span class="badge badge--primary dot">Contacted</span><span class="badge badge--neutral dot">Closed</span></div></div>
+      <div><div class="demo-cap">Project moderation <span>admin and builder</span></div><div class="chip-row"><span class="badge badge--neutral dot">Draft</span><span class="badge badge--warning dot">Pending</span><span class="badge badge--success dot">Approved</span><span class="badge badge--danger dot">Rejected</span><span class="badge badge--primary">Published</span><span class="badge badge--type">Unpublished</span><span class="badge badge--featured"><fp-icon n="star"></fp-icon>Featured</span></div></div>
+      <div><div class="demo-cap">Unit availability</div><div class="chip-row"><span class="badge badge--success dot">Available</span><span class="badge badge--warning dot">On hold</span><span class="badge badge--neutral dot">Sold</span><span class="badge badge--info dot">Blocked</span></div></div>
+      <div><div class="demo-cap">Delivery and accounts</div><div class="chip-row"><span class="badge badge--success dot">Delivered</span><span class="badge badge--danger dot">Failed</span><span class="badge badge--warning dot">Retrying</span><span class="badge badge--success dot">Active</span><span class="badge badge--neutral dot">Inactive</span><span class="badge badge--warning dot">Invited</span></div></div>
+    </div>
+    <p class="small muted mt-3">Status badges always carry a dot and a word. Green means live or good, amber means waiting, red means failed or rejected, blue means new, grey means finished.</p></section>
+
+  <section class="bsec"><h2>Content</h2><h3>Property card and its states</h3>
+    <div class="demo-grid wide">
+      <div><div class="demo-cap">Default <span>image, price, title, locality, specs, compare</span></div><fp-cards ids="1" cols=""></fp-cards></div>
+      <div><div class="demo-cap">Hover or keyboard focus <span>lifts, second photo, ring on the whole card</span></div><div id="card-hover"></div></div>
+      <div><div class="demo-cap">Saved and compared</div><fp-cards ids="2" saved="2" compared="2"></fp-cards></div>
+      <div><div class="demo-cap">Compare limit reached <span>3 selected: other cards disable Compare</span></div><fp-cards ids="3" compared="1,2,6"></fp-cards></div>
+      <div><div class="demo-cap">Long title <span>clamped to two lines</span></div><fp-cards ids="13"></fp-cards></div>
+      <div><div class="demo-cap">Missing optional details <span>no BHK or baths: nothing blank is shown</span></div><fp-cards ids="5"></fp-cards></div>
+      <div><div class="demo-cap">Loading</div><fp-skeletons n="1"></fp-skeletons></div>
+      <div><div class="demo-cap">Rent price format</div><fp-cards ids="4"></fp-cards></div>
+    </div></section>
+
+  <section class="bsec"><h2>Content</h2><h3>Project card, locality tile, developer card, stat</h3>
+    <div class="demo-grid"><fp-projects ids="1"></fp-projects><div class="col" style="gap:20px"><fp-tiles></fp-tiles></div></div>
+    <div class="demo-grid mt-6"><div id="bc"></div><div class="stats" style="grid-template-columns:1fr 1fr"><fp-stat label="Awaiting approval" value="14" icon="clock" tone="warn" attn sub="Review listings" href="#"></fp-stat><fp-stat label="Total leads" value="862" icon="inbox" tone="copper"></fp-stat></div></div></section>
+
+  <section class="bsec"><h2>Content</h2><h3>Image gallery</h3>
+    <div class="demo-grid wide"><div><div class="demo-cap">Desktop and tablet <span>main image, thumbnail strip, counter, arrows</span></div><fp-gallery badges="sale,featured" bleed="false"></fp-gallery></div>
+      <div class="note-row" style="margin-top:0"><div><b>Mobile</b>Full-bleed 4:3 image, swipe between photos, position dots instead of thumbnails, no arrows.</div><div><b>Keyboard</b>Left and right arrows change the photo; thumbnails are buttons with the photo number in their name.</div><div><b>Missing photos</b>One photo hides the strip and arrows. No photo shows an illustrated placeholder, never a broken image.</div></div></div></section>
+
+  <section class="bsec"><h2>Data</h2><h3>Tables and rows</h3>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Project</th><th>Builder</th><th class="r">Price range</th><th>Status</th><th class="r">Actions</th></tr></thead><tbody><tr><td><div class="cell"><div class="th"><fp-art kind="twin" v="1"></fp-art></div><div><b>Kadal Vista</b><small>OMR Navalur</small></div></div></td><td>Kadal Homes</td><td class="num r">₹78 L – ₹1.42 Cr</td><td><span class="badge badge--success dot">Approved</span></td><td class="r"><button class="btn btn--secondary btn--sm" type="button">Unpublish</button></td></tr><tr class="is-selected"><td><div class="cell"><div class="th"><fp-art kind="lowrise" v="0"></fp-art></div><div><b>Nila Grove</b><small>Medavakkam</small></div></div></td><td>Nila Habitats</td><td class="num r">₹62 L – ₹98 L</td><td><span class="badge badge--warning dot">Pending</span></td><td class="r"><button class="btn btn--primary btn--sm" type="button">Approve</button></td></tr></tbody></table></div><div class="tbl-foot"><span>Selected row shown in tint</span></div></div>
+    <div class="note-row"><div><b>Below 768 px</b>Rows turn into stacked cards; each cell keeps its label from <code>data-label</code> and actions wrap under the card.</div><div><b>Numbers</b>Right-aligned, lining and tabular so columns line up.</div><div><b>Row actions</b>One contextual primary action, the rest in a “More” menu; destructive actions are always confirmed.</div></div></section>
+
+  <section class="bsec"><h2>Flows</h2><h3>Stepper, upload and sortable list</h3>
+    <div class="demo-grid wide"><div class="stepper"><div class="step done"><span class="n"><fp-icon n="check"></fp-icon></span><div><b>Basics</b><small>Type, locality, address</small></div></div><div class="step on"><span class="n">2</span><div><b>Details</b><small>Size, price, amenities</small></div></div><div class="step"><span class="n">3</span><div><b>Photos</b><small>Up to 6 photos</small></div></div></div>
+      <div class="drop is-hover" style="padding:22px"><span class="ic"><fp-icon n="upload"></fp-icon></span><b>Drag photos here</b><span>Drop zone, hover state</span></div></div>
+    <div class="demo-grid wide mt-6"><div class="photos" style="grid-template-columns:repeat(3,1fr)"><div class="photo"><fp-art kind="apartment" v="1"></fp-art><span class="cover">Cover</span></div><div class="photo"><fp-art kind="bedroom" v="0"></fp-art><div class="prog"><i style="width:62%"></i></div></div><div class="photo is-error"><fp-art kind="kitchen" v="0"></fp-art><div class="err">Too large. Max 10 MB.</div></div></div>
+      <div><div class="dnd"><div class="dnd-head"><span class="grip"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Name</b></div><span class="badge badge--primary">required</span></div></div><div class="dnd is-dragging"><div class="dnd-head"><span class="grip"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Mobile (dragging)</b></div></div></div><div class="drop-line"></div><div class="dnd"><div class="dnd-head"><span class="grip"><fp-icon n="grip"></fp-icon></span><div class="grow"><b class="title-sm">Email</b></div></div></div></div></div></section>
+
+  <section class="bsec"><h2>Search</h2><h3>Search card: one component, two layouts</h3>
+    <div class="demo-grid wide"><div><div class="demo-cap">Wide <span>Variation A, ≥ 1024 px</span></div><fp-search layout="wide" focus="loc"></fp-search></div><div><div class="demo-cap">Stacked <span>Variation B, and every layout below 1024 px</span></div><fp-search layout="stacked" hover="go" loc="Velachery" type="Apartment" bhk="3 BHK" budget="Up to ₹1.5 Cr"></fp-search></div></div>
+    <p class="small muted mt-3">The same fields in the same order everywhere: locality, property type, bedrooms (single value), maximum budget. Same tabs, same “Describe it in words” link, same copper Search button.</p></section>
+</div></main>
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+<script>
+document.getElementById('card-hover').innerHTML = FP.pcard(1, { hover: true });
+document.getElementById('bc').innerHTML = FP.bcard(FP.data.builders[0]);
+</script>
+</body>
+</html>

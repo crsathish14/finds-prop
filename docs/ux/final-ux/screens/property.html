@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property detail · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="signedout" data-bottombar-off data-mbar data-hdr="line">
+<!-- States: signedout (default) · signedin · errors · failed · sent · loading · notfound · sparse (long title, missing details) · sheet (mobile enquiry sheet) -->
+<fp-header role="visitor" active="buy" data-show="signedout errors failed loading notfound sparse sheet"></fp-header>
+<fp-header role="user" active="buy" data-show="signedin sent"></fp-header>
+
+<main id="main">
+  <!-- NOT FOUND -->
+  <div class="container" data-show="notfound"><div class="empty-wrap" style="padding-top:40px">
+    <div class="empty" role="status"><div class="art" style="width:72px;height:88px"><svg viewBox="0 0 72 88" aria-hidden="true"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg></div>
+      <h3>Property not found</h3><p>This home may have been sold or rented, or the link may be wrong. Browse the homes that are available now.</p>
+      <a class="btn btn--primary" href="search.html">Browse all properties<fp-icon n="arrow"></fp-icon></a></div>
+  </div></div>
+
+  <div class="container" data-hide="notfound">
+    <div class="page-head">
+      <nav class="crumbs hide-t" aria-label="Breadcrumb"><a href="home-a.html">Home</a><fp-icon n="chev-r"></fp-icon><a href="search.html">Properties</a><fp-icon n="chev-r"></fp-icon><a href="search.html">Velachery</a></nav>
+      <a class="backlink only-t" href="search.html"><fp-icon n="arrow-l"></fp-icon>Back to results</a>
+    </div>
+
+    <!-- LOADING -->
+    <div class="detail" data-show="loading" aria-busy="true" aria-label="Loading property">
+      <div class="detail-main"><div class="sk" style="aspect-ratio:16/10;border-radius:24px"></div>
+        <div class="sk line l" style="width:70%;height:34px"></div><div class="sk line" style="width:40%"></div>
+        <div class="specs"><div class="sk" style="height:64px;border-radius:16px"></div><div class="sk" style="height:64px;border-radius:16px"></div><div class="sk" style="height:64px;border-radius:16px"></div></div>
+        <div class="sk line" style="width:96%"></div><div class="sk line" style="width:90%"></div><div class="sk line" style="width:60%"></div></div>
+      <div class="sticky-col hide-t"><div class="sk" style="height:140px;border-radius:22px"></div><div class="sk" style="height:360px;border-radius:22px"></div></div>
+    </div>
+
+    <!-- DEFAULT / FORM STATES -->
+    <div class="detail" data-hide="loading sparse">
+      <div class="detail-main">
+        <fp-gallery badges="sale,featured"></fp-gallery>
+
+        <div class="detail-title">
+          <h1>3 BHK apartment with clubhouse and covered parking</h1>
+          <div class="loc"><fp-icon n="pin"></fp-icon>Velachery, Chennai · Listed 2 days ago</div>
+          <div class="detail-actions">
+            <button class="btn btn--secondary btn--sm" type="button" aria-pressed="false"><fp-icon n="cols"></fp-icon>Add to compare</button>
+            <button class="btn btn--secondary btn--sm" type="button" aria-pressed="false"><fp-icon n="heart"></fp-icon>Save</button>
+          </div>
+        </div>
+
+        <section aria-labelledby="specs-h"><h2 class="sect-h" id="specs-h">At a glance</h2>
+          <div class="specs">
+            <div class="spec"><span class="ic"><fp-icon n="bed"></fp-icon></span><div><span class="lbl">Bedrooms</span><span class="val">3 BHK</span></div></div>
+            <div class="spec"><span class="ic"><fp-icon n="bath"></fp-icon></span><div><span class="lbl">Bathrooms</span><span class="val">2</span></div></div>
+            <div class="spec"><span class="ic"><fp-icon n="area"></fp-icon></span><div><span class="lbl">Area</span><span class="val">1,420 sq.ft</span></div></div>
+            <div class="spec"><span class="ic"><fp-icon n="building"></fp-icon></span><div><span class="lbl">Property type</span><span class="val">Apartment</span></div></div>
+            <div class="spec"><span class="ic"><fp-icon n="sofa"></fp-icon></span><div><span class="lbl">Furnishing</span><span class="val">Semi-furnished</span></div></div>
+            <div class="spec"><span class="ic"><fp-icon n="calendar"></fp-icon></span><div><span class="lbl">Listed</span><span class="val">2 days ago</span></div></div>
+          </div></section>
+
+        <section aria-labelledby="desc-h"><h2 class="sect-h" id="desc-h">About this home</h2>
+          <div class="prose"><p>A bright east-facing apartment on a high floor in a gated community, a short walk from the Velachery MRTS station. The living and dining area opens onto a balcony, and all three bedrooms have built-in wardrobes.</p><p>Residents share a clubhouse and a landscaped courtyard, and the apartment comes with one covered parking space.</p></div></section>
+
+        <section aria-labelledby="amen-h"><h2 class="sect-h" id="amen-h">Amenities</h2>
+          <ul class="checklist c3"><li><fp-icon n="check"></fp-icon>Gym</li><li><fp-icon n="check"></fp-icon>Swimming Pool</li><li><fp-icon n="check"></fp-icon>24x7 Security</li><li><fp-icon n="check"></fp-icon>Car Park</li><li><fp-icon n="check"></fp-icon>Lift</li><li><fp-icon n="check"></fp-icon>Power Backup</li><li><fp-icon n="check"></fp-icon>Clubhouse</li><li><fp-icon n="check"></fp-icon>Near Metro</li></ul></section>
+      </div>
+
+      <aside class="sticky-col" aria-label="Price and enquiry">
+        <div class="price-card"><div class="tagrow"><span class="badge badge--type">For sale</span><span class="badge badge--featured">Featured</span></div>
+          <div class="price-lg num">₹1.25 Cr</div><div class="sub">₹8,803 per sq.ft</div></div>
+
+        <div class="enq-card" id="enquiry">
+          <!-- signed out: enquiry needs an account -->
+          <div class="gate" data-show="signedout loading sheet"><span class="icon-disc info"><fp-icon n="lock"></fp-icon></span>
+            <h2>Contact the owner</h2><p class="lead-in">Sign in to send an enquiry. We will bring you back to this home afterwards.</p>
+            <div class="col"><a class="btn btn--accent btn--block" href="auth.html#signin-gate">Sign in to contact</a><a class="btn btn--secondary btn--block" href="auth.html#signup">Create an account</a></div></div>
+
+          <!-- signed in: default form, validation errors, send failure -->
+          <div data-show="signedin errors failed">
+            <h2>Send an enquiry</h2><p class="lead-in">Your name and contact details are shared with the owner of this home.</p>
+            <form class="form-stack" novalidate>
+              <div class="alert alert--danger" role="alert" data-show="failed"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't send your enquiry</b>Nothing was lost: your details are still here. Try again in a moment.</div></div>
+              <div class="field" data-show="errors"><label class="label" for="e-name">Your name<span class="req" aria-hidden="true">*</span></label><input id="e-name" class="input is-error" aria-invalid="true" aria-describedby="e-name-err" value="A"><div class="error" id="e-name-err"><fp-icon n="alert"></fp-icon>Enter your name (2 to 80 characters).</div></div>
+              <div class="field" data-hide="errors"><label class="label" for="e-name2">Your name<span class="req" aria-hidden="true">*</span></label><input id="e-name2" class="input" autocomplete="name" value="Priya Raman"></div>
+              <div class="field" data-show="errors"><label class="label" for="e-ph">Phone<span class="req" aria-hidden="true">*</span></label><input id="e-ph" class="input is-error" aria-invalid="true" aria-describedby="e-ph-err" value="12345"><div class="error" id="e-ph-err"><fp-icon n="alert"></fp-icon>Enter a phone number with 6 to 15 digits.</div></div>
+              <div class="field" data-hide="errors"><label class="label" for="e-ph2">Phone<span class="req" aria-hidden="true">*</span></label><input id="e-ph2" class="input" inputmode="tel" autocomplete="tel" value="98400 12345"></div>
+              <div class="field"><label class="label" for="e-mail">Email <span class="opt">(optional)</span></label><input id="e-mail" class="input" inputmode="email" autocomplete="email" placeholder="you@example.com"></div>
+              <div class="field"><div class="row between"><label class="label" for="e-msg">Message <span class="opt">(optional)</span></label><span class="counter num">0 / 1000</span></div><textarea id="e-msg" class="textarea" placeholder="Tell the owner what you would like to know, or when you can visit."></textarea></div>
+              <button class="btn btn--accent btn--lg btn--block" type="button"><fp-icon n="send"></fp-icon>Send enquiry</button>
+            </form>
+          </div>
+
+          <!-- sent -->
+          <div class="success-box" data-show="sent" role="status"><span class="icon-disc success"><fp-icon n="check-circle"></fp-icon></span>
+            <h2>Enquiry sent</h2><p class="lead-in" style="margin:0">The owner can now see your details and message. The reply status will show in your dashboard.</p>
+            <a class="btn btn--primary btn--block" href="dashboard.html#sent">View my enquiries<fp-icon n="arrow"></fp-icon></a></div>
+        </div>
+        <div class="mini-note hide-t"><fp-icon n="info"></fp-icon><span>Only approved homes are listed on Find Prop.</span></div>
+      </aside>
+    </div>
+
+    <!-- SPARSE: long title, no bathrooms / area / furnishing / description / amenities, one photo -->
+    <div class="detail" data-show="sparse">
+      <div class="detail-main">
+        <fp-gallery badges="sale,prime" kinds="apartment:3"></fp-gallery>
+        <div class="detail-title">
+          <h1>Beautifully maintained, east-facing 3 BHK apartment with a double-height living room, private lift lobby and a landscaped terrace garden in a quiet lane off Velachery Main Road</h1>
+          <div class="loc"><fp-icon n="pin"></fp-icon>Velachery, Chennai · Listed 3 weeks ago</div>
+          <div class="detail-actions"><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="cols"></fp-icon>Add to compare</button><button class="btn btn--secondary btn--sm" type="button"><fp-icon n="heart"></fp-icon>Save</button></div>
+        </div>
+        <section><h2 class="sect-h">At a glance</h2>
+          <div class="specs"><div class="spec"><span class="ic"><fp-icon n="bed"></fp-icon></span><div><span class="lbl">Bedrooms</span><span class="val">3 BHK</span></div></div><div class="spec"><span class="ic"><fp-icon n="building"></fp-icon></span><div><span class="lbl">Property type</span><span class="val">Apartment</span></div></div><div class="spec"><span class="ic"><fp-icon n="calendar"></fp-icon></span><div><span class="lbl">Listed</span><span class="val">3 weeks ago</span></div></div></div>
+          <p class="mini-note mt-3"><fp-icon n="info"></fp-icon><span>Optional details the owner has not added are left out rather than shown as blanks.</span></p></section>
+      </div>
+      <aside class="sticky-col"><div class="price-card"><div class="tagrow"><span class="badge badge--type">For sale</span><span class="badge badge--prime">Prime</span></div><div class="price-lg num">₹2.05 Cr</div></div>
+        <div class="enq-card"><div class="gate"><span class="icon-disc info"><fp-icon n="lock"></fp-icon></span><h2>Contact the owner</h2><p class="lead-in">Sign in to send an enquiry.</p><div class="col"><a class="btn btn--accent btn--block" href="auth.html#signin-gate">Sign in to contact</a></div></div></div></aside>
+    </div>
+  </div>
+</main>
+
+<!-- Mobile: sticky price + enquiry bar, and the enquiry sheet -->
+<div class="mbar" data-hide="notfound loading sheet sent"><div class="p"><div class="price num">₹1.25 Cr</div><small>₹8,803 per sq.ft</small></div>
+  <a class="btn btn--accent" href="#sheet" data-show="signedout errors failed sparse">Sign in to enquire</a><a class="btn btn--accent" href="#signedin" data-show="signedin">Enquire</a></div>
+<div class="scrim bottom only-t" data-show="sheet" role="dialog" aria-modal="true" aria-label="Enquiry">
+  <div class="sheet"><div class="sheet-head"><h2>Send an enquiry</h2><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></div>
+    <form class="form-stack col" novalidate style="gap:14px"><p class="small muted">Your name and contact details are shared with the owner of this home.</p>
+      <div class="field"><label class="label" for="s-name">Your name<span class="req">*</span></label><input id="s-name" class="input" value="Priya Raman"></div>
+      <div class="field"><label class="label" for="s-ph">Phone<span class="req">*</span></label><input id="s-ph" class="input" value="98400 12345"></div>
+      <div class="field"><label class="label" for="s-msg">Message <span class="opt">(optional)</span></label><textarea id="s-msg" class="textarea" style="min-height:90px" placeholder="Tell the owner what you would like to know."></textarea></div>
+      <button class="btn btn--accent btn--lg btn--block" type="button"><fp-icon n="send"></fp-icon>Send enquiry</button></form></div>
+</div>
+
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+</body>
+</html>

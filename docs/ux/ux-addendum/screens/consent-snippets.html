@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consent text and cookie notice · Find Prop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum2.css">
+</head>
+<body data-default="default" data-hdr="line" data-ai-off>
+<fp-header role="visitor"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-12 · Proposed.</b> Where consent and privacy wording appears next to forms, and the optional cookie notice. <b>Wording is a placeholder</b> until your legal text exists (<b>DEC-25</b>); the placement, size and links are the design. States: default (board) · banner · prefs.</div></div></div>
+
+    <!-- BOARD: one card per form -->
+    <div class="consent-board" data-show="default">
+      <section class="cb-card" aria-label="Phone sign-in"><span class="where">Sign-in · ADD-01</span><h2>Under "Send code"</h2>
+        <div class="field"><span class="label">Mobile number</span><div class="phone"><span class="input">98765 43210</span><span class="cc"><fp-icon n="phone"></fp-icon>+91</span></div></div>
+        <button class="btn btn--accent btn--block" type="button">Send code</button>
+        <p class="consent">By continuing you agree to our <a href="legal-page.html#terms">Terms</a> and <a href="legal-page.html#privacy">Privacy Policy</a>. We'll send you one text message; your carrier may charge for it.</p></section>
+
+      <section class="cb-card" aria-label="Property enquiry"><span class="where">Property page · enquiry card</span><h2>Under "Send enquiry"</h2>
+        <div class="field"><span class="label">Your name</span><span class="input">Priya Raman</span></div>
+        <div class="field"><span class="label">Message <span class="opt">(optional)</span></span><span class="textarea" style="min-height:64px;display:block;padding:12px 16px">Is the apartment still available?</span></div>
+        <button class="btn btn--accent btn--block" type="button">Send enquiry</button>
+        <p class="consent">The owner will see your name, phone number and message so they can reply. We don't show your details to anyone else. <a href="legal-page.html#privacy">Privacy Policy</a></p></section>
+
+      <section class="cb-card" aria-label="Project lead form"><span class="where">Project page · enquire or site visit</span><h2>Under "Send" (shared with the developer)</h2>
+        <div class="field"><span class="label">Preferred visit date</span><span class="input">Sat, 7 Nov 2026</span></div>
+        <button class="btn btn--accent btn--block" type="button">Request a visit</button>
+        <p class="consent">Your name, phone number and message go to <b>Kadal Homes</b> and Find Prop so they can contact you. <a href="legal-page.html#privacy">Privacy Policy</a></p></section>
+
+      <section class="cb-card" aria-label="Contact form"><span class="where">Contact page</span><h2>Under "Send message"</h2>
+        <div class="field"><span class="label">Email</span><span class="input">you@example.com</span></div>
+        <button class="btn btn--primary btn--block" type="button">Send message</button>
+        <p class="consent">We use these details only to reply to you. Files you attach are visible to Find Prop staff. <a href="legal-page.html#privacy">Privacy Policy</a></p></section>
+
+      <section class="cb-card" aria-label="Address field notice"><span class="where">Address search · ADD-07 and ADD-08</span><h2>Under the address field</h2>
+        <div class="field"><span class="label">Where is the property?</span><div class="input-wrap"><fp-icon n="pin"></fp-icon><span class="input">Velachery</span></div></div>
+        <p class="consent">Suggestions come from Ola Maps. What you type is sent to them to find matching places. <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">Map data © OpenStreetMap contributors</a> · <a href="legal-page.html#privacy">Privacy Policy</a> <span class="flag">Provider notice required</span></p></section>
+
+      <section class="cb-card" aria-label="Listing submission"><span class="where">Post a property · review step</span><h2>Above "Submit for review"</h2>
+        <label class="consent is-check"><input type="checkbox" checked aria-label="Confirm listing"> <span>I confirm this listing is accurate and I have the right to advertise this property.</span></label>
+        <p class="consent">We show the locality and your photos publicly. Your phone number is never shown; it is shared only with people who enquire about this listing. <a href="legal-page.html#privacy">Privacy Policy</a></p>
+        <button class="btn btn--accent btn--block" type="button">Submit for review</button></section>
+    </div>
+
+    <p class="caption muted" data-show="default">Wording to confirm for every card. The links point at the legal page template (<a class="link" href="legal-page.html">legal-page.html</a>).</p>
+  </div>
+
+  <!-- COOKIE NOTICE: only needed if non-essential cookies or analytics are added. Shown over any page. -->
+  <div data-show="banner prefs">
+    <section class="hero hero-a" aria-labelledby="hero-h1"><fp-arches></fp-arches><div class="container">
+      <h1 id="hero-h1" class="display">Find the place that fits<br class="hide-m"> your life in <em>Chennai</em>.</h1><p class="sub">Shortlist, compare and enquire directly.</p>
+      <fp-search layout="wide"></fp-search></div></section>
+    <fp-homebelow></fp-homebelow>
+  </div>
+
+  <aside class="cookie" role="region" aria-label="Cookie notice" data-show="banner">
+    <div><h2>We use cookies to keep you signed in and to improve Find Prop</h2><p>Essential cookies are always on. We'd also like to use optional ones to see which pages help people most. <span class="flag">Wording to confirm</span></p></div>
+    <div class="acts"><button class="btn btn--primary" type="button">Accept all</button><button class="btn btn--secondary" type="button">Essential only</button><button class="btn btn--ghost" type="button">Choose</button></div>
+    <p class="caption muted" style="margin:0">Read the <a class="link" href="legal-page.html#cookies">cookie information</a>. You can change this any time from the footer.</p>
+  </aside>
+
+  <div class="scrim" data-show="prefs" role="dialog" aria-modal="true" aria-labelledby="ck-t">
+    <div class="dialog" style="max-width:520px;text-align:left">
+      <h2 id="ck-t">Cookie settings</h2><p>Choose which cookies we may use. Essential ones keep the site working and cannot be turned off.</p>
+      <div class="mt-4">
+        <div class="cookie-row"><div><b>Essential</b><span class="d">Sign-in session and your compare list. Always on.</span></div><label class="switch"><input type="checkbox" checked disabled aria-label="Essential cookies, always on"></label></div>
+        <div class="cookie-row"><div><b>Analytics</b><span class="d">Helps us see which pages are used. Off unless you allow it. <span class="flag">Only if analytics is added</span></span></div><label class="switch"><input type="checkbox" aria-label="Analytics cookies"></label></div>
+      </div>
+      <div class="actions mt-4"><button class="btn btn--secondary" type="button">Essential only</button><button class="btn btn--primary" type="button">Save choices</button></div>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system · Feedback and states · Find Prop final UX</title>
+<link rel="stylesheet" href="../assets/fp.css">
+</head>
+<body data-default="default">
+<fp-header role="visitor"></fp-header>
+<main id="main" class="board"><div class="container">
+  <span class="overline" style="color:var(--c-accent-text)">Design system</span>
+  <h1 class="h1">Feedback and states</h1>
+  <p class="intro">How the product answers back: alerts, toasts, confirmations, empty and loading states, validation and failures. Messages say what happened and what to do next, in plain words, and name the thing they refer to.</p>
+
+  <section class="bsec"><h2>Alerts</h2><h3>Inline messages</h3>
+    <div class="demo-grid wide">
+      <div class="alert alert--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Enquiry sent</b>The owner can now see your details and message.</div></div>
+      <div class="alert alert--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>Sign in to contact the owner</b>We will take you straight back to this home.</div></div>
+      <div class="alert alert--warning" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>Edits go back for approval</b>The project is hidden until it is approved again.</div></div>
+      <div class="alert alert--danger" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't send your enquiry</b>Your details are still here. Try again in a moment.</div><button class="btn btn--danger-outline btn--sm" type="button"><fp-icon n="refresh"></fp-icon>Try again</button></div>
+      <div class="alert alert--neutral"><fp-icon n="info"></fp-icon><div class="grow">Builder accounts are created by invitation only.</div></div>
+    </div>
+    <p class="small muted mt-3">Errors use <code>role="alert"</code> and are announced; success and info use <code>role="status"</code>. An alert always has an icon and a title, so colour is never the only signal.</p></section>
+
+  <section class="bsec"><h2>Toasts</h2><h3>Brief confirmation after an action</h3>
+    <div class="demo-grid"><div class="demo-frame" style="padding:20px"><div class="toast toast--success" role="status"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>Marked as sold</b>It no longer shows in search results.</div><button class="x" type="button" aria-label="Dismiss"><fp-icon n="x"></fp-icon></button></div></div>
+      <div class="demo-frame" style="padding:20px"><div class="toast toast--info" role="status"><fp-icon n="info"></fp-icon><div class="grow"><b>Removed from compare</b></div><button class="act" type="button">Undo</button></div></div>
+      <div class="demo-frame" style="padding:20px"><div class="toast toast--danger" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>Couldn't save</b>Check your connection.</div><button class="act" type="button">Try again</button></div></div></div>
+    <div class="note-row"><div><b>Placement</b>Bottom centre on desktop; above the bottom bar on mobile. One at a time.</div><div><b>Timing</b>Stay 6 seconds, pause while hovered or focused, and never carry the only copy of something important: errors also stay inline on the page.</div><div><b>Undo</b>Only where the action can really be undone (removing from compare). Deleting a listing cannot be undone, so it is confirmed first instead.</div></div></section>
+
+  <section class="bsec"><h2>Confirmations</h2><h3>Dialogs</h3>
+    <div class="demo-grid wide">
+      <div class="demo-frame" style="padding:24px;background:rgba(22,40,31,.5)"><div class="dialog" role="alertdialog"><span class="icon-disc danger"><fp-icon n="trash"></fp-icon></span><h2>Delete this listing?</h2><p>"Independent villa with private garden and terrace" will be permanently deleted, along with any enquiries on it. This can't be undone.</p><div class="actions"><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--danger" type="button"><fp-icon n="trash"></fp-icon>Delete listing</button></div></div></div>
+      <div class="demo-frame" style="padding:24px;background:rgba(22,40,31,.5)"><div class="dialog" role="alertdialog"><span class="icon-disc warning"><fp-icon n="alert"></fp-icon></span><h2>Mark this home as sold?</h2><p>It will be removed from search results. You can't undo this.</p><div class="actions"><button class="btn btn--secondary" type="button">Keep it live</button><button class="btn btn--primary" type="button">Mark as sold</button></div></div></div>
+    </div>
+    <div class="note-row"><div class="do"><b>Do</b>Name the thing (“Delete this listing?”), say the consequence, and repeat the verb on the button. Put the safe choice first in reading order and give it initial focus when the action is destructive.</div><div class="do"><b>Behaviour</b>Escape closes. Focus is trapped inside and returns to the button that opened it. On phones, dialogs stay centred; forms use a bottom sheet instead.</div><div class="dont"><b>Don't</b>Use “Are you sure?”, “OK / Cancel”, or confirm actions that are easy to reverse.</div></div></section>
+
+  <section class="bsec"><h2>Overlays</h2><h3>Bottom sheet, side drawer, menus and popovers</h3>
+    <div class="demo-grid wide">
+      <div class="demo-frame" style="padding:0;background:rgba(22,40,31,.5);display:flex;align-items:flex-end;min-height:420px"><div class="sheet" style="width:100%"><div class="sheet-head"><h2>Filters</h2><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></div><p class="small muted">Mobile filter sheet: grabber, title, close, content, sticky actions.</p><div class="row mt-4"><button class="btn btn--ghost" type="button">Clear all</button><button class="btn btn--accent grow" type="button">Show 48 homes</button></div></div></div>
+      <div class="demo-frame" style="padding:0;background:rgba(22,40,31,.5);display:flex;justify-content:flex-end;min-height:420px"><div class="drawer-side" style="width:min(380px,100%)"><header><h2 class="h3">Add unit</h2><button class="icon-btn" type="button" aria-label="Close"><fp-icon n="x"></fp-icon></button></header><div class="body small muted">Side drawer for editing in the portals: header, scrolling body, sticky footer.</div><footer><button class="btn btn--secondary" type="button">Cancel</button><button class="btn btn--primary" type="button">Save unit</button></footer></div></div>
+    </div>
+    <div class="demo-grid mt-6"><div><div class="demo-cap">Menu</div><div class="menu" style="min-width:0"><a href="#"><fp-icon n="edit"></fp-icon>Edit project</a><a href="#" class="is-hover"><fp-icon n="star"></fp-icon>Feature</a><div class="sep"></div><button type="button" class="danger" disabled><fp-icon n="trash"></fp-icon>Delete (has 128 leads)</button></div></div>
+      <div><div class="demo-cap">List box</div><div class="listbox"><div class="opt on">Newest<fp-icon n="check"></fp-icon></div><div class="opt is-hover">Price: low to high</div><div class="opt">Price: high to low</div></div></div>
+      <div><div class="demo-cap">Popover and tooltip</div><div class="popover">About sponsored content: paid placement. <span class="flag">Wording to be approved</span></div><div class="mt-3"><span class="tip">You can compare up to 3 homes</span></div></div></div></section>
+
+  <section class="bsec"><h2>Empty states</h2><h3>Say what is missing and offer the next step</h3>
+    <div class="demo-grid">
+      <div class="empty" style="padding:30px 20px"><svg class="art" viewBox="0 0 72 88" aria-hidden="true" style="width:56px;height:68px"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg><h3 style="font-size:21px">No homes match your filters</h3><p>Widen your budget or remove a filter.</p><button class="btn btn--primary btn--sm" type="button">Clear all filters</button></div>
+      <div class="empty" style="padding:30px 20px"><svg class="art" viewBox="0 0 72 88" aria-hidden="true" style="width:56px;height:68px"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg><h3 style="font-size:21px">You have no listings yet</h3><p>Post a home and it will show here.</p><button class="btn btn--accent btn--sm" type="button">Post your property</button></div>
+      <div class="empty" style="padding:30px 20px"><svg class="art" viewBox="0 0 72 88" aria-hidden="true" style="width:56px;height:68px"><path d="M10 84V34a26 26 0 0 1 52 0v50" fill="none" stroke="#1F4A38" stroke-width="4" stroke-linecap="round"/><path d="M22 84V38a14 14 0 0 1 28 0v46" fill="#E2ECE5"/><circle cx="43" cy="60" r="3.2" fill="#1F4A38"/></svg><h3 style="font-size:21px">New projects are coming soon</h3><p>Browse homes available today.</p><button class="btn btn--primary btn--sm" type="button">Browse homes</button></div></div></section>
+
+  <section class="bsec"><h2>Loading</h2><h3>Skeletons, button progress and refetch</h3>
+    <div class="demo-grid"><div><div class="demo-cap">Card skeleton</div><fp-skeletons n="1"></fp-skeletons></div>
+      <div><div class="demo-cap">Table skeleton</div><div class="panel panel-pad col" style="gap:12px"><div class="row"><div class="sk" style="width:64px;height:48px"></div><div class="grow col" style="gap:8px"><div class="sk line" style="width:60%"></div><div class="sk line" style="width:40%"></div></div></div><div class="row"><div class="sk" style="width:64px;height:48px"></div><div class="grow col" style="gap:8px"><div class="sk line" style="width:70%"></div><div class="sk line" style="width:35%"></div></div></div></div>
+        <div class="demo-cap mt-4">Button in progress</div><button class="btn btn--accent is-loading" type="button" aria-busy="true">Sending</button></div>
+      <div><div class="demo-cap">Charts on refetch <span>keep the last render, dimmed</span></div><div class="panel panel-pad refetching"><div id="rf"></div></div></div></div>
+    <div class="note-row"><div><b>Skeletons</b>Match the final layout so nothing jumps. Shown only after a short delay so quick loads don't flash.</div><div><b>Sponsored slots</b>Never show a skeleton: the sponsor is decided with the page. If the image fails, the slot is removed and the layout reverts to the no-sponsor state.</div><div><b>Reduced motion</b>The shimmer stops; the grey blocks stay.</div></div></section>
+
+  <section class="bsec"><h2>Validation</h2><h3>Errors next to the field, summary for long forms</h3>
+    <div class="demo-grid wide"><div class="panel panel-pad"><div class="alert alert--danger mb-4" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>2 things need attention</b>Add a project name and a slug before saving.</div></div>
+        <div class="field is-error"><label class="label">Project name<span class="req">*</span></label><input class="input" aria-invalid="true"><div class="error"><fp-icon n="alert"></fp-icon>Project name is required.</div></div></div>
+      <div class="note-row" style="margin-top:0"><div><b>When</b>On submit, and on leaving a field that was edited. Never while typing the first time.</div><div><b>Where</b>Under the field, red text with an icon, linked with <code>aria-describedby</code>. Forms longer than one screen add a summary and move focus to the first error.</div><div><b>Words</b>Say how to fix it (“Enter a phone number with 6 to 15 digits”), not what the rule is called.</div><div><b>Success</b>Confirmed on the page that matters (a success panel, or a toast plus the new state), not a generic banner.</div></div></div></section>
+
+  <section class="bsec"><h2>Failure</h2><h3>Failed actions and authentication-required</h3>
+    <div class="demo-grid wide"><div class="alert alert--danger" role="alert"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't update that listing</b>Nothing was changed. Check your connection and try again.</div><button class="btn btn--danger-outline btn--sm" type="button">Try again</button></div>
+      <div class="alert alert--info" role="status"><fp-icon n="lock"></fp-icon><div class="grow"><b>Sign in to save homes</b>Saved homes are kept in your account. We will bring you back here.</div><a class="btn btn--primary btn--sm" href="auth.html">Sign in</a></div></div></section>
+</div></main>
+<fp-footer></fp-footer>
+<script src="../assets/fp.js"></script>
+<script>
+(function () {
+  const l = Array.from({ length: 14 }, (_, i) => `${i + 1} Oct`);
+  document.getElementById('rf').innerHTML = FP.line({ title: 'Refetching', labels: l, series: [{ name: 'Leads', slot: 2, data: [20, 24, 22, 28, 30, 27, 31, 33, 29, 35, 34, 38, 36, 40] }], yMax: 50, ticks: [0, 25, 50], h: 160, tickEvery: 4, endLabels: false, area: true });
+})();
+</script>
+</body>
+</html>
