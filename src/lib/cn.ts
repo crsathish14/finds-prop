@@ -20,6 +20,7 @@ const mergeClasses = extendTailwindMerge({
         "overline",
         "price",
         "price-lg",
+        "logo",
       ],
       radius: ["pill"],
       shadow: ["card", "hover", "float", "pop", "modal"],
