@@ -14,3 +14,11 @@ if (typeof window !== "undefined" && !("ResizeObserver" in window)) {
   }
   Object.defineProperty(window, "ResizeObserver", { value: ResizeObserverStub });
 }
+
+// jsdom lacks these pointer and scroll methods, which Radix menus and popovers call.
+if (typeof Element !== "undefined") {
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
+  Element.prototype.scrollIntoView ??= () => {};
+}
