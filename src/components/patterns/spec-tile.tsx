@@ -6,7 +6,7 @@
  * Responsive: two columns on phones in a grid owned by the page; long values wrap.
  * Accessibility: label and value are plain text in reading order. A missing value is still text.
  * States: default, missing. Dependencies: cn.
- * Tests: display.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: display.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, spec tile (c-cards.css .spec).
  */
 import type { ReactNode } from "react";

@@ -15,7 +15,7 @@
  *   second language is added. The up button is disabled on the first row and the down button on the
  *   last. Focus stays on a button after it moves its row.
  * States: resting, dragging, first, last. Dependencies: dnd-kit, IconButton, Icon, cn.
- * Tests: sortable.test.tsx; Design Lab "Cards" (S2-T07).
+ * Tests: sortable.test.tsx; Design Lab "Card parts" (S2-T07).
  * UX reference: ds-components, sortable row (post-property photos step).
  */
 import {

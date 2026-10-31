@@ -47,7 +47,7 @@ The approved UX package is in `docs/ux/` (text, HTML and CSS; renders are not co
 
 ### 7.1 Required specification for every shared component
 
-Recorded in the component's Design Lab page and in a short header comment:
+Recorded in the component's Design Lab page and in a short header comment. The header has one labelled line for each of the eight items below (`Purpose:`, `Props:`, `Responsive:`, `Accessibility:`, `States:`, `Dependencies:`, `Tests:`, `UX reference:`); `src/components/__tests__/spec-headers.test.ts` fails when one is missing, when the purpose is not a sentence, when a named test file does not exist, or when a named Design Lab page does not exist:
 
 1. **Purpose and owner** (design-system owner vs feature).
 2. **Props and variants** (typed; no free-form `style`).
