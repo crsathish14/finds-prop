@@ -14,23 +14,23 @@ Gates `G-01` to `G-21`, the local layers `L-01` to `L-04`, the npm scripts, the 
 
 `package.json` scripts (names are the contract; flags are internal). All scripts are Node-based and run on Windows, macOS and Linux with no POSIX-only syntax.
 
-| Script                              | Runs                                                                                                               | Target time | Needs                    |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------ |
-| `format` · `format:check`           | Prettier write · check                                                                                             | seconds     |                          |
-| `lint`                              | ESLint, zero warnings allowed                                                                                      | < 40 s      |                          |
-| `typecheck`                         | `tsc --noEmit`                                                                                                     | < 40 s      |                          |
-| `test`                              | Vitest unit and component tests                                                                                    | < 40 s      |                          |
-| `policy`                            | `check-hygiene`, `check-env`, `check-deps`, `check-messages`, `check-harness`, and from Stage 2 `check-tokens`     | < 10 s      |                          |
-| **`check`**                         | `format:check` + `lint` + `typecheck` + `test` + `policy`                                                          | **< 2 min** | none                     |
-| `db:start` · `db:stop` · `db:reset` | Local Supabase stack                                                                                               |             | Docker                   |
-| `check:db`                          | `db:reset`, `supabase db lint --level error`, `supabase test db` (pgTAP), generated-types diff, `check-migrations` | < 3 min     | Docker (optional)        |
-| `gen:types`                         | `supabase gen types typescript --local` into `src/types/database.types.ts`                                         |             | Docker (optional)        |
-| `test:integration`                  | Vitest against the local stack with fake adapters                                                                  | minutes     | Docker (optional)        |
-| `test:ds`                           | Playwright on the Design Lab: axe plus visual at 390, 820, 1440                                                    | minutes     | build                    |
-| `test:e2e:smoke`                    | Playwright `@smoke` journeys                                                                                       | minutes     | build, Docker (optional) |
-| **`verify`**                        | `check` + `check:db` + `test:integration` + `build` + `test:ds` + `test:e2e:smoke`                                 | CI parity   | Docker (optional)        |
-| `harness:check`                     | `check-harness` plus the harness and script tests                                                                  | seconds     |                          |
-| `doctor`                            | Environment diagnosis (§6)                                                                                         | seconds     |                          |
+| Script                              | Runs                                                                                                                | Target time | Needs                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------ |
+| `format` · `format:check`           | Prettier write · check                                                                                              | seconds     |                          |
+| `lint`                              | ESLint, zero warnings allowed                                                                                       | < 40 s      |                          |
+| `typecheck`                         | `tsc --noEmit`                                                                                                      | < 40 s      |                          |
+| `test`                              | Vitest unit and component tests                                                                                     | < 40 s      |                          |
+| `policy`                            | `check-hygiene`, `check-env`, `check-deps`, `check-messages`, `check-tokens`, `check-token-parity`, `check-harness` | < 10 s      |                          |
+| **`check`**                         | `format:check` + `lint` + `typecheck` + `test` + `policy`                                                           | **< 2 min** | none                     |
+| `db:start` · `db:stop` · `db:reset` | Local Supabase stack                                                                                                |             | Docker                   |
+| `check:db`                          | `db:reset`, `supabase db lint --level error`, `supabase test db` (pgTAP), generated-types diff, `check-migrations`  | < 3 min     | Docker (optional)        |
+| `gen:types`                         | `supabase gen types typescript --local` into `src/types/database.types.ts`                                          |             | Docker (optional)        |
+| `test:integration`                  | Vitest against the local stack with fake adapters                                                                   | minutes     | Docker (optional)        |
+| `test:ds`                           | Playwright on the Design Lab: axe plus visual at 390, 820, 1440                                                     | minutes     | build                    |
+| `test:e2e:smoke`                    | Playwright `@smoke` journeys                                                                                        | minutes     | build, Docker (optional) |
+| **`verify`**                        | `check` + `check:db` + `test:integration` + `build` + `test:ds` + `test:e2e:smoke`                                  | CI parity   | Docker (optional)        |
+| `harness:check`                     | `check-harness` plus the harness and script tests                                                                   | seconds     |                          |
+| `doctor`                            | Environment diagnosis (§6)                                                                                          | seconds     |                          |
 
 ---
 

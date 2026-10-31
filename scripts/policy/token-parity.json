@@ -1,0 +1,58 @@
+{
+  "allow": [
+    {
+      "name": "--p-*",
+      "reason": "Primitive layer (plan 04 section 2.2). Every semantic token that uses one is compared with the UX file."
+    },
+    {
+      "name": "--c-focus",
+      "reason": "Focus ring colour token; the UX writes var(--c-primary) directly in base.css."
+    },
+    {
+      "name": "--c-focus-on-dark",
+      "reason": "Plan 04 section 10 note 1: the UX hard-codes #F2C9A3 in base.css, so it becomes a token."
+    },
+    { "name": "--focus-w", "reason": "Focus ring width; the UX hard-codes 3px in base.css." },
+    { "name": "--focus-offset", "reason": "Focus ring offset; the UX hard-codes 2px in base.css." },
+    {
+      "name": "--section-y-*",
+      "reason": "Plan 04 section 10 note 3: section padding 36, 52 and 64 px are literals in the UX base.css."
+    },
+    {
+      "name": "--bw-*",
+      "reason": "Border widths from the UX component CSS (plan 04 section 2.8)."
+    },
+    {
+      "name": "--container-mid",
+      "reason": "UX base.css uses 1100px as a literal in .container.mid."
+    },
+    {
+      "name": "--container-narrow",
+      "reason": "UX base.css uses 760px as a literal in .container.narrow."
+    },
+    {
+      "name": "--rail-w",
+      "reason": "Portal icon rail width from the UX portal CSS (plan 04 section 2.5)."
+    },
+    {
+      "name": "--w-*",
+      "reason": "Hero layout widths measured from the UX home screens (plan 04 section 2.5)."
+    },
+    {
+      "name": "--size-*",
+      "reason": "Component sizes taken from the UX component specification (plan 04 section 2.5)."
+    },
+    {
+      "name": "--font-display",
+      "reason": "ADR-005: Fraunces is loaded by next/font, so the family name is its generated variable."
+    },
+    {
+      "name": "--font-ui",
+      "reason": "ADR-005: Figtree and Noto Sans Tamil are loaded by next/font, so the names are generated variables."
+    },
+    {
+      "name": "--z-skip-link",
+      "reason": "The UX base.css uses z-index 200 for the skip link as a literal."
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-@import "tailwindcss";
-
-/* Placeholder. Stage 2 (S2-T01) replaces this with src/styles/tokens.css, theme.css and globals.css
-   built from the approved UX tokens. */
-:root {
-  color-scheme: light;
-}

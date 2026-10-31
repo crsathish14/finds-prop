@@ -1,0 +1,83 @@
+/* Entry stylesheet: Tailwind, the tokens, the Tailwind bridge, then the base layer (plan 04 section 2.1).
+   Tailwind's own reset already clears margins, list styles and button chrome. This adds the page
+   defaults, the one focus ring, the skip link and the motion and contrast preferences. */
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./theme.css";
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-ui);
+    font-size: var(--t-body);
+    line-height: var(--t-body-lh);
+    color: var(--c-ink);
+    background: var(--c-bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  /* One focus ring everywhere. An outline (not a shadow) so it survives Windows high contrast. */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: var(--focus-w) solid var(--c-focus);
+    outline-offset: var(--focus-offset);
+    border-radius: inherit;
+  }
+  .on-dark :focus-visible {
+    outline-color: var(--c-focus-on-dark);
+  }
+
+  /* Skip link: the first focusable element on every page */
+  .skip-link {
+    position: absolute;
+    left: var(--s-3);
+    top: -60px;
+    z-index: var(--z-skip-link);
+    padding: var(--s-3) var(--s-5);
+    border-radius: var(--r-md);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+    font-weight: 600;
+  }
+  .skip-link:focus {
+    top: var(--s-3);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Windows high contrast: keep real outlines and let the system pick colours */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: var(--focus-w) solid CanvasText;
+  }
+}
