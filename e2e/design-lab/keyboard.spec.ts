@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import en from "../../src/i18n/messages/en.json";
 import { settle } from "./helpers";
 
@@ -253,15 +253,162 @@ test.describe("sponsor slot", () => {
     await expect(page.locator("[data-slot=sponsor-slot]")).toHaveCount(0);
   });
 
-  test("a sponsor link opens safely, and the pager moves between ads", async ({ page }) => {
+  // The banner on show: slides that are not on show are inert and hidden from screen readers.
+  const shownLink = (page: Page) =>
+    page.locator("[data-slot=sponsor-slot] [aria-roledescription=slide]:not([inert]) a");
+
+  test("a sponsor link opens safely, and the buttons move between ads", async ({ page }) => {
     await page.goto("/design-system/preview/hero-a-three-ads");
     await settle(page);
-    const link = page.locator("[data-slot=sponsor-slot] a");
+    const link = shownLink(page);
     await expect(link).toHaveAttribute("rel", "sponsored noopener");
     await expect(link).toHaveAttribute("target", "_blank");
     await expect(link).toHaveAttribute("aria-label", /banner A/);
     await page.getByRole("button", { name: en.sponsor.next }).click();
     await expect(link).toHaveAttribute("aria-label", /banner B/);
+    await page.getByRole("button", { name: en.sponsor.previous }).click();
+    await expect(link).toHaveAttribute("aria-label", /banner A/);
+  });
+
+  test("the banners turn by themselves every 5 seconds, sliding sideways", async ({ page }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-a-three-ads");
+    await settle(page);
+    const link = shownLink(page);
+    await expect(link).toHaveAttribute("aria-label", /banner A/);
+    const track = page
+      .locator("[data-slot=sponsor-slot] [aria-roledescription=slide]")
+      .first()
+      .locator("..");
+    const before = await track.evaluate((element) => getComputedStyle(element).transform);
+    await page.clock.fastForward(5100);
+    await expect(link).toHaveAttribute("aria-label", /banner B/);
+    await page.clock.fastForward(300);
+    const after = await track.evaluate((element) => getComputedStyle(element).transform);
+    expect(after, "the track slid").not.toBe(before);
+    await page.clock.fastForward(5100);
+    await expect(link).toHaveAttribute("aria-label", /banner C/);
+    await page.clock.fastForward(5100);
+    await expect(link).toHaveAttribute("aria-label", /banner A/);
+  });
+
+  test("only the banner slides: the frame, label row and pager stay where they are", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-b-three-ads");
+    await settle(page);
+    const slot = page.locator("[data-slot=sponsor-slot]");
+    const slide = slot.locator("[aria-roledescription=slide]").first();
+    // The frame is the bordered box around the sliding banners.
+    const frame = slide.locator("xpath=ancestor::div[contains(@class,'border-line-strong')][1]");
+    const label = slot.getByText(en.sponsor.label);
+    const pager = slot.getByRole("button", { name: en.sponsor.next });
+    const frameBefore = await frame.boundingBox();
+    const labelBefore = await label.boundingBox();
+    const pagerBefore = await pager.boundingBox();
+    const slideBefore = await slide.boundingBox();
+
+    await page.clock.fastForward(5100);
+    // Part-way through the slide: the banner has moved but the frame has not.
+    await page.clock.fastForward(150);
+    expect(await frame.boundingBox()).toEqual(frameBefore);
+    expect(await label.boundingBox()).toEqual(labelBefore);
+    expect(await pager.boundingBox()).toEqual(pagerBefore);
+    expect((await slide.boundingBox())?.x, "the banner moved").not.toBe(slideBefore?.x);
+    await page.clock.fastForward(1000);
+    expect(await frame.boundingBox()).toEqual(frameBefore);
+  });
+
+  test("the rotation waits while the pointer is over the banner", async ({ page }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-a-three-ads");
+    await settle(page);
+    await page.locator("[data-slot=sponsor-slot]").hover();
+    await page.clock.fastForward(8000);
+    await expect(shownLink(page)).toHaveAttribute("aria-label", /banner A/);
+    await page.mouse.move(5, 5);
+    await page.clock.fastForward(5100);
+    await expect(shownLink(page)).toHaveAttribute("aria-label", /banner B/);
+  });
+
+  test("the rotation waits while keyboard focus is on a control in the banner area", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-a-three-ads");
+    await settle(page);
+    await page.getByRole("button", { name: en.sponsor.next }).focus();
+    await page.clock.fastForward(8000);
+    await expect(shownLink(page)).toHaveAttribute("aria-label", /banner A/);
+  });
+
+  test("every banner's picture is loaded before its turn, so none slides in empty", async ({
+    page,
+  }) => {
+    await page.goto("/design-system/preview/hero-a-three-ads");
+    await settle(page);
+    const loaded = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLImageElement>("[data-slot=sponsor-slot] img")].map(
+        (image) => image.complete && image.naturalWidth > 0,
+      ),
+    );
+    expect(loaded).toEqual([true, true, true]);
+  });
+
+  test("only the banner on show can be reached with Tab", async ({ page }) => {
+    await page.goto("/design-system/preview/hero-a-three-ads");
+    await settle(page);
+    await expect(page.locator("[data-slot=sponsor-slot] a:visible")).toHaveCount(3);
+    const reachable = await page.evaluate(
+      () =>
+        [...document.querySelectorAll("[data-slot=sponsor-slot] a")].filter(
+          (link) => !link.closest("[inert]"),
+        ).length,
+    );
+    expect(reachable).toBe(1);
+  });
+
+  test("a single banner stays still", async ({ page }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-a-one-ad");
+    await settle(page);
+    await page.clock.fastForward(12000);
+    await expect(page.locator("[data-slot=sponsor-slot] [aria-roledescription=slide]")).toHaveCount(
+      1,
+    );
+    await expect(page.getByRole("button", { name: en.sponsor.next })).toHaveCount(0);
+  });
+
+  test.describe("with reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("the banners do not turn by themselves", async ({ page }) => {
+      await page.clock.install();
+      await page.goto("/design-system/preview/hero-a-three-ads");
+      await settle(page);
+      await page.clock.fastForward(12000);
+      await expect(shownLink(page)).toHaveAttribute("aria-label", /banner A/);
+    });
+
+    test("the buttons still work", async ({ page }) => {
+      await page.goto("/design-system/preview/hero-a-three-ads");
+      await settle(page);
+      await page.getByRole("button", { name: en.sponsor.next }).click();
+      await expect(shownLink(page)).toHaveAttribute("aria-label", /banner B/);
+    });
+  });
+
+  test("the frame keeps its height while the banners turn (no layout shift)", async ({ page }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-b-three-ads");
+    await settle(page);
+    const slot = page.locator("[data-slot=sponsor-slot]");
+    const before = await slot.boundingBox();
+    await page.clock.fastForward(5100);
+    await page.clock.fastForward(500);
+    const after = await slot.boundingBox();
+    expect(after?.height).toBeCloseTo(before?.height ?? 0, 0);
   });
 
   test("the picture does not shift the page when it loads", async ({ page }) => {

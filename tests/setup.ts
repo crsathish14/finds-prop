@@ -37,3 +37,16 @@ if (typeof window !== "undefined" && !window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList;
 }
+
+// jsdom has no IntersectionObserver, which Embla reads to know which slides are in view.
+if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
+  class IntersectionObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  }
+  Object.defineProperty(window, "IntersectionObserver", { value: IntersectionObserverStub });
+}

@@ -9,7 +9,11 @@
  *  2. Check each picture against its slot. Within 8% of the slot shape it fills the slot ("cover");
  *     within 30% it is shown whole on a neutral background ("contain"); further off it is dropped.
  *  3. Nothing left: show nothing at all (no frame, no label, no gap).
+ * With several banners left they slide in turn, SPONSOR_ROTATION_MS each (SponsorFrame).
  */
+/** How long each banner stays before the next one slides in (owner decision, ADR-038). */
+export const SPONSOR_ROTATION_MS = 5000;
+
 export type SponsorFormat = "strip" | "panel";
 export type SponsorPlacement = "hero" | "results";
 export type HeroLayout = "search_desk" | "split";

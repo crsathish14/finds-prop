@@ -84,6 +84,9 @@
     "bath": "{count, plural, one {# bath} other {# baths}}"
   },
   "sponsor": {
+    "carousel": "Sponsored banners",
+    "carouselKind": "carousel",
+    "slideKind": "slide",
     "label": "Sponsored",
     "about": "About this ad",
     "aboutTitle": "About sponsored content",

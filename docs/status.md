@@ -34,6 +34,8 @@ Plan: `property-platform-implementation-plan/` (outside this repo, owner's copy)
 
 - **"Browse properties" button on the not-found page** (in the UX) is left out until `/properties` exists (Stage 4); add it then.
 
+- **UX source still says "no autoplay" for sponsored banners.** The owner changed this to a 2-second carousel (ADR-038, no Play/Pause button). The approved UX package at its source, this repo's read-only copy in `docs/ux/final-ux/`, and the implementation plan still describe a manual pager; update them together (R-DS-05). Also revisit WCAG 2.2.2 (a pause control) if an accessibility review asks for it.
+
 ## Working notes
 
 - Branches are `feat/…`, `fix/…`, `chore/…`, `docs/…` from `develop`; squash into `develop`.
