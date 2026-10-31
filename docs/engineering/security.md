@@ -275,6 +275,17 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-naming.mjs\""
+          }
+        ]
+      }
     ]
   }
 }
@@ -310,6 +321,10 @@ Reads `tool_input.file_path` (and content for Write), normalises it relative to 
 | Otherwise                 | No opinion                                                                                                                                                                                                                                                                                                                                               |
 
 The ask list is the same set as the "protected paths" that `G-17` uses to demand a `Gate-change:` line, so a change that gets past the local prompt (another tool, a person) is still visible in review.
+
+### 3.2a `check-naming.mjs` (PostToolUse, feedback only)
+
+Runs after every `Edit` or `Write` of a `.ts`, `.tsx`, `.mjs` or `.mts` file. It lints that one file with the naming rules in `scripts/policy/naming-rules.mjs` (`id-length` and `id-denylist`, the same definition `eslint.config.mjs` uses for gate `G-02`). If it finds a single-letter name or cryptic shorthand (R-GEN-11) it exits with code 2 and prints the list, which Claude Code shows to Claude so the names are fixed in the same turn. It never blocks on its own failure and it is not a gate: lint, the pre-commit hook and CI decide. Tests: `scripts/__tests__/check-naming-hook.test.mjs`.
 
 ### 3.3 Testing the hooks
 

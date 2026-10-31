@@ -23,11 +23,11 @@ afterAll(() => {
 async function lint(code, filePath) {
   const [result] = await eslint.lintText(code, { filePath: path.join(repoRoot, filePath) });
   return result.messages.map(
-    (m) => `${m.ruleId ?? (m.fatal ? "fatal" : "directive")}: ${m.message}`,
+    (message) => `${message.ruleId ?? (message.fatal ? "fatal" : "directive")}: ${message.message}`,
   );
 }
 const has = (messages, ruleId, text = "") =>
-  messages.some((m) => m.startsWith(`${ruleId}:`) && m.includes(text));
+  messages.some((message) => message.startsWith(`${ruleId}:`) && message.includes(text));
 
 describe("G-02 lint: restricted syntax", () => {
   it("R-FE-06 rejects raw interactive elements in features and app", async () => {
@@ -226,7 +226,7 @@ describe("G-02 lint: restricted syntax", () => {
 
   it("R-FE-21 allows text from en.json, numbers, punctuation, symbols and non-text props", async () => {
     const allowed = [
-      "export function X({ t }) { return <p>{t('home.title')}</p>; }\n",
+      "export function X({ translate }) { return <p>{translate('home.title')}</p>; }\n",
       "export function X() { return <p>{'·'} 12 {'₹'} — / →</p>; }\n",
       "export function X() { return <img alt='' src='/a.png' className='h-4 w-4' />; }\n",
       "export function X() { return <a href='/search' id='main' className='underline' />; }\n",
@@ -235,6 +235,49 @@ describe("G-02 lint: restricted syntax", () => {
     for (const code of allowed) {
       expect(
         has(await lint(code, "src/app/x/page.tsx"), "no-restricted-syntax", "R-FE-21"),
+        code,
+      ).toBe(false);
+    }
+  });
+
+  it("R-GEN-11 rejects single-letter names and cryptic shorthand, everywhere", async () => {
+    const violations = [
+      ["callback argument", "export const names = items.map((t) => t.name);\n"],
+      ["loop counter", "export function run() { for (let i = 0; i < 3; i++) {} }\n"],
+      ["parameter", "export function run(f) { return f; }\n"],
+      ["function name", "export function x() { return 1; }\n"],
+      ["destructuring", "export const { a } = source;\n"],
+      ["object key", "export const shape = { a: 1 };\n"],
+      ["shorthand abbreviation", "export function run(err) { return err; }\n"],
+      ["context abbreviation", "export function run(ctx) { return ctx; }\n"],
+    ];
+    for (const [name, code] of violations) {
+      for (const file of [
+        "src/lib/zz-naming.ts",
+        "scripts/zz-naming.mjs",
+        "e2e/zz-naming.spec.ts",
+        ".claude/hooks/zz-naming.mjs",
+      ]) {
+        const out = await lint(code, file);
+        expect(
+          out.some((message) => /^id-(length|denylist):/.test(message)),
+          `${name} in ${file}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("R-GEN-11 allows words, a lone underscore and the Zod import", async () => {
+    const allowed = [
+      "export const names = items.map((item) => item.name);\n",
+      "export function run(_, index) { return index; }\n",
+      "export const shape = { id: 1, ok: true, en: 'x' };\n",
+      "import { z } from 'zod';\nexport const schema = z.string();\n",
+    ];
+    for (const code of allowed) {
+      const out = await lint(code, "src/lib/zz-naming.ts");
+      expect(
+        out.some((message) => /^id-(length|denylist):/.test(message)),
         code,
       ).toBe(false);
     }

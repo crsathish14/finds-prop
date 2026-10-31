@@ -11,7 +11,7 @@
 ## Decision
 
 1. **One message file:** `src/i18n/messages/en.json`, grouped by area (`common`, `errors`, `home`, ...). Split per area, merged at build, only if it passes about 1,500 lines (DEC-43). Keys are by meaning; sentences are whole; variables are named; no HTML.
-2. **Library:** next-intl (DEC-39). If spike I18N-SPK-01 fails, a small in-house `t()` helper reads the same file. The spike passes only if `/` is still prerendered on Vercel, the build passes, `proxy.ts` still runs, an unknown language gives our 404 and `global-error` renders.
+2. **Library:** next-intl (DEC-39). If spike I18N-SPK-01 fails, a small in-house `translate()` helper reads the same file. The spike passes only if `/` is still prerendered on Vercel, the build passes, `proxy.ts` still runs, an unknown language gives our 404 and `global-error` renders.
 3. **URLs:** English has no prefix; a later language gets one (`/ta/...`); `/en/...` redirects to the unprefixed URL (DEC-40). Routes live under `src/app/[locale]/`.
 4. **Server errors** return codes (and variables); the screen looks up `errors.<code>`. The server does not produce visitor-facing sentences.
 5. **Out of scope for now** (DEC-41): admin-edited `site_settings` copy, SMS and email templates, legal pages, logs. Vocabulary ids stay in `config/vocab.ts`; their labels move to `en.json`.
