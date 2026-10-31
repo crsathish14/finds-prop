@@ -53,7 +53,7 @@ scripts/          policy checks, doctor, tests           e2e/                Pla
 
 ## Environments
 
-Daily work runs against the hosted `findsprop-dev` Supabase project; the owner applies migrations to it with `supabase db push` (ADR-034). CI builds a throwaway stack from empty on every pull request. `findsprop-prod` and a staging project (added before launch) receive migrations only through CI from `main`. Production and staging credentials live only in Vercel, GitHub Environments and the Supabase dashboard, never on a developer machine used with AI agents. The dev project holds no real data. Variable names are in `.env.example`.
+Daily work runs against the hosted `findsprop-dev` Supabase project; migrations reach it only through the `db-deploy` workflow after a merge to `develop` (ADR-034). CI builds a throwaway stack from empty on every pull request. `findsprop-prod` and a staging project (added before launch) receive migrations only through CI from `main`. Production and staging credentials live only in Vercel, GitHub Environments and the Supabase dashboard, never on a developer machine used with AI agents. The dev project holds no real data. Variable names are in `.env.example`.
 
 ## Windows and OneDrive
 
