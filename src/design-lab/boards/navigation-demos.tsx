@@ -2,6 +2,7 @@
 
 import { LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
+import { ErrorScreen } from "@/components/layout/error-screen";
 import { Breadcrumb } from "@/components/patterns/breadcrumb";
 import {
   DropdownMenu,
@@ -152,5 +153,46 @@ export function StepperDemo() {
     <Stage>
       <Stepper steps={STEPS} progressLabel="Step 2 of 5: Details" className="max-w-md" />
     </Stage>
+  );
+}
+
+export function ErrorScreenDemo() {
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Specimen label="Not found" className="w-full">
+        <Stage tone="canvas" className="w-full">
+          <ErrorScreen
+            as="div"
+            titleAs="h3"
+            className="min-h-0 py-6"
+            code="Error 404"
+            title="This page isn't here"
+            emphasis="here"
+            description="The link may be old or mistyped. Let's get you back to finding a home."
+            actions={<Button>Go home</Button>}
+          />
+        </Stage>
+      </Specimen>
+      <Specimen label="Something went wrong, with technical details" className="w-full">
+        <Stage tone="canvas" className="w-full">
+          <ErrorScreen
+            as="div"
+            titleAs="h3"
+            className="min-h-0 py-6"
+            code="Something went wrong"
+            title="We couldn't load this page"
+            emphasis="this page"
+            description="It's on our side, not yours. Try again, or go back home."
+            actions={
+              <>
+                <Button>Try again</Button>
+                <Button variant="secondary">Go home</Button>
+              </>
+            }
+            details={{ summary: "Technical details", text: "Reference: 1234567890" }}
+          />
+        </Stage>
+      </Specimen>
+    </div>
   );
 }

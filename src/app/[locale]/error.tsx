@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { ErrorScreen } from "@/components/layout/error-screen";
+import { Button } from "@/components/ui/button";
 
-// Styled to the approved `errors` screens in Stage 2 (S2-T08), which also swaps the raw button for Button.
+// Shown when a page fails while it renders. Details stay on the server: the digest is a reference
+// support can use to find the matching log line, never the error message itself.
 export default function ErrorPage({
   error,
   reset,
@@ -11,21 +15,28 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   const translate = useTranslations();
-  // Details stay on the server; the digest lets support find the matching log line.
   return (
-    <main
-      id="main"
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-14"
-    >
-      <h1 className="text-2xl font-semibold">{translate("errorPage.title")}</h1>
-      <p>{translate("errorPage.body")}</p>
-      {error.digest ? (
-        <p className="text-sm">{translate("common.reference", { id: error.digest })}</p>
-      ) : null}
-      {/* eslint-disable-next-line no-restricted-syntax -- stand-in until the shared Button exists (S2-T04, S2-T08) */}
-      <button type="button" onClick={reset} className="w-fit underline">
-        {translate("common.tryAgain")}
-      </button>
-    </main>
+    <ErrorScreen
+      code={translate("errorPage.code")}
+      title={translate("errorPage.title")}
+      emphasis={translate("errorPage.emphasis")}
+      description={translate("errorPage.body")}
+      actions={
+        <>
+          <Button onClick={reset}>{translate("common.tryAgain")}</Button>
+          <Button asChild variant="secondary">
+            <Link href="/">{translate("common.goHome")}</Link>
+          </Button>
+        </>
+      }
+      {...(error.digest
+        ? {
+            details: {
+              summary: translate("common.technicalDetails"),
+              text: translate("common.reference", { id: error.digest }),
+            },
+          }
+        : {})}
+    />
   );
 }
