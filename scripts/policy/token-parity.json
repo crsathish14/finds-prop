@@ -43,6 +43,14 @@
       "reason": "Component sizes taken from the UX component specification (plan 04 section 2.5)."
     },
     {
+      "name": "--font-display",
+      "reason": "ADR-005: Fraunces is loaded by next/font, so the family name is its generated variable."
+    },
+    {
+      "name": "--font-ui",
+      "reason": "ADR-005: Figtree and Noto Sans Tamil are loaded by next/font, so the names are generated variables."
+    },
+    {
       "name": "--z-skip-link",
       "reason": "The UX base.css uses z-index 200 for the skip link as a literal."
     }

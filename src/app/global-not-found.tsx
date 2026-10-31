@@ -1,3 +1,5 @@
+import { cn } from "@/lib/cn";
+import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.css";
 import Link from "next/link";
 import en from "@/i18n/messages/en.json";
@@ -6,7 +8,7 @@ import en from "@/i18n/messages/en.json";
 // English file directly (like global-error). Pages that call notFound() use [locale]/not-found.tsx.
 export default function GlobalNotFound() {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={cn(fontVariables, "h-full antialiased")}>
       <body className="min-h-full flex flex-col">
         <main
           id="main"

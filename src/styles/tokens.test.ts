@@ -9,7 +9,12 @@ const tokens = read("tokens.css");
 const theme = read("theme.css");
 const globals = read("globals.css");
 
-const defined = new Set([...tokens.matchAll(/(--[\w-]+)\s*:/g)].map((match) => match[1]));
+// Defined at runtime by next/font on <html> (src/styles/fonts.ts)
+const FONT_FILE_VARIABLES = ["--font-fraunces", "--font-figtree", "--font-noto-sans-tamil"];
+const defined = new Set([
+  ...[...tokens.matchAll(/(--[\w-]+)\s*:/g)].map((match) => match[1]),
+  ...FONT_FILE_VARIABLES,
+]);
 const themeDefined = new Set([...theme.matchAll(/(--[\w-]+)\s*:/g)].map((match) => match[1]));
 const used = (css: string) =>
   [...css.matchAll(/var\((--[\w-]+)\)/g)].map((match) => match[1] ?? "");

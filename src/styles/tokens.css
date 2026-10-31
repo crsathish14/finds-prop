@@ -122,8 +122,11 @@
   --focus-offset: 2px;
 
   /* Type */
-  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
-  --font-ui: "Figtree", "Noto Sans Tamil", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The three --font-* family variables come from next/font (src/styles/fonts.ts) */
+  --font-display: var(--font-fraunces), "Source Serif 4", Georgia, serif;
+  --font-ui:
+    var(--font-figtree), var(--font-noto-sans-tamil), system-ui, -apple-system, "Segoe UI",
+    sans-serif;
   --display-weight: 500;
   --display-tracking: -0.02em;
 

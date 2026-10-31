@@ -1,6 +1,7 @@
 "use client";
 
 import en from "@/i18n/messages/en.json";
+import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.css";
 
 // Last-resort boundary: it replaces the root layout, so it renders its own html and body. The
@@ -13,7 +14,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body>
         <main className="mx-auto my-14 max-w-3xl px-6">
           <h1>{en.errorPage.title}</h1>
