@@ -139,9 +139,9 @@ test.describe("@smoke text origin", () => {
         .filter(Boolean);
       const attributes = await page.evaluate(() =>
         [...document.querySelectorAll("[aria-label], img[alt], [title], [placeholder]")].flatMap(
-          (el) =>
+          (element) =>
             ["aria-label", "alt", "title", "placeholder"]
-              .map((name) => el.getAttribute(name))
+              .map((name) => element.getAttribute(name))
               .filter((value): value is string => !!value),
         ),
       );

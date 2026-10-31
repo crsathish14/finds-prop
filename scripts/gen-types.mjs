@@ -44,10 +44,10 @@ if (check) {
     ? fs.readFileSync(target, "utf8").replace(/\r\n/g, "\n")
     : "";
   if (current !== generated) {
-    const tmp = path.join(os.tmpdir(), "database.types.generated.ts");
-    fs.writeFileSync(tmp, generated);
+    const tempPath = path.join(os.tmpdir(), "database.types.generated.ts");
+    fs.writeFileSync(tempPath, generated);
     console.error(
-      `gen-types: src/types/database.types.ts is out of date with the migrations. Run npm run gen:types and commit the result. (Fresh output: ${tmp})`,
+      `gen-types: src/types/database.types.ts is out of date with the migrations. Run npm run gen:types and commit the result. (Fresh output: ${tempPath})`,
     );
     // A CI runner's temp folder is gone after the job, so show the fresh file in the log.
     if (process.env.CI) {

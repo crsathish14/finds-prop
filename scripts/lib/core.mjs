@@ -13,8 +13,10 @@ export function finding(file, line, rule, message) {
 }
 
 export function printFindings(name, findings) {
-  for (const f of findings) {
-    console.error(`${f.file}${f.line ? `:${f.line}` : ""} ${f.rule} ${f.message}`);
+  for (const problem of findings) {
+    console.error(
+      `${problem.file}${problem.line ? `:${problem.line}` : ""} ${problem.rule} ${problem.message}`,
+    );
   }
   if (findings.length === 0) console.log(`${name}: ok`);
   else console.error(`${name}: ${findings.length} problem${findings.length === 1 ? "" : "s"}`);
@@ -41,9 +43,9 @@ export function listFiles(root, { staged = false } = {}) {
     : git(root, ["ls-files", "--cached", "--others", "--exclude-standard"]);
   return out
     .split("\n")
-    .map((f) => f.trim())
+    .map((line) => line.trim())
     .filter(Boolean)
-    .filter((f) => fs.existsSync(path.join(root, f)));
+    .filter((file) => fs.existsSync(path.join(root, file)));
 }
 
 const TEXT_EXTENSIONS = new Set([
@@ -81,26 +83,26 @@ export function readText(root, file, maxBytes = 1_000_000) {
 /** Glob to RegExp: `**` crosses folders, `*` does not, `{a,b}` alternates. Matches the whole path. */
 export function globToRegExp(glob) {
   let re = "";
-  for (let i = 0; i < glob.length; i++) {
-    const c = glob[i];
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
+  for (let index = 0; index < glob.length; index++) {
+    const character = glob[index];
+    if (character === "*") {
+      if (glob[index + 1] === "*") {
         re += ".*";
-        i++;
-        if (glob[i + 1] === "/") i++;
+        index++;
+        if (glob[index + 1] === "/") index++;
       } else re += "[^/]*";
-    } else if (c === "?") re += "[^/]";
-    else if (c === "{") re += "(?:";
-    else if (c === "}") re += ")";
-    else if (c === ",") re += "|";
-    else if ("\\^$+.()|[]".includes(c)) re += `\\${c}`;
-    else re += c;
+    } else if (character === "?") re += "[^/]";
+    else if (character === "{") re += "(?:";
+    else if (character === "}") re += ")";
+    else if (character === ",") re += "|";
+    else if ("\\^$+.()|[]".includes(character)) re += `\\${character}`;
+    else re += character;
   }
   return new RegExp(`^${re}$`);
 }
 
 export function matchesAny(file, globs) {
-  return globs.some((g) => globToRegExp(g).test(file));
+  return globs.some((glob) => globToRegExp(glob).test(file));
 }
 
 export function lineOf(text, index) {

@@ -27,7 +27,7 @@ function licenceVerdict(expression, name, policy) {
     const clean = id.replace(/[()]/g, "").trim();
     if (policy.permissive.includes(clean)) return "ok";
     if (policy.weakCopyleft.includes(clean)) {
-      return policy.weakCopyleftAllowedPackages.some((g) => globToRegExp(g).test(name))
+      return policy.weakCopyleftAllowedPackages.some((pattern) => globToRegExp(pattern).test(name))
         ? "ok"
         : "weak";
     }
@@ -129,7 +129,7 @@ export function checkDeps({ root = repoRoot, baseManifest = null } = {}) {
       const name = packageName(key);
       if (
         info.hasInstallScript &&
-        !licences.installScriptAllowedPackages.some((g) => globToRegExp(g).test(name))
+        !licences.installScriptAllowedPackages.some((pattern) => globToRegExp(pattern).test(name))
       ) {
         findings.push(
           finding(
@@ -193,14 +193,15 @@ if (isMain(import.meta.url)) {
   if (args.includes("--report") || diff) {
     if (diff && (diff.added.length || diff.changed.length || diff.removed.length)) {
       console.log("Dependency changes against the base branch:");
-      for (const a of diff.added) {
-        const entry = lock?.packages?.[`node_modules/${a.name}`];
+      for (const addedPackage of diff.added) {
+        const entry = lock?.packages?.[`node_modules/${addedPackage.name}`];
         console.log(
-          `  + ${a.name}@${a.range} (${a.section}) licence=${entry?.license ?? "?"} installScript=${entry?.hasInstallScript ? "yes" : "no"}`,
+          `  + ${addedPackage.name}@${addedPackage.range} (${addedPackage.section}) licence=${entry?.license ?? "?"} installScript=${entry?.hasInstallScript ? "yes" : "no"}`,
         );
       }
-      for (const c of diff.changed) console.log(`  ~ ${c.name}: ${c.from} -> ${c.to}`);
-      for (const r of diff.removed) console.log(`  - ${r.name}`);
+      for (const changedPackage of diff.changed)
+        console.log(`  ~ ${changedPackage.name}: ${changedPackage.from} -> ${changedPackage.to}`);
+      for (const removedPackage of diff.removed) console.log(`  - ${removedPackage.name}`);
     } else if (baseRef && !base)
       console.log(`check-deps: base ref ${baseRef} not available; skipping the change report`);
   }

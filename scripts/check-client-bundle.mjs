@@ -18,7 +18,7 @@ function* walk(dir) {
 export function serverVariableNames(root) {
   const text = fs.readFileSync(path.join(root, "src/server/env.ts"), "utf8");
   return [...text.matchAll(/^\s+([A-Z][A-Z0-9_]+):/gm)]
-    .map((m) => m[1])
+    .map((match) => match[1])
     .filter((name) => !name.startsWith("NEXT_PUBLIC_"));
 }
 

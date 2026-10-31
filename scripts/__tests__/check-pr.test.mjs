@@ -35,8 +35,8 @@ function body({
     "AI assistance": "- [x] No",
     "Gate-change": `${gate}\n<!-- If you changed lint, CI, hooks: write Gate-change: <what and why> -->`,
   };
-  return HEADINGS.filter((h) => !omit.includes(h))
-    .map((h) => `## ${h}\n${parts[h]}`)
+  return HEADINGS.filter((heading) => !omit.includes(heading))
+    .map((heading) => `## ${heading}\n${parts[heading]}`)
     .join("\n\n");
 }
 
@@ -47,7 +47,8 @@ const ok = {
   changedFiles: ["src/features/search/queries.ts"],
   actor: "crsathish14",
 };
-const run = (overrides = {}) => checkPr({ ...ok, body: body(), ...overrides }).map((f) => f.rule);
+const run = (overrides = {}) =>
+  checkPr({ ...ok, body: body(), ...overrides }).map((finding) => finding.rule);
 
 describe("G-17 check-pr", () => {
   it("passes a complete pull request", () => {

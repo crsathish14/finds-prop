@@ -23,9 +23,9 @@ export function parseMessage(message) {
   const problems = [];
   const args = new Set();
   const stack = [];
-  for (let i = 0; i < message.length; i++) {
-    const ch = message[i];
-    if (ch === "'" && (message[i + 1] === "{" || message[i + 1] === "}")) {
+  for (let index = 0; index < message.length; index++) {
+    const ch = message[index];
+    if (ch === "'" && (message[index + 1] === "{" || message[index + 1] === "}")) {
       problems.push("an apostrophe before a brace escapes it; reword the message");
     }
     if (ch === "{") {
@@ -34,7 +34,7 @@ export function parseMessage(message) {
         stack.push({ branches: false });
         continue;
       }
-      const header = /^\s*([^\s,{}]*)\s*(?:,\s*([A-Za-z]+))?/.exec(message.slice(i + 1));
+      const header = /^\s*([^\s,{}]*)\s*(?:,\s*([A-Za-z]+))?/.exec(message.slice(index + 1));
       const name = header?.[1] ?? "";
       const type = header?.[2];
       if (!ARG_NAME.test(name)) problems.push(`"${name}" is not a valid variable name`);
@@ -82,12 +82,12 @@ function usedKeys(keys, files, root) {
     if (!SOURCE.test(file) || NOT_SOURCE.test(file)) continue;
     const text = readText(root, file);
     if (text === null) continue;
-    for (const m of text.matchAll(/["'`]([A-Za-z0-9_.]+)["'`]/g))
-      literals.add(`${file}\u0000${m[1]}`);
-    for (const m of text.matchAll(/`([A-Za-z0-9_.]+\.)\$\{/g)) prefixes.add(m[1]);
+    for (const match of text.matchAll(/["'`]([A-Za-z0-9_.]+)["'`]/g))
+      literals.add(`${file}\u0000${match[1]}`);
+    for (const match of text.matchAll(/`([A-Za-z0-9_.]+\.)\$\{/g)) prefixes.add(match[1]);
     // direct reads of the file, as global-error does: en.errorPage.title
-    for (const m of text.matchAll(/\b(?:en|messages)\.([A-Za-z0-9_.]+)/g)) {
-      literals.add(`${file}\u0000${m[1]}`);
+    for (const match of text.matchAll(/\b(?:en|messages)\.([A-Za-z0-9_.]+)/g)) {
+      literals.add(`${file}\u0000${match[1]}`);
     }
   }
   const byFile = new Map();
@@ -98,17 +98,17 @@ function usedKeys(keys, files, root) {
   }
   const used = new Set();
   for (const key of keys) {
-    if ([...prefixes].some((p) => key.startsWith(p))) {
+    if ([...prefixes].some((prefix) => key.startsWith(prefix))) {
       used.add(key);
       continue;
     }
     const parts = key.split(".");
     for (const set of byFile.values()) {
       // the full key, or a namespace passed to the translator plus the rest as a second literal
-      const found = parts.some((_, i) => {
-        const namespace = parts.slice(0, i).join(".");
-        const rest = parts.slice(i).join(".");
-        return i === 0 ? set.has(rest) : set.has(namespace) && set.has(rest);
+      const found = parts.some((_, index) => {
+        const namespace = parts.slice(0, index).join(".");
+        const rest = parts.slice(index).join(".");
+        return index === 0 ? set.has(rest) : set.has(namespace) && set.has(rest);
       });
       if (found) {
         used.add(key);
@@ -130,7 +130,7 @@ export function checkMessages({ root = repoRoot, files = listFiles(root) } = {})
   const loaded = new Map();
   for (const name of fs
     .readdirSync(dir)
-    .filter((n) => n.endsWith(".json"))
+    .filter((fileName) => fileName.endsWith(".json"))
     .sort()) {
     const rel = `${MESSAGES_DIR}/${name}`;
     const text = fs.readFileSync(path.join(root, rel), "utf8");

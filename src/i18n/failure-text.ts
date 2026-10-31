@@ -11,17 +11,19 @@ export interface Translator {
 }
 
 export function failureText(
-  t: Translator,
+  translate: Translator,
   failure: Pick<ActionFailure, "code" | "retryAfter">,
 ): string {
   if (failure.code === "RATE_LIMITED" && failure.retryAfter !== undefined) {
-    return t("errors.RATE_LIMITED_WAIT", {
+    return translate("errors.RATE_LIMITED_WAIT", {
       minutes: Math.max(1, Math.ceil(failure.retryAfter / 60)),
     });
   }
-  return t(`errors.${failure.code}`);
+  return translate(`errors.${failure.code}`);
 }
 
-export function fieldErrorText(t: Translator, error: FieldError): string {
-  return t.has(error.key) ? t(error.key, error.values) : t("validation.invalid");
+export function fieldErrorText(translate: Translator, error: FieldError): string {
+  return translate.has(error.key)
+    ? translate(error.key, error.values)
+    : translate("validation.invalid");
 }

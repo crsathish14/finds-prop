@@ -16,10 +16,10 @@ export interface LogFields {
 }
 
 export interface Logger {
-  debug(msg: string, fields?: LogFields): void;
-  info(msg: string, fields?: LogFields): void;
-  warn(msg: string, fields?: LogFields): void;
-  error(msg: string, fields?: LogFields): void;
+  debug(message: string, fields?: LogFields): void;
+  info(message: string, fields?: LogFields): void;
+  warn(message: string, fields?: LogFields): void;
+  error(message: string, fields?: LogFields): void;
   child(fields: LogFields): Logger;
 }
 
@@ -44,17 +44,23 @@ export function createLogger(base: LogFields = {}, options: LoggerOptions = {}):
   const write = options.write ?? stdoutWrite;
   const now = options.now ?? (() => new Date());
 
-  const emit = (level: LogLevel, msg: string, fields: LogFields = {}): void => {
+  const emit = (level: LogLevel, message: string, fields: LogFields = {}): void => {
     if (LEVEL_ORDER[level] < threshold) return;
-    const line = redactValue({ level, msg, time: now().toISOString(), ...base, ...fields });
+    const line = redactValue({
+      level,
+      msg: message,
+      time: now().toISOString(),
+      ...base,
+      ...fields,
+    });
     write(JSON.stringify(line));
   };
 
   return {
-    debug: (msg, fields) => emit("debug", msg, fields),
-    info: (msg, fields) => emit("info", msg, fields),
-    warn: (msg, fields) => emit("warn", msg, fields),
-    error: (msg, fields) => emit("error", msg, fields),
+    debug: (message, fields) => emit("debug", message, fields),
+    info: (message, fields) => emit("info", message, fields),
+    warn: (message, fields) => emit("warn", message, fields),
+    error: (message, fields) => emit("error", message, fields),
     child: (fields) => createLogger({ ...base, ...fields }, options),
   };
 }

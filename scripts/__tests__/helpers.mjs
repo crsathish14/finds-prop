@@ -25,4 +25,4 @@ export function cleanupTrees() {
   for (const dir of created.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
 }
 
-export const rules = (findings) => findings.map((f) => f.rule);
+export const rules = (findings) => findings.map((finding) => finding.rule);

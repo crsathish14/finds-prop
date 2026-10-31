@@ -3,7 +3,7 @@ import { evaluateMigrations } from "../check-migrations.mjs";
 
 const NAME = (ts, slug = "change") => `supabase/migrations/${ts}_${slug}.sql`;
 const file = (ts, content, slug) => ({ path: NAME(ts, slug), content });
-const ids = (findings) => findings.map((f) => f.rule);
+const ids = (findings) => findings.map((finding) => finding.rule);
 
 const baseWith = (existing, nameStatus = []) => ({
   baseFiles: existing.map((ts) => NAME(ts, "base")),

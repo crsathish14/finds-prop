@@ -22,30 +22,32 @@ function number(locale: string, value: number, maximumFractionDigits = 0): strin
 }
 
 /** 78 L, 1.5 Cr, 1.25 Cr (at most two decimals, trailing zeros dropped), or plain rupees below 1 L. */
-export function formatPrice(t: Translate, locale: string, rupees: number): string {
+export function formatPrice(translate: Translate, locale: string, rupees: number): string {
   if (rupees >= CRORE) {
-    return t("format.crore", { value: number(locale, rupees / CRORE, 2) });
+    return translate("format.crore", { value: number(locale, rupees / CRORE, 2) });
   }
   if (rupees >= LAKH) {
     const lakh = Math.round((rupees / LAKH) * 100) / 100;
     // 99,99,999 rounds to 100 L, which reads as 1 Cr.
-    if (lakh >= 100) return t("format.crore", { value: number(locale, rupees / CRORE, 2) });
-    return t("format.lakh", { value: number(locale, lakh, 2) });
+    if (lakh >= 100) return translate("format.crore", { value: number(locale, rupees / CRORE, 2) });
+    return translate("format.lakh", { value: number(locale, lakh, 2) });
   }
-  return t("format.rupees", { value: number(locale, rupees) });
+  return translate("format.rupees", { value: number(locale, rupees) });
 }
 
-export function formatRent(t: Translate, locale: string, rupees: number): string {
-  return t("format.rentShort", { price: formatPrice(t, locale, rupees) });
+export function formatRent(translate: Translate, locale: string, rupees: number): string {
+  return translate("format.rentShort", { price: formatPrice(translate, locale, rupees) });
 }
 
 /** Price per square foot, shown for sale listings only. */
-export function formatPerSqft(t: Translate, locale: string, rupees: number): string {
-  return t("format.perSqft", { price: t("format.rupees", { value: number(locale, rupees) }) });
+export function formatPerSqft(translate: Translate, locale: string, rupees: number): string {
+  return translate("format.perSqft", {
+    price: translate("format.rupees", { value: number(locale, rupees) }),
+  });
 }
 
-export function formatArea(t: Translate, locale: string, sqft: number): string {
-  return t("format.area", { value: number(locale, sqft) });
+export function formatArea(translate: Translate, locale: string, sqft: number): string {
+  return translate("format.area", { value: number(locale, sqft) });
 }
 
 /** Dates are stored in UTC and shown in India time. */

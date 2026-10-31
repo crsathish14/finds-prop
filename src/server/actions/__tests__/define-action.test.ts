@@ -54,7 +54,7 @@ describe("UT-define-action: pipeline order (R-BE-02)", () => {
       input,
       auth: "user",
       rateLimit: { scope: "listing" },
-      idempotencyKey: (i) => i.idempotencyKey,
+      idempotencyKey: (parsed) => parsed.idempotencyKey,
       invalidate: () => ["property:1"],
       audit: { action: "listing.sold" },
       handler: () => {
@@ -94,7 +94,7 @@ describe("UT-define-action: pipeline order (R-BE-02)", () => {
       name: "x",
       input: z.object({ tag: z.array(z.string()) }),
       auth: "none",
-      handler: ({ input: i }) => Promise.resolve(i.tag),
+      handler: ({ input: parsedInput }) => Promise.resolve(parsedInput.tag),
     });
     const form = new FormData();
     form.append("tag", "a");
@@ -171,7 +171,7 @@ describe("UT-define-action: idempotency, rate limit, invalidation", () => {
       name: "x",
       input,
       auth: "user",
-      idempotencyKey: (i) => i.idempotencyKey,
+      idempotencyKey: (parsed) => parsed.idempotencyKey,
       handler: () => {
         calls.push("handler");
         return Promise.resolve("second");
@@ -214,7 +214,7 @@ describe("UT-define-action: idempotency, rate limit, invalidation", () => {
       handler: () => Promise.reject(new Error("db down")),
     });
     expect(await action(validInput)).toMatchObject({ ok: false, code: "INTERNAL" });
-    expect(calls.some((c) => c.startsWith("invalidate"))).toBe(false);
+    expect(calls.some((call) => call.startsWith("invalidate"))).toBe(false);
   });
 });
 
