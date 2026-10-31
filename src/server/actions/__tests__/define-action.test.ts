@@ -291,11 +291,24 @@ describe("UT-define-action: error normalisation never leaks details", () => {
     expect(classifyError("a string")).toBe("INTERNAL");
   });
 
-  it("keeps the message of a deliberate ActionError", () => {
+  it("returns the code of a deliberate ActionError but never its developer message", () => {
     expect(toFailure(new ActionError("NOT_FOUND", "No such listing."))).toEqual({
       ok: false,
       code: "NOT_FOUND",
-      message: "No such listing.",
     });
+  });
+
+  it("returns no sentence at all: failures carry codes and keys only", async () => {
+    const { defineAction } = harness();
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      handler: () => Promise.resolve(1),
+    });
+    const result = await action({ id: "not-a-uuid" });
+    expect(result).toMatchObject({ ok: false, code: "VALIDATION" });
+    expect(result).not.toHaveProperty("message");
+    expect(result.ok === false && result.fieldErrors?.id?.[0]?.key).toMatch(/^validation\./);
   });
 });

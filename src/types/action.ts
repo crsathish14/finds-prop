@@ -12,12 +12,20 @@ export const ERROR_CODES = [
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
+/** A validation problem on one field: a message key under `validation.*` plus values for it. */
+export interface FieldError {
+  key: string;
+  values?: Record<string, string | number>;
+}
+
+/**
+ * What an action returns on failure. It carries codes and values, never sentences: the screen
+ * looks the words up in en.json (ADR-035), so the server stays language-free.
+ */
 export interface ActionFailure {
   ok: false;
   code: ErrorCode;
-  /** Safe to show to a person. Never a stack trace or a database message. */
-  message: string;
-  fieldErrors?: Record<string, string[]>;
+  fieldErrors?: Record<string, FieldError[]>;
   /** Seconds until the caller may try again (RATE_LIMITED). */
   retryAfter?: number;
   /** Shown to the user as a support reference for unexpected errors. */

@@ -21,5 +21,33 @@
   "errorPage": {
     "title": "Something went wrong",
     "body": "Please try again. If it keeps happening, tell us the reference below."
+  },
+  "errors": {
+    "VALIDATION": "Some of the information is not valid.",
+    "UNAUTHENTICATED": "Please sign in to continue.",
+    "FORBIDDEN": "You don't have permission to do that.",
+    "NOT_FOUND": "We couldn't find that.",
+    "CONFLICT": "That conflicts with something that already exists.",
+    "RATE_LIMITED": "Too many attempts. Please try again shortly.",
+    "RATE_LIMITED_WAIT": "{minutes, plural, one {Too many attempts. Please try again in # minute.} other {Too many attempts. Please try again in # minutes.}}",
+    "UPSTREAM_FAILED": "A service we rely on isn't responding. Please try again.",
+    "INTERNAL": "Something went wrong on our side. Please try again."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "invalid": "This value is not valid.",
+    "invalidFormat": "This is not in the expected format.",
+    "tooShort": "{minimum, plural, one {Use at least # character.} other {Use at least # characters.}}",
+    "tooLong": "{maximum, plural, one {Use at most # character.} other {Use at most # characters.}}",
+    "tooSmall": "Enter a value of {minimum} or more.",
+    "tooBig": "Enter a value of {maximum} or less."
+  },
+  "format": {
+    "rupees": "₹{value}",
+    "lakh": "₹{value} L",
+    "crore": "₹{value} Cr",
+    "rentShort": "{price}/mo",
+    "perSqft": "{price} per sq.ft",
+    "area": "{value} sq.ft"
   }
 }
