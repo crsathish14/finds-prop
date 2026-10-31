@@ -28,7 +28,7 @@ export function evaluateMigrations({ files, rollbackFiles = [], base = null }) {
 
   if (base) {
     const newestOnBase = base.baseFiles
-      .map((f) => NAME.exec(f)?.[1])
+      .map((fileName) => NAME.exec(fileName)?.[1])
       .filter(Boolean)
       .sort()
       .at(-1);
@@ -121,12 +121,15 @@ export function collect(root, baseRef) {
   const files = fs.existsSync(dir)
     ? fs
         .readdirSync(dir)
-        .filter((f) => f.endsWith(".sql"))
-        .map((f) => ({ path: `${DIR}/${f}`, content: fs.readFileSync(path.join(dir, f), "utf8") }))
+        .filter((fileName) => fileName.endsWith(".sql"))
+        .map((fileName) => ({
+          path: `${DIR}/${fileName}`,
+          content: fs.readFileSync(path.join(dir, fileName), "utf8"),
+        }))
     : [];
   const rollbackDir = path.join(root, "supabase/rollbacks");
   const rollbackFiles = fs.existsSync(rollbackDir)
-    ? fs.readdirSync(rollbackDir).map((f) => `supabase/rollbacks/${f}`)
+    ? fs.readdirSync(rollbackDir).map((fileName) => `supabase/rollbacks/${fileName}`)
     : [];
 
   let base = null;

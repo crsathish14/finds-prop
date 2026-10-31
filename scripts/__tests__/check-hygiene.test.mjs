@@ -160,7 +160,9 @@ describe("G-14 check-hygiene: waivers", () => {
       entry({ issue: "", reason: "x" }),
     );
     expect(
-      rules(checkHygiene({ root, files: ["src/a.ts"], today })).filter((r) => r === "allowlist"),
+      rules(checkHygiene({ root, files: ["src/a.ts"], today })).filter(
+        (rule) => rule === "allowlist",
+      ),
     ).toHaveLength(2);
   });
 });

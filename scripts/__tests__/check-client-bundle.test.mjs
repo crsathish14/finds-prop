@@ -11,7 +11,12 @@ const tree = (staticFiles) =>
   makeTree(
     {
       "src/server/env.ts": ENV_MODULE,
-      ...Object.fromEntries(Object.entries(staticFiles).map(([k, v]) => [`.next/static/${k}`, v])),
+      ...Object.fromEntries(
+        Object.entries(staticFiles).map(([fileName, content]) => [
+          `.next/static/${fileName}`,
+          content,
+        ]),
+      ),
     },
     { withPolicy: false },
   );

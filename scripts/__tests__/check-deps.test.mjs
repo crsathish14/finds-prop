@@ -105,11 +105,17 @@ describe("G-11 check-deps", () => {
 
 describe("G-11 dependency diff", () => {
   it("reports added, changed and removed packages", () => {
-    const base = { dependencies: { a: "1.0.0", b: "1.0.0" }, devDependencies: { c: "1.0.0" } };
-    const current = { dependencies: { a: "1.1.0", d: "2.0.0" }, devDependencies: { c: "1.0.0" } };
+    const base = {
+      dependencies: { alpha: "1.0.0", beta: "1.0.0" },
+      devDependencies: { gamma: "1.0.0" },
+    };
+    const current = {
+      dependencies: { alpha: "1.1.0", delta: "2.0.0" },
+      devDependencies: { gamma: "1.0.0" },
+    };
     const diff = diffDependencies(base, current);
-    expect(diff.added.map((d) => d.name)).toEqual(["d"]);
-    expect(diff.changed).toEqual([{ name: "a", from: "1.0.0", to: "1.1.0" }]);
-    expect(diff.removed.map((d) => d.name)).toEqual(["b"]);
+    expect(diff.added.map((added) => added.name)).toEqual(["delta"]);
+    expect(diff.changed).toEqual([{ name: "alpha", from: "1.0.0", to: "1.1.0" }]);
+    expect(diff.removed.map((removed) => removed.name)).toEqual(["beta"]);
   });
 });

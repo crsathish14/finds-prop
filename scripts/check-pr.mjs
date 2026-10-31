@@ -94,8 +94,8 @@ export function checkPr({
       add("PR-TEMPLATE", `missing section "## ${heading}" from the pull request template`);
   }
 
-  const classes = ["C0", "C1", "C2"].filter((c) =>
-    new RegExp(`\\[x\\]\\s*${c}\\b`, "i").test(section(text, "Change class") ?? ""),
+  const classes = ["C0", "C1", "C2"].filter((changeClass) =>
+    new RegExp(`\\[x\\]\\s*${changeClass}\\b`, "i").test(section(text, "Change class") ?? ""),
   );
   if (classes.length !== 1)
     add("PR-CLASS", `tick exactly one change class (C0, C1 or C2); found ${classes.length}`);
@@ -110,7 +110,9 @@ export function checkPr({
     );
 
   const gate = /^Gate-change:\s*(.*)$/im.exec(section(text, "Gate-change") ?? "");
-  const gateFiles = changedFiles.filter((f) => GATE_FILES.some((g) => globToRegExp(g).test(f)));
+  const gateFiles = changedFiles.filter((file) =>
+    GATE_FILES.some((pattern) => globToRegExp(pattern).test(file)),
+  );
   if (!gate || !gate[1]?.trim())
     add(
       "PR-GATE",
@@ -125,8 +127,8 @@ export function checkPr({
 
   if (addedDependencies.length > 0) {
     const deps = section(text, "Dependencies") ?? "";
-    const m = /New dependency:\s*(.*)/i.exec(deps);
-    if (!m || /^none\b/i.test(m[1]?.trim() ?? "none")) {
+    const match = /New dependency:\s*(.*)/i.exec(deps);
+    if (!match || /^none\b/i.test(match[1]?.trim() ?? "none")) {
       add(
         "PR-DEPENDENCY",
         `dependencies were added (${addedDependencies.join(", ")}) but "New dependency:" says none; give need, size, maintenance, licence and alternatives (R-DEP-01)`,
@@ -160,7 +162,7 @@ if (isMain(import.meta.url)) {
   const { diff } = checkDeps({
     baseManifest: baseManifestText ? JSON.parse(baseManifestText) : null,
   });
-  const addedDependencies = diff ? diff.added.map((a) => a.name) : [];
+  const addedDependencies = diff ? diff.added.map((addedPackage) => addedPackage.name) : [];
   const findings = checkPr({
     title: pr.title,
     body: pr.body,

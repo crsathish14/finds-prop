@@ -49,7 +49,7 @@ const none = { decision: "none", reason: "" };
 export function splitSegments(command) {
   return command
     .split(/&&|\|\||;|\||\r?\n/)
-    .map((s) => s.trim())
+    .map((segment) => segment.trim())
     .filter(Boolean);
 }
 
@@ -66,18 +66,18 @@ export function unwrap(tokens) {
   const first = (tokens[0] ?? "").toLowerCase().replace(/\.(cmd|exe)$/, "");
   if (first === "npx" || first === "pnpx" || first === "bunx") {
     const flags = [];
-    let i = 1;
-    while (tokens[i]?.startsWith("-")) flags.push(tokens[i++]);
+    let index = 1;
+    while (tokens[index]?.startsWith("-")) flags.push(tokens[index++]);
     return {
       wrapper: first,
       noInstall: flags.includes("--no-install") || flags.includes("--offline"),
-      tokens: tokens.slice(i),
+      tokens: tokens.slice(index),
     };
   }
   if (first === "npm" && tokens[1] === "exec") {
-    let i = 2;
-    while (tokens[i]?.startsWith("-")) i++;
-    return { wrapper: "npm exec", noInstall: false, tokens: tokens.slice(i) };
+    let index = 2;
+    while (tokens[index]?.startsWith("-")) index++;
+    return { wrapper: "npm exec", noInstall: false, tokens: tokens.slice(index) };
   }
   return { wrapper: null, noInstall: false, tokens };
 }
@@ -90,14 +90,15 @@ function commandName(token = "") {
 }
 
 function gitSubcommand(tokens) {
-  let i = 1;
-  while (i < tokens.length) {
-    const t = tokens[i];
-    if (t === "-C" || t === "-c" || t === "--git-dir" || t === "--work-tree") i += 2;
-    else if (t.startsWith("-")) i += 1;
+  let index = 1;
+  while (index < tokens.length) {
+    const token = tokens[index];
+    if (token === "-C" || token === "-c" || token === "--git-dir" || token === "--work-tree")
+      index += 2;
+    else if (token.startsWith("-")) index += 1;
     else break;
   }
-  return { sub: tokens[i] ?? "", rest: tokens.slice(i + 1) };
+  return { sub: tokens[index] ?? "", rest: tokens.slice(index + 1) };
 }
 
 function evaluateGit(tokens, branch) {
@@ -108,22 +109,22 @@ function evaluateGit(tokens, branch) {
   const onProtected = PROTECTED_BRANCHES.has(branch ?? "");
   if (sub === "push") {
     const force = rest.some(
-      (t) =>
-        t === "--force" ||
-        t === "-f" ||
-        t.startsWith("--force-with-lease") ||
-        t === "--mirror" ||
-        t === "--delete" ||
-        /^\+\S/.test(t),
+      (token) =>
+        token === "--force" ||
+        token === "-f" ||
+        token.startsWith("--force-with-lease") ||
+        token === "--mirror" ||
+        token === "--delete" ||
+        /^\+\S/.test(token),
     );
     if (force)
       return deny(
         "Force-pushing, deleting remote branches and mirror pushes are not allowed (R-GIT-01).",
       );
-    const targets = rest.filter((t) => !t.startsWith("-")).slice(1); // after the remote name
+    const targets = rest.filter((token) => !token.startsWith("-")).slice(1); // after the remote name
     const toProtected =
-      targets.some((t) => /(^|[:/])(main|develop)$/.test(t)) ||
-      (rest.filter((t) => !t.startsWith("-")).length <= 1 && onProtected);
+      targets.some((token) => /(^|[:/])(main|develop)$/.test(token)) ||
+      (rest.filter((token) => !token.startsWith("-")).length <= 1 && onProtected);
     if (toProtected)
       return deny(
         "Do not push to main or develop; push a feature branch and open a pull request (R-GIT-01).",
@@ -139,7 +140,7 @@ function evaluateGit(tokens, branch) {
     return onProtected
       ? deny(`git reset --hard on ${branch} is not allowed.`)
       : ask("git reset --hard discards uncommitted work. Confirm.");
-  if (sub === "clean" && rest.some((t) => /^-\w*f/.test(t) || t === "--force"))
+  if (sub === "clean" && rest.some((token) => /^-\w*f/.test(token) || token === "--force"))
     return deny("git clean -f deletes untracked files and cannot be undone.");
   return none;
 }
@@ -149,21 +150,21 @@ function evaluateSupabase(tokens) {
   const joined = args.join(" ");
   if (
     args.some(
-      (t) =>
-        t === "--linked" ||
-        t === "--db-url" ||
-        t.startsWith("--db-url=") ||
-        t === "--project-ref" ||
-        t.startsWith("--project-ref=") ||
-        t === "--project-id" ||
-        t.startsWith("--project-id="),
+      (token) =>
+        token === "--linked" ||
+        token === "--db-url" ||
+        token.startsWith("--db-url=") ||
+        token === "--project-ref" ||
+        token.startsWith("--project-ref=") ||
+        token === "--project-id" ||
+        token.startsWith("--project-id="),
     )
   ) {
     return deny(
       "Commands against a linked project or a database URL touch a shared environment. CI applies migrations; agents never do (R-DB-01).",
     );
   }
-  const sub = args.find((t) => !t.startsWith("-")) ?? "";
+  const sub = args.find((token) => !token.startsWith("-")) ?? "";
   if (
     [
       "link",
@@ -216,15 +217,19 @@ function evaluateGh(tokens) {
     return deny("Secrets and variables are managed by the owner.");
   if (area === "api") {
     const method = args.find(
-      (t, i) =>
-        (args[i - 1] === "-X" || args[i - 1] === "--method") &&
-        /^(POST|PUT|PATCH|DELETE)$/i.test(t),
+      (token, index) =>
+        (args[index - 1] === "-X" || args[index - 1] === "--method") &&
+        /^(POST|PUT|PATCH|DELETE)$/i.test(token),
     );
     const writes =
       Boolean(method) ||
       args.some(
-        (t) =>
-          t === "-f" || t === "-F" || t === "--field" || t === "--raw-field" || t === "--input",
+        (token) =>
+          token === "-f" ||
+          token === "-F" ||
+          token === "--field" ||
+          token === "--raw-field" ||
+          token === "--input",
       );
     if (writes) return deny("gh api with a write method changes GitHub state and is not allowed.");
   }
@@ -239,13 +244,14 @@ function evaluateGh(tokens) {
 function evaluateRemoval(name, tokens) {
   const args = tokens.slice(1);
   const recursive =
-    (name === "rm" && args.some((t) => /^-[a-zA-Z]*[rR]/.test(t) || t === "--recursive")) ||
+    (name === "rm" &&
+      args.some((token) => /^-[a-zA-Z]*[rR]/.test(token) || token === "--recursive")) ||
     ((name === "rmdir" || name === "rd" || name === "del" || name === "erase") &&
-      args.some((t) => /^\/[sS]$/.test(t))) ||
-    (name === "remove-item" && args.some((t) => /^-recurse$/i.test(t))) ||
-    ((name === "ri" || name === "rm") && args.some((t) => /^-recurse$/i.test(t)));
+      args.some((token) => /^\/[sS]$/.test(token))) ||
+    (name === "remove-item" && args.some((token) => /^-recurse$/i.test(token))) ||
+    ((name === "ri" || name === "rm") && args.some((token) => /^-recurse$/i.test(token)));
   if (!recursive) return none;
-  const targets = args.filter((t) => !t.startsWith("-") && !/^\/[a-zA-Z]$/.test(t));
+  const targets = args.filter((token) => !token.startsWith("-") && !/^\/[a-zA-Z]$/.test(token));
   if (targets.length === 0) return deny("Recursive delete with no target.");
   for (const target of targets) {
     const cleaned = target.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
@@ -268,7 +274,7 @@ function evaluateRemoval(name, tokens) {
 
 function evaluateNpm(tokens) {
   const args = tokens.slice(1);
-  const sub = args.find((t) => !t.startsWith("-")) ?? "";
+  const sub = args.find((token) => !token.startsWith("-")) ?? "";
   if (
     sub === "publish" ||
     sub === "unpublish" ||
@@ -309,10 +315,10 @@ function evaluateNpm(tokens) {
 
 /**
  * @param {string} command  the Bash command line
- * @param {{ branch?: string|null }} ctx
+ * @param {{ branch?: string|null }} context
  * @returns {{ decision: "deny"|"ask"|"none", reason: string }}
  */
-export function decide(command, ctx = {}) {
+export function decide(command, context = {}) {
   if (typeof command !== "string" || command.trim() === "") return none;
   if (DOWNLOAD_TO_SHELL.test(command)) return deny("Do not run downloaded code through a shell.");
   const results = [];
@@ -321,7 +327,7 @@ export function decide(command, ctx = {}) {
     if (tokens.length === 0) continue;
     const { wrapper, noInstall, tokens: inner } = unwrap(tokens);
     const name = commandName(inner[0]);
-    const push = (r) => results.push(r);
+    const push = (result) => results.push(result);
 
     // secrets: env files and the process environment
     if (SECRET_ENV_FILE.test(segment))
@@ -332,7 +338,7 @@ export function decide(command, ctx = {}) {
       );
     if (
       ["printenv"].includes(name) ||
-      (name === "env" && inner.slice(1).every((t) => t.startsWith("-"))) ||
+      (name === "env" && inner.slice(1).every((token) => token.startsWith("-"))) ||
       (name === "set" && inner.length === 1) ||
       /^(get-childitem|gci|dir|ls)\s+env:/i.test(segment)
     ) {
@@ -341,7 +347,7 @@ export function decide(command, ctx = {}) {
     if (/^(echo|printf|write-output|write-host)$/.test(name) && SECRET_VARIABLE.test(segment))
       push(deny("Do not print variables that may hold secrets (R-AI-08)."));
 
-    if (name === "git") push(evaluateGit(inner, ctx.branch));
+    if (name === "git") push(evaluateGit(inner, context.branch));
     else if (name === "supabase") push(evaluateSupabase(inner));
     else if (name === "gh") push(evaluateGh(inner));
     else if (name === "vercel") push(deny("Deployments run in CI, not from an agent session."));
@@ -368,7 +374,9 @@ export function decide(command, ctx = {}) {
       );
   }
   return (
-    results.find((r) => r.decision === "deny") ?? results.find((r) => r.decision === "ask") ?? none
+    results.find((result) => result.decision === "deny") ??
+    results.find((result) => result.decision === "ask") ??
+    none
   );
 }
 

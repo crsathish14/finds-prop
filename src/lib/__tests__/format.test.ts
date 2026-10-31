@@ -10,7 +10,7 @@ import {
   type Translate,
 } from "../format";
 
-const t = createTranslator({ locale: "en", messages }) as unknown as Translate;
+const translate = createTranslator({ locale: "en", messages }) as unknown as Translate;
 
 describe("UT-format: prices follow the approved UX", () => {
   it.each([
@@ -24,28 +24,28 @@ describe("UT-format: prices follow the approved UX", () => {
     [48_000, "₹48,000"],
     [99_999, "₹99,999"],
   ])("%i is shown as %s", (rupees, expected) => {
-    expect(formatPrice(t, "en", rupees)).toBe(expected);
+    expect(formatPrice(translate, "en", rupees)).toBe(expected);
   });
 
   it("rounding up to 100 L reads as 1 Cr, never 100 L", () => {
-    expect(formatPrice(t, "en", 99_99_999)).toBe("₹1 Cr");
+    expect(formatPrice(translate, "en", 99_99_999)).toBe("₹1 Cr");
   });
 
   it("at most two decimals, trailing zeros dropped", () => {
-    expect(formatPrice(t, "en", 1_23_45_678)).toBe("₹1.23 Cr");
-    expect(formatPrice(t, "en", 54_20_000)).toBe("₹54.2 L");
+    expect(formatPrice(translate, "en", 1_23_45_678)).toBe("₹1.23 Cr");
+    expect(formatPrice(translate, "en", 54_20_000)).toBe("₹54.2 L");
   });
 
   it("rent adds /mo to the same price", () => {
-    expect(formatRent(t, "en", 48_000)).toBe("₹48,000/mo");
-    expect(formatRent(t, "en", 1_00_000)).toBe("₹1 L/mo");
+    expect(formatRent(translate, "en", 48_000)).toBe("₹48,000/mo");
+    expect(formatRent(translate, "en", 1_00_000)).toBe("₹1 L/mo");
   });
 
   it("price per sq.ft and area use Indian digit grouping", () => {
-    expect(formatPerSqft(t, "en", 8_906)).toBe("₹8,906 per sq.ft");
-    expect(formatPerSqft(t, "en", 1_20_000)).toBe("₹1,20,000 per sq.ft");
-    expect(formatArea(t, "en", 1_420)).toBe("1,420 sq.ft");
-    expect(formatArea(t, "en", 1_20_000)).toBe("1,20,000 sq.ft");
+    expect(formatPerSqft(translate, "en", 8_906)).toBe("₹8,906 per sq.ft");
+    expect(formatPerSqft(translate, "en", 1_20_000)).toBe("₹1,20,000 per sq.ft");
+    expect(formatArea(translate, "en", 1_420)).toBe("1,420 sq.ft");
+    expect(formatArea(translate, "en", 1_20_000)).toBe("1,20,000 sq.ft");
   });
 });
 

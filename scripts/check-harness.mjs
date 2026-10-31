@@ -31,7 +31,7 @@ function stripNextBlock(text) {
 }
 
 function backtickSpans(text) {
-  return [...text.matchAll(/`([^`\n]+)`/g)].map((m) => m[1]);
+  return [...text.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]);
 }
 
 function looksLikeRepoPath(span) {
@@ -51,11 +51,11 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
 
   // --- instruction files
   const instructionFiles = files.filter(
-    (f) =>
-      f === "AGENTS.md" ||
-      f.endsWith("/AGENTS.md") ||
-      f === "CONTRIBUTING.md" ||
-      /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(f),
+    (file) =>
+      file === "AGENTS.md" ||
+      file.endsWith("/AGENTS.md") ||
+      file === "CONTRIBUTING.md" ||
+      /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(file),
   );
   if (!exists("AGENTS.md"))
     findings.push(
@@ -67,24 +67,24 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
       ),
     );
 
-  const handbook = files.filter((f) => /^docs\/engineering\/[^/]+\.md$/.test(f));
+  const handbook = files.filter((file) => /^docs\/engineering\/[^/]+\.md$/.test(file));
   const definedRules = new Map();
   const definedGates = new Set();
   for (const file of handbook) {
     const text = readText(root, file) ?? "";
-    for (const m of text.matchAll(/^\|\s*(R-[A-Z]+-\d\d)\s*\|/gm)) {
-      if (definedRules.has(m[1]))
+    for (const match of text.matchAll(/^\|\s*(R-[A-Z]+-\d\d)\s*\|/gm)) {
+      if (definedRules.has(match[1]))
         findings.push(
           finding(
             file,
             0,
             "H-RULE-DUP",
-            `${m[1]} is defined here and in ${definedRules.get(m[1])}; each rule has one home`,
+            `${match[1]} is defined here and in ${definedRules.get(match[1])}; each rule has one home`,
           ),
         );
-      else definedRules.set(m[1], file);
+      else definedRules.set(match[1], file);
     }
-    for (const m of text.matchAll(/^\|\s*(G-\d\d)\s*\|/gm)) definedGates.add(m[1]);
+    for (const match of text.matchAll(/^\|\s*(G-\d\d)\s*\|/gm)) definedGates.add(match[1]);
   }
 
   for (const file of instructionFiles) {
@@ -146,27 +146,34 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
       if (!candidates.some(exists))
         findings.push(finding(file, 0, "H-PATH", `mentions ${span} which does not exist`));
     }
-    for (const m of text.matchAll(/\bR-[A-Z]+-\d\d\b/g)) {
-      if (definedRules.size > 0 && !definedRules.has(m[0]))
+    for (const match of text.matchAll(/\bR-[A-Z]+-\d\d\b/g)) {
+      if (definedRules.size > 0 && !definedRules.has(match[0]))
         findings.push(
-          finding(file, 0, "H-RULE-REF", `cites ${m[0]} which is not defined in docs/engineering`),
+          finding(
+            file,
+            0,
+            "H-RULE-REF",
+            `cites ${match[0]} which is not defined in docs/engineering`,
+          ),
         );
     }
-    for (const m of text.matchAll(/\bG-\d\d\b/g)) {
-      if (definedGates.size > 0 && !definedGates.has(m[0]))
+    for (const match of text.matchAll(/\bG-\d\d\b/g)) {
+      if (definedGates.size > 0 && !definedGates.has(match[0]))
         findings.push(
           finding(
             file,
             0,
             "H-GATE-REF",
-            `cites ${m[0]} which is not defined in docs/engineering/quality-gates.md`,
+            `cites ${match[0]} which is not defined in docs/engineering/quality-gates.md`,
           ),
         );
     }
   }
 
   // --- skills
-  for (const file of files.filter((f) => /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(f))) {
+  for (const file of files.filter((candidate) =>
+    /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(candidate),
+  )) {
     const text = readText(root, file) ?? "";
     const front = /^---\n([\s\S]*?)\n---/.exec(text)?.[1] ?? "";
     const dir = file.split("/")[2];
@@ -188,7 +195,7 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
 
   // --- ADRs
   const adrFiles = files.filter(
-    (f) => /^docs\/adr\/[^/]+\.md$/.test(f) && !/\/(_template|README)\.md$/.test(f),
+    (file) => /^docs\/adr\/[^/]+\.md$/.test(file) && !/\/(_template|README)\.md$/.test(file),
   );
   const numbers = new Map();
   for (const file of adrFiles) {
@@ -231,13 +238,17 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
       );
     }
     const hookCommands = JSON.stringify(settings?.hooks ?? {});
-    for (const m of hookCommands.matchAll(/\.claude\/hooks\/([\w-]+\.mjs)/g)) {
-      const rel = `.claude/hooks/${m[1]}`;
+    for (const match of hookCommands.matchAll(/\.claude\/hooks\/([\w-]+\.mjs)/g)) {
+      const rel = `.claude/hooks/${match[1]}`;
       if (!exists(rel))
         findings.push(
           finding(".claude/settings.json", 0, "H-HOOK", `hook script ${rel} does not exist`),
         );
-      else if (!files.some((f) => /\.test\.mjs$/.test(f) && f.includes(path.basename(rel, ".mjs"))))
+      else if (
+        !files.some(
+          (file) => /\.test\.mjs$/.test(file) && file.includes(path.basename(rel, ".mjs")),
+        )
+      )
         findings.push(
           finding(rel, 0, "H-HOOK", "hook scripts need a test file (scripts/__tests__)"),
         );
@@ -263,10 +274,10 @@ export function checkHarness({ root = repoRoot, files = listFiles(root) } = {}) 
   }
   if (exists("lefthook.yml")) {
     const text = fs.readFileSync(path.join(root, "lefthook.yml"), "utf8");
-    for (const m of text.matchAll(/node (scripts\/[\w./-]+\.mjs)/g)) {
-      if (!exists(m[1]))
+    for (const match of text.matchAll(/node (scripts\/[\w./-]+\.mjs)/g)) {
+      if (!exists(match[1]))
         findings.push(
-          finding("lefthook.yml", 0, "H-LEFTHOOK", `runs ${m[1]} which does not exist`),
+          finding("lefthook.yml", 0, "H-LEFTHOOK", `runs ${match[1]} which does not exist`),
         );
     }
   }

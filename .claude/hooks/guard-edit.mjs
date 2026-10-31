@@ -51,11 +51,11 @@ export function toRelative(filePath, root) {
 
 /**
  * @param {string} filePath  path from the tool call (absolute or relative)
- * @param {{ root?: string, existsOnBase?: (rel: string) => boolean|null }} ctx
+ * @param {{ root?: string, existsOnBase?: (rel: string) => boolean|null }} context
  *   existsOnBase returns true/false, or null when the base branch cannot be consulted.
  */
-export function decide(filePath, ctx = {}) {
-  const rel = toRelative(filePath, ctx.root);
+export function decide(filePath, context = {}) {
+  const rel = toRelative(filePath, context.root);
   if (!rel) return none;
   if (SECRET_FILE.test(rel))
     return deny(
@@ -65,7 +65,7 @@ export function decide(filePath, ctx = {}) {
     return deny("Edit package.json and let npm update package-lock.json (R-DEP-03).");
   if (GENERATED.test(rel)) return deny("Generated or tool-owned folder; do not edit it by hand.");
   if (/^supabase\/migrations\/[^/]+\.sql$/.test(rel)) {
-    const existing = ctx.existsOnBase ? ctx.existsOnBase(rel) : null;
+    const existing = context.existsOnBase ? context.existsOnBase(rel) : null;
     if (existing === true)
       return deny(
         "This migration already exists on the base branch. Migrations are forward-only: add a new migration instead (R-DB-02).",

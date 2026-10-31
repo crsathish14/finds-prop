@@ -9,6 +9,7 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
 import tseslint from "typescript-eslint";
+import { NAMING_RULES } from "./scripts/policy/naming-rules.mjs";
 
 // Next.js special files must have a default export, and the error boundaries must be client components.
 const NEXT_SPECIAL_FILES = [
@@ -54,7 +55,7 @@ const NO_ENUM = syntax(
 const LETTER = "[A-Za-z\u00C0-\u1FFF\u2C00-\uFFFF]";
 const TEXT_PROPS = "alt|title|aria-label|aria-description|aria-roledescription|placeholder|label";
 const NO_LITERAL_TEXT_MESSAGE =
-  "Visitor-facing text belongs in src/i18n/messages/en.json; use t('key'). R-FE-21";
+  "Visitor-facing text belongs in src/i18n/messages/en.json; use translate('key'). R-FE-21";
 const NO_LITERAL_TEXT = [
   syntax(`JSXText[value=/${LETTER}/]`, NO_LITERAL_TEXT_MESSAGE),
   syntax(`JSXExpressionContainer > Literal[value=/${LETTER}/]`, NO_LITERAL_TEXT_MESSAGE),
@@ -166,6 +167,12 @@ const eslintConfig = defineConfig([
       "no-restricted-syntax": ["error", NO_ENUM, NO_PROCESS_ENV],
       "no-restricted-imports": ["error", { patterns: [ADMIN_CLIENT, TANSTACK] }],
     },
+  },
+
+  // ---------------------------------------------------------------- names are words (R-GEN-11)
+  {
+    files: ["**/*.{ts,tsx,mjs,mts}"],
+    rules: NAMING_RULES,
   },
 
   // ---------------------------------------------------------------- default exports (R-GEN-04)

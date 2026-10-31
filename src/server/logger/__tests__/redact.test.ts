@@ -47,14 +47,14 @@ describe("UT-redact: values", () => {
 
   it("walks nested objects and arrays and stops at a depth limit", () => {
     const out = redactValue({
-      a: [{ password: "x" }],
-      b: { c: { d: { e: { f: { g: { h: 1 } } } } } },
+      accounts: [{ password: "x" }],
+      nested: { one: { two: { three: { four: { five: { six: 1 } } } } } },
     }) as {
-      a: Array<{ password: string }>;
-      b: unknown;
+      accounts: Array<{ password: string }>;
+      nested: unknown;
     };
-    expect(out.a[0]?.password).toBe(REDACTED);
-    expect(JSON.stringify(out.b)).toContain("[TRUNCATED]");
+    expect(out.accounts[0]?.password).toBe(REDACTED);
+    expect(JSON.stringify(out.nested)).toContain("[TRUNCATED]");
   });
 
   it("keeps only the name and a redacted message of an Error, never the stack", () => {

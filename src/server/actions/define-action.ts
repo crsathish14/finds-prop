@@ -53,7 +53,7 @@ export interface ActionConfig<S extends z.ZodType, R> {
   /** Cache tags to invalidate after a successful write. */
   invalidate?: (result: R, input: z.infer<S>) => readonly string[];
   audit?: { action: string };
-  handler: (ctx: ActionContext<z.infer<S>>) => Promise<R>;
+  handler: (context: ActionContext<z.infer<S>>) => Promise<R>;
 }
 
 const notConfigured = (what: string) => (): never => {

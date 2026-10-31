@@ -52,10 +52,12 @@ describe("UT-field-errors: Zod issues become message keys, never English", () =>
   });
 
   it("free text from a schema is never passed through", () => {
-    const schema = z.object({ a: z.string().refine(() => false, { error: "Please fix a" }) });
-    const out = errorsOf(schema, { a: "x" });
-    expect(JSON.stringify(out)).not.toContain("Please fix a");
-    expect(out.a).toEqual([{ key: "validation.invalid" }]);
+    const schema = z.object({
+      name: z.string().refine(() => false, { error: "Please fix the name" }),
+    });
+    const out = errorsOf(schema, { name: "x" });
+    expect(JSON.stringify(out)).not.toContain("Please fix the name");
+    expect(out.name).toEqual([{ key: "validation.invalid" }]);
   });
 
   it("collects several problems per field and uses a dotted path for nested fields", () => {

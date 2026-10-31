@@ -9,10 +9,10 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("meta");
+  const translate = await getTranslations("meta");
   return {
-    title: { default: t("title"), template: t("titleTemplate") },
-    description: t("description"),
+    title: { default: translate("title"), template: translate("titleTemplate") },
+    description: translate("description"),
   };
 }
 

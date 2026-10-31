@@ -10,7 +10,7 @@ const EN = JSON.stringify({
   common: { items: "{count, plural, one {# item} other {# items}}" },
 });
 const USER =
-  'const a = t("home.title");\nconst b = t(`errors.${code}`);\nconst c = t("common.items", { count });\n';
+  'const title = translate("home.title");\nconst error = translate(`errors.${code}`);\nconst items = translate("common.items", { count });\n';
 
 const run = (messages = {}, src = USER) => {
   const tree = {
@@ -57,13 +57,16 @@ describe("G-21 check-messages: en.json", () => {
   it("fails on empty text, stray spaces and HTML", () => {
     const bad = JSON.stringify({ home: { title: "", sub: " hi ", rich: "Click <b>here</b>" } });
     const out = rules(
-      run({ "src/i18n/messages/en.json": bad }, 't("home.title"); t("home.sub"); t("home.rich");'),
+      run(
+        { "src/i18n/messages/en.json": bad },
+        'translate("home.title"); translate("home.sub"); translate("home.rich");',
+      ),
     );
     expect(out).toEqual(expect.arrayContaining(["MSG-EMPTY", "MSG-SPACE", "MSG-HTML"]));
   });
 
   it("fails on arrays, numbers and odd key names", () => {
-    const bad = JSON.stringify({ "bad-key": "x", list: ["a"], n: 3 });
+    const bad = JSON.stringify({ "bad-key": "x", list: ["first"], count: 3 });
     expect(rules(run({ "src/i18n/messages/en.json": bad }))).toEqual(
       expect.arrayContaining(["MSG-KEY", "MSG-SHAPE"]),
     );
@@ -71,30 +74,32 @@ describe("G-21 check-messages: en.json", () => {
 
   it("fails on a broken variable", () => {
     const bad = JSON.stringify({ home: { title: "Hello {name" } });
-    expect(rules(run({ "src/i18n/messages/en.json": bad }, 't("home.title")'))).toContain(
+    expect(rules(run({ "src/i18n/messages/en.json": bad }, 'translate("home.title")'))).toContain(
       "MSG-ICU",
     );
   });
 
   it("fails on a key nobody reads", () => {
-    const out = run({}, 't("home.title"); t(`errors.${c}`);');
-    expect(out.some((f) => f.rule === "MSG-UNUSED" && f.message.includes("common.items"))).toBe(
-      true,
-    );
+    const out = run({}, 'translate("home.title"); translate(`errors.${code}`);');
+    expect(
+      out.some(
+        (finding) => finding.rule === "MSG-UNUSED" && finding.message.includes("common.items"),
+      ),
+    ).toBe(true);
   });
 
   it("counts a namespace plus a key, a dynamic prefix and a direct read as use", () => {
-    const en = JSON.stringify({ a: { b: "x" }, dyn: { one: "y" }, err: { title: "z" } });
+    const en = JSON.stringify({ group: { item: "x" }, dyn: { one: "y" }, problem: { title: "z" } });
     const src =
-      'const t = getTranslations("a"); t("b");\nconst k = `dyn.${x}`;\nconst m = en.err.title;\n';
+      'const translate = getTranslations("group"); translate("item");\nconst dynamicKey = `dyn.${name}`;\nconst direct = en.problem.title;\n';
     expect(run({ "src/i18n/messages/en.json": en }, src)).toEqual([]);
   });
 
   it("does not count a test file as use", () => {
     const tree = {
-      "src/i18n/messages/en.json": JSON.stringify({ a: { b: "x" } }),
+      "src/i18n/messages/en.json": JSON.stringify({ group: { item: "x" } }),
       "src/app/page.tsx": "export {};\n",
-      "src/app/__tests__/page.test.tsx": 't("a.b")',
+      "src/app/__tests__/page.test.tsx": 'translate("group.item")',
     };
     const root = makeTree(tree, { withPolicy: false });
     expect(rules(checkMessages({ root, files: Object.keys(tree) }))).toContain("MSG-UNUSED");
@@ -117,9 +122,13 @@ describe("G-21 check-messages: other languages", () => {
       errors: { RATE_LIMITED: "{mins} min" },
     });
     const out = run({ "src/i18n/messages/ta.json": ta });
-    const parity = out.filter((f) => f.rule === "MSG-PARITY").map((f) => f.message);
-    expect(parity.some((m) => m.includes('"common.items" is missing'))).toBe(true);
-    expect(parity.some((m) => m.includes('"home.extra" is not in en.json'))).toBe(true);
-    expect(parity.some((m) => m.includes("{mins}") && m.includes("{minutes}"))).toBe(true);
+    const parity = out
+      .filter((finding) => finding.rule === "MSG-PARITY")
+      .map((finding) => finding.message);
+    expect(parity.some((message) => message.includes('"common.items" is missing'))).toBe(true);
+    expect(parity.some((message) => message.includes('"home.extra" is not in en.json'))).toBe(true);
+    expect(
+      parity.some((message) => message.includes("{mins}") && message.includes("{minutes}")),
+    ).toBe(true);
   });
 });

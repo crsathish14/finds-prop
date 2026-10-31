@@ -34,9 +34,11 @@ describe("G-15 check-env", () => {
 
   it("fails when .env.example has a variable the schema does not know", () => {
     const result = run({ ".env.example": `${EXAMPLE}EXTRA_KEY=1\n` });
-    expect(result.some((f) => f.rule === "ENV-PARITY" && f.message.includes("EXTRA_KEY"))).toBe(
-      true,
-    );
+    expect(
+      result.some(
+        (finding) => finding.rule === "ENV-PARITY" && finding.message.includes("EXTRA_KEY"),
+      ),
+    ).toBe(true);
   });
 
   it("fails when .env.example holds a secret-looking value", () => {

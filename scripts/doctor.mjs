@@ -9,17 +9,17 @@ const results = [];
 const add = (level, item, detail, fix = "") => results.push({ level, item, detail, fix });
 
 function run(cmd, args, options = {}) {
-  const r = spawnSync(cmd, args, {
+  const spawned = spawnSync(cmd, args, {
     encoding: "utf8",
     shell: process.platform === "win32",
     cwd: repoRoot,
     timeout: 20_000,
     ...options,
   });
-  return r.error || r.status !== 0 ? null : (r.stdout ?? "").trim();
+  return spawned.error || spawned.status !== 0 ? null : (spawned.stdout ?? "").trim();
 }
 
-const major = (v) => Number.parseInt(String(v).replace(/^v/, ""), 10);
+const major = (version) => Number.parseInt(String(version).replace(/^v/, ""), 10);
 
 export function doctor() {
   const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
@@ -143,13 +143,13 @@ export function doctor() {
 
 if (isMain(import.meta.url)) {
   const out = doctor();
-  const widest = Math.max(...out.map((r) => r.item.length));
-  for (const r of out) {
-    console.log(`${r.level.padEnd(4)}  ${r.item.padEnd(widest)}  ${r.detail}`);
-    if (r.fix && r.level !== "OK") console.log(`      -> ${r.fix}`);
+  const widest = Math.max(...out.map((row) => row.item.length));
+  for (const row of out) {
+    console.log(`${row.level.padEnd(4)}  ${row.item.padEnd(widest)}  ${row.detail}`);
+    if (row.fix && row.level !== "OK") console.log(`      -> ${row.fix}`);
   }
-  const fails = out.filter((r) => r.level === "FAIL").length;
-  const warns = out.filter((r) => r.level === "WARN").length;
+  const fails = out.filter((row) => row.level === "FAIL").length;
+  const warns = out.filter((row) => row.level === "WARN").length;
   console.log(`\n${fails} blocking, ${warns} warnings.`);
   process.exit(fails > 0 ? 1 : 0);
 }
