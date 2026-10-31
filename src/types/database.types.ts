@@ -23,16 +23,86 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            [_ in never]: never
+            "app_config": {
+                  Row: {
+                    "description": string | null,"key": string,"updated_at": string,"value": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "description"?: string | null,"key": string,"updated_at"?: string,"value": string
+                  }
+                  Update: {
+                    "description"?: string | null,"key"?: string,"updated_at"?: string,"value"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
+                  Row: {
+                    "created_at": string,"email_verified_at": string | null,"full_name": string | null,"id": string,"phone": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email_verified_at"?: string | null,"full_name"?: string | null,"id": string,"phone"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"email_verified_at"?: string | null,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"site_settings": {
+                  Row: {
+                    "key": string,"updated_at": string,"value": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "key": string,"updated_at"?: string,"value": NonNullable<Json>
+                  }
+                  Update: {
+                    "key"?: string,"updated_at"?: string,"value"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"user_roles": {
+                  Row: {
+                    "created_at": string,"id": string,"role": Database["public"]['Enums']["app_role"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"role": Database["public"]['Enums']["app_role"],"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"role"?: Database["public"]['Enums']["app_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "has_role":
+{ Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
+                           },
+"has_verified_phone":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_super_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"normalise_phone":
+{ Args: { "raw_phone": string }; Returns: string
+                           },
+"reserved_admin_email":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           }
           }
           Enums: {
-            [_ in never]: never
+            "app_role": "super_admin"|"agent"|"builder"|"customer"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -152,7 +222,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "app_role": ["super_admin", "agent", "builder", "customer"]
           }
         }
 } as const
