@@ -50,8 +50,8 @@ function DropdownMenuContent({
 type DropdownMenuItemProps = ComponentProps<typeof MenuPrimitive.Item> & {
   icon?: ReactNode;
   meta?: ReactNode;
-  metaTone?: "default" | "new";
-  destructive?: boolean;
+  metaTone?: "default" | "new" | undefined;
+  destructive?: boolean | undefined;
 };
 
 function DropdownMenuItem({

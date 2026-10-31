@@ -27,7 +27,8 @@ function Toaster({ closeLabel, containerLabel }: ToasterProps) {
       duration={6000}
       closeButton
       theme="light"
-      containerAriaLabel={containerLabel}
+      // customAriaLabel replaces the whole label; the default appends the English text "alt+T".
+      customAriaLabel={containerLabel}
       mobileOffset={{ bottom: "calc(var(--bottombar-h) + var(--s-4))" }}
       icons={{
         success: <CircleCheck className="size-5.5" aria-hidden="true" />,

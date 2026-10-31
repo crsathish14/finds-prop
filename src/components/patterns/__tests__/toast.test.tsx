@@ -16,7 +16,7 @@ describe("Toaster and notify", () => {
       notify.success("Saved to your list");
     });
     expect(await screen.findByText("Saved to your list")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Notifications alt+T" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Notifications" })).toBeInTheDocument();
   });
 
   it("shows an error and an info message", async () => {
