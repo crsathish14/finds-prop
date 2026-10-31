@@ -46,3 +46,5 @@ Findings for the owner:
 1. **Dependency footprint.** 4.14.9 adds `@swc/core` and `@parcel/watcher` (native, install scripts) and `@eloqnt/*` (first-party, from the same author, published August 2026). They belong to the optional message extractor and are not used here. Installs use `--ignore-scripts`, but R-DEP-04 requires the two install scripts to be approved by name in `scripts/policy/licences.json`. Releases up to 4.4.x avoid them but lack root-params support and are a year old.
 2. **`globalNotFound` is an experimental Next.js flag.** It is the documented answer for a top-level dynamic segment. If it changes, only `global-not-found.tsx` and one line of config are affected.
 3. The fallback (own helper) is not needed.
+
+**Owner decision, 31 Oct 2026:** approved next-intl 4.14.9 and the two install scripts by name (ADR-031).

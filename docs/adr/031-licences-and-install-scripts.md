@@ -10,7 +10,7 @@
 
 ## Decision
 
-Weak copyleft approved by name: `axe-core` and `@axe-core/*` (MPL-2.0, accessibility testing, development only), `lightningcss*` (MPL-2.0, used by Tailwind CSS to build styles), `@img/sharp-*` (LGPL-3.0-or-later native image libraries used by next/image, dynamically linked and unmodified). Install scripts approved by name: `fsevents` (macOS file watching), `lefthook` (installs git hooks locally), `unrs-resolver` (ships prebuilt binaries; the script only validates them). All approvals live in `scripts/policy/licences.json`.
+Weak copyleft approved by name: `axe-core` and `@axe-core/*` (MPL-2.0, accessibility testing, development only), `lightningcss*` (MPL-2.0, used by Tailwind CSS to build styles), `@img/sharp-*` (LGPL-3.0-or-later native image libraries used by next/image, dynamically linked and unmodified). Install scripts approved by name: `fsevents` (macOS file watching), `lefthook` (installs git hooks locally), `unrs-resolver` (ships prebuilt binaries; the script only validates them). Added 31 Oct 2026 with ADR-035 (owner approved): `@swc/core` (its postinstall only checks that the native binary loads, else falls back to WebAssembly) and `@parcel/watcher` (builds from source only when `npm_config_build_from_source=true`); both are used only by the optional next-intl message extractor, which we do not use. All approvals live in `scripts/policy/licences.json`.
 
 ## Consequences
 
