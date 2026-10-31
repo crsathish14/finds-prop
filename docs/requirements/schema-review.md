@@ -102,6 +102,23 @@ _Recommendation:_ yes. Required columns are nullable only while `status = 'draft
 - **Seeding without Docker (ADR-034).** The plan has the dev seed script create the admin test user locally. There is no local stack, and the script needs the service-role key, which agents must never hold. So the **owner runs `seed-dev.mjs`** against `findsprop-dev`, and the admin signs in with the real reserved mailbox through Google (DEC-32). pgTAP creates its own users in CI.
 - **Environment-specific values.** The URL the CRM retry job calls is not a secret but differs per environment. It goes in `app_config` through a runbook step, not through a migration. The dev value needs a stable dev URL (RISK-07, RISK-20).
 
+## 4a. Guests (signed-out visitors)
+
+A guest is the database role `anon`: no session, no token. Guests never get an anonymous Supabase session. A guest never writes to a table directly; anything a guest submits goes through a server action that uses the service role or a function, with a rate limit keyed by the visitor hash (BR-75).
+
+| Guest action                                        | Database mechanism                                                                        | Test                                                                                     | Step     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------- |
+| Read header, hero, footer, sponsors                 | `anon` select on `site_settings`                                                          | `DB-RLS-site_settings`                                                                   | F03 done |
+| Browse approved listings                            | `anon` select, approved rows, public columns only; no owner, exact location or moderation | `DB-RLS-properties-anon`, `DB-RLS-column-grants`                                         | F06      |
+| Photos of approved listings                         | `anon` select on `listing_media` where the listing is approved                            | `DB-RLS-listing_media-anon`                                                              | F06      |
+| Browse live projects, units, price trends, builders | `anon` select via `project_is_live()`; builders limited to active rows and public columns | `DB-RLS-projects-anon`, `DB-RLS-builders-anon`                                           | F04      |
+| Read an active form                                 | `anon` select where `active`                                                              | `DB-RLS-forms-anon`                                                                      | F05      |
+| Submit a project lead or form, track a view         | Server only: function with rate limit; `anon` has no insert on these tables               | `DB-FN-submit_project_lead`, `DB-FN-record_form_submission`, `DB-FN-track_project_event` | S5       |
+| Upload a form attachment                            | Server issues a signed URL; the bucket has no `anon` policy                               | `DB-STO-form-uploads-denied`                                                             | F08      |
+| Send an enquiry, save a home                        | Denied: sign-in and a verified phone are required (BR-50, BR-54)                          | `DB-RLS-enquiries-*`, `DB-RLS-saved`                                                     | F06      |
+| Compare homes                                       | Browser storage only                                                                      | none                                                                                     | none     |
+| Write anywhere                                      | Denied for every table and view                                                           | `DB-RLS-no-anon-writes`                                                                  | F01 done |
+
 ## 5. Defaults I will apply unless you object
 
 - `bhk`: nullable, 0 to 10 (0 means studio); required for apartment, villa and house; empty for plot and commercial. `bathrooms` 0 to 10.
