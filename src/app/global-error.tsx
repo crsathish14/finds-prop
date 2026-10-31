@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import { ErrorScreen } from "@/components/layout/error-screen";
+import { Button } from "@/components/ui/button";
 import en from "@/i18n/messages/en.json";
+import { cn } from "@/lib/cn";
 import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.css";
 
@@ -14,17 +18,30 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="en" className={fontVariables}>
-      <body>
-        <main className="mx-auto my-14 max-w-3xl px-6">
-          <h1>{en.errorPage.title}</h1>
-          <p>{en.errorPage.body}</p>
-          {error.digest ? <p>{en.common.reference.replace("{id}", error.digest)}</p> : null}
-          {/* eslint-disable-next-line no-restricted-syntax -- stand-in until the shared Button exists (S2-T08) */}
-          <button type="button" onClick={reset}>
-            {en.common.tryAgain}
-          </button>
-        </main>
+    <html lang="en" className={cn(fontVariables, "h-full antialiased")}>
+      <body className="flex min-h-full flex-col">
+        <ErrorScreen
+          code={en.errorPage.code}
+          title={en.errorPage.title}
+          emphasis={en.errorPage.emphasis}
+          description={en.errorPage.body}
+          actions={
+            <>
+              <Button onClick={reset}>{en.common.tryAgain}</Button>
+              <Button asChild variant="secondary">
+                <Link href="/">{en.common.goHome}</Link>
+              </Button>
+            </>
+          }
+          {...(error.digest
+            ? {
+                details: {
+                  summary: en.common.technicalDetails,
+                  text: en.common.reference.replace("{id}", error.digest),
+                },
+              }
+            : {})}
+        />
       </body>
     </html>
   );

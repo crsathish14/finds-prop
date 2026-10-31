@@ -1,25 +1,28 @@
+import Link from "next/link";
+import { ErrorScreen } from "@/components/layout/error-screen";
+import { Button } from "@/components/ui/button";
+import en from "@/i18n/messages/en.json";
 import { cn } from "@/lib/cn";
 import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.css";
-import Link from "next/link";
-import en from "@/i18n/messages/en.json";
 
 // Used when a URL matches no route at all. It bypasses the language layout, so it reads the
 // English file directly (like global-error). Pages that call notFound() use [locale]/not-found.tsx.
 export default function GlobalNotFound() {
   return (
     <html lang="en" className={cn(fontVariables, "h-full antialiased")}>
-      <body className="min-h-full flex flex-col">
-        <main
-          id="main"
-          className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-14"
-        >
-          <h1 className="text-2xl font-semibold">{en.notFound.title}</h1>
-          <p>{en.notFound.body}</p>
-          <Link href="/" className="underline">
-            {en.common.goHome}
-          </Link>
-        </main>
+      <body className="flex min-h-full flex-col">
+        <ErrorScreen
+          code={en.notFound.code}
+          title={en.notFound.title}
+          emphasis={en.notFound.emphasis}
+          description={en.notFound.body}
+          actions={
+            <Button asChild>
+              <Link href="/">{en.common.goHome}</Link>
+            </Button>
+          }
+        />
       </body>
     </html>
   );

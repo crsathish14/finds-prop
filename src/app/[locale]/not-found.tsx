@@ -1,18 +1,23 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { ErrorScreen } from "@/components/layout/error-screen";
+import { Button } from "@/components/ui/button";
 
+// Pages that call notFound() show this. A URL that matches no route at all shows
+// src/app/global-not-found.tsx instead. Both follow the approved `errors` screen.
 export default async function NotFound() {
   const translate = await getTranslations();
   return (
-    <main
-      id="main"
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-14"
-    >
-      <h1 className="text-2xl font-semibold">{translate("notFound.title")}</h1>
-      <p>{translate("notFound.body")}</p>
-      <Link href="/" className="underline">
-        {translate("common.goHome")}
-      </Link>
-    </main>
+    <ErrorScreen
+      code={translate("notFound.code")}
+      title={translate("notFound.title")}
+      emphasis={translate("notFound.emphasis")}
+      description={translate("notFound.body")}
+      actions={
+        <Button asChild>
+          <Link href="/">{translate("common.goHome")}</Link>
+        </Button>
+      }
+    />
   );
 }

@@ -7,6 +7,7 @@ import {
   TabsDemo,
   MenuDemo,
   BreadcrumbDemo,
+  ErrorScreenDemo,
   StepperDemo,
 } from "./navigation-demos";
 
@@ -68,5 +69,13 @@ export const NAVIGATION: LabEntry[] = [
       "Numbered steps with done, current, error and upcoming states, and a segmented bar on phones.",
     sources: ["patterns/stepper.tsx"],
     Demo: StepperDemo,
+  },
+  {
+    id: "error-screen",
+    name: "Error screens",
+    description:
+      "Not found and something went wrong: the page every missing or failed page shows, with one or two next steps and a fold-out for the support reference.",
+    sources: ["layout/error-screen.tsx"],
+    Demo: ErrorScreenDemo,
   },
 ];

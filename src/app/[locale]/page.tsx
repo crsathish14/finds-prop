@@ -1,14 +1,18 @@
 import { getTranslations } from "next-intl/server";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
 
 export default async function HomePage() {
   const translate = await getTranslations("home");
   return (
     <main
       id="main"
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-14"
+      className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-gutter py-14"
     >
-      <h1 className="text-3xl font-semibold">{translate("title")}</h1>
-      <p className="text-lg">{translate("tagline")}</p>
+      <Heading as="h1" size="display">
+        {translate("title")}
+      </Heading>
+      <Text variant="lead">{translate("tagline")}</Text>
     </main>
   );
 }

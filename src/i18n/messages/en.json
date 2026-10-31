@@ -7,7 +7,8 @@
   "common": {
     "loading": "Loading…",
     "tryAgain": "Try again",
-    "goHome": "Go to the home page",
+    "goHome": "Go home",
+    "technicalDetails": "Technical details",
     "reference": "Reference: {id}",
     "close": "Close",
     "skipToContent": "Skip to content"
@@ -17,12 +18,16 @@
     "tagline": "Homes, plots and new projects in Tamil Nadu. We are getting ready."
   },
   "notFound": {
-    "title": "We couldn't find that page",
-    "body": "The link may be old, or the page may have moved."
+    "code": "Error 404",
+    "title": "This page isn't here",
+    "emphasis": "here",
+    "body": "The link may be old or mistyped. Let's get you back to finding a home."
   },
   "errorPage": {
-    "title": "Something went wrong",
-    "body": "Please try again. If it keeps happening, tell us the reference below."
+    "code": "Something went wrong",
+    "title": "We couldn't load this page",
+    "emphasis": "this page",
+    "body": "It's on our side, not yours. Try again, or go back home."
   },
   "errors": {
     "VALIDATION": "Some of the information is not valid.",

@@ -56,6 +56,18 @@ test.describe("@smoke app boots", () => {
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
   });
+
+  test("the not-found page follows the approved screen: code, next step, no dead link", async ({
+    page,
+  }) => {
+    await page.goto("/this-page-does-not-exist");
+    await expect(page.getByText(en.notFound.code)).toBeVisible();
+    await expect(page.getByText(en.notFound.body)).toBeVisible();
+    const home = page.getByRole("link", { name: en.common.goHome });
+    await expect(home).toBeVisible();
+    await home.click();
+    await expect(page.getByRole("heading", { level: 1, name: en.home.title })).toBeVisible();
+  });
 });
 
 test.describe("@smoke language routing", () => {
@@ -132,7 +144,8 @@ function toPattern(message: string): RegExp {
     index++;
     return `(?:${branches.join("|")})`;
   }
-  return new RegExp(`^${text("end")}$`);
+  // Case-insensitive: small labels are set in capitals by CSS, and innerText returns what is drawn.
+  return new RegExp(`^${text("end")}$`, "i");
 }
 
 const PATTERNS = flatten(en).map(toPattern);
