@@ -8,13 +8,15 @@ Outcomes of the four Stage 1 spikes (plan 12 section 4). What was run, what it s
 
 ## S1-SPK-01 · Cache Components, session refresh, cached public read, per-user hole
 
-**Status: partly done. Needs a real Supabase session (Docker or a dev project) to finish.**
+**Status: partly done. Needs a signed-in Supabase session (Docker or a dev project) to finish.**
 
 Done on Next.js 16.4.3 with `cacheComponents` and `partialPrefetching` enabled:
 
 - `proxy.ts` with `@supabase/ssr` and `getClaims()` builds and runs. With no session cookie `getClaims()` makes no network call and the proxy adds the request id, noindex and CSP headers on prerendered pages (`x-nextjs-prerender` pages still receive proxy headers).
 - A throwaway page with a `"use cache"` component (`cacheLife("minutes")`, `cacheTag`) next to a `<Suspense>` hole that reads `cookies()` built as `Partial Prerender` (static shell plus streamed dynamic content), revalidate 1m, expire 1h, with no blocking-route error. The cached part was identical for every request; the hole changed with the cookie.
 - A dynamic route handler needs `await connection()`; without it a plain GET handler is prerendered at build time (`/api/health` fixed accordingly).
+
+CI (first run of the `db` job) also showed that the Supabase CLI 2.122.0 local stack starts with `supabase/config.toml` as written (test OTP numbers, TOTP, email signup off), `supabase db reset` applies `seed.sql`, `supabase db lint` is clean and the pgTAP smoke test passes. The generated types for the empty schema are committed.
 
 Not yet shown: a signed-in Supabase session refreshing in the proxy, a cookie-less `publicAnon` query inside `"use cache"` against a database, and a per-user save heart reading a verified session. These run in the first slice that has a database (Stage 3) or earlier if Docker is installed.
 
