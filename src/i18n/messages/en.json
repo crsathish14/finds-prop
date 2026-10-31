@@ -49,5 +49,31 @@
     "rentShort": "{price}/mo",
     "perSqft": "{price} per sq.ft",
     "area": "{value} sq.ft"
+  },
+  "status": {
+    "listing": {
+      "draft": "Draft",
+      "live": "Live",
+      "pendingReview": "Pending review",
+      "sold": "Sold",
+      "rentedOut": "Rented out",
+      "notApproved": "Not approved"
+    },
+    "enquiry": {
+      "new": "New",
+      "contacted": "Contacted",
+      "closed": "Closed",
+      "waitingForOwner": "Waiting for owner"
+    },
+    "unit": {
+      "available": "Available",
+      "onHold": "On hold",
+      "sold": "Sold",
+      "blocked": "Blocked"
+    }
+  },
+  "property": {
+    "bhk": "{count} BHK",
+    "bath": "{count, plural, one {# bath} other {# baths}}"
   }
 }

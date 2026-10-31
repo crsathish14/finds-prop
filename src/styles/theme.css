@@ -259,3 +259,13 @@
   background-size: 400% 100%;
   animation: skeleton-shimmer 1.5s ease infinite;
 }
+
+/* The big number in a dashboard tile */
+@utility text-stat {
+  font-family: var(--font-ui);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
