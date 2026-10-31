@@ -270,7 +270,7 @@ test.describe("sponsor slot", () => {
     await expect(link).toHaveAttribute("aria-label", /banner A/);
   });
 
-  test("the banners turn by themselves every 2 seconds, sliding sideways", async ({ page }) => {
+  test("the banners turn by themselves every 5 seconds, sliding sideways", async ({ page }) => {
     await page.clock.install();
     await page.goto("/design-system/preview/hero-a-three-ads");
     await settle(page);
@@ -281,15 +281,43 @@ test.describe("sponsor slot", () => {
       .first()
       .locator("..");
     const before = await track.evaluate((element) => getComputedStyle(element).transform);
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(5100);
     await expect(link).toHaveAttribute("aria-label", /banner B/);
     await page.clock.fastForward(300);
     const after = await track.evaluate((element) => getComputedStyle(element).transform);
     expect(after, "the track slid").not.toBe(before);
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(5100);
     await expect(link).toHaveAttribute("aria-label", /banner C/);
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(5100);
     await expect(link).toHaveAttribute("aria-label", /banner A/);
+  });
+
+  test("only the banner slides: the frame, label row and pager stay where they are", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.goto("/design-system/preview/hero-b-three-ads");
+    await settle(page);
+    const slot = page.locator("[data-slot=sponsor-slot]");
+    const slide = slot.locator("[aria-roledescription=slide]").first();
+    // The frame is the bordered box around the sliding banners.
+    const frame = slide.locator("xpath=ancestor::div[contains(@class,'border-line-strong')][1]");
+    const label = slot.getByText(en.sponsor.label);
+    const pager = slot.getByRole("button", { name: en.sponsor.next });
+    const frameBefore = await frame.boundingBox();
+    const labelBefore = await label.boundingBox();
+    const pagerBefore = await pager.boundingBox();
+    const slideBefore = await slide.boundingBox();
+
+    await page.clock.fastForward(5100);
+    // Part-way through the slide: the banner has moved but the frame has not.
+    await page.clock.fastForward(150);
+    expect(await frame.boundingBox()).toEqual(frameBefore);
+    expect(await label.boundingBox()).toEqual(labelBefore);
+    expect(await pager.boundingBox()).toEqual(pagerBefore);
+    expect((await slide.boundingBox())?.x, "the banner moved").not.toBe(slideBefore?.x);
+    await page.clock.fastForward(1000);
+    expect(await frame.boundingBox()).toEqual(frameBefore);
   });
 
   test("the rotation waits while the pointer is over the banner", async ({ page }) => {
@@ -300,7 +328,7 @@ test.describe("sponsor slot", () => {
     await page.clock.fastForward(8000);
     await expect(shownLink(page)).toHaveAttribute("aria-label", /banner A/);
     await page.mouse.move(5, 5);
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(5100);
     await expect(shownLink(page)).toHaveAttribute("aria-label", /banner B/);
   });
 
@@ -345,7 +373,7 @@ test.describe("sponsor slot", () => {
     await page.clock.install();
     await page.goto("/design-system/preview/hero-a-one-ad");
     await settle(page);
-    await page.clock.fastForward(10000);
+    await page.clock.fastForward(12000);
     await expect(page.locator("[data-slot=sponsor-slot] [aria-roledescription=slide]")).toHaveCount(
       1,
     );
@@ -359,7 +387,7 @@ test.describe("sponsor slot", () => {
       await page.clock.install();
       await page.goto("/design-system/preview/hero-a-three-ads");
       await settle(page);
-      await page.clock.fastForward(10000);
+      await page.clock.fastForward(12000);
       await expect(shownLink(page)).toHaveAttribute("aria-label", /banner A/);
     });
 
@@ -377,7 +405,7 @@ test.describe("sponsor slot", () => {
     await settle(page);
     const slot = page.locator("[data-slot=sponsor-slot]");
     const before = await slot.boundingBox();
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(5100);
     await page.clock.fastForward(500);
     const after = await slot.boundingBox();
     expect(after?.height).toBeCloseTo(before?.height ?? 0, 0);

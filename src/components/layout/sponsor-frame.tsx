@@ -4,9 +4,10 @@
  * SponsorFrame: shows the chosen sponsored banners in the platform's frame, as a carousel when
  *   there is more than one. Use SponsorSlot, which picks the banners; this is its client part.
  * Purpose: the platform owns the frame, the "Sponsored" label, "About this ad" and the pager; the
- *   advertiser owns only the picture. Several banners slide sideways on their own every 2 seconds
- *   (Embla carousel), and the previous and next buttons or a swipe move them by hand. Owner: design
- *   system.
+ *   advertiser owns only the picture. Several banners slide sideways on their own every 5 seconds
+ *   (Embla carousel), and the previous and next buttons or a swipe move them by hand. Only the
+ *   banner picture moves: the frame (border, corners, shadow), the label row and the pager stay
+ *   where they are. Owner: design system.
  * Props: sponsors and format (from selectSponsors, src/lib/sponsors.ts), defaultInfoOpen (shows
  *   "About this ad" open, for the Design Lab), className. The first picture loads at once (it is
  *   above the fold); the others load straight after at low priority, so a banner is never empty
@@ -53,11 +54,15 @@ const SIZES = {
   panel: "(min-width: 1024px) 524px, 100vw",
 } as const;
 
-const FORMAT_STYLES = {
-  strip:
-    "mx-auto max-w-140 lg:max-w-242.5 [&_a]:aspect-16/5 [&_a]:rounded-lg lg:[&_a]:aspect-[970/90] lg:[&_a]:rounded-md",
-  panel:
-    "[&_a]:aspect-2/1 [&_a]:rounded-lg lg:[&_a]:aspect-[540/510] lg:[&_a]:rounded-xl lg:[&_a]:p-2 lg:[&_a]:shadow-hover",
+// The width of the area, and the shape of the frame that stays put while the banners slide in it.
+const AREA_STYLES = {
+  strip: "mx-auto max-w-140 lg:max-w-242.5",
+  panel: "",
+} as const satisfies Record<SponsorFormat, string>;
+
+const FRAME_STYLES = {
+  strip: "aspect-16/5 rounded-lg lg:aspect-[970/90] lg:rounded-md",
+  panel: "aspect-2/1 rounded-lg lg:aspect-[540/510] lg:rounded-xl lg:p-2 lg:shadow-hover",
 } as const satisfies Record<SponsorFormat, string>;
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
@@ -130,34 +135,33 @@ function Slide({
       // A slide that is not on show cannot be reached by Tab or a screen reader.
       aria-hidden={active ? undefined : true}
       inert={!active}
-      className="min-w-0 flex-[0_0_100%]"
+      className="h-full min-w-0 flex-[0_0_100%]"
     >
-      <div className={FORMAT_STYLES[format]}>
-        {/* eslint-disable-next-line react/jsx-no-target-blank -- rel is set below to sponsored noopener (R-FE-14, R-FE-15) */}
-        <a
-          href={sponsor.href}
-          target="_blank"
-          rel="sponsored noopener"
-          aria-label={`${sponsor.alt} ${newTab}`}
-          className={cn(
-            "relative block overflow-hidden border border-line-strong bg-surface transition-colors duration-(--dur-fast) hover:border-primary",
-            sponsor.fit === "contain" && "bg-canvas-sunken",
-          )}
-        >
-          <picture>
-            <source media="(min-width: 1024px)" srcSet={desktop.srcSet ?? desktop.src} />
-            <img
-              {...compact}
-              alt=""
-              onError={() => onFailed(sponsor.id)}
-              className={cn(
-                "block size-full object-center",
-                sponsor.fit === "contain" ? "object-contain" : "object-cover",
-              )}
-            />
-          </picture>
-        </a>
-      </div>
+      {/* eslint-disable-next-line react/jsx-no-target-blank -- rel is set below to sponsored noopener (R-FE-14, R-FE-15) */}
+      <a
+        href={sponsor.href}
+        target="_blank"
+        rel="sponsored noopener"
+        aria-label={`${sponsor.alt} ${newTab}`}
+        // The focus ring is drawn around the fixed frame (it would be clipped here), see FRAME below.
+        className={cn(
+          "block size-full outline-none",
+          sponsor.fit === "contain" ? "bg-canvas-sunken" : "bg-surface",
+        )}
+      >
+        <picture>
+          <source media="(min-width: 1024px)" srcSet={desktop.srcSet ?? desktop.src} />
+          <img
+            {...compact}
+            alt=""
+            onError={() => onFailed(sponsor.id)}
+            className={cn(
+              "block size-full object-center",
+              sponsor.fit === "contain" ? "object-contain" : "object-cover",
+            )}
+          />
+        </picture>
+      </a>
     </div>
   );
 }
@@ -170,7 +174,7 @@ function SponsorFrame({ sponsors, format, defaultInfoOpen = false, className }: 
   const several = total > 1;
   const reducedMotion = usePrefersReducedMotion();
 
-  // The rotation: every 2 seconds; it waits while the pointer is over the banner or focus is
+  // The rotation: every 5 seconds; it waits while the pointer is over the banner or focus is
   // inside it, and is not started at all when the reader prefers less motion.
   const plugins = useMemo(
     () =>
@@ -284,22 +288,32 @@ function SponsorFrame({ sponsors, format, defaultInfoOpen = false, className }: 
           ) : null}
         </span>
       </div>
-      {/* overflow-x is clipped but not y, so the panel's soft shadow below the frame is not cut off. */}
-      <div ref={viewport} className="overflow-x-clip">
-        <div className="flex">
-          {visible.map((sponsor, index) => (
-            <Slide
-              key={sponsor.id}
-              sponsor={sponsor}
-              format={format}
-              first={sponsor.id === first.id}
-              active={index === Math.min(selected, total - 1)}
-              label={translate("position", { current: index + 1, total })}
-              roleDescription={translate("slideKind")}
-              newTab={translate("newTab")}
-              onFailed={(id) => setFailed((list) => [...list, id])}
-            />
-          ))}
+      {/* FRAME: the border, corners, padding and shadow never move; only the banners slide inside it. */}
+      <div className={AREA_STYLES[format]}>
+        <div
+          className={cn(
+            "relative border border-line-strong bg-surface transition-colors duration-(--dur-fast) hover:border-primary",
+            "has-[a:focus-visible]:outline-(length:--focus-w) has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus",
+            FRAME_STYLES[format],
+          )}
+        >
+          <div ref={viewport} className="size-full overflow-hidden rounded-[inherit]">
+            <div className="flex size-full">
+              {visible.map((sponsor, index) => (
+                <Slide
+                  key={sponsor.id}
+                  sponsor={sponsor}
+                  format={format}
+                  first={sponsor.id === first.id}
+                  active={index === Math.min(selected, total - 1)}
+                  label={translate("position", { current: index + 1, total })}
+                  roleDescription={translate("slideKind")}
+                  newTab={translate("newTab")}
+                  onFailed={(id) => setFailed((list) => [...list, id])}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       <p aria-live="polite" className="sr-only">

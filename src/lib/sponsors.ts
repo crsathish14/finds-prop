@@ -12,7 +12,7 @@
  * With several banners left they slide in turn, SPONSOR_ROTATION_MS each (SponsorFrame).
  */
 /** How long each banner stays before the next one slides in (owner decision, ADR-038). */
-export const SPONSOR_ROTATION_MS = 2000;
+export const SPONSOR_ROTATION_MS = 5000;
 
 export type SponsorFormat = "strip" | "panel";
 export type SponsorPlacement = "hero" | "results";

@@ -189,7 +189,7 @@ describe("SponsorSlot: carousel", () => {
   });
 });
 
-describe("SponsorSlot: automatic rotation every 2 seconds", () => {
+describe("SponsorSlot: automatic rotation every 5 seconds", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -200,16 +200,16 @@ describe("SponsorSlot: automatic rotation every 2 seconds", () => {
   const shown = () => document.querySelector("[aria-roledescription=slide]:not([inert])");
   const wait = (milliseconds: number) => act(() => void vi.advanceTimersByTime(milliseconds));
 
-  it("shows the next banner after 2 seconds, and the one after that after 2 more", () => {
+  it("shows the next banner after 5 seconds, and the one after that after 5 more", () => {
     renderWithMessages(<SponsorSlot ads={THREE} placement="hero" />);
     expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
-    wait(1900);
+    wait(4900);
     expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
     wait(200);
     expect(shown()).toHaveAttribute("aria-label", "Banner 2 of 3");
-    wait(2100);
+    wait(5100);
     expect(shown()).toHaveAttribute("aria-label", "Banner 3 of 3");
-    wait(2100);
+    wait(5100);
     expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
   });
 
@@ -217,10 +217,10 @@ describe("SponsorSlot: automatic rotation every 2 seconds", () => {
     renderWithMessages(<SponsorSlot ads={THREE} placement="hero" />);
     const region = screen.getByRole("region", { name: "Sponsored banners" });
     act(() => void fireEvent.mouseEnter(region));
-    wait(10000);
+    wait(12000);
     expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
     act(() => void fireEvent.mouseLeave(region));
-    wait(2100);
+    wait(5100);
     expect(shown()).toHaveAttribute("aria-label", "Banner 2 of 3");
   });
 
@@ -228,16 +228,16 @@ describe("SponsorSlot: automatic rotation every 2 seconds", () => {
     renderWithMessages(<SponsorSlot ads={THREE} placement="hero" />);
     const next = screen.getByRole("button", { name: "Next sponsored banner" });
     act(() => void fireEvent.focus(next));
-    wait(10000);
+    wait(12000);
     expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
     act(() => void fireEvent.blur(next, { relatedTarget: document.body }));
-    wait(2100);
+    wait(5100);
     expect(shown()).toHaveAttribute("aria-label", "Banner 2 of 3");
   });
 
   it("does not turn by itself with one banner", () => {
     renderWithMessages(<SponsorSlot ads={[SAMPLE_AD_A]} placement="hero" />);
-    wait(10000);
+    wait(12000);
     expect(document.querySelectorAll("[aria-roledescription=slide]")).toHaveLength(1);
     expect(screen.getByRole("link")).toBeInTheDocument();
   });
@@ -257,14 +257,14 @@ describe("SponsorSlot: automatic rotation every 2 seconds", () => {
       }) as MediaQueryList;
     try {
       renderWithMessages(<SponsorSlot ads={THREE} placement="hero" />);
-      wait(10000);
+      wait(12000);
       expect(shown()).toHaveAttribute("aria-label", "Banner 1 of 3");
     } finally {
       window.matchMedia = original;
     }
   });
 
-  it("uses a rotation time of 2 seconds", () => {
-    expect(SPONSOR_ROTATION_MS).toBe(2000);
+  it("uses a rotation time of 5 seconds", () => {
+    expect(SPONSOR_ROTATION_MS).toBe(5000);
   });
 });
