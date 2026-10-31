@@ -135,6 +135,6 @@ A guest is the database role `anon`: no session, no token. Guests never get an a
 
 1. You answer Q1 to Q3 (or accept).
 2. I write the written plan for **F01 to F03** (`base`, `identity`, `site_settings`) and ask for approval. These do not depend on Q1 to Q3, so they can go first.
-3. After approval, the migrations and their pgTAP tests, one concern per commit, on a branch. CI (`db` job) is where they run; you apply them to `findsprop-dev` with `supabase db push`.
+3. After approval, the migrations and their pgTAP tests, one concern per commit, on a branch. CI (`db` job) is where they run; after the merge the `db-deploy` workflow applies them to `findsprop-dev`.
 4. The F06 plan (listings) follows once Q1 to Q3 are settled.
 5. Auth spikes (S3-T08) need the dev project's phone provider and test OTP numbers set in the dashboard; that is a step only you can do.

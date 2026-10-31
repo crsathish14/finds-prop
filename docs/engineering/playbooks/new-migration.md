@@ -8,4 +8,4 @@ Read `AGENTS.md` and the nested file for the folder first.
 4. Write pgTAP beside it (impersonation helpers), update the BR trace.
 5. With Docker: `npm run db:reset`, `npm run check:db`, `npm run gen:types`. Without Docker: push the branch and read the CI `db` job, which prints the fresh generated types if they differ. Commit migration, tests and types (migration in its own commit).
 6. Destructive or behaviour-changing: rollback note and `supabase/rollbacks/<timestamp>.sql`.
-7. Update seeds and `database.md` (ER or policy table). You never apply it to a shared environment: the owner runs `supabase db push` against dev (ADR-034); staging and production are CI only.
+7. Update seeds and `database.md` (ER or policy table). You never apply it to a shared environment: after the merge to `develop` the `db-deploy` workflow applies it to dev (ADR-034, runbook `docs/runbooks/dev-database-deploy.md`); staging and production are CI only.

@@ -24,3 +24,12 @@ The plan assumed a local Supabase stack (Docker) for daily work. The development
 - Without Docker the local gate is lighter. Say so in the PR under "Not run, and why"; CI runs the rest.
 - **Residual risk to be aware of.** R-DB-01 previously kept all shared-environment credentials off machines where agents run. Applying migrations from the owner's machine puts a Supabase CLI login and the dev database password there. Defences: the deny rules, `guard-bash`, no password stored in any file (enter it at the prompt), and the dev project holds no real data. If that is not acceptable, the alternative is CI applying migrations to dev when a PR merges to `develop`, with no credentials on the machine.
 - Revisit at the start of Stage 3, when the first migration is written.
+
+## Amendment, 1 Nov 2026 (owner decision)
+
+Point 2 changed: **migrations reach `findsprop-dev` only through the `db-deploy.yml` workflow**, which runs `supabase db push` inside CI after a merge to `develop`. This is the alternative the residual-risk note names. Nobody runs `supabase link` or `db push` from a machine, and agents still never do.
+
+- Trigger: automatic on a push to `develop` that changes `supabase/migrations/`, plus a manual retry. It waits for the CI result of the same commit and applies nothing if CI failed.
+- Credential: one secret, `DEV_DATABASE_URL` (the Session pooler connection string), in the GitHub Environment `dev`. It reaches only the dev database; no Supabase account token is used, because that would also reach a future production project.
+- Trade-off the owner accepted: a merge to `develop` changes the dev database without a second prompt, so only green pull requests are merged. The dev project holds no real data and is rebuildable from migrations.
+- Runbook: `docs/runbooks/dev-database-deploy.md`.

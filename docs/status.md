@@ -17,7 +17,7 @@ Plan: `property-platform-implementation-plan/` (outside this repo, owner's copy)
 
 ## Standing decisions (do not reopen without the owner)
 
-- **No Docker.** Docker and WSL do not run on the owner's machine. Daily database work uses the hosted `findsprop-dev` Supabase project, and only the owner runs `supabase link` and `db push`. Agents never run link, `db push` or `--linked` commands. The CI `db` job does lint, pgTAP and the types diff. (ADR-034)
+- **No Docker.** Docker and WSL do not run on the owner's machine. Daily database work uses the hosted `findsprop-dev` Supabase project, and migrations reach it only through the `db-deploy` workflow after a merge to `develop` (owner decision, 1 Nov 2026). Nobody runs `link` or `db push` by hand; agents never run link, `db push` or `--linked` commands, and ask before every git push. The CI `db` job does lint, pgTAP and the types diff. (ADR-034)
 - **No GitHub branch rules.** Discipline only, zero required approvals while the owner works alone. Revisit when a second maintainer joins or before launch. (DEC-36, `docs/adr/030-ai-harness.md` A-05)
 - **Merges are human.** An agent opens pull requests and never merges or changes the default branch. Ask before any push, and before creating the Vercel project. (R-AI-12)
 - **Pull requests are created with the Haiku model only.** Whoever opens a pull request (title, body, `gh pr create`) does it with Claude Haiku: an agent that is not already running as Haiku hands the step to a Haiku subagent (model `haiku`) with the finished branch, the commit list and the checks it ran, and does not write the pull request text itself. Reading CI results afterwards may be done by any model. (Owner rule, 31 Oct 2026)
