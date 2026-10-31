@@ -115,7 +115,7 @@ A slice is done only when **all** of the following exist:
 | Stage | Done when (summary; details in `10`)                                                                                                 |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | S0    | Decision log signed; accounts exist; UX addendum brief issued; DLT and domain started                                                |
-| S1    | CI green; preview deploys; spikes recorded; branch protection on                                                                     |
+| S1    | CI green; preview deploys; spikes recorded; branch protection on (waived by the owner, DEC-36)                                       |
 | S2    | Design Lab matches UX boards; axe clean; token parity; **you have signed off**                                                       |
 | S3    | Fresh DB → all migrations + pgTAP green; auth works (test OTP locally and on dev); all routes guarded; no stray service-role imports |
 | S4    | Public screens match UX at three widths; both hero layouts and fallback pass `E2E-09`; vitals meet NFR-01; sitemap/canonical correct |

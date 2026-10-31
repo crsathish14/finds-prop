@@ -6,11 +6,11 @@ Gates `G-01` to `G-20`, the local layers `L-01` to `L-04`, the npm scripts, the 
 
 ## 1. Enforcement tiers and local commands
 
-| Tier                                 | Runs                                        | Purpose                                           |
-| ------------------------------------ | ------------------------------------------- | ------------------------------------------------- |
-| T1 CI and branch protection          | On every PR and push to `develop` or `main` | Authoritative; cannot be bypassed by contributors |
-| T2 Local: `npm run check`, git hooks | Before commit and before pushing            | Fast feedback; a subset of T1                     |
-| T3 Agent guardrails                  | While an agent works                        | Prevent unrecoverable actions (`06`)              |
+| Tier                                 | Runs                                        | Purpose                                                                                 |
+| ------------------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| T1 CI and branch protection          | On every PR and push to `develop` or `main` | Authoritative signal; GitHub does not enforce it while no branch rules are set (DEC-36) |
+| T2 Local: `npm run check`, git hooks | Before commit and before pushing            | Fast feedback; a subset of T1                                                           |
+| T3 Agent guardrails                  | While an agent works                        | Prevent unrecoverable actions (`06`)                                                    |
 
 `package.json` scripts (names are the contract; flags are internal). All scripts are Node-based and run on Windows, macOS and Linux with no POSIX-only syntax.
 
@@ -193,7 +193,7 @@ Properties kept from plan 09 §4: least-privilege `permissions`, third-party act
 | `main` accepts only `develop`  | n/a                                                                         | `G-17` fails a PR to `main` from any other branch | GitHub cannot restrict the source branch natively |
 | Environments                   | `dev` (no approval)                                                         | `production` (required reviewer)                  | plan 09 §5                                        |
 
-Verify at `S1-T06` that the GitHub plan supports these on a private repository (decision `DEC-36`).
+**Not in force (decision `DEC-36`, 31 Oct 2026).** The owner chose not to set branch rules, so the table above is the target, not the current setting. CI still runs on every PR and push, but GitHub does not block a failing PR, a direct push to `develop` or `main`, or a force push. Until rules are set these are held by discipline (R-GIT-01), the agent deny rules and `L-03`, and the owner merging only green PRs. Revisit when a second maintainer joins and before launch.
 
 ---
 
