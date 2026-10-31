@@ -16,7 +16,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 type InputProps = Omit<ComponentProps<"input">, "ref"> & {
-  invalid?: boolean;
+  invalid?: boolean | undefined;
   leading?: ReactNode;
   trailing?: ReactNode;
 };

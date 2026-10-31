@@ -33,7 +33,7 @@ const iconButtonStyles = cva(
   },
 );
 
-type IconButtonProps = Omit<ComponentProps<"button">, "ref" | "aria-label" | "children"> &
+type IconButtonProps = Omit<ComponentProps<"button">, "aria-label" | "children"> &
   VariantProps<typeof iconButtonStyles> & {
     "aria-label": string;
     pressed?: boolean;

@@ -4,7 +4,8 @@
  * Popover: a small floating panel anchored to a button (a filter's options, a short explanation).
  * Purpose: wraps Radix Popover. Owner: design system. For a list of actions use DropdownMenu; for
  *   a hint use Tooltip; for anything long use a Sheet.
- * Props: Popover (root), PopoverTrigger (use asChild), PopoverContent (align, side, sideOffset),
+ * Props: Popover (root), PopoverTrigger (use asChild), PopoverAnchor (position it from another
+ *   element, as Combobox does), PopoverContent (align, side, sideOffset),
  *   PopoverClose.
  * Responsive: up to 320 px wide, never wider than the screen.
  * Accessibility: focus moves into the panel when it opens and returns to the trigger when it
@@ -23,6 +24,10 @@ function Popover(props: ComponentProps<typeof PopoverPrimitive.Root>) {
 
 function PopoverTrigger(props: ComponentProps<typeof PopoverPrimitive.Trigger>) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+}
+
+function PopoverAnchor(props: ComponentProps<typeof PopoverPrimitive.Anchor>) {
+  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
 }
 
 function PopoverClose(props: ComponentProps<typeof PopoverPrimitive.Close>) {
@@ -49,4 +54,4 @@ function PopoverContent({
   );
 }
 
-export { Popover, PopoverClose, PopoverContent, PopoverTrigger };
+export { Popover, PopoverAnchor, PopoverClose, PopoverContent, PopoverTrigger };
