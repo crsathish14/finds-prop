@@ -17,6 +17,7 @@
 
 ## Owner decisions, 1 Nov 2026
 
+- **The admin signs in with Google only (decided 1 Nov 2026).** The reserved, Google-verified address is what makes someone the admin (BR-11 and BR-12, enforced by the database). No SMS code and no second step inside the app. The owner turns on 2-Step Verification in the Google account of that mailbox. An authenticator-app step can be added later if wanted.
 - **Builders and agents sign in with Google only.** No password, no phone code and no second factor. This resolves `DEC-05` for them and replaces the second-factor options above for builders and agents.
 - **Google needs the project's own OAuth client.** Supabase provides no shared Google client, so the owner creates one in Google Cloud and enters its Client ID and Secret in the Supabase dashboard (checked in Supabase's documentation, 1 Nov 2026).
 - **Consequences to build for:** no builder password flow, no set-password email, no `/reset-password` for staff, no `/builder/login` password form; builder and agent accounts have no verified phone, so `has_verified_phone()` keeps them out of customer actions (save, enquire, post a listing); the approved builder sign-in and the addendum's `staff-signin` and `staff-2fa` screens must be redrawn Google-only before S3-T10.
@@ -29,5 +30,4 @@ Settled only by a live test (`docs/runbooks/auth-spike.md`, script `scripts/spik
 
 ## Open questions
 
-- **Admin second step.** Not covered by the 1 Nov decision. Recommendation: TOTP for the admin only (free, no SMS), enforced with an `aal2` condition on the admin's write policies. Or Google alone.
 - **Agents.** The `agent` role has no portal (`DEC-08`). How is an agent invited and what can they do after signing in with Google?

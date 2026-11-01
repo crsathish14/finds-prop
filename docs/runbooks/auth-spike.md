@@ -2,7 +2,7 @@
 
 This is a throwaway experiment on the **dev** Supabase project only. You run the steps; the test script prints what Supabase does; you send the output to the agent. Nothing here touches staging or production, and nothing is sent to the agent except the script output (it holds no secrets or personal data).
 
-**Owner decisions it builds on (1 Nov 2026):** builders and agents sign in with Google only, with no password, no SMS code and no second factor. Customers sign in with a phone code. The admin signs in with Google; the admin's second step is still open (see "Open questions" in ADR-010).
+**Owner decisions it builds on (1 Nov 2026):** builders and agents sign in with Google only, with no password, no SMS code and no second factor. Customers sign in with a phone code. The admin signs in with Google only.
 
 **What we want to learn**
 
