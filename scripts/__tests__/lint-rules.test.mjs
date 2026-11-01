@@ -362,6 +362,24 @@ describe("G-02 lint: restricted imports", () => {
     expect(
       has(await lint(code, "src/server/rate-limit/limit.ts"), "no-restricted-imports", "R-BE-07"),
     ).toBe(false);
+    expect(
+      has(await lint(code, "src/server/idempotency/table.ts"), "no-restricted-imports", "R-BE-07"),
+    ).toBe(false);
+    expect(
+      has(await lint(code, "src/server/audit/audit.ts"), "no-restricted-imports", "R-BE-07"),
+    ).toBe(false);
+  });
+
+  it("R-BE-07 still rejects the service-role client in neighbouring server modules", async () => {
+    const code =
+      "import { createAdminSupabase } from '@/server/supabase/admin.server';\nexport const x = createAdminSupabase;\n";
+    for (const file of [
+      "src/server/auth/zz-lint-fixture.ts",
+      "src/server/actions/zz-lint-fixture.ts",
+      "src/server/zz-lint-fixture/index.ts",
+    ]) {
+      expect(has(await lint(code, file), "no-restricted-imports", "R-BE-07")).toBe(true);
+    }
   });
 
   it("R-FE-13 rejects TanStack Query outside client islands", async () => {
