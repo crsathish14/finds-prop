@@ -273,6 +273,8 @@ const eslintConfig = defineConfig([
     files: [
       "src/server/supabase/admin.server.ts",
       "src/server/rate-limit/**/*.ts",
+      "src/server/idempotency/**/*.ts",
+      "src/server/audit/**/*.ts",
       "src/features/builders/service.ts",
       "src/features/forms/service.ts",
       "src/features/crm/service.ts",

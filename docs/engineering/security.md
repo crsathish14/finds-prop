@@ -57,6 +57,8 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 | `features/crm/service` (+ `/api/internal/crm-retry`)                   | Reads `crm_integration_secrets` (service-role only) and calls external CRMs |
 | `features/media/service` (`finalize`, sweep)                           | Reads object bytes/metadata; deletes orphan objects                         |
 | `server/rate-limit`                                                    | Writes `public_rate_limits` (revoked from users)                            |
+| `server/idempotency`                                                   | Claims and stores `idempotency_keys` (closed to users)                      |
+| `server/audit`                                                         | Calls the service-only `audit_record()` for events a trigger cannot see     |
 | `/api/auth/hooks/send-sms`                                             | Needs no database; no service role                                          |
 | Seed script (local/dev only)                                           | Creates test users                                                          |
 
