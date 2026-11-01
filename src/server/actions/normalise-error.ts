@@ -1,4 +1,4 @@
-import type { ActionFailure, ErrorCode, FieldError } from "@/types/action";
+import type { ActionFailure, ErrorCode, FailureReason, FieldError } from "@/types/action";
 
 /**
  * Error thrown by services and handlers when a known failure occurs. The message is for
@@ -9,17 +9,23 @@ export class ActionError extends Error {
   readonly code: ErrorCode;
   readonly fieldErrors?: Record<string, FieldError[]>;
   readonly retryAfter?: number;
+  readonly reason?: FailureReason;
 
   constructor(
     code: ErrorCode,
     message: string,
-    extra: { fieldErrors?: Record<string, FieldError[]>; retryAfter?: number } = {},
+    extra: {
+      fieldErrors?: Record<string, FieldError[]>;
+      retryAfter?: number;
+      reason?: FailureReason;
+    } = {},
   ) {
     super(message);
     this.name = "ActionError";
     this.code = code;
     if (extra.fieldErrors) this.fieldErrors = extra.fieldErrors;
     if (extra.retryAfter !== undefined) this.retryAfter = extra.retryAfter;
+    if (extra.reason) this.reason = extra.reason;
   }
 }
 
@@ -60,6 +66,7 @@ export function toFailure(error: unknown, requestId?: string): ActionFailure {
   if (error instanceof ActionError) {
     if (error.fieldErrors) failure.fieldErrors = error.fieldErrors;
     if (error.retryAfter !== undefined) failure.retryAfter = error.retryAfter;
+    if (error.reason) failure.reason = error.reason;
   }
   if (code === "INTERNAL" && requestId) failure.requestId = requestId;
   return failure;

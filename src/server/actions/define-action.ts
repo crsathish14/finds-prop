@@ -1,5 +1,8 @@
 import type { z } from "zod";
 import type { ActionResult } from "@/types/action";
+import { getSessionView } from "../auth/get-session-view";
+import { assertAdmin, assertBuilder, assertUser, assertVerifiedPhone } from "../auth/guards";
+import type { SessionView } from "../auth/session";
 import { createLogger, type Logger } from "../logger";
 import { toFieldErrors } from "./field-errors";
 import { ActionError, toFailure } from "./normalise-error";
@@ -11,19 +14,20 @@ import { ActionError, toFailure } from "./normalise-error";
  *   1 parse  2 authenticate  3 authorise  4 rate limit  5 idempotency
  *   6 handler  7 cache invalidation  8 audit  9 normalise errors and return
  *
- * Stage 1 delivers the skeleton. Every dependency that needs infrastructure that does not exist
- * yet (sessions, rate limits, idempotency table, audit log) defaults to a FAIL-CLOSED stand-in:
- * an action that asks for it gets an error rather than silently skipping the protection.
- * Stage 3 (S3-T07, S3-T12) supplies the real implementations through `createDefineAction`.
+ * Stage 1 delivered the skeleton. S3-T07 supplies the real session. Every dependency that needs
+ * infrastructure that does not exist yet (rate limits, idempotency table, audit log, cache) still
+ * defaults to a FAIL-CLOSED stand-in: an action that asks for it gets an error rather than silently
+ * skipping the protection. S3-T12 supplies those through `createDefineAction`.
  */
 
-export type ActionAuth = "none" | "user" | { role: "builder" | "super_admin"; aal2?: boolean };
+/**
+ * Who may call the action. `user` is any signed-in account; `verified-phone` also needs a phone
+ * confirmed by a code (customer write paths); `builder` needs the role and an active builder
+ * record (BR-34, agents included); `super_admin` is the reserved admin.
+ */
+export type ActionAuth = "none" | "user" | "verified-phone" | { role: "builder" | "super_admin" };
 
-export interface SessionView {
-  userId: string;
-  roles: readonly string[];
-  aal: "aal1" | "aal2";
-}
+export type { SessionView };
 
 export interface ActionContext<I> {
   input: I;
@@ -73,12 +77,10 @@ export const failClosedDeps: ActionDeps = {
 
 function authorise(auth: ActionAuth, session: SessionView | null): void {
   if (auth === "none") return;
-  if (!session) throw new ActionError("UNAUTHENTICATED", "Please sign in to continue.");
-  if (auth === "user") return;
-  if (!session.roles.includes(auth.role))
-    throw new ActionError("FORBIDDEN", "You don't have permission to do that.");
-  if (auth.aal2 && session.aal !== "aal2")
-    throw new ActionError("FORBIDDEN", "A second verification step is required.");
+  if (auth === "user") assertUser(session);
+  else if (auth === "verified-phone") assertVerifiedPhone(session);
+  else if (auth.role === "builder") assertBuilder(session);
+  else assertAdmin(session);
 }
 
 /** Accepts plain objects or FormData (repeated keys become arrays). */
@@ -154,4 +156,4 @@ export function createDefineAction(deps: ActionDeps) {
   };
 }
 
-export const defineAction = createDefineAction(failClosedDeps);
+export const defineAction = createDefineAction({ ...failClosedDeps, getSession: getSessionView });
