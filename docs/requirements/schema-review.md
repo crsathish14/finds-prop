@@ -128,7 +128,7 @@ A guest is the database role `anon`: no session, no token. Guests never get an a
 - The pending-listing cap (DEC-26, five draft plus pending) and the one-enquiry-per-day rule live in the S6 and S5 functions, with the numbers in `app_config`.
 - Email verification (DEC-07) is checked when a listing is **submitted**, not when a draft is saved.
 - `reserved_admin_emails()` is one function holding both admin addresses; changing the list takes a reviewed migration, and a migration that removes an address must also remove that account's `super_admin` role (RISK-14).
-- Staff second factor (DEC-05), admin entry (DEC-06), CAPTCHA (DEC-23) and OTP policy (DEC-31) keep their recommended defaults until the auth spike (S3-T08). Policies that need `aal2` are added in a later migration once the spike settles it; until then admin writes are role-only on the dev project.
+- There is no staff second factor (owner decision, 1 Nov 2026), so no policy needs `aal2`. Admin entry (DEC-06), CAPTCHA (DEC-23) and OTP policy (DEC-31) keep their recommended defaults until the auth spike (S3-T08).
 - `has_verified_phone()` is written against the assumed JWT `phone` claim. If the spike (S3-SPK-01) shows otherwise, a new migration replaces the function body; no table changes.
 
 ## 6. Proposed order and what I need from you
