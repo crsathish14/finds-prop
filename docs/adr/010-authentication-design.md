@@ -18,6 +18,7 @@
 ## Owner decisions, 1 Nov 2026
 
 - **The admin signs in with Google only (decided 1 Nov 2026).** The reserved, Google-verified address is what makes someone the admin (BR-11 and BR-12, enforced by the database). No SMS code and no second step inside the app. The owner turns on 2-Step Verification in the Google account of that mailbox. An authenticator-app step can be added later if wanted.
+- **An agent works exactly like a builder (decided 1 Nov 2026):** same invitation, same Google-only sign-in, same portal and rules, and the admin approves their projects. They differ only by a **type** the admin can see (builder or agent), because their payment differs. Both hold the `builder` role for access; the type lives on the builder record (`builders.kind`, a later migration). The `agent` value of the role enum stays unused (`DEC-08`). Billing itself is not designed and not built.
 - **Builders and agents sign in with Google only.** No password, no phone code and no second factor. This resolves `DEC-05` for them and replaces the second-factor options above for builders and agents.
 - **Google needs the project's own OAuth client.** Supabase provides no shared Google client, so the owner creates one in Google Cloud and enters its Client ID and Secret in the Supabase dashboard (checked in Supabase's documentation, 1 Nov 2026).
 - **Consequences to build for:** no builder password flow, no set-password email, no `/reset-password` for staff, no `/builder/login` password form; builder and agent accounts have no verified phone, so `has_verified_phone()` keeps them out of customer actions (save, enquire, post a listing); the approved builder sign-in and the addendum's `staff-signin` and `staff-2fa` screens must be redrawn Google-only before S3-T10.
@@ -29,5 +30,3 @@ From Supabase's documentation (1 Nov 2026): a TOTP second step is free and gives
 Settled only by a live test (`docs/runbooks/auth-spike.md`, script `scripts/spike-auth.mjs`): what the token's `phone` claim holds for each kind of user; whether a Google sign-in lands on the invited account or creates a second one; whether the reserved admin becomes `super_admin` through Google; whether a stranger can create an account with Google; whether the Before User Created hook fires for phone sign-ups. The Send-SMS hook test (`S3-SPK-02`) waits for the hook route (S3-T09).
 
 ## Open questions
-
-- **Agents.** The `agent` role has no portal (`DEC-08`). How is an agent invited and what can they do after signing in with Google?
