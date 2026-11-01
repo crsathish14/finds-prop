@@ -7,7 +7,7 @@ This is a throwaway experiment on the **dev** Supabase project only. You run the
 **What we want to learn**
 
 1. Does a Google sign-in land on the invited builder's account, or create a second account?
-2. Does the reserved admin address become `super_admin` when it signs in with Google (BR-12)?
+2. Do the reserved admin addresses become `super_admin` when it signs in with Google (BR-12)?
 3. What does the sign-in token say about the phone for phone users and for Google users? The "verified phone" check depends on it.
 4. Is sign-up by email closed, and can a stranger create an account by signing in with Google?
 5. Does a test phone number with a fixed code work, and how long does it take?
@@ -38,7 +38,7 @@ For each run, copy the whole output into your reply.
 1. **Sign-up by email.** `node scripts/spike-auth.mjs signup`. It says whether email sign-up is open. If it was accepted, delete the `spike-...@example.test` user in the dashboard.
 2. **Phone test number.** Set `$env:SPIKE_PHONE = "+919000000001"` and `$env:SPIKE_OTP = "123456"`, then `node scripts/spike-auth.mjs phone`. Note the time it prints.
 3. **A user with no phone.** Set `$env:SPIKE_EMAIL` and `$env:SPIKE_PASSWORD` to the test user from A5, then `node scripts/spike-auth.mjs password`.
-4. **The reserved admin with Google.** `node scripts/spike-auth.mjs google`. Open the address it prints and sign in with the administrator Google account (`support@drizzlemarketings.com`).
+4. **The reserved admin with Google.** `node scripts/spike-auth.mjs google`. Open the address it prints and sign in with an administrator Google account (`support@drizzlemarketings.com` or `developer@findsprop.com`; run it once for each if you can).
 5. **A stranger with Google.** Run `google` again and sign in with any other Google account that was **not** invited. It creates a test account on dev; delete it afterwards.
 6. **An invited builder with Google.** First, in Authentication, Users, add a user whose email is the Google address of a test builder (auto confirm, any password). Then in the SQL editor run this once, with that address in both places:
 
