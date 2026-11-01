@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
 import { env } from "@/server/env";
+import { REQUEST_ID_PATTERN } from "@/server/request-id";
 
 /**
  * proxy.ts replaces middleware.ts in Next.js 16. It does three things for every page request:
@@ -15,8 +16,6 @@ import { env } from "@/server/env";
  * Static security headers live in next.config.ts. No authorization decisions are made here:
  * guards live in layouts and handlers (plan 07).
  */
-
-const REQUEST_ID = /^[\w-]{8,64}$/;
 
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
@@ -36,7 +35,7 @@ const handleLanguage = createIntlProxy(routing);
 
 export async function proxy(request: NextRequest) {
   const incoming = request.headers.get("x-request-id");
-  const requestId = incoming && REQUEST_ID.test(incoming) ? incoming : crypto.randomUUID();
+  const requestId = incoming && REQUEST_ID_PATTERN.test(incoming) ? incoming : crypto.randomUUID();
 
   // 1. Session refresh first, so the language routing below sees the refreshed cookies.
   const refreshed: { name: string; value: string; options: CookieOptions }[] = [];
