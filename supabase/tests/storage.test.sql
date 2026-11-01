@@ -129,6 +129,10 @@ select ok(
   'a customer may not write under a project'
 );
 
+-- Supabase refuses a plain SQL delete on storage.objects; the Storage API sets this switch for its own
+-- deletes and still applies our delete policies. The tests set it the same way, for this transaction only.
+select set_config('storage.allow_delete_query', 'true', true);
+
 -- DB-STO-listing-photos
 insert into storage.objects (bucket_id, name)
 values ('listing-photos', '00000000-0000-4000-8000-0000000000a2/00000000-0000-4000-9000-000000000002/seed.webp');
