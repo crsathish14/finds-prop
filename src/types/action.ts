@@ -12,6 +12,11 @@ export const ERROR_CODES = [
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
+/** Why a FORBIDDEN happened, when a screen needs to react differently (for example to ask for a phone). */
+export const FAILURE_REASONS = ["PHONE_NOT_VERIFIED"] as const;
+
+export type FailureReason = (typeof FAILURE_REASONS)[number];
+
 /** A validation problem on one field: a message key under `validation.*` plus values for it. */
 export interface FieldError {
   key: string;
@@ -28,6 +33,8 @@ export interface ActionFailure {
   fieldErrors?: Record<string, FieldError[]>;
   /** Seconds until the caller may try again (RATE_LIMITED). */
   retryAfter?: number;
+  /** Set only for a few FORBIDDEN cases; see FAILURE_REASONS. */
+  reason?: FailureReason;
   /** Shown to the user as a support reference for unexpected errors. */
   requestId?: string;
 }

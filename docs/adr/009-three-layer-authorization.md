@@ -10,3 +10,4 @@
 
 - **Decision:** (1) UI visibility (cosmetic); (2) server check in every action/handler/RSC data function via `requireUser()`, `requireRole()`, `requireOwnership()`; (3) RLS + triggers in Postgres as the final authority. Roles stay in `user_roles` with `has_role()`; policies use `(select auth.uid())`-style initPlan wrapping for performance. Staff routes additionally require `aal2` if `DEC-05` selects a second factor that supports it.
 - **Never:** service role to bypass authorization in user-facing reads.
+- **Update, 1 Nov 2026:** there is no staff second factor (ADR-010), so no `aal2` check exists; `requireAal2()` was dropped.

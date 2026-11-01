@@ -44,7 +44,7 @@ Rules:
 
 - **Never** trust a client-supplied user id, role, owner id, status or price flag. Derive from the session; pass only the entity id.
 - Actions are named by intent (`submitEnquiry`, `approveListing`) not by CRUD verb.
-- Admin actions use `auth: { role: 'super_admin', aal: 'aal2'? }` and re-check in the handler (ARC: "re-checked in every server action").
+- Admin actions use `auth: { role: 'super_admin' }` (builders: `{ role: 'builder' }`, customers' writes: `'verified-phone'`) and re-check in the handler (ARC: "re-checked in every server action").
 - A Server Action is a public POST endpoint: treat arguments as hostile even if only your UI calls it.
 - Server Actions are not for data fetching (they run sequentially per client); reads use RSC or Route Handlers.
 

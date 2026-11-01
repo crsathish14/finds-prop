@@ -9,8 +9,20 @@ import {
 } from "@/server/actions/define-action";
 import { ActionError, classifyError, toFailure } from "@/server/actions/normalise-error";
 
-const user: SessionView = { userId: "u1", roles: ["customer"], aal: "aal1" };
-const admin: SessionView = { userId: "a1", roles: ["super_admin"], aal: "aal2" };
+const user: SessionView = {
+  userId: "u1",
+  roles: ["customer"],
+  phoneVerified: false,
+  builderId: null,
+};
+const verifiedUser: SessionView = { ...user, phoneVerified: true };
+const admin: SessionView = { ...user, userId: "a1", roles: ["super_admin", "customer"] };
+const builder: SessionView = {
+  ...user,
+  userId: "b1",
+  roles: ["builder", "customer"],
+  builderId: "builder-record-1",
+};
 
 function harness(overrides: Partial<ActionDeps> = {}, session: SessionView | null = user) {
   const calls: string[] = [];
@@ -118,22 +130,53 @@ describe("UT-define-action: authentication and authorisation", () => {
     expect(await action(validInput)).toMatchObject({ ok: false, code: "FORBIDDEN" });
   });
 
-  it("requires aal2 when asked", async () => {
-    const aal1Admin: SessionView = { ...admin, aal: "aal1" };
-    const strict = harness({}, aal1Admin).defineAction({
+  it("lets the admin through a super_admin action", async () => {
+    const action = harness({}, admin).defineAction({
       name: "x",
       input,
-      auth: { role: "super_admin", aal2: true },
+      auth: { role: "super_admin" },
       handler,
     });
-    expect(await strict(validInput)).toMatchObject({ ok: false, code: "FORBIDDEN" });
-    const ok = harness({}, admin).defineAction({
+    expect(await action(validInput)).toMatchObject({ ok: true });
+  });
+
+  it("asks for a verified phone on a verified-phone action, with the reason", async () => {
+    const withoutPhone = harness({}, user).defineAction({
       name: "x",
       input,
-      auth: { role: "super_admin", aal2: true },
+      auth: "verified-phone",
       handler,
     });
-    expect(await ok(validInput)).toMatchObject({ ok: true });
+    expect(await withoutPhone(validInput)).toEqual({
+      ok: false,
+      code: "FORBIDDEN",
+      reason: "PHONE_NOT_VERIFIED",
+    });
+    const withPhone = harness({}, verifiedUser).defineAction({
+      name: "x",
+      input,
+      auth: "verified-phone",
+      handler,
+    });
+    expect(await withPhone(validInput)).toMatchObject({ ok: true });
+  });
+
+  it("needs the builder role and an active builder record (BR-34)", async () => {
+    const run = (session: SessionView | null) =>
+      harness({}, session).defineAction({ name: "x", input, auth: { role: "builder" }, handler })(
+        validInput,
+      );
+    expect(await run(builder)).toMatchObject({ ok: true });
+    expect(await run({ ...builder, builderId: null })).toMatchObject({
+      ok: false,
+      code: "FORBIDDEN",
+    });
+    expect(await run({ ...builder, roles: ["customer"] })).toMatchObject({
+      ok: false,
+      code: "FORBIDDEN",
+    });
+    expect(await run(user)).toMatchObject({ ok: false, code: "FORBIDDEN" });
+    expect(await run(null)).toMatchObject({ ok: false, code: "UNAUTHENTICATED" });
   });
 
   it("does not even look up a session for auth none", async () => {

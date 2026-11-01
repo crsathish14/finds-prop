@@ -12,7 +12,7 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------- |
 | R-SEC-01 | Authorization has three independent layers (UI hint, server check, RLS and triggers). A test proves the server layer and the database layer each reject an unauthorised call on their own | G-06, G-08                               | ADR-009             |
 | R-SEC-02 | Every Server Action and Route Handler satisfies the ten-point checklist in plan 07 §4.2, ticked in the PR template                                                                        | PR template (`G-17`); Review             | plan 07 §4.2        |
-| R-SEC-03 | Staff routes require the role, an active builder row where relevant, and `aal2` where the second-factor decision requires it                                                              | G-08, G-10 (E2E-10)                      | ADR-009, DEC-05     |
+| R-SEC-03 | Staff routes require the role, and an active builder row where relevant; there is no second factor (owner decision, 1 Nov 2026)                                                           | G-08, G-10 (E2E-10)                      | ADR-009, DEC-05     |
 | R-SEC-04 | Uploads: signed URL, finalize step with server-side MIME and magic-byte check, no SVG, EXIF stripped before upload, `form-uploads` private                                                | G-08 (`IT-media`)                        | ADR-015, plan 07 §7 |
 | R-SEC-05 | Redirects after sign-in go through `safeRedirect` only                                                                                                                                    | G-05 (`UT-safe-redirect`), G-10 (E2E-02) | plan 08 §3          |
 | R-SEC-06 | Security headers and CSP are set in `proxy.ts` and `next.config.ts`; no inline scripts                                                                                                    | G-10 (header checks)                     | plan 07 §8          |
@@ -25,15 +25,14 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 
 ### 4.1 Helpers (`server/auth/`)
 
-| Helper                                                   | Returns / throws                                                                                |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `getSessionView()`                                       | verified claims → `{ userId, roles, isBuilderActive, aal, phoneVerified }` (cached per request) |
-| `requireUser()`                                          | `UNAUTHENTICATED`                                                                               |
-| `requireVerifiedPhone()`                                 | `FORBIDDEN` with code `PHONE_NOT_VERIFIED`                                                      |
-| `requireRole(role)` with role `builder` or `super_admin` | `FORBIDDEN`                                                                                     |
-| `requireBuilder()`                                       | role **and** active builder row (BR-34)                                                         |
-| `requireAal2()`                                          | when MFA enforced                                                                               |
-| `requireOwnership(entity, id)`                           | loads with the user-scoped client; `NOT_FOUND` if RLS hides it                                  |
+| Helper                         | Returns / throws                                                                                                                                                       |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getSessionView()`             | verified claims → `{ userId, roles, phoneVerified, builderId }`; `builderId` is set only for an active builder record held by a builder-role user (cached per request) |
+| `requireUser()`                | `UNAUTHENTICATED`                                                                                                                                                      |
+| `requireVerifiedPhone()`       | `FORBIDDEN` with code `PHONE_NOT_VERIFIED`                                                                                                                             |
+| `requireAdmin()`               | `FORBIDDEN` unless the user holds `super_admin`                                                                                                                        |
+| `requireBuilder()`             | role **and** active builder row (BR-34)                                                                                                                                |
+| `requireOwnership(entity, id)` | loads with the user-scoped client; `NOT_FOUND` if RLS hides it                                                                                                         |
 
 ### 4.2 Mandatory checklist for every Server Action and Route Handler
 
