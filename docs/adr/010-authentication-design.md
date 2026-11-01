@@ -17,6 +17,7 @@
 
 ## Owner decisions, 1 Nov 2026
 
+- **There are two admin addresses, both permanent (decided 1 Nov 2026):** `support@drizzlemarketings.com` and `developer@findsprop.com`, held in one database function (`reserved_admin_emails()`, migration `20261101170000`). Each is granted `super_admin` when its Google email is confirmed; nobody else can hold it; neither can become a builder. The list is fixed in a migration, not a table, so a leaked server key cannot add an admin. The owner confirmed control of both mailboxes.
 - **The admin signs in with Google only (decided 1 Nov 2026).** The reserved, Google-verified address is what makes someone the admin (BR-11 and BR-12, enforced by the database). No SMS code and no second step inside the app. The owner turns on 2-Step Verification in the Google account of that mailbox. An authenticator-app step can be added later if wanted.
 - **An agent works exactly like a builder (decided 1 Nov 2026):** same invitation, same Google-only sign-in, same portal and rules, and the admin approves their projects. They differ only by a **type** the admin can see (builder or agent), because their payment differs. Both hold the `builder` role for access; the type lives on the builder record (`builders.kind`, a later migration). The `agent` value of the role enum stays unused (`DEC-08`). Billing itself is not designed and not built.
 - **Builders and agents sign in with Google only.** No password, no phone code and no second factor. This resolves `DEC-05` for them and replaces the second-factor options above for builders and agents.

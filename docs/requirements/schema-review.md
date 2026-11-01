@@ -18,7 +18,7 @@ Scope of this pass: the identity, site settings and listings tables (F01 to F03 
 | BR-04, 05   | Email confirmation, password reset                            | Auth configuration and staff UI                                                                                      | App                                            | T10  |
 | BR-06       | Safe redirect                                                 | Not a database rule                                                                                                  | App (`UT-safe-redirect`)                       | T09  |
 | BR-10       | Four roles                                                    | `app_role` enum (`super_admin`, `agent`, `builder`, `customer`)                                                      | `DB-CON-app_role`                              | F01  |
-| BR-11       | Only the reserved account can be `super_admin`                | `guard_user_roles()` trigger; the address lives in one function, `reserved_admin_email()`                            | `DB-TRG-user_roles-guard`                      | F02  |
+| BR-11       | Only the reserved account can be `super_admin`                | `guard_user_roles()` trigger; the addresses live in one function, `reserved_admin_emails()` (two since 1 Nov 2026)   | `DB-TRG-user_roles-guard`                      | F02  |
 | BR-12       | Reserved account is granted `super_admin` on create / confirm | Triggers on `auth.users` insert and on `email_confirmed_at` update                                                   | `DB-TRG-super_admin-grant`                     | F02  |
 | BR-13       | Admin API cannot touch `super_admin` rows                     | RLS on `user_roles` excludes `super_admin` rows for writes                                                           | `DB-RLS-user_roles-*`                          | F02  |
 | BR-14       | `agent` exists, no portal                                     | Enum value only (DEC-08 option a)                                                                                    | `DB-CON-app_role`                              | F01  |
@@ -127,7 +127,7 @@ A guest is the database role `anon`: no session, no token. Guests never get an a
 - `price` is a `bigint` of whole rupees; rent is per month.
 - The pending-listing cap (DEC-26, five draft plus pending) and the one-enquiry-per-day rule live in the S6 and S5 functions, with the numbers in `app_config`.
 - Email verification (DEC-07) is checked when a listing is **submitted**, not when a draft is saved.
-- `reserved_admin_email()` is one function in one migration; changing it takes a new migration (RISK-14).
+- `reserved_admin_emails()` is one function holding both admin addresses; changing the list takes a reviewed migration, and a migration that removes an address must also remove that account's `super_admin` role (RISK-14).
 - Staff second factor (DEC-05), admin entry (DEC-06), CAPTCHA (DEC-23) and OTP policy (DEC-31) keep their recommended defaults until the auth spike (S3-T08). Policies that need `aal2` are added in a later migration once the spike settles it; until then admin writes are role-only on the dev project.
 - `has_verified_phone()` is written against the assumed JWT `phone` claim. If the spike (S3-SPK-01) shows otherwise, a new migration replaces the function body; no table changes.
 
