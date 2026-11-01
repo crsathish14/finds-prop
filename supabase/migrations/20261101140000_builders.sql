@@ -130,6 +130,13 @@ create policy builders_select_public on public.builders
   for select to anon, authenticated
   using (active);
 
+-- The admin sees every builder (public columns here; complete rows through admin_builders()). An
+-- update must leave the new row visible to its updater, so without this the admin could not
+-- deactivate a builder.
+create policy builders_select_admin on public.builders
+  for select to authenticated
+  using ((select public.is_super_admin()));
+
 create policy builders_update_own on public.builders
   for update to authenticated
   using (id = (select public.current_builder_id()))

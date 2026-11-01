@@ -281,7 +281,7 @@ grant update (project_id) on public.project_units to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000b1", "role": "authenticated"}', true);
 select throws_ok(
-  $$update public.projects set published = true where id = '00000000-0000-4000-c000-000000000002'$$,
+  $$update public.projects set published = false where id = '00000000-0000-4000-c000-000000000002'$$,
   'P0001', 'projects.moderation_system_only', 'the guard refuses a builder publishing a project'
 );
 select throws_ok(
