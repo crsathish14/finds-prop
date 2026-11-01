@@ -37,6 +37,80 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"builders": {
+                  Row: {
+                    "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email": string,"id"?: string,"invited_at"?: string | null,"logo_url"?: string | null,"name": string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                  }
+                  Update: {
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"id"?: string,"invited_at"?: string | null,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"crm_api_logs": {
+                  Row: {
+                    "attempt": number,"created_at": string,"form_name": string | null,"http_status": number | null,"id": string,"integration_id": string | null,"integration_name": string,"outcome": string,"response_snippet": string | null,"submission_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempt"?: number,"created_at"?: string,"form_name"?: string | null,"http_status"?: number | null,"id"?: string,"integration_id"?: string | null,"integration_name": string,"outcome": string,"response_snippet"?: string | null,"submission_id"?: string | null
+                  }
+                  Update: {
+                    "attempt"?: number,"created_at"?: string,"form_name"?: string | null,"http_status"?: number | null,"id"?: string,"integration_id"?: string | null,"integration_name"?: string,"outcome"?: string,"response_snippet"?: string | null,"submission_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_api_logs_integration_id_fkey"
+      columns: ["integration_id"]
+isOneToOne: false
+      referencedRelation: "crm_integrations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "crm_api_logs_submission_id_fkey"
+      columns: ["submission_id"]
+isOneToOne: false
+      referencedRelation: "form_submissions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_integration_secrets": {
+                  Row: {
+                    "access_token": string | null,"api_key": string | null,"api_secret": string | null,"integration_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "access_token"?: string | null,"api_key"?: string | null,"api_secret"?: string | null,"integration_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "access_token"?: string | null,"api_key"?: string | null,"api_secret"?: string | null,"integration_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "crm_integration_secrets_integration_id_fkey"
+      columns: ["integration_id"]
+isOneToOne: true
+      referencedRelation: "crm_integrations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"crm_integrations": {
+                  Row: {
+                    "active": boolean,"base_url": string,"body_mapping": NonNullable<Json>,"created_at": string,"endpoint": string | null,"headers": NonNullable<Json>,"id": string,"lead_id_path": string | null,"lead_source": string | null,"method": string,"name": string,"project_codes": NonNullable<Json>,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"base_url": string,"body_mapping"?: NonNullable<Json>,"created_at"?: string,"endpoint"?: string | null,"headers"?: NonNullable<Json>,"id"?: string,"lead_id_path"?: string | null,"lead_source"?: string | null,"method"?: string,"name": string,"project_codes"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"base_url"?: string,"body_mapping"?: NonNullable<Json>,"created_at"?: string,"endpoint"?: string | null,"headers"?: NonNullable<Json>,"id"?: string,"lead_id_path"?: string | null,"lead_source"?: string | null,"method"?: string,"name"?: string,"project_codes"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"enquiries": {
                   Row: {
                     "created_at": string,"email": string | null,"id": string,"message": string | null,"name": string,"phone": string,"property_id": string,"status": string,"status_changed_at": string,"user_id": string | null
@@ -56,6 +130,84 @@ isOneToOne: false
       referencedRelation: "properties"
       referencedColumns: ["id"]
     }
+                  ]
+                },"form_submissions": {
+                  Row: {
+                    "created_at": string,"crm_attempts": number,"crm_http_status": number | null,"crm_integration_id": string | null,"crm_lead_id": string | null,"crm_status": string,"data": NonNullable<Json>,"email": string | null,"files": NonNullable<Json>,"form_id": string | null,"form_name": string,"id": string,"idempotency_key": string | null,"last_error": string | null,"mobile": string | null,"name": string | null,"next_retry_at": string | null,"project_id": string | null,"project_lead_id": string | null,"source": string | null,"visitor_hash": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"crm_attempts"?: number,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name": string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"crm_attempts"?: number,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name"?: string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "form_submissions_crm_integration_id_fkey"
+      columns: ["crm_integration_id"]
+isOneToOne: false
+      referencedRelation: "crm_integrations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "form_submissions_form_id_fkey"
+      columns: ["form_id"]
+isOneToOne: false
+      referencedRelation: "forms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "form_submissions_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "form_submissions_project_lead_id_fkey"
+      columns: ["project_lead_id"]
+isOneToOne: false
+      referencedRelation: "project_leads"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"forms": {
+                  Row: {
+                    "active": boolean,"button_text": string | null,"created_at": string,"crm_integration_id": string | null,"fields": NonNullable<Json>,"id": string,"kind": string,"name": string,"placement": string,"project_id": string | null,"slug": string,"success_message": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"button_text"?: string | null,"created_at"?: string,"crm_integration_id"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"kind": string,"name": string,"placement"?: string,"project_id"?: string | null,"slug": string,"success_message"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"button_text"?: string | null,"created_at"?: string,"crm_integration_id"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"kind"?: string,"name"?: string,"placement"?: string,"project_id"?: string | null,"slug"?: string,"success_message"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "forms_crm_integration_id_fkey"
+      columns: ["crm_integration_id"]
+isOneToOne: false
+      referencedRelation: "crm_integrations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "forms_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"internal_cron_tokens": {
+                  Row: {
+                    "created_at": string,"name": string,"token": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"name": string,"token": string
+                  }
+                  Update: {
+                    "created_at"?: string,"name"?: string,"token"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"listing_media": {
                   Row: {
@@ -90,6 +242,112 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"project_events": {
+                  Row: {
+                    "created_at": string,"event_type": string,"id": string,"project_id": string,"visitor_hash": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_type": string,"id"?: string,"project_id": string,"visitor_hash"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"event_type"?: string,"id"?: string,"project_id"?: string,"visitor_hash"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"project_leads": {
+                  Row: {
+                    "created_at": string,"email": string | null,"id": string,"kind": string,"message": string | null,"name": string,"phone": string,"project_id": string,"status": string,"updated_at": string,"visit_date": string | null,"visitor_hash": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"kind": string,"message"?: string | null,"name": string,"phone": string,"project_id": string,"status"?: string,"updated_at"?: string,"visit_date"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"kind"?: string,"message"?: string | null,"name"?: string,"phone"?: string,"project_id"?: string,"status"?: string,"updated_at"?: string,"visit_date"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_leads_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"project_price_trends": {
+                  Row: {
+                    "created_at": string,"id": string,"month": string,"price_per_sqft": number,"project_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"month": string,"price_per_sqft": number,"project_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"month"?: string,"price_per_sqft"?: number,"project_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_price_trends_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"project_units": {
+                  Row: {
+                    "area_sqft": number | null,"available_from": string | null,"bhk": number | null,"created_at": string,"facing": string | null,"floor_number": number | null,"floor_plan_path": string | null,"id": string,"price": number | null,"project_id": string,"status": string,"unit_number": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area_sqft"?: number | null,"available_from"?: string | null,"bhk"?: number | null,"created_at"?: string,"facing"?: string | null,"floor_number"?: number | null,"floor_plan_path"?: string | null,"id"?: string,"price"?: number | null,"project_id": string,"status"?: string,"unit_number": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "area_sqft"?: number | null,"available_from"?: string | null,"bhk"?: number | null,"created_at"?: string,"facing"?: string | null,"floor_number"?: number | null,"floor_plan_path"?: string | null,"id"?: string,"price"?: number | null,"project_id"?: string,"status"?: string,"unit_number"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_units_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"projects": {
+                  Row: {
+                    "address": string | null,"advantages": (string)[],"amenities": (string)[],"bhk_options": (number)[],"brochure_path": string | null,"builder_id": string,"contact_phone": string | null,"created_at": string,"description": string | null,"elevations": (string)[],"featured": boolean,"floor_plans": (string)[],"form_id": string | null,"id": string,"images": (string)[],"land_area_acres": number | null,"latitude": number | null,"locality": string,"location": unknown,"longitude": number | null,"moderated_at": string | null,"moderated_by": string | null,"moderation": string,"name": string,"nearby": (string)[],"plot_images": (string)[],"possession_date": string | null,"price_max": number | null,"price_min": number | null,"project_status": string | null,"project_type": string | null,"property_type": string | null,"published": boolean,"rejection_reason": string | null,"rera_applicable": boolean,"rera_number": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"specifications": string | null,"total_units": number | null,"updated_at": string,"videos": (string)[]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality": string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name": string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                  }
+                  Update: {
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality"?: string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name"?: string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "projects_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "projects_form_id_fkey"
+      columns: ["form_id"]
+isOneToOne: false
+      referencedRelation: "forms"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"properties": {
                   Row: {
@@ -159,7 +417,104 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_properties":
+            "admin_builders":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,
+"contact_person": string | null,
+"created_at": string,
+"description": string | null,
+"email": string,
+"id": string,
+"invited_at": string | null,
+"logo_url": string | null,
+"name": string,
+"onboarded_at": string | null,
+"phone": string | null,
+"updated_at": string,
+"user_id": string | null,
+"website": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "builders"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"admin_forms":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,
+"button_text": string | null,
+"created_at": string,
+"crm_integration_id": string | null,
+"fields": NonNullable<Json>,
+"id": string,
+"kind": string,
+"name": string,
+"placement": string,
+"project_id": string | null,
+"slug": string,
+"success_message": string | null,
+"updated_at": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "forms"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"admin_projects":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "address": string | null,
+"advantages": (string)[],
+"amenities": (string)[],
+"bhk_options": (number)[],
+"brochure_path": string | null,
+"builder_id": string,
+"contact_phone": string | null,
+"created_at": string,
+"description": string | null,
+"elevations": (string)[],
+"featured": boolean,
+"floor_plans": (string)[],
+"form_id": string | null,
+"id": string,
+"images": (string)[],
+"land_area_acres": number | null,
+"latitude": number | null,
+"locality": string,
+"location": unknown,
+"longitude": number | null,
+"moderated_at": string | null,
+"moderated_by": string | null,
+"moderation": string,
+"name": string,
+"nearby": (string)[],
+"plot_images": (string)[],
+"possession_date": string | null,
+"price_max": number | null,
+"price_min": number | null,
+"project_status": string | null,
+"project_type": string | null,
+"property_type": string | null,
+"published": boolean,
+"rejection_reason": string | null,
+"rera_applicable": boolean,
+"rera_number": string | null,
+"seo_description": string | null,
+"seo_title": string | null,
+"slug": string,
+"specifications": string | null,
+"total_units": number | null,
+"updated_at": string,
+"videos": (string)[]
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "projects"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"admin_properties":
 { Args: Record<PropertyKey, never>; Returns: {
               "address": string | null,
 "amenities": (string)[],
@@ -201,14 +556,26 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"arm_crm_retry":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "build_property_slug":
 { Args: { "locality": string,"title": string }; Returns: string
+                           },
+"current_builder_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"disarm_crm_retry":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "has_role":
 { Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
                            },
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_reserved_admin_email":
+{ Args: { "candidate": string }; Returns: boolean
                            },
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -219,6 +586,81 @@ isOneToOne: false
 "listing_is_public":
 { Args: { "target_property": string }; Returns: boolean
                            },
+"my_builder":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,
+"contact_person": string | null,
+"created_at": string,
+"description": string | null,
+"email": string,
+"id": string,
+"invited_at": string | null,
+"logo_url": string | null,
+"name": string,
+"onboarded_at": string | null,
+"phone": string | null,
+"updated_at": string,
+"user_id": string | null,
+"website": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "builders"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"my_projects":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "address": string | null,
+"advantages": (string)[],
+"amenities": (string)[],
+"bhk_options": (number)[],
+"brochure_path": string | null,
+"builder_id": string,
+"contact_phone": string | null,
+"created_at": string,
+"description": string | null,
+"elevations": (string)[],
+"featured": boolean,
+"floor_plans": (string)[],
+"form_id": string | null,
+"id": string,
+"images": (string)[],
+"land_area_acres": number | null,
+"latitude": number | null,
+"locality": string,
+"location": unknown,
+"longitude": number | null,
+"moderated_at": string | null,
+"moderated_by": string | null,
+"moderation": string,
+"name": string,
+"nearby": (string)[],
+"plot_images": (string)[],
+"possession_date": string | null,
+"price_max": number | null,
+"price_min": number | null,
+"project_status": string | null,
+"project_type": string | null,
+"property_type": string | null,
+"published": boolean,
+"rejection_reason": string | null,
+"rera_applicable": boolean,
+"rera_number": string | null,
+"seo_description": string | null,
+"seo_title": string | null,
+"slug": string,
+"specifications": string | null,
+"total_units": number | null,
+"updated_at": string,
+"videos": (string)[]
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "projects"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "my_properties":
 { Args: Record<PropertyKey, never>; Returns: {
               "address": string | null,
@@ -266,6 +708,12 @@ isOneToOne: false
                            },
 "owns_property":
 { Args: { "target_property": string }; Returns: boolean
+                           },
+"project_is_live":
+{ Args: { "target_project": string }; Returns: boolean
+                           },
+"project_is_mine":
+{ Args: { "target_project": string }; Returns: boolean
                            },
 "reserved_admin_email":
 { Args: Record<PropertyKey, never>; Returns: string
