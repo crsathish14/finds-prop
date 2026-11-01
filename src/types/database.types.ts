@@ -779,8 +779,8 @@ isOneToOne: false
               "allowed": boolean,"retry_after": number
             }[]
                            },
-"reserved_admin_email":
-{ Args: Record<PropertyKey, never>; Returns: string
+"reserved_admin_emails":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
 "slugify":
 { Args: { "input": string }; Returns: string
