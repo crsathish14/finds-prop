@@ -36,6 +36,8 @@ Plan: `property-platform-implementation-plan/` (outside this repo, owner's copy)
 
 - **UX source still says "no autoplay" for sponsored banners.** The owner changed this to a 2-second carousel (ADR-038, no Play/Pause button). The approved UX package at its source, this repo's read-only copy in `docs/ux/final-ux/`, and the implementation plan still describe a manual pager; update them together (R-DS-05). Also revisit WCAG 2.2.2 (a pause control) if an accessibility review asks for it.
 
+- **Handoff to a new machine** (1 Nov 2026): setup steps, current state, what the owner still has to do (auth spike, MSG91, merging PR #29) and the first message for a new session are in `docs/runbooks/new-machine-and-handoff.md`.
+
 ## Working notes
 
 - Branches are `feat/…`, `fix/…`, `chore/…`, `docs/…` from `develop`; squash into `develop`.
