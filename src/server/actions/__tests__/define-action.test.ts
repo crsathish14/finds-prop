@@ -33,15 +33,22 @@ function harness(overrides: Partial<ActionDeps> = {}, session: SessionView | nul
       calls.push("authenticate");
       return Promise.resolve(session);
     },
-    rateLimit: (scope) => {
+    rateLimit: ({ scope }) => {
       calls.push(`rateLimit:${scope}`);
       return Promise.resolve();
     },
-    beginIdempotent: (key) => {
+    beginIdempotent: ({ key }) => {
       calls.push(`idempotency:${key}`);
       return Promise.resolve({ replay: false });
     },
-    completeIdempotent: () => Promise.resolve(),
+    completeIdempotent: ({ key }) => {
+      calls.push(`complete:${key}`);
+      return Promise.resolve();
+    },
+    releaseIdempotent: ({ key }) => {
+      calls.push(`release:${key}`);
+      return Promise.resolve();
+    },
     invalidate: (tags) => {
       calls.push(`invalidate:${tags.join(",")}`);
     },
@@ -65,7 +72,7 @@ describe("UT-define-action: pipeline order (R-BE-02)", () => {
       name: "markSold",
       input,
       auth: "user",
-      rateLimit: { scope: "listing" },
+      rateLimit: { scope: "listing_create" },
       idempotencyKey: (parsed) => parsed.idempotencyKey,
       invalidate: () => ["property:1"],
       audit: { action: "listing.sold" },
@@ -78,11 +85,12 @@ describe("UT-define-action: pipeline order (R-BE-02)", () => {
     expect(result).toEqual({ ok: true, data: { done: true } });
     expect(calls).toEqual([
       "authenticate",
-      "rateLimit:listing",
+      "rateLimit:listing_create",
       "idempotency:k1",
       "handler",
       "invalidate:property:1",
       "audit:listing.sold",
+      "complete:k1",
     ]);
   });
 
@@ -233,7 +241,7 @@ describe("UT-define-action: idempotency, rate limit, invalidation", () => {
       name: "x",
       input,
       auth: "user",
-      rateLimit: { scope: "s" },
+      rateLimit: { scope: "enquiry" },
       handler: () => {
         calls.push("handler");
         return Promise.resolve(1);
@@ -275,12 +283,10 @@ describe("UT-define-action: fail-closed defaults (Stage 1 skeleton)", () => {
     expect(await action(validInput)).toMatchObject({ ok: false, code: "UNAUTHENTICATED" });
   });
 
-  it("refuses to run rate-limited, idempotent, audited or invalidating actions until the real parts exist", async () => {
+  it("refuses to run rate-limited or idempotent actions until the real parts exist", async () => {
     for (const extra of [
-      { rateLimit: { scope: "s" } },
+      { rateLimit: { scope: "enquiry" as const } },
       { idempotencyKey: () => "k" },
-      { audit: { action: "a" } },
-      { invalidate: () => ["t"] },
     ]) {
       const action = defineAction({
         name: "x",
@@ -353,5 +359,190 @@ describe("UT-define-action: error normalisation never leaks details", () => {
     expect(result).toMatchObject({ ok: false, code: "VALIDATION" });
     expect(result).not.toHaveProperty("message");
     expect(result.ok === false && result.fieldErrors?.id?.[0]?.key).toMatch(/^validation\./);
+  });
+});
+
+describe("UT-define-action: the full pipeline (S3-T12)", () => {
+  const handler = () => Promise.resolve("saved");
+  const claimed = { idempotencyKey: (parsed: { idempotencyKey: string }) => parsed.idempotencyKey };
+
+  it("returns the first result for a repeat, and never runs the handler twice", async () => {
+    const stored = { ok: true, data: "first" };
+    const { defineAction, calls } = harness({
+      beginIdempotent: () => Promise.resolve({ replay: true, result: stored }),
+    });
+    const action = defineAction({ name: "x", input, auth: "user", ...claimed, handler });
+    expect(await action(validInput)).toEqual(stored);
+    expect(calls).not.toContain("complete:k1");
+    expect(calls).not.toContain("release:k1");
+  });
+
+  it("refuses a repeat of a request that is still running with CONFLICT", async () => {
+    const { defineAction, calls } = harness({
+      beginIdempotent: () => Promise.reject(new ActionError("CONFLICT", "running")),
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      ...claimed,
+      handler: () => {
+        calls.push("handler");
+        return Promise.resolve(1);
+      },
+    });
+    expect(await action(validInput)).toMatchObject({ ok: false, code: "CONFLICT" });
+    expect(calls).not.toContain("handler");
+  });
+
+  it("gives the claim back when the handler fails, so the user can try again", async () => {
+    const { defineAction, calls } = harness();
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      ...claimed,
+      handler: () => Promise.reject(new ActionError("CONFLICT", "duplicate")),
+    });
+    expect(await action(validInput)).toMatchObject({ ok: false, code: "CONFLICT" });
+    expect(calls).toContain("release:k1");
+    expect(calls).not.toContain("complete:k1");
+  });
+
+  it("keeps the claim once the handler succeeded", async () => {
+    const { defineAction, calls } = harness();
+    const action = defineAction({ name: "x", input, auth: "user", ...claimed, handler });
+    await action(validInput);
+    expect(calls).toContain("complete:k1");
+    expect(calls).not.toContain("release:k1");
+  });
+
+  it("reports the handler's own failure even when giving the claim back fails", async () => {
+    const { defineAction, lines } = harness({
+      releaseIdempotent: () => Promise.reject(new Error("database down")),
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      ...claimed,
+      handler: () => Promise.reject(new ActionError("NOT_FOUND", "gone")),
+    });
+    expect(await action(validInput)).toMatchObject({ ok: false, code: "NOT_FOUND" });
+    expect(lines.join("\n")).toContain("giving the idempotency claim back failed");
+  });
+
+  it("does not try to release a claim that was never made", async () => {
+    const { defineAction, calls } = harness();
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      handler: () => Promise.reject(new Error("boom")),
+    });
+    await action(validInput);
+    expect(calls.some((call) => call.startsWith("release"))).toBe(false);
+  });
+
+  it("still succeeds when the audit write fails after the data was saved, and logs it", async () => {
+    const { defineAction, lines } = harness({
+      audit: () => Promise.reject(new Error("audit down")),
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      audit: { action: "listing.sold" },
+      handler,
+    });
+    expect(await action(validInput)).toEqual({ ok: true, data: "saved" });
+    expect(lines.join("\n")).toContain("audit failed after the write");
+  });
+
+  it("still succeeds when cache invalidation fails after the write, and logs it", async () => {
+    const { defineAction, lines } = harness({
+      invalidate: () => {
+        throw new Error("cache down");
+      },
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      invalidate: () => ["t"],
+      handler,
+    });
+    expect(await action(validInput)).toEqual({ ok: true, data: "saved" });
+    expect(lines.join("\n")).toContain("cache invalidation failed after the write");
+  });
+
+  it("still succeeds when the idempotent result cannot be stored, and logs it", async () => {
+    const { defineAction, lines } = harness({
+      completeIdempotent: () => Promise.reject(new Error("store down")),
+    });
+    const action = defineAction({ name: "x", input, auth: "user", ...claimed, handler });
+    expect(await action(validInput)).toEqual({ ok: true, data: "saved" });
+    expect(lines.join("\n")).toContain("storing the idempotent result failed after the write");
+  });
+
+  it("passes the rate limit key and the request id to the limiter", async () => {
+    const seen: unknown[] = [];
+    const { defineAction } = harness({
+      rateLimit: (request) => {
+        seen.push(request);
+        return Promise.resolve();
+      },
+    });
+    const action = defineAction({
+      name: "x",
+      input: z.object({ id: z.uuid(), phone: z.string() }),
+      auth: "none",
+      rateLimit: { scope: "otp_request", key: (parsed) => parsed.phone },
+      handler,
+    });
+    await action({ ...validInput, phone: "+919000000001" });
+    expect(seen).toEqual([
+      { scope: "otp_request", session: null, requestId: "req-1", key: "+919000000001" },
+    ]);
+  });
+
+  it("names the audited entity from the result and the input", async () => {
+    const events: unknown[] = [];
+    const { defineAction } = harness({
+      audit: (event) => {
+        events.push(event);
+        return Promise.resolve();
+      },
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      audit: {
+        action: "listing.sold",
+        entity: (_result, parsed) => ({ type: "property", id: parsed.id }),
+      },
+      handler,
+    });
+    await action(validInput);
+    expect(events).toEqual([
+      {
+        action: "listing.sold",
+        entity: { type: "property", id: validInput.id },
+        session: user,
+        requestId: "req-1",
+      },
+    ]);
+  });
+
+  it("accepts a request id that arrives asynchronously", async () => {
+    const { defineAction } = harness({ newRequestId: () => Promise.resolve("req-async-1") });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      handler: () => Promise.reject(new Error("boom")),
+    });
+    expect(await action(validInput)).toMatchObject({ requestId: "req-async-1" });
   });
 });
