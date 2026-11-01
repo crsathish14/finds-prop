@@ -73,7 +73,7 @@ select is(
   'site assets accept WebP, JPEG and PNG only'
 );
 select ok(
-  'application/pdf' = any ((select allowed_mime_types from storage.buckets where id = 'project-media')),
+  (select 'application/pdf' = any (allowed_mime_types) from storage.buckets where id = 'project-media'),
   'project media accepts the PDF brochure'
 );
 select ok(
