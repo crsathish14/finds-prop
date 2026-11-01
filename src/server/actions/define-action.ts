@@ -1,9 +1,10 @@
 import type { z } from "zod";
 import type { ActionResult } from "@/types/action";
-import { getSessionView } from "../auth/get-session-view";
 import { assertAdmin, assertBuilder, assertUser, assertVerifiedPhone } from "../auth/guards";
 import type { SessionView } from "../auth/session";
 import { createLogger, type Logger } from "../logger";
+import type { RateLimitScope } from "../rate-limit/limits";
+import { actionDeps } from "./deps";
 import { toFieldErrors } from "./field-errors";
 import { ActionError, toFailure } from "./normalise-error";
 
@@ -14,10 +15,10 @@ import { ActionError, toFailure } from "./normalise-error";
  *   1 parse  2 authenticate  3 authorise  4 rate limit  5 idempotency
  *   6 handler  7 cache invalidation  8 audit  9 normalise errors and return
  *
- * Stage 1 delivered the skeleton. S3-T07 supplies the real session. Every dependency that needs
- * infrastructure that does not exist yet (rate limits, idempotency table, audit log, cache) still
- * defaults to a FAIL-CLOSED stand-in: an action that asks for it gets an error rather than silently
- * skipping the protection. S3-T12 supplies those through `createDefineAction`.
+ * Steps 4 and 5 protect the write, so a failure there refuses the call (fail closed). Once the
+ * handler has saved something, steps 7 and 8 and storing the idempotent result can no longer undo
+ * it: a failure there is logged as an error and the caller still gets the success. If the handler
+ * itself fails, the idempotency claim is given back so the user can try again.
  */
 
 /**
@@ -36,27 +37,55 @@ export interface ActionContext<I> {
   log: Logger;
 }
 
+/** Names the claim: which action, who is acting (decided by the dependency), and the form's key. */
+export interface IdempotencyRequest {
+  scope: string;
+  key: string;
+  session: SessionView | null;
+  requestId: string;
+}
+
+export interface ActionAuditEvent {
+  action: string;
+  entity?: { type: string; id?: string } | undefined;
+  session: SessionView | null;
+  requestId: string;
+}
+
 export interface ActionDeps {
-  newRequestId(): string;
+  newRequestId(): string | Promise<string>;
   getSession(): Promise<SessionView | null>;
-  rateLimit(scope: string, session: SessionView | null): Promise<void>;
-  beginIdempotent(key: string): Promise<{ replay: true; result: unknown } | { replay: false }>;
-  completeIdempotent(key: string, result: unknown): Promise<void>;
+  rateLimit(request: {
+    scope: RateLimitScope;
+    session: SessionView | null;
+    key?: string;
+    requestId: string;
+  }): Promise<void>;
+  beginIdempotent(
+    request: IdempotencyRequest,
+  ): Promise<{ replay: true; result: unknown } | { replay: false }>;
+  completeIdempotent(request: IdempotencyRequest & { result: unknown }): Promise<void>;
+  releaseIdempotent(request: IdempotencyRequest): Promise<void>;
   invalidate(tags: readonly string[]): void;
-  audit(event: { action: string; session: SessionView | null; requestId: string }): Promise<void>;
+  audit(event: ActionAuditEvent): Promise<void>;
   log: Logger;
 }
 
 export interface ActionConfig<S extends z.ZodType, R> {
-  /** Named by intent, for example "submitEnquiry". */
+  /** Named by intent, for example "submitEnquiry". Also names the idempotency claim. */
   name: string;
   input: S;
   auth: ActionAuth;
-  rateLimit?: { scope: string };
+  /** The scope comes from the closed list in rate-limit/limits.ts; `key` feeds the rules that need one. */
+  rateLimit?: { scope: RateLimitScope; key?: (input: z.infer<S>) => string };
   idempotencyKey?: (input: z.infer<S>) => string;
   /** Cache tags to invalidate after a successful write. */
   invalidate?: (result: R, input: z.infer<S>) => readonly string[];
-  audit?: { action: string };
+  /** A history entry for an event the database triggers cannot see (staff sign-in and the like). */
+  audit?: {
+    action: string;
+    entity?: (result: R, input: z.infer<S>) => { type: string; id?: string };
+  };
   handler: (context: ActionContext<z.infer<S>>) => Promise<R>;
 }
 
@@ -64,12 +93,14 @@ const notConfigured = (what: string) => (): never => {
   throw new ActionError("INTERNAL", `${what} is not configured`);
 };
 
+/** Stand-ins for tests: the protections that guard a write refuse, the rest only log. */
 export const failClosedDeps: ActionDeps = {
   newRequestId: () => crypto.randomUUID(),
   getSession: () => Promise.resolve(null),
   rateLimit: notConfigured("Rate limiting"),
   beginIdempotent: notConfigured("Idempotency"),
   completeIdempotent: notConfigured("Idempotency"),
+  releaseIdempotent: notConfigured("Idempotency"),
   invalidate: notConfigured("Cache invalidation"),
   audit: notConfigured("Audit"),
   log: createLogger(),
@@ -101,9 +132,19 @@ export function toInputObject(raw: unknown): unknown {
 export function createDefineAction(deps: ActionDeps) {
   return function defineAction<S extends z.ZodType, R>(config: ActionConfig<S, R>) {
     return async function action(raw: unknown): Promise<ActionResult<R>> {
-      const requestId = deps.newRequestId();
+      const requestId = await deps.newRequestId();
       const log = deps.log.child({ requestId, route: config.name });
       const started = Date.now();
+
+      /** After the write: log a failure and carry on, because the data is already saved. */
+      const afterWrite = async (what: string, step: () => void | Promise<void>) => {
+        try {
+          await step();
+        } catch (error) {
+          log.error(`${what} failed after the write`, { error });
+        }
+      };
+
       try {
         // 1 parse
         const submitted = toInputObject(raw);
@@ -120,25 +161,57 @@ export function createDefineAction(deps: ActionDeps) {
         // 3 authorise
         authorise(config.auth, session);
         // 4 rate limit
-        if (config.rateLimit) await deps.rateLimit(config.rateLimit.scope, session);
+        if (config.rateLimit) {
+          const key = config.rateLimit.key?.(input);
+          await deps.rateLimit({
+            scope: config.rateLimit.scope,
+            session,
+            requestId,
+            ...(key !== undefined ? { key } : {}),
+          });
+        }
 
         // 5 idempotency
-        let key: string | undefined;
+        let claim: IdempotencyRequest | undefined;
         if (config.idempotencyKey) {
-          key = config.idempotencyKey(input);
-          const state = await deps.beginIdempotent(key);
+          claim = { scope: config.name, key: config.idempotencyKey(input), session, requestId };
+          const state = await deps.beginIdempotent(claim);
           if (state.replay) return state.result as ActionResult<R>;
         }
 
-        // 6 handler
-        const data = await config.handler({ input, session, requestId, log });
+        // 6 handler: a failure gives the claim back so the user can try again
+        let data: R;
+        try {
+          data = await config.handler({ input, session, requestId, log });
+        } catch (error) {
+          if (claim) {
+            const held = claim;
+            await afterWrite("giving the idempotency claim back", () =>
+              deps.releaseIdempotent(held),
+            );
+          }
+          throw error;
+        }
         const result: ActionResult<R> = { ok: true, data };
 
-        // 7 cache invalidation (after the write succeeded)
-        if (config.invalidate) deps.invalidate(config.invalidate(data, input));
+        // 7 cache invalidation
+        if (config.invalidate) {
+          const tags = config.invalidate(data, input);
+          await afterWrite("cache invalidation", () => deps.invalidate(tags));
+        }
         // 8 audit
-        if (config.audit) await deps.audit({ action: config.audit.action, session, requestId });
-        if (key !== undefined) await deps.completeIdempotent(key, result);
+        if (config.audit) {
+          const { action: auditAction, entity } = config.audit;
+          await afterWrite("audit", () =>
+            deps.audit({ action: auditAction, entity: entity?.(data, input), session, requestId }),
+          );
+        }
+        if (claim) {
+          const held = claim;
+          await afterWrite("storing the idempotent result", () =>
+            deps.completeIdempotent({ ...held, result }),
+          );
+        }
 
         log.info("action ok", { durationMs: Date.now() - started });
         return result;
@@ -156,4 +229,4 @@ export function createDefineAction(deps: ActionDeps) {
   };
 }
 
-export const defineAction = createDefineAction({ ...failClosedDeps, getSession: getSessionView });
+export const defineAction = createDefineAction(actionDeps);
