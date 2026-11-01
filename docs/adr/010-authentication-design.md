@@ -30,4 +30,8 @@ From Supabase's documentation (1 Nov 2026): a TOTP second step is free and gives
 
 Settled only by a live test (`docs/runbooks/auth-spike.md`, script `scripts/spike-auth.mjs`): what the token's `phone` claim holds for each kind of user; whether a Google sign-in lands on the invited account or creates a second one; whether the reserved admin becomes `super_admin` through Google; whether a stranger can create an account with Google; whether the Before User Created hook fires for phone sign-ups. The Send-SMS hook test (`S3-SPK-02`) waits for the hook route (S3-T09).
 
+## Phone-code hook, built 1 Nov 2026 (S3-T09, first part)
+
+The Send-SMS hook route, the MSG91 adapter (3 second limit inside Supabase's 5 second budget), a fake sender and the signature check are built (`docs/runbooks/send-sms-hook.md`). The signature check is written with Node's crypto, so no package was added. The MSG91 request is not yet run against the live service and waits for DLT approval.
+
 ## Open questions

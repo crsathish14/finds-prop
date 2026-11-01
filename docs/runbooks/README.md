@@ -9,6 +9,7 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | Secrets rotation                                          | S3 (first secrets) and S9 |
 | Supabase configuration checklist                          | S3                        |
 | MSG91 DLT and template change                             | S3 and S9                 |
+| Phone-code hook and MSG91 (`send-sms-hook.md`)            | S3 (written)              |
 | OTP abuse response                                        | S5                        |
 | CRM outage and manual retry                               | S7                        |
 | Staff second-factor lost device                           | S3                        |
