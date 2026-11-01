@@ -37,6 +37,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"audit_log": {
+                  Row: {
+                    "action": string,"actor_id": string | null,"actor_role": string,"at": string,"diff": NonNullable<Json>,"entity_id": string | null,"entity_type": string,"id": number,"ip_hash": string | null,"request_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"actor_id"?: string | null,"actor_role": string,"at"?: string,"diff"?: NonNullable<Json>,"entity_id"?: string | null,"entity_type": string,"id"?: never,"ip_hash"?: string | null,"request_id"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string | null,"actor_role"?: string,"at"?: string,"diff"?: NonNullable<Json>,"entity_id"?: string | null,"entity_type"?: string,"id"?: never,"ip_hash"?: string | null,"request_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"builders": {
                   Row: {
                     "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
@@ -194,6 +208,20 @@ isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
     }
+                  ]
+                },"idempotency_keys": {
+                  Row: {
+                    "created_at": string,"key": string,"result": Json | null,"scope": string,"subject": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"key": string,"result"?: Json | null,"scope": string,"subject": string
+                  }
+                  Update: {
+                    "created_at"?: string,"key"?: string,"result"?: Json | null,"scope"?: string,"subject"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"internal_cron_tokens": {
                   Row: {
@@ -359,6 +387,20 @@ isOneToOne: false
                   }
                   Update: {
                     "address"?: string | null,"amenities"?: (string)[],"area_sqft"?: number | null,"available_from"?: string | null,"bathrooms"?: number | null,"bhk"?: number | null,"city"?: string | null,"closed_at"?: string | null,"created_at"?: string,"description"?: string | null,"featured"?: boolean,"furnishing"?: string | null,"id"?: string,"listing_type"?: string | null,"locality"?: string | null,"location"?: unknown,"moderated_at"?: string | null,"moderated_by"?: string | null,"owner_id"?: string,"pincode"?: string | null,"price"?: number | null,"property_type"?: string | null,"public_location"?: never,"published_at"?: string | null,"rejection_reason"?: string | null,"search_vector"?: never,"short_id"?: string,"slug"?: string,"state"?: string | null,"status"?: string,"submitted_at"?: string | null,"title"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"public_rate_limits": {
+                  Row: {
+                    "hits": number,"scope": string,"subject_hash": string,"window_start": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "hits"?: number,"scope": string,"subject_hash": string,"window_start": string
+                  }
+                  Update: {
+                    "hits"?: number,"scope"?: string,"subject_hash"?: string,"window_start"?: string
                   }
                   Relationships: [
                     
@@ -559,8 +601,23 @@ isOneToOne: false
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"audit_actor_role":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"audit_record":
+{ Args: { "action_name": string,"actor": string,"actor_kind": string,"change": Json,"entity_key": string,"entity_kind": string,"ip_digest": string,"request_key": string }; Returns: undefined
+                           },
+"audit_request_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"audit_write":
+{ Args: { "action_name": string,"change": Json,"entity_key": string,"entity_kind": string }; Returns: undefined
+                           },
 "build_property_slug":
 { Args: { "locality": string,"title": string }; Returns: string
+                           },
+"changed_columns":
+{ Args: { "new_row": Json,"old_row": Json }; Returns: Json
                            },
 "current_builder_id":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -715,11 +772,22 @@ isOneToOne: false
 "project_is_mine":
 { Args: { "target_project": string }; Returns: boolean
                            },
+"rate_limit_hit":
+{ Args: { "limit_scope": string,"limit_subject": string,"max_hits": number,"window_seconds": number }; Returns: {
+              "allowed": boolean,"retry_after": number
+            }[]
+                           },
 "reserved_admin_email":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "slugify":
 { Args: { "input": string }; Returns: string
+                           },
+"storage_listing_path_ok":
+{ Args: { "object_name": string }; Returns: boolean
+                           },
+"storage_project_path_ok":
+{ Args: { "object_name": string }; Returns: boolean
                            }
           }
           Enums: {
