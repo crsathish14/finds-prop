@@ -53,9 +53,9 @@ describe("UT-audit: writeAudit", () => {
       action: "staff.signed_in",
       entity: { type: "user", id: "u1" },
       session: admin,
-      requestId: "req-12345678",
+      requestId: "req-aaaaaaaa",
     });
-    expect(createAdminSupabase).toHaveBeenCalledWith("req-12345678");
+    expect(createAdminSupabase).toHaveBeenCalledWith("req-aaaaaaaa");
     expect(rpc).toHaveBeenCalledTimes(1);
     const [name, args] = rpc.mock.calls[0] as [string, Record<string, unknown>];
     expect(name).toBe("audit_record");
@@ -66,7 +66,7 @@ describe("UT-audit: writeAudit", () => {
       entity_kind: "user",
       entity_key: "u1",
       change: {},
-      request_key: "req-12345678",
+      request_key: "req-aaaaaaaa",
     });
     expect(String(args.ip_digest)).toMatch(/^[0-9a-f]{40}$/);
     expect(JSON.stringify(args)).not.toContain("203.0.113.7");
@@ -74,7 +74,7 @@ describe("UT-audit: writeAudit", () => {
 
   it("records an event with no signed-in user as a system event", async () => {
     const { writeAudit } = await load();
-    await writeAudit({ action: "cms.published", session: null, requestId: "req-12345678" });
+    await writeAudit({ action: "cms.published", session: null, requestId: "req-aaaaaaaa" });
     const args = rpc.mock.calls[0]?.[1] as Record<string, unknown>;
     expect(args).toMatchObject({
       actor: null,
@@ -87,7 +87,7 @@ describe("UT-audit: writeAudit", () => {
   it("stores no address hash at all when the secret is missing", async () => {
     delete environment.RATE_LIMIT_HMAC_SECRET;
     const { writeAudit } = await load();
-    await writeAudit({ action: "cms.published", session: admin, requestId: "req-12345678" });
+    await writeAudit({ action: "cms.published", session: admin, requestId: "req-aaaaaaaa" });
     expect((rpc.mock.calls[0]?.[1] as Record<string, unknown>).ip_digest).toBeNull();
   });
 
@@ -95,7 +95,7 @@ describe("UT-audit: writeAudit", () => {
     rpc.mockResolvedValue({ error: { message: "boom" } });
     const { writeAudit } = await load();
     await expect(
-      writeAudit({ action: "cms.published", session: admin, requestId: "req-12345678" }),
+      writeAudit({ action: "cms.published", session: admin, requestId: "req-aaaaaaaa" }),
     ).rejects.toMatchObject({ code: "INTERNAL" });
   });
 });
