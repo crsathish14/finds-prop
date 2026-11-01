@@ -53,14 +53,14 @@ export type Database = {
                   ]
                 },"builders": {
                   Row: {
-                    "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
+                    "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"kind": string,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email": string,"id"?: string,"invited_at"?: string | null,"logo_url"?: string | null,"name": string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email": string,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_url"?: string | null,"name": string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"id"?: string,"invited_at"?: string | null,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
                   }
                   Relationships: [
                     
@@ -468,6 +468,7 @@ isOneToOne: false
 "email": string,
 "id": string,
 "invited_at": string | null,
+"kind": string,
 "logo_url": string | null,
 "name": string,
 "onboarded_at": string | null,
@@ -652,6 +653,7 @@ isOneToOne: false
 "email": string,
 "id": string,
 "invited_at": string | null,
+"kind": string,
 "logo_url": string | null,
 "name": string,
 "onboarded_at": string | null,
