@@ -17,28 +17,42 @@ It is an allow-list and it never raises an error, because an error inside a hook
 
 ## Status
 
-Built and covered by pgTAP. **Inactive until you select it in the dashboard**, and not yet tested live. Supabase's documentation does not say which sign-up methods fire the hook, so the live test below is part of the job, not an extra.
+**Live on the dev project since 2 Nov 2026, and tested live** (results below). Built and covered by pgTAP; the owner enabled it on dev and ran the six cases. Staging and production do not exist yet: switch it on there, as part of the Supabase configuration check (S3-T14), before launch.
 
-## Turning it on (owner, dev project first)
+## Turning it on (owner, per project)
 
-1. Wait until the migration has reached dev (the "Deploy database to dev" workflow runs after the merge to `develop`).
-2. Supabase dashboard of the dev project: Authentication, Hooks, **Before User Created**. Choose a **Postgres function**, schema `public`, function `hook_before_user_created`, and save. Menu names move around; tell the agent what you see.
+1. Wait until the migration has reached the project (the "Deploy database to dev" workflow runs after the merge to `develop`; staging and production come only through CI from `main`).
+2. Supabase dashboard of the project: Authentication, Hooks, **Before User Created**. Choose a **Postgres function**, schema `public`, function `hook_before_user_created`, and save. Menu names move around; tell the agent what you see.
 3. Run the live test.
 
-## Live test on dev
+## Live test on dev (2 Nov 2026)
 
-Run each case and send the agent the output (it holds no secrets). `phone` needs the test number set again in the Phone provider settings (the spike's number was removed in the clean-up).
+| Case                                             | How                                                       | Result                                                                                   |
+| ------------------------------------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Phone sign-in with the test number (new account) | `node scripts/spike-auth.mjs phone`                       | Allowed; role `customer`; phone claim set                                                |
+| Email sign-up                                    | the direct call below                                     | Refused: HTTP 403, `signup_not_allowed`                                                  |
+| Stranger with Google                             | `node scripts/spike-auth.mjs google`, any other account   | Refused: "Google sign-in did not finish: signup_not_allowed"; no account row was created |
+| `developer@findsprop.com` with Google            | `node scripts/spike-auth.mjs google` (a **new** account)  | Allowed; `is_super_admin()` true; roles `customer, super_admin`                          |
+| Invited builder with Google (account made first) | Add user in the dashboard, the builder SQL, then `google` | Allowed; one account with identities `email, google`; roles `customer, builder`          |
+| A user added in the dashboard (Add user)         | Authentication, Users, Add user                           | **Created**: the guard does not block accounts made by an admin                          |
 
-| Case                                             | How                                                     | Expected                                   | What it settles                                                |
-| ------------------------------------------------ | ------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------- |
-| Phone sign-in with the test number               | `node scripts/spike-auth.mjs phone`                     | Accepted                                   | The phone provider reaches the guard as `phone`                |
-| Email sign-up                                    | `node scripts/spike-auth.mjs signup`                    | Refused with `signup_not_allowed`          | Email sign-up is closed                                        |
-| Stranger with Google                             | `node scripts/spike-auth.mjs google`, any other account | Refused                                    | A stranger cannot create an account                            |
-| `developer@findsprop.com` with Google            | `node scripts/spike-auth.mjs google`                    | Accepted, `is_super_admin()` true          | The reserved admin still gets in                               |
-| Invited builder with Google (account made first) | As spike step C6                                        | Accepted, one account with `email, google` | An existing account still links, whether or not the hook fires |
-| A user added in the dashboard (Add user)         | Authentication, Users, Add user                         | Note whether it works                      | Whether the hook also fires for accounts made by an admin      |
+What this means:
 
-The last row matters for the invite flow (S7-T05), which creates the account before the builder row. If the dashboard refuses the user, that flow must create the builder row first, or the guard needs another signal. Record the answer here and in ADR-010.
+- The guard fires for phone, email and Google sign-ups. Accounts made from the dashboard are not blocked, so the invite flow (S7-T05) can create the builder's account first, then the builder row. The live invite flow uses the same admin route; confirm it when it is built.
+- Supabase reports a refusal as HTTP 403 with `msg: signup_not_allowed` and `error_code: unknown`. The app must recognise it by the `msg` text.
+- The guard checks only **brand-new** accounts. An existing user (or an existing user that Google links to) is never rechecked. To test an allow rule, use an address that has no account yet: the first run of the `developer@` case used an old account and proved nothing, and was repeated after deleting it.
+- Supabase's documentation does not say which sign-up methods fire the hook; this test is the answer for phone, email, Google and admin-created accounts.
+
+### Email sign-up call
+
+`node scripts/spike-auth.mjs signup` cannot test this: its fake `…@example.test` address is rejected as invalid before the guard runs. Use an address you own (for example a plus-address) in your own terminal, with the two `SPIKE_` values set from the dev project's URL and publishable key:
+
+```powershell
+$env:SPIKE_TEST_EMAIL = "<an address you own>"
+node --input-type=module -e "const r = await fetch(process.env.SPIKE_SUPABASE_URL + '/auth/v1/signup', { method: 'POST', headers: { apikey: process.env.SPIKE_PUBLISHABLE_KEY, 'content-type': 'application/json' }, body: JSON.stringify({ email: process.env.SPIKE_TEST_EMAIL, password: crypto.randomUUID() }) }); const body = await r.json(); console.log(r.status, JSON.stringify({ code: body.code, error_code: body.error_code, msg: body.msg ?? body.message }))"
+```
+
+It prints only the status and the error text. A `200` means the guard did not fire; delete the unconfirmed user it created.
 
 ## Turning it off
 
