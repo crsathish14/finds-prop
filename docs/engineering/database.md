@@ -63,21 +63,22 @@ Cross-system operations (Auth, Storage, email, CRM HTTP) are **not** transaction
 
 **Derivation (no demo SQL).** `S3-T01` produces a rule-to-schema checklist from `06-business-rules-and-data.md` and `07-supabase-interactions.md`, settles column lists from the page and form specifications (ANA `04`, UX post-property, project form, lead forms, CMS editors), and records ambiguities as questions for you instead of inferring them from the demo's code. Every database-enforced rule is then written as a trigger, policy, constraint or function with a named pgTAP test (`08` §10).
 
-| Rule                                     | Enforced by (new schema)                                                   |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| BR-02/03 profile + default role          | `handle_new_user()` trigger on `auth.users` (null-email safe)              |
-| BR-11/12/13 reserved super admin         | role-grant trigger + `user_roles` guard + RLS excluding `super_admin` rows |
-| BR-20…25 listing moderation              | `properties` guard trigger + RLS + column grants                           |
-| BR-26 owner-scoped delete                | RLS                                                                        |
-| BR-27/28 listing and property types      | CHECK constraints                                                          |
-| BR-30…35 builder isolation and guards    | `current_builder_id()`, `project_is_mine()`, builder guard trigger, RLS    |
-| BR-40…43 project moderation, re-approval | `projects` guard trigger + `project_is_live()` + RLS                       |
-| BR-44 delete blocked with leads          | `project_leads.project_id ON DELETE RESTRICT`                              |
-| BR-45…47 unit and lead locks             | guard triggers                                                             |
-| BR-50…53 enquiries and saved homes       | RLS, RPC `submit_enquiry`, unique `(user_id, property_id)`                 |
-| BR-60…67 forms and CRM                   | tables + service-only secrets + retry functions reading `app_config`       |
-| BR-70…75 rate limits and visitor hash    | `rate_limit_hit()` + service-side HMAC                                     |
-| BR-80/81 CMS defaults                    | `site_settings` + app-side merge                                           |
+| Rule                                     | Enforced by (new schema)                                                            |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| BR-02/03 profile + default role          | `handle_new_user()` trigger on `auth.users` (null-email safe)                       |
+| BR-11/12/13 reserved super admin         | role-grant trigger + `user_roles` guard + RLS excluding `super_admin` rows          |
+| BR-16 who can create an account          | `hook_before_user_created()` Auth hook (allow-list; off until the owner enables it) |
+| BR-20…25 listing moderation              | `properties` guard trigger + RLS + column grants                                    |
+| BR-26 owner-scoped delete                | RLS                                                                                 |
+| BR-27/28 listing and property types      | CHECK constraints                                                                   |
+| BR-30…35 builder isolation and guards    | `current_builder_id()`, `project_is_mine()`, builder guard trigger, RLS             |
+| BR-40…43 project moderation, re-approval | `projects` guard trigger + `project_is_live()` + RLS                                |
+| BR-44 delete blocked with leads          | `project_leads.project_id ON DELETE RESTRICT`                                       |
+| BR-45…47 unit and lead locks             | guard triggers                                                                      |
+| BR-50…53 enquiries and saved homes       | RLS, RPC `submit_enquiry`, unique `(user_id, property_id)`                          |
+| BR-60…67 forms and CRM                   | tables + service-only secrets + retry functions reading `app_config`                |
+| BR-70…75 rate limits and visitor hash    | `rate_limit_hit()` + service-side HMAC                                              |
+| BR-80/81 CMS defaults                    | `site_settings` + app-side merge                                                    |
 
 **Order.** All migrations are SQL files in `supabase/migrations/`, forward-only, reviewed in pull requests, executed in timestamp order, and applied to an empty database in CI. Dependencies run top to bottom.
 

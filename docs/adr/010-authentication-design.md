@@ -34,4 +34,8 @@ Settled only by a live test (`docs/runbooks/auth-spike.md`, script `scripts/spik
 
 The Send-SMS hook route, the MSG91 adapter (3 second limit inside Supabase's 5 second budget), a fake sender and the signature check are built (`docs/runbooks/send-sms-hook.md`). The signature check is written with Node's crypto, so no package was added. The MSG91 request is not yet run against the live service and waits for DLT approval.
 
+## Before User Created guard, built 2 Nov 2026 (BR-16, proposed)
+
+The auth spike showed that, while sign-ups are on, a stranger can create an account with Google (`docs/runbooks/auth-spike.md`, section F). The database function `hook_before_user_created()` closes that: it allows phone sign-ups, the two reserved administrators and active invited builders (the last two only through Google) and refuses everything else with `signup_not_allowed`. It is an allow-list that never raises an error, and it refuses an email sign-up that uses a reserved or invited address, so nobody can take a staff address before its owner arrives. It does nothing until the owner selects it in the dashboard, and Supabase's documentation does not say which sign-up methods fire it, so the live test in `docs/runbooks/before-user-created-hook.md` settles that. If the hook also fires for accounts made by an admin, the invite flow (S7-T05) must create the builder row before the account.
+
 ## Open questions

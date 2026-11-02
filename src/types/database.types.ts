@@ -632,6 +632,9 @@ isOneToOne: false
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"hook_before_user_created":
+{ Args: { "event": Json }; Returns: Json
+                           },
 "is_reserved_admin_email":
 { Args: { "candidate": string }; Returns: boolean
                            },
