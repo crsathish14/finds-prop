@@ -1,5 +1,11 @@
 import { AUTH_CALLBACK_PATH } from "@/lib/url/language-free";
 import { isSafeRedirectPath } from "@/lib/url/safe-redirect";
+import {
+  STAFF_AREAS,
+  STAFF_PROBLEMS,
+  type StaffArea,
+  type StaffProblem,
+} from "@/types/staff-sign-in";
 import type { SessionView } from "./session";
 
 /**
@@ -7,8 +13,8 @@ import type { SessionView } from "./session";
  * 1 Nov 2026). Builders and agents share the builder area; the administrator has their own.
  * Everything here is pure, so the action, the callback and the pages share one set of rules.
  */
-export const STAFF_AREAS = ["builder", "admin"] as const;
-export type StaffArea = (typeof STAFF_AREAS)[number];
+export { STAFF_AREAS, STAFF_PROBLEMS };
+export type { StaffArea, StaffProblem };
 
 export function isStaffArea(value: unknown): value is StaffArea {
   return typeof value === "string" && (STAFF_AREAS as readonly string[]).includes(value);
@@ -23,10 +29,6 @@ export const STAFF_HOME_PATH: Record<StaffArea, string> = {
   builder: "/builder/dashboard",
   admin: "/admin/dashboard",
 };
-
-/** What a sign-in page can say went wrong. One generic message each: never a reason or an address. */
-export const STAFF_PROBLEMS = ["denied", "cancelled", "error"] as const;
-export type StaffProblem = (typeof STAFF_PROBLEMS)[number];
 
 export function staffLoginPath(area: StaffArea, problem?: StaffProblem): string {
   return problem ? `${STAFF_LOGIN_PATH[area]}?${problem}=1` : STAFF_LOGIN_PATH[area];
