@@ -104,9 +104,14 @@ jobs:
         env:
           CI: "true"
       - run: supabase start
-      - run: supabase db reset
+      - name: Reset without the seed (the database tests assume empty tables)
+        run: supabase db reset --no-seed
       - run: supabase db lint --level error
       - run: supabase test db
+      - name: Reset with the seed data (S3-T13)
+        run: supabase db reset
+      - name: Seed tests
+        run: supabase test db supabase/seed-tests
       - name: Generated types match the migrations (G-07)
         run: node scripts/gen-types.mjs --check
       - if: always()

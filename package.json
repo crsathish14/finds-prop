@@ -19,7 +19,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "gen:types": "node scripts/gen-types.mjs",
-    "check:db": "node scripts/check-migrations.mjs && supabase db reset && supabase db lint --level error && supabase test db && node scripts/gen-types.mjs --check",
+    "check:db": "node scripts/check-migrations.mjs && supabase db reset --no-seed && supabase db lint --level error && supabase test db && supabase db reset && supabase test db supabase/seed-tests && node scripts/gen-types.mjs --check",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:ds": "playwright test --project=design-lab --pass-with-no-tests",
     "test:e2e:smoke": "playwright test --grep @smoke",
