@@ -118,6 +118,11 @@ jobs:
         run: supabase test db supabase/seed-dev-tests
       - name: Generated types match the migrations (G-07)
         run: node scripts/gen-types.mjs --check
+      # S4-SPK-01: 10,000 fictional listings, then each search timed 200 times as a visitor and its plan
+      # checked. Fails when a search is over 100 ms at p95 or a named index is not used. Runs last: it
+      # leaves its data behind in this throwaway database.
+      - name: Search performance (S4-SPK-01)
+        run: docker exec -i supabase_db_findsprop psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -v p95_limit=100 -v runs=200 < supabase/perf/search-spike.sql
       - if: always()
         run: supabase stop --no-backup
 
