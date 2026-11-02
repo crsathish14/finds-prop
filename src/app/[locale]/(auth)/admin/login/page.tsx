@@ -1,14 +1,16 @@
 import { Suspense } from "react";
-import { RoutePlaceholder } from "@/app/[locale]/_components/route-placeholder";
 import { SignedInRedirect } from "@/app/[locale]/_components/signed-in-redirect";
+import { StaffSignInFromQuery } from "@/features/staff-auth";
 
-export default function AdminLoginPage() {
+export default function AdminLoginPage({ searchParams }: PageProps<"/[locale]/admin/login">) {
   return (
     <>
       <Suspense fallback={null}>
         <SignedInRedirect area="admin" destination="/admin/dashboard" />
       </Suspense>
-      <RoutePlaceholder route="/admin/login" />
+      <Suspense fallback={null}>
+        <StaffSignInFromQuery area="admin" searchParams={searchParams} />
+      </Suspense>
     </>
   );
 }

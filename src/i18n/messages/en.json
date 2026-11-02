@@ -17,6 +17,42 @@
     "title": "Find Prop",
     "tagline": "Homes, plots and new projects in Tamil Nadu. We are getting ready."
   },
+  "auth": {
+    "staff": {
+      "google": "Continue with Google",
+      "googleOpening": "Opening Google",
+      "cancelledTitle": "Sign-in was cancelled",
+      "cancelledBody": "You didn't finish signing in with Google. Try again when you're ready.",
+      "errorTitle": "Something went wrong",
+      "errorBody": "We couldn't finish signing you in. Please try again.",
+      "rateLimitedTitle": "Too many attempts",
+      "rateLimitedBody": "{minutes, plural, one {For your security, try again in # minute.} other {For your security, try again in # minutes.}}",
+      "builder": {
+        "roleTag": "Builder portal",
+        "title": "Builder and agent sign in",
+        "lead": "Sign in with the Google account Find Prop invited. There is no password to remember.",
+        "deniedTitle": "This Google account can't sign in here",
+        "deniedBody": "It isn't an active builder or agent account. Try a different Google account, or contact Find Prop if you think this is a mistake. You have been signed out.",
+        "invitationOnly": "Builder and agent accounts are created by invitation only. There is no sign-up here.",
+        "buyerLink": "Looking for a buyer or owner account?",
+        "asideTitle": "Manage your projects, units and leads.",
+        "asideEmphasis": "leads",
+        "benefitPublish": "Publish and update your projects",
+        "benefitUnits": "Keep unit availability current",
+        "benefitLeads": "Follow up on every lead",
+        "benefitInsights": "See how your projects perform"
+      },
+      "admin": {
+        "roleTag": "Administrator",
+        "title": "Administrator sign in",
+        "lead": "For Find Prop administrators only. Sign in with your Google account.",
+        "deniedTitle": "This account isn't authorised",
+        "deniedBody": "You have been signed out. Only a Find Prop administrator account can use this area.",
+        "backLink": "Back to the public site",
+        "quietNote": "Admin pages are never indexed by search engines."
+      }
+    }
+  },
   "notFound": {
     "code": "Error 404",
     "title": "This page isn't here",

@@ -154,7 +154,13 @@ const fromMessages = (text: string) =>
   SYMBOLS_ONLY.test(text) || PATTERNS.some((pattern) => pattern.test(text));
 
 test.describe("@smoke text origin", () => {
-  for (const route of ["/", "/this-page-does-not-exist"]) {
+  for (const route of [
+    "/",
+    "/this-page-does-not-exist",
+    "/builder/login",
+    "/builder/login?denied=1",
+    "/admin/login",
+  ]) {
     test(`all visible text on ${route} comes from en.json`, async ({ page }) => {
       await page.goto(route);
       await page.waitForLoadState("networkidle");

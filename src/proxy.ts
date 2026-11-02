@@ -3,6 +3,7 @@ import createIntlProxy from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
+import { hasNoLanguage } from "@/lib/url/language-free";
 import { RETURN_PATH_HEADER } from "@/server/auth/return-path";
 import { env } from "@/server/env";
 import { REQUEST_ID_PATTERN } from "@/server/request-id";
@@ -66,7 +67,7 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-request-id", requestId);
   requestHeaders.set(RETURN_PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
-  const response = request.nextUrl.pathname.startsWith("/api")
+  const response = hasNoLanguage(request.nextUrl.pathname)
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : handleLanguage(new NextRequest(request, { headers: requestHeaders }));
 
