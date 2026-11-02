@@ -23,7 +23,7 @@ A Supabase personal access token belongs to your **whole account**, not to one p
    node scripts/verify-supabase-config.mjs --project-ref <20 letters> --site-url https://<the app's address> --environment dev
    ```
 
-   `--site-url` is the address the app is served from, with no path (the same as `NEXT_PUBLIC_SITE_URL`). Without it the checks that depend on it are skipped, and say so. `--environment` is `dev` (the default), `staging` or `production`. `--strict` makes a warning fail the run as well.
+   `--site-url` is the address the app is served from, with no path (the same as `NEXT_PUBLIC_SITE_URL`): `http://` or `https://`, the host and an optional port, with no path, space or quotes. The script refuses anything else before it sends a request. Without it the checks that depend on it are skipped, and say so. `--environment` is `dev` (the default), `staging` or `production`. `--strict` makes a warning fail the run as well.
 
 4. Paste the output to the agent if you want help. It holds no secrets.
 5. Delete the token and close the terminal.
