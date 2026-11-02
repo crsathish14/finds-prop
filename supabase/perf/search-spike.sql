@@ -8,8 +8,15 @@
 -- fictional data only (R-DB-11), it removes what it made before it starts, and it can run again.
 --
 -- It prints one line per search: the time of 200 real calls (p50, p95, max), the indexes the plan
--- uses, whether the plan reads the whole table, and a verdict. It fails (a non-zero exit) when a
--- search is slower than the gate, or when a search that should use a named index does not.
+-- chooses, whether that plan reads the whole table, whether the named index can serve the search, and
+-- a verdict. It fails (a non-zero exit) when a search is slower than the gate, or when a search that
+-- has a named index cannot use it. Two things it deliberately does not ask:
+--   * That the planner picks the named index by itself. At about 10,000 rows it may rightly prefer
+--     another plan, so the check is that the index CAN serve the search: the plan is asked again with
+--     full scans off (and, for the place and keyword indexes, with the plain index scans that follow
+--     the sort order off too), and the natural plan is still printed.
+--   * That a search with no filter avoids reading the whole table. total_count is the number of every
+--     matching listing, so those searches must read them all; this grows with the table.
 -- The plan is taken from the statement inside search_properties() itself, so it cannot drift.
 
 \set ON_ERROR_STOP on
@@ -161,8 +168,8 @@ select count(*) as listings_loaded,
 from public.properties
 where owner_id::text like '00000000-0000-4000-a000-%';
 
--- 4. The searches. Each row is one search the app will make; expect_index names an index the plan
--- must use (only where one is clearly the right tool), forbid_seq fails a plan that reads the whole table.
+-- 4. The searches. Each row is one search the app will make; expect_index names an index that must be
+-- able to serve it (only where one is clearly the right tool).
 create temp table spike_shapes (
   id serial primary key,
   label text not null,
@@ -170,14 +177,14 @@ create temp table spike_shapes (
   locality text, lat double precision, lng double precision, radius double precision,
   west double precision, south double precision, east double precision, north double precision,
   q text, label_filter text, sort text not null default 'newest', page_size integer not null default 12,
-  expect_index text, forbid_seq boolean not null default false
+  expect_index text
 );
-insert into spike_shapes (label, sort, page_size, expect_index, forbid_seq) values
-  ('newest, no filter', 'newest', 12, 'properties_search_newest', true),
-  ('price up, no filter', 'price_asc', 12, 'properties_search_price', true),
-  ('price down, no filter', 'price_desc', 12, 'properties_search_price', true),
-  ('largest, no filter', 'area_desc', 12, 'properties_search_area', true),
-  ('largest page, newest, 120', 'newest', 120, null, false);
+insert into spike_shapes (label, sort, page_size, expect_index) values
+  ('newest, no filter', 'newest', 12, 'properties_search_newest'),
+  ('price up, no filter', 'price_asc', 12, 'properties_search_price'),
+  ('price down, no filter', 'price_desc', 12, 'properties_search_price'),
+  ('largest, no filter', 'area_desc', 12, 'properties_search_area'),
+  ('largest page, newest, 120', 'newest', 120, null);
 insert into spike_shapes (label, listing_type) values ('buy, newest', 'sale');
 insert into spike_shapes (label, listing_type, property_type, bhk, max_price)
   values ('rent apartment 2 bhk under 30000', 'rent', 'apartment', 2, 30000);
@@ -204,7 +211,7 @@ insert into spike_shapes (label, listing_type, property_type, bhk, max_price, la
 
 create temp table spike_results (
   id integer, label text, matches bigint, runs integer, p50_ms numeric, p95_ms numeric, max_ms numeric,
-  indexes text, reads_whole_table boolean, verdict text
+  indexes text, reads_whole_table boolean, index_check text, verdict text
 );
 
 do $$
@@ -220,7 +227,9 @@ declare
   started timestamptz;
   matches bigint;
   used_indexes text;
+  probe_indexes text;
   whole_table boolean;
+  index_check text;
   problems text;
   gate numeric := current_setting('spike.p95_limit')::numeric;
   runs integer := current_setting('spike.runs')::integer;
@@ -231,7 +240,7 @@ begin
   select prosrc into source from pg_proc
   where proname = 'search_properties' and pronamespace = 'public'::regnamespace;
   template := substring(source from '(?s)format\(\$sql\$(.*)\$sql\$, order_by\)');
-  if template is null or position('order by %s' in template) = 0 then
+  if template is null or position('order by %1$s' in template) = 0 then
     raise exception 'The statement inside search_properties() was not found; update this script to match it';
   end if;
 
@@ -268,45 +277,73 @@ begin
       when 'price_desc' then 'found.price desc, found.id desc'
       else 'found.area_sqft desc nulls last, found.id'
     end;
-    execute 'explain (format json) ' || replace(template, '%s', order_clause)
-      into plan
-      using shape.listing_type, shape.property_type, shape.bhk, shape.min_price, shape.max_price,
-        nullif(btrim(shape.locality), ''), (shape.lat is not null), shape.lat, shape.lng,
-        coalesce(shape.radius, 5), (shape.west is not null), shape.west, shape.south, shape.east,
-        shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size;
+    -- Probe 0 is the plan the planner chooses. Where the search has a named index that it did not
+    -- choose, ask again with full scans off (probe 1), then with the plain index scans off too (probe 2),
+    -- which leaves the bitmap scans of the place and keyword indexes as the way to the rows.
+    used_indexes := null;
+    whole_table := null;
+    index_check := null;
+    for probe in 0..2 loop
+      exit when probe > 0 and (shape.expect_index is null or index_check <> 'NOT USABLE');
+      if probe >= 1 then
+        perform set_config('enable_seqscan', 'off', true);
+      end if;
+      if probe = 2 then
+        perform set_config('enable_indexscan', 'off', true);
+        perform set_config('enable_indexonlyscan', 'off', true);
+      end if;
+      execute 'explain (format json) ' || replace(template, '%1$s', order_clause)
+        into plan
+        using shape.listing_type, shape.property_type, shape.bhk, shape.min_price, shape.max_price,
+          nullif(btrim(shape.locality), ''), (shape.lat is not null), shape.lat, shape.lng,
+          coalesce(shape.radius, 5), (shape.west is not null), shape.west, shape.south, shape.east,
+          shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size;
+      perform set_config('enable_seqscan', 'on', true);
+      perform set_config('enable_indexscan', 'on', true);
+      perform set_config('enable_indexonlyscan', 'on', true);
+
+      plan_text := plan::text;
+      select string_agg(distinct hit[1], ', ' order by hit[1]) into probe_indexes
+      from regexp_matches(plan_text, '"Index Name": "([^"]+)"', 'g') as hit;
+      if probe = 0 then
+        used_indexes := probe_indexes;
+        whole_table := plan_text ~ '"Node Type": "Seq Scan"[^}]*"Relation Name": "properties"';
+        if shape.expect_index is not null then
+          index_check := case when position(shape.expect_index in coalesce(probe_indexes, '')) > 0
+            then 'chosen' else 'NOT USABLE' end;
+        end if;
+      elsif position(shape.expect_index in coalesce(probe_indexes, '')) > 0 then
+        index_check := case probe when 1 then 'usable, not chosen'
+          else 'usable, not chosen (plain index scans off too)' end;
+      end if;
+    end loop;
     execute 'reset role';
 
     select percentile_cont(0.5) within group (order by ms),
            percentile_cont(0.95) within group (order by ms)
       into p50, p95
     from unnest(sample_ms) as ms;
-    plan_text := plan::text;
-    select string_agg(distinct hit[1], ', ' order by hit[1]) into used_indexes
-    from regexp_matches(plan_text, '"Index Name": "([^"]+)"', 'g') as hit;
-    whole_table := plan_text ~ '"Node Type": "Seq Scan"[^}]*"Relation Name": "properties"';
 
     problems := '';
     if p95 > gate then
       problems := problems || format(' p95 %s ms is over the %s ms gate;', round(p95, 2), gate);
     end if;
-    if shape.expect_index is not null and coalesce(used_indexes, '') not like '%' || shape.expect_index || '%' then
-      problems := problems || format(' the plan does not use %s;', shape.expect_index);
-    end if;
-    if shape.forbid_seq and whole_table then
-      problems := problems || ' the plan reads the whole table;';
+    if index_check = 'NOT USABLE' then
+      problems := problems || format(' %s cannot serve this search, even with full scans off;', shape.expect_index);
     end if;
 
     insert into spike_results
     values (shape.id, shape.label, matches, runs, round(p50, 2), round(p95, 2),
             round((select max(ms) from unnest(sample_ms) as ms), 2), used_indexes, whole_table,
-            case when problems = '' then 'ok' else 'FAIL:' || problems end);
+            index_check, case when problems = '' then 'ok' else 'FAIL:' || problems end);
   end loop;
 end
 $$;
 
 \echo
 \echo 'S4-SPK-01 results (time of one call, in milliseconds, over the runs given):'
-select id, label, matches as total_matches, p50_ms, p95_ms, max_ms, indexes, reads_whole_table, verdict
+select id, label, matches as total_matches, p50_ms, p95_ms, max_ms, indexes, reads_whole_table,
+       index_check, verdict
 from spike_results order by id;
 
 do $$
