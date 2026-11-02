@@ -11,6 +11,7 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | MSG91 DLT and template change                                  | S3 and S9                 |
 | Phone-code hook and MSG91 (`send-sms-hook.md`)                 | S3 (written)              |
 | New machine and session handoff (`new-machine-and-handoff.md`) | S3 (written, 1 Nov 2026)  |
+| Before User Created guard (`before-user-created-hook.md`)      | S3 (written, 2 Nov 2026)  |
 | OTP abuse response                                             | S5                        |
 | CRM outage and manual retry                                    | S7                        |
 | Staff second-factor lost device                                | S3                        |
