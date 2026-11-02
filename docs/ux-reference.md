@@ -75,8 +75,8 @@ Whole-page previews of the layout components at 390, 820 and 1280 px are served 
 | ADD-03        | Add and verify your email                                     | /auth, /dashboard            | `docs/ux/ux-addendum/screens/verify-email.html`        |
 | ADD-03        | Email prompt, reminder and posting gate                       | /dashboard, /post-property   | `docs/ux/ux-addendum/screens/email-prompts.html`       |
 | ADD-04        | What should we call you?                                      | /auth                        | `docs/ux/ux-addendum/screens/profile-name.html`        |
-| ADD-05        | Builder and agent sign in, Google only (Proposed 2 Nov 2026)  | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin-google.html` |
-| ADD-06        | Administrator sign in, Google only (Proposed 2 Nov 2026)      | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login-google.html`  |
+| ADD-05        | Builder and agent sign in, Google only (approved 2 Nov 2026)  | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin-google.html` |
+| ADD-06        | Administrator sign in, Google only (approved 2 Nov 2026)      | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login-google.html`  |
 | ADD-05        | Builder sign in (email, password or Google), **superseded**   | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin.html`        |
 | ADD-05        | Second factor for builders and administrators, **superseded** | /builder/login, /admin/login | `docs/ux/ux-addendum/screens/staff-2fa.html`           |
 | ADD-05        | Set your password (invitation) and reset, **superseded**      | /reset-password              | `docs/ux/ux-addendum/screens/staff-password.html`      |
