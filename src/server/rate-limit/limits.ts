@@ -36,6 +36,11 @@ export const RATE_LIMITS = {
   ],
   /** 10 wrong or right tries per phone per hour (DEC-31). */
   otp_verify: [{ who: "key", windowSeconds: HOUR, max: 10 }],
+  /** Starting a staff Google sign-in: 10 per visitor per 10 minutes and 30 per address per hour (S3-T10). */
+  staff_sign_in: [
+    { who: "visitor", windowSeconds: 10 * MINUTE, max: 10 },
+    { who: "ip", windowSeconds: HOUR, max: 30 },
+  ],
   /** 10 enquiries per user per day (DEC-26). */
   enquiry: [{ who: "user", windowSeconds: DAY, max: 10 }],
   /** 10 listings created per user per day (DEC-26). */

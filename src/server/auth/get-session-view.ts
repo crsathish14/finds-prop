@@ -11,8 +11,18 @@ import { buildSessionView, type SessionView } from "./session";
  * the builder record are read as the user, so the database's own row rules apply. Roles are read
  * for this user only: an admin can read every row in user_roles, so the filter is not optional.
  */
-export const getSessionView = cache(async (): Promise<SessionView | null> => {
-  const supabase = await createServerSupabase();
+export const getSessionView = cache(async (): Promise<SessionView | null> =>
+  loadSessionView(await createServerSupabase()),
+);
+
+/**
+ * The same read for a client the caller already holds. The staff sign-in callback uses it so the
+ * session it just created through exchangeCodeForSession is the one it reads, not a second client
+ * that would have to find the new cookies.
+ */
+export async function loadSessionView(
+  supabase: Awaited<ReturnType<typeof createServerSupabase>>,
+): Promise<SessionView | null> {
   const { data, error } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (error || !claims || typeof claims.sub !== "string") return null;
@@ -29,4 +39,4 @@ export const getSessionView = cache(async (): Promise<SessionView | null> => {
     roles: roleRows.data.map((row) => row.role),
     builderId: builder.data,
   });
-});
+}

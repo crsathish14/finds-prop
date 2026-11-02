@@ -19,6 +19,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "places",
         "project_event",
         "project_lead",
+        "staff_sign_in",
         "upload_url",
       ].sort(),
     );
@@ -36,6 +37,13 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["map_search", [{ who: "visitor", windowSeconds: 60, max: 60 }]],
   ])("%s has the agreed rule", (scope, rules) => {
     expect(RATE_LIMITS[scope]).toEqual(rules);
+  });
+
+  it("limits a staff Google sign-in per visitor and per address (S3-T10)", () => {
+    expect(RATE_LIMITS.staff_sign_in).toEqual([
+      { who: "visitor", windowSeconds: 600, max: 10 },
+      { who: "ip", windowSeconds: 3600, max: 30 },
+    ]);
   });
 
   it("limits a phone code per phone and per address (DEC-31)", () => {
