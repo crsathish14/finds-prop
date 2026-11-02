@@ -112,6 +112,10 @@ jobs:
         run: supabase db reset
       - name: Seed tests
         run: supabase test db supabase/seed-tests
+      - name: Seed test users and photos (S3-T13)
+        run: node scripts/seed-dev.mjs
+      - name: Seed-dev tests
+        run: supabase test db supabase/seed-dev-tests
       - name: Generated types match the migrations (G-07)
         run: node scripts/gen-types.mjs --check
       - if: always()
