@@ -6,6 +6,8 @@ The approved package in `../final-ux/` was designed for email and Google sign-in
 
 Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-addendum-brief.md`.
 
+**Update 2 Nov 2026:** the owner decided on 1 Nov that builders, agents and the administrator sign in with **Google only**: no password, no reset and no second step in the app. The two new Proposed screens above replace the staff sign-in, second-factor and set-password screens, which are marked superseded and kept for history. They are not rendered yet (the counts below are the original batch totals) and are not built until you approve them.
+
 ## Start here
 
 1. Open **[index.html](index.html)** in a desktop browser. It lists every screen with thumbnails and state chips.
@@ -23,8 +25,10 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 | ADD-02 | Enter the 6-digit code (12 states) | `screens/auth-otp.html` |
 | ADD-03 | Add and verify email (8 states) · dashboard prompt, reminder and posting gate (4 states) | `screens/verify-email.html`, `screens/email-prompts.html` |
 | ADD-04 | What should we call you? (5 states) | `screens/profile-name.html` |
-| ADD-05 | Builder sign in with Google (8 states) · second factor, variant A authenticator app and variant B SMS (12 states) · set password from invitation and reset (6 states) | `screens/staff-signin.html`, `screens/staff-2fa.html`, `screens/staff-password.html` |
-| ADD-06 | Administrator sign in (5 states) | `screens/admin-login.html` |
+| ADD-05 | Builder and agent sign in, **Google only** (6 states, Proposed 2 Nov 2026) | `screens/staff-signin-google.html` |
+| ADD-06 | Administrator sign in, **Google only** (6 states, Proposed 2 Nov 2026) | `screens/admin-login-google.html` |
+| ADD-05 | **Superseded 2 Nov 2026**, kept for history: builder sign in with Google (8 states) · second factor (12 states) · set password and reset (6 states) | `screens/staff-signin.html`, `screens/staff-2fa.html`, `screens/staff-password.html` |
+| ADD-06 | **Superseded 2 Nov 2026**, kept for history: administrator sign in (5 states) | `screens/admin-login.html` |
 | ADD-10 | Homepage A, B and fallback, search results and a navigation board, all without AI search | `screens/home-*-noai.html`, `screens/search-noai.html`, `screens/nav-noai.html` |
 
 ### Batches 2 and 3 (priority P2 and P3)

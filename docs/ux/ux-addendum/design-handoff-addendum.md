@@ -4,6 +4,7 @@ Companion to `../final-ux/design-handoff.md`. It lists what this batch decides, 
 
 **Scope:** ADD-01 to ADD-12 from `../property-platform-implementation-plan/stage-0/02-ux-addendum-brief.md` (ADD-13 PG and hostels stays gated): **21 screens, 133 states, 200 renders**.
 
+- **Update 2 Nov 2026 (owner decision of 1 Nov: builders, agents and the administrator sign in with Google only).** Two Proposed screens replace the staff sign-in set: `staff-signin-google.html` and `admin-login-google.html` (12 states, not yet rendered). The password, reset and second-factor screens are marked superseded and kept for history. The counts below are the original batch totals.
 - **Batch 1** (ADD-01 to ADD-06, ADD-10): 14 screens, 76 states, 119 renders.
 - **Batches 2 and 3** (ADD-07, ADD-08, ADD-09, ADD-11, ADD-12): 7 screens, 57 states, 81 renders.
 
@@ -18,10 +19,12 @@ Companion to `../final-ux/design-handoff.md`. It lists what this batch decides, 
 | ADD-03 Email verification | `verify-email.html` | entry · invalid · sending · sent · resent · verified · expired · taken |
 | ADD-03 Prompt, reminder, gate | `email-prompts.html` | prompt · banner · gate · gate-sent |
 | ADD-04 Name | `profile-name.html` | default · error · saving · required-post · required-enquire |
-| ADD-05 Builder sign-in | `staff-signin.html` | signin · google-mismatch · denied · errors · forgot · forgotsent · busy · ratelimited |
-| ADD-05 Second factor | `staff-2fa.html` | A: enrol · enrol-wrong · recovery · challenge · wrong · locked · use-recovery · lost · admin-challenge. B: sms · sms-wrong · sms-add-phone |
-| ADD-05 Set password / reset | `staff-password.html` | welcome · mismatch · short · success · expired · reset |
-| ADD-06 Administrator sign-in | `admin-login.html` | default · errors · notauth · ratelimited · busy |
+| ADD-05 Builder and agent sign-in, Google only (Proposed 2 Nov 2026) | `staff-signin-google.html` | default · busy · cancelled · denied · error · ratelimited |
+| ADD-06 Administrator sign-in, Google only (Proposed 2 Nov 2026) | `admin-login-google.html` | default · busy · cancelled · notauth · error · ratelimited |
+| ADD-05 Builder sign-in (**superseded 2 Nov 2026**) | `staff-signin.html` | signin · google-mismatch · denied · errors · forgot · forgotsent · busy · ratelimited |
+| ADD-05 Second factor (**superseded 2 Nov 2026**) | `staff-2fa.html` | A: enrol · enrol-wrong · recovery · challenge · wrong · locked · use-recovery · lost · admin-challenge. B: sms · sms-wrong · sms-add-phone |
+| ADD-05 Set password / reset (**superseded 2 Nov 2026**) | `staff-password.html` | welcome · mismatch · short · success · expired · reset |
+| ADD-06 Administrator sign-in (**superseded 2 Nov 2026**) | `admin-login.html` | default · errors · notauth · ratelimited · busy |
 | ADD-10 AI search off | `home-a-noai`, `home-b-noai`, `home-none-noai`, `search-noai` (empty, default), `nav-noai` | default · empty |
 
 | ADD-07 Place suggestions | `place-suggest.html` | idle · typing · loading · results · noresults · degraded · ratelimited · selected · stacked · rail |
