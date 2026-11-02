@@ -20,14 +20,15 @@ Written 1 Nov 2026, when the owner moved to another computer in the middle of St
 ## 3. Where the work stands (1 Nov 2026)
 
 - **Merged into `develop`:** the whole database, the dev deploy workflow, session guards, the full `defineAction` pipeline, and the phone-code hook with the MSG91 adapter.
-- **Open pull request #29** (`feat/route-skeleton`, task S3-T11): the guarded route skeleton and the `site` settings module. All checks pass, including Vercel. **The owner merges it.** Before merging, the three `NEXT_PUBLIC_…` variables must also be set for Vercel's **Production** environment, because Production builds `develop`.
+- **Pull request #29** (`feat/route-skeleton`, task S3-T11): the guarded route skeleton and the `site` settings module. **Merged by the owner on 2 Nov 2026.** The three `NEXT_PUBLIC_…` variables must be set for Vercel's **Production** environment, because Production builds `develop`.
 - **Vercel:** the preview build had failed because its `NEXT_PUBLIC_…` variables were wrong after the Supabase project was replaced. They are fixed.
-- **Supabase dev project:** replaced earlier, so migrations must be applied to the new one: GitHub, Actions, "Deploy database to dev", Run workflow, branch `develop`. Check that it has run on the new project.
+- **Supabase dev project:** replaced earlier. The "Deploy database to dev" workflow was run by hand on `develop` on 2 Nov 2026 and applied all 16 migrations to the new project.
 - **Google sign-in provider:** set up in the Supabase dashboard (owner, 1 Nov 2026).
-- **Auth spike (S3-SPK-01):** not run. The owner decided to continue on the other machine. Dashboard part A is partly done (Google). Still to check: phone test number `+919000000001` with code `123456`, the redirect URL `http://localhost:54999/callback`, and a test user with no phone. Then run the script as in `docs/runbooks/auth-spike.md`.
+- **Auth spike (S3-SPK-01):** run on 2 Nov 2026 with `developer@findsprop.com` as the admin. Results are in `docs/runbooks/auth-spike.md` (section F). The test users and the test builder were deleted. The dashboard forced placeholder Twilio values before it saved the test phone number; they stay on the dev project until the Send SMS hook replaces them. Open decision: a guard on the "Before User Created" hook, because a stranger can create an account with Google.
   - Already learned: "Allow new users to sign up" is **on**, and the "Before User Created" hook is **available** on the plan. The breadcrumb showed a `PRODUCTION` badge on the project named `main`; the owner confirmed it is the dev project.
-- **Waiting on others:** MSG91 DLT approval (needed before real phone codes), the Send SMS hook dashboard setup (needs the stable app address and `SEND_SMS_HOOK_SECRET`), and 2-Step Verification for `support@drizzlemarketings.com`.
-- **Next tasks, after the spike results:** the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); staff Google sign-in and the invitation flow (S3-T10, needs approved Google-only UX screens first); seeds (S3-T13); the Supabase config check (S3-T14); the CI integration job (H3-T01); then finalise ADR-010 from the spike results.
+- **Waiting on others:** MSG91 DLT approval (needed before real phone codes), and the Send SMS hook dashboard setup (needs the stable app address and `SEND_SMS_HOOK_SECRET`).
+- **Deferred by the owner (2 Nov 2026):** `support@drizzlemarketings.com`, including its 2-Step Verification and first Google sign-in, until all stages are complete. The database keeps the address reserved, so nobody else can take it. The spike did not test it.
+- **Next tasks (the spike results are in):** a plan for the sign-in guard (class C2, needs approval); the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); staff Google sign-in and the invitation flow (S3-T10, needs approved Google-only UX screens first); seeds (S3-T13); the Supabase config check (S3-T14); the CI integration job (H3-T01); then finalise ADR-010 from the spike results.
 
 ## 4. Working agreement (what the assistant must keep doing)
 
