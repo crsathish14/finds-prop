@@ -10,5 +10,5 @@ Read `docs/engineering/database.md` first. No local stack is required (ADR-034):
 6. Multi-step workflows are RPC functions. Cross-system steps are idempotent with compensation. (R-DB-08)
 7. Destructive or behaviour-changing migration: rollback note in the PR, a reviewed rollback script for the same timestamp (never auto-run), expand then contract across releases. (R-DB-03)
 8. Run `npm run gen:types` and commit the result; CI diffs it. (R-DB-10)
-9. Seeds are fictional; seed scripts refuse non-local URLs. No secrets in SQL. (R-DB-11, R-DB-13)
+9. Seeds are fictional; seed scripts refuse non-local URLs. No secrets in SQL. The seed has its own tests in `supabase/seed-tests`, run on a reset with the seed; the tests in `supabase/tests` run without it and must not depend on it. (R-DB-11, R-DB-13)
 10. After any change here run `npm run check:db` if Docker is available; otherwise push and read the CI `db` job. Report the real result.
