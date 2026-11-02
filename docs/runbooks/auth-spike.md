@@ -69,3 +69,22 @@ Delete every test user in Authentication, Users. Then in the SQL editor: `delete
 | Test phone numbers work                            | Local and dev sign-in tests need no SMS provider                                                                        |
 
 The Send-SMS hook test (S3-SPK-02) comes later, when the hook route exists (S3-T09).
+
+## F. Results (run 2 Nov 2026, dev project, admin account `developer@findsprop.com`)
+
+| Question                                            | Result                                                                                                                                  | Decides                                                                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Google lands on the invited account                 | Yes. One account with identities `email, google`; roles `customer, builder`                                                             | The admin only needs the builder's Google email on file (see the caveat below)                          |
+| Reserved admin becomes `super_admin` through Google | Yes for `developer@findsprop.com`. `support@drizzlemarketings.com` was not tested (deferred by the owner until all stages are complete) | BR-12 holds for Google; no change                                                                       |
+| Phone claim for Google and password users           | Empty; `has_verified_phone()` is false                                                                                                  | `has_verified_phone()` stays as written                                                                 |
+| Stranger can create an account with Google          | Yes: a plain `customer`, no phone, no other role                                                                                        | A "Before User Created" check is needed (the hook is available on the plan, not set up). Owner decision |
+| Email sign-up closed                                | Not shown: the script's fake `.test` address was rejected as invalid. "Allow new users to sign up" is on and the Email provider is on   | Treat email sign-up as open until the guard or the provider setting says otherwise                      |
+| Test phone number with a fixed code works           | Yes (`919000000001`, code `123456`); the code request took about 1.2 s                                                                  | Local and dev sign-in tests need no SMS provider                                                        |
+
+Notes for whoever reads the output next:
+
+- The script's "refused ... closed" line for sign-up is printed for any error, including an invalid address. Do not read it as proof that sign-up is closed.
+- A super admin can read every row of `profiles` and `user_roles`, so in an admin session the "Database view" shows all accounts (for example `customer` three times and one `super_admin`, and "multiple rows" for the profile). This is the policies working, not duplicate rows.
+- The Phone provider page refused to save the test number without Twilio fields. Placeholder values were entered, which are not credentials and send nothing. The number is entered without `+` and needs a "valid until" date.
+- The invited builder was linked because an `auth.users` row with a confirmed email existed before the first Google sign-in. If the invitation flow does not create that row first, the first Google sign-in makes a new account without the builder role, and the invite needs a database step that links it.
+- Cleaned up afterwards: all test users, the `Spike Test Builder` row and the test phone number.
