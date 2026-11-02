@@ -30,13 +30,13 @@ The named tests (`UT-`, `DB-`, `IT-`, `E2E-`) are listed in `test-catalogue.md`.
 | Performance        | Lighthouse CI + Vercel Speed Insights                                   | preview URL; field data           | LCP/INP/CLS, bundle budget                                           | nightly         |
 | Static             | ESLint (flat config), `tsc --noEmit`, token/boundary scripts            | source                            | Style, boundaries, types, no hard-coded values                       | seconds         |
 
-Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP; `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
+Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP (on an empty database) and `supabase/seed-tests/` for the seed data; `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
 
 ## Test data, environments and fakes
 
 | Concern            | Approach                                                                                                                                                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Database           | CI starts a throwaway Supabase from migrations + `seed.sql` on every run; with Docker the same stack runs locally (ADR-034)                                                                                                                                          |
+| Database           | CI starts a throwaway Supabase from migrations on every run and runs the pgTAP suite **without** seed data (those tests assume empty tables), then resets it **with** `seed.sql` and runs the seed tests; with Docker the same stack runs locally (ADR-034)          |
 | Users              | Created via the Auth admin API in a setup file: customer A, customer B (owner), builder A (active), builder B (active), builder C (inactive), admin (reserved email, local only). Phone sign-in uses Supabase **test phone numbers with fixed OTPs**; no SMS is sent |
 | Email              | Inbucket (local) read through its HTTP API to follow verification and invite links                                                                                                                                                                                   |
 | External providers | Interfaces in `server/{sms,places,mail}` have fakes (`FakeSms`, `FakePlaces` with deterministic Tamil Nadu results, `FakeMail`); CRM target is a local HTTP server that can fail on demand                                                                           |
