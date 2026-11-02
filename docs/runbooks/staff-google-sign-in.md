@@ -38,6 +38,19 @@ Run it from `npm run dev` (or a build with `npm start`) and open `http://localho
 
 After each case, check Authentication, Users and the audit log: a sign-in writes `staff.signed_in`, a refusal of an existing account writes `staff.sign_in_denied`. Clean up as in spike section D (test users, the test builder row).
 
+## Live check results (dev project, 2 Nov 2026)
+
+| Case                                               | Result                                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------- |
+| The administrator (`developer@`) at `/admin/login` | In, landed on `/admin/dashboard`                                                |
+| An invited, active builder at `/builder/login`     | In, landed on `/builder/dashboard`; Google linked to the dashboard-made account |
+| The builder at `/admin/login`                      | `/admin/login?denied=1`, "This account isn't authorised", signed out            |
+| The administrator at `/builder/login`              | `/builder/login?denied=1`, "This Google account can't sign in here", signed out |
+
+The server log showed one `staff signed in` or `staff sign-in denied` line for each, with only the area and the user id. The audit log held the four matching rows (`staff.signed_in` for `super_admin` and `builder`, `staff.sign_in_denied` for `builder` and `super_admin`), with no email or name. The test builder, its builder row and its user were deleted afterwards.
+
+Not yet tried live: a stranger's Google account, a cancelled Google screen, a deactivated builder, and the too-many-attempts limit. They are covered by unit tests and the CI smoke run, not by a real Google round trip.
+
 ## If it does not work
 
 - **"redirect URL not allowed" (or the page stays on Supabase):** the callback address is missing from the Redirect URLs list, or `NEXT_PUBLIC_SITE_URL` is not the address the browser is using.
