@@ -17,7 +17,7 @@ Written 1 Nov 2026, when the owner moved to another computer in the middle of St
 - Terminal variables such as `SPIKE_SUPABASE_URL` vanished when the old terminal closed. Set them again for the spike (`docs/runbooks/auth-spike.md`, part B).
 - Dashboard settings (Supabase, Google Cloud, Vercel, GitHub secrets) live online and are unchanged.
 
-## 3. Where the work stands (1 Nov 2026)
+## 3. Where the work stands (updated 2 Nov 2026)
 
 - **Merged into `develop`:** the whole database, the dev deploy workflow, session guards, the full `defineAction` pipeline, and the phone-code hook with the MSG91 adapter.
 - **Pull request #29** (`feat/route-skeleton`, task S3-T11): the guarded route skeleton and the `site` settings module. **Merged by the owner on 2 Nov 2026.** The three `NEXT_PUBLIC_…` variables must be set for Vercel's **Production** environment, because Production builds `develop`.
@@ -28,7 +28,8 @@ Written 1 Nov 2026, when the owner moved to another computer in the middle of St
   - Already learned: "Allow new users to sign up" is **on**, and the "Before User Created" hook is **available** on the plan. The breadcrumb showed a `PRODUCTION` badge on the project named `main`; the owner confirmed it is the dev project.
 - **Waiting on others:** MSG91 DLT approval (needed before real phone codes), and the Send SMS hook dashboard setup (needs the stable app address and `SEND_SMS_HOOK_SECRET`).
 - **Deferred by the owner (2 Nov 2026):** `support@drizzlemarketings.com`, including its 2-Step Verification and first Google sign-in, until all stages are complete. The database keeps the address reserved, so nobody else can take it. The spike did not test it.
-- **Next tasks (the spike results are in):** the remaining live cases of staff Google sign-in (S3-T10, merged 2 Nov 2026; `docs/runbooks/staff-google-sign-in.md`); the environment variables for the deployed app (`docs/runbooks/environment-variables.md`); the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); the invitation flow (S7-T05); seeds (S3-T13); the Supabase config check (S3-T14); the CI integration job (H3-T01); then finalise ADR-010 from the spike results.
+- **Stage 3 is complete except the owner's items (2 Nov 2026).** Also merged since the spike: staff Google sign-in (S3-T10), the fictional seed and `seed-dev` (S3-T13), the Supabase config checker (S3-T14; first real run on dev passed 9, failed 0, warned 2; `docs/runbooks/supabase-config-checklist.md`) and the integration tests with their CI job (H3-T01).
+- **Next tasks:** the environment variables for the deployed app (`docs/runbooks/environment-variables.md`, owner); MSG91 DLT approval (owner, pending); approval of the addendum phone screens ADD-01 to ADD-04, then the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); the invitation flow (S7-T05); then finalise ADR-010 from the spike results.
 
 ## 4. Working agreement (what the assistant must keep doing)
 
