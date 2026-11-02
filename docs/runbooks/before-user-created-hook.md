@@ -19,6 +19,8 @@ It is an allow-list and it never raises an error, because an error inside a hook
 
 **Live on the dev project since 2 Nov 2026, and tested live** (results below). Built and covered by pgTAP; the owner enabled it on dev and ran the six cases. Staging and production do not exist yet: switch it on there, as part of the Supabase configuration check (S3-T14), before launch.
 
+**Local stack and CI:** the guard is switched on in `supabase/config.toml`, so the integration job runs against it (`tests/integration/before-user-created-guard.test.ts`): a phone sign-up gets through, an anonymous sign-in is refused and leaves no account, and an account made through the admin API is not blocked. Anonymous sign-ins are allowed by the local config only so that refusal can be seen; a hosted project keeps them off and `scripts/verify-supabase-config.mjs` fails one that does not. The Google and email cases cannot be reached locally (no Google credentials, email sign-up off); pgTAP and the dev live test cover them.
+
 ## Turning it on (owner, per project)
 
 1. Wait until the migration has reached the project (the "Deploy database to dev" workflow runs after the merge to `develop`; staging and production come only through CI from `main`).

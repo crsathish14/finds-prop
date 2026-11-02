@@ -76,6 +76,7 @@ Every test ID cited in the rules, the gates and the plan is defined here.
 | IT-audit                                   | `writeAudit` records system, administrator, builder and customer events with a hashed address; a bad action name is refused; the log is append-only even for the service role; closed to visitors, and a customer sees nothing (written, H3-T01)                          |
 | IT-idempotency                             | The first call runs, a second while it runs is `CONFLICT`, a finished call replays its result, a failed call gives the claim back, one of eight simultaneous calls runs; closed to visitors (written, H3-T01)                                                             |
 | IT-session                                 | `loadSessionView` from a real phone sign-in: no session, customer, active builder, deactivated builder (BR-34), builder record without the role, role removed at once, `super_admin` never granted to an ordinary account (BR-11), no self-granted role (written, H3-T01) |
+| IT-before-user-created                     | The real local Auth service calls the guard: a phone sign-up is allowed (which also proves the hook address), an anonymous sign-in is refused with a 4xx and creates no account, an account made through the admin API is not blocked (written, H3-T01)                   |
 
 ## End-to-end journeys
 
