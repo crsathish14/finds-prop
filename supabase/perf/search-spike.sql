@@ -18,6 +18,9 @@
 --   * That a search with no filter avoids reading the whole table. total_count is the number of every
 --     matching listing, so those searches must read them all; this grows with the table.
 -- The plan is taken from the statement inside search_properties() itself, so it cannot drift.
+-- It also prints a diagnosis (not a gate): for every search with a named index, whether that index is
+-- in the plan as a visitor and as the superuser (no Row Level Security), and the plans themselves for
+-- the first search of each index that a visitor could not use.
 
 \set ON_ERROR_STOP on
 \if :{?p95_limit}
@@ -214,6 +217,16 @@ create temp table spike_results (
   indexes text, reads_whole_table boolean, index_check text, verdict text
 );
 
+-- Why can a named index not serve a search? For each search with a named index, the same plan questions
+-- are asked as a visitor and as the superuser (which Row Level Security does not apply to). v_ is the
+-- visitor, s_ the superuser; the value says whether the named index is in the plan.
+create temp table spike_diagnosis (
+  id integer, label text, expect_index text,
+  v_as_chosen boolean, v_seq_off boolean, v_index_off boolean,
+  s_as_chosen boolean, s_seq_off boolean, s_index_off boolean,
+  plans text
+);
+
 do $$
 declare
   shape record;
@@ -230,6 +243,10 @@ declare
   probe_indexes text;
   whole_table boolean;
   index_check text;
+  plan_line record;
+  plan_lines text;
+  diag_hits boolean[];
+  diag_plans text;
   problems text;
   gate numeric := current_setting('spike.p95_limit')::numeric;
   runs integer := current_setting('spike.runs')::integer;
@@ -336,6 +353,50 @@ begin
     values (shape.id, shape.label, matches, runs, round(p50, 2), round(p95, 2),
             round((select max(ms) from unnest(sample_ms) as ms), 2), used_indexes, whole_table,
             index_check, case when problems = '' then 'ok' else 'FAIL:' || problems end);
+
+    -- Diagnosis: the same three plan questions (as chosen; full scans off; plain index scans off too),
+    -- asked as a visitor (1) and as the superuser (2), with the plan text kept for the report below.
+    if shape.expect_index is not null then
+      diag_hits := array[null, null, null, null, null, null]::boolean[];
+      diag_plans := '';
+      for who in 1..2 loop
+        if who = 1 then
+          execute 'set local role anon';
+        else
+          execute 'reset role';
+        end if;
+        for probe in 0..2 loop
+          if probe >= 1 then
+            perform set_config('enable_seqscan', 'off', true);
+          end if;
+          if probe = 2 then
+            perform set_config('enable_indexscan', 'off', true);
+            perform set_config('enable_indexonlyscan', 'off', true);
+          end if;
+          plan_lines := '';
+          for plan_line in execute 'explain ' || replace(template, '%1$s', order_clause)
+            using shape.listing_type, shape.property_type, shape.bhk, shape.min_price, shape.max_price,
+              nullif(btrim(shape.locality), ''), (shape.lat is not null), shape.lat, shape.lng,
+              coalesce(shape.radius, 5), (shape.west is not null), shape.west, shape.south, shape.east,
+              shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size
+          loop
+            plan_lines := plan_lines || plan_line."QUERY PLAN" || E'\n';
+          end loop;
+          perform set_config('enable_seqscan', 'on', true);
+          perform set_config('enable_indexscan', 'on', true);
+          perform set_config('enable_indexonlyscan', 'on', true);
+          diag_hits[(who - 1) * 3 + probe + 1] := position(shape.expect_index in plan_lines) > 0;
+          diag_plans := diag_plans || format(E'-- as the %s, %s --\n%s',
+            case who when 1 then 'visitor' else 'superuser' end,
+            case probe when 0 then 'plan as chosen' when 1 then 'full scans off' else 'plain index scans off too' end,
+            plan_lines);
+        end loop;
+      end loop;
+      execute 'reset role';
+      insert into spike_diagnosis
+      values (shape.id, shape.label, shape.expect_index, diag_hits[1], diag_hits[2], diag_hits[3],
+              diag_hits[4], diag_hits[5], diag_hits[6], diag_plans);
+    end if;
   end loop;
 end
 $$;
@@ -345,6 +406,28 @@ $$;
 select id, label, matches as total_matches, p50_ms, p95_ms, max_ms, indexes, reads_whole_table,
        index_check, verdict
 from spike_results order by id;
+
+\echo
+\echo 'Is the named index in the plan? v = as a visitor, s = as the superuser (no Row Level Security);'
+\echo 'as_chosen = the plan the planner picks, seq_off = full scans off, index_off = plain index scans off too:'
+select id, label, expect_index, v_as_chosen, v_seq_off, v_index_off, s_as_chosen, s_seq_off, s_index_off
+from spike_diagnosis order by id;
+
+-- The plans, for the first search of each named index that a visitor could not serve.
+do $$
+declare
+  d record;
+begin
+  for d in
+    select distinct on (expect_index) id, label, expect_index, plans
+    from spike_diagnosis
+    where not (v_as_chosen or v_seq_off or v_index_off)
+    order by expect_index, id
+  loop
+    raise notice E'plans for "%" (named index %):\n%', d.label, d.expect_index, d.plans;
+  end loop;
+end
+$$;
 
 do $$
 declare
