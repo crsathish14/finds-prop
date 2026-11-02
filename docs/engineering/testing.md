@@ -32,6 +32,15 @@ The named tests (`UT-`, `DB-`, `IT-`, `E2E-`) are listed in `test-catalogue.md`.
 
 Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP; `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
 
+## Design Lab checks and screenshots (G-10, lab part)
+
+`npm run test:ds` runs in the CI `build` job, after the smoke tests, with `DESIGN_LAB_VISUAL=compare`. It opens the five boards and the thirteen whole-page previews at 390, 820 and 1440 px (54 page checks) and for each runs axe (no serious or critical violation), the sideways-scroll check and a full-page screenshot compared with the stored baseline. It also runs the keyboard tests and three route checks (89 tests, about 2.5 minutes on the runner's 2 CPUs; one worker, because more would only compete with the server).
+
+- **Where the baselines are:** `e2e/design-lab/boards.spec.ts-snapshots/`, one `<name>-design-lab-linux.png` per page and width, 8.7 MB in all. They can only be made by the Linux CI runner: Windows draws text differently, so a baseline made on a developer machine would never match. A local `npm run test:ds` (after `npx playwright install chromium`) runs the same checks without the screenshot comparison.
+- **Changing one on purpose (R-TEST-06):** change the component, push, and let the step fail. The failure artifact `playwright-report` holds the new image as `*-actual.png` under `test-results/`. The reviewer compares it with the UX render, and only then is it copied over the baseline (renamed to the baseline's name) in **its own commit**, with the reason in the message and in the pull request. A **new** board or preview has no baseline yet: the first run fails with "A snapshot doesn't exist" and the failure artifact also holds the new image in the snapshot folder.
+- **Never** raise `maxDiffPixelRatio` (1%), add `--update-snapshots` to CI, or skip a page to make the step pass (R-TEST-02).
+- **Known limits:** the ads board shows the sponsor carousel at its first slide, and its hero frames load lazily, so they stay blank in a full-page screenshot; the same previews have their own baselines.
+
 ## Test data, environments and fakes
 
 | Concern            | Approach                                                                                                                                                                                                                                                             |

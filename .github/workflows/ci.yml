@@ -147,15 +147,6 @@ jobs:
             test-results/
             e2e/design-lab/boards.spec.ts-snapshots/
           retention-days: 7
-      # BOOTSTRAP, removed once the first baselines are committed: the baselines do not exist yet and
-      # only this runner can make them.
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: design-lab-baselines
-          path: e2e/design-lab/boards.spec.ts-snapshots/
-          if-no-files-found: ignore
-          retention-days: 7
 
   security:
     name: security (audit, secrets)
