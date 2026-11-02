@@ -121,6 +121,29 @@ jobs:
       - if: always()
         run: supabase stop --no-backup
 
+  integration:
+    name: integration (real local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.122.0
+      - run: npm ci --ignore-scripts
+      - run: supabase start
+      # The tests read the stack's address and keys from `supabase status` themselves (H3-T01).
+      - name: Integration tests (H3-T01)
+        run: npm run test:integration
+      - if: always()
+        run: supabase stop --no-backup
+
   build:
     name: build and e2e smoke
     runs-on: ubuntu-latest
@@ -184,7 +207,7 @@ jobs:
   all-checks-passed:
     name: all-checks-passed
     if: always()
-    needs: [static, pr-policy, unit, db, build, security]
+    needs: [static, pr-policy, unit, db, integration, build, security]
     runs-on: ubuntu-latest
     steps:
       - name: Every required job succeeded (skipped is fine for pr-policy on push events)
