@@ -1,3 +1,4 @@
+import { AUTH_CALLBACK_PATH } from "@/lib/url/language-free";
 import { isSafeRedirectPath } from "@/lib/url/safe-redirect";
 import type { SessionView } from "./session";
 
@@ -77,7 +78,7 @@ export function isStaffPathFor(area: StaffArea, path: unknown): path is string {
  * never from a request header, so a forged Host header cannot move the sign-in to another site.
  */
 export function buildStaffCallbackUrl(siteUrl: string, area: StaffArea, next?: string): string {
-  const callback = new URL("/auth/callback", siteUrl);
+  const callback = new URL(AUTH_CALLBACK_PATH, siteUrl);
   callback.searchParams.set("area", area);
   if (next !== undefined && isStaffPathFor(area, next)) callback.searchParams.set("next", next);
   return callback.toString();
