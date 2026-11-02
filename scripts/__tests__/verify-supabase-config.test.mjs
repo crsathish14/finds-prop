@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  assertSiteUrl,
   assertRequest,
   CHECKED_FIELDS,
   evaluateSettings,
@@ -120,6 +121,44 @@ describe("UT-verify-supabase-config: the request is checked before it leaves (S3
         expect(error.message).not.toContain(TOKEN);
       }
     }
+  });
+
+  it("accepts the app's address alone, with or without a trailing slash and a port", () => {
+    for (const address of [
+      "http://localhost:3000",
+      "http://localhost:3000/",
+      "https://findsprop.example.test",
+      "https://dev.findsprop.example.test/",
+    ]) {
+      expect(() => assertSiteUrl(address)).not.toThrow();
+    }
+  });
+
+  it.each([
+    ["no scheme", "localhost:3000"],
+    ["a space on the end", "http://localhost:3000 "],
+    ["quotes kept", '"http://localhost:3000"'],
+    ["a path", "http://localhost:3000/auth/callback"],
+    ["another scheme", "ftp://localhost:3000"],
+    ["the next option taken as the value", "--environment"],
+    ["no value at all", undefined],
+  ])("refuses --site-url with %s, before any request", (_name, address) => {
+    expect(() => assertSiteUrl(address)).toThrow(VerifyRefusal);
+  });
+
+  it("does not echo what was typed in the refusal", () => {
+    try {
+      assertSiteUrl("http://user:secret-value@localhost:3000");
+    } catch (error) {
+      expect(error.message).not.toContain("secret-value");
+    }
+  });
+
+  it("says a failing dev setting is not as expected yet, not that it is unset", () => {
+    const results = run(healthyResponse, "dev", { security_captcha_enabled: false });
+    expect(results.find((result) => result.id === "captcha").note).toBe(
+      "not as expected yet (allowed on this environment)",
+    );
   });
 });
 

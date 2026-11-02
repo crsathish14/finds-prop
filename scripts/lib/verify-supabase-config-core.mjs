@@ -43,6 +43,19 @@ export function assertRequest({ token, ref, environment }) {
   }
 }
 
+/**
+ * The app's address as given with --site-url: http or https, a host and an optional port, nothing
+ * else (a trailing slash is allowed). A slip such as a missing scheme, a space or a path would
+ * otherwise show up as a misleading "not as expected" on the checks that use it.
+ */
+export function assertSiteUrl(siteUrl) {
+  if (typeof siteUrl !== "string" || !/^https?:\/\/[A-Za-z0-9.-]+(:\d{1,5})?\/?$/.test(siteUrl)) {
+    throw new VerifyRefusal(
+      "--site-url must be the app's address alone, such as http://localhost:3000 or https://example.com (http or https, a host, an optional port; no path, spaces or quotes)",
+    );
+  }
+}
+
 /** The Auth settings this script looks at: names only, never values. */
 export const CHECKED_FIELDS = [
   "external_google_enabled",
@@ -237,7 +250,8 @@ export function evaluateSettings({ settings, environment, siteUrl, now = Date.no
       id: check.id,
       asks: check.asks,
       status: level,
-      note: level === "warn" ? "not set yet (allowed on this environment)" : "not as expected",
+      note:
+        level === "warn" ? "not as expected yet (allowed on this environment)" : "not as expected",
     };
   });
 }

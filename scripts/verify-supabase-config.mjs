@@ -10,6 +10,7 @@
 // Close the terminal, or delete the token in the dashboard, when you are done. Runbook:
 // docs/runbooks/supabase-config-checklist.md.
 import {
+  assertSiteUrl,
   evaluateSettings,
   fetchAuthSettings,
   summarise,
@@ -24,6 +25,8 @@ function option(name) {
 async function main() {
   const environment = option("environment") ?? "dev";
   const siteUrl = option("site-url");
+  // Checked before anything is sent: a flag with no value, or a malformed address, is refused.
+  if (process.argv.includes("--site-url")) assertSiteUrl(siteUrl);
   const settings = await fetchAuthSettings({
     fetch,
     token: process.env.SUPABASE_ACCESS_TOKEN,
