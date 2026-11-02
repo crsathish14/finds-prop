@@ -10,7 +10,9 @@ import {
   VerifyRefusal,
 } from "../lib/verify-supabase-config-core.mjs";
 
-const TOKEN = "sbp_0123456789abcdef0123456789abcdef01234567";
+// Starts like a personal access token (sbp_) but is not shaped like one (40 hex characters), so the
+// secret scan does not take a fixture for a leaked credential.
+const TOKEN = "sbp_unit-test-token-not-a-real-credential";
 const REF = "abcdefghijklmnopqrst";
 const SITE = "https://dev.example.test";
 const NOW = Date.parse("2026-11-02T12:00:00Z");
