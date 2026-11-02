@@ -3,15 +3,18 @@ import createIntlProxy from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
+import { RETURN_PATH_HEADER } from "@/server/auth/return-path";
 import { env } from "@/server/env";
 import { REQUEST_ID_PATTERN } from "@/server/request-id";
 
 /**
- * proxy.ts replaces middleware.ts in Next.js 16. It does three things for every page request:
+ * proxy.ts replaces middleware.ts in Next.js 16. It does four things for every page request:
  *  1. gives the request an id (accepted from a caller only if it looks like one);
  *  2. refreshes the Supabase session. This is the ONLY place a session is refreshed, because
  *     refresh tokens are single-use (ADR-008). Identity is checked with getClaims();
- *  3. adds environment-dependent headers: noindex outside production, and a Report-Only CSP
+ *  3. records the page address in x-return-path, so a layout can send a signed-out visitor to
+ *     sign-in and back (the value is always set here, never taken from the caller);
+ *  4. adds environment-dependent headers: noindex outside production, and a Report-Only CSP
  *     (enforced after spike S1-SPK-02).
  * Static security headers live in next.config.ts. No authorization decisions are made here:
  * guards live in layouts and handlers (plan 07).
@@ -62,6 +65,7 @@ export async function proxy(request: NextRequest) {
   // 2. Language routing (rewrite or redirect). Route handlers under /api have no language.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-request-id", requestId);
+  requestHeaders.set(RETURN_PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
   const response = request.nextUrl.pathname.startsWith("/api")
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : handleLanguage(new NextRequest(request, { headers: requestHeaders }));
