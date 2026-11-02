@@ -28,7 +28,7 @@ Written 1 Nov 2026, when the owner moved to another computer in the middle of St
   - Already learned: "Allow new users to sign up" is **on**, and the "Before User Created" hook is **available** on the plan. The breadcrumb showed a `PRODUCTION` badge on the project named `main`; the owner confirmed it is the dev project.
 - **Waiting on others:** MSG91 DLT approval (needed before real phone codes), and the Send SMS hook dashboard setup (needs the stable app address and `SEND_SMS_HOOK_SECRET`).
 - **Deferred by the owner (2 Nov 2026):** `support@drizzlemarketings.com`, including its 2-Step Verification and first Google sign-in, until all stages are complete. The database keeps the address reserved, so nobody else can take it. The spike did not test it.
-- **Next tasks (the spike results are in):** a class C2 plan for staff Google sign-in (S3-T10; the Google-only screens are approved since 2 Nov 2026); the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); the invitation flow (S7-T05); seeds (S3-T13); the Supabase config check (S3-T14); the CI integration job (H3-T01); then finalise ADR-010 from the spike results.
+- **Next tasks (the spike results are in):** the live check of staff Google sign-in (S3-T10, built 2 Nov 2026; `docs/runbooks/staff-google-sign-in.md`); the phone sign-in screens, CAPTCHA and per-phone limits (rest of S3-T09); the invitation flow (S7-T05); seeds (S3-T13); the Supabase config check (S3-T14); the CI integration job (H3-T01); then finalise ADR-010 from the spike results.
 
 ## 4. Working agreement (what the assistant must keep doing)
 
