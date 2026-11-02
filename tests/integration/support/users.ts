@@ -38,7 +38,9 @@ export async function signInTestCustomer(): Promise<TestUser> {
   const client = visitorClient();
   const asked = await client.auth.signInWithOtp({ phone: TEST_PHONE });
   if (asked.error)
-    throw new Error(`Could not ask for a code (${asked.error.status ?? "no status"})`);
+    throw new Error(
+      `Could not ask for a code (${asked.error.status ?? "no status"}, ${asked.error.code ?? "no code"}: ${asked.error.message})`,
+    );
   const verified = await client.auth.verifyOtp({
     phone: TEST_PHONE,
     token: TEST_CODE,
@@ -46,7 +48,9 @@ export async function signInTestCustomer(): Promise<TestUser> {
   });
   const userId = verified.data.user?.id;
   if (verified.error || !userId) {
-    throw new Error(`Could not verify the code (${verified.error?.status ?? "no user"})`);
+    throw new Error(
+      `Could not verify the code (${verified.error?.status ?? "no user"}, ${verified.error?.code ?? "no code"}: ${verified.error?.message ?? "no message"})`,
+    );
   }
   return { userId, client };
 }

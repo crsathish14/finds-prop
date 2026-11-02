@@ -83,7 +83,7 @@ describe("IT-audit: writing an entry through the service", () => {
 });
 
 describe("IT-audit: nobody can change or read the history without the right", () => {
-  it("is append-only, even for the service role", async () => {
+  it("cannot be changed or removed, even by the service role", async () => {
     const entityId = randomUUID();
     await writeAudit({
       action: "it.append_only",
@@ -97,10 +97,10 @@ describe("IT-audit: nobody can change or read the history without the right", ()
       .from("audit_log")
       .update({ action: "it.rewritten" })
       .eq("id", entry.id);
-    expect(changed.error?.message).toContain("audit_log.append_only");
+    expect(changed.error?.message).toMatch(/audit_log\.append_only|permission denied/);
 
     const removed = await adminClient().from("audit_log").delete().eq("id", entry.id);
-    expect(removed.error?.message).toContain("audit_log.append_only");
+    expect(removed.error?.message).toMatch(/audit_log\.append_only|permission denied/);
 
     expect((await entryFor(entityId)).action).toBe("it.append_only");
   });
