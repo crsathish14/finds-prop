@@ -2,6 +2,7 @@ import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
 import messages from "@/i18n/messages/en.json";
 import {
+  calendarYear,
   formatArea,
   formatDate,
   formatPerSqft,
@@ -53,5 +54,13 @@ describe("UT-format: dates are stored in UTC and shown in India time", () => {
   it("shows the Indian calendar day, not the UTC one", () => {
     // 20:00 UTC on 30 Oct is already 1:30 am on 31 Oct in India.
     expect(formatDate("en", "2026-10-30T20:00:00Z", "medium")).toBe("31 Oct 2026");
+  });
+});
+
+describe("UT-format: the year for the copyright line", () => {
+  it("follows India time, so the new year starts there first", () => {
+    // 20:00 UTC on 31 Dec is already 1:30 am on 1 Jan in India.
+    expect(calendarYear(new Date("2026-12-31T20:00:00Z"))).toBe(2027);
+    expect(calendarYear(new Date("2026-12-31T10:00:00Z"))).toBe(2026);
   });
 });

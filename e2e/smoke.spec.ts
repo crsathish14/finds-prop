@@ -170,6 +170,95 @@ test.describe("@smoke site header", () => {
   });
 });
 
+// S4-T06: the footer and the phone bottom bar. The footer's links come from the site content or,
+// while it is empty, from the catalogue; the bottom bar shows only on the pages the navigation doc
+// lists, and never from 768 px.
+test.describe("@smoke site footer and bottom bar", () => {
+  const footerText = en.site.footer;
+  const bar = en.site.bottomBar;
+
+  test("the footer shows the brand, a link column and the legal line, without AI search", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const footer = page.getByRole("contentinfo");
+    await expect(
+      footer.getByRole("navigation", { name: footerText.navLabel }).getByRole("heading"),
+    ).toHaveText(footerText.exploreHeading);
+    await expect(
+      footer.getByRole("navigation", { name: footerText.navLabel }).getByRole("link"),
+    ).toHaveText([
+      footerText.linkBuy,
+      footerText.linkRent,
+      footerText.linkProjects,
+      footerText.linkContact,
+      footerText.linkPost,
+    ]);
+    await expect(footer.getByRole("link", { name: footerText.privacy })).toHaveAttribute(
+      "href",
+      "/privacy",
+    );
+    await expect(footer.getByRole("link", { name: footerText.terms })).toHaveAttribute(
+      "href",
+      "/terms",
+    );
+    await expect(footer).toContainText(new RegExp(String.raw`© \d{4} ${en.site.brandName}`));
+    await expect(footer.getByText(footerText.linkAiSearch)).toHaveCount(0);
+  });
+
+  test("the sign-in pages have the footer, but the quiet administrator page does not", async ({
+    page,
+  }) => {
+    for (const route of ["/auth", "/builder/login"]) {
+      await page.goto(route);
+      await expect(page.getByRole("contentinfo")).toBeVisible();
+    }
+    await page.goto("/admin/login");
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toHaveCount(0);
+  });
+
+  test("on a phone the bottom bar shows on the home page with Home marked, and not on sign-in", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: bar.navLabel });
+    await expect(nav.getByRole("link")).toHaveText([
+      bar.home,
+      bar.search,
+      bar.post,
+      bar.saved,
+      bar.me,
+    ]);
+    await expect(nav.getByRole("link", { name: bar.home })).toHaveAttribute("aria-current", "page");
+    await page.goto("/auth");
+    await expect(page.getByRole("navigation", { name: bar.navLabel })).toHaveCount(0);
+  });
+
+  test("the bar does not cover the end of the page: the footer can scroll clear of it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const footerBottom = await page
+      .getByRole("contentinfo")
+      .evaluate((element) => element.getBoundingClientRect().bottom);
+    const barTop = await page
+      .getByRole("navigation", { name: bar.navLabel })
+      .evaluate((element) => element.getBoundingClientRect().top);
+    expect(footerBottom).toBeLessThanOrEqual(barTop + 1);
+  });
+
+  test("from 768 px there is no bottom bar", async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: bar.navLabel })).toBeHidden();
+  });
+});
+
 // Text-origin check (ADR-035): every line of text a visitor can see, plus the page title and the
 // label and alt attributes, must be a message from en.json. It catches hard-coded text that the
 // lint rule cannot see, such as a sentence kept in a variable.

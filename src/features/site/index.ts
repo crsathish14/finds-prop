@@ -19,6 +19,8 @@ export {
   type HeaderModel,
   type NavLink,
 } from "./chrome";
+export { PublicBottomBar } from "./public-bottom-bar";
+export { PublicFooter } from "./public-footer";
 export { PublicHeader } from "./public-header";
 export { getFeatureFlags, type FeatureFlags } from "./flags";
 export { getSiteSettings, SITE_SETTINGS_TAG } from "./queries";
