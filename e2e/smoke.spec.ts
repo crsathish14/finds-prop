@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import en from "../src/i18n/messages/en.json";
 
@@ -88,6 +89,84 @@ test.describe("@smoke language routing", () => {
     const response = await page.goto("/ta/search");
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
+  });
+});
+
+// S4-T06: the site header on the public pages. The links come from the site content or, while it is
+// empty, from the catalogue. AI search is absent from navigation while its flag is off (R-FE-17).
+test.describe("@smoke site header", () => {
+  const nav = en.site.nav;
+
+  test("shows the brand, the main links and Sign in to a visitor, and no AI search while its flag is off", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const banner = page.getByRole("banner");
+    await expect(
+      banner.getByRole("link", {
+        name: en.site.header.homeLabel.replace("{brandName}", en.site.brandName),
+      }),
+    ).toHaveAttribute("href", "/");
+    const main = banner.getByRole("navigation", { name: en.site.header.navLabel });
+    await expect(main.getByRole("link")).toHaveText([nav.buy, nav.rent, nav.projects, nav.contact]);
+    await expect(banner.getByRole("link", { name: en.site.header.signIn })).toHaveAttribute(
+      "href",
+      "/auth",
+    );
+    await expect(banner.getByRole("link", { name: en.site.header.postProperty })).toBeVisible();
+    await expect(page.getByText(nav.aiSearch)).toHaveCount(0);
+  });
+
+  test("marks the page the visitor is on, and asks Sign in to come back to it", async ({
+    page,
+  }) => {
+    // A hydration mismatch shows as a page error in the production build.
+    const problems: string[] = [];
+    page.on("pageerror", (error) => problems.push(error.message));
+    await page.goto("/projects");
+    const banner = page.getByRole("banner");
+    await expect(banner.getByRole("link", { name: nav.projects })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(banner.getByRole("link", { name: en.site.header.signIn })).toHaveAttribute(
+      "href",
+      "/auth?redirect=%2Fprojects",
+    );
+    expect(problems).toEqual([]);
+  });
+
+  test("opens the menu drawer on a phone, with the main links and the sign-in actions", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: en.site.header.navLabel })).toBeHidden();
+    await page.getByRole("button", { name: en.site.header.openMenu }).click();
+    const drawer = page.getByRole("dialog", { name: en.site.header.menuTitle });
+    await expect(drawer.getByRole("link", { name: nav.buy })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: en.site.header.signIn })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: en.site.header.postProperty })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toBeHidden();
+  });
+
+  test("the header itself has no serious accessibility violation, on a page with and without the hero", async ({
+    page,
+  }) => {
+    // Scoped to the header: the rest of each page is checked with its own screen.
+    for (const route of ["/", "/auth"]) {
+      await page.goto(route);
+      await page.waitForLoadState("networkidle");
+      const results = await new AxeBuilder({ page })
+        .include("[data-slot=site-header]")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(serious.map((violation) => violation.id)).toEqual([]);
+    }
   });
 });
 

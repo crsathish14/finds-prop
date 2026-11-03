@@ -95,6 +95,24 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("button", { name: "Open menu" })).toBeInTheDocument();
   });
 
+  it("lists two links that share an address, without a duplicate-key warning", () => {
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(
+      <SiteHeader
+        logo={<Logo name="Find Prop" />}
+        navLabel="Main"
+        nav={[
+          { label: "Buy", href: "/properties" },
+          { label: "Rent", href: "/properties" },
+        ]}
+      />,
+    );
+    const nav = screen.getByRole("navigation", { name: "Main" });
+    expect(within(nav).getAllByRole("link")).toHaveLength(2);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it("is sticky, and draws its bottom line only when asked", () => {
     const { rerender } = render(<Example />);
     expect(screen.getByRole("banner")).toHaveClass("sticky", "border-transparent");
@@ -208,6 +226,16 @@ describe("AvatarMenu", () => {
     await userEvent.click(screen.getByRole("menuitem", { name: /Sign out/ }));
     expect(onSignOut).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("shows a person icon, not empty letters, when the account has no name yet", async () => {
+    render(<AvatarMenu {...props} name="Your account" initials="" />);
+    expect(document.querySelector("[data-initials]")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Account menu" }).querySelector("svg.lucide-user"),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    expect(within(screen.getByRole("menu")).getByText("Your account")).toBeInTheDocument();
   });
 
   it("shows initials as the picture when there is no photo", () => {

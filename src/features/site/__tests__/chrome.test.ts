@@ -10,6 +10,7 @@ import {
   isBottomBarVisible,
   isRouteEnabled,
   markCurrent,
+  signInHref,
 } from "../chrome";
 import { SITE_DEFAULTS } from "../defaults";
 import type { FeatureFlags } from "../flags";
@@ -349,5 +350,31 @@ describe("UT-site-chrome: initials", () => {
 
   it("works for names that are not written in Latin letters", () => {
     expect(initialsFrom("அன்பு குமார்")).toBe("அக");
+  });
+});
+
+describe("UT-site-chrome: the header's Sign in link", () => {
+  it("asks to come back to the page the visitor is on", () => {
+    expect(signInHref("/projects")).toBe("/auth?redirect=%2Fprojects");
+    expect(signInHref("/properties/two-bhk-ab12cd")).toBe(
+      "/auth?redirect=%2Fproperties%2Ftwo-bhk-ab12cd",
+    );
+  });
+
+  it("leaves the query out, because it could hold something private", () => {
+    expect(signInHref("/properties?min=5000000&phone=1")).toBe("/auth?redirect=%2Fproperties");
+  });
+
+  it("sends no return address from home or from a sign-in page", () => {
+    for (const path of [
+      "/",
+      "/auth",
+      "/auth/",
+      "/builder/login",
+      "/admin/login",
+      "/reset-password",
+    ]) {
+      expect(signInHref(path)).toBe("/auth");
+    }
   });
 });

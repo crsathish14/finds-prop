@@ -19,6 +19,7 @@ export {
   type HeaderModel,
   type NavLink,
 } from "./chrome";
+export { PublicHeader } from "./public-header";
 export { getFeatureFlags, type FeatureFlags } from "./flags";
 export { getSiteSettings, SITE_SETTINGS_TAG } from "./queries";
 export type { SiteSettingKey, SiteSettings } from "./schemas";

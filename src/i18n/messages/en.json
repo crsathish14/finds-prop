@@ -279,7 +279,17 @@
       "contact": "Contact"
     },
     "header": {
-      "postProperty": "Post property"
+      "postProperty": "Post property",
+      "navLabel": "Main",
+      "homeLabel": "{brandName}, home",
+      "signIn": "Sign in",
+      "signOut": "Sign out",
+      "signOutFailed": "We couldn't sign you out. Please try again.",
+      "accountMenu": "Account menu",
+      "yourAccount": "Your account",
+      "openMenu": "Open menu",
+      "menuTitle": "Menu",
+      "closeMenu": "Close menu"
     },
     "footer": {
       "exploreHeading": "Explore",

@@ -229,6 +229,24 @@ export function isBottomBarVisible(pathname: string): boolean {
   return BOTTOM_BAR_PAGES.has(pathOf(pathname));
 }
 
+/** Pages where a "come back here" address makes no sense: the sign-in pages themselves and home. */
+const NO_RETURN_PREFIXES = ["/auth", "/builder/login", "/admin/login", "/reset-password"];
+
+/**
+ * The header's Sign in link: the sign-in page, asking to return to this page afterwards (the
+ * page address only, never its query, which could hold something private). Sign-in itself checks
+ * the address again (BR-06); this only decides whether to send one.
+ */
+export function signInHref(pathname: string): string {
+  const path = pathOf(pathname);
+  const isReturnable =
+    path !== "/" &&
+    !NO_RETURN_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+  return isReturnable
+    ? `/auth?redirect=${encodeURIComponent(pathname.split(/[?#]/, 1)[0] ?? "")}`
+    : "/auth";
+}
+
 /** Which bottom-bar item is the current page. Saved is not told apart from Me until tabs are read. */
 export function bottomBarCurrentKey(pathname: string): BottomBarKey | undefined {
   const path = pathOf(pathname);

@@ -40,8 +40,7 @@ function layoutsAbove(page: string): string[] {
   return found;
 }
 
-// The home page sits beside the groups, not inside one: a staged "(group)/page.tsx" path trips the
-// pre-commit prettier check.
+// The home page is in the (public) group, so it gets the public header (S4-T06).
 const OPEN_GROUP = /^(\(public\)|\(auth\)|page\.tsx$)/;
 const AREA_GATE: [RegExp, string][] = [
   [/^\(account\)/, 'area="customer"'],
