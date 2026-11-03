@@ -41,7 +41,7 @@ function layoutsAbove(page: string): string[] {
 }
 
 // The home page is in the (public) group, so it gets the public header (S4-T06).
-const OPEN_GROUP = /^(\(public\)|\(auth\)|page\.tsx$)/;
+const OPEN_GROUP = /^(\(public\)|\(auth\)|\(quiet\)|page\.tsx$)/;
 const AREA_GATE: [RegExp, string][] = [
   [/^\(account\)/, 'area="customer"'],
   [/^\(portal\)[\\/]admin/, 'area="admin"'],
@@ -70,7 +70,7 @@ describe("UT-route-skeleton: no page is left unguarded (S3-T11)", () => {
   }
 
   it("keeps the sign-in pages out of the guarded groups, so they cannot redirect to themselves", () => {
-    for (const login of ["(auth)/auth", "(auth)/builder/login", "(auth)/admin/login"]) {
+    for (const login of ["(auth)/auth", "(auth)/builder/login", "(quiet)/admin/login"]) {
       expect(relativePages).toContain(join(login, "page.tsx"));
     }
     const loginInPortal = relativePages.some((name) =>
@@ -80,7 +80,7 @@ describe("UT-route-skeleton: no page is left unguarded (S3-T11)", () => {
   });
 
   it("marks every private group as not for search engines", () => {
-    for (const group of ["(account)", "(portal)", "(auth)"]) {
+    for (const group of ["(account)", "(portal)", "(auth)", "(quiet)"]) {
       const layout = readFileSync(join(appRoot, group, "layout.tsx"), "utf8");
       expect(layout).toMatch(/robots:\s*\{\s*index:\s*false/);
     }

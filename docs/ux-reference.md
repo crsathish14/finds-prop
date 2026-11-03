@@ -66,6 +66,20 @@ The five approved design-system boards are built in the Design Lab (ADR-020) wit
 
 Whole-page previews of the layout components at 390, 820 and 1280 px are served at `/design-system/preview/<name>` (names in `src/design-lab/preview-names.ts`).
 
+## Site header, footer and bottom bar (S4-T06)
+
+The layout components of the `ds-navigation` board are mounted by the route groups in `src/app/[locale]/`, from `src/features/site`. The content comes from the site settings (header and footer; the catalogue links are used while they are empty, BR-81) and the feature flags (a link to `/ai-search` is absent while `FLAG_AI_SEARCH` is off).
+
+| Route group | Pages                                                                              | Header                                       | Footer | Bottom bar (phones)                                                                 |
+| ----------- | ---------------------------------------------------------------------------------- | -------------------------------------------- | ------ | ----------------------------------------------------------------------------------- |
+| `(public)`  | home, search, projects, property and project detail, compare, contact, legal pages | yes                                          | yes    | only on home, search, projects, compare, AI search and contact; not on detail pages |
+| `(account)` | dashboard, post a property                                                         | yes                                          | yes    | only on the dashboard                                                               |
+| `(auth)`    | customer and builder sign-in, reset password                                       | yes                                          | yes    | no                                                                                  |
+| `(quiet)`   | administrator sign-in (ADD-06)                                                     | yes                                          | no     | no                                                                                  |
+| `(portal)`  | admin and builder portals                                                          | the portal shell (S7), not the public header | no     | no                                                                                  |
+
+Not yet built: the header and footer on the not-found and error pages, the notification bell (Proposed), and the saved and enquiry counts (Stage 5).
+
 ## Addendum screens
 
 | Addendum item | Screen                                                              | Routes                       | File                                                   |

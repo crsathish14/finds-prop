@@ -301,7 +301,8 @@
       "linkPost": "Post a property",
       "privacy": "Privacy",
       "terms": "Terms",
-      "copyright": "© {year} {brandName}"
+      "copyright": "© {year} {brandName}",
+      "navLabel": "Footer"
     },
     "bottomBar": {
       "navLabel": "Primary",

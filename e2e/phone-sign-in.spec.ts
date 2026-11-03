@@ -21,15 +21,17 @@ test.describe("@smoke phone sign-in page", () => {
 
   test("links the builder sign-in and the legal pages", async ({ page }) => {
     await page.goto("/auth");
-    await expect(page.getByRole("link", { name: words.builderLink })).toHaveAttribute(
+    // The footer has its own Terms and Privacy links; these are the ones in the sign-in card.
+    const card = page.locator("#main");
+    await expect(card.getByRole("link", { name: words.builderLink })).toHaveAttribute(
       "href",
       "/builder/login",
     );
-    await expect(page.getByRole("link", { name: words.termsLink })).toHaveAttribute(
+    await expect(card.getByRole("link", { name: words.termsLink })).toHaveAttribute(
       "href",
       "/terms",
     );
-    await expect(page.getByRole("link", { name: words.privacyLink })).toHaveAttribute(
+    await expect(card.getByRole("link", { name: words.privacyLink })).toHaveAttribute(
       "href",
       "/privacy",
     );

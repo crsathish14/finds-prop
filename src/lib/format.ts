@@ -50,6 +50,13 @@ export function formatArea(translate: Translate, locale: string, sqft: number): 
   return translate("format.area", { value: number(locale, sqft) });
 }
 
+/** The calendar year in India right now, for a copyright line. */
+export function calendarYear(date: Date): number {
+  return Number(
+    new Intl.DateTimeFormat("en", { year: "numeric", timeZone: TIME_ZONE }).format(date),
+  );
+}
+
 /** Dates are stored in UTC and shown in India time. */
 export function formatDate(
   locale: string,
