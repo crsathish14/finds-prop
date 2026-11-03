@@ -120,6 +120,9 @@ test.describe("@smoke site header", () => {
   test("marks the page the visitor is on, and asks Sign in to come back to it", async ({
     page,
   }) => {
+    // A hydration mismatch shows as a page error in the production build.
+    const problems: string[] = [];
+    page.on("pageerror", (error) => problems.push(error.message));
     await page.goto("/projects");
     const banner = page.getByRole("banner");
     await expect(banner.getByRole("link", { name: nav.projects })).toHaveAttribute(
@@ -130,6 +133,7 @@ test.describe("@smoke site header", () => {
       "href",
       "/auth?redirect=%2Fprojects",
     );
+    expect(problems).toEqual([]);
   });
 
   test("opens the menu drawer on a phone, with the main links and the sign-in actions", async ({

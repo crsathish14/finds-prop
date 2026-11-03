@@ -1,7 +1,6 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
 import { SheetClose } from "@/components/patterns/sheet";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { markCurrent, type NavLink } from "./chrome";
+import { useClientPathname } from "./client-pathname";
 
 export type AccountDrawerProps = {
   labels: { trigger: string; title: string; close: string };
@@ -27,8 +27,10 @@ export type AccountDrawerProps = {
  * page (the header lives in the layout and survives navigation).
  */
 export function AccountDrawer({ labels, links, groups, actions, trailing }: AccountDrawerProps) {
-  const pathname = usePathname();
-  const nav = markCurrent(links, pathname).map((link) => ({
+  const pathname = useClientPathname();
+  const marked: (NavLink & { current?: boolean })[] =
+    pathname === undefined ? links : markCurrent(links, pathname);
+  const nav = marked.map((link) => ({
     label: link.label,
     href: link.href,
     ...(link.current ? { current: true } : {}),

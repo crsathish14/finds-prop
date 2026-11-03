@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Heart } from "lucide-react";
 import type { ReactNode } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Icon } from "@/components/ui/icon";
 import { AccountDrawer } from "../account-drawer.client";
@@ -173,5 +175,34 @@ describe("AccountDrawer: the menu drawer", () => {
     await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
     await userEvent.click(screen.getByRole("link", { name: "Sign in" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+});
+
+describe("the header does not depend on the pathname before hydration", () => {
+  // A prerendered page can be reached through the language rewrite, so the server and the first
+  // browser render may see different pathnames. Both must draw the same header, and the page is
+  // marked only afterwards; otherwise React reports a hydration mismatch (Next.js usePathname).
+  it("draws the same markup on the server for any pathname", () => {
+    page.pathname = "/projects/green-acres-ab12cd";
+    const onProjects = renderToString(<HeaderFrame {...view} />);
+    page.pathname = "/en/projects/green-acres-ab12cd";
+    const onRewritten = renderToString(<HeaderFrame {...view} />);
+    expect(onProjects).toBe(onRewritten);
+    expect(onProjects).not.toContain("aria-current");
+  });
+
+  it("hydrates the server markup without a mismatch, then marks the current page", async () => {
+    page.pathname = "/projects";
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(<HeaderFrame {...view} />);
+    document.body.append(container);
+    const problems = vi.spyOn(console, "error").mockImplementation(() => {});
+    await act(async () => {
+      hydrateRoot(container, <HeaderFrame {...view} />);
+    });
+    expect(problems).not.toHaveBeenCalled();
+    problems.mockRestore();
+    expect(container.querySelector("nav [aria-current=page]")).toHaveTextContent("Projects");
+    container.remove();
   });
 });
