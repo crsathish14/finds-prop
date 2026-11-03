@@ -7,7 +7,7 @@ import { LAB_BOARDS } from "@/design-lab/registry";
 // that says what it is for, what it takes, how it behaves on each screen, how it is made
 // accessible, its states, what it builds on, how it is tested and where the design comes from.
 const COMPONENTS_DIR = path.resolve(__dirname, "..");
-const LAYERS = ["ui", "patterns", "layout"];
+const LAYERS = ["ui", "patterns", "layout", "domain"];
 const NOT_COMPONENTS = new Set(["layout/nav-types.ts"]);
 const REQUIRED_PARTS = [
   "Purpose",

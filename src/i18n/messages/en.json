@@ -325,5 +325,22 @@
       "roleAdmin": "Admin",
       "roleBuilder": "Builder"
     }
+  },
+  "domain": {
+    "propertyCard": {
+      "forSale": "For sale",
+      "forRent": "For rent",
+      "label": {
+        "featured": "Featured",
+        "prime": "Prime",
+        "budget": "Budget"
+      },
+      "location": "{locality}, {city}",
+      "save": "Save to shortlist",
+      "unsave": "Remove from saved homes",
+      "compare": "Compare",
+      "compared": "Added to compare",
+      "compareLimit": "You can compare up to 3 homes"
+    }
   }
 }

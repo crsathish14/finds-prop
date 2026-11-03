@@ -21,6 +21,19 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Pictures of homes and projects come from the public Supabase storage buckets (the hosted
+  // projects, and the local stack in development). The CSP already allows these hosts.
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "54321",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   // A top-level [locale] segment cannot compose a root 404 page (Next.js docs: not-found).
   experimental: { globalNotFound: true },
   async headers() {
