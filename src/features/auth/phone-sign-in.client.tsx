@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState, useTransition, type FormEvent } from "react";
+import { useCallback, useEffect, useState, useTransition, type FormEvent } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import { PhoneField } from "@/components/patterns/phone-field";
@@ -19,6 +19,7 @@ import { CodeEntry } from "./code-entry.client";
 import { HumanCheck, type HumanCheckStatus } from "./human-check.client";
 import { EmailStep } from "./email-step.client";
 import { NameStep } from "./name-step.client";
+import { goTo } from "./navigate";
 import { marker, withLinks } from "./with-links";
 
 type Problem =
@@ -34,6 +35,8 @@ type PhoneSignInProps = {
   gate: boolean;
   /** Where to go once signed in: an address the page has already checked (BR-06). */
   redirectTo: string;
+  /** Whether the visitor was already signed in when the page was requested (the server only reports it). */
+  alreadySignedIn: boolean;
 };
 
 function minutesToWait(retryAfter: number | undefined): number {
@@ -46,7 +49,7 @@ function minutesToWait(retryAfter: number | undefined): number {
  * server, which also applies the limits (R-BE-03). Once a code is sent the card moves to the code
  * step; the number itself is kept in this component and never goes into the address (R-BE-10).
  */
-export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
+export function PhoneSignIn({ siteKey, gate, redirectTo, alreadySignedIn }: PhoneSignInProps) {
   const translate = useTranslations("auth.phone");
   const translateValidation = useTranslations("validation");
   const [phone, setPhone] = useState("");
@@ -60,6 +63,15 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
   const [naming, setNaming] = useState(false);
   const [emailing, setEmailing] = useState(false);
   const [pending, startTransition] = useTransition();
+  // Only how the visitor ARRIVED counts. Signing in here sets a cookie, Next.js re-renders the page and
+  // hands this component alreadySignedIn = true in the middle of the flow; that must not send the
+  // visitor away before the name and email steps (BR-06 only covers visitors who arrive signed in).
+  const [arrivedSignedIn] = useState(alreadySignedIn);
+  const flowStarted = sent !== null || naming || emailing;
+  const leaving = arrivedSignedIn && !flowStarted;
+  useEffect(() => {
+    if (leaving) goTo(redirectTo);
+  }, [leaving, redirectTo]);
 
   const handleCheck = useCallback((status: HumanCheckStatus, nextToken: string | null) => {
     setToken(nextToken);
@@ -228,6 +240,9 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
       </div>
     </div>
   );
+
+  // A visitor who arrived signed in is on their way to where they were headed: show nothing meanwhile.
+  if (leaving) return null;
 
   if (emailing) {
     return (

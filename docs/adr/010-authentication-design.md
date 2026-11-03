@@ -86,4 +86,10 @@ Not built yet: sign-out.
 
 `useSignOut(destination)` is what the avatar menu's Sign out entry will call: it asks the server, then goes to the destination with a full page load (the home page for customers, their own sign-in page for staff), or sets `failed` so the menu can say so. **Nothing mounts the avatar menu yet** (the header is S4-T06) and the approved UX draws Sign out only inside that menu, so this slice has no button; the owner chose on 3 Nov 2026 to build the action and hook now and wire them with the header. Until then, switching account means clearing the site's cookies. Session edge cases (an expired session in the middle of a form, returning after re-sign-in) are S5-T07.
 
+## Correction after the first live test, 3 Nov 2026 (S3-T09)
+
+The first real sign-in threw the visitor out to the dashboard before the name and email steps. Cause: `/auth` redirected a signed-in visitor on the server (BR-06), and signing in on that page sets the session cookie in a Server Action, after which Next.js re-renders the current page on the server (Next.js documentation, "Mutating data", Cookies). The re-render saw a signed-in visitor and redirected, overriding the steps the client was showing. The unit tests missed it because they replace the actions with fakes, so no cookie is ever set and no re-render happens.
+
+The server no longer redirects on `/auth`. `PhoneSignInFromQuery` only reports whether the visitor arrived signed in, and the sign-in screen decides: it remembers how the visitor arrived (state kept from the first render, which Next.js preserves across the re-render) and sends a visitor who arrived signed in to `?redirect=` or `/dashboard`, but never once the number, code, name or email step has begun. The staff pages keep the server redirect, because their sign-in sets no session cookie in a Server Action. Regression tests re-render the screen signed in at the code, name and email steps and check the visitor stays; they fail when the old behaviour is put back. What no test can show is Next.js's re-render itself, so the owner's live test of the whole flow remains the proof.
+
 ## Open questions
