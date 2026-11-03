@@ -8,3 +8,4 @@ export {
 export { EmailResultFromQuery } from "./email-result-from-query";
 export { RESEND_AFTER_SECONDS } from "./constants";
 export { PhoneSignInFromQuery } from "./phone-sign-in-from-query";
+export { useSignOut } from "./use-sign-out.client";

@@ -2,6 +2,7 @@ import {
   addEmailSchema,
   saveProfileNameSchema,
   sendPhoneCodeSchema,
+  signOutSchema,
   verifyPhoneCodeSchema,
   type SendPhoneCodeInput,
   type VerifyPhoneCodeInput,
@@ -58,4 +59,15 @@ export const resendEmailLinkConfig = {
   input: addEmailSchema,
   auth: "verified-phone" as const,
   rateLimit: { scope: "email_link" as const },
+};
+
+/**
+ * Signing out: open to anyone, signed in or not. A visitor whose session has already expired must still be
+ * able to clear what the browser holds, so there is no authentication step. It ends only this browser's
+ * session, and a repeat changes nothing, so it needs no limit of its own.
+ */
+export const signOutConfig = {
+  name: "signOut",
+  input: signOutSchema,
+  auth: "none" as const,
 };

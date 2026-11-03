@@ -10,7 +10,7 @@ Supabase makes the six digit code and calls our route `POST /api/auth/hooks/send
 - **Code entry (S3-T09, ADD-02):** `verifyPhoneCode` checks the six digits with the `otp_verify` limit (10 tries per phone per hour; every try counts) and a good code puts the session in the visitor's cookies. The screen has the resend timer (60 seconds, with a fresh human-check token) and the wrong, expired, locked and unavailable states.
 - **Name step (S3-T09, ADD-04):** `verifyPhoneCode` also says whether the profile has a name yet (`needsName`); a new account is then asked for one before going on. `saveProfileName` saves it on the visitor's own profile (2 to 80 characters).
 - **Email (S3-T09, ADD-03):** a new account is offered "Add your email" after the name step; `addEmail` and `resendEmailLink` send Supabase's single-use link, and `/auth/confirm` finishes it. Setup is in `docs/runbooks/environment-variables.md`.
-- **Not built yet:** sign-out.
+- **Sign-out (S3-T09):** `signOut` ends this browser's session, for customers and staff, and `useSignOut` is what the avatar menu's Sign out entry will call. Nothing mounts that menu until the header is built (S4-T06), so there is no button to press yet.
 
 ## Behaviour per environment
 

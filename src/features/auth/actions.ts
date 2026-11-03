@@ -10,10 +10,12 @@ import {
   resendEmailLinkConfig,
   saveProfileNameConfig,
   sendPhoneCodeConfig,
+  signOutConfig,
   verifyPhoneCodeConfig,
 } from "./action-config";
 import { addEmailAddress, resendEmailAddress } from "./email-service";
 import { updateProfileName } from "./profile-service";
+import { endSession } from "./sign-out-service";
 import { confirmPhoneCode, requestPhoneCode } from "./service";
 
 async function phoneCodeClient() {
@@ -106,4 +108,17 @@ export const addEmail = defineAction({
 export const resendEmailLink = defineAction({
   ...resendEmailLinkConfig,
   handler: async ({ input }) => resendEmailAddress(await emailLinkClient(), input),
+});
+
+/**
+ * Ends this browser's session, for a customer or for staff. The cookie-bound server client clears the
+ * session cookies; other devices stay signed in (FR-AUTH-08: "everywhere in the browser" means every tab
+ * of this browser, which share its cookies).
+ */
+export const signOut = defineAction({
+  ...signOutConfig,
+  handler: async () => {
+    const supabase = await createServerSupabase();
+    return endSession({ signOut: () => supabase.auth.signOut({ scope: "local" }) });
+  },
 });
