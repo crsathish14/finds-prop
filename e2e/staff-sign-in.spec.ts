@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { expectNoSeriousAccessibilityViolations } from "./design-lab/helpers";
 import en from "../src/i18n/messages/en.json";
 
 // S3-T10: the staff sign-in pages and the callback. Real Google sign-in is checked by hand against
@@ -7,6 +8,15 @@ import en from "../src/i18n/messages/en.json";
 const words = en.auth.staff;
 
 test.describe("@smoke staff sign-in pages", () => {
+  for (const route of ["/builder/login", "/admin/login"]) {
+    test(`${route} has no serious accessibility violation on a wide screen`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(route);
+      await page.waitForLoadState("networkidle");
+      await expectNoSeriousAccessibilityViolations(page);
+    });
+  }
+
   test("the builder page offers one Google button and no password", async ({ page }) => {
     await page.goto("/builder/login");
     await expect(page.getByRole("heading", { level: 1, name: words.builder.title })).toBeVisible();
