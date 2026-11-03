@@ -1,14 +1,17 @@
 // @vitest-environment jsdom
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useEffect, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { saveProfileName, sendPhoneCode, verifyPhoneCode } from "../actions";
+import { goTo } from "../navigate";
 import { PhoneSignInScreen } from "../phone-sign-in-screen";
 
 // The action reaches the server and the widget reaches Cloudflare; the tests stand in for both.
+vi.mock("../navigate", () => ({ goTo: vi.fn() }));
 vi.mock("../actions", () => ({
   sendPhoneCode: vi.fn(),
   verifyPhoneCode: vi.fn(),
@@ -54,9 +57,35 @@ function answer(result: ActionResult<{ resendAfter: number }>) {
   send.mockResolvedValueOnce(result);
 }
 
-function renderScreen(gate = false) {
+function renderScreen(gate = false, alreadySignedIn = false) {
   return renderWithMessages(
-    <PhoneSignInScreen siteKey="site-key" gate={gate} redirectTo="/dashboard" />,
+    <PhoneSignInScreen
+      siteKey="site-key"
+      gate={gate}
+      redirectTo="/dashboard"
+      alreadySignedIn={alreadySignedIn}
+    />,
+  );
+}
+
+/**
+ * The page as Next.js re-renders it after a Server Action sets the session cookie: the same screen,
+ * now handed alreadySignedIn = true by the server, in the middle of the flow. The first render is the
+ * visitor arriving signed out. `refresh` stands for the server's re-render.
+ */
+let refresh: () => void = () => undefined;
+function RefreshingScreen() {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    refresh = () => setSignedIn(true);
+  }, []);
+  return (
+    <PhoneSignInScreen
+      siteKey="site-key"
+      gate={false}
+      redirectTo="/dashboard"
+      alreadySignedIn={signedIn}
+    />
   );
 }
 
@@ -192,6 +221,76 @@ describe("phone sign-in: a new account", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(codeWords.benefitPrivate)).not.toBeInTheDocument();
     expect(screen.queryByText(words.benefitShortlist)).not.toBeInTheDocument();
+  });
+});
+
+describe("phone sign-in: a visitor who arrives already signed in (BR-06)", () => {
+  it("is sent on to where they were headed, and never shown the form", async () => {
+    renderScreen(false, true);
+    await waitFor(() => expect(vi.mocked(goTo)).toHaveBeenCalledWith("/dashboard"));
+    expect(vi.mocked(goTo)).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(words.label)).not.toBeInTheDocument();
+  });
+
+  it("does not send a signed-out visitor anywhere", () => {
+    renderScreen(false, false);
+    expect(vi.mocked(goTo)).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { level: 1, name: words.title })).toBeInTheDocument();
+  });
+});
+
+describe("phone sign-in: the page re-renders signed in in the middle of the flow", () => {
+  // Signing in sets a cookie, and Next.js then re-renders the page on the server with the visitor
+  // signed in. The first live test showed the visitor thrown out to the dashboard before the name step.
+  it("keeps the visitor on the code step when the re-render arrives there", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    renderWithMessages(<RefreshingScreen />);
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await screen.findByLabelText(codeWords.label);
+    act(() => refresh());
+    expect(screen.getByLabelText(codeWords.label)).toBeInTheDocument();
+    expect(vi.mocked(goTo)).not.toHaveBeenCalled();
+  });
+
+  it("keeps a new account on the name step, then the email step, when the re-render arrives", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    vi.mocked(saveProfileName).mockResolvedValueOnce({ ok: true, data: { name: "Priya Raman" } });
+    renderWithMessages(<RefreshingScreen />);
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    act(() => refresh()); // the cookie has just been set
+    expect(
+      await screen.findByRole("heading", { level: 1, name: en.auth.name.title }),
+    ).toBeInTheDocument();
+    expect(vi.mocked(goTo)).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByLabelText(new RegExp(en.auth.name.label)), "Priya Raman");
+    await userEvent.click(screen.getByRole("button", { name: en.auth.name.save }));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: en.auth.email.title }),
+    ).toBeInTheDocument();
+    expect(vi.mocked(goTo)).not.toHaveBeenCalled();
+  });
+
+  it("lets a returning visitor see Number verified, and go on only when it says so", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: false },
+    });
+    renderWithMessages(<RefreshingScreen />);
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    act(() => refresh());
+    expect(await screen.findByText(codeWords.successTitle)).toBeInTheDocument();
+    expect(vi.mocked(goTo)).not.toHaveBeenCalled();
   });
 });
 
