@@ -2,7 +2,9 @@
 
 import { defineAction } from "@/server/actions/define-action";
 import { createServerSupabase } from "@/server/supabase/server";
-import { sendPhoneCodeConfig, verifyPhoneCodeConfig } from "./action-config";
+import { ActionError } from "@/server/actions/normalise-error";
+import { saveProfileNameConfig, sendPhoneCodeConfig, verifyPhoneCodeConfig } from "./action-config";
+import { updateProfileName } from "./profile-service";
 import { confirmPhoneCode, requestPhoneCode } from "./service";
 
 async function phoneCodeClient() {
@@ -12,6 +14,15 @@ async function phoneCodeClient() {
       supabase.auth.signInWithOtp(credentials),
     verifyOtp: (credentials: { phone: string; token: string; type: "sms" }) =>
       supabase.auth.verifyOtp(credentials),
+    // Through the visitor's own session, so the database lets them read only their own row.
+    readProfileName: async (userId: string) => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      return error || !data ? null : { fullName: data.full_name };
+    },
   };
 }
 
@@ -32,4 +43,30 @@ export const sendPhoneCode = defineAction({
 export const verifyPhoneCode = defineAction({
   ...verifyPhoneCodeConfig,
   handler: async ({ input }) => confirmPhoneCode(await phoneCodeClient(), input),
+});
+
+/**
+ * Saves the signed-in visitor's own name (ADD-04). The row is the session user's: the name is the only
+ * thing taken from the caller, and the database lets a customer change nothing else (R-BE-03).
+ */
+export const saveProfileName = defineAction({
+  ...saveProfileNameConfig,
+  handler: async ({ input, session }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "A signed-in user is required");
+    const supabase = await createServerSupabase();
+    return updateProfileName(
+      {
+        updateName: async (userId, fullName) => {
+          const { data, error } = await supabase
+            .from("profiles")
+            .update({ full_name: fullName })
+            .eq("id", userId)
+            .select("id");
+          return { error, updated: data?.length ?? 0 };
+        },
+      },
+      session.userId,
+      input,
+    );
+  },
 });

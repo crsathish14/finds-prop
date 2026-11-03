@@ -95,6 +95,22 @@
       "successBody": "Welcome to Find Prop. Taking you back to what you were doing…",
       "continue": "Continue"
     },
+    "name": {
+      "title": "What should we call you?",
+      "lead": "Your name appears on the enquiries you send and on the listings you post. You can change it later.",
+      "postTitle": "Add your name to post a property",
+      "postLead": "Your name appears on your listing's enquiries. It takes a few seconds.",
+      "enquireTitle": "Add your name to contact the owner",
+      "enquireLead": "The owner sees your name, phone number and message when you enquire.",
+      "label": "Full name",
+      "placeholder": "Priya Raman",
+      "counter": "{count} / {max}",
+      "save": "Continue",
+      "saving": "Saving",
+      "skip": "Skip for now",
+      "askAgain": "You'll be asked again before you post or enquire.",
+      "back": "Back"
+    },
     "staff": {
       "google": "Continue with Google",
       "googleOpening": "Opening Google",
@@ -165,7 +181,8 @@
     "phoneUnsupported": "We can only send codes to Indian (+91) mobile numbers right now.",
     "codeInvalid": "Enter the 6-digit code from your text message.",
     "codeWrong": "That code isn't right. Check the message and try again.",
-    "captchaFailed": "We couldn't confirm you're a person. Check your connection and run the check again."
+    "captchaFailed": "We couldn't confirm you're a person. Check your connection and run the check again.",
+    "nameTooShort": "Enter your name, at least 2 characters."
   },
   "format": {
     "rupees": "₹{value}",

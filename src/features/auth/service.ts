@@ -16,9 +16,11 @@ export interface PhoneCodeDeps {
   }): Promise<{ error: PhoneCodeError | null }>;
   /** Supabase's verifyOtp, through the same client: a good code puts the session in the visitor's cookies. */
   verifyOtp(credentials: { phone: string; token: string; type: "sms" }): Promise<{
-    data: { session: object | null };
+    data: { session: object | null; user: { id: string } | null };
     error: PhoneCodeError | null;
   }>;
+  /** The signed-in user's own profile name, or null when it could not be read. */
+  readProfileName(userId: string): Promise<{ fullName: string | null } | null>;
 }
 
 export interface PhoneCodeSent {
@@ -106,11 +108,14 @@ export async function requestPhoneCode(
  * Checks the six digits. On success Supabase has put the session in the visitor's cookies, and the
  * database has created the profile and the customer role for a new number (BR-02, BR-03). A "success"
  * with no session is treated as a failure: nobody is told they are signed in when they are not.
+ * `needsName` is true when the profile has no name yet, which is the case for a new account: the
+ * screen then asks for it before going on (ADD-04). If the profile cannot be read the visitor is not
+ * held up: the name is asked for again before posting or enquiring anyway.
  */
 export async function confirmPhoneCode(
   deps: PhoneCodeDeps,
   input: VerifyPhoneCodeInput,
-): Promise<{ signedIn: true }> {
+): Promise<{ signedIn: true; needsName: boolean }> {
   const { data, error } = await deps.verifyOtp({
     phone: input.phone,
     token: input.code,
@@ -120,5 +125,6 @@ export async function confirmPhoneCode(
   if (!data.session) {
     throw new ActionError("INTERNAL", "Supabase accepted the code but returned no session");
   }
-  return { signedIn: true };
+  const profile = data.user ? await deps.readProfileName(data.user.id) : null;
+  return { signedIn: true, needsName: profile !== null && !profile.fullName };
 }

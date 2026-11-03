@@ -24,6 +24,7 @@ function fakeClient(error: PhoneCodeError | null = null) {
       return Promise.resolve({ error });
     },
     verifyOtp: () => Promise.reject(new Error("sending a code never checks one")),
+    readProfileName: () => Promise.reject(new Error("sending a code never reads a profile")),
   };
   return { deps, requests };
 }

@@ -41,11 +41,12 @@ const verify = vi.mocked(verifyPhoneCode);
 const resendAction = vi.mocked(sendPhoneCode);
 const go = vi.mocked(goTo);
 const onChangeNumber = vi.fn();
+const onNeedsName = vi.fn();
 
 const field = () => screen.getByLabelText(words.label);
 const verifyButton = () => screen.getByRole("button", { name: words.verify });
 
-function answerVerify(result: ActionResult<{ signedIn: true }>) {
+function answerVerify(result: ActionResult<{ signedIn: true; needsName: boolean }>) {
   verify.mockResolvedValueOnce(result);
 }
 function answerResend(result: ActionResult<{ resendAfter: number }>) {
@@ -61,6 +62,7 @@ function renderCode(options: { redirectTo?: string } = {}) {
       siteKey="site-key"
       redirectTo={options.redirectTo ?? "/dashboard"}
       onChangeNumber={onChangeNumber}
+      onNeedsName={onNeedsName}
     />,
   );
 }
@@ -115,7 +117,7 @@ describe("code entry: the default state (ADD-02)", () => {
 
 describe("code entry: checking the code", () => {
   it("checks the code itself on the sixth digit, with the number it was sent to", async () => {
-    answerVerify({ ok: true, data: { signedIn: true } });
+    answerVerify({ ok: true, data: { signedIn: true, needsName: false } });
     renderCode();
     await user().type(field(), "482916");
     expect(verify).toHaveBeenCalledWith({ phone: "+919876543210", code: "482916" });
@@ -123,18 +125,19 @@ describe("code entry: checking the code", () => {
   });
 
   it("shows Verifying while it waits, and does not check twice", async () => {
-    let finish: (result: ActionResult<{ signedIn: true }>) => void = () => undefined;
+    let finish: (result: ActionResult<{ signedIn: true; needsName: boolean }>) => void = () =>
+      undefined;
     verify.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
     renderCode();
     await user().type(field(), "482916");
     expect(await screen.findByRole("button", { name: words.verifying })).toBeDisabled();
     expect(field()).toBeDisabled();
     expect(verify).toHaveBeenCalledOnce();
-    await act(async () => finish({ ok: true, data: { signedIn: true } }));
+    await act(async () => finish({ ok: true, data: { signedIn: true, needsName: false } }));
   });
 
   it("takes the visitor on after a short pause, or at once with Continue", async () => {
-    answerVerify({ ok: true, data: { signedIn: true } });
+    answerVerify({ ok: true, data: { signedIn: true, needsName: false } });
     renderCode({ redirectTo: "/properties/home-1" });
     await user().type(field(), "482916");
     await screen.findByText(words.successTitle);
@@ -146,8 +149,18 @@ describe("code entry: checking the code", () => {
     expect(go).toHaveBeenCalledWith("/properties/home-1");
   });
 
+  it("hands over to the name step, with no success screen and no redirect, for a new account", async () => {
+    verify.mockResolvedValueOnce({ ok: true, data: { signedIn: true, needsName: true } });
+    renderCode();
+    await user().type(field(), "482916");
+    await waitFor(() => expect(onNeedsName).toHaveBeenCalledOnce());
+    expect(screen.queryByText(words.successTitle)).not.toBeInTheDocument();
+    pass(5);
+    expect(go).not.toHaveBeenCalled();
+  });
+
   it("goes at once when Continue is pressed", async () => {
-    answerVerify({ ok: true, data: { signedIn: true } });
+    answerVerify({ ok: true, data: { signedIn: true, needsName: false } });
     renderCode();
     await user().type(field(), "482916");
     await user().click(await screen.findByRole("button", { name: words.continue }));
