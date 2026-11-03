@@ -86,9 +86,9 @@ select ok(
   'search_properties runs as the caller, is stable and pins its search_path'
 );
 select ok(
-  (select provolatile = 'i' and coalesce(proconfig::text like '%search_path=%', false)
+  (select provolatile = 'i' and not prosecdef and proconfig is null
    from pg_proc where proname = 'listing_label' and pronamespace = 'public'::regnamespace),
-  'listing_label is immutable and pins its search_path'
+  'listing_label is immutable, runs as the caller and has no SET clause, so the planner can inline it'
 );
 select ok(
   not exists (

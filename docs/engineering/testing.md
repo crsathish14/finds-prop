@@ -30,7 +30,7 @@ The named tests (`UT-`, `DB-`, `IT-`, `E2E-`) are listed in `test-catalogue.md`.
 | Performance        | Lighthouse CI + Vercel Speed Insights                                   | preview URL; field data           | LCP/INP/CLS, bundle budget                                           | nightly         |
 | Static             | ESLint (flat config), `tsc --noEmit`, token/boundary scripts            | source                            | Style, boundaries, types, no hard-coded values                       | seconds         |
 
-Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP (on an empty database) and `supabase/seed-tests/` for the seed data and `supabase/seed-dev-tests/` for what `scripts/seed-dev.mjs` adds to it; `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
+Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP (on an empty database) and `supabase/seed-tests/` for the seed data and `supabase/seed-dev-tests/` for what `scripts/seed-dev.mjs` adds to it; `supabase/perf/` for the search performance spike (S4-SPK-01: 10,000 fictional listings, run by the CI `db` job, never part of the seed); `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
 
 ## Design Lab checks and screenshots (G-10, lab part)
 
