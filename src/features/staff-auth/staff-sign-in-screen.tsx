@@ -55,7 +55,7 @@ function BuilderScreen({ problem }: { problem: StaffProblem | null }) {
             <Text as="span" variant="overline" tone="inherit" className="text-on-dark-accent">
               {translate("builder.roleTag")}
             </Text>
-            <Heading as="h2" size="2" className="mt-3 text-on-dark">
+            <Heading as="h2" size="2" className="mt-3 text-on-dark [&_em]:text-on-dark-accent">
               <TitleWithEmphasis
                 title={translate("builder.asideTitle")}
                 emphasis={translate("builder.asideEmphasis")}

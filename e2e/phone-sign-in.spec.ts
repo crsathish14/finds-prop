@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { expectNoSeriousAccessibilityViolations } from "./design-lab/helpers";
 import en from "../src/i18n/messages/en.json";
 
 // S3-T09: the customer sign-in page. Sending a real code needs the dev project's CAPTCHA and a test
@@ -7,6 +8,15 @@ import en from "../src/i18n/messages/en.json";
 const words = en.auth.phone;
 
 test.describe("@smoke phone sign-in page", () => {
+  test("has no serious accessibility violation, including the side panel on a wide screen", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/auth");
+    await page.waitForLoadState("networkidle");
+    await expectNoSeriousAccessibilityViolations(page);
+  });
+
   test("offers a mobile number field and Send code, and no Google or password", async ({
     page,
   }) => {
