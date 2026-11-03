@@ -68,3 +68,19 @@ export const saveProfileNameSchema = z.object({
 });
 
 export type SaveProfileNameInput = z.infer<typeof saveProfileNameSchema>;
+
+/**
+ * What the email step sends: the address as typed. Spaces at the ends are dropped and it is lowercased,
+ * so one address is one address however it was typed (ADD-03). It must look like an address and fit in
+ * 254 characters. Whose account it is comes from the session, never from here (R-BE-03).
+ */
+export const addEmailSchema = z.object({
+  email: z
+    .string({ error: "validation.emailInvalid" })
+    .trim()
+    .toLowerCase()
+    .max(254, { error: "validation.emailInvalid" })
+    .pipe(z.email({ error: "validation.emailInvalid" })),
+});
+
+export type AddEmailInput = z.infer<typeof addEmailSchema>;

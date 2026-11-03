@@ -1,4 +1,5 @@
 import {
+  addEmailSchema,
   saveProfileNameSchema,
   sendPhoneCodeSchema,
   verifyPhoneCodeSchema,
@@ -38,4 +39,23 @@ export const saveProfileNameConfig = {
   name: "saveProfileName",
   input: saveProfileNameSchema,
   auth: "user" as const,
+};
+
+/**
+ * Adding an email, and asking for its link again: a signed-in customer (one with a verified phone), limited
+ * to 5 emails per user per hour and 20 per address per day (owner decision, 3 Nov 2026). Sending
+ * email costs money and can be abused, and a resend counts like the first send.
+ */
+export const addEmailConfig = {
+  name: "addEmail",
+  input: addEmailSchema,
+  auth: "verified-phone" as const,
+  rateLimit: { scope: "email_link" as const },
+};
+
+export const resendEmailLinkConfig = {
+  name: "resendEmailLink",
+  input: addEmailSchema,
+  auth: "verified-phone" as const,
+  rateLimit: { scope: "email_link" as const },
 };

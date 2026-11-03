@@ -14,9 +14,10 @@ import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { classifyPhoneInput, typedDialCode } from "@/lib/phone";
 import { sendPhoneCode } from "./actions";
-import { AuthAside } from "./auth-aside";
+import { AuthFrame } from "./auth-frame";
 import { CodeEntry } from "./code-entry.client";
 import { HumanCheck, type HumanCheckStatus } from "./human-check.client";
+import { EmailStep } from "./email-step.client";
 import { NameStep } from "./name-step.client";
 import { marker, withLinks } from "./with-links";
 
@@ -57,6 +58,7 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
     null,
   );
   const [naming, setNaming] = useState(false);
+  const [emailing, setEmailing] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const handleCheck = useCallback((status: HumanCheckStatus, nextToken: string | null) => {
@@ -227,34 +229,37 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
     </div>
   );
 
+  if (emailing) {
+    return (
+      <AuthFrame step="email">
+        <EmailStep redirectTo={redirectTo} />
+      </AuthFrame>
+    );
+  }
+
   if (naming) {
     return (
       <div className="mx-auto w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card md:p-8">
-        <NameStep reason="signup" redirectTo={redirectTo} />
+        <NameStep reason="signup" onDone={() => setEmailing(true)} />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <AuthAside step={sent ? "code" : "phone"} />
-      <section className="grid place-items-center">
-        <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card md:p-8">
-          {sent ? (
-            <CodeEntry
-              phone={sent.phone}
-              sentAt={sent.sentAt}
-              resendAfter={sent.resendAfter}
-              siteKey={siteKey}
-              redirectTo={redirectTo}
-              onChangeNumber={() => setSent(null)}
-              onNeedsName={() => setNaming(true)}
-            />
-          ) : (
-            phoneStep
-          )}
-        </div>
-      </section>
-    </div>
+    <AuthFrame step={sent ? "code" : "phone"}>
+      {sent ? (
+        <CodeEntry
+          phone={sent.phone}
+          sentAt={sent.sentAt}
+          resendAfter={sent.resendAfter}
+          siteKey={siteKey}
+          redirectTo={redirectTo}
+          onChangeNumber={() => setSent(null)}
+          onNeedsName={() => setNaming(true)}
+        />
+      ) : (
+        phoneStep
+      )}
+    </AuthFrame>
   );
 }

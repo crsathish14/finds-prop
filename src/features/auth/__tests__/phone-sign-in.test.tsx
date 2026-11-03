@@ -5,11 +5,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
-import { sendPhoneCode, verifyPhoneCode } from "../actions";
+import { saveProfileName, sendPhoneCode, verifyPhoneCode } from "../actions";
 import { PhoneSignInScreen } from "../phone-sign-in-screen";
 
 // The action reaches the server and the widget reaches Cloudflare; the tests stand in for both.
-vi.mock("../actions", () => ({ sendPhoneCode: vi.fn(), verifyPhoneCode: vi.fn() }));
+vi.mock("../actions", () => ({
+  sendPhoneCode: vi.fn(),
+  verifyPhoneCode: vi.fn(),
+  saveProfileName: vi.fn(),
+  addEmail: vi.fn(),
+  resendEmailLink: vi.fn(),
+}));
 const check = vi.hoisted(() => ({
   status: "verified" as "checking" | "verified" | "failed",
   token: "token-1" as string | null,
@@ -186,6 +192,46 @@ describe("phone sign-in: a new account", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(codeWords.benefitPrivate)).not.toBeInTheDocument();
     expect(screen.queryByText(words.benefitShortlist)).not.toBeInTheDocument();
+  });
+});
+
+describe("phone sign-in: a new account's next steps", () => {
+  it("goes on from the name to the email step, with its own panel beside the card", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    vi.mocked(saveProfileName).mockResolvedValueOnce({ ok: true, data: { name: "Priya Raman" } });
+    renderScreen();
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    await userEvent.type(
+      await screen.findByLabelText(new RegExp(en.auth.name.label)),
+      "Priya Raman",
+    );
+    await userEvent.click(screen.getByRole("button", { name: en.auth.name.save }));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: en.auth.email.title }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(en.auth.email.benefitUpdates)).toBeInTheDocument();
+  });
+
+  it("goes on to the email step when the name is skipped", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    renderScreen();
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    await userEvent.click(await screen.findByRole("button", { name: en.auth.name.skip }));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: en.auth.email.title }),
+    ).toBeInTheDocument();
   });
 });
 
