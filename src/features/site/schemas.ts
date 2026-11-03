@@ -28,7 +28,11 @@ const headerSchema = z.object({
 const footerSchema = z.object({
   about: z.string().max(400).optional(),
   contact: z
-    .object({ email: z.email().optional(), phone: z.string().max(30).optional() })
+    .object({
+      address: z.string().max(200).optional(),
+      email: z.email().optional(),
+      phone: z.string().max(30).optional(),
+    })
     .optional(),
   links: z.array(navigationLink).max(20),
   copyright: z.string().max(200).optional(),

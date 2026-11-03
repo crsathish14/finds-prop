@@ -11,6 +11,7 @@
     "technicalDetails": "Technical details",
     "reference": "Reference: {id}",
     "close": "Close",
+    "opensInNewTab": "(opens in a new tab)",
     "skipToContent": "Skip to content"
   },
   "home": {
@@ -267,5 +268,51 @@
   },
   "toast": {
     "container": "Notifications"
+  },
+  "site": {
+    "brandName": "Find Prop",
+    "nav": {
+      "buy": "Buy",
+      "rent": "Rent",
+      "projects": "Projects",
+      "aiSearch": "AI Search",
+      "contact": "Contact"
+    },
+    "header": {
+      "postProperty": "Post property"
+    },
+    "footer": {
+      "exploreHeading": "Explore",
+      "linkBuy": "Buy a home",
+      "linkRent": "Rent a home",
+      "linkProjects": "New projects",
+      "linkAiSearch": "AI search",
+      "linkContact": "Contact us",
+      "linkPost": "Post a property",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "© {year} {brandName}"
+    },
+    "bottomBar": {
+      "navLabel": "Primary",
+      "home": "Home",
+      "search": "Search",
+      "post": "Post",
+      "saved": "Saved",
+      "me": "Me"
+    },
+    "account": {
+      "dashboardHeading": "Dashboard",
+      "savedHomes": "Saved homes",
+      "myListings": "My listings",
+      "enquiriesReceived": "Enquiries received",
+      "myEnquiries": "My enquiries",
+      "postProperty": "Post a property",
+      "workspacesHeading": "Workspaces",
+      "builderPortal": "Builder portal",
+      "adminPortal": "Admin portal",
+      "roleAdmin": "Admin",
+      "roleBuilder": "Builder"
+    }
   }
 }
