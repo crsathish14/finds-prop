@@ -41,6 +41,19 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     expect(logger.warn.mock.calls[0]?.[1]).toEqual({ settingKey: "hero" });
   });
 
+  it("accepts an address in the footer contact details", () => {
+    const merged = mergeSiteSettings(
+      [
+        {
+          key: "footer",
+          value: { contact: { address: "1 Sample Road", phone: "+91 44 0000 0000" } },
+        },
+      ],
+      log(),
+    );
+    expect(merged.footer.contact).toEqual({ address: "1 Sample Road", phone: "+91 44 0000 0000" });
+  });
+
   it("ignores a row that is not an object", () => {
     expect(mergeSiteSettings([{ key: "footer", value: "text" }], log()).footer).toEqual(
       SITE_DEFAULTS.footer,
