@@ -58,6 +58,14 @@ Not built yet at that point: entering the code, the name step (ADD-04), email ve
 
 Two owner decisions (3 Nov 2026) follow from what Supabase and the limiter can tell us. First, Supabase answers a wrong code and an expired one with the same `otp_expired` error, so the screen calls a refused code "expired" only when more than `CODE_LIFETIME_SECONDS` (300) have passed since it asked for one; the project's code expiry must be set to 300 seconds to match. Second, the approved text "You have 3 attempts left" and "paused for 15 minutes" cannot be built as written: the limiter answers only allowed or refused (and the limit is 10 an hour, DEC-31). The wrong-code message omits the count, and the locked message uses the real wait time from the limiter. A refused code clears the field so the visitor can type again. A count would need `rate_limit_hit` to return the hits used, which is a migration.
 
-Sending a new code needs a fresh human-check token, so the code step runs the widget quietly (no status box) and keeps Resend off until it passes. Not built yet: the name step (ADD-04), email verification and `/auth/confirm` (ADD-03), and sign-out.
+Sending a new code needs a fresh human-check token, so the code step runs the widget quietly (no status box) and keeps Resend off until it passes. Not built yet at that point: the name step (ADD-04), email verification and `/auth/confirm` (ADD-03), and sign-out.
+
+## Name step, built 3 Nov 2026 (S3-T09, ADD-04)
+
+After a good code, `verifyPhoneCode` reads the visitor's own profile through their new session and returns `needsName` (true when `full_name` is empty, as it is for a new account). A visitor who needs a name sees the ADD-04 card, on its own without the side panel; anyone else goes straight to the page they came for. If the profile cannot be read the visitor is not held up, because the name is asked for again before posting or enquiring. `saveProfileName` is a `defineAction` for a signed-in user: the name is the only thing taken from the caller (spaces trimmed and collapsed, 2 to 80 characters, no control characters), the row is the session user's, and the database lets a customer change only `full_name` (`profiles_update_own` and the column grant), so no migration is needed. It has no rate limit of its own and no audit entry. No row changed is reported as not found, never as a success.
+
+The UX's "Skip for now" goes to the page the visitor was headed for (the UX draws a link to the home page, which would lose where they were going). The "post" and "enquire" wordings of the same card are built and tested, but nothing opens them yet: the posting and enquiry features will, with the rule that a name is required before posting or enquiring.
+
+Not built yet: email verification and `/auth/confirm` (ADD-03), and sign-out.
 
 ## Open questions

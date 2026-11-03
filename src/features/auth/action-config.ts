@@ -1,4 +1,5 @@
 import {
+  saveProfileNameSchema,
   sendPhoneCodeSchema,
   verifyPhoneCodeSchema,
   type SendPhoneCodeInput,
@@ -27,4 +28,14 @@ export const verifyPhoneCodeConfig = {
   input: verifyPhoneCodeSchema,
   auth: "none" as const,
   rateLimit: { scope: "otp_verify" as const, key: (input: VerifyPhoneCodeInput) => input.phone },
+};
+
+/**
+ * Saving the visitor's own name: a signed-in user, no other limit (it changes one column of their own
+ * row, which is all the database lets them change).
+ */
+export const saveProfileNameConfig = {
+  name: "saveProfileName",
+  input: saveProfileNameSchema,
+  auth: "user" as const,
 };

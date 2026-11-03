@@ -36,6 +36,8 @@ type CodeEntryProps = {
   /** Where to go once signed in: an address the page has already checked (BR-06). */
   redirectTo: string;
   onChangeNumber: () => void;
+  /** A new account has no name yet: the page asks for it before going on (ADD-04). */
+  onNeedsName: () => void;
 };
 
 function minutesToWait(retryAfter: number | undefined): number {
@@ -62,6 +64,7 @@ export function CodeEntry({
   siteKey,
   redirectTo,
   onChangeNumber,
+  onNeedsName,
 }: CodeEntryProps) {
   const translate = useTranslations("auth.code");
   const translatePhone = useTranslations("auth.phone");
@@ -124,7 +127,8 @@ export function CodeEntry({
     startVerify(async () => {
       const result = await verifyPhoneCode({ phone, code: value });
       if (result.ok) {
-        setDone(true);
+        if (result.data.needsName) onNeedsName();
+        else setDone(true);
         return;
       }
       setCode("");

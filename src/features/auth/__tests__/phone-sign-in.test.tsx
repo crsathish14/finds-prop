@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
-import { sendPhoneCode } from "../actions";
+import { sendPhoneCode, verifyPhoneCode } from "../actions";
 import { PhoneSignInScreen } from "../phone-sign-in-screen";
 
 // The action reaches the server and the widget reaches Cloudflare; the tests stand in for both.
@@ -167,6 +167,25 @@ describe("phone sign-in: the number", () => {
     expect(screen.getByText(en.validation.phoneUnsupported)).toBeInTheDocument();
     expect(screen.getByText("+44")).toBeInTheDocument();
     expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe("phone sign-in: a new account", () => {
+  it("asks for the visitor's name after the code is checked, on a card with no side panel", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    renderScreen();
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    expect(
+      await screen.findByRole("heading", { level: 1, name: en.auth.name.title }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(codeWords.benefitPrivate)).not.toBeInTheDocument();
+    expect(screen.queryByText(words.benefitShortlist)).not.toBeInTheDocument();
   });
 });
 

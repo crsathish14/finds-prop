@@ -17,6 +17,7 @@ import { sendPhoneCode } from "./actions";
 import { AuthAside } from "./auth-aside";
 import { CodeEntry } from "./code-entry.client";
 import { HumanCheck, type HumanCheckStatus } from "./human-check.client";
+import { NameStep } from "./name-step.client";
 import { marker, withLinks } from "./with-links";
 
 type Problem =
@@ -55,6 +56,7 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
   const [sent, setSent] = useState<{ phone: string; sentAt: number; resendAfter: number } | null>(
     null,
   );
+  const [naming, setNaming] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const handleCheck = useCallback((status: HumanCheckStatus, nextToken: string | null) => {
@@ -225,6 +227,14 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
     </div>
   );
 
+  if (naming) {
+    return (
+      <div className="mx-auto w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card md:p-8">
+        <NameStep reason="signup" redirectTo={redirectTo} />
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <AuthAside step={sent ? "code" : "phone"} />
@@ -238,6 +248,7 @@ export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
               siteKey={siteKey}
               redirectTo={redirectTo}
               onChangeNumber={() => setSent(null)}
+              onNeedsName={() => setNaming(true)}
             />
           ) : (
             phoneStep

@@ -11,31 +11,44 @@ const CODE = "482916";
 
 type Verify = Parameters<PhoneCodeDeps["verifyOtp"]>[0];
 
-function fakeClient(answer: { error?: PhoneCodeError | null; session?: object | null } = {}) {
+const USER_ID = "user-1";
+
+type Answer = {
+  error?: PhoneCodeError | null;
+  session?: object | null;
+  user?: { id: string } | null;
+  /** What the profile reader returns; undefined means a profile with no name. */
+  profile?: { fullName: string | null } | null;
+};
+
+function fakeClient(answer: Answer = {}) {
   const requests: Verify[] = [];
+  const profileReads: string[] = [];
   const deps: PhoneCodeDeps = {
     signInWithOtp: () => Promise.reject(new Error("checking a code never sends one")),
     verifyOtp: (credentials) => {
       requests.push(credentials);
       return Promise.resolve({
-        data: { session: answer.session === undefined ? { access_token: "x" } : answer.session },
+        data: {
+          session: answer.session === undefined ? { access_token: "x" } : answer.session,
+          user: answer.user === undefined ? { id: USER_ID } : answer.user,
+        },
         error: answer.error ?? null,
       });
     },
+    readProfileName: (userId) => {
+      profileReads.push(userId);
+      return Promise.resolve(answer.profile === undefined ? { fullName: null } : answer.profile);
+    },
   };
-  return { deps, requests };
+  return { deps, requests, profileReads };
 }
 
-function actionHarness(
-  options: { rateLimited?: boolean; error?: PhoneCodeError; session?: object | null } = {},
-) {
+function actionHarness(options: Answer & { rateLimited?: boolean } = {}) {
   const calls: string[] = [];
   const rateLimitKeys: (string | undefined)[] = [];
   const logLines: string[] = [];
-  const { deps, requests } = fakeClient({
-    error: options.error ?? null,
-    ...(options.session !== undefined ? { session: options.session } : {}),
-  });
+  const { deps, requests } = fakeClient(options);
   const actionDeps: ActionDeps = {
     newRequestId: () => "req-1",
     getSession: () => {
@@ -66,10 +79,50 @@ function actionHarness(
 describe("UT-verify-phone-code: the service (S3-T09, FR-AUTH-01)", () => {
   it("checks the code as an SMS code for the normalised number and reports a sign-in", async () => {
     const { deps, requests } = fakeClient();
-    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toEqual({
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toMatchObject({
       signedIn: true,
     });
     expect(requests).toEqual([{ phone: PHONE, token: CODE, type: "sms" }]);
+  });
+
+  it("asks for a name when the profile has none, which is the case for a new account", async () => {
+    const { deps, profileReads } = fakeClient({ profile: { fullName: null } });
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toEqual({
+      signedIn: true,
+      needsName: true,
+    });
+    expect(profileReads).toEqual([USER_ID]);
+  });
+
+  it("goes straight on when the profile already has a name", async () => {
+    const { deps } = fakeClient({ profile: { fullName: "Priya Raman" } });
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toEqual({
+      signedIn: true,
+      needsName: false,
+    });
+  });
+
+  it("does not hold a visitor up when the profile cannot be read", async () => {
+    const { deps } = fakeClient({ profile: null });
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toEqual({
+      signedIn: true,
+      needsName: false,
+    });
+  });
+
+  it("does not read a profile when Supabase named no user", async () => {
+    const { deps, profileReads } = fakeClient({ user: null });
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).resolves.toEqual({
+      signedIn: true,
+      needsName: false,
+    });
+    expect(profileReads).toEqual([]);
+  });
+
+  it("reads no profile when the code is refused", async () => {
+    const { deps, profileReads } = fakeClient({ error: { code: "otp_expired", status: 403 } });
+    await expect(confirmPhoneCode(deps, { phone: PHONE, code: CODE })).rejects.toBeDefined();
+    expect(profileReads).toEqual([]);
   });
 
   it("does not say the visitor is signed in when Supabase returned no session", async () => {
@@ -110,7 +163,7 @@ describe("UT-verify-phone-code: the action pipeline", () => {
     const { action, calls, rateLimitKeys, requests } = actionHarness();
     await expect(action({ phone: PHONE_AS_TYPED, code: CODE })).resolves.toEqual({
       ok: true,
-      data: { signedIn: true },
+      data: { signedIn: true, needsName: true },
     });
     expect(calls).toEqual(["rateLimit:otp_verify"]);
     expect(rateLimitKeys).toEqual([PHONE]);

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { classifyPhoneInput } from "@/lib/phone";
-import { CODE_LENGTH } from "./constants";
+import { CODE_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH } from "./constants";
 
 const PHONE_INVALID = "validation.phoneInvalid";
 const CODE_INVALID = "validation.codeInvalid";
@@ -48,3 +48,23 @@ export const verifyPhoneCodeSchema = z.object({
 });
 
 export type VerifyPhoneCodeInput = z.infer<typeof verifyPhoneCodeSchema>;
+
+/**
+ * What the name step sends: the name as typed. Spaces at the ends are dropped and runs of spaces
+ * become one, then it must be 2 to 80 characters with no control characters (ADD-04). Nothing here
+ * says whose profile it is: that is the signed-in user's, taken from the session (R-BE-03).
+ */
+export const saveProfileNameSchema = z.object({
+  name: z
+    .string({ error: "validation.nameTooShort" })
+    .transform((typed) => typed.trim().replace(/\s+/g, " "))
+    .pipe(
+      z
+        .string()
+        .min(NAME_MIN_LENGTH, { error: "validation.nameTooShort" })
+        .max(NAME_MAX_LENGTH)
+        .regex(/^[^\p{C}]*$/u, { error: "validation.invalid" }),
+    ),
+});
+
+export type SaveProfileNameInput = z.infer<typeof saveProfileNameSchema>;
