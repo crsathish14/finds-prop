@@ -24,7 +24,8 @@
 --     first page, and no plan, however forced, takes the order from an index (S4-SPK-01, ADR-012). Those
 --     four checks are printed, not gated; the p95 gate is what catches the cost when the table grows.
 --     The newest and price indexes do serve searches that have a filter (the radius searches choose
---     them); none of the 19 searches uses the area index.
+--     them); none of the first 19 searches uses the area index, so search 20 (buy apartment, largest)
+--     asks whether any search with a filter does.
 --   * That a visitor can use the place and keyword indexes: a visitor cannot (S4-SPK-01, ADR-012). The
 --     search runs under Row Level Security, which lets a visitor's filter into an index only if its
 --     operator is leakproof, and the PostGIS and text-search operators are not. The superuser, which
@@ -226,6 +227,11 @@ insert into spike_shapes (label, label_filter) values ('label prime', 'prime');
 insert into spike_shapes (label, label_filter) values ('label featured', 'featured');
 insert into spike_shapes (label, listing_type, property_type, bhk, max_price, lat, lng, radius, sort, page_size)
   values ('buy apartment 3 bhk under 80 lakh, within 10 km, price up, 24', 'sale', 'apartment', 3, 8000000, 13.0827, 80.2707, 10, 'price_asc', 24);
+-- Asks whether properties_search_area is ever of use: the "Largest" sort with a filter. Printed, not gated.
+-- If it is not usable here either, no search the app makes needs the index (R-DB-09) and it can be dropped.
+insert into spike_shapes (label, listing_type, property_type, sort, page_size, expect_index, gate_index, ungated_note)
+  values ('buy apartment, largest, 24', 'sale', 'apartment', 'area_desc', 24, 'properties_search_area', false,
+          'not usable (not gated; if this holds before launch, drop properties_search_area, ADR-012)');
 
 create temp table spike_results (
   id integer, label text, matches bigint, runs integer, p50_ms numeric, p95_ms numeric, max_ms numeric,
