@@ -9,7 +9,7 @@ import { sendPhoneCode } from "../actions";
 import { PhoneSignInScreen } from "../phone-sign-in-screen";
 
 // The action reaches the server and the widget reaches Cloudflare; the tests stand in for both.
-vi.mock("../actions", () => ({ sendPhoneCode: vi.fn() }));
+vi.mock("../actions", () => ({ sendPhoneCode: vi.fn(), verifyPhoneCode: vi.fn() }));
 const check = vi.hoisted(() => ({
   status: "verified" as "checking" | "verified" | "failed",
   token: "token-1" as string | null,
@@ -39,6 +39,7 @@ vi.mock("../human-check.client", async () => {
 });
 
 const words = en.auth.phone;
+const codeWords = en.auth.code;
 const send = vi.mocked(sendPhoneCode);
 const sendButton = () => screen.getByRole("button", { name: new RegExp(`^${words.send}$`) });
 const field = () => screen.getByLabelText(words.label);
@@ -48,7 +49,9 @@ function answer(result: ActionResult<{ resendAfter: number }>) {
 }
 
 function renderScreen(gate = false) {
-  return renderWithMessages(<PhoneSignInScreen siteKey="site-key" gate={gate} />);
+  return renderWithMessages(
+    <PhoneSignInScreen siteKey="site-key" gate={gate} redirectTo="/dashboard" />,
+  );
 }
 
 beforeEach(() => {
@@ -174,8 +177,8 @@ describe("phone sign-in: sending the code", () => {
     await userEvent.type(field(), "98765 43210");
     await userEvent.click(sendButton());
     expect(send).toHaveBeenCalledWith({ phone: "98765 43210", captchaToken: "token-1" });
-    expect(await screen.findByRole("heading", { level: 1, name: words.code.title })).toBeVisible();
-    expect(screen.getByText(words.code.sentTo.replace("{phone}", "+91 98••• ••210"))).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 1, name: codeWords.title })).toBeVisible();
+    expect(screen.getByText("+91 98••• ••210")).toBeVisible();
     expect(screen.queryByText(/9876543210/)).not.toBeInTheDocument();
   });
 
@@ -184,7 +187,7 @@ describe("phone sign-in: sending the code", () => {
     renderScreen();
     await userEvent.type(field(), "9876543210");
     await userEvent.click(sendButton());
-    await userEvent.click(await screen.findByRole("button", { name: words.code.changeNumber }));
+    await userEvent.click(await screen.findByRole("button", { name: codeWords.changeNumber }));
     expect(screen.getByRole("heading", { level: 1, name: words.title })).toBeInTheDocument();
   });
 
@@ -194,7 +197,7 @@ describe("phone sign-in: sending the code", () => {
     const before = check.mounts;
     await userEvent.type(field(), "9876543210");
     await userEvent.click(sendButton());
-    await userEvent.click(await screen.findByRole("button", { name: words.code.changeNumber }));
+    await userEvent.click(await screen.findByRole("button", { name: codeWords.changeNumber }));
     expect(check.mounts).toBeGreaterThan(before);
   });
 
