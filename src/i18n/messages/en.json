@@ -83,7 +83,10 @@
     "tooShort": "{minimum, plural, one {Use at least # character.} other {Use at least # characters.}}",
     "tooLong": "{maximum, plural, one {Use at most # character.} other {Use at most # characters.}}",
     "tooSmall": "Enter a value of {minimum} or more.",
-    "tooBig": "Enter a value of {maximum} or less."
+    "tooBig": "Enter a value of {maximum} or less.",
+    "phoneInvalid": "Enter a 10-digit mobile number that starts with 6, 7, 8 or 9.",
+    "phoneUnsupported": "We can only send codes to Indian (+91) mobile numbers right now.",
+    "captchaFailed": "We couldn't confirm you're a person. Check your connection and run the check again."
   },
   "format": {
     "rupees": "₹{value}",
