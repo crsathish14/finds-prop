@@ -10,7 +10,8 @@
 -- It prints one line per search: the time of 200 real calls (p50, p95, max), the indexes the plan
 -- chooses, whether that plan reads the whole table, whether the named index can serve the search, and
 -- a verdict. It fails (a non-zero exit) when a search is slower than the gate, or when a gated search
--- cannot use its named sort index. Three things it deliberately does not ask:
+-- cannot use its named index (no search is gated that way at present, see below). Four things it
+-- deliberately does not ask:
 --   * That the planner picks the named index by itself. At about 10,000 rows it may rightly prefer
 --     another plan, so the check is that the index CAN serve the search: the plan is asked again with
 --     full scans off, then with full scans and plain index scans off (leaving the bitmap scans a place
@@ -18,6 +19,12 @@
 --     scan a sort index gives). The natural plan is still printed.
 --   * That a search with no filter avoids reading the whole table. total_count is the number of every
 --     matching listing, so those searches must read them all; this grows with the table.
+--   * That the sort indexes (newest, price, area) can serve a search with no filter. They cannot:
+--     total_count is a window count, so the function reads and sorts every match before it returns the
+--     first page, and no plan, however forced, takes the order from an index (S4-SPK-01, ADR-012). Those
+--     four checks are printed, not gated; the p95 gate is what catches the cost when the table grows.
+--     The newest and price indexes do serve searches that have a filter (the radius searches choose
+--     them); none of the 19 searches uses the area index.
 --   * That a visitor can use the place and keyword indexes: a visitor cannot (S4-SPK-01, ADR-012). The
 --     search runs under Row Level Security, which lets a visitor's filter into an index only if its
 --     operator is leakproof, and the PostGIS and text-search operators are not. The superuser, which
@@ -178,7 +185,8 @@ where owner_id::text like '00000000-0000-4000-a000-%';
 
 -- 4. The searches. Each row is one search the app will make; expect_index names an index that should be
 -- able to serve it (only where one is clearly the right tool); gate_index says whether failing that
--- check fails the run (the place and keyword indexes are not gated, see the header).
+-- check fails the run (only searches whose index can serve them are gated; see the header for the rest,
+-- and ungated_note for what the result says in place of NOT USABLE).
 create temp table spike_shapes (
   id serial primary key,
   label text not null,
@@ -186,14 +194,15 @@ create temp table spike_shapes (
   locality text, lat double precision, lng double precision, radius double precision,
   west double precision, south double precision, east double precision, north double precision,
   q text, label_filter text, sort text not null default 'newest', page_size integer not null default 12,
-  expect_index text, gate_index boolean not null default true
+  expect_index text, gate_index boolean not null default true,
+  ungated_note text not null default 'not usable by a visitor (not gated, ADR-012)'
 );
-insert into spike_shapes (label, sort, page_size, expect_index) values
-  ('newest, no filter', 'newest', 12, 'properties_search_newest'),
-  ('price up, no filter', 'price_asc', 12, 'properties_search_price'),
-  ('price down, no filter', 'price_desc', 12, 'properties_search_price'),
-  ('largest, no filter', 'area_desc', 12, 'properties_search_area'),
-  ('largest page, newest, 120', 'newest', 120, null);
+insert into spike_shapes (label, sort, page_size, expect_index, gate_index, ungated_note) values
+  ('newest, no filter', 'newest', 12, 'properties_search_newest', false, 'not usable: total_count reads every match (not gated, ADR-012)'),
+  ('price up, no filter', 'price_asc', 12, 'properties_search_price', false, 'not usable: total_count reads every match (not gated, ADR-012)'),
+  ('price down, no filter', 'price_desc', 12, 'properties_search_price', false, 'not usable: total_count reads every match (not gated, ADR-012)'),
+  ('largest, no filter', 'area_desc', 12, 'properties_search_area', false, 'not usable: total_count reads every match (not gated, ADR-012)');
+insert into spike_shapes (label, sort, page_size) values ('largest page, newest, 120', 'newest', 120);
 insert into spike_shapes (label, listing_type) values ('buy, newest', 'sale');
 insert into spike_shapes (label, listing_type, property_type, bhk, max_price)
   values ('rent apartment 2 bhk under 30000', 'rent', 'apartment', 2, 30000);
@@ -351,7 +360,7 @@ begin
 
     -- A check that is printed, not gated (see the header): say so in the result instead of failing.
     if index_check = 'NOT USABLE' and not shape.gate_index then
-      index_check := 'not usable by a visitor (not gated, ADR-012)';
+      index_check := shape.ungated_note;
     end if;
 
     select percentile_cont(0.5) within group (order by ms),
