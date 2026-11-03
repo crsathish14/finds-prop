@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import { unstable_rethrow } from "next/navigation";
 import { AccountMenu, SignOutButton, getAccountSummary } from "@/features/auth";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
@@ -44,7 +45,9 @@ const ENTRY_ICONS: Record<AccountEntryKey, LucideIcon> = {
 async function readSession(): Promise<SessionView | null> {
   try {
     return await getSessionView();
-  } catch {
+  } catch (error) {
+    // Next.js ends a prerender by throwing from cookies(); that must reach Next.js, not be logged.
+    unstable_rethrow(error);
     logger.warn("the header could not read the session, showing the signed-out look");
     return null;
   }

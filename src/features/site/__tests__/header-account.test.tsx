@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import messages from "@/i18n/messages/en.json";
@@ -7,7 +8,7 @@ import type { SessionView } from "@/server/auth/session";
 
 const state = vi.hoisted(() => ({
   session: null as SessionView | null,
-  sessionFails: false,
+  sessionFailure: null as Error | null,
   summary: { fullName: "Priya Raman", email: "priya@example.com" } as {
     fullName: string | null;
     email: string | null;
@@ -21,7 +22,7 @@ const state = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/auth/get-session-view", () => ({
   getSessionView: async () => {
-    if (state.sessionFails) throw new Error("roles unreadable");
+    if (state.sessionFailure) throw state.sessionFailure;
     return state.session;
   },
 }));
@@ -84,7 +85,7 @@ async function renderDrawer() {
 
 beforeEach(() => {
   state.session = null;
-  state.sessionFails = false;
+  state.sessionFailure = null;
   state.summary = { fullName: "Priya Raman", email: "priya@example.com" };
   state.menu = [];
   state.drawer = [];
@@ -147,11 +148,24 @@ describe("HeaderAccountActions: the right side of the header", () => {
   });
 
   it("shows the signed-out look and logs when the roles cannot be read, instead of breaking the page", async () => {
-    state.sessionFails = true;
+    state.sessionFailure = new Error("roles unreadable");
     await renderActions();
     expect(screen.getByTestId("sign-in-link")).toHaveTextContent("Sign in");
     expect(state.warnings).toHaveLength(1);
     expect(JSON.stringify(state.warnings)).not.toContain("roles unreadable");
+  });
+});
+
+describe("HeaderAccountActions: errors that belong to Next.js", () => {
+  it("lets Next.js end a render itself instead of logging it and showing Sign in", async () => {
+    // Next.js ends a prerender, a redirect or a not-found by throwing; catching it breaks the page.
+    try {
+      redirect("/somewhere");
+    } catch (error) {
+      state.sessionFailure = error as Error;
+    }
+    await expect(HeaderAccountActions()).rejects.toBe(state.sessionFailure);
+    expect(state.warnings).toEqual([]);
   });
 });
 
