@@ -9,18 +9,23 @@
 --
 -- It prints one line per search: the time of 200 real calls (p50, p95, max), the indexes the plan
 -- chooses, whether that plan reads the whole table, whether the named index can serve the search, and
--- a verdict. It fails (a non-zero exit) when a search is slower than the gate, or when a search that
--- has a named index cannot use it. Two things it deliberately does not ask:
+-- a verdict. It fails (a non-zero exit) when a search is slower than the gate, or when a gated search
+-- cannot use its named sort index. Three things it deliberately does not ask:
 --   * That the planner picks the named index by itself. At about 10,000 rows it may rightly prefer
 --     another plan, so the check is that the index CAN serve the search: the plan is asked again with
---     full scans off (and, for the place and keyword indexes, with the plain index scans that follow
---     the sort order off too), and the natural plan is still printed.
+--     full scans off, then with full scans and plain index scans off (leaving the bitmap scans a place
+--     or keyword index gives), then with full scans and bitmap scans off (leaving the ordered index
+--     scan a sort index gives). The natural plan is still printed.
 --   * That a search with no filter avoids reading the whole table. total_count is the number of every
 --     matching listing, so those searches must read them all; this grows with the table.
+--   * That a visitor can use the place and keyword indexes: a visitor cannot (S4-SPK-01, ADR-012). The
+--     search runs under Row Level Security, which lets a visitor's filter into an index only if its
+--     operator is leakproof, and the PostGIS and text-search operators are not. The superuser, which
+--     Row Level Security does not apply to, does use them. These two checks are printed, not gated;
+--     the p95 gate is what catches the cost when the table grows.
 -- The plan is taken from the statement inside search_properties() itself, so it cannot drift.
--- It also prints a diagnosis (not a gate): for every search with a named index, whether that index is
--- in the plan as a visitor and as the superuser (no Row Level Security), and the plans themselves for
--- the first search of each index that a visitor could not use.
+-- The last table says, for every search with a named index, whether the index is in the plan as a
+-- visitor and as the superuser; the plans themselves are printed for a search whose verdict failed.
 
 \set ON_ERROR_STOP on
 \if :{?p95_limit}
@@ -171,8 +176,9 @@ select count(*) as listings_loaded,
 from public.properties
 where owner_id::text like '00000000-0000-4000-a000-%';
 
--- 4. The searches. Each row is one search the app will make; expect_index names an index that must be
--- able to serve it (only where one is clearly the right tool).
+-- 4. The searches. Each row is one search the app will make; expect_index names an index that should be
+-- able to serve it (only where one is clearly the right tool); gate_index says whether failing that
+-- check fails the run (the place and keyword indexes are not gated, see the header).
 create temp table spike_shapes (
   id serial primary key,
   label text not null,
@@ -180,7 +186,7 @@ create temp table spike_shapes (
   locality text, lat double precision, lng double precision, radius double precision,
   west double precision, south double precision, east double precision, north double precision,
   q text, label_filter text, sort text not null default 'newest', page_size integer not null default 12,
-  expect_index text
+  expect_index text, gate_index boolean not null default true
 );
 insert into spike_shapes (label, sort, page_size, expect_index) values
   ('newest, no filter', 'newest', 12, 'properties_search_newest'),
@@ -193,16 +199,16 @@ insert into spike_shapes (label, listing_type, property_type, bhk, max_price)
   values ('rent apartment 2 bhk under 30000', 'rent', 'apartment', 2, 30000);
 insert into spike_shapes (label, listing_type, property_type, sort, page_size)
   values ('buy villa, price up, 24', 'sale', 'villa', 'price_asc', 24);
-insert into spike_shapes (label, lat, lng, radius, expect_index)
-  values ('Chennai within 5 km', 13.0827, 80.2707, 5, 'properties_search_place');
+insert into spike_shapes (label, lat, lng, radius, expect_index, gate_index)
+  values ('Chennai within 5 km', 13.0827, 80.2707, 5, 'properties_search_place', false);
 insert into spike_shapes (label, lat, lng, radius, sort, page_size)
   values ('Chennai within 25 km, price up, 24', 13.0827, 80.2707, 25, 'price_asc', 24);
-insert into spike_shapes (label, lat, lng, radius, expect_index)
-  values ('Coimbatore within 10 km', 11.0168, 76.9558, 10, 'properties_search_place');
-insert into spike_shapes (label, west, south, east, north, expect_index)
-  values ('Chennai map box', 80.15, 12.98, 80.35, 13.15, 'properties_search_place');
-insert into spike_shapes (label, q, expect_index)
-  values ('keyword, a rare place (Srirangam)', 'Srirangam', 'properties_search_keyword');
+insert into spike_shapes (label, lat, lng, radius, expect_index, gate_index)
+  values ('Coimbatore within 10 km', 11.0168, 76.9558, 10, 'properties_search_place', false);
+insert into spike_shapes (label, west, south, east, north, expect_index, gate_index)
+  values ('Chennai map box', 80.15, 12.98, 80.35, 13.15, 'properties_search_place', false);
+insert into spike_shapes (label, q, expect_index, gate_index)
+  values ('keyword, a rare place (Srirangam)', 'Srirangam', 'properties_search_keyword', false);
 insert into spike_shapes (label, q) values ('keyword, a common word (villa)', 'villa');
 insert into spike_shapes (label, q, lat, lng, radius)
   values ('keyword and radius', 'Adyar', 13.0827, 80.2707, 10);
@@ -217,13 +223,13 @@ create temp table spike_results (
   indexes text, reads_whole_table boolean, index_check text, verdict text
 );
 
--- Why can a named index not serve a search? For each search with a named index, the same plan questions
--- are asked as a visitor and as the superuser (which Row Level Security does not apply to). v_ is the
--- visitor, s_ the superuser; the value says whether the named index is in the plan.
+-- Where is the named index used? For each search with a named index, the same plan questions are asked
+-- as a visitor and as the superuser (which Row Level Security does not apply to). v_ is the visitor, s_
+-- the superuser; as_chosen is the plan the planner picks, forced is any of the three forced plans (full
+-- scans off; plain index scans off too; bitmap scans off too). The value says whether the index is in it.
 create temp table spike_diagnosis (
   id integer, label text, expect_index text,
-  v_as_chosen boolean, v_seq_off boolean, v_index_off boolean,
-  s_as_chosen boolean, s_seq_off boolean, s_index_off boolean,
+  v_as_chosen boolean, v_forced boolean, s_as_chosen boolean, s_forced boolean,
   plans text
 );
 
@@ -295,12 +301,14 @@ begin
       else 'found.area_sqft desc nulls last, found.id'
     end;
     -- Probe 0 is the plan the planner chooses. Where the search has a named index that it did not
-    -- choose, ask again with full scans off (probe 1), then with the plain index scans off too (probe 2),
-    -- which leaves the bitmap scans of the place and keyword indexes as the way to the rows.
+    -- choose, ask again with full scans off (probe 1); then with the plain index scans off too (probe 2),
+    -- which leaves the bitmap scans of a place or keyword index; then with the bitmap scans off instead
+    -- (probe 3), which leaves the ordered index scan of a sort index. Without probe 3 the planner picks
+    -- a bitmap scan on the status index, and without probe 2 the newest-first index beats the place one.
     used_indexes := null;
     whole_table := null;
     index_check := null;
-    for probe in 0..2 loop
+    for probe in 0..3 loop
       exit when probe > 0 and (shape.expect_index is null or index_check <> 'NOT USABLE');
       if probe >= 1 then
         perform set_config('enable_seqscan', 'off', true);
@@ -308,6 +316,9 @@ begin
       if probe = 2 then
         perform set_config('enable_indexscan', 'off', true);
         perform set_config('enable_indexonlyscan', 'off', true);
+      end if;
+      if probe = 3 then
+        perform set_config('enable_bitmapscan', 'off', true);
       end if;
       execute 'explain (format json) ' || replace(template, '%1$s', order_clause)
         into plan
@@ -318,6 +329,7 @@ begin
       perform set_config('enable_seqscan', 'on', true);
       perform set_config('enable_indexscan', 'on', true);
       perform set_config('enable_indexonlyscan', 'on', true);
+      perform set_config('enable_bitmapscan', 'on', true);
 
       plan_text := plan::text;
       select string_agg(distinct hit[1], ', ' order by hit[1]) into probe_indexes
@@ -330,11 +342,17 @@ begin
             then 'chosen' else 'NOT USABLE' end;
         end if;
       elsif position(shape.expect_index in coalesce(probe_indexes, '')) > 0 then
-        index_check := case probe when 1 then 'usable, not chosen'
-          else 'usable, not chosen (plain index scans off too)' end;
+        index_check := case probe when 1 then 'usable, not chosen (full scans off)'
+          when 2 then 'usable, not chosen (plain index scans off too)'
+          else 'usable, not chosen (bitmap scans off too)' end;
       end if;
     end loop;
     execute 'reset role';
+
+    -- A check that is printed, not gated (see the header): say so in the result instead of failing.
+    if index_check = 'NOT USABLE' and not shape.gate_index then
+      index_check := 'not usable by a visitor (not gated, ADR-012)';
+    end if;
 
     select percentile_cont(0.5) within group (order by ms),
            percentile_cont(0.95) within group (order by ms)
@@ -346,7 +364,7 @@ begin
       problems := problems || format(' p95 %s ms is over the %s ms gate;', round(p95, 2), gate);
     end if;
     if index_check = 'NOT USABLE' then
-      problems := problems || format(' %s cannot serve this search, even with full scans off;', shape.expect_index);
+      problems := problems || format(' %s cannot serve this search, even when the planner is forced to use an index;', shape.expect_index);
     end if;
 
     insert into spike_results
@@ -354,10 +372,10 @@ begin
             round((select max(ms) from unnest(sample_ms) as ms), 2), used_indexes, whole_table,
             index_check, case when problems = '' then 'ok' else 'FAIL:' || problems end);
 
-    -- Diagnosis: the same three plan questions (as chosen; full scans off; plain index scans off too),
+    -- Where is the index used? The four plan questions above (as chosen, then the three forced ones),
     -- asked as a visitor (1) and as the superuser (2), with the plan text kept for the report below.
     if shape.expect_index is not null then
-      diag_hits := array[null, null, null, null, null, null]::boolean[];
+      diag_hits := array[null, null, null, null, null, null, null, null]::boolean[];
       diag_plans := '';
       for who in 1..2 loop
         if who = 1 then
@@ -365,13 +383,16 @@ begin
         else
           execute 'reset role';
         end if;
-        for probe in 0..2 loop
+        for probe in 0..3 loop
           if probe >= 1 then
             perform set_config('enable_seqscan', 'off', true);
           end if;
           if probe = 2 then
             perform set_config('enable_indexscan', 'off', true);
             perform set_config('enable_indexonlyscan', 'off', true);
+          end if;
+          if probe = 3 then
+            perform set_config('enable_bitmapscan', 'off', true);
           end if;
           plan_lines := '';
           for plan_line in execute 'explain ' || replace(template, '%1$s', order_clause)
@@ -385,17 +406,20 @@ begin
           perform set_config('enable_seqscan', 'on', true);
           perform set_config('enable_indexscan', 'on', true);
           perform set_config('enable_indexonlyscan', 'on', true);
-          diag_hits[(who - 1) * 3 + probe + 1] := position(shape.expect_index in plan_lines) > 0;
+          perform set_config('enable_bitmapscan', 'on', true);
+          diag_hits[(who - 1) * 4 + probe + 1] := position(shape.expect_index in plan_lines) > 0;
           diag_plans := diag_plans || format(E'-- as the %s, %s --\n%s',
             case who when 1 then 'visitor' else 'superuser' end,
-            case probe when 0 then 'plan as chosen' when 1 then 'full scans off' else 'plain index scans off too' end,
+            case probe when 0 then 'plan as chosen' when 1 then 'full scans off'
+              when 2 then 'plain index scans off too' else 'bitmap scans off too' end,
             plan_lines);
         end loop;
       end loop;
       execute 'reset role';
       insert into spike_diagnosis
-      values (shape.id, shape.label, shape.expect_index, diag_hits[1], diag_hits[2], diag_hits[3],
-              diag_hits[4], diag_hits[5], diag_hits[6], diag_plans);
+      values (shape.id, shape.label, shape.expect_index,
+              diag_hits[1], diag_hits[2] or diag_hits[3] or diag_hits[4],
+              diag_hits[5], diag_hits[6] or diag_hits[7] or diag_hits[8], diag_plans);
     end if;
   end loop;
 end
@@ -409,20 +433,21 @@ from spike_results order by id;
 
 \echo
 \echo 'Is the named index in the plan? v = as a visitor, s = as the superuser (no Row Level Security);'
-\echo 'as_chosen = the plan the planner picks, seq_off = full scans off, index_off = plain index scans off too:'
-select id, label, expect_index, v_as_chosen, v_seq_off, v_index_off, s_as_chosen, s_seq_off, s_index_off
+\echo 'as_chosen = the plan the planner picks, forced = any plan with full scans off and one more scan kind off:'
+select id, label, expect_index, v_as_chosen, v_forced, s_as_chosen, s_forced
 from spike_diagnosis order by id;
 
--- The plans, for the first search of each named index that a visitor could not serve.
+-- The plans, for the first failed search of each named index (nothing is printed when all pass).
 do $$
 declare
   d record;
 begin
   for d in
-    select distinct on (expect_index) id, label, expect_index, plans
-    from spike_diagnosis
-    where not (v_as_chosen or v_seq_off or v_index_off)
-    order by expect_index, id
+    select distinct on (g.expect_index) g.id, g.label, g.expect_index, g.plans
+    from spike_diagnosis as g
+    join spike_results as r on r.id = g.id
+    where r.verdict <> 'ok'
+    order by g.expect_index, g.id
   loop
     raise notice E'plans for "%" (named index %):\n%', d.label, d.expect_index, d.plans;
   end loop;
