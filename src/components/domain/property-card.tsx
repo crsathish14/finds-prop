@@ -97,13 +97,13 @@ function PropertyCard({
           "transition-[box-shadow,border-color] duration-(--dur) hover:border-line-strong hover:shadow-hover",
           "has-[a[data-stretched]:focus-visible]:outline-3 has-[a[data-stretched]:focus-visible]:outline-offset-3 has-[a[data-stretched]:focus-visible]:outline-primary",
           compared ? "border-primary outline-1 outline-primary" : "border-line",
-          list && "@2xl:flex-row",
+          list && "@xl:flex-row",
         )}
       >
         <div
           className={cn(
             "relative aspect-4/3 shrink-0 overflow-hidden bg-canvas-sunken",
-            list && "@2xl:aspect-auto @2xl:min-h-52 @2xl:w-2/5",
+            list && "@xl:aspect-auto @xl:min-h-52 @xl:w-2/5",
           )}
         >
           <CardCover
@@ -129,10 +129,7 @@ function PropertyCard({
         <div className="flex min-w-0 flex-1 flex-col">
           {/* In the list layout the heart sits at the card's right edge, so the text keeps clear of it. */}
           <div
-            className={cn(
-              "flex flex-1 flex-col gap-2 px-4 pt-4 pb-3",
-              list && "@2xl:p-5 @2xl:pr-14",
-            )}
+            className={cn("flex flex-1 flex-col gap-2 px-4 pt-4 pb-3", list && "@xl:p-5 @xl:pr-14")}
           >
             <div className="flex items-baseline justify-between gap-3">
               <PriceDisplay rupees={property.rupees} listingType={property.listingType} />
@@ -193,7 +190,7 @@ function PropertyCard({
             <div
               className={cn(
                 "relative z-20 flex items-center justify-between gap-3 border-t border-line py-1 pr-4 pl-4",
-                list && "@2xl:border-t-0 @2xl:px-5 @2xl:pb-3",
+                list && "@xl:border-t-0 @xl:px-5 @xl:pb-3",
               )}
             >
               {compare ?? <span />}
@@ -223,13 +220,13 @@ function PropertyCardSkeleton({
         data-slot="property-card-skeleton"
         className={cn(
           "flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface",
-          list && "@2xl:flex-row",
+          list && "@xl:flex-row",
         )}
       >
         <Skeleton
           className={cn(
             "aspect-4/3 w-full rounded-none",
-            list && "@2xl:aspect-auto @2xl:min-h-52 @2xl:w-2/5",
+            list && "@xl:aspect-auto @xl:min-h-52 @xl:w-2/5",
           )}
         />
         <div className="flex flex-1 flex-col gap-3 p-4">
