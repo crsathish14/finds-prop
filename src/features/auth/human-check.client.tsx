@@ -67,6 +67,8 @@ type HumanCheckProps = {
   onChange: (status: HumanCheckStatus, token: string | null) => void;
   /** "Try again": the parent gives this component a new key, which starts a fresh check. */
   onRetry: () => void;
+  /** Only the widget, with no status box: for a screen that shows the outcome in its own words. */
+  quiet?: boolean;
 };
 
 /**
@@ -75,7 +77,7 @@ type HumanCheckProps = {
  * visitor has to do something, so the usual case passes on its own. A token works once, so after
  * each use the parent remounts this component with a new key. Words come from en.json.
  */
-export function HumanCheck({ siteKey, onChange, onRetry }: HumanCheckProps) {
+export function HumanCheck({ siteKey, onChange, onRetry, quiet = false }: HumanCheckProps) {
   const translate = useTranslations("auth.phone");
   const container = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<HumanCheckStatus>(siteKey ? "checking" : "failed");
@@ -120,6 +122,8 @@ export function HumanCheck({ siteKey, onChange, onRetry }: HumanCheckProps) {
       if (widgetId !== undefined) api?.remove(widgetId);
     };
   }, [siteKey, onChange]);
+
+  if (quiet) return <div ref={container} />;
 
   return (
     <div className="flex flex-col gap-3">

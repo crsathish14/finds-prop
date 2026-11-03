@@ -23,6 +23,7 @@ function fakeClient(error: PhoneCodeError | null = null) {
       requests.push(credentials);
       return Promise.resolve({ error });
     },
+    verifyOtp: () => Promise.reject(new Error("sending a code never checks one")),
   };
   return { deps, requests };
 }

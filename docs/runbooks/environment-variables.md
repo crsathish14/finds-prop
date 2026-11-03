@@ -47,6 +47,8 @@ Changing `RATE_LIMIT_HMAC_SECRET` later only resets the visitor hashes, which is
 
 While `APP_ENV` is `dev`, phone codes go through the fake sender and Supabase's test numbers, so MSG91 does not block building or testing the screens.
 
+**Code lifetime (owner setting, each Supabase project).** The code screen says "Codes work for 5 minutes", so set the phone code expiry to **300 seconds** in the project's phone provider settings (the default is 3600). Supabase answers a wrong code and an expired one with the same error, so the screen calls a refused code "expired" only when five minutes have passed since it asked for one; with a longer expiry a code that is still valid could be called expired.
+
 **CAPTCHA on dev.** Turnstile is free and needs only a Cloudflare account (no domain on Cloudflare). For the dev project and `localhost`, Cloudflare publishes dummy keys that work on any hostname (see "Testing" in Cloudflare's Turnstile documentation): a dummy site key in `.env.local` and the matching dummy **secret** in the Supabase dashboard's CAPTCHA setting (provider Turnstile). A dummy token is accepted only by a dummy secret, so dummy keys must never reach staging or production. Without `NEXT_PUBLIC_TURNSTILE_SITE_KEY` the sign-in page shows "Check failed" and Send code stays off (it fails closed). For staging and production, create one real widget per environment with that environment's hostnames.
 
 ## Later and optional

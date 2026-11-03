@@ -7,7 +7,8 @@ Supabase makes the six digit code and calls our route `POST /api/auth/hooks/send
 - **Built and tested with fakes:** signature check (Standard Webhooks, constant time, five minute window), the +91 only rule, the MSG91 adapter with a 3 second limit, a fake sender for tests and local work.
 - **Not yet run against the real service.** The MSG91 request follows third-party client libraries (POST `/api/v5/otp` with `template_id`, `mobile` and `otp`; `authkey` header), because MSG91's own reference could not be read. It cannot send real codes until DLT approves the sender and the OTP template. Check the request against MSG91's current reference and one real send before launch.
 - **Built in the sign-in action (S3-T09, `src/features/auth/`):** `sendPhoneCode` asks Supabase for the code with the CAPTCHA token and applies the `otp_request` limits (5 per phone per hour, 20 per address per day), keyed on the normalised number. A number from another country is refused before any code is requested. The ADD-01 screen and the human-check widget are in the same slice.
-- **Not built yet:** entering the code and the `otp_verify` limit (the next S3-T09 step).
+- **Code entry (S3-T09, ADD-02):** `verifyPhoneCode` checks the six digits with the `otp_verify` limit (10 tries per phone per hour; every try counts) and a good code puts the session in the visitor's cookies. The screen has the resend timer (60 seconds, with a fresh human-check token) and the wrong, expired, locked and unavailable states.
+- **Not built yet:** the name step (ADD-04), email verification (ADD-03) and sign-out.
 
 ## Behaviour per environment
 

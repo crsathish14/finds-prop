@@ -2,14 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  Fragment,
-  useCallback,
-  useState,
-  useTransition,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { useCallback, useState, useTransition, type FormEvent } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import { PhoneField } from "@/components/patterns/phone-field";
@@ -19,9 +12,12 @@ import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
-import { classifyPhoneInput, maskIndianMobile, typedDialCode } from "@/lib/phone";
+import { classifyPhoneInput, typedDialCode } from "@/lib/phone";
 import { sendPhoneCode } from "./actions";
+import { AuthAside } from "./auth-aside";
+import { CodeEntry } from "./code-entry.client";
 import { HumanCheck, type HumanCheckStatus } from "./human-check.client";
+import { marker, withLinks } from "./with-links";
 
 type Problem =
   | "invalid"
@@ -34,21 +30,9 @@ type PhoneSignInProps = {
   siteKey: string | undefined;
   /** The visitor was sent here by an action that needs an account (?gate=enquire). */
   gate: boolean;
+  /** Where to go once signed in: an address the page has already checked (BR-06). */
+  redirectTo: string;
 };
-
-// No message in en.json contains this, so a marker is never mistaken for the visitor's words.
-const MARKER = "%%";
-const marker = (name: string) => `${MARKER}${name}${MARKER}`;
-
-/**
- * A sentence that holds links stays one message with named variables (ADR-035: whole sentences, no
- * HTML). The page passes each variable as a marker, and the markers are swapped for the links here.
- */
-function withLinks(sentence: string, links: Record<string, ReactNode>): ReactNode[] {
-  return sentence
-    .split(new RegExp(`${MARKER}([A-Za-z]+)${MARKER}`))
-    .map((part, index) => (index % 2 === 1 ? <Fragment key={part}>{links[part]}</Fragment> : part));
-}
 
 function minutesToWait(retryAfter: number | undefined): number {
   return Math.max(1, Math.ceil((retryAfter ?? 600) / 60));
@@ -60,7 +44,7 @@ function minutesToWait(retryAfter: number | undefined): number {
  * server, which also applies the limits (R-BE-03). Once a code is sent the card moves to the code
  * step; the number itself is kept in this component and never goes into the address (R-BE-10).
  */
-export function PhoneSignIn({ siteKey, gate }: PhoneSignInProps) {
+export function PhoneSignIn({ siteKey, gate, redirectTo }: PhoneSignInProps) {
   const translate = useTranslations("auth.phone");
   const translateValidation = useTranslations("validation");
   const [phone, setPhone] = useState("");
@@ -68,7 +52,9 @@ export function PhoneSignIn({ siteKey, gate }: PhoneSignInProps) {
   const [token, setToken] = useState<string | null>(null);
   const [checkFailed, setCheckFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [sent, setSent] = useState<{ phone: string; sentAt: number; resendAfter: number } | null>(
+    null,
+  );
   const [pending, startTransition] = useTransition();
 
   const handleCheck = useCallback((status: HumanCheckStatus, nextToken: string | null) => {
@@ -98,7 +84,11 @@ export function PhoneSignIn({ siteKey, gate }: PhoneSignInProps) {
       const result = await sendPhoneCode({ phone, captchaToken: token });
       startNewCheck();
       if (result.ok) {
-        setSentTo(checked.e164);
+        setSent({
+          phone: checked.e164,
+          sentAt: Date.now(),
+          resendAfter: result.data.resendAfter,
+        });
         return;
       }
       const phoneKey = result.fieldErrors?.phone?.[0]?.key;
@@ -111,26 +101,12 @@ export function PhoneSignIn({ siteKey, gate }: PhoneSignInProps) {
     });
   }
 
-  if (sentTo) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Heading as="h1" size="2">
-          {translate("code.title")}
-        </Heading>
-        <Text variant="lead">{translate("code.sentTo", { phone: maskIndianMobile(sentTo) })}</Text>
-        <Button variant="ghost" className="self-start" onClick={() => setSentTo(null)}>
-          {translate("code.changeNumber")}
-        </Button>
-      </div>
-    );
-  }
-
   const rateLimited = typeof problem === "object" && problem !== null;
   const phoneProblem = problem === "invalid" || problem === "unsupported" ? problem : null;
   const dialCode = problem === "unsupported" ? typedDialCode(phone) : null;
   const canSend = token !== null && !rateLimited && !pending;
 
-  return (
+  const phoneStep = (
     <div className="flex flex-col gap-4">
       <div>
         <Heading as="h1" size="2">
@@ -246,6 +222,28 @@ export function PhoneSignIn({ siteKey, gate }: PhoneSignInProps) {
           {translate("backLink")}
         </Link>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <AuthAside step={sent ? "code" : "phone"} />
+      <section className="grid place-items-center">
+        <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card md:p-8">
+          {sent ? (
+            <CodeEntry
+              phone={sent.phone}
+              sentAt={sent.sentAt}
+              resendAfter={sent.resendAfter}
+              siteKey={siteKey}
+              redirectTo={redirectTo}
+              onChangeNumber={() => setSent(null)}
+            />
+          ) : (
+            phoneStep
+          )}
+        </div>
+      </section>
     </div>
   );
 }
