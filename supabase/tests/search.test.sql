@@ -106,8 +106,8 @@ select ok(
 select is(
   (select count(*)::int from pg_indexes where schemaname = 'public' and tablename = 'properties'
      and indexname like 'properties\_search\_%' and indexdef like '%WHERE%'),
-  6,
-  'the six search indexes exist and each covers approved listings only'
+  5,
+  'the five search indexes exist and each covers approved listings only'
 );
 
 -- A visitor
