@@ -252,6 +252,27 @@ test.describe("@smoke site footer and bottom bar", () => {
     expect(footerBottom).toBeLessThanOrEqual(barTop + 1);
   });
 
+  test("a missing page keeps the header and footer around the not-found message", async ({
+    page,
+  }) => {
+    // /ai-search does not exist while its flag is off, so the page calls notFound().
+    const response = await page.goto("/ai-search");
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
+    await expect(page.getByRole("link", { name: en.common.goHome })).toBeVisible();
+  });
+
+  test("a URL that matches no page at all still shows the plain not-found screen", async ({
+    page,
+  }) => {
+    // global-not-found has no layout and no language context in this Next.js version.
+    await page.goto("/this-page-does-not-exist");
+    await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
+    await expect(page.getByRole("banner")).toHaveCount(0);
+  });
+
   test("from 768 px there is no bottom bar", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 800 });
     await page.goto("/");

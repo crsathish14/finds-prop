@@ -78,7 +78,9 @@ The layout components of the `ds-navigation` board are mounted by the route grou
 | `(quiet)`   | administrator sign-in (ADD-06)                                                     | yes                                          | no     | no                                                                                  |
 | `(portal)`  | admin and builder portals                                                          | the portal shell (S7), not the public header | no     | no                                                                                  |
 
-Not yet built: the header and footer on the not-found and error pages, the notification bell (Proposed), and the saved and enquiry counts (Stage 5).
+Pages that call `notFound()` or fail while they render show the header and footer around the message (a `not-found.tsx` and `error.tsx` in each group), and the phone bottom bar, which error pages ask for because they keep the address of the page that failed. A URL that matches no route at all shows the plain not-found screen (`global-not-found`), which has no layout in this Next.js version.
+
+Not yet built: the notification bell (Proposed), and the saved and enquiry counts (Stage 5).
 
 ## Addendum screens
 
