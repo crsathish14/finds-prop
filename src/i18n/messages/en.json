@@ -18,6 +18,48 @@
     "tagline": "Homes, plots and new projects in Tamil Nadu. We are getting ready."
   },
   "auth": {
+    "phone": {
+      "roleTag": "Find Prop",
+      "asideTitle": "Find the place that fits your life.",
+      "asideEmphasis": "your life",
+      "benefitShortlist": "Shortlist the homes you like",
+      "benefitCompare": "Compare up to three side by side",
+      "benefitEnquire": "Enquire directly with owners and builders",
+      "benefitPost": "Post your own property",
+      "title": "Sign in or create your account",
+      "lead": "Enter your mobile number and we'll text you a 6-digit code. New to Find Prop? We'll set up your account.",
+      "gateTitle": "Sign in to contact the owner",
+      "gateBody": "We will take you straight back to the home you were viewing.",
+      "label": "Mobile number",
+      "placeholder": "98765 43210",
+      "hint": "Indian mobile numbers only for now. We use it to sign you in.",
+      "send": "Send code",
+      "sending": "Sending code",
+      "consent": "By continuing you agree to our {terms} and {privacy}. We'll send you one text message; your carrier may charge for it.",
+      "termsLink": "Terms",
+      "privacyLink": "Privacy Policy",
+      "builderPrompt": "Are you a builder? {signIn}",
+      "builderLink": "Sign in with your invitation",
+      "backLink": "Back to home",
+      "rateLimitedTitle": "Too many codes requested",
+      "rateLimitedBody": "{minutes, plural, one {For your security, please try again in # minute.} other {For your security, please try again in # minutes.}}",
+      "unavailableTitle": "We can't send codes right now",
+      "unavailableBody": "Nothing is wrong with your number. Please try again in a few minutes.",
+      "tryAgain": "Try again",
+      "captchaFailedTitle": "We couldn't confirm you're a person",
+      "captchaFailedBody": "Check your connection and run the check again.",
+      "check": {
+        "label": "Security check",
+        "verified": "Verified",
+        "checking": "Checking that you're a person…",
+        "failed": "Check failed"
+      },
+      "code": {
+        "title": "Enter the 6-digit code",
+        "sentTo": "We sent a text message to {phone}.",
+        "changeNumber": "Change number"
+      }
+    },
     "staff": {
       "google": "Continue with Google",
       "googleOpening": "Opening Google",

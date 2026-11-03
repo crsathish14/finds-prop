@@ -160,6 +160,8 @@ test.describe("@smoke text origin", () => {
     "/builder/login",
     "/builder/login?denied=1",
     "/admin/login",
+    "/auth",
+    "/auth?gate=enquire",
   ]) {
     test(`all visible text on ${route} comes from en.json`, async ({ page }) => {
       await page.goto(route);

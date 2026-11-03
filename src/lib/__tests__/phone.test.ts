@@ -1,5 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { classifyPhoneInput, normaliseIndianMobile, phoneDigits } from "../phone";
+import {
+  classifyPhoneInput,
+  maskIndianMobile,
+  normaliseIndianMobile,
+  phoneDigits,
+  typedDialCode,
+} from "../phone";
+
+describe("maskIndianMobile", () => {
+  it("shows the first two and last three digits", () => {
+    expect(maskIndianMobile("+919876543210")).toBe("+91 98••• ••210");
+  });
+
+  it("shows nothing of a value that is not a normalised number", () => {
+    expect(maskIndianMobile("9876543210")).toBe("+91 ••••• •••••");
+  });
+});
+
+describe("typedDialCode", () => {
+  it.each([
+    ["+44 7700 900123", "+44"],
+    ["0044 7911 123456", "+44"],
+    ["+971 50 123 4567", "+971"],
+    ["+1 (415) 555-2671", "+1"],
+    ["+1", "+1"],
+    ["+14155552671", "+"], // no space: the code cannot be told from the number
+    ["+447700900123", "+"],
+  ])("reads %s as %s", (input, expected) => {
+    expect(typedDialCode(input)).toBe(expected);
+  });
+});
 
 describe("classifyPhoneInput", () => {
   it.each([

@@ -44,3 +44,19 @@ export function classifyPhoneInput(input: string): PhoneInputCheck {
   const e164 = normaliseIndianMobile(digits);
   return e164 ? { kind: "valid", e164 } : { kind: "invalid" };
 }
+
+/** "+919876543210" becomes "+91 98••• ••210": enough to recognise the number, not to read it out. */
+export function maskIndianMobile(e164: string): string {
+  const match = /^\+91(\d{2})\d{5}(\d{3})$/.exec(e164);
+  return match ? `+91 ${match[1]}••• ••${match[2]}` : "+91 ••••• •••••";
+}
+
+/**
+ * The country code someone typed before a number from another country, for the prefix tab of the
+ * field ("+44 7700 900123" gives "+44"). A code with no space after it cannot be told from the
+ * number, so the tab shows only "+".
+ */
+export function typedDialCode(input: string): string {
+  const match = /^\s*(?:\+|00)(\d{1,3})(?=[\s\-(.]|$)/.exec(input);
+  return match ? `+${match[1]}` : "+";
+}
