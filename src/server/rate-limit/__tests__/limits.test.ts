@@ -10,6 +10,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
   it("holds exactly the agreed scopes", () => {
     expect([...RATE_LIMIT_SCOPES].sort()).toEqual(
       [
+        "email_link",
         "enquiry",
         "form_submit",
         "listing_create",
@@ -43,6 +44,13 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     expect(RATE_LIMITS.staff_sign_in).toEqual([
       { who: "visitor", windowSeconds: 600, max: 10 },
       { who: "ip", windowSeconds: 3600, max: 30 },
+    ]);
+  });
+
+  it("limits verification emails per user and per address (owner decision, 3 Nov 2026)", () => {
+    expect(RATE_LIMITS.email_link).toEqual([
+      { who: "user", windowSeconds: 3600, max: 5 },
+      { who: "ip", windowSeconds: 86400, max: 20 },
     ]);
   });
 

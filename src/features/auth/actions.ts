@@ -3,7 +3,16 @@
 import { defineAction } from "@/server/actions/define-action";
 import { createServerSupabase } from "@/server/supabase/server";
 import { ActionError } from "@/server/actions/normalise-error";
-import { saveProfileNameConfig, sendPhoneCodeConfig, verifyPhoneCodeConfig } from "./action-config";
+import { publicEnv } from "@/lib/public-env";
+import { AUTH_CONFIRM_PATH } from "@/lib/url/language-free";
+import {
+  addEmailConfig,
+  resendEmailLinkConfig,
+  saveProfileNameConfig,
+  sendPhoneCodeConfig,
+  verifyPhoneCodeConfig,
+} from "./action-config";
+import { addEmailAddress, resendEmailAddress } from "./email-service";
 import { updateProfileName } from "./profile-service";
 import { confirmPhoneCode, requestPhoneCode } from "./service";
 
@@ -69,4 +78,32 @@ export const saveProfileName = defineAction({
       input,
     );
   },
+});
+
+async function emailLinkClient() {
+  const supabase = await createServerSupabase();
+  return {
+    updateEmail: (email: string) =>
+      supabase.auth.updateUser(
+        { email },
+        // Only used if the project's email template still has the default link; ours points at the same page.
+        { emailRedirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}${AUTH_CONFIRM_PATH}` },
+      ),
+    resendEmail: (email: string) => supabase.auth.resend({ type: "email_change", email }),
+  };
+}
+
+/**
+ * Attaches an email to the signed-in customer's account; Supabase sends the single-use link. The
+ * account is the session's, and the limits apply before any email is sent (R-BE-01, R-BE-03, R-BE-08).
+ */
+export const addEmail = defineAction({
+  ...addEmailConfig,
+  handler: async ({ input }) => addEmailAddress(await emailLinkClient(), input),
+});
+
+/** Sends the link again for the address the visitor already entered. It counts against the same limits. */
+export const resendEmailLink = defineAction({
+  ...resendEmailLinkConfig,
+  handler: async ({ input }) => resendEmailAddress(await emailLinkClient(), input),
 });

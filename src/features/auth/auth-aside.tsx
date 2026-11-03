@@ -1,4 +1,13 @@
-import { Building2, Columns2, Heart, Lock, MessageCircle, ShieldCheck } from "lucide-react";
+import {
+  Bell,
+  Building2,
+  Columns2,
+  Heart,
+  Lock,
+  Mail,
+  MessageCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Heading } from "@/components/ui/heading";
 import { Icon, type LucideIcon } from "@/components/ui/icon";
@@ -16,12 +25,17 @@ function TitleWithEmphasis({ title, emphasis }: { title: string; emphasis: strin
   );
 }
 
+export type AuthStep = "phone" | "code" | "email";
+
 /**
- * The panel beside the card on the customer sign-in page, for large screens only: one text for the
- * number step (ADD-01) and one for the code step (ADD-02). Words come from en.json.
+ * The panel beside the card on the customer sign-in page, for large screens only: one text for each
+ * step (ADD-01 number, ADD-02 code, ADD-03 email). Words come from en.json.
  */
-export function AuthAside({ step }: { step: "phone" | "code" }) {
-  const translate = useTranslations(step === "phone" ? "auth.phone" : "auth.code");
+
+export function AuthAside({ step }: { step: AuthStep }) {
+  const translate = useTranslations(
+    step === "phone" ? "auth.phone" : step === "code" ? "auth.code" : "auth.email",
+  );
   const benefits: { icon: LucideIcon; text: string }[] =
     step === "phone"
       ? [
@@ -30,11 +44,17 @@ export function AuthAside({ step }: { step: "phone" | "code" }) {
           { icon: MessageCircle, text: translate("benefitEnquire") },
           { icon: Building2, text: translate("benefitPost") },
         ]
-      : [
-          { icon: ShieldCheck, text: translate("benefitPrivate") },
-          { icon: MessageCircle, text: translate("benefitOwners") },
-          { icon: Lock, text: translate("benefitNoPassword") },
-        ];
+      : step === "code"
+        ? [
+            { icon: ShieldCheck, text: translate("benefitPrivate") },
+            { icon: MessageCircle, text: translate("benefitOwners") },
+            { icon: Lock, text: translate("benefitNoPassword") },
+          ]
+        : [
+            { icon: Bell, text: translate("benefitUpdates") },
+            { icon: Mail, text: translate("benefitSecond") },
+            { icon: Building2, text: translate("benefitPost") },
+          ];
   return (
     <aside
       aria-label={translate("roleTag")}

@@ -66,6 +66,18 @@ After a good code, `verifyPhoneCode` reads the visitor's own profile through the
 
 The UX's "Skip for now" goes to the page the visitor was headed for (the UX draws a link to the home page, which would lose where they were going). The "post" and "enquire" wordings of the same card are built and tested, but nothing opens them yet: the posting and enquiry features will, with the rule that a name is required before posting or enquiring.
 
-Not built yet: email verification and `/auth/confirm` (ADD-03), and sign-out.
+Not built yet at that point: email verification and `/auth/confirm` (ADD-03), and sign-out.
+
+## Email verification, built 3 Nov 2026 (S3-T09, ADD-03)
+
+A new account is offered "Add your email" after the name step (owner decision, 3 Nov 2026); returning visitors are not asked at sign-in and will get the dashboard prompt when that page is built (S5-T04). A visitor may skip: only posting needs a verified email (DEC-07). `addEmail` is a `defineAction` for a signed-in customer with a verified phone. It calls `updateUser({ email })`, which for a phone-only account is an email change, so Supabase sends a single-use link and marks the email confirmed only when the link is followed; the database trigger then copies `email_confirmed_at` to `profiles.email_verified_at` (no migration). `resendEmailLink` calls `resend` for an email change. Both run under a new `email_link` limit (5 per user per hour and 20 per address per day, owner decision), and a resend counts like the first send. Every reason an address cannot be used gives the same "We couldn't use that email" answer, so nobody can learn whose address it is.
+
+`GET /auth/confirm` (outside the language routing, like `/auth/callback`) accepts only `type=email_change` with a well-formed token hash, calls `verifyOtp`, and redirects to `/auth?email=verified` or `/auth?email=expired`. Every failure, including a missing or malformed token, is the same expired page. `/auth` shows the verified page only to a visitor whose session carries the email (otherwise a stale link just shows sign-in) and shows the expired page to anyone; a signed-in visitor can ask for a new link on the same card, anyone else is sent to sign in first.
+
+Risks reviewed, not removed: following the link signs that browser in as the account (Supabase's behaviour for this link type), which is no more than the mailbox owner could do; some email scanners open links ahead of the visitor and use the link up, which shows as "expired or already used" (the UX has that state); a phone customer cannot confirm an administrator's or an invited builder's address without that mailbox, and Supabase refuses an address another account already holds. I have not seen what the live project returns for an address in use, so the "taken" state is built from the documented error codes.
+
+The unbuilt states: the UX has no separate rate-limited or service-unavailable state for email, so those use the shared error wording in an alert. The dashboard prompt, reminder and posting gate (the second ADD-03 screen) are built with the dashboard (S5-T04) and posting (S6).
+
+Not built yet: sign-out.
 
 ## Open questions

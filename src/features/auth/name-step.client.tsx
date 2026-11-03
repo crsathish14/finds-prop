@@ -15,7 +15,6 @@ import { cn } from "@/lib/cn";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { saveProfileName } from "./actions";
 import { NAME_MAX_LENGTH, NAME_MIN_LENGTH } from "./constants";
-import { goTo } from "./navigate";
 
 /**
  * Why the visitor is being asked: right after a first sign-in ("signup"), or because they tried to
@@ -26,8 +25,8 @@ export type NameReason = "signup" | "post" | "enquire";
 
 type NameStepProps = {
   reason: NameReason;
-  /** Where to go once the name is saved, or skipped: an address the page has already checked (BR-06). */
-  redirectTo: string;
+  /** Called once the name is saved, or skipped: the page decides what comes next. */
+  onDone: () => void;
 };
 
 /**
@@ -36,7 +35,7 @@ type NameStepProps = {
  * session. A name is never needed to browse, so after a sign-in the visitor may skip it and will be
  * asked again before posting or enquiring. Words come from en.json.
  */
-export function NameStep({ reason, redirectTo }: NameStepProps) {
+export function NameStep({ reason, onDone }: NameStepProps) {
   const translate = useTranslations("auth.name");
   // The same cast the helper's own test uses: next-intl's strict translator type is wider than Translator.
   const translateAll = useTranslations() as unknown as Translator;
@@ -60,9 +59,9 @@ export function NameStep({ reason, redirectTo }: NameStepProps) {
     startTransition(async () => {
       const result = await saveProfileName({ name });
       if (result.ok) {
-        // Stay in the busy state until the browser has left the page.
+        // Stay in the busy state until the page has moved on.
         setSaved(true);
-        goTo(redirectTo);
+        onDone();
         return;
       }
       const fieldError = result.fieldErrors?.name?.[0];
@@ -131,7 +130,7 @@ export function NameStep({ reason, redirectTo }: NameStepProps) {
 
       {asked ? (
         <div className="flex flex-col items-center gap-1 text-center">
-          <Button variant="ghost" onClick={() => goTo(redirectTo)} disabled={busy}>
+          <Button variant="ghost" onClick={onDone} disabled={busy}>
             {translate("skip")}
           </Button>
           <Text variant="caption" tone="muted">

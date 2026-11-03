@@ -6,16 +6,14 @@ import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { saveProfileName } from "../actions";
-import { goTo } from "../navigate";
 import { NameStep, type NameReason } from "../name-step.client";
 
-// The action reaches the server and goTo leaves the page; the tests stand in for both.
+// The action reaches the server; the test stands in for it.
 vi.mock("../actions", () => ({ saveProfileName: vi.fn() }));
-vi.mock("../navigate", () => ({ goTo: vi.fn() }));
 
 const words = en.auth.name;
 const save = vi.mocked(saveProfileName);
-const go = vi.mocked(goTo);
+const onDone = vi.fn();
 
 const field = () => screen.getByLabelText(new RegExp(words.label));
 const continueButton = () => screen.getByRole("button", { name: new RegExp(`^${words.save}$`) });
@@ -25,7 +23,7 @@ function answer(result: ActionResult<{ name: string }>) {
 }
 
 function renderName(reason: NameReason = "signup") {
-  return renderWithMessages(<NameStep reason={reason} redirectTo="/properties/home-1" />);
+  return renderWithMessages(<NameStep reason={reason} onDone={onDone} />);
 }
 
 beforeEach(() => {
@@ -54,7 +52,7 @@ describe("name step: after the first sign-in (ADD-04)", () => {
     renderName();
     expect(screen.getByText(words.askAgain)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: words.skip }));
-    expect(go).toHaveBeenCalledWith("/properties/home-1");
+    expect(onDone).toHaveBeenCalledOnce();
     expect(save).not.toHaveBeenCalled();
   });
 });
@@ -94,13 +92,13 @@ describe("name step: the name", () => {
     expect(screen.queryByText(en.validation.nameTooShort)).not.toBeInTheDocument();
   });
 
-  it("saves the name as typed, then goes on to where the visitor was headed", async () => {
+  it("saves the name as typed, then hands over to the next step", async () => {
     answer({ ok: true, data: { name: "Priya Raman" } });
     renderName();
     await userEvent.type(field(), "Priya Raman");
     await userEvent.click(continueButton());
     expect(save).toHaveBeenCalledWith({ name: "Priya Raman" });
-    await waitFor(() => expect(go).toHaveBeenCalledWith("/properties/home-1"));
+    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
   });
 
   it("shows Saving, and turns the field and Skip off, while it waits", async () => {
@@ -114,7 +112,7 @@ describe("name step: the name", () => {
     expect(screen.getByRole("button", { name: words.skip })).toBeDisabled();
     expect(save).toHaveBeenCalledOnce();
     finish({ ok: true, data: { name: "Priya Raman" } });
-    await waitFor(() => expect(go).toHaveBeenCalled());
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
   });
 
   it("shows the server's verdict on the name, in words from en.json", async () => {
@@ -127,7 +125,7 @@ describe("name step: the name", () => {
     await userEvent.type(field(), "Priya Raman");
     await userEvent.click(continueButton());
     expect(await screen.findByText("Use at most 80 characters.")).toBeInTheDocument();
-    expect(go).not.toHaveBeenCalled();
+    expect(onDone).not.toHaveBeenCalled();
   });
 
   it("keeps the name and says something went wrong when saving fails", async () => {
@@ -138,7 +136,7 @@ describe("name step: the name", () => {
     expect(await screen.findByText(en.errors.INTERNAL)).toBeInTheDocument();
     expect(field()).toHaveValue("Priya Raman");
     expect(await screen.findByRole("button", { name: words.save })).toBeEnabled();
-    expect(go).not.toHaveBeenCalled();
+    expect(onDone).not.toHaveBeenCalled();
   });
 
   it("says the visitor must sign in when the session is gone", async () => {

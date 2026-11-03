@@ -43,3 +43,47 @@ test.describe("@smoke phone sign-in page", () => {
     await expect(page.getByText(words.gateBody)).toBeVisible();
   });
 });
+
+// S3-T09: the email link (ADD-03). A real link needs a signed-in session and the dev project's email,
+// so that is checked by hand; here we check what a browser sees without either, and that the link
+// route refuses a missing or malformed token without asking Supabase.
+const emailWords = en.auth.email;
+
+test.describe("@smoke email link", () => {
+  test("shows the expired page to a visitor who is not signed in", async ({ page }) => {
+    await page.goto("/auth?email=expired");
+    await expect(
+      page.getByRole("heading", { level: 1, name: emailWords.expiredTitle }),
+    ).toBeVisible();
+    await expect(page.getByText(emailWords.expiredBody)).toBeVisible();
+    await expect(page.getByRole("button", { name: emailWords.newLink })).toBeVisible();
+    await expect(page.getByRole("button", { name: emailWords.dashboard })).toBeVisible();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("shows the sign-in page, not a thank-you, for a stale verified link", async ({ page }) => {
+    await page.goto("/auth?email=verified");
+    await expect(page.getByRole("heading", { level: 1, name: words.title })).toBeVisible();
+    await expect(page.getByText(emailWords.verifiedTitle)).toHaveCount(0);
+  });
+
+  test("ignores an unknown ?email= value", async ({ page }) => {
+    await page.goto("/auth?email=hacked");
+    await expect(page.getByRole("heading", { level: 1, name: words.title })).toBeVisible();
+  });
+
+  for (const query of [
+    "",
+    "?token_hash=short&type=email_change",
+    "?token_hash=abcdefghij0123456789&type=recovery",
+    "?token_hash=abc%20def%3Cscript%3E12345&type=email_change",
+  ]) {
+    test(`/auth/confirm${query || " with nothing"} lands on the expired page`, async ({ page }) => {
+      await page.goto(`/auth/confirm${query}`);
+      await expect(page).toHaveURL(/\/auth\?email=expired$/);
+      await expect(
+        page.getByRole("heading", { level: 1, name: emailWords.expiredTitle }),
+      ).toBeVisible();
+    });
+  }
+});

@@ -51,6 +51,17 @@ While `APP_ENV` is `dev`, phone codes go through the fake sender and Supabase's 
 
 **CAPTCHA on dev.** Turnstile is free and needs only a Cloudflare account (no domain on Cloudflare). For the dev project and `localhost`, Cloudflare publishes dummy keys that work on any hostname (see "Testing" in Cloudflare's Turnstile documentation): a dummy site key in `.env.local` and the matching dummy **secret** in the Supabase dashboard's CAPTCHA setting (provider Turnstile). A dummy token is accepted only by a dummy secret, so dummy keys must never reach staging or production. Without `NEXT_PUBLIC_TURNSTILE_SITE_KEY` the sign-in page shows "Check failed" and Send code stays off (it fails closed). For staging and production, create one real widget per environment with that environment's hostnames.
 
+## Email verification (owner settings, each Supabase project)
+
+Customers verify an email with a single-use link that Supabase sends and `/auth/confirm` finishes (S3-T09, ADD-03). None of this is an environment variable; all of it is set in the Supabase dashboard, and the email step cannot be tried live until it is done.
+
+1. **A sender that can reach real addresses.** As I understand Supabase's documentation, its built-in email sender is for trying things out: it is tightly limited and, on a hosted project, reaches only the project team's own addresses. Set up custom SMTP (Resend, per the accounts checklist). Without a verified domain Resend delivers only to the account owner's own address, which is enough to test with. Check the current rules in Supabase's and Resend's documentation.
+2. **The "Change email address" template.** A customer adds an email to a phone account, which Supabase treats as an email change. Make its link `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change`. With the default link the visitor lands on the expired page.
+3. **Site URL and redirect list.** The Site URL is the deployment's stable address, and `https://<address>/auth/confirm` is in the redirect list (the local `config.toml` already has the localhost one).
+4. **Link lifetime.** The screen says "The link works for 1 hour"; Supabase's email link expiry is 3600 seconds by default, which matches. If you change it, change the screen text too (it is still marked "Duration to confirm").
+
+The app limits emails itself: 5 per user per hour and 20 per address per day (the `email_link` scope), on top of Supabase's own limit.
+
 ## Later and optional
 
 | Variable                                              | When                                                             |
