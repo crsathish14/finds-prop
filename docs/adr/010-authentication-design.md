@@ -46,4 +46,10 @@ Builders, agents and the administrator sign in with Google only, on the two appr
 
 Not built here: sign-out (with the customer work, S3-T09), the shared header and footer on these pages (the shared layout), and the invite flow (S7-T05). Vercel preview deployments each have their own address, so sign-in is tested locally and on the stable dev address. The setup and the live check are in `docs/runbooks/staff-google-sign-in.md`.
 
+## Phone sign-in, first part built 3 Nov 2026 (S3-T09, ADD-01)
+
+The customer sign-in page `/auth` shows the approved ADD-01 screen. The mobile number goes to `sendPhoneCode`, a `defineAction` with no sign-in step and the `otp_request` limits, keyed on the normalised number so every way of typing one number shares a count. It calls `signInWithOtp` from the server (never from the browser, so the limits cannot be skipped) with the Turnstile token and `shouldCreateUser`, so a new number becomes an account when its code is entered. A number from another country is refused before the rate limiter and before any SMS (FR-AUTH-09); Supabase's `captcha_failed`, its own send limit and a failing hook map to the existing error codes, and the logs never carry the number or the token. The human-check widget loads Cloudflare's script on this page only, in interaction-only mode, so the common case passes unseen; it lives in the `auth` feature, not in `components/`, because only sign-in uses it. The CSP (still Report-Only) allows `challenges.cloudflare.com`. The number stays in the browser component between the two steps and never goes into the address.
+
+Not built yet: entering the code (ADD-02, `verifyOtp` and the `otp_verify` limit), the name step (ADD-04), email verification and `/auth/confirm` (ADD-03), and sign-out. The `gate-enquiry` state needs the property the visitor was viewing, so its context chip comes with the enquiry slice; the plain gate message shows for `?gate=enquire`.
+
 ## Open questions

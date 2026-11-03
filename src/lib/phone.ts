@@ -20,3 +20,43 @@ export function normaliseIndianMobile(input: string): string | null {
   if (!/^[6-9]\d{9}$/.test(digits)) return null;
   return `+91${digits}`;
 }
+
+export type PhoneInputCheck =
+  { kind: "valid"; e164: string } | { kind: "invalid" } | { kind: "unsupported" };
+
+const INTERNATIONAL_PREFIX = /^\s*(?:\+|00)/;
+
+/**
+ * Tells a mistyped number from a number of another country, because the sign-in screen words them
+ * differently (ADD-01). Only a number written with a country code (`+44 …` or `0044 …`) can be
+ * "unsupported"; a ten-digit number the field cannot use is "invalid". Every Indian form that
+ * normaliseIndianMobile accepts is valid here too, and `0091 …` is accepted as well.
+ */
+export function classifyPhoneInput(input: string): PhoneInputCheck {
+  const international = INTERNATIONAL_PREFIX.exec(input);
+  if (!international) {
+    const e164 = normaliseIndianMobile(input);
+    return e164 ? { kind: "valid", e164 } : { kind: "invalid" };
+  }
+  const digits = phoneDigits(input.slice(international[0].length));
+  if (digits.length === 0) return { kind: "invalid" };
+  if (!digits.startsWith("91")) return { kind: "unsupported" };
+  const e164 = normaliseIndianMobile(digits);
+  return e164 ? { kind: "valid", e164 } : { kind: "invalid" };
+}
+
+/** "+919876543210" becomes "+91 98••• ••210": enough to recognise the number, not to read it out. */
+export function maskIndianMobile(e164: string): string {
+  const match = /^\+91(\d{2})\d{5}(\d{3})$/.exec(e164);
+  return match ? `+91 ${match[1]}••• ••${match[2]}` : "+91 ••••• •••••";
+}
+
+/**
+ * The country code someone typed before a number from another country, for the prefix tab of the
+ * field ("+44 7700 900123" gives "+44"). A code with no space after it cannot be told from the
+ * number, so the tab shows only "+".
+ */
+export function typedDialCode(input: string): string {
+  const match = /^\s*(?:\+|00)(\d{1,3})(?=[\s\-(.]|$)/.exec(input);
+  return match ? `+${match[1]}` : "+";
+}

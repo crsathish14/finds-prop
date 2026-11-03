@@ -29,7 +29,8 @@ const CSP_REPORT_ONLY = [
   "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co http://127.0.0.1:54321 ws://127.0.0.1:54321",
 ].join("; ");
 
