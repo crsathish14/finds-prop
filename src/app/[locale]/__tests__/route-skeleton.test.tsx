@@ -87,6 +87,20 @@ describe("UT-route-skeleton: no page is left unguarded (S3-T11)", () => {
   });
 });
 
+describe("UT-route-skeleton: error pages keep the site header and footer (S4-T06)", () => {
+  // not-found and error pages in a group render inside its layout, so they sit between its header
+  // and footer. The portals have their own shell (S7) and use the language-level pages.
+  for (const group of ["(public)", "(account)", "(auth)", "(quiet)"]) {
+    it(`${group} has not-found and error pages that reuse the site ones`, () => {
+      const notFound = readFileSync(join(appRoot, group, "not-found.tsx"), "utf8");
+      const error = readFileSync(join(appRoot, group, "error.tsx"), "utf8");
+      expect(notFound).toContain('export { default } from "../not-found"');
+      expect(error).toMatch(/^"use client";/);
+      expect(error).toContain('export { default } from "../error"');
+    });
+  }
+});
+
 describe("UT-route-skeleton: behaviour of the special routes", () => {
   beforeEach(() => {
     flags.aiSearch = false;

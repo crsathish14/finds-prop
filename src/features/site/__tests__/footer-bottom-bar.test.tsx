@@ -2,6 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { Home } from "lucide-react";
+import { useRequestBottomBar } from "@/lib/bottom-bar-request";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Icon } from "@/components/ui/icon";
 import messages from "@/i18n/messages/en.json";
@@ -155,6 +156,25 @@ describe("BottomBarNav: the phone bottom bar", () => {
     state.pathname = path;
     const { container } = render(<BottomBarNav navLabel="Primary" items={items} />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("shows on a page where it is normally hidden while an error page there has asked for it", () => {
+    state.pathname = "/properties/two-bhk-ab12cd";
+    function MissingPage() {
+      useRequestBottomBar();
+      return null;
+    }
+    const { rerender } = render(<BottomBarNav navLabel="Primary" items={items} />);
+    expect(screen.queryByRole("navigation", { name: "Primary" })).not.toBeInTheDocument();
+    rerender(
+      <>
+        <MissingPage />
+        <BottomBarNav navLabel="Primary" items={items} />
+      </>,
+    );
+    expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
+    rerender(<BottomBarNav navLabel="Primary" items={items} />);
+    expect(screen.queryByRole("navigation", { name: "Primary" })).not.toBeInTheDocument();
   });
 
   it("draws nothing on the server, where the pathname may be the rewritten one", () => {

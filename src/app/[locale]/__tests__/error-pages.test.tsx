@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
+import { useBottomBarRequested } from "@/lib/bottom-bar-request";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import GlobalError from "../../global-error";
 import ErrorPage from "../error";
@@ -27,6 +28,22 @@ describe("error page (inside the site layout)", () => {
     expect(screen.queryByText(/secret database detail/)).not.toBeInTheDocument();
     expect(screen.getByText("Reference: abc123")).toBeInTheDocument();
     expect(screen.getByText(en.common.technicalDetails)).toBeInTheDocument();
+  });
+
+  it("asks for the phone bottom bar while it is on screen, as the approved screen shows it", () => {
+    const seen: boolean[] = [];
+    function Watcher() {
+      seen.push(useBottomBarRequested());
+      return null;
+    }
+    const page = renderWithMessages(
+      <>
+        <Watcher />
+        <ErrorPage error={new Error("boom")} reset={vi.fn()} />
+      </>,
+    );
+    expect(seen.at(-1)).toBe(true);
+    page.unmount();
   });
 
   it("has no technical details when there is no reference", () => {

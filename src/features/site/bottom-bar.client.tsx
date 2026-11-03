@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { BottomBar } from "@/components/layout/bottom-bar";
+import { useBottomBarRequested } from "@/lib/bottom-bar-request";
 import { bottomBarCurrentKey, isBottomBarVisible, type BottomBarKey } from "./chrome";
 import { useClientPathname } from "./client-pathname";
 
@@ -15,12 +16,16 @@ type BottomBarNavProps = {
  * item marked. It is fixed to the screen, so an empty block of the same height follows the footer
  * and the last line of the page is never hidden behind it. From 768 px both disappear.
  *
+ * Error pages ask for it explicitly (see bottom-bar-request), because they keep the address of the
+ * page that failed.
+ *
  * Which pages show it depends on the pathname, which the server cannot be sure of (see
  * useClientPathname), so it appears once the page has been hydrated.
  */
 export function BottomBarNav({ navLabel, items }: BottomBarNavProps) {
   const pathname = useClientPathname();
-  if (pathname === undefined || !isBottomBarVisible(pathname)) return null;
+  const requested = useBottomBarRequested();
+  if (pathname === undefined || !(requested || isBottomBarVisible(pathname))) return null;
   const current = bottomBarCurrentKey(pathname);
   return (
     <>
