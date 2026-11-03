@@ -80,4 +80,10 @@ The unbuilt states: the UX has no separate rate-limited or service-unavailable s
 
 Not built yet: sign-out.
 
+## Sign-out, built 3 Nov 2026 (S3-T09)
+
+`signOut` is a `defineAction` with no authentication step and no limit of its own. A visitor whose session has already expired must still be able to clear what the browser holds, and a repeat changes nothing. It calls `signOut({ scope: "local" })` through the cookie-bound server client, which ends this browser's session and clears its cookies; the user's other devices stay signed in. FR-AUTH-08 says "ends the session everywhere in the browser", which this reads as every tab of this browser (they share its cookies), not every device. The staff callback already signs out the same way. A session that is already gone, expired or revoked counts as signed out. Any other error is reported, because the library may then leave the cookies in place, and a visitor must never be told they are signed out when they are not.
+
+`useSignOut(destination)` is what the avatar menu's Sign out entry will call: it asks the server, then goes to the destination with a full page load (the home page for customers, their own sign-in page for staff), or sets `failed` so the menu can say so. **Nothing mounts the avatar menu yet** (the header is S4-T06) and the approved UX draws Sign out only inside that menu, so this slice has no button; the owner chose on 3 Nov 2026 to build the action and hook now and wire them with the header. Until then, switching account means clearing the site's cookies. Session edge cases (an expired session in the middle of a form, returning after re-sign-in) are S5-T07.
+
 ## Open questions

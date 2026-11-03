@@ -23,7 +23,7 @@ Every refusal is the same generic message. It never shows an invited address or 
 
 ## Live check on dev
 
-Run it from `npm run dev` (or a build with `npm start`) and open `http://localhost:3000/builder/login`. There is no sign-out yet (it comes with the customer sign-in, S3-T09): to try another account, clear the site's cookies or use a private window.
+Run it from `npm run dev` (or a build with `npm start`) and open `http://localhost:3000/builder/login`. There is no sign-out button yet: the `signOut` action exists (S3-T09), but the avatar menu that will call it is not on any page until the header is built (S4-T06). To try another account, clear the site's cookies or use a private window.
 
 | Case                                  | How                                                                                                                      | Expected                                                           |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -59,4 +59,4 @@ Not yet tried live: a stranger's Google account, a cancelled Google screen, a de
 
 ## Not built here
 
-Sign-out (S3-T09), the shared header and footer on these pages (the shared layout), and the invitation flow that creates the builder's account (S7-T05).
+The Sign out button (the action is built, S3-T09; the menu waits for the header, S4-T06), the shared header and footer on these pages (the shared layout), and the invitation flow that creates the builder's account (S7-T05).

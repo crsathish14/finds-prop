@@ -84,3 +84,6 @@ export const addEmailSchema = z.object({
 });
 
 export type AddEmailInput = z.infer<typeof addEmailSchema>;
+
+/** Signing out takes nothing from the caller: it ends the session this browser holds. */
+export const signOutSchema = z.object({});
