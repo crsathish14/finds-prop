@@ -128,6 +128,8 @@
     "tooBig": "Enter a value of {maximum} or less.",
     "phoneInvalid": "Enter a 10-digit mobile number that starts with 6, 7, 8 or 9.",
     "phoneUnsupported": "We can only send codes to Indian (+91) mobile numbers right now.",
+    "codeInvalid": "Enter the 6-digit code from your text message.",
+    "codeWrong": "That code isn't right. Check the message and try again.",
     "captchaFailed": "We couldn't confirm you're a person. Check your connection and run the check again."
   },
   "format": {
