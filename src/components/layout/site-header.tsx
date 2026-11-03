@@ -54,7 +54,7 @@ function SiteHeader({
         <nav aria-label={navLabel} className="hidden lg:block">
           <ul className="flex gap-6 xl:gap-8">
             {nav.map((item) => (
-              <li key={item.href}>
+              <li key={`${item.href}|${item.label}`}>
                 <Link
                   href={item.href}
                   current={item.current}

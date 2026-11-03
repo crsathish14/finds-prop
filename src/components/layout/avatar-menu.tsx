@@ -6,6 +6,7 @@
  *   and Sign out. Owner: design system. Which entries appear depends on the role; the caller
  *   builds the groups.
  * Props: triggerLabel (required, already-translated, e.g. "Account menu"), name, email, initials,
+ *   (an empty initials string shows a generic person icon, for an account with no name yet),
  *   roleLabel (e.g. "Admin" or "Builder") with roleTone ("default" | "admin"), groups (MenuGroup
  *   list: optional heading, then entries with label, href or onSelect, icon, count, current,
  *   destructive), imageSrc (optional photo).
@@ -18,7 +19,7 @@
  * Tests: layout.test.tsx; Design Lab "Navigation" (S2-T07).
  * UX reference: ds-navigation, avatar menu (c-nav.css .avatar-btn, .hdr-menu).
  */
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import { Fragment } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
@@ -69,10 +70,16 @@ function AvatarMenu({
           {imageSrc ? <AvatarImage src={imageSrc} alt="" /> : null}
           {/* The initials are drawn by CSS, not written as text: the button is named by its label, and a
               visible text that differs from the name would fail WCAG 2.5.3 (label in name). */}
-          <AvatarFallback
-            data-initials={initials}
-            className="bg-primary text-on-primary before:content-[attr(data-initials)]"
-          />
+          {initials ? (
+            <AvatarFallback
+              data-initials={initials}
+              className="bg-primary text-on-primary before:content-[attr(data-initials)]"
+            />
+          ) : (
+            <AvatarFallback className="bg-primary text-on-primary">
+              <Icon icon={User} />
+            </AvatarFallback>
+          )}
         </Avatar>
         <Icon icon={ChevronDown} className="hidden text-muted md:block" />
       </DropdownMenuTrigger>
@@ -80,7 +87,9 @@ function AvatarMenu({
         <div className="flex items-center gap-3 px-3 pt-3 pb-3">
           <Avatar className="size-12">
             {imageSrc ? <AvatarImage src={imageSrc} alt="" /> : null}
-            <AvatarFallback className="bg-primary text-on-primary">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-primary text-on-primary">
+              {initials || <Icon icon={User} />}
+            </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
             <p className="text-title-sm text-ink">{name}</p>

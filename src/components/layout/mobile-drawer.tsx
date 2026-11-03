@@ -61,7 +61,7 @@ function MobileDrawer({
         <nav aria-label={title} className="flex min-h-full flex-col">
           <ul>
             {nav.map((item) => (
-              <li key={item.href}>
+              <li key={`${item.href}|${item.label}`}>
                 <SheetClose asChild>
                   <Link
                     href={item.href}

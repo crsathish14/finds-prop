@@ -1,3 +1,6 @@
+export { getAccountSummary, type AccountSummary } from "./account-summary";
+export { AccountMenu, type AccountMenuProps } from "./account-menu.client";
+export { SignOutButton } from "./sign-out-button.client";
 export {
   addEmail,
   resendEmailLink,
