@@ -68,28 +68,28 @@ Whole-page previews of the layout components at 390, 820 and 1280 px are served 
 
 ## Addendum screens
 
-| Addendum item | Screen                                                        | Routes                       | File                                                   |
-| ------------- | ------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------ |
-| ADD-01        | Sign in or create account with a phone number                 | /auth                        | `docs/ux/ux-addendum/screens/auth-phone.html`          |
-| ADD-02        | Enter the 6-digit code                                        | /auth                        | `docs/ux/ux-addendum/screens/auth-otp.html`            |
-| ADD-03        | Add and verify your email                                     | /auth, /dashboard            | `docs/ux/ux-addendum/screens/verify-email.html`        |
-| ADD-03        | Email prompt, reminder and posting gate                       | /dashboard, /post-property   | `docs/ux/ux-addendum/screens/email-prompts.html`       |
-| ADD-04        | What should we call you?                                      | /auth                        | `docs/ux/ux-addendum/screens/profile-name.html`        |
-| ADD-05        | Builder and agent sign in, Google only (approved 2 Nov 2026)  | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin-google.html` |
-| ADD-06        | Administrator sign in, Google only (approved 2 Nov 2026)      | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login-google.html`  |
-| ADD-05        | Builder sign in (email, password or Google), **superseded**   | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin.html`        |
-| ADD-05        | Second factor for builders and administrators, **superseded** | /builder/login, /admin/login | `docs/ux/ux-addendum/screens/staff-2fa.html`           |
-| ADD-05        | Set your password (invitation) and reset, **superseded**      | /reset-password              | `docs/ux/ux-addendum/screens/staff-password.html`      |
-| ADD-06        | Administrator sign in, **superseded**                         | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login.html`         |
-| ADD-10        | Homepage A without AI search                                  | /                            | `docs/ux/ux-addendum/screens/home-a-noai.html`         |
-| ADD-10        | Homepage B without AI search                                  | /                            | `docs/ux/ux-addendum/screens/home-b-noai.html`         |
-| ADD-10        | Homepage fallback without AI search                           | /                            | `docs/ux/ux-addendum/screens/home-none-noai.html`      |
-| ADD-10        | Search results without AI search                              | /properties                  | `docs/ux/ux-addendum/screens/search-noai.html`         |
-| ADD-10        | Navigation board without AI search                            | (none)                       | `docs/ux/ux-addendum/screens/nav-noai.html`            |
-| ADD-07        | Address and place suggestions                                 | /, /properties               | `docs/ux/ux-addendum/screens/place-suggest.html`       |
-| ADD-12        | Legal page template (privacy, terms, cookies)                 | /privacy, /terms, /cookies   | `docs/ux/ux-addendum/screens/legal-page.html`          |
-| ADD-12        | Consent text and cookie notice                                | (none)                       | `docs/ux/ux-addendum/screens/consent-snippets.html`    |
-| ADD-08        | Post a property: address and location pin                     | /post-property               | `docs/ux/ux-addendum/screens/post-address.html`        |
-| ADD-11        | Admin: hero layout and sponsors                               | /admin/hero                  | `docs/ux/ux-addendum/screens/admin-sponsors.html`      |
-| ADD-11        | Admin: homepage localities editor                             | /admin/homepage              | `docs/ux/ux-addendum/screens/admin-localities.html`    |
-| ADD-09        | Map view for search results (optional)                        | /properties                  | `docs/ux/ux-addendum/screens/map-view.html`            |
+| Addendum item | Screen                                                              | Routes                       | File                                                   |
+| ------------- | ------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------ |
+| ADD-01        | Sign in or create account with a phone number (approved 3 Nov 2026) | /auth                        | `docs/ux/ux-addendum/screens/auth-phone.html`          |
+| ADD-02        | Enter the 6-digit code (approved 3 Nov 2026)                        | /auth                        | `docs/ux/ux-addendum/screens/auth-otp.html`            |
+| ADD-03        | Add and verify your email (approved 3 Nov 2026)                     | /auth, /dashboard            | `docs/ux/ux-addendum/screens/verify-email.html`        |
+| ADD-03        | Email prompt, reminder and posting gate (approved 3 Nov 2026)       | /dashboard, /post-property   | `docs/ux/ux-addendum/screens/email-prompts.html`       |
+| ADD-04        | What should we call you? (approved 3 Nov 2026)                      | /auth                        | `docs/ux/ux-addendum/screens/profile-name.html`        |
+| ADD-05        | Builder and agent sign in, Google only (approved 2 Nov 2026)        | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin-google.html` |
+| ADD-06        | Administrator sign in, Google only (approved 2 Nov 2026)            | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login-google.html`  |
+| ADD-05        | Builder sign in (email, password or Google), **superseded**         | /builder/login               | `docs/ux/ux-addendum/screens/staff-signin.html`        |
+| ADD-05        | Second factor for builders and administrators, **superseded**       | /builder/login, /admin/login | `docs/ux/ux-addendum/screens/staff-2fa.html`           |
+| ADD-05        | Set your password (invitation) and reset, **superseded**            | /reset-password              | `docs/ux/ux-addendum/screens/staff-password.html`      |
+| ADD-06        | Administrator sign in, **superseded**                               | /admin/login                 | `docs/ux/ux-addendum/screens/admin-login.html`         |
+| ADD-10        | Homepage A without AI search                                        | /                            | `docs/ux/ux-addendum/screens/home-a-noai.html`         |
+| ADD-10        | Homepage B without AI search                                        | /                            | `docs/ux/ux-addendum/screens/home-b-noai.html`         |
+| ADD-10        | Homepage fallback without AI search                                 | /                            | `docs/ux/ux-addendum/screens/home-none-noai.html`      |
+| ADD-10        | Search results without AI search                                    | /properties                  | `docs/ux/ux-addendum/screens/search-noai.html`         |
+| ADD-10        | Navigation board without AI search                                  | (none)                       | `docs/ux/ux-addendum/screens/nav-noai.html`            |
+| ADD-07        | Address and place suggestions                                       | /, /properties               | `docs/ux/ux-addendum/screens/place-suggest.html`       |
+| ADD-12        | Legal page template (privacy, terms, cookies)                       | /privacy, /terms, /cookies   | `docs/ux/ux-addendum/screens/legal-page.html`          |
+| ADD-12        | Consent text and cookie notice                                      | (none)                       | `docs/ux/ux-addendum/screens/consent-snippets.html`    |
+| ADD-08        | Post a property: address and location pin                           | /post-property               | `docs/ux/ux-addendum/screens/post-address.html`        |
+| ADD-11        | Admin: hero layout and sponsors                                     | /admin/hero                  | `docs/ux/ux-addendum/screens/admin-sponsors.html`      |
+| ADD-11        | Admin: homepage localities editor                                   | /admin/homepage              | `docs/ux/ux-addendum/screens/admin-localities.html`    |
+| ADD-09        | Map view for search results (optional)                              | /properties                  | `docs/ux/ux-addendum/screens/map-view.html`            |

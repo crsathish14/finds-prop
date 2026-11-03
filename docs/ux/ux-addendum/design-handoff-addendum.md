@@ -5,6 +5,7 @@ Companion to `../final-ux/design-handoff.md`. It lists what this batch decides, 
 **Scope:** ADD-01 to ADD-12 from `../property-platform-implementation-plan/stage-0/02-ux-addendum-brief.md` (ADD-13 PG and hostels stays gated): **21 screens, 133 states, 200 renders**.
 
 - **Update 2 Nov 2026 (owner decision of 1 Nov: builders, agents and the administrator sign in with Google only).** Two screens, approved by the owner on 2 Nov 2026, replace the staff sign-in set: `staff-signin-google.html` and `admin-login-google.html` (12 states, not yet rendered). The password, reset and second-factor screens are marked superseded and kept for history. The counts below are the original batch totals.
+- **Update 3 Nov 2026.** The owner approved ADD-01 to ADD-04 (`auth-phone.html`, `auth-otp.html`, `verify-email.html`, `email-prompts.html`, `profile-name.html`). The approval covers layout, states and components; text still flagged *To confirm*, *Wording to confirm* or *Duration to confirm* is not approved yet.
 - **Batch 1** (ADD-01 to ADD-06, ADD-10): 14 screens, 76 states, 119 renders.
 - **Batches 2 and 3** (ADD-07, ADD-08, ADD-09, ADD-11, ADD-12): 7 screens, 57 states, 81 renders.
 
@@ -14,11 +15,11 @@ Companion to `../final-ux/design-handoff.md`. It lists what this batch decides, 
 
 | Brief item | Screen file | States |
 |---|---|---|
-| ADD-01 Phone sign-in / sign-up | `auth-phone.html` | default · invalid · sending · gate · gate-enquiry · captcha · captchafail · ratelimited · unavailable · unsupported |
-| ADD-02 Code entry | `auth-otp.html` | default · typing · filled · verifying · wrong · expired · locked · resend · resent · ratelimited · unavailable · success |
-| ADD-03 Email verification | `verify-email.html` | entry · invalid · sending · sent · resent · verified · expired · taken |
-| ADD-03 Prompt, reminder, gate | `email-prompts.html` | prompt · banner · gate · gate-sent |
-| ADD-04 Name | `profile-name.html` | default · error · saving · required-post · required-enquire |
+| ADD-01 Phone sign-in / sign-up (approved by the owner 3 Nov 2026) | `auth-phone.html` | default · invalid · sending · gate · gate-enquiry · captcha · captchafail · ratelimited · unavailable · unsupported |
+| ADD-02 Code entry (approved by the owner 3 Nov 2026) | `auth-otp.html` | default · typing · filled · verifying · wrong · expired · locked · resend · resent · ratelimited · unavailable · success |
+| ADD-03 Email verification (approved by the owner 3 Nov 2026) | `verify-email.html` | entry · invalid · sending · sent · resent · verified · expired · taken |
+| ADD-03 Prompt, reminder, gate (approved by the owner 3 Nov 2026) | `email-prompts.html` | prompt · banner · gate · gate-sent |
+| ADD-04 Name (approved by the owner 3 Nov 2026) | `profile-name.html` | default · error · saving · required-post · required-enquire |
 | ADD-05 Builder and agent sign-in, Google only (approved by the owner 2 Nov 2026) | `staff-signin-google.html` | default · busy · cancelled · denied · error · ratelimited |
 | ADD-06 Administrator sign-in, Google only (approved by the owner 2 Nov 2026) | `admin-login-google.html` | default · busy · cancelled · notauth · error · ratelimited |
 | ADD-05 Builder sign-in (**superseded 2 Nov 2026**) | `staff-signin.html` | signin · google-mismatch · denied · errors · forgot · forgotsent · busy · ratelimited |
@@ -96,7 +97,7 @@ Not built: ADD-13 (PG/hostels), gated until the requirement exists.
 |---|---|---|---|
 | **PhoneField** | Standard input with a fixed **+91** prefix tab inside the field | default, focus, error, read-only prefix | `type=tel`, `inputmode=tel`, `autocomplete=tel-national`; prefix is decorative text and repeated in the hint; error linked by `aria-describedby` |
 | **OtpInput** | One real input (opacity 0, full size) over six `aria-hidden` cells; caret in the next empty cell | empty, typing, filled, verifying, error (shake only without reduced motion), verified, disabled | One labelled field for screen readers; `autocomplete=one-time-code`, `inputmode=numeric`, `maxlength=6`; errors with `role=alert`; focus returns to the field |
-| **HumanCheck placeholder** | Box with checkbox/spinner/check + "Security check (provider widget)" | verified, checking, failed | Provider widget decides its own markup; our wrapper announces status politely |
+| **HumanCheck placeholder** | Full-width box (matches the field and the button), 65 px tall, with checkbox/spinner/check + "Security check (provider widget)" | verified, checking, failed | Provider widget decides its own markup; our wrapper announces status politely |
 | **ResendRow** | "Resend code in 0:42" + text button | counting, available, sent, blocked | Countdown announced at 30 s, 10 s and at zero, not every second |
 | **NumberedSteps** | Numbered discs with title and one sentence | — | Ordered list semantics |
 | **QrPanel + KeyBox** | QR in a framed square; copyable key under "Can't scan?" | default, copied | QR has a text alternative; the key is selectable and has a Copy button |

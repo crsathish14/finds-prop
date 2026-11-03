@@ -8,6 +8,8 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 **Update 2 Nov 2026:** the owner decided on 1 Nov that builders, agents and the administrator sign in with **Google only**: no password, no reset and no second step in the app. The two new screens above, **approved by the owner on 2 Nov 2026**, replace the staff sign-in, second-factor and set-password screens, which are marked superseded and kept for history. They are not rendered yet (the counts below are the original batch totals).
 
+**Update 3 Nov 2026:** the owner **approved ADD-01 to ADD-04** (the five customer sign-in screens: phone, code, email, email prompts, name). The approval covers layout, states and components. Text still flagged *To confirm*, *Wording to confirm* or *Duration to confirm* on those screens is not approved yet.
+
 ## Start here
 
 1. Open **[index.html](index.html)** in a desktop browser. It lists every screen with thumbnails and state chips.
@@ -21,10 +23,10 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 | ID | Screens | Files |
 |---|---|---|
-| ADD-01 | Sign in or create an account with a phone number (10 states) | `screens/auth-phone.html` |
-| ADD-02 | Enter the 6-digit code (12 states) | `screens/auth-otp.html` |
-| ADD-03 | Add and verify email (8 states) · dashboard prompt, reminder and posting gate (4 states) | `screens/verify-email.html`, `screens/email-prompts.html` |
-| ADD-04 | What should we call you? (5 states) | `screens/profile-name.html` |
+| ADD-01 | Sign in or create an account with a phone number (10 states, approved by the owner 3 Nov 2026) | `screens/auth-phone.html` |
+| ADD-02 | Enter the 6-digit code (12 states, approved by the owner 3 Nov 2026) | `screens/auth-otp.html` |
+| ADD-03 | Add and verify email (8 states) · dashboard prompt, reminder and posting gate (4 states), approved by the owner 3 Nov 2026 | `screens/verify-email.html`, `screens/email-prompts.html` |
+| ADD-04 | What should we call you? (5 states, approved by the owner 3 Nov 2026) | `screens/profile-name.html` |
 | ADD-05 | Builder and agent sign in, **Google only** (6 states, approved by the owner 2 Nov 2026) | `screens/staff-signin-google.html` |
 | ADD-06 | Administrator sign in, **Google only** (6 states, approved by the owner 2 Nov 2026) | `screens/admin-login-google.html` |
 | ADD-05 | **Superseded 2 Nov 2026**, kept for history: builder sign in with Google (8 states) · second factor (12 states) · set password and reset (6 states) | `screens/staff-signin.html`, `screens/staff-2fa.html`, `screens/staff-password.html` |

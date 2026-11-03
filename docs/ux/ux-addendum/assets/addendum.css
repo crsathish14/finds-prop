@@ -45,7 +45,7 @@
 .btn-link[disabled] { color: var(--c-muted); text-decoration: none; cursor: not-allowed; }
 
 /* ── Human-check widget placeholder (provider widget; shown for placement and states only) ── */
-.captcha { display: flex; align-items: center; gap: 12px; min-height: 65px; max-width: 320px; padding: 0 14px; border: 1.5px solid var(--c-border-strong); border-radius: var(--r-sm); background: var(--c-surface); font: 600 14px/1.3 var(--font-ui); color: var(--c-ink); }
+.captcha { display: flex; align-items: center; gap: 12px; min-height: 65px; width: 100%; padding: 0 14px; border: 1.5px solid var(--c-border-strong); border-radius: var(--r-sm); background: var(--c-surface); font: 600 14px/1.3 var(--font-ui); color: var(--c-ink); }
 .captcha .bx { width: 26px; height: 26px; flex: none; border: 2px solid var(--c-border-input); border-radius: var(--r-xs); display: grid; place-items: center; font-size: 18px; }
 .captcha small { margin-left: auto; text-align: right; font: 500 11px/1.25 var(--font-ui); color: var(--c-muted); }
 .captcha.is-busy .bx { border-radius: 50%; border-color: var(--c-primary-tint-2); border-top-color: var(--c-primary); animation: spin .8s linear infinite; }
