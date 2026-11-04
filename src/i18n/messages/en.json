@@ -19,6 +19,50 @@
       "title": "Find the place that fits your life.",
       "titleInRegion": "Find the place that fits your life in {region}.",
       "subtitle": "Shortlist, compare and enquire directly."
+    },
+    "explore": {
+      "title": "Explore by locality",
+      "seeAll": "See all localities"
+    },
+    "browse": {
+      "title": "Browse by what matters",
+      "featured": {
+        "title": "Featured",
+        "description": "Hand-picked homes we recommend first"
+      },
+      "prime": {
+        "title": "Prime",
+        "description": "Premium addresses and large luxury homes"
+      },
+      "budget": {
+        "title": "Budget",
+        "description": "Affordable homes that fit a smaller budget"
+      },
+      "locality": {
+        "title": "By locality",
+        "description": "Browse homes area by area",
+        "descriptionInRegion": "Browse homes area by area across {region}"
+      }
+    },
+    "why": {
+      "title": "Why {brandName}",
+      "approved": {
+        "title": "Approved listings only",
+        "description": "Homes appear on {brandName} after they are approved."
+      },
+      "enquire": {
+        "title": "Enquire directly",
+        "description": "Send your details to the owner or builder, and track the reply in your dashboard."
+      },
+      "compare": {
+        "title": "Shortlist and compare",
+        "description": "Save homes you like and compare up to three side by side."
+      }
+    },
+    "cta": {
+      "title": "Want to sell or rent your property?",
+      "description": "Post your property free. Your listing is reviewed, then goes live.",
+      "action": "Post your property free"
     }
   },
   "auth": {

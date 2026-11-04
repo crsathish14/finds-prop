@@ -3,8 +3,8 @@
  * Purpose: one place for a section's heading, the line under it and the link or buttons at its
  *   right ("See all localities", the arrows of a scroller). Owner: design system. It holds no
  *   state and fetches nothing: the page passes the words, already translated.
- * Props: title, emphasis (words set in copper italic after the title, as in "Why Find Prop"; left
- *   out when missing), description (the line under the title; left out when missing), action (a
+ * Props: title, emphasis (the part of the title to set in copper italic, as "Find Prop" in "Why
+ *   Find Prop"; it must appear in the title, otherwise the title is plain), description (the line under the title; left out when missing), action (a
  *   `Link variant="arrow"`, buttons or anything else for the right end; left out when missing),
  *   as ("h2" default | "h3"), id (so a section can name itself with aria-labelledby), className.
  * Responsive: 18 px below the title on a phone and 24 px from 768 px; the title steps up through
@@ -36,6 +36,30 @@ type SectionHeadProps = {
   className?: string;
 };
 
+/**
+ * The title with the named part in copper italic. It is the same rule as the hero's and the error
+ * screen's (the part must be in the title, so the title is one message and can be worded in any
+ * order), but in the copper text colour, which passes 4.5 : 1 at this heading's phone size; the
+ * fill copper of `Heading.Em` does not.
+ */
+function TitleWithEmphasized({
+  title,
+  emphasis,
+}: {
+  title: string;
+  emphasis?: string | undefined;
+}) {
+  const at = emphasis ? title.indexOf(emphasis) : -1;
+  if (!emphasis || at < 0) return title;
+  return (
+    <>
+      {title.slice(0, at)}
+      <em className="font-display font-normal text-cta-text italic">{emphasis}</em>
+      {title.slice(at + emphasis.length)}
+    </>
+  );
+}
+
 function SectionHead({
   title,
   emphasis,
@@ -52,13 +76,7 @@ function SectionHead({
     >
       <div className="min-w-0">
         <Heading as={as} size="2" id={id}>
-          {title}
-          {emphasis ? (
-            <>
-              {/* A real space, so the heading reads "Why Find Prop" everywhere. */}{" "}
-              <em className="font-display font-normal text-cta-text italic">{emphasis}</em>
-            </>
-          ) : null}
+          <TitleWithEmphasized title={title} emphasis={emphasis} />
         </Heading>
         {description ? (
           <Text tone="muted" className="mt-1">

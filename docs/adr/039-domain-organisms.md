@@ -77,6 +77,17 @@ The owner approved the plan on 4 Nov 2026 ("all recommended"): four steps, the b
 - **One copper button more:** the banner keeps its copper button as drawn, so the homepage has two (this one and Search). The owner approved this on 4 Nov 2026; no automated check enforces one per page.
 - **Loading:** none of the five holds data, so none has a skeleton; the cards inside the scroller bring their own.
 
+### Homepage sections, the static part (fourth step, S4-T06)
+
+The owner approved the plan on 4 Nov 2026 ("all recommended"). The sections that need no data come first; Featured homes, New launches and Newest follow with the data of ADR-041.
+
+- **Two layout pieces** (`components/domain`): `HomeSection` (a labelled region with the page's spacing: 36, 52 and 64 px, or the tight 24 and 32 px, and the darker band tone for New launches) and `SectionGrid` (the columns: tiles 2, 3 and 5; category cards 1, 2 and 4; value cards 1 and 3). The UX changes columns at 640 px, which is not a breakpoint of this site, so 768 px is used and its 14 px gaps are 16 px.
+- **Four server sections** (`features/home/sections.tsx`), each a labelled region built from the pieces above and the blocks of the third step: **Explore by locality** (a tile for each curated locality, each leading to the homes around that place; the "See all localities" link leads to the results page; **all** curated localities are shown, up to the 30 the settings allow, so the content team's list is the limit; there is **no line under the name** because the UX's "Apartments · Villas" needs a count for each locality, which nothing provides yet; **not drawn at all when no locality is curated**), **Browse by what matters** (Featured, Prime and Budget lead to the homes with that label; By locality leads to the results page; its line names the region when the site content has one and names no place otherwise, DEC-14), **Why Find Prop** (the UX's three reasons, with the brand name from the site content) and the **banner** (leads to Post property; left out when that route is switched off, as the header's button is).
+- **The switches** (BR-82): `showDiscovery` is Explore by locality, `showProjectTypes` is Browse by what matters, `showWhyUs` and `showCta` are as named. A section switched off or with nothing to show is not rendered, so no region and no gap is left (FR-PUB-05). The page only composes.
+- **`SectionHead`'s emphasis** is now part of the title, as in the hero and the error screen: "Why {brandName}" is one message, so the word order can change in another language, and the page text can be checked against the message catalogue. `CtaBand` gained an optional `id` so the section around it is named by its title.
+- **Not decided by the UX, so decided here (the owner can change them):** all curated localities are tiles (not only the first five of the UX's picture), and there is no line under a tile name.
+- **Design Lab:** a "Homepage sections" entry shows the four sections as the page builds them, with sample words, and the darker band tone.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
