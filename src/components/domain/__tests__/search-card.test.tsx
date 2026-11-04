@@ -188,6 +188,14 @@ describe("SearchCard: the locality box", () => {
     });
   });
 
+  it("can ask at once when the page's list is local (localityDebounceMs 0)", async () => {
+    const { onLocalityQueryChange } = setup({ localityDebounceMs: 0 });
+    await userEvent.type(locality(), "Vel");
+    await waitFor(() => expect(onLocalityQueryChange).toHaveBeenLastCalledWith("Vel"), {
+      timeout: 200,
+    });
+  });
+
   it("shows the suggestions the page gives, and picking one fills the box", async () => {
     setup();
     await userEvent.type(locality(), "Vel");

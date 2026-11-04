@@ -23,5 +23,7 @@ export { PublicBottomBar } from "./public-bottom-bar";
 export { PublicFooter } from "./public-footer";
 export { PublicHeader } from "./public-header";
 export { getFeatureFlags, type FeatureFlags } from "./flags";
+export { buildHero, type HeroText } from "./home";
+export { getTranslate } from "./translator";
 export { getSiteSettings, SITE_SETTINGS_TAG } from "./queries";
 export type { SiteSettingKey, SiteSettings } from "./schemas";

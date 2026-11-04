@@ -15,8 +15,11 @@
     "skipToContent": "Skip to content"
   },
   "home": {
-    "title": "Find Prop",
-    "tagline": "Homes, plots and new projects in Tamil Nadu. We are getting ready."
+    "hero": {
+      "title": "Find the place that fits your life.",
+      "titleInRegion": "Find the place that fits your life in {region}.",
+      "subtitle": "Shortlist, compare and enquire directly."
+    }
   },
   "auth": {
     "phone": {

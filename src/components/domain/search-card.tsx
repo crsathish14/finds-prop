@@ -11,8 +11,9 @@
  *   card | "stacked" two rows at every width), defaultValues (what to start with), projectsHref (the
  *   "New projects" link-tab), aiSearchHref (the "Describe it in words" link; leave it out while AI
  *   search is off and the link is not drawn), localityOptions, onLocalityQueryChange,
- *   localityLoading and localityMinChars (the suggestion list, passed to Combobox; 1 letter by
- *   default), popular (up to four { label, href } localities, links; none leaves the group out),
+ *   localityLoading, localityMinChars and localityDebounceMs (the suggestion list, passed to
+ *   Combobox; 1 letter and 300 ms by default; a page whose list is local sets 0 ms, so a suggestion
+ *   can never be out of date when Enter is pressed), popular (up to four { label, href } localities, links; none leaves the group out),
  *   quickPickHrefs ({ bedrooms, budget }: the two quick picks "3 BHK" and "Budget homes", each a
  *   link the page addresses; a missing one is left out), className.
  *   Bedrooms are one value (1 to 4 or Any). Budget is a maximum only; Buy lists sale amounts and Rent
@@ -89,6 +90,7 @@ type SearchCardProps = {
   onLocalityQueryChange: (query: string) => void;
   localityLoading?: boolean;
   localityMinChars?: number;
+  localityDebounceMs?: number;
   popular?: readonly SearchLink[];
   quickPickHrefs?: { bedrooms?: string | undefined; budget?: string | undefined } | undefined;
   className?: string;
@@ -200,6 +202,7 @@ function SearchCard({
   onLocalityQueryChange,
   localityLoading = false,
   localityMinChars = 1,
+  localityDebounceMs,
   popular = [],
   quickPickHrefs,
   className,
@@ -332,6 +335,7 @@ function SearchCard({
               options={localityOptions}
               loading={localityLoading}
               minChars={localityMinChars}
+              {...(localityDebounceMs === undefined ? {} : { debounceMs: localityDebounceMs })}
               labels={{
                 clear: translate("domain.searchCard.locality.clear"),
                 loading: translate("domain.searchCard.locality.loading"),
