@@ -95,8 +95,8 @@ export function FilterRailDemo() {
         </Specimen>
       </div>
       <Text tone="muted">
-        Every change applies at once. Clear all sets the locality, kind of property, bedrooms and
-        budget back to Any and leaves Looking to alone. The page makes the rail sticky and shows it
+        Every change applies at once. Clear all sets Looking to back to All and the locality, kind
+        of property, bedrooms and budget back to Any. The page makes the rail sticky and shows it
         from 1024 px; below that the Filters button opens the sheet.
       </Text>
     </div>
@@ -161,8 +161,8 @@ export function FilterSheetDemo() {
       </Specimen>
       <Text tone="muted">
         The sheet keeps its choices until Show is pressed; closing it any other way throws them
-        away. Clear all resets the four filters and leaves the sheet open. The button says Show
-        homes while the page has no count, and Show 1 home for one.
+        away. Clear all resets the filters and leaves the sheet open. The button says Show homes
+        while the page has no count, and Show 1 home for one.
       </Text>
     </div>
   );

@@ -101,12 +101,20 @@ export function countActiveFilters(values: FilterValues): number {
 }
 
 /**
- * What "Clear all" does: the four counted filters go back to Any. "Looking to" and the sort order
- * stay, since they are not filters the visitor sees as chosen (the UX does not say; the owner can
- * change this).
+ * What "Clear all" does: every filter goes back to Any (Looking to back to All), and the sort order
+ * stays. docs/engineering/frontend.md 6.1 rule 3: "Clear all removes every filter param but keeps
+ * sort and view", and Looking to is the `listingType` filter. (The first version kept Looking to;
+ * corrected before the filters were wired to the address.)
  */
 export function clearFilters(values: FilterValues): FilterValues {
-  return { ...values, locality: null, propertyType: null, bedrooms: null, maxBudget: null };
+  return {
+    ...values,
+    intent: "all",
+    locality: null,
+    propertyType: null,
+    bedrooms: null,
+    maxBudget: null,
+  };
 }
 
 /**
