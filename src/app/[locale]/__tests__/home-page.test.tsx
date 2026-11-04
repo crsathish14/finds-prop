@@ -37,6 +37,11 @@ vi.mock("@/features/search", () => ({
 }));
 vi.mock("@/features/home", () => ({
   ExploreSection: () => <section data-testid="explore" />,
+  FeaturedSection: () => <section data-testid="featured" />,
+  NewLaunchesSection: () => <section data-testid="launches" />,
+  NewestSection: (props: { brandName: string }) => (
+    <section data-testid="newest" data-brand={props.brandName} />
+  ),
   BrowseSection: (props: { regionName?: string }) => (
     <section data-testid="browse" data-region={props.regionName ?? ""} />
   ),
@@ -50,7 +55,7 @@ const { default: HomePage } = await import("../(public)/page");
 
 const sections = () =>
   screen
-    .queryAllByTestId(/^(explore|browse|why|cta)$/)
+    .queryAllByTestId(/^(explore|featured|launches|browse|newest|why|cta)$/)
     .map((node) => node.getAttribute("data-testid"));
 
 beforeEach(() => {
@@ -73,31 +78,92 @@ describe("the homepage (S4-T06)", () => {
     render(await HomePage());
     expect(screen.getByRole("heading", { level: 1, name: "Headline" })).toBeVisible();
     expect(screen.getByTestId("search")).toBeInTheDocument();
-    expect(sections()).toEqual(["explore", "browse", "why", "cta"]);
+    expect(sections()).toEqual([
+      "explore",
+      "featured",
+      "launches",
+      "browse",
+      "newest",
+      "why",
+      "cta",
+    ]);
   });
 
   it("leaves out each section its switch in the site content turns off (BR-82)", async () => {
-    state.homepage = { ...state.homepage, showDiscovery: false };
-    const view = render(await HomePage());
-    expect(sections()).toEqual(["browse", "why", "cta"]);
-    view.unmount();
-    state.homepage = { ...state.homepage, showDiscovery: true, showProjectTypes: false };
-    const second = render(await HomePage());
-    expect(sections()).toEqual(["explore", "why", "cta"]);
-    second.unmount();
-    state.homepage = { ...state.homepage, showProjectTypes: true, showWhyUs: false };
-    const third = render(await HomePage());
-    expect(sections()).toEqual(["explore", "browse", "cta"]);
-    third.unmount();
-    state.homepage = { ...state.homepage, showWhyUs: true, showCta: false };
+    const off = async (change: Partial<typeof state.homepage>) => {
+      state.homepage = { ...state.homepage, ...change };
+      const view = render(await HomePage());
+      const shown = sections();
+      view.unmount();
+      state.homepage = {
+        showFeatured: true,
+        showProjectTypes: true,
+        showDiscovery: true,
+        showWhyUs: true,
+        showCta: true,
+        localities: [],
+      };
+      return shown;
+    };
+    expect(await off({ showDiscovery: false })).toEqual([
+      "featured",
+      "launches",
+      "browse",
+      "newest",
+      "why",
+      "cta",
+    ]);
+    expect(await off({ showFeatured: false })).toEqual([
+      "explore",
+      "launches",
+      "browse",
+      "newest",
+      "why",
+      "cta",
+    ]);
+    expect(await off({ showProjectTypes: false })).toEqual([
+      "explore",
+      "featured",
+      "launches",
+      "newest",
+      "why",
+      "cta",
+    ]);
+    expect(await off({ showWhyUs: false })).toEqual([
+      "explore",
+      "featured",
+      "launches",
+      "browse",
+      "newest",
+      "cta",
+    ]);
+    expect(await off({ showCta: false })).toEqual([
+      "explore",
+      "featured",
+      "launches",
+      "browse",
+      "newest",
+      "why",
+    ]);
+  });
+
+  it("always asks for New launches and Newest, which have no switch and leave themselves out when empty", async () => {
+    state.homepage = {
+      ...state.homepage,
+      showDiscovery: false,
+      showFeatured: false,
+      showProjectTypes: false,
+      showWhyUs: false,
+      showCta: false,
+    };
     render(await HomePage());
-    expect(sections()).toEqual(["explore", "browse", "why"]);
+    expect(sections()).toEqual(["launches", "newest"]);
   });
 
   it("leaves out the banner when its route is switched off", async () => {
     state.postEnabled = false;
     render(await HomePage());
-    expect(sections()).toEqual(["explore", "browse", "why"]);
+    expect(sections()).toEqual(["explore", "featured", "launches", "browse", "newest", "why"]);
   });
 
   it("gives the sections the region, the brand name and the banner's address", async () => {
@@ -106,6 +172,7 @@ describe("the homepage (S4-T06)", () => {
     render(await HomePage());
     expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Chennai");
     expect(screen.getByTestId("why")).toHaveAttribute("data-brand", "Find Prop");
+    expect(screen.getByTestId("newest")).toHaveAttribute("data-brand", "Find Prop");
     expect(screen.getByTestId("cta")).toHaveAttribute("data-href", "/post-property");
   });
 

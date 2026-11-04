@@ -5,7 +5,8 @@
  * Purpose: "Newest on Find Prop" on the homepage: more cards than fit, so the row scrolls instead
  *   of wrapping. Owner: design system. It holds the scroll position and nothing else: the page
  *   passes the title and the cards (property cards, as many as it has).
- * Props: title (see SectionHead), description, as ("h2" default | "h3"), label (already-translated
+ * Props: title (see SectionHead), description, as ("h2" default | "h3"), id (the title's id, so a
+ *   section around the row can be named by it), label (already-translated
  *   name of the list for screen readers, such as "Newest homes"), children (one card each; each is
  *   put in its own list item), className.
  * Responsive: cards are 300 px wide, or 78% of the screen when that is less, and a little of the
@@ -42,6 +43,7 @@ type ScrollRowProps = {
   title: string;
   description?: string | undefined;
   as?: "h2" | "h3" | undefined;
+  id?: string | undefined;
   label: string;
   children: ReactNode;
   className?: string;
@@ -52,7 +54,7 @@ const END_SLACK = 2;
 /** A press moves the row by this share of what is showing, so the card before it stays in view. */
 const PAGE_SHARE = 0.8;
 
-function ScrollRow({ title, description, as, label, children, className }: ScrollRowProps) {
+function ScrollRow({ title, description, as, id, label, children, className }: ScrollRowProps) {
   const translate = useTranslations();
   const rail = useRef<HTMLUListElement>(null);
   const [atStart, setAtStart] = useState(true);
@@ -90,6 +92,7 @@ function ScrollRow({ title, description, as, label, children, className }: Scrol
         title={title}
         description={description}
         as={as}
+        id={id}
         action={
           <div className="hidden items-center gap-2 md:flex">
             <IconButton

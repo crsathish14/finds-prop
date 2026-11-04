@@ -2,7 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
-import { HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
+import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -136,5 +136,13 @@ export const DOMAIN: LabEntry[] = [
       "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why Find Prop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
     sources: ["domain/home-section.tsx", "domain/section-grid.tsx"],
     Demo: HomeSectionsDemo,
+  },
+  {
+    id: "home-card-sections",
+    name: "Homepage card sections",
+    description:
+      "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on Find Prop is the Scrolling row.",
+    sources: [],
+    Demo: HomeCardSectionsDemo,
   },
 ];

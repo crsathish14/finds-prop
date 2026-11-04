@@ -129,7 +129,7 @@ export function ProjectCardDemo() {
   );
 }
 
-const DEVELOPERS: DeveloperCardData[] = [
+export const DEVELOPERS: DeveloperCardData[] = [
   {
     name: "Kadal Homes",
     monogram: "KH",

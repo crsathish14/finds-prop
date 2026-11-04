@@ -2,6 +2,8 @@
 
 import { Building2, Columns2, MapPin, MessageCircle, ShieldCheck, Star, Tag } from "lucide-react";
 import { CategoryCard } from "@/components/domain/category-card";
+import { DeveloperCard } from "@/components/domain/developer-card";
+import { PropertyCard } from "@/components/domain/property-card";
 import { CtaBand } from "@/components/domain/cta-band";
 import { HomeHero } from "@/components/domain/home-hero";
 import { HomeSection } from "@/components/domain/home-section";
@@ -12,6 +14,8 @@ import { ValueCard } from "@/components/domain/value-card";
 import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
+import { PLOT_NO_PICTURE, RENT_PRIME, SALE_BUDGET, SALE_FEATURED } from "./domain-demos";
+import { DEVELOPERS } from "./domain-demos-places";
 import { SearchCardHost } from "./domain-demos-search";
 
 export function HomeHeroDemo() {
@@ -208,6 +212,62 @@ export function HomeSectionsDemo() {
         A section with nothing to show is not drawn at all, so no gap is left: Explore by locality
         disappears when no locality is curated, and every section can be switched off in the site
         content.
+      </Text>
+    </div>
+  );
+}
+
+/** The two sections that show cards in a grid, as the page builds them, with sample data. */
+export function HomeCardSectionsDemo() {
+  return (
+    <div className="flex flex-col gap-10">
+      <Specimen
+        label="Featured homes: property cards, 1, 2 and 3 across, with a View all link (no Save or Compare yet)"
+        className="w-full"
+      >
+        <HomeSection labelledBy="lab-featured-title" spacing="tight" className="w-full">
+          <SectionHead
+            id="lab-featured-title"
+            title="Featured homes"
+            action={
+              <Link href="#featured" variant="arrow">
+                View all
+              </Link>
+            }
+          />
+          <SectionGrid variant="cards">
+            <PropertyCard property={SALE_FEATURED} priority />
+            <PropertyCard property={RENT_PRIME} priority />
+            <PropertyCard property={SALE_BUDGET} priority />
+            <PropertyCard property={PLOT_NO_PICTURE} priority />
+          </SectionGrid>
+        </HomeSection>
+      </Specimen>
+      <Specimen
+        label="New launches from developers: developer cards on the darker band, with the line under the title"
+        className="w-full"
+      >
+        <HomeSection labelledBy="lab-launches-title" tone="band" className="w-full">
+          <SectionHead
+            id="lab-launches-title"
+            title="New launches from developers"
+            description="Approved and published projects only."
+            action={
+              <Link href="#projects" variant="arrow">
+                See all projects
+              </Link>
+            }
+          />
+          <SectionGrid variant="cards">
+            {DEVELOPERS.map((developer) => (
+              <DeveloperCard key={developer.name} developer={developer} />
+            ))}
+          </SectionGrid>
+        </HomeSection>
+      </Specimen>
+      <Text tone="muted">
+        Newest on Find Prop is the Scrolling row entry above. Each of these sections is left out
+        whole when it has nothing to show.
       </Text>
     </div>
   );
