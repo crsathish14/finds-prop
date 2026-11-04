@@ -395,6 +395,25 @@
       "quickPicks": "Quick picks",
       "quickPickBedrooms": "3 BHK",
       "quickPickBudget": "Budget homes"
+    },
+    "filters": {
+      "title": "Filters",
+      "clearAll": "Clear all",
+      "close": "Close filters",
+      "all": "All",
+      "bedrooms": "Bedrooms (BHK)",
+      "bedroomsAny": "Any",
+      "sortLabel": "Sort by",
+      "sort": {
+        "newest": "Newest",
+        "priceAsc": "Price: low to high",
+        "priceDesc": "Price: high to low",
+        "areaDesc": "Largest first"
+      },
+      "button": "Filters",
+      "buttonApplied": "Filters, {count} applied",
+      "show": "Show homes",
+      "showCount": "{count, plural, one {Show # home} other {Show # homes}}"
     }
   }
 }

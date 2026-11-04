@@ -5,11 +5,21 @@ import {
   BUDGET_STEPS,
   PROPERTY_TYPES,
   PROPERTY_TYPE_WORDS,
+  SORT_OPTIONS,
+  SORT_WORDS,
   budgetStepsFor,
+  budgetStepsForFilter,
+  clearFilters,
+  countActiveFilters,
   keepBudget,
+  keepFilterBudget,
   parseBedrooms,
   parseBudget,
+  parseFilterBudget,
+  parseFilterIntent,
   parsePropertyType,
+  parseSort,
+  type FilterValues,
 } from "../search-options";
 
 describe("search options (S4-T01)", () => {
@@ -59,5 +69,74 @@ describe("search options (S4-T01)", () => {
     expect(parseBedrooms("")).toBeNull();
     expect(parseBudget("buy", "7500000")).toBe(7_500_000);
     expect(parseBudget("rent", "7500000")).toBeNull();
+  });
+});
+
+describe("filter options (S4-T01)", () => {
+  const empty: FilterValues = {
+    intent: "all",
+    locality: null,
+    propertyType: null,
+    bedrooms: null,
+    maxBudget: null,
+    sort: "newest",
+  };
+
+  it("shows sale amounts for All and Buy and monthly rents for Rent", () => {
+    expect(budgetStepsForFilter("all")).toBe(BUDGET_STEPS.buy);
+    expect(budgetStepsForFilter("buy")).toBe(BUDGET_STEPS.buy);
+    expect(budgetStepsForFilter("rent")).toBe(BUDGET_STEPS.rent);
+  });
+
+  it("keeps a budget the new list has, for Looking to as well", () => {
+    expect(keepFilterBudget("all", 10_000_000)).toBe(10_000_000);
+    expect(keepFilterBudget("rent", 10_000_000)).toBeNull();
+    expect(keepFilterBudget("rent", 25_000)).toBe(25_000);
+    expect(keepFilterBudget("buy", null)).toBeNull();
+  });
+
+  it("reads select text for budget, Looking to and sort, treating unknown text as the default", () => {
+    expect(parseFilterBudget("all", "7500000")).toBe(7_500_000);
+    expect(parseFilterBudget("rent", "7500000")).toBeNull();
+    expect(parseFilterIntent("rent")).toBe("rent");
+    expect(parseFilterIntent("sell")).toBe("all");
+    expect(parseSort("price_desc")).toBe("price_desc");
+    expect(parseSort("cheapest")).toBe("newest");
+  });
+
+  it("has the four orders of the search function, each with a word in en.json", () => {
+    expect(SORT_OPTIONS).toEqual(["newest", "price_asc", "price_desc", "area_desc"]);
+    for (const option of SORT_OPTIONS) {
+      const key = SORT_WORDS[option].replace("domain.filters.sort.", "");
+      expect(en.domain.filters.sort[key as keyof typeof en.domain.filters.sort]).toBeTruthy();
+    }
+  });
+
+  it("counts the four filters, as the UX button does, and not Looking to or the sort", () => {
+    expect(countActiveFilters(empty)).toBe(0);
+    expect(countActiveFilters({ ...empty, intent: "rent", sort: "price_asc" })).toBe(0);
+    expect(
+      countActiveFilters({
+        ...empty,
+        locality: "Velachery",
+        propertyType: "apartment",
+        bedrooms: 3,
+        maxBudget: 15_000_000,
+      }),
+    ).toBe(4);
+    expect(countActiveFilters({ ...empty, bedrooms: 1 })).toBe(1);
+  });
+
+  it("clears the four filters and leaves Looking to and the sort alone", () => {
+    expect(
+      clearFilters({
+        intent: "buy",
+        locality: "Adyar",
+        propertyType: "villa",
+        bedrooms: 2,
+        maxBudget: 5_000_000,
+        sort: "area_desc",
+      }),
+    ).toEqual({ ...empty, intent: "buy", sort: "area_desc" });
   });
 });

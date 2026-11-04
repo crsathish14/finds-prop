@@ -1,6 +1,7 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
+import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { SearchCardDemo } from "./domain-demos-search";
 
 /**
@@ -55,5 +56,21 @@ export const DOMAIN: LabEntry[] = [
       "The home page search box: Buy, Rent and New projects, a locality box with suggestions, property type, bedrooms, maximum budget and the copper Search button, with Popular and Quick-pick chips. Wide (one joined bar), stacked, with values, Rent, no AI link and no chips, and long text.",
     sources: ["domain/search-card.tsx"],
     Demo: SearchCardDemo,
+  },
+  {
+    id: "filter-rail",
+    name: "Filter rail",
+    description:
+      "The filter panel beside the results on a wide screen: Looking to, locality, property type, bedrooms (Any and 1 to 4), maximum budget and Clear all. Filled, nothing set, Rent and a locality that is not in the list.",
+    sources: ["domain/filters.tsx"],
+    Demo: FilterRailDemo,
+  },
+  {
+    id: "filter-sheet",
+    name: "Filter sheet",
+    description:
+      "On a phone, the Filters button (with the count of filters set) opens a bottom sheet with the same fields plus Sort by, Clear all and Show N homes. The button with and without a count, and the open sheet drawn for comparison.",
+    sources: [],
+    Demo: FilterSheetDemo,
   },
 ];
