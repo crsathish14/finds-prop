@@ -105,7 +105,7 @@ const EMPTY: SearchValues = {
 /** The four fields share one box: label above, value below, a ring around all of it on focus. */
 function fieldBox(wide: boolean) {
   return cn(
-    "relative flex h-14 min-w-0 flex-col justify-center gap-1 rounded-md border-[length:var(--bw-field)] border-line-input bg-surface px-3 @xl:px-4",
+    "relative flex h-14 min-w-0 flex-col justify-center gap-1 rounded-md border-[length:var(--bw-field)] border-line-input bg-surface px-2 @xl:px-4",
     "transition-colors duration-(--dur-fast) hover:border-primary",
     "focus-within:border-primary focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-primary",
     wide &&
@@ -124,7 +124,7 @@ function FieldLabel({
   short?: string | undefined;
 }) {
   return (
-    <label htmlFor={htmlFor} className="text-overline text-muted">
+    <label htmlFor={htmlFor} className="text-overline text-muted @max-xl:tracking-normal">
       {short ? (
         <>
           <span className="@xl:hidden">{short}</span>
@@ -173,7 +173,7 @@ function SelectField({
           value={value}
           onChange={onChange}
           className={cn(
-            "h-6 w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent text-small font-semibold text-ink @xl:pr-6 @xl:text-body",
+            "h-6 w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent @max-xs:pr-4 text-small font-semibold text-ink @xl:pr-6 @xl:text-body",
             "focus-visible:outline-0",
             value === "" && "font-normal text-muted",
           )}
@@ -183,7 +183,7 @@ function SelectField({
         <Icon
           icon={ChevronDown}
           size="sm"
-          className="pointer-events-none absolute top-2 right-1.5 size-3.5 text-muted @xl:top-1/2 @xl:right-0 @xl:size-4 @xl:-translate-y-1/2"
+          className="pointer-events-none absolute top-2 right-1 size-3 text-muted @max-xs:top-auto @max-xs:bottom-3 @xl:top-1/2 @xl:right-0 @xl:size-4 @xl:-translate-y-1/2"
         />
       </div>
     </div>
@@ -272,7 +272,7 @@ function SearchCard({
           aria-label={translate("domain.searchCard.intentLabel")}
           value={values.intent}
           onValueChange={chooseIntent}
-          className="order-1 w-full @xl:w-auto"
+          className="order-1 w-full @max-xs:[&>*]:px-3 @xl:w-auto"
           options={[
             { value: "buy", label: translate("domain.searchCard.buy") },
             { value: "rent", label: translate("domain.searchCard.rent") },
@@ -301,7 +301,7 @@ function SearchCard({
 
         <div
           className={cn(
-            "order-2 grid w-full grid-cols-6 gap-3 @xl:order-3",
+            "order-2 grid w-full grid-cols-6 gap-2 @xl:order-3 @xl:gap-3",
             wide &&
               "@4xl:flex @4xl:items-stretch @4xl:gap-0 @4xl:overflow-hidden @4xl:rounded-lg @4xl:border-[length:var(--bw-field)] @4xl:border-line-input @4xl:bg-surface",
           )}
@@ -309,7 +309,7 @@ function SearchCard({
           <div
             className={cn(
               fieldBox(wide),
-              "col-span-6 @xl:col-span-4 @xl:row-start-1",
+              "col-span-6 px-3 @xl:col-span-4 @xl:row-start-1",
               wide && "@4xl:flex-[1.7]",
             )}
             onKeyDown={onLocalityKeyDown}
