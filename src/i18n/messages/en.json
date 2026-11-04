@@ -414,6 +414,10 @@
       "buttonApplied": "Filters, {count} applied",
       "show": "Show homes",
       "showCount": "{count, plural, one {Show # home} other {Show # homes}}"
+    },
+    "scrollRow": {
+      "previous": "Previous",
+      "next": "Next"
     }
   }
 }

@@ -54,6 +54,18 @@ The owner approved this plan on 4 Nov 2026 (it was the second half of the search
 - **No loading state:** the fields are static (the page gives them their lists), so there is nothing to show while loading.
 - **Not built:** the results bar (sort at the right, grid and list toggle, active filter chips, label pills), which belongs to S4-T04, and the place search.
 
+### Section building blocks (third step of the homepage, S4-T06)
+
+The owner approved the plan on 4 Nov 2026 ("all recommended"): four steps, the building blocks third. This step adds the pieces the homepage sections are made of and puts them on the Domain board; the sections themselves, with their data, are the fourth step.
+
+- **Five blocks, all in `components/domain`:** `SectionHead` (the title row: heading, an optional line under it and an action at the right), `CategoryCard` (the "Browse by what matters" card), `ValueCard` (the "Why Find Prop" card), `CtaBand` (the green post-a-property banner) and `ScrollRow` (a titled row of cards that scrolls sideways). The page passes every word, already translated, so the page owns the wording. The only words in `en.json` are the scroller's Previous and Next.
+- **Reuse:** the heading is the shared `Heading`, the link at the right is the shared `Link variant="arrow"`, the scroller's buttons are the shared `IconButton`, and the banner's button is the shared copper `Button`. The locality tiles of "Explore by locality" are the existing `LocalityTile`.
+- **`ScrollRow`** is the only block with client code (it needs the scroll position). The cards go in a list, one item each, so a screen reader hears "list, 8 items". It scrolls by 80% of what is showing, instantly under reduced motion. It is left out, title and all, when it has no cards (an empty section leaves no gap). The first card lines up with the page's side padding and the row runs to the screen edge, as the UX's CSS says (padding and negative margin of one gutter).
+- **Not in the UX, so decided here (the owner can change them):** Previous and Next are **disabled at the ends** (the UX draws only the enabled state), the same as the gallery arrows; they are hidden on a phone, as drawn, where the visitor swipes. The copper italic words of "Why Find Prop" are an `emphasis` prop of `SectionHead` in the **copper text colour**, not the fill copper of `Heading.Em` (which is documented for display and h1 sizes only): the Design Lab's accessibility scan found the fill copper below 4.5 : 1 at the 23 px phone size of an h2 (about 4.2 : 1 in the UX itself). The arrow on the category card is **white** on the copper dot; the UX draws it green (about 1.7 : 1 against the copper), a leftover of a style shared with the Search button.
+- **Small differences from the UX:** spacing uses the 4 px scale (the card padding of 22 px is 24 px at the sides and 20 px above and below; the gap under a section title is 16 px on a phone, UX 18 px; the banner's side padding is 40 px, UX 48 px); the banner and cards use the 24 px corner token (the banner is 28 px in the UX); card titles use the 19 to 21 px heading step (UX 22 px) and the value card's sentence is 14 px (UX 15 px). The tints are the nearest palette tokens, the fourth category tint matching the second.
+- **One copper button more:** the banner keeps its copper button as drawn, so the homepage has two (this one and Search). The owner approved this on 4 Nov 2026; no automated check enforces one per page.
+- **Loading:** none of the five holds data, so none has a skeleton; the cards inside the scroller bring their own.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
