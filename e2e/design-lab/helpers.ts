@@ -8,7 +8,14 @@ export const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
 ] as const;
 
-export const BOARDS = ["foundations", "components", "navigation", "feedback", "ads"] as const;
+export const BOARDS = [
+  "foundations",
+  "components",
+  "navigation",
+  "feedback",
+  "ads",
+  "domain",
+] as const;
 
 export async function settle(page: Page) {
   await page.waitForLoadState("networkidle");

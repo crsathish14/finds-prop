@@ -1,5 +1,6 @@
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
+import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
 import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
@@ -48,6 +49,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "The sponsored banner container: anatomy, formats, several ads, fitting and the fallback.",
     entries: ADS,
+  },
+  {
+    id: "domain",
+    title: "Domain",
+    uxBoard: "search",
+    summary:
+      "The organisms that appear only inside the screens: property, project and developer cards, search, filters, gallery and enquiry. They mirror the search, property, projects and home screens.",
+    entries: DOMAIN,
   },
 ];
 

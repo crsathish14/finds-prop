@@ -1,7 +1,11 @@
 import type { ComponentType } from "react";
 
-/** The five boards, each mirroring one UX design-system board (ADR-020). */
-export type LabBoardId = "foundations" | "components" | "navigation" | "feedback" | "ads";
+/**
+ * The five boards that mirror the approved UX design-system boards (ADR-020), and "domain", which
+ * shows the organisms that only appear inside the screens (the cards, search and detail parts).
+ */
+export type LabBoardId =
+  "foundations" | "components" | "navigation" | "feedback" | "ads" | "domain";
 
 export type LabEntry = {
   /** Anchor on the board page: lowercase words joined by hyphens. */
@@ -16,7 +20,7 @@ export type LabEntry = {
 export type LabBoard = {
   id: LabBoardId;
   title: string;
-  /** The UX board this one mirrors. */
+  /** The UX board or screen this one mirrors (a file in docs/ux/final-ux/screens). */
   uxBoard: string;
   summary: string;
   entries: LabEntry[];

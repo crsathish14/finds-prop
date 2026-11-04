@@ -10,7 +10,7 @@ import { LAB_BOARDS } from "./registry";
 // R-DS-03: a shared component without a Design Lab entry fails here, so a component cannot ship
 // without being shown in every state.
 const COMPONENTS_DIR = path.resolve(__dirname, "..", "components");
-const LAYERS = ["ui", "patterns", "layout"];
+const LAYERS = ["ui", "patterns", "layout", "domain"];
 // Types only: no component to show.
 const NOT_COMPONENTS = new Set(["layout/nav-types.ts"]);
 
@@ -29,13 +29,14 @@ const allEntries = LAB_BOARDS.flatMap((board) => board.entries.map((entry) => ({
 const registered = new Set(allEntries.flatMap(({ entry }) => entry.sources));
 
 describe("Design Lab registry", () => {
-  it("has the five boards of the approved UX, in order", () => {
+  it("has the five boards of the approved UX, in order, then the domain board", () => {
     expect(LAB_BOARDS.map((board) => board.id)).toEqual([
       "foundations",
       "components",
       "navigation",
       "feedback",
       "ads",
+      "domain",
     ]);
     expect(LAB_BOARDS.map((board) => board.uxBoard)).toEqual([
       "ds-foundations",
@@ -43,6 +44,7 @@ describe("Design Lab registry", () => {
       "ds-navigation",
       "ds-feedback",
       "ds-ads",
+      "search",
     ]);
   });
 
