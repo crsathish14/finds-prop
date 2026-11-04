@@ -24,6 +24,19 @@
       "title": "Explore by locality",
       "seeAll": "See all localities"
     },
+    "featured": {
+      "title": "Featured homes",
+      "viewAll": "View all"
+    },
+    "newLaunches": {
+      "title": "New launches from developers",
+      "description": "Approved and published projects only.",
+      "seeAll": "See all projects"
+    },
+    "newest": {
+      "title": "Newest on {brandName}",
+      "label": "Newest homes"
+    },
     "browse": {
       "title": "Browse by what matters",
       "featured": {

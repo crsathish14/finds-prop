@@ -26,3 +26,4 @@ export {
   type ExploreTile,
   type ValueCardModel,
 } from "./static-sections";
+export { FeaturedSection, NewLaunchesSection, NewestSection } from "./card-sections";

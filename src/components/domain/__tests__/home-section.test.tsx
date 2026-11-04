@@ -59,7 +59,7 @@ describe("HomeSection: one band of the homepage (S4-T06)", () => {
 });
 
 describe("SectionGrid: the columns of a homepage card row (S4-T06)", () => {
-  const classes = (variant: "tiles" | "categories" | "values") => {
+  const classes = (variant: "tiles" | "categories" | "values" | "cards") => {
     const view = render(
       <SectionGrid variant={variant}>
         <span>card</span>
@@ -82,6 +82,13 @@ describe("SectionGrid: the columns of a homepage card row (S4-T06)", () => {
     expect(categories.split(" ")).not.toContain("grid-cols-2");
     expect(categories).toContain("md:grid-cols-2");
     expect(categories).toContain("portal:grid-cols-4");
+  });
+
+  it("lays property and developer cards out 1, 2 and 3 across", () => {
+    const cards = classes("cards");
+    expect(cards.split(" ")).not.toContain("grid-cols-2");
+    expect(cards).toContain("md:grid-cols-2");
+    expect(cards).toContain("portal:grid-cols-3");
   });
 
   it("lays value cards out 1 and 3 across", () => {

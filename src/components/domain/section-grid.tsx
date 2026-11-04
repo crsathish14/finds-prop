@@ -2,11 +2,11 @@
  * SectionGrid: the grid that lays out the cards of a homepage section.
  * Purpose: one place for the columns and gaps of the four kinds of card row on the homepage, so the
  *   Design Lab, the homepage and any later page agree. Owner: design system. It holds no words.
- * Props: variant ("tiles" locality tiles | "categories" category cards | "values" value cards),
- *   children, className.
+ * Props: variant ("tiles" locality tiles | "categories" category cards | "values" value cards |
+ *   "cards" property and developer cards), children, className.
  * Responsive: tiles are 2 across on a phone, 3 from 768 px and 5 from 1100 px; category cards are 1,
- *   then 2 from 768 px and 4 from 1100 px; value cards are 1, then 3 from 768 px. The gaps grow with
- *   the columns.
+ *   then 2 from 768 px and 4 from 1100 px; value cards are 1, then 3 from 768 px; property and developer
+ *   cards are 1, then 2 from 768 px and 3 from 1100 px. The gaps grow with the columns.
  * Accessibility: layout only. Each child is its own link or card.
  * States: none.
  * Dependencies: cva, cn.
@@ -25,6 +25,7 @@ const gridStyles = cva("grid", {
       tiles: "grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 portal:grid-cols-5",
       categories: "gap-4 md:grid-cols-2 portal:grid-cols-4 portal:gap-5",
       values: "gap-4 md:grid-cols-3 md:gap-5",
+      cards: "gap-5 md:grid-cols-2 portal:grid-cols-3",
     },
   },
 });
