@@ -1,6 +1,12 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
+import {
+  EnquiryCardDemo,
+  EnquirySheetDemo,
+  PriceCardDemo,
+  StickyMobileBarDemo,
+} from "./domain-demos-enquiry";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
@@ -144,5 +150,37 @@ export const DOMAIN: LabEntry[] = [
       "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on Find Prop is the Scrolling row.",
     sources: [],
     Demo: HomeCardSectionsDemo,
+  },
+  {
+    id: "price-card",
+    name: "Price card",
+    description:
+      "The price of one home in the sticky column of the property page: the tags, the large price and the price per square foot. Sale with and without the price per square foot, rent and no tags.",
+    sources: ["domain/price-card.tsx"],
+    Demo: PriceCardDemo,
+  },
+  {
+    id: "enquiry-card",
+    name: "Enquiry card",
+    description:
+      "Where a visitor contacts the owner, in each of its states: signed out (sign in or create an account), the form (name, phone, email and message with its counter), errors, send failed with the typed values kept, sending, sent, and long text. Static states: it sends nothing.",
+    sources: ["domain/enquiry-card.tsx"],
+    Demo: EnquiryCardDemo,
+  },
+  {
+    id: "enquiry-sheet",
+    name: "Enquiry sheet",
+    description:
+      "On a phone the Enquire button opens a bottom sheet with the name, the phone and a shorter message box. The real sheet, opened by a button, and the open sheet drawn for comparison.",
+    sources: ["domain/enquiry-sheet.tsx"],
+    Demo: EnquirySheetDemo,
+  },
+  {
+    id: "sticky-mobile-bar",
+    name: "Sticky mobile bar",
+    description:
+      "The bar pinned to the bottom of a phone on a property page: the price on the left and the one copper button on the right (a sign-in link, or Enquire for the sheet). Shown in the page here so it can be seen at every width; the real one is hidden from 1024 px.",
+    sources: ["domain/sticky-mobile-bar.tsx"],
+    Demo: StickyMobileBarDemo,
   },
 ];

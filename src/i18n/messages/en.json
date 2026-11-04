@@ -482,6 +482,38 @@
     "scrollRow": {
       "previous": "Previous",
       "next": "Next"
+    },
+    "enquiry": {
+      "optional": "(optional)",
+      "close": "Close",
+      "gate": {
+        "title": "Contact the owner",
+        "leadIn": "Sign in to send an enquiry. We will bring you back to this home afterwards.",
+        "signIn": "Sign in to contact",
+        "createAccount": "Create an account"
+      },
+      "form": {
+        "title": "Send an enquiry",
+        "leadIn": "Your name and contact details are shared with the owner of this home.",
+        "name": "Your name",
+        "phone": "Phone",
+        "email": "Email",
+        "emailPlaceholder": "you@example.com",
+        "message": "Message",
+        "messagePlaceholder": "Tell the owner what you would like to know, or when you can visit.",
+        "messagePlaceholderShort": "Tell the owner what you would like to know.",
+        "counter": "{count} / {max}",
+        "send": "Send enquiry"
+      },
+      "failed": {
+        "title": "We couldn't send your enquiry",
+        "body": "Nothing was lost: your details are still here. Try again in a moment."
+      },
+      "sent": {
+        "title": "Enquiry sent",
+        "body": "The owner can now see your details and message. The reply status will show in your dashboard.",
+        "viewEnquiries": "View my enquiries"
+      }
     }
   }
 }
