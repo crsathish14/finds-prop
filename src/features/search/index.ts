@@ -25,3 +25,11 @@ export {
   SHOW_STEP,
   type SearchParams,
 } from "./schemas";
+export {
+  matchLocalities,
+  popularLinks,
+  POPULAR_COUNT,
+  quickPickLinks,
+  type SearchLink,
+} from "./home-links";
+export { HomeSearch } from "./home-search.client";

@@ -22,6 +22,7 @@ import { Logo } from "@/components/ui/logo";
 import { Text } from "@/components/ui/text";
 import { resolveHero, type HeroLayout, type SponsorAd } from "@/lib/sponsors";
 import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "@/lib/sponsors.fixtures";
+import { SearchCardHost } from "./boards/domain-demos-search";
 import type { PreviewName } from "./preview-names";
 import {
   ACCOUNT_GROUPS,
@@ -236,15 +237,6 @@ function PortalPage() {
   );
 }
 
-/** A stand-in for the search card, which is built in Stage 4. */
-function SearchCardStandIn() {
-  return (
-    <div className="flex min-h-52 items-center justify-center rounded-xl bg-surface p-6 text-small text-muted shadow-float">
-      Search card (built in Stage 4)
-    </div>
-  );
-}
-
 function HeroPage({ ads, layout }: { ads: SponsorAd[]; layout: HeroLayout }) {
   const hero = resolveHero(ads, layout);
   const split = hero.arrangement === "split";
@@ -261,7 +253,7 @@ function HeroPage({ ads, layout }: { ads: SponsorAd[]; layout: HeroLayout }) {
           <Heading as="h1" size={split ? "1" : "display"} className={split ? "" : "text-center"}>
             Find the place that fits your life
           </Heading>
-          <SearchCardStandIn />
+          <SearchCardHost layout={split ? "stacked" : "wide"} />
           {split ? null : <SponsorSlot ads={ads} placement="hero" layout={layout} />}
         </div>
         {split ? <SponsorSlot ads={ads} placement="hero" layout={layout} /> : null}

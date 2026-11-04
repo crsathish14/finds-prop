@@ -2,6 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
+import { HomeHeroDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 
 /**
@@ -72,5 +73,13 @@ export const DOMAIN: LabEntry[] = [
       "On a phone, the Filters button (with the count of filters set) opens a bottom sheet with the same fields plus Sort by, Clear all and Show N homes. The button with and without a count, and the open sheet drawn for comparison.",
     sources: [],
     Demo: FilterSheetDemo,
+  },
+  {
+    id: "home-hero",
+    name: "Home hero",
+    description:
+      "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search card, on faint green arches. With and without the copper word and the line, and a long headline.",
+    sources: ["domain/home-hero.tsx"],
+    Demo: HomeHeroDemo,
   },
 ];

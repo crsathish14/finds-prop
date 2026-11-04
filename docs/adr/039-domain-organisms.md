@@ -54,6 +54,17 @@ The owner approved this plan on 4 Nov 2026 (it was the second half of the search
 - **No loading state:** the fields are static (the page gives them their lists), so there is nothing to show while loading.
 - **Not built:** the results bar (sort at the right, grid and list toggle, active filter chips, label pills), which belongs to S4-T04, and the place search.
 
+### Home hero (second step of the homepage, S4-T06)
+
+The owner approved the plan on 4 Nov 2026 ("all recommended"): four steps, the hero second. The step makes the real homepage top: the headline, the line under it and the search card, joined to the results address (ADR-040).
+
+- **`HomeHero`** (`components/domain`) is the "Search Desk" layout without a sponsor strip: the headline (the page's h1), the line under it, and the search card as `children`, on three faint green half-circles drawn at each side (SVG, cropped, never squeezed). It holds no words; the page passes them. The sponsor strip joins under the card in S4-T07, which also builds the "Split" layout, so a site content setting of `split` shows this layout for now.
+- **The words** (`buildHero` in `features/site`, decided with the owner): a headline written in the site content is shown as given, with no copper word (the site cannot know which word it would be); otherwise the catalogue's "Find the place that fits your life." which, when the site content names a region, becomes "... in {region}." with the region in copper (display-size text, so it passes the large-text contrast limit); the line under it is the site content's or "Shortlist, compare and enquire directly." An empty or blank setting counts as no setting. The default names no place (DEC-14). The site content's eyebrow has no place in this layout (the UX draws one only in the Split layout), so it is not shown yet.
+- **The shared `TitleWithEmphasis`** (from the error screen, now in `ui/heading.tsx`) sets the named part of a title in italic copper; a second screen needed it (R-DS-02).
+- **The card's extra prop:** `SearchCard` gained `localityDebounceMs` (default 300 ms, as before). The home page's suggestions are a local list, so it sets 0: with a pause, an Enter pressed straight after typing text that matches nothing would pick a suggestion left over from the shorter text instead of searching what was typed.
+- **Small differences from the UX:** the headline is balanced and held to a width instead of broken by hand after "fits"; the line is 16 px on a phone (UX 15 px); the gaps follow the 4 px scale (UX 10 px and 22 px become 8 and 12 px, and 16 and 24 px).
+- **Design Lab:** the hero previews use the real search card in place of the "built in Stage 4" stand-in, so their pictures change.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.

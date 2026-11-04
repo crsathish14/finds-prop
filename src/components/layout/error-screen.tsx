@@ -19,7 +19,7 @@
  */
 import type { ReactNode } from "react";
 import { ArchIllustration } from "@/components/ui/arch-illustration";
-import { Heading } from "@/components/ui/heading";
+import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
 
@@ -35,18 +35,6 @@ type ErrorScreenProps = {
   titleAs?: "h1" | "h2" | "h3";
   className?: string;
 };
-
-function TitleWithEmphasis({ title, emphasis }: { title: string; emphasis?: string | undefined }) {
-  const at = emphasis ? title.indexOf(emphasis) : -1;
-  if (!emphasis || at < 0) return title;
-  return (
-    <>
-      {title.slice(0, at)}
-      <Heading.Em>{emphasis}</Heading.Em>
-      {title.slice(at + emphasis.length)}
-    </>
-  );
-}
 
 function ErrorScreen({
   code,

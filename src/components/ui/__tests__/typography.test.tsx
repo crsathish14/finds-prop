@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Heading } from "../heading";
+import { Heading, TitleWithEmphasis } from "../heading";
 import { Price } from "../price";
 import { Text } from "../text";
 
@@ -56,6 +56,32 @@ describe("Heading", () => {
     const emphasis = screen.getByText("you love");
     expect(emphasis.tagName).toBe("EM");
     expect(emphasis).toHaveClass("em-accent");
+  });
+});
+
+describe("TitleWithEmphasis", () => {
+  it("sets the named part of the title in italic copper and leaves the rest plain", () => {
+    render(
+      <Heading as="h1" size="display">
+        <TitleWithEmphasis
+          title="Find the place that fits your life in Chennai."
+          emphasis="Chennai"
+        />
+      </Heading>,
+    );
+    const heading = screen.getByRole("heading", {
+      name: "Find the place that fits your life in Chennai.",
+    });
+    expect(screen.getByText("Chennai").tagName).toBe("EM");
+    expect(heading.textContent).toBe("Find the place that fits your life in Chennai.");
+  });
+
+  it("shows the title plain when the emphasis is missing or is not part of it", () => {
+    const { container, rerender } = render(<TitleWithEmphasis title="Find a home" />);
+    expect(container.textContent).toBe("Find a home");
+    rerender(<TitleWithEmphasis title="Find a home" emphasis="Chennai" />);
+    expect(container.textContent).toBe("Find a home");
+    expect(container.querySelector("em")).not.toBeInTheDocument();
   });
 });
 
