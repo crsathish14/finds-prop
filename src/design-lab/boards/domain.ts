@@ -4,6 +4,13 @@ import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-d
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { HomeHeroDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
+import {
+  CategoryCardDemo,
+  CtaBandDemo,
+  ScrollRowDemo,
+  SectionHeadDemo,
+  ValueCardDemo,
+} from "./domain-demos-sections";
 
 /**
  * The organisms that appear only inside the screens (S4-T01). The five approved boards do not show
@@ -73,6 +80,46 @@ export const DOMAIN: LabEntry[] = [
       "On a phone, the Filters button (with the count of filters set) opens a bottom sheet with the same fields plus Sort by, Clear all and Show N homes. The button with and without a count, and the open sheet drawn for comparison.",
     sources: [],
     Demo: FilterSheetDemo,
+  },
+  {
+    id: "section-head",
+    name: "Section head",
+    description:
+      "The title row above a homepage section: the heading, an optional line under it and a link or buttons at the right. With a link, with a line, with an emphasised word and with a long title.",
+    sources: ["domain/section-head.tsx"],
+    Demo: SectionHeadDemo,
+  },
+  {
+    id: "category-card",
+    name: "Category card",
+    description:
+      "A tinted card with an icon, a title, a line and a copper arrow that leads to one way of browsing (Featured, Prime, Budget, By locality). The four tints, hover lift and a long text. The tints use the nearest palette tokens.",
+    sources: ["domain/category-card.tsx"],
+    Demo: CategoryCardDemo,
+  },
+  {
+    id: "value-card",
+    name: "Value card",
+    description:
+      "One reason to use Find Prop: a green icon square, a bold title and a sentence, on a white card. Three in a row, and a long text.",
+    sources: ["domain/value-card.tsx"],
+    Demo: ValueCardDemo,
+  },
+  {
+    id: "cta-band",
+    name: "Call to action band",
+    description:
+      "The green banner at the foot of the homepage with arches, a title, a line and the copper button that leads to Post property. With and without the line.",
+    sources: ["domain/cta-band.tsx"],
+    Demo: CtaBandDemo,
+  },
+  {
+    id: "scroll-row",
+    name: "Scrolling row",
+    description:
+      "A titled row of cards that scrolls sideways, with Previous and Next buttons from 768 px (disabled at the ends) and swiping on a phone. Six cards, and one card only.",
+    sources: ["domain/scroll-row.tsx"],
+    Demo: ScrollRowDemo,
   },
   {
     id: "home-hero",
