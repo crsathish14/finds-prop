@@ -67,3 +67,21 @@ export function formatDate(
     typeof date === "string" ? new Date(date) : date,
   );
 }
+
+const DAYS_PER_MONTH = 30;
+const DAYS_PER_YEAR = 365;
+
+/**
+ * How long ago a listing went live, as the cards say it: "Today", "3 days ago" up to 29 days, then
+ * months and years. The age is whole days; a date in the future (a clock a little ahead) is
+ * "Today".
+ */
+export function formatListedAgo(translate: Translate, ageDays: number): string {
+  const days = Math.floor(ageDays);
+  if (days < 1) return translate("format.today");
+  if (days < DAYS_PER_MONTH) return translate("format.daysAgo", { count: days });
+  if (days < DAYS_PER_YEAR) {
+    return translate("format.monthsAgo", { count: Math.floor(days / DAYS_PER_MONTH) });
+  }
+  return translate("format.yearsAgo", { count: Math.floor(days / DAYS_PER_YEAR) });
+}

@@ -5,6 +5,7 @@ import {
   calendarYear,
   formatArea,
   formatDate,
+  formatListedAgo,
   formatPerSqft,
   formatPrice,
   formatRent,
@@ -62,5 +63,28 @@ describe("UT-format: the year for the copyright line", () => {
     // 20:00 UTC on 31 Dec is already 1:30 am on 1 Jan in India.
     expect(calendarYear(new Date("2026-12-31T20:00:00Z"))).toBe(2027);
     expect(calendarYear(new Date("2026-12-31T10:00:00Z"))).toBe(2026);
+  });
+});
+
+describe("UT-format: how long ago a listing went live", () => {
+  it("says Today for the first day and for a date in the future", () => {
+    expect(formatListedAgo(translate, 0)).toBe("Today");
+    expect(formatListedAgo(translate, 0.9)).toBe("Today");
+    expect(formatListedAgo(translate, -2)).toBe("Today");
+  });
+
+  it("counts days up to 29, with one day in the singular", () => {
+    expect(formatListedAgo(translate, 1)).toBe("1 day ago");
+    expect(formatListedAgo(translate, 3.7)).toBe("3 days ago");
+    expect(formatListedAgo(translate, 12)).toBe("12 days ago");
+    expect(formatListedAgo(translate, 29)).toBe("29 days ago");
+  });
+
+  it("then counts months of 30 days, and years", () => {
+    expect(formatListedAgo(translate, 30)).toBe("1 month ago");
+    expect(formatListedAgo(translate, 75)).toBe("2 months ago");
+    expect(formatListedAgo(translate, 364)).toBe("12 months ago");
+    expect(formatListedAgo(translate, 365)).toBe("1 year ago");
+    expect(formatListedAgo(translate, 800)).toBe("2 years ago");
   });
 });
