@@ -1,6 +1,7 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
+import { SearchCardDemo } from "./domain-demos-search";
 
 /**
  * The organisms that appear only inside the screens (S4-T01). The five approved boards do not show
@@ -46,5 +47,13 @@ export const DOMAIN: LabEntry[] = [
       "A tinted tile linking to one locality, in the five tints of the UX, with an optional subtitle. Hover lift, no subtitle, a long name and loading. The tints use the nearest palette tokens.",
     sources: ["domain/locality-tile.tsx"],
     Demo: LocalityTileDemo,
+  },
+  {
+    id: "search-card",
+    name: "Search card",
+    description:
+      "The home page search box: Buy, Rent and New projects, a locality box with suggestions, property type, bedrooms, maximum budget and the copper Search button, with Popular and Quick-pick chips. Wide (one joined bar), stacked, with values, Rent, no AI link and no chips, and long text.",
+    sources: ["domain/search-card.tsx"],
+    Demo: SearchCardDemo,
   },
 ];

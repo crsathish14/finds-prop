@@ -8,7 +8,9 @@
  *   stops typing for debounceMs, only once they have typed minChars characters; fetch here),
  *   options ({ value, label, hint? }), onSelect, loading, minChars (3), debounceMs (300), invalid,
  *   disabled, id, placeholder, aria-label (required) and labels ({ clear, loading, noResults,
- *   resultCount(count) }, all already-translated).
+ *   resultCount(count) }, all already-translated). icon (the glyph at the start of the box, a
+ *   magnifier by default) and inputClassName (changes the text box itself, for a host that draws
+ *   the box, such as the search card's field) are optional; without them the box is unchanged.
  * Responsive: the list is as wide as the box; at least 52 px per row for touch.
  * Accessibility: the input has role combobox with aria-expanded, aria-controls and
  *   aria-activedescendant (cmdk); the list is a listbox of options. Arrow keys move, Enter picks,
@@ -20,7 +22,7 @@
  * UX reference: ds-components, search card locality field; interaction-specifications section 1.
  */
 import { Command } from "cmdk";
-import { Search, X } from "lucide-react";
+import { Search, X, type LucideIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
@@ -52,7 +54,9 @@ type ComboboxProps = {
   disabled?: boolean;
   id?: string;
   placeholder?: string;
+  icon?: LucideIcon;
   className?: string;
+  inputClassName?: string;
 };
 
 function Combobox({
@@ -70,7 +74,9 @@ function Combobox({
   disabled,
   id,
   placeholder,
+  icon = Search,
   className,
+  inputClassName,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -134,7 +140,8 @@ function Combobox({
                 invalid={invalid}
                 disabled={disabled}
                 autoComplete="off"
-                leading={<Icon icon={Search} />}
+                className={inputClassName}
+                leading={<Icon icon={icon} />}
                 trailing={
                   value ? (
                     <IconButton
