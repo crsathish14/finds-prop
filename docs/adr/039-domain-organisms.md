@@ -88,6 +88,17 @@ The owner approved the plan on 4 Nov 2026 ("all recommended"). The sections that
 - **Not decided by the UX, so decided here (the owner can change them):** all curated localities are tiles (not only the first five of the UX's picture), and there is no line under a tile name.
 - **Design Lab:** a "Homepage sections" entry shows the four sections as the page builds them, with sample words, and the darker band tone.
 
+### Homepage card sections (fifth step, S4-T06)
+
+The last step of the homepage plan the owner approved on 4 Nov 2026: the three sections that show data from ADR-041. With them the homepage has all seven sections of the UX, in its order: Explore by locality, Featured homes, New launches from developers, Browse by what matters, Newest on Find Prop, Why Find Prop and the banner.
+
+- **Three server sections** (`features/home/card-sections.tsx`), each reading one cached read of ADR-041 and mapping the rows with `toPropertyCard` and `toDeveloperCard`: **Featured homes** (six property cards in a grid, "View all" leads to the homes with the Featured label), **New launches from developers** (three developer cards on the darker band, with "Approved and published projects only." under the title and "See all projects" leading to `/projects`) and **Newest on Find Prop** (eight property cards in the scrolling row).
+- **Switches:** `showFeatured` switches Featured homes off. New launches and Newest have **no switch of their own** (the owner decided this on 4 Nov 2026): they appear when there is something to show. **A section with nothing to show is not rendered**, so no region and no gap is left (FR-PUB-05); this covers a failed read too, since a failed read gives no rows (ADR-041).
+- **No Save or Compare on the cards yet:** the cards are drawn without the heart and the Compare checkbox that the UX shows, until saving and comparing exist (S5-T01, S4-T02); the owner decided this in the plan.
+- **`SectionGrid` gained the "cards" variant** (1 column, 2 from 768 px, 3 from 1100 px, 20 px gap), and `ScrollRow` an optional `id` so the section around it is named by its title.
+- **A home can be in both Featured homes and Newest** (the UX removes nothing); noted in ADR-041.
+- **Design Lab:** a "Homepage card sections" entry shows Featured homes and New launches with sample data; Newest is the Scrolling row entry.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
