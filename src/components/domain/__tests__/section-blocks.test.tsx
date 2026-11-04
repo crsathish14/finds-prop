@@ -37,7 +37,7 @@ describe("SectionHead: the title row of a homepage section (S4-T06)", () => {
   });
 
   it("keeps an emphasised word inside the heading, so the heading reads as one title", () => {
-    renderWithMessages(<SectionHead title="Why" emphasis="Find Prop" />);
+    renderWithMessages(<SectionHead title="Why Find Prop" emphasis="Find Prop" />);
     const heading = screen.getByRole("heading", { level: 2, name: "Why Find Prop" });
     expect(heading).toBeVisible();
     // The copper text colour, not the fill copper: the fill fails 4.5 : 1 at the phone size.

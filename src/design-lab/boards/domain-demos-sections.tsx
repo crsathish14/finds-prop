@@ -44,7 +44,7 @@ export function SectionHeadDemo() {
         />
       </Specimen>
       <Specimen label="An emphasised word (Why Find Prop) and no action" className="w-full">
-        <SectionHead className="mb-0 w-full" title="Why" emphasis="Find Prop" />
+        <SectionHead className="mb-0 w-full" title="Why Find Prop" emphasis="Find Prop" />
       </Specimen>
       <Specimen
         label="A long title: the link drops under it instead of squeezing it"

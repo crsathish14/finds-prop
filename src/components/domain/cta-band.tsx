@@ -3,7 +3,8 @@
  * Purpose: the last block of the homepage ("Want to sell or rent your property?"). Owner: design
  *   system. It holds no state and fetches nothing: the page passes the words, already translated,
  *   and where the button leads.
- * Props: title, description (left out when missing), actionLabel, href, className.
+ * Props: title, description (left out when missing), actionLabel, href, id (the title's id, so the
+ *   section around the banner can be named by it), className.
  * Responsive: stacked on a phone (title, sentence, button); from 768 px the button sits at the
  *   right, centred on the text.
  * Accessibility: the title is a level 2 heading; the button is a link named by its label. The
@@ -27,10 +28,11 @@ type CtaBandProps = {
   description?: string | undefined;
   actionLabel: string;
   href: string;
+  id?: string | undefined;
   className?: string;
 };
 
-function CtaBand({ title, description, actionLabel, href, className }: CtaBandProps) {
+function CtaBand({ title, description, actionLabel, href, id, className }: CtaBandProps) {
   return (
     <div
       data-slot="cta-band"
@@ -68,7 +70,7 @@ function CtaBand({ title, description, actionLabel, href, className }: CtaBandPr
         />
       </svg>
       <div className="relative">
-        <Heading as="h2" size="2" className="text-on-primary">
+        <Heading as="h2" size="2" id={id} className="text-on-primary">
           {title}
         </Heading>
         {description ? <p className="mt-2 text-body text-on-dark-muted">{description}</p> : null}

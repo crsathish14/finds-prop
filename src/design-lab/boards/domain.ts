@@ -2,7 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
-import { HomeHeroDemo } from "./domain-demos-home";
+import { HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -128,5 +128,13 @@ export const DOMAIN: LabEntry[] = [
       "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search card, on faint green arches. With and without the copper word and the line, and a long headline.",
     sources: ["domain/home-hero.tsx"],
     Demo: HomeHeroDemo,
+  },
+  {
+    id: "home-sections",
+    name: "Homepage sections",
+    description:
+      "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why Find Prop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
+    sources: ["domain/home-section.tsx", "domain/section-grid.tsx"],
+    Demo: HomeSectionsDemo,
   },
 ];
