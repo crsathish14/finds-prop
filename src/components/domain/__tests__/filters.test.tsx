@@ -178,11 +178,11 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
     expect(onChange).toHaveBeenLastCalledWith({ ...FILLED, intent: "all" });
   });
 
-  it("clears the four filters but keeps Looking to and the sort order", async () => {
+  it("clears every filter, Looking to included, but keeps the sort order", async () => {
     const onChange = renderRail({ ...FILLED, sort: "price_asc" });
     await userEvent.click(screen.getByRole("button", { name: words.clearAll }));
     expect(onChange).toHaveBeenCalledWith({
-      intent: "buy",
+      intent: "all",
       locality: null,
       propertyType: null,
       bedrooms: null,
@@ -325,7 +325,7 @@ describe("FilterSheet: the Filters button and the phone bottom sheet (S4-T01)", 
     );
   });
 
-  it("clears the four filters, keeps Looking to and the sort, and stays open", async () => {
+  it("clears every filter, keeps the sort, and stays open", async () => {
     const onApply = renderSheet({ ...FILLED, sort: "area_desc" });
     const dialog = await openSheet("Filters, 4 applied");
     await userEvent.click(within(dialog).getByRole("button", { name: words.clearAll }));

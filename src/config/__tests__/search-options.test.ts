@@ -127,7 +127,7 @@ describe("filter options (S4-T01)", () => {
     expect(countActiveFilters({ ...empty, bedrooms: 1 })).toBe(1);
   });
 
-  it("clears the four filters and leaves Looking to and the sort alone", () => {
+  it("clears every filter, Looking to included, and leaves the sort alone", () => {
     expect(
       clearFilters({
         intent: "buy",
@@ -137,6 +137,6 @@ describe("filter options (S4-T01)", () => {
         maxBudget: 5_000_000,
         sort: "area_desc",
       }),
-    ).toEqual({ ...empty, intent: "buy", sort: "area_desc" });
+    ).toEqual({ ...empty, sort: "area_desc" });
   });
 });
