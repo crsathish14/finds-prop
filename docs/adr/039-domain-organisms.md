@@ -28,6 +28,18 @@ The owner approved this plan on 4 Nov 2026.
 - **Where the tile list comes from:** the tile takes its name, link and subtitle as props. The curated list of localities (ADD-11, still Proposed) is not part of this change.
 - **Small differences from the UX:** the project name uses the display heading size (19 px on a phone, 22 px from the desktop width; the UX is 22 px everywhere); spacings use the 4 px scale; the tile's corner radius is 18 px (the UX 20 px).
 
+### Search card (third pull request)
+
+The owner approved this plan on 4 Nov 2026. The filter rail and sheet follow in their own pull request.
+
+- **Controlled by the page, no address logic:** the card keeps only what the visitor has chosen and calls `onSearch({ intent, locality, propertyType, bedrooms, maxBudget })`. The page (S4-T04) turns the values into the results address, as `frontend.md` says (the search form has no submit action). The same applies to the links: "New projects", "Describe it in words" (drawn only when the page gives the link, so AI search off leaves no trace), the Popular localities and the two Quick picks are all given by the page.
+- **Locality:** the existing Combobox (ADR-037) with the suggestions the page supplies (the twelve Chennai localities of the approved UX for now, one letter is enough). The place search of ADD-07 is still Proposed and is not built; it can replace the list later without changing the card, since the card only passes the typed text to the page. Combobox gained two optional props, `icon` and `inputClassName`, so the card can show a pin and draw the box itself; without them it is unchanged. Enter in the locality box searches unless that Enter picked a suggestion (cmdk otherwise swallows it).
+- **Choices in one place:** `src/config/search-options.ts` holds the kinds of property, bedrooms 1 to 4 and the budget steps (sale: 50 L, 75 L, 1 Cr, 1.5 Cr, 2 Cr, 3 Cr; rent: 15,000, 25,000, 40,000, 60,000, 1 L, as drawn in the UX and confirmed by the owner). The filter rail and sheet will use the same lists. Switching Buy and Rent keeps the budget only if the new list has the same amount, otherwise it goes back to Any.
+- **Layout answers to the card's own width:** the UX breaks at 640, 768 and 1024 px of screen width, and 640 is not a declared breakpoint (plan 04 section 10), so the card uses container queries on its own width instead. Under 576 px it is the phone layout. From 576 px the tabs and the AI link share a row, the locality and Search share a row and the chips show (the UX's 640 and 768 px layouts are one here, which also gives the stacked card at about 650 px on the homepage the UX's two-row layout). A wide card joins everything into one bar from 896 px (the UX's 1024 px screen).
+- **Small differences from the UX:** the "Any ..." values are in the muted text colour (the UX uses a lighter one that is below the contrast limit); spacings use the 4 px scale (UX 10, 14 and 58 px become 12, 16 and 56 px); the field text is 14 px on a phone and 16 px from 768 px.
+- **Chips:** Popular and Quick picks are links (the UX draws links too); up to four Popular on a wide card and three on a stacked one, as in the UX. Without any, the row is not drawn. They are hidden below 576 px of card width.
+- **Not built:** the place search and its attribution (ADD-07), the curated list behind Popular (ADD-11), the keyword-search rule for text that is not a locality (to confirm in the UX), and the swap of the hero stand-in in the Design Lab previews (the hero change of S4-T06).
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.

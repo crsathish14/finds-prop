@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MapPin, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Combobox, type ComboboxOption } from "../combobox";
@@ -166,5 +167,40 @@ describe("Combobox: debounce and minimum length", () => {
     });
     wait(1000);
     expect(onQueryChange).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Combobox: icon and box styling for a host that draws the field (S4-T01)", () => {
+  function Host({ icon, inputClassName }: { icon?: LucideIcon; inputClassName?: string }) {
+    const [value, setValue] = useState("");
+    return (
+      <Combobox
+        aria-label="Locality"
+        value={value}
+        onValueChange={setValue}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        options={OPTIONS}
+        labels={LABELS}
+        {...(icon ? { icon } : {})}
+        {...(inputClassName ? { inputClassName } : {})}
+      />
+    );
+  }
+
+  it("shows a magnifier at the start of the box unless another icon is given", () => {
+    const { container, unmount } = render(<Host />);
+    expect(container.querySelector("svg.lucide-search")).toBeInTheDocument();
+    unmount();
+    const custom = render(<Host icon={MapPin} />);
+    expect(custom.container.querySelector("svg.lucide-map-pin")).toBeInTheDocument();
+    expect(custom.container.querySelector("svg.lucide-search")).not.toBeInTheDocument();
+  });
+
+  it("adds the host's classes to the text box and keeps its own", () => {
+    render(<Host inputClassName="host-box" />);
+    const input = screen.getByRole("combobox", { name: "Locality" });
+    expect(input).toHaveClass("host-box");
+    expect(input).toHaveAttribute("data-slot", "input");
   });
 });

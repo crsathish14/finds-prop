@@ -354,6 +354,47 @@
     },
     "developerCard": {
       "projects": "{count, plural, one {# project} other {# projects}}"
+    },
+    "searchCard": {
+      "label": "Property search",
+      "intentLabel": "Looking to",
+      "buy": "Buy",
+      "rent": "Rent",
+      "newProjects": "New projects",
+      "describeInWords": "Describe it in words",
+      "locality": {
+        "label": "Locality",
+        "placeholder": "Search a locality",
+        "clear": "Clear locality",
+        "loading": "Looking for localities",
+        "noResults": "No localities found",
+        "resultCount": "{count, plural, one {# locality found} other {# localities found}}"
+      },
+      "propertyType": {
+        "label": "Property type",
+        "shortLabel": "Type",
+        "any": "Any type",
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "house": "Independent House",
+        "plot": "Plot / Land",
+        "commercial": "Commercial"
+      },
+      "bedrooms": {
+        "label": "Bedrooms",
+        "any": "Any BHK"
+      },
+      "budget": {
+        "label": "Max budget",
+        "shortLabel": "Budget",
+        "any": "Any budget",
+        "upTo": "Up to {amount}"
+      },
+      "search": "Search",
+      "popular": "Popular",
+      "quickPicks": "Quick picks",
+      "quickPickBedrooms": "3 BHK",
+      "quickPickBudget": "Budget homes"
     }
   }
 }
