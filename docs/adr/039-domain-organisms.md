@@ -40,6 +40,20 @@ The owner approved this plan on 4 Nov 2026. The filter rail and sheet follow in 
 - **Chips:** Popular and Quick picks are links (the UX draws links too); up to four Popular on a wide card and three on a stacked one, as in the UX. Without any, the row is not drawn. They are hidden below 576 px of card width.
 - **Not built:** the place search and its attribution (ADD-07), the curated list behind Popular (ADD-11), the keyword-search rule for text that is not a locality (to confirm in the UX), and the swap of the hero stand-in in the Design Lab previews (the hero change of S4-T06).
 
+### Filter rail and filter sheet (fourth pull request)
+
+The owner approved this plan on 4 Nov 2026 (it was the second half of the search card plan).
+
+- **One set of fields:** `FilterFields` (Looking to, locality, kind of property, bedrooms, maximum budget, and Sort by in the sheet) is used by both the rail and the sheet, so they cannot differ. They are controlled by the page: values in, the whole new set out, no address logic (S4-T04).
+- **Rail:** a card of fields in which every change is reported at once, with Clear all. It is a complementary landmark named by its heading. The page decides where it sits (sticky, from 1024 px); it does not hide itself, so the Design Lab can show it at every width.
+- **Sheet:** the "Filters" button (with the count of filters set, and the name "Filters, 4 applied") opens the shared bottom Sheet. Choices are kept in a draft and applied only by "Show N homes"; closing the sheet any other way drops them. "Clear all" in the sheet resets the draft and leaves it open. The count in "Show N homes" and a way to follow the draft (`onDraftChange`) are given by the page; with no count it says "Show homes", and "Show 1 home" for one.
+- **Not in the UX, so decided here (the owner can change them):** "Clear all" resets the four filters that are counted (locality, kind of property, bedrooms, budget) and leaves Looking to and the sort order alone; the button's count is those four, as in the UX's example (4 for Velachery, Apartment, 3 BHK and up to 1.5 Cr). With Looking to set to All the budget list is the sale list, as drawn in the UX, which compares a sale cap with rents; S4-T04 decides what a budget means with no listing type.
+- **Locality is a dropdown, as drawn:** "All of the city" (words given by the page, since the region wording is undecided, DEC-14) and the localities the page supplies. A locality that is not in the list is added to it, so the box never shows a different one. The place search of ADD-07 (Proposed) can replace the dropdown later.
+- **Bedrooms:** one value, as toggle buttons in a labelled group: Any, 1, 2, 3, 4. The chosen one is filled and has no tick, as the UX draws it (the shared Chip's tick style is not used here); each is named "3 BHK" for a screen reader.
+- **Small differences from the UX:** the panel's corner radius is 18 px (UX 20 px), the gap between fields is 20 px (UX 18 px), "Clear all" is a ghost button rather than a link, and the sheet uses the shared Sheet, so its title row has a rule under it and its buttons sit in a footer with a rule above (the UX has neither).
+- **No loading state:** the fields are static (the page gives them their lists), so there is nothing to show while loading.
+- **Not built:** the results bar (sort at the right, grid and list toggle, active filter chips, label pills), which belongs to S4-T04, and the place search.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
