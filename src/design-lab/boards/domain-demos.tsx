@@ -12,7 +12,7 @@ import { Column, Specimen } from "../frame";
 
 const PICTURES = "/design-lab/listings";
 
-const SALE_FEATURED: PropertyCardData = {
+export const SALE_FEATURED: PropertyCardData = {
   href: "#property-1",
   title: "3 BHK apartment with clubhouse and covered parking",
   locality: "Velachery",
@@ -29,7 +29,7 @@ const SALE_FEATURED: PropertyCardData = {
   cover: { src: `${PICTURES}/home-a.svg`, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const RENT_PRIME: PropertyCardData = {
+export const RENT_PRIME: PropertyCardData = {
   href: "#property-2",
   title: "Furnished 2 BHK close to the IT corridor",
   locality: "Perungudi",
@@ -46,7 +46,7 @@ const RENT_PRIME: PropertyCardData = {
   cover: { src: `${PICTURES}/home-b.svg`, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const SALE_BUDGET: PropertyCardData = {
+export const SALE_BUDGET: PropertyCardData = {
   href: "#property-3",
   title: "Bright 2 BHK, a short walk from the river",
   locality: "Adyar",
@@ -63,7 +63,7 @@ const SALE_BUDGET: PropertyCardData = {
   cover: { src: `${PICTURES}/home-c.svg`, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const PLOT_NO_PICTURE: PropertyCardData = {
+export const PLOT_NO_PICTURE: PropertyCardData = {
   href: "#property-4",
   title: "Residential plot in a gated layout",
   locality: "Sholinganallur",
@@ -95,7 +95,7 @@ const LONG_TITLE: PropertyCardData = {
 };
 
 /** A card wired to the heart and Compare the way a results page will do it. */
-function InteractiveCard({
+export function InteractiveCard({
   property,
   layout = "grid",
   startSaved = false,
