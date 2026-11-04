@@ -5,6 +5,8 @@
  *   large h3 never needs a style override. Owner: design system.
  * Props: as ("h1" to "h6", required), size ("display" | "1" | "2" | "3", required), className.
  *   `Heading.Em` is italic copper emphasis inside a heading; use it at display and h1 sizes only.
+ *   `TitleWithEmphasis` (title, emphasis) sets one part of a title string in `Heading.Em`; the part
+ *   must appear in the title, otherwise the title is shown plain.
  * Responsive: sizes step up at md and lg through the --t-* tokens; nothing to set here.
  * Accessibility: renders the real h1 to h6 element. Do not skip levels.
  * States: none. Dependencies: cva, cn, tokens (text-display, text-h1 to text-h3, em-accent).
@@ -41,4 +43,17 @@ function HeadingEmphasis({ className, ...props }: Omit<ComponentProps<"em">, "re
 
 Heading.Em = HeadingEmphasis;
 
-export { Heading };
+/** A title with one part of it in italic copper; if that part is not in the title, the title is plain. */
+function TitleWithEmphasis({ title, emphasis }: { title: string; emphasis?: string | undefined }) {
+  const at = emphasis ? title.indexOf(emphasis) : -1;
+  if (!emphasis || at < 0) return title;
+  return (
+    <>
+      {title.slice(0, at)}
+      <Heading.Em>{emphasis}</Heading.Em>
+      {title.slice(at + emphasis.length)}
+    </>
+  );
+}
+
+export { Heading, TitleWithEmphasis };

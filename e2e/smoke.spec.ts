@@ -9,7 +9,7 @@ import en from "../src/i18n/messages/en.json";
 test.describe("@smoke app boots", () => {
   test("home page renders", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: en.home.title })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: en.home.hero.title })).toBeVisible();
     await expect(page).toHaveTitle(en.meta.title);
   });
 
@@ -67,7 +67,7 @@ test.describe("@smoke app boots", () => {
     const home = page.getByRole("link", { name: en.common.goHome });
     await expect(home).toBeVisible();
     await home.click();
-    await expect(page.getByRole("heading", { level: 1, name: en.home.title })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: en.home.hero.title })).toBeVisible();
   });
 });
 
@@ -377,7 +377,7 @@ test.describe("@smoke text origin", () => {
 
   test("the check itself notices text that is not in en.json", () => {
     expect(fromMessages("Totally made up sentence")).toBe(false);
-    expect(fromMessages(en.home.tagline)).toBe(true);
+    expect(fromMessages(en.home.hero.subtitle)).toBe(true);
     expect(fromMessages("₹ 12 · 3")).toBe(true);
   });
 });

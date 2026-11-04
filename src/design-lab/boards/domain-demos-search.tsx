@@ -39,7 +39,7 @@ type DemoProps = Partial<Omit<SearchCardProps, "onSearch" | "localityOptions">> 
 };
 
 /** A card with a locality list that filters the twelve names as the visitor types. */
-function SearchCardHost({ onSearch, ...rest }: DemoProps) {
+export function SearchCardHost({ onSearch, ...rest }: DemoProps) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
   const options = LOCALITIES.filter((name) => name.toLowerCase().includes(needle)).map((name) => ({

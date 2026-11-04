@@ -2,6 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
+import { HomeHeroDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -119,5 +120,13 @@ export const DOMAIN: LabEntry[] = [
       "A titled row of cards that scrolls sideways, with Previous and Next buttons from 768 px (disabled at the ends) and swiping on a phone. Six cards, and one card only.",
     sources: ["domain/scroll-row.tsx"],
     Demo: ScrollRowDemo,
+  },
+  {
+    id: "home-hero",
+    name: "Home hero",
+    description:
+      "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search card, on faint green arches. With and without the copper word and the line, and a long headline.",
+    sources: ["domain/home-hero.tsx"],
+    Demo: HomeHeroDemo,
   },
 ];
