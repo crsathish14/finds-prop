@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
+import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 
 /**
  * The organisms that appear only inside the screens (S4-T01). The five approved boards do not show
@@ -21,5 +22,29 @@ export const DOMAIN: LabEntry[] = [
       "The list layout puts the picture beside the text when the card's own box is wide enough (a container query) and stacks below that.",
     sources: [],
     Demo: PropertyCardListDemo,
+  },
+  {
+    id: "project-card",
+    name: "Project card",
+    description:
+      "One new-build project: picture with the Featured and status badges, developer in copper capitals, name, place, price range and BHK sizes. Hover, no picture, no details, long text and loading.",
+    sources: ["domain/project-card.tsx"],
+    Demo: ProjectCardDemo,
+  },
+  {
+    id: "developer-card",
+    name: "Developer card",
+    description:
+      "A developer's monogram in green, copper or sand, name, project count, introduction and two project thumbnails. Only a name, long text, a missing picture and loading.",
+    sources: ["domain/developer-card.tsx"],
+    Demo: DeveloperCardDemo,
+  },
+  {
+    id: "locality-tile",
+    name: "Locality tile",
+    description:
+      "A tinted tile linking to one locality, in the five tints of the UX, with an optional subtitle. Hover lift, no subtitle, a long name and loading. The tints use the nearest palette tokens.",
+    sources: ["domain/locality-tile.tsx"],
+    Demo: LocalityTileDemo,
   },
 ];

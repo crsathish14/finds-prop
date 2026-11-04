@@ -341,6 +341,19 @@
       "compare": "Compare",
       "compared": "Added to compare",
       "compareLimit": "You can compare up to 3 homes"
+    },
+    "projectCard": {
+      "featured": "Featured",
+      "status": {
+        "newLaunch": "New launch",
+        "underConstruction": "Under construction",
+        "readyToMove": "Ready to move"
+      },
+      "location": "{locality}, {city}",
+      "priceRange": "{min} – {max}"
+    },
+    "developerCard": {
+      "projects": "{count, plural, one {# project} other {# projects}}"
     }
   }
 }
