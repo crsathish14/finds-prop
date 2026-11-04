@@ -18,6 +18,16 @@ S4-T01 builds the organisms that appear only inside the screens: the property, p
 - **Proposed items stay unbuilt:** the grid and list toggle, active filter chips, Show more on search, the sponsored banner inside results and the locality filter on Projects.
 - **Wording:** visible text comes from `en.json` under `domain.*`; text that depends on dates or on several facts (how long ago a home was listed, the list summary) is passed in already translated by the page, so no date or sentence rule is invented here.
 
+### Project card, developer card and locality tile (second pull request)
+
+The owner approved this plan on 4 Nov 2026.
+
+- **Loading:** each has a skeleton with the same box (`ProjectCardSkeleton`, `DeveloperCardSkeleton`, `LocalityTileSkeleton`). The UX shows a loading state for the project card only; the other two follow the property card's pattern, at the owner's request.
+- **Colours:** the UX hard-codes the five tile tints and the sand monogram. These use the nearest palette tokens and no new token was added. Tints 1 and 2 and the green and copper monograms match the UX exactly. Tint 3 ends at sand 200 (the UX ends at a slightly darker sand), tint 4 uses the same colours as tint 1 (the UX's are nearly the same), tint 5 runs from copper 100 to sand 100 (the UX is a warmer straw), and the sand monogram's text is the neutral grey-green (the UX uses a brown). The owner compares the rendered boards with the UX.
+- **Developer logo:** the database stores a logo link, but the UX never shows one: the developer card uses a monogram. The card shows the monogram only. Showing logos needs a design for the logo (size, crop, broken link) and a decision on loading pictures from any web address, since `next.config.ts` allows only our own storage.
+- **Where the tile list comes from:** the tile takes its name, link and subtitle as props. The curated list of localities (ADD-11, still Proposed) is not part of this change.
+- **Small differences from the UX:** the project name uses the display heading size (19 px on a phone, 22 px from the desktop width; the UX is 22 px everywhere); spacings use the 4 px scale; the tile's corner radius is 18 px (the UX 20 px).
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
