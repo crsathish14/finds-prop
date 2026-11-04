@@ -2,6 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
+import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
@@ -136,5 +137,13 @@ export const DOMAIN: LabEntry[] = [
       "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why Find Prop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
     sources: ["domain/home-section.tsx", "domain/section-grid.tsx"],
     Demo: HomeSectionsDemo,
+  },
+  {
+    id: "property-gallery",
+    name: "Property gallery",
+    description:
+      "The photos of one home: the picture with Previous and Next, the count and a strip of thumbnails from 768 px; swipe and dots on a phone, where the picture runs edge to edge. Six photos with badges, starting on another photo, one photo, no photo, a photo that fails to load, twelve photos and loading.",
+    sources: ["domain/property-gallery.tsx"],
+    Demo: PropertyGalleryDemo,
   },
 ];

@@ -88,6 +88,18 @@ The owner approved the plan on 4 Nov 2026 ("all recommended"). The sections that
 - **Not decided by the UX, so decided here (the owner can change them):** all curated localities are tiles (not only the first five of the UX's picture), and there is no line under a tile name.
 - **Design Lab:** a "Homepage sections" entry shows the four sections as the page builds them, with sample words, and the darker band tone.
 
+### Property gallery (fifth pull request of S4-T01, first half of PR D)
+
+The owner approved the plan for PR D on 5 Nov 2026 ("all recommended"): two pull requests, the gallery first, then the enquiry card with the price card, the sticky mobile bar and the enquiry sheet.
+
+- **One mechanism for every width:** the photos are slides in a row that scrolls sideways and snaps (CSS scroll-snap, no dependency). On a phone the visitor **swipes** it (the UX's interaction specification says "Phones: swipe, dots", and its CSS hides the arrows and thumbnails there); from 768 px Previous, Next, the thumbnails and the arrow keys move the same row with a smooth scroll. The photo showing is read from the scroll position, so a swipe, a press and a key all agree; while a press is scrolling to a photo, the photos in between are not counted as chosen.
+- **The plan's first draft left swipe out; that was a misreading and is corrected here:** without it a phone, where the arrows are hidden, could never leave the first photo.
+- **From the UX:** 16 : 10 with 24 px corners and the badges over the top left (the page supplies them); the count "2 / 6" at the bottom right; thumbnails six to a row, the current one ringed; dots on a phone; 4 : 3 and edge to edge on a phone (`bleed`, on by default); one photo hides the strip, the arrows and the dots (and here the count, since "1 / 1" says nothing); no photo, or a photo that fails to load, shows the illustrated tile (the property card's cover); a loading skeleton of the same box.
+- **Accessibility:** a carousel named Photos with slides "2 of 6", only the photo showing exposed to a screen reader; the picture area takes focus (it scrolls) and the left and right arrow keys change the photo; thumbnails are buttons named "Photo 3: Kitchen" (or "Photo 3"); the count is a polite live region; motion is instant under reduced motion.
+- **Not in the UX, so decided here (the owner can change them):** Previous and Next are **disabled at the ends** (the same as the scrolling row's); a one-photo gallery shows **no count**. **Not built, because the UX does not draw them:** a full-screen viewer and zoom.
+- **Small differences from the UX:** the current thumbnail's ring is an outline of 2 px with a 3 px gap (the UX box-shadow rings are not allowed by the style rules); the dots are 8 px apart (UX 6 px) and 7 px high; the count is 12.5 px type (UX 13 px).
+- **Design Lab:** a "Property gallery" entry shows six photos with badges, starting on another photo and not bleeding, one photo, no photo, a failing first photo, twelve photos and loading. The real-browser keyboard tests (arrow keys, thumbnails, the ends) are in `e2e/design-lab/keyboard.spec.ts`.
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.

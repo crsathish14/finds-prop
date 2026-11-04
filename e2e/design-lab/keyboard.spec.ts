@@ -107,6 +107,47 @@ test.describe("keyboard", () => {
   });
 });
 
+test.describe("property gallery", () => {
+  test("the arrow keys change the photo, and a thumbnail shows its photo", async ({ page }) => {
+    await page.goto("/design-system/domain");
+    await settle(page);
+    const gallery = page
+      .locator("#property-gallery")
+      .getByRole("group", { name: en.domain.gallery.label })
+      .first();
+    await gallery.scrollIntoViewIfNeeded();
+    const count = gallery.getByText("1 / 6");
+    await expect(count).toBeVisible();
+    await gallery.locator('[tabindex="0"]').first().focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(gallery.getByText("2 / 6")).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(gallery.getByText("3 / 6")).toBeVisible();
+    await page.keyboard.press("ArrowLeft");
+    await expect(gallery.getByText("2 / 6")).toBeVisible();
+    await gallery.getByRole("button", { name: "Photo 5: View from the balcony" }).click();
+    await expect(gallery.getByText("5 / 6")).toBeVisible();
+    await expect(
+      gallery.getByRole("button", { name: "Photo 5: View from the balcony" }),
+    ).toHaveAttribute("aria-current", "true");
+  });
+
+  test("Previous is disabled on the first photo and Next on the last", async ({ page }) => {
+    await page.goto("/design-system/domain");
+    await settle(page);
+    const gallery = page
+      .locator("#property-gallery")
+      .getByRole("group", { name: en.domain.gallery.label })
+      .first();
+    await gallery.scrollIntoViewIfNeeded();
+    await expect(gallery.getByRole("button", { name: en.domain.gallery.previous })).toBeDisabled();
+    await gallery.getByRole("button", { name: "Photo 6: Floor plan" }).click();
+    await expect(gallery.getByText("6 / 6")).toBeVisible();
+    await expect(gallery.getByRole("button", { name: en.domain.gallery.next })).toBeDisabled();
+    await expect(gallery.getByRole("button", { name: en.domain.gallery.previous })).toBeEnabled();
+  });
+});
+
 test.describe("dialogs, sheets and toasts", () => {
   test("a destructive confirm dialog focuses the safe button, traps focus, and returns it on Escape", async ({
     page,
