@@ -13,6 +13,7 @@ import { PROPERTY_TYPE_WORDS } from "@/config/search-options";
 import { cn } from "@/lib/cn";
 import { formatArea, formatPerSqft, formatPrice, formatRent, type Translate } from "@/lib/format";
 import { CompareRemove } from "./compare-remove.client";
+import { CompareScroller } from "./compare-scroller.client";
 import { amenityRows, hasAmenity, type CompareColumn } from "./table";
 
 const FURNISHING_WORDS = {
@@ -44,8 +45,8 @@ const ROW_HEAD =
  * The comparison below the site header (S4-T02, ADR-044, FR-PUB-10): breadcrumb, heading and line, and
  * one table with a label column and a column for each home (two or three): a picture, the tags, the
  * title, the price, "View home" and Remove; then Overview, Facts and one row for every amenity any of
- * the homes has, with Yes or Not listed. On a phone the table scrolls sideways and the label column
- * stays. Fewer than two homes is the empty state. It fetches nothing: the page gives it the columns.
+ * the homes has, with Yes or Not listed. On a phone the table scrolls sideways, the label column
+ * stays, and a soft fade at the right edge says there is more. Fewer than two homes is the empty state. It fetches nothing: the page gives it the columns.
  */
 export function CompareScreen({ columns, preview = false, titleAs = "h1" }: CompareScreenProps) {
   const translate = useTranslations();
@@ -115,7 +116,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
 
       {ready ? (
         <>
-          <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card">
+          <CompareScroller>
             <table
               aria-label={translate("compare.table.label", { count: columns.length })}
               className={cn(
@@ -244,7 +245,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
                 )}
               </tbody>
             </table>
-          </div>
+          </CompareScroller>
           <p className="mt-4 text-small text-muted max-md:hidden">{translate("compare.tip")}</p>
         </>
       ) : (
