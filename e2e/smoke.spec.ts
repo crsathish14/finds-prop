@@ -508,6 +508,60 @@ test.describe("@smoke compare", () => {
   });
 });
 
+// S4-T09: the projects page. CI has no database behind the app, so these tests look at what does not
+// depend on projects: the heading, the line under it, the way back, and that one of the three states
+// (the projects, coming soon, or the failed load with Try again) is drawn.
+test.describe("@smoke projects page", () => {
+  test("opens with the breadcrumb, the heading and its line, whatever the data", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/projects");
+    await expect(
+      page.getByRole("heading", { level: 1, name: en.projects.list.title }),
+    ).toBeVisible();
+    await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · Find Prop`);
+    await expect(page.getByText(en.projects.list.overline)).toBeVisible();
+    await expect(page.getByText(en.projects.list.sub)).toBeVisible();
+    const trail = page.getByRole("navigation", { name: en.projects.list.crumb.nav });
+    await expect(trail.getByText(en.projects.list.crumb.projects)).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  test("draws one of its three states: the projects, coming soon, or the failed load", async ({
+    page,
+  }) => {
+    await page.goto("/projects");
+    const projects = page.getByRole("region", { name: en.projects.list.listLabel });
+    const soon = page.getByRole("heading", { name: en.projects.list.empty.title });
+    const failed = page.getByRole("alert").filter({ hasText: en.projects.list.error.title });
+    await expect(projects.or(soon).or(failed).first()).toBeVisible();
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/projects");
+      await expect(
+        page.getByRole("heading", { level: 1, name: en.projects.list.title }),
+      ).toBeVisible();
+      const results = await new AxeBuilder({ page })
+        .include("#main")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(
+        serious.map((violation) => violation.id),
+        `at ${width} px`,
+      ).toEqual([]);
+    }
+  });
+});
+
 // Text-origin check (ADR-035): every line of text a visitor can see, plus the page title and the
 // label and alt attributes, must be a message from en.json. It catches hard-coded text that the
 // lint rule cannot see, such as a sentence kept in a variable.
@@ -577,6 +631,7 @@ test.describe("@smoke text origin", () => {
     "/properties?bhk=3&listingType=sale&propertyType=apartment",
     "/properties/not-an-id",
     "/compare",
+    "/projects",
     "/this-page-does-not-exist",
     "/builder/login",
     "/builder/login?denied=1",

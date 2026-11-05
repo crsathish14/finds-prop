@@ -64,7 +64,7 @@ export const LAB_BOARDS: LabBoard[] = [
     title: "Discovery",
     uxBoard: "compare",
     summary:
-      "What spans the screens when choosing homes: the compare bar and the comparison. It mirrors the compare screen.",
+      "What spans the screens when choosing homes and projects: the compare bar and the comparison, and the projects page. It mirrors the compare and projects screens.",
     entries: DISCOVERY,
   },
 ];

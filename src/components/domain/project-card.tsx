@@ -11,7 +11,7 @@
  * Responsive: a column of picture over text at every width; the grid around it sets the columns.
  * Accessibility: the whole card is one link target: the project name link is stretched over the
  *   card. A keyboard ring is drawn around the card when that link has focus. The picture has the
- *   project's alt text.
+ *   project's alt text. The place is "locality, city", or the locality alone when no city is given.
  * States: default, hover (shadow and a stronger border), focus, picture missing or failed
  *   (illustrated tile), loading (ProjectCardSkeleton).
  * Dependencies: Badge, Icon, Link, Skeleton, CardCover, format helpers, next-intl.
@@ -35,6 +35,7 @@ type ProjectCardData = {
   name: string;
   developerName?: string | undefined;
   locality: string;
+  /** Leave empty when the project has no city of its own: the card then shows the locality alone. */
   city: string;
   minRupees?: number | null | undefined;
   maxRupees?: number | null | undefined;
@@ -126,10 +127,12 @@ function ProjectCard({
         <p className="flex items-center gap-2 text-small text-muted">
           <Icon icon={MapPin} className="shrink-0 text-primary" />
           <span className="truncate">
-            {translate("domain.projectCard.location", {
-              locality: project.locality,
-              city: project.city,
-            })}
+            {project.city
+              ? translate("domain.projectCard.location", {
+                  locality: project.locality,
+                  city: project.city,
+                })
+              : project.locality}
           </span>
         </p>
         {price ? <p className="text-title lining-nums">{price}</p> : null}
