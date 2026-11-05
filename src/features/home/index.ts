@@ -16,7 +16,7 @@ export {
   HOME_PROJECTS_TAG,
   NEWEST_COUNT,
 } from "./queries";
-export type { DeveloperRow, ListingRow } from "./schemas";
+export { listingRowSchema, type DeveloperRow, type ListingRow } from "./schemas";
 export { BrowseSection, CtaSection, ExploreSection, WhySection } from "./sections";
 export {
   buildBrowseCards,
