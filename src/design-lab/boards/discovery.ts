@@ -1,10 +1,11 @@
 import type { LabEntry } from "../types";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
+import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
 
 /**
  * The parts of finding and choosing homes and projects that sit across the screens: the compare bar and the
- * comparison (S4-T02) and the projects page (S4-T09). They mirror the compare and projects screens; the
+ * comparison (S4-T02) and the projects page and the project page (S4-T09). They mirror the compare and projects screens; the
  * search, property and project cards are on the Domain board.
  */
 export const DISCOVERY: LabEntry[] = [
@@ -21,7 +22,12 @@ export const DISCOVERY: LabEntry[] = [
     name: "Compare page",
     description:
       "The comparison below the header: the breadcrumb, the heading and line, and one table with a label column and a column for each home (picture, tags, title, price, View home and Remove), then Overview, Facts and a row for every amenity any home has, with Yes or Not listed. On a phone the table scrolls sideways and the label column stays. Three homes (a sale, a rent and a plot with details missing), fewer than two homes, and loading. Nothing here navigates.",
-    sources: ["patterns/empty-state.tsx", "patterns/breadcrumb.tsx", "patterns/spec-tile.tsx"],
+    sources: [
+      "patterns/empty-state.tsx",
+      "patterns/breadcrumb.tsx",
+      "patterns/spec-tile.tsx",
+      "patterns/scroll-fade.client.tsx",
+    ],
     Demo: ComparePageDemo,
   },
   {
@@ -37,5 +43,21 @@ export const DISCOVERY: LabEntry[] = [
       "patterns/empty-state.tsx",
     ],
     Demo: ProjectsPageDemo,
+  },
+  {
+    id: "project-page",
+    name: "Project page",
+    description:
+      "The project page below the header: the breadcrumb, the developer's monogram and name, the title with the locality and RERA tags, the gallery, Call, WhatsApp and Brochure, then Project overview, About, Amenities, Specifications, the units table (status as a word with a dot; it scrolls sideways on a phone with a soft fade), Floor plans (each opens full size in a new tab), the price per sq.ft trend with a View as table, Location advantages and Nearby places, and Videos. Beside them the price card with the sizes and possession. A project with little given leaves the empty sections out; not found and loading. Nothing here navigates; the enquiry form and the phone bar are the next change.",
+    sources: [
+      "domain/property-gallery.tsx",
+      "domain/property-card-controls.client.tsx",
+      "patterns/spec-tile.tsx",
+      "patterns/status-badge.tsx",
+      "patterns/scroll-fade.client.tsx",
+      "ui/avatar.tsx",
+      "ui/price.tsx",
+    ],
+    Demo: ProjectPageDemo,
   },
 ];

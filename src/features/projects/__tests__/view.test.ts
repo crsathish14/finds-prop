@@ -2,11 +2,19 @@ import { describe, expect, it } from "vitest";
 import type { ProjectData, ProjectUnit, TrendPoint } from "../types";
 import {
   bhkSizes,
+  contactLinks,
+  developerInitials,
   orderUnits,
   priceBounds,
+  projectMetaDescription,
   reraTag,
+  specificationRows,
   specItems,
+  trendFraction,
+  trendLabelIndexes,
+  trendScale,
   trendSeries,
+  UNIT_BADGE_STATUS,
   unitsSummary,
   videoLinks,
 } from "../view";
@@ -248,5 +256,160 @@ describe("UT-project-view: what the project pages show", () => {
       expect(links).toHaveLength(5);
       expect(links[0]).toBe("https://example.com/v0");
     });
+  });
+});
+
+describe("UT-project-view: contact, specifications and the trend scale", () => {
+  describe("contactLinks", () => {
+    it("offers Call and WhatsApp for a number with its plus", () => {
+      expect(contactLinks("+914412345678")).toEqual({
+        call: "tel:+914412345678",
+        whatsapp: "https://wa.me/914412345678",
+      });
+    });
+    it("offers Call alone for a number with no country code", () => {
+      expect(contactLinks("4412345678")).toEqual({ call: "tel:4412345678", whatsapp: null });
+    });
+    it("offers nothing for no number or one that does not fit", () => {
+      for (const phone of [
+        null,
+        "",
+        "12345",
+        "+1234567890123456",
+        "98 400 12345",
+        "javascript:1",
+      ]) {
+        expect(contactLinks(phone)).toEqual({ call: null, whatsapp: null });
+      }
+    });
+  });
+
+  describe("specificationRows", () => {
+    it("reads lines of Name: value as pairs", () => {
+      expect(
+        specificationRows(
+          "Structure: RCC framed structure\nFlooring: Vitrified tiles: living areas",
+        ),
+      ).toEqual({
+        kind: "pairs",
+        rows: [
+          { name: "Structure", value: "RCC framed structure" },
+          { name: "Flooring", value: "Vitrified tiles: living areas" },
+        ],
+      });
+    });
+    it("reads anything else as paragraphs, so nothing typed is lost", () => {
+      expect(
+        specificationRows("Structure: RCC\nGranite counters in the kitchen\n\nTeak doors"),
+      ).toEqual({
+        kind: "text",
+        paragraphs: ["Structure: RCC\nGranite counters in the kitchen", "Teak doors"],
+      });
+    });
+    it("is nothing for no text", () => {
+      expect(specificationRows(null)).toBeNull();
+      expect(specificationRows("  \n \n")).toBeNull();
+    });
+    it("does not read a line with no value, or a very long name, as a pair", () => {
+      expect(specificationRows("Structure:")?.kind).toBe("text");
+      expect(specificationRows(`${"x".repeat(41)}: value`)?.kind).toBe("text");
+    });
+  });
+
+  describe("trendScale", () => {
+    const series = (...values: number[]): TrendPoint[] =>
+      values.map((pricePerSqft, index) => ({
+        month: `2026-${String(index + 1).padStart(2, "0")}-01`,
+        pricePerSqft,
+      }));
+
+    it("is nothing for fewer than two months", () => {
+      expect(trendScale([])).toBeNull();
+      expect(trendScale(series(8000))).toBeNull();
+    });
+    it("runs in round steps from below the lowest to above the highest", () => {
+      const scale = trendScale(series(7650, 7720, 7810, 7900, 8020, 8110, 8230, 8350));
+      expect(scale).not.toBeNull();
+      if (!scale) return;
+      expect(scale.min).toBeLessThanOrEqual(7650);
+      expect(scale.max).toBeGreaterThanOrEqual(8350);
+      expect(scale.ticks[0]).toBe(scale.min);
+      expect(scale.ticks.at(-1)).toBe(scale.max);
+      expect(scale.ticks.length).toBeGreaterThanOrEqual(3);
+      expect(scale.ticks.length).toBeLessThanOrEqual(6);
+    });
+    it("gives months that are all the same value room either side", () => {
+      const scale = trendScale(series(8000, 8000, 8000));
+      expect(scale).not.toBeNull();
+      if (!scale) return;
+      expect(scale.min).toBeLessThan(8000);
+      expect(scale.max).toBeGreaterThan(8000);
+    });
+    it("never goes below zero", () => {
+      const scale = trendScale(series(1, 2));
+      expect(scale?.min).toBeGreaterThanOrEqual(0);
+    });
+    it("places a value on the scale from 0 to 1", () => {
+      const scale = { min: 7500, max: 8500, ticks: [7500, 8000, 8500] };
+      expect(trendFraction(7500, scale)).toBe(0);
+      expect(trendFraction(8000, scale)).toBe(0.5);
+      expect(trendFraction(8500, scale)).toBe(1);
+    });
+  });
+
+  describe("trendLabelIndexes", () => {
+    it("names every month when there are four or fewer", () => {
+      expect(trendLabelIndexes(2)).toEqual([0, 1]);
+      expect(trendLabelIndexes(4)).toEqual([0, 1, 2, 3]);
+    });
+    it("names the first, the last and two between when there are more", () => {
+      expect(trendLabelIndexes(12)).toEqual([0, 4, 7, 11]);
+      expect(trendLabelIndexes(8)).toEqual([0, 2, 5, 7]);
+    });
+  });
+});
+
+describe("UT-project-view: monogram and unit status", () => {
+  it("makes the monogram from the first two words of the developer's name", () => {
+    expect(developerInitials("Kadal Homes")).toBe("KH");
+    expect(developerInitials("  nila   habitats  private limited")).toBe("NH");
+    expect(developerInitials("Olive")).toBe("O");
+    expect(developerInitials("")).toBe("");
+  });
+  it("names every unit status the way the status badge does", () => {
+    expect(UNIT_BADGE_STATUS).toEqual({
+      available: "available",
+      hold: "onHold",
+      sold: "sold",
+      blocked: "blocked",
+    });
+  });
+});
+
+describe("UT-project-view: the page description", () => {
+  const base = { seoDescription: null, description: null };
+  it("prefers the developer's own SEO description, on one line", () => {
+    expect(
+      projectMetaDescription({
+        ...base,
+        seoDescription: "  Gated  homes\n on the OMR. ",
+        description: "Other",
+      }),
+    ).toBe("Gated homes on the OMR.");
+  });
+  it("otherwise takes the first paragraph of the description", () => {
+    expect(
+      projectMetaDescription({ ...base, description: "A gated community.\n\nSecond paragraph." }),
+    ).toBe("A gated community.");
+  });
+  it("cuts a long first paragraph at a word and adds an ellipsis", () => {
+    const long = "word ".repeat(80).trim();
+    const text = projectMetaDescription({ ...base, description: long });
+    expect(text?.endsWith("…")).toBe(true);
+    expect((text ?? "").length).toBeLessThanOrEqual(161);
+  });
+  it("is nothing when there is neither", () => {
+    expect(projectMetaDescription(base)).toBeNull();
+    expect(projectMetaDescription({ ...base, seoDescription: "   " })).toBeNull();
   });
 });
