@@ -143,6 +143,30 @@ describe("EmptyState, Alert, StatTile and SpecTile", () => {
     expect(screen.getByRole("link", { name: "Browse homes" })).toBeInTheDocument();
   });
 
+  it("takes an h1 for a page that has no other heading", () => {
+    render(<EmptyState as="h1" title="Property not found" description="The link may be wrong." />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Property not found" }),
+    ).toBeInTheDocument();
+  });
+
+  it("draws the icon from 768 px only when asked, so a phone's words get the room", () => {
+    const { container, rerender } = render(
+      <SpecTile label="Property type" value="Apartment" icon={<svg data-testid="glyph" />} />,
+    );
+    expect(screen.getByTestId("glyph").parentElement).toHaveClass("grid");
+    rerender(
+      <SpecTile
+        label="Property type"
+        value="Apartment"
+        icon={<svg data-testid="glyph" />}
+        iconFrom="md"
+      />,
+    );
+    expect(screen.getByTestId("glyph").parentElement).toHaveClass("hidden", "md:grid");
+    expect(container).toHaveTextContent("Apartment");
+  });
+
   it("reads an error alert at once and the other tones politely", () => {
     render(
       <>

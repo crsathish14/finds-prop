@@ -11,6 +11,7 @@ import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
+import { PropertyPageDemo } from "./domain-demos-property";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -216,5 +217,13 @@ export const DOMAIN: LabEntry[] = [
       "The whole results page below the header, with sample homes: the breadcrumb, the heading with the place in copper, the count, the filter rail from 1024 px and the Filters button below it, the bar with the applied filters, and the cards. Default with filters, and a failed load with the filters kept (the list view and the no-match state are under Results grid and states). Nothing here navigates.",
     sources: ["domain/results-bar.tsx", "domain/results-list.tsx", "domain/filters.tsx"],
     Demo: ResultsScreenDemo,
+  },
+  {
+    id: "property-page",
+    name: "Property page",
+    description:
+      "The whole property page below the header, with sample homes: the breadcrumb, the gallery with its tags, the title and place, At a glance, About this home, the amenities, and beside them the price card and the enquiry card. A full listing for a visitor who is not signed in (the gate), a sparse listing for one who is (the form with Send switched off until enquiries can be sent: long title, one photo, details left out and a note saying so), loading, and not found. Nothing here navigates or sends.",
+    sources: ["domain/price-card.tsx", "domain/enquiry-card.tsx", "domain/property-gallery.tsx"],
+    Demo: PropertyPageDemo,
   },
 ];

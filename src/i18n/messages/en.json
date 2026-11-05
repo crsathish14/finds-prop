@@ -315,7 +315,50 @@
   },
   "property": {
     "bhk": "{count} BHK",
-    "bath": "{count, plural, one {# bath} other {# baths}}"
+    "bath": "{count, plural, one {# bath} other {# baths}}",
+    "page": {
+      "crumb": {
+        "nav": "Breadcrumb",
+        "home": "Home",
+        "properties": "Properties",
+        "back": "Back to results"
+      },
+      "photoAlt": "{title}: photo {number}",
+      "location": "{place} · Listed {ago}",
+      "listedOnly": "Listed {ago}",
+      "specs": {
+        "heading": "At a glance",
+        "bedrooms": "Bedrooms",
+        "bathrooms": "Bathrooms",
+        "area": "Area",
+        "propertyType": "Property type",
+        "furnishing": "Furnishing",
+        "listed": "Listed",
+        "leftOut": "Optional details the owner has not added are left out rather than shown as blanks."
+      },
+      "furnishing": {
+        "unfurnished": "Unfurnished",
+        "semi": "Semi-furnished",
+        "full": "Fully furnished"
+      },
+      "about": "About this home",
+      "amenities": "Amenities",
+      "aside": {
+        "label": "Price and enquiry",
+        "note": "Only approved homes are listed on Find Prop."
+      },
+      "enquiry": {
+        "signInToEnquire": "Sign in to enquire",
+        "enquire": "Enquire",
+        "notOpen": "Sending enquiries is not open yet."
+      },
+      "notFound": {
+        "title": "Property not found",
+        "body": "This home may have been sold or rented, or the link may be wrong. Browse the homes that are available now.",
+        "browse": "Browse all properties"
+      },
+      "loading": "Loading property"
+    }
   },
   "sponsor": {
     "carousel": "Sponsored banners",
