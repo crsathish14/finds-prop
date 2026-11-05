@@ -1,7 +1,6 @@
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
 import { DISCOVERY } from "./boards/discovery";
-import { PROJECTS } from "./boards/projects";
 import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
 import { FOUNDATIONS } from "./boards/foundations";
@@ -65,16 +64,8 @@ export const LAB_BOARDS: LabBoard[] = [
     title: "Discovery",
     uxBoard: "compare",
     summary:
-      "What spans the screens when choosing homes: the compare bar and the comparison. It mirrors the compare screen.",
+      "What spans the screens when choosing homes and projects: the compare bar and the comparison, and the projects page. It mirrors the compare and projects screens.",
     entries: DISCOVERY,
-  },
-  {
-    id: "projects",
-    title: "Projects",
-    uxBoard: "projects",
-    summary:
-      "The projects screens: the list of new projects in each state, then the project page. It mirrors the projects and project screens.",
-    entries: PROJECTS,
   },
 ];
 

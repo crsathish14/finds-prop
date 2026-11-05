@@ -41,7 +41,7 @@ for (const viewport of VIEWPORTS) {
 }
 
 test.describe("Design Lab routes", () => {
-  test("the index lists the eight boards", async ({ page }) => {
+  test("the index lists the seven boards", async ({ page }) => {
     await page.goto("/design-system");
     await expect(page.getByRole("heading", { level: 1, name: "Design Lab" })).toBeVisible();
     for (const board of [
@@ -52,7 +52,6 @@ test.describe("Design Lab routes", () => {
       "Ads",
       "Domain",
       "Discovery",
-      "Projects",
     ]) {
       await expect(page.getByRole("link", { name: board })).toBeVisible();
     }
