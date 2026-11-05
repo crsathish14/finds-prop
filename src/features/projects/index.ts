@@ -35,3 +35,6 @@ export {
   videoLinks,
   type SpecItem,
 } from "./view";
+export { ProjectsRetry } from "./projects-retry.client";
+export { ProjectsScreen } from "./projects-screen";
+export { ProjectsSkeleton } from "./projects-skeleton";

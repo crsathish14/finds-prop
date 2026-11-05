@@ -472,6 +472,33 @@
     },
     "loadingTitle": "Loading homes"
   },
+  "projects": {
+    "list": {
+      "metaTitle": "Projects",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "home": "Home",
+        "projects": "Projects",
+        "backHome": "Home"
+      },
+      "overline": "New launches",
+      "title": "New projects",
+      "titleIn": "Projects in {region}",
+      "sub": "New developments from developers on Find Prop. Only approved and published projects are shown.",
+      "listLabel": "Projects",
+      "loadingTitle": "Loading projects",
+      "empty": {
+        "title": "New projects are coming soon",
+        "body": "No projects are live right now. In the meantime, browse homes that are available today.",
+        "browse": "Browse homes"
+      },
+      "error": {
+        "title": "We couldn't load projects",
+        "body": "Check your connection and try again.",
+        "retry": "Try again"
+      }
+    }
+  },
   "compare": {
     "add": "Add to compare",
     "title": "Compare homes",

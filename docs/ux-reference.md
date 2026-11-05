@@ -65,6 +65,7 @@ The five approved design-system boards are built in the Design Lab (ADR-020) wit
 | `/design-system/ads`         | `docs/ux/final-ux/screens/ds-ads.html`         | Sponsor slot anatomy and formats, near-miss fit, several ads, the three hero placements                                                                                                      |
 | `/design-system/domain`      | `docs/ux/final-ux/screens/search.html`         | The organisms that appear only inside the screens (S4-T01): the property, project and developer cards, the locality tile, the search card and the filter rail and sheet now; the rest follow |
 | `/design-system/discovery`   | `docs/ux/final-ux/screens/compare.html`        | What spans the screens when choosing homes (S4-T02): the compare bar and the comparison, in each state                                                                                       |
+| `/design-system/projects`    | `docs/ux/final-ux/screens/projects.html`       | The projects screens (S4-T09): the projects page in each state now; the project page follows                                                                                                 |
 
 Whole-page previews of the layout components at 390, 820 and 1280 px are served at `/design-system/preview/<name>` (names in `src/design-lab/preview-names.ts`).
 

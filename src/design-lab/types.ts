@@ -3,10 +3,17 @@ import type { ComponentType } from "react";
 /**
  * The five boards that mirror the approved UX design-system boards (ADR-020), and "domain", which
  * shows the organisms that only appear inside the screens (the cards, search and detail parts), and "discovery": what spans the screens when choosing homes
- * (the compare bar and the comparison).
+ * (the compare bar and the comparison), and "projects": the projects screens (the list, then the project page).
  */
 export type LabBoardId =
-  "foundations" | "components" | "navigation" | "feedback" | "ads" | "domain" | "discovery";
+  | "foundations"
+  | "components"
+  | "navigation"
+  | "feedback"
+  | "ads"
+  | "domain"
+  | "discovery"
+  | "projects";
 
 export type LabEntry = {
   /** Anchor on the board page: lowercase words joined by hyphens. */
