@@ -2,6 +2,7 @@ import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
+import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
@@ -144,5 +145,13 @@ export const DOMAIN: LabEntry[] = [
       "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on Find Prop is the Scrolling row.",
     sources: [],
     Demo: HomeCardSectionsDemo,
+  },
+  {
+    id: "property-gallery",
+    name: "Property gallery",
+    description:
+      "The photos of one home: the picture with Previous and Next, the count and a strip of thumbnails from 768 px; swipe and dots on a phone, where the picture runs edge to edge. Six photos with badges, starting on another photo, one photo, no photo, a photo that fails to load, twelve photos and loading.",
+    sources: ["domain/property-gallery.tsx"],
+    Demo: PropertyGalleryDemo,
   },
 ];
