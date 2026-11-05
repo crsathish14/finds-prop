@@ -10,6 +10,7 @@ import {
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
+import { ResultsBarDemo, ResultsBodyDemo } from "./domain-demos-results";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -191,5 +192,21 @@ export const DOMAIN: LabEntry[] = [
       "The bar pinned to the bottom of a phone on a property page: the price on the left and the one copper button on the right (a sign-in link, or Enquire for the sheet). Shown in the page here so it can be seen at every width; the real one is hidden from 1024 px.",
     sources: ["domain/sticky-mobile-bar.tsx"],
     Demo: StickyMobileBarDemo,
+  },
+  {
+    id: "results-bar",
+    name: "Results bar",
+    description:
+      "The bar above the results: the sort order, the grid and list choice (hidden on a phone), the Filters button below 1024 px, the applied filters as chips that can each be removed with Clear all, and the Show All, Featured, Prime, Budget choice. With four filters applied and with none.",
+    sources: ["domain/results-bar.tsx"],
+    Demo: ResultsBarDemo,
+  },
+  {
+    id: "results-body",
+    name: "Results grid and states",
+    description:
+      "The body of the results page: the cards as a grid (1, 2 or 3 across by the width of the results area) or a list, loading in both, Show more with its count (default, loading, complete and at the 120-home cap), no match (with and without the AI link) and a failed load with Try again.",
+    sources: ["domain/results-list.tsx"],
+    Demo: ResultsBodyDemo,
   },
 ];
