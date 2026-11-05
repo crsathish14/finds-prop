@@ -69,6 +69,33 @@ describe("ScrollFade: the fade that says there is more (S4-T02)", () => {
     expect(hint()).toHaveClass("pointer-events-none");
   });
 
+  it("is a named group that takes keyboard focus when it is given the heading that names it", () => {
+    const view = render(
+      <>
+        <h2 id="units-title">Units</h2>
+        <ScrollFade labelledBy="units-title">
+          <table>
+            <tbody>
+              <tr>
+                <td>cell</td>
+              </tr>
+            </tbody>
+          </table>
+        </ScrollFade>
+      </>,
+    );
+    const box = view.container.querySelector<HTMLElement>(".overflow-x-auto") as HTMLElement;
+    expect(box).toHaveAttribute("role", "group");
+    expect(box).toHaveAttribute("aria-labelledby", "units-title");
+    expect(box).toHaveAttribute("tabindex", "0");
+  });
+
+  it("is a plain overflow area, not a tab stop, when it is not given one", () => {
+    const { box } = setup();
+    expect(box).not.toHaveAttribute("tabindex");
+    expect(box).not.toHaveAttribute("role");
+  });
+
   it("keeps the table inside a box that scrolls sideways", () => {
     const { box } = setup();
     expect(box).toHaveClass("overflow-x-auto");

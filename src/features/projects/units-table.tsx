@@ -31,7 +31,7 @@ export function UnitsTable({
   const locale = useLocale();
   return (
     <div>
-      <ScrollFade>
+      <ScrollFade labelledBy={labelledBy}>
         <table aria-labelledby={labelledBy} className="w-full min-w-2xl border-collapse text-left">
           <thead>
             <tr className="bg-canvas-sunken">
