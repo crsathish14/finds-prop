@@ -25,6 +25,12 @@ vi.mock("@/lib/public-env", () => ({
     NEXT_PUBLIC_SITE_URL: "https://findsprop.test",
   },
 }));
+vi.mock("@/components/domain/enquiry-card", () => ({ EnquiryCardSkeleton: () => null }));
+vi.mock("@/features/property", async () => ({
+  enquiryLinks: (
+    await vi.importActual<{ enquiryLinks: unknown }>("@/features/property/enquiry-links")
+  ).enquiryLinks,
+}));
 vi.mock("@/features/home", () => ({
   PROJECT_BUCKET: "project-media",
   publicStorageUrl: (base: string, bucket: string, path: string) => `${base}/${bucket}/${path}`,
@@ -42,13 +48,20 @@ vi.mock("@/features/projects", async () => {
     projectStructuredData: data.projectStructuredData,
     projectMetaDescription: view.projectMetaDescription,
     contactLinks: view.contactLinks,
-    ProjectLeadCard: (props: { state: string; sendDisabled?: boolean; sendNotice?: string }) => (
+    ProjectEnquirySlot: (props: {
+      slug: string;
+      signInHref: string;
+      createAccountHref: string;
+    }) => (
       <div
         data-testid="lead"
-        data-state={props.state}
-        data-disabled={String(props.sendDisabled ?? false)}
-        data-notice={props.sendNotice ?? ""}
+        data-slug={props.slug}
+        data-sign-in={props.signInHref}
+        data-create={props.createAccountHref}
       />
+    ),
+    ProjectViewTracker: (props: { slug: string }) => (
+      <div data-testid="tracker" data-slug={props.slug} />
     ),
     ProjectMobileBar: (props: { contact: { call: string | null; whatsapp: string | null } }) => (
       <div
@@ -149,13 +162,22 @@ describe("the project page (S4-T09)", () => {
     );
   });
 
-  it("draws the enquiry card with Send switched off and says why", async () => {
+  it("puts the enquiry card, with the project and the sign-in links that lead back to it, in the screen", async () => {
     state.result = found();
     render(await ProjectPage(props("kadal-vista")));
     const lead = screen.getByTestId("lead");
-    expect(lead).toHaveAttribute("data-state", "form");
-    expect(lead).toHaveAttribute("data-disabled", "true");
-    expect(lead).toHaveAttribute("data-notice", "projects.page.lead.notOpen");
+    expect(lead).toHaveAttribute("data-slug", "kadal-vista");
+    expect(lead).toHaveAttribute(
+      "data-sign-in",
+      "/auth?gate=enquire&redirect=%2Fprojects%2Fkadal-vista",
+    );
+    expect(lead).toHaveAttribute("data-create", "/auth?redirect=%2Fprojects%2Fkadal-vista");
+  });
+
+  it("records the view of the project it shows, by the stored slug", async () => {
+    state.result = found();
+    render(await ProjectPage(props("kadal-vista")));
+    expect(screen.getByTestId("tracker")).toHaveAttribute("data-slug", "kadal-vista");
   });
 
   it("draws the phone bar with the links the project's number allows", async () => {

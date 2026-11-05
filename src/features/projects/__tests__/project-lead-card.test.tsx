@@ -30,7 +30,6 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
     const kinds = screen.getByRole("radiogroup", { name: words.kindLabel });
     expect(within(kinds).getByRole("radio", { name: words.enquire })).toBeChecked();
     expect(screen.getByLabelText(new RegExp(`^${words.name}`))).toBeRequired();
-    expect(screen.getByLabelText(new RegExp(`^${words.phone}`))).toBeInTheDocument();
     expect(screen.getByLabelText(new RegExp(`^${words.email}`))).toBeInTheDocument();
     expect(screen.queryByLabelText(new RegExp(`^${words.visitDate}`))).toBeNull();
     expect(screen.getByRole("button", { name: words.send })).toBeInTheDocument();
@@ -62,11 +61,31 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
   });
 
   it("starts with the values it is given", () => {
-    renderWithMessages(
-      <ProjectLeadCard state="form" values={{ name: "Priya Raman", phone: "98400 12345" }} />,
-    );
+    renderWithMessages(<ProjectLeadCard state="form" values={{ name: "Priya Raman" }} />);
     expect(screen.getByLabelText(new RegExp(`^${words.name}`))).toHaveValue("Priya Raman");
-    expect(screen.getByLabelText(new RegExp(`^${words.phone}`))).toHaveValue("98400 12345");
+  });
+
+  it("shows the account's phone, locked, and says where it comes from", () => {
+    renderWithMessages(<ProjectLeadCard state="form" phone="+91 98••• ••345" />);
+    const phone = screen.getByLabelText(new RegExp(`^${words.phone}`));
+    expect(phone).toHaveValue("+91 98••• ••345");
+    expect(phone).toHaveAttribute("readonly");
+    expect(phone).not.toBeRequired();
+    expect(phone).toHaveAccessibleDescription(words.phoneHint);
+  });
+
+  it("limits the visit date to the window it is given", () => {
+    renderWithMessages(
+      <ProjectLeadCard
+        state="form"
+        defaultKind="site_visit"
+        visitDateMin="2026-11-06"
+        visitDateMax="2027-11-06"
+      />,
+    );
+    const date = screen.getByLabelText(new RegExp(`^${words.visitDate}`));
+    expect(date).toHaveAttribute("min", "2026-11-06");
+    expect(date).toHaveAttribute("max", "2027-11-06");
   });
 
   it("hands the request type and the typed values over when it is sent", () => {
@@ -74,36 +93,22 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
     renderWithMessages(<ProjectLeadCard state="form" onSubmit={onSubmit} />);
     fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
     fill(words.name, "Priya Raman");
-    fill(words.phone, "9840012345");
     fill(words.visitDate, "2026-11-08");
     fireEvent.click(screen.getByRole("button", { name: words.requestVisit }));
     expect(onSubmit).toHaveBeenCalledWith("site_visit", {
       name: "Priya Raman",
-      phone: "9840012345",
       email: "",
       visitDate: "2026-11-08",
       message: "",
     });
   });
 
-  it("switches Send off, and says why, when sending is not open", () => {
-    const onSubmit = vi.fn();
-    renderWithMessages(
-      <ProjectLeadCard state="form" sendDisabled sendNotice={words.notOpen} onSubmit={onSubmit} />,
-    );
-    const send = screen.getByRole("button", { name: words.send });
-    expect(send).toBeDisabled();
-    expect(send).toHaveAccessibleDescription(words.notOpen);
-    fireEvent.submit(send.closest("form") as HTMLFormElement);
-    // A form can still be submitted from the keyboard in some browsers; the page's action decides then.
-    expect(screen.getByText(words.notOpen)).toBeInTheDocument();
-  });
-
   it("marks a field with an error as invalid and says what is wrong", () => {
     renderWithMessages(
       <ProjectLeadCard
         state="form"
-        errors={{ name: "Your name is required.", phone: "Enter a valid phone number." }}
+        defaultKind="site_visit"
+        errors={{ name: "Your name is required.", visitDate: "Choose a date for the visit." }}
       />,
     );
     expect(screen.getByLabelText(new RegExp(`^${words.name}`))).toHaveAttribute(
@@ -111,7 +116,7 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
       "true",
     );
     expect(screen.getByText("Your name is required.")).toBeInTheDocument();
-    expect(screen.getByText("Enter a valid phone number.")).toBeInTheDocument();
+    expect(screen.getByText("Choose a date for the visit.")).toBeInTheDocument();
     expect(screen.getByLabelText(new RegExp(`^${words.email}`))).not.toHaveAttribute(
       "aria-invalid",
       "true",
@@ -122,9 +127,9 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
     const { rerender } = render(wrap(<ProjectLeadCard state="form" />));
     expect(screen.getByLabelText(new RegExp(`^${words.name}`))).not.toHaveFocus();
     rerender(
-      wrap(<ProjectLeadCard state="form" errors={{ phone: "Enter a valid phone number." }} />),
+      wrap(<ProjectLeadCard state="form" errors={{ email: "Enter a valid email address." }} />),
     );
-    expect(screen.getByLabelText(new RegExp(`^${words.phone}`))).toHaveFocus();
+    expect(screen.getByLabelText(new RegExp(`^${words.email}`))).toHaveFocus();
   });
 
   it("says to wait a little, and keeps the form, when the visitor sent too many", () => {
@@ -135,9 +140,16 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
     expect(screen.getByRole("button", { name: words.send })).toBeInTheDocument();
   });
 
+  it("says to try again, and keeps the form, when the request could not be sent", () => {
+    renderWithMessages(<ProjectLeadCard state="form" failed />);
+    expect(screen.getByText(words.failed)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: words.send })).toBeInTheDocument();
+  });
+
   it("shows no alert when there is nothing to wait for", () => {
     renderWithMessages(<ProjectLeadCard state="form" />);
     expect(screen.queryByText(words.rateLimit.title)).toBeNull();
+    expect(screen.queryByText(words.failed)).toBeNull();
   });
 
   it("is busy and does nothing a second time while sending", () => {
@@ -147,6 +159,29 @@ describe("ProjectLeadCard: Interested in this project? (S4-T09)", () => {
     expect(send).toHaveAttribute("aria-busy", "true");
     fireEvent.submit(send.closest("form") as HTMLFormElement);
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("is the gate for a visitor who is not signed in: why, then sign in or create an account, and no form", () => {
+    const { container } = renderWithMessages(
+      <ProjectLeadCard
+        state="signed_out"
+        signInHref="/auth?gate=enquire&redirect=%2Fprojects%2Fkadal-vista"
+        createAccountHref="/auth?redirect=%2Fprojects%2Fkadal-vista"
+      />,
+    );
+    expect(container.querySelector("#enquiry")).not.toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: words.title })).toBeInTheDocument();
+    expect(screen.getByText(words.gate.leadIn)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: words.gate.signIn })).toHaveAttribute(
+      "href",
+      "/auth?gate=enquire&redirect=%2Fprojects%2Fkadal-vista",
+    );
+    expect(screen.getByRole("link", { name: words.gate.createAccount })).toHaveAttribute(
+      "href",
+      "/auth?redirect=%2Fprojects%2Fkadal-vista",
+    );
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByRole("radiogroup")).toBeNull();
   });
 
   it("is replaced by the thank-you note once sent, with no form", () => {

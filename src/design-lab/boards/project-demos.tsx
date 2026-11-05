@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ProjectLeadCard } from "@/features/projects/project-lead-card.client";
 import { ProjectMobileBar } from "@/features/projects/project-mobile-bar";
 import { ProjectNotFound } from "@/features/projects/project-not-found";
@@ -119,8 +118,19 @@ const pictureOf = (path: string) => {
   return `${PICTURES}/${file}.svg`;
 };
 
-function Screen({ project, brochure }: { project: ProjectData; brochure: boolean }) {
-  const translate = useTranslations("projects.page.lead");
+/** Fixed, so the pictures never change with the day they are taken. */
+const PHONE = "+91 98••• ••345";
+const WINDOW = { visitDateMin: "2026-11-06", visitDateMax: "2027-11-06" };
+
+function Screen({
+  project,
+  brochure,
+  signedIn,
+}: {
+  project: ProjectData;
+  brochure: boolean;
+  signedIn: boolean;
+}) {
   return (
     <div className={FRAME}>
       <ProjectScreen
@@ -129,7 +139,13 @@ function Screen({ project, brochure }: { project: ProjectData; brochure: boolean
         imageSources={project.images.map(pictureOf)}
         floorPlanSources={project.floorPlans.map(() => `${PICTURES}/home-a.svg`)}
         brochureSource={brochure ? "https://example.com/brochure.pdf" : null}
-        enquiry={<ProjectLeadCard state="form" sendDisabled sendNotice={translate("notOpen")} />}
+        enquiry={
+          signedIn ? (
+            <ProjectLeadCard state="form" phone={PHONE} {...WINDOW} />
+          ) : (
+            <ProjectLeadCard state="signed_out" />
+          )
+        }
       />
     </div>
   );
@@ -140,48 +156,54 @@ const IN_PAGE = "static border border-line lg:block";
 
 /** The project page with everything, with little given, not found and loading, then the enquiry card and the phone bar. */
 export function ProjectPageDemo() {
-  const translate = useTranslations("projects.page.lead");
-  const notOpen = translate("notOpen");
   return (
     <div className="flex flex-col gap-14">
       <Specimen
         label="A project with everything: gallery, overview, about, amenities, specifications, units, floor plans, price trend, location and videos"
         className="w-full"
       >
-        <Screen project={FULL} brochure />
+        <Screen project={FULL} brochure signedIn={false} />
       </Specimen>
       <Specimen
         label="A project with little given: one price, no picture, no RERA, no units or trend; the empty sections are left out"
         className="w-full"
       >
-        <Screen project={SPARSE} brochure={false} />
+        <Screen project={SPARSE} brochure={false} signedIn />
       </Specimen>
       <Specimen
-        label="Enquiry card: Enquire chosen; Send is off and a line says why (sending is a later task)"
+        label="Enquiry card, visitor not signed in: the gate (sending needs a phone sign-in)"
         className="w-full max-w-md"
       >
-        <ProjectLeadCard state="form" sendDisabled sendNotice={notOpen} className="w-full" />
+        <ProjectLeadCard state="signed_out" className="w-full" />
       </Specimen>
       <Specimen
-        label="Enquiry card: Site visit chosen, which asks for a date"
+        label="Enquiry card, signed in: Enquire chosen; the phone is the account's and cannot be changed"
+        className="w-full max-w-md"
+      >
+        <ProjectLeadCard state="form" phone={PHONE} {...WINDOW} className="w-full" />
+      </Specimen>
+      <Specimen
+        label="Enquiry card: Site visit chosen, which asks for a date from today to a year ahead"
         className="w-full max-w-md"
       >
         <ProjectLeadCard
           state="form"
+          phone={PHONE}
+          {...WINDOW}
           className="w-full"
           defaultKind="site_visit"
-          values={{ name: "Priya Raman", phone: "98400 12345", visitDate: "2026-11-08" }}
+          values={{ name: "Priya Raman", visitDate: "2026-11-08" }}
         />
       </Specimen>
       <Specimen label="Enquiry card: what is missing is marked" className="w-full max-w-md">
         <ProjectLeadCard
           state="form"
+          phone={PHONE}
+          {...WINDOW}
           className="w-full"
           defaultKind="site_visit"
-          values={{ phone: "98x" }}
           errors={{
             name: "Your name is required.",
-            phone: "Enter a valid phone number.",
             visitDate: "Choose a date for the visit.",
           }}
         />
@@ -189,9 +211,24 @@ export function ProjectPageDemo() {
       <Specimen label="Enquiry card: too many requests this hour" className="w-full max-w-md">
         <ProjectLeadCard
           state="form"
+          phone={PHONE}
+          {...WINDOW}
           className="w-full"
           rateLimited
-          values={{ name: "Priya Raman", phone: "98400 12345" }}
+          values={{ name: "Priya Raman" }}
+        />
+      </Specimen>
+      <Specimen
+        label="Enquiry card: the request could not be sent, try again"
+        className="w-full max-w-md"
+      >
+        <ProjectLeadCard
+          state="form"
+          phone={PHONE}
+          {...WINDOW}
+          className="w-full"
+          failed
+          values={{ name: "Priya Raman" }}
         />
       </Specimen>
       <Specimen label="Enquiry card: sent" className="w-full max-w-md">
