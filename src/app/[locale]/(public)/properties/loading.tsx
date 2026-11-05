@@ -19,7 +19,7 @@ export default function Loading() {
           <Skeleton shape="text" className="w-56" />
         </div>
         <div className="grid gap-8 lg:grid-cols-[17.5rem_minmax(0,1fr)]">
-          <Skeleton shape="card" className="hidden min-h-[28rem] lg:block" />
+          <Skeleton shape="card" className="hidden min-h-96 lg:block" />
           <div className="flex min-w-0 flex-col gap-6">
             <div aria-hidden="true" className="flex justify-end">
               <Skeleton className="h-(--size-control) w-52" />

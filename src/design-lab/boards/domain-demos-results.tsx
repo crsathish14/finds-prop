@@ -214,7 +214,7 @@ function Screen({
 /** The whole results page in its states, with sample homes; nothing here navigates (preview). */
 export function ResultsScreenDemo() {
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-14">
       <Specimen
         label="Default: Buy, Velachery, Apartment, 3 BHK, up to ₹1.5 Cr; 48 homes, two shown"
         className="w-full"
