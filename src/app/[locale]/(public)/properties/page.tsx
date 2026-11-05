@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { PropertyCard } from "@/components/domain/property-card";
@@ -7,10 +8,13 @@ import { CompareCardToggle } from "@/features/compare";
 import { toPropertyCard } from "@/features/home";
 import {
   canonicalRedirect,
+  canonicalSearchHref,
   getSearchResults,
   parseSearchParams,
   ResultsScreen,
+  resultsMeta,
 } from "@/features/search";
+import { pageMetadata } from "@/features/seo";
 import { getFeatureFlags, getSiteSettings, getSponsorAds, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 import { RESULTS_SPONSOR_AFTER, selectSponsors } from "@/lib/sponsors";
@@ -19,9 +23,25 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const translate = await getTranslate();
-  return { title: translate("results.metaTitle") };
+/**
+ * Each search has its own title and description, and one canonical address: its filters, without the
+ * sort, the number shown or the view (FR-PUB-14).
+ */
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const raw = await searchParams;
+  const [settings, translate, locale] = await Promise.all([
+    getSiteSettings(),
+    getTranslate(),
+    getLocale(),
+  ]);
+  const params = parseSearchParams(raw, { bounds: settings.region.bounds });
+  const { title, description } = resultsMeta(params, translate, locale);
+  return pageMetadata({
+    title,
+    description,
+    path: canonicalSearchHref(params),
+    siteName: translate("meta.title"),
+  });
 }
 
 /** The first cards are above the fold on every width, so their pictures load at once. */

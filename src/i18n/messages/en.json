@@ -329,6 +329,7 @@
         "properties": "Properties",
         "back": "Back to results"
       },
+      "metaFallback": "{title}. See the photos, price and details on Find Prop.",
       "photoAlt": "{title}: photo {number}",
       "location": "{place} · Listed {ago}",
       "listedOnly": "Listed {ago}",
@@ -441,6 +442,10 @@
   },
   "results": {
     "metaTitle": "Properties",
+    "meta": {
+      "titleFiltered": "{heading}, {filters}",
+      "description": "{title}. Photos, prices and details of homes on Find Prop."
+    },
     "keyword": "“{keyword}”",
     "title": {
       "sale": "{kind} for sale",
@@ -476,6 +481,7 @@
   "projects": {
     "list": {
       "metaTitle": "Projects",
+      "metaDescription": "Browse new projects with prices, sizes and possession dates on Find Prop.",
       "crumb": {
         "nav": "Breadcrumb",
         "home": "Home",
@@ -506,6 +512,7 @@
         "projects": "Projects",
         "back": "All projects"
       },
+      "metaFallback": "{name} by {developer} in {locality}. See prices, plans and amenities on Find Prop.",
       "loading": "Loading project",
       "photoAlt": "{name}: photo {number}",
       "reraTag": "RERA applicable · {number}",

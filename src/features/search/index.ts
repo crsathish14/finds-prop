@@ -1,5 +1,6 @@
 export {
   buildSearchHref,
+  canonicalSearchHref,
   clearSearchFilters,
   parseSearchParams,
   searchRadiusKm,
@@ -36,4 +37,4 @@ export { HomeSearch } from "./home-search.client";
 export { LISTINGS_TAG, listingRowSchema, type ListingRow } from "./listing-row";
 export { getSearchResults, type SearchResults } from "./results";
 export { ResultsScreen } from "./results-screen";
-export { canonicalRedirect } from "./results-view";
+export { canonicalRedirect, resultsMeta } from "./results-view";

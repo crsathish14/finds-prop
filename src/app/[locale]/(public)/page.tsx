@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HomeHero } from "@/components/domain/home-hero";
 import {
   BrowseSection,
@@ -10,6 +11,7 @@ import {
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { HomeSearch } from "@/features/search";
+import { pageMetadata } from "@/features/seo";
 import { resolveHero } from "@/lib/sponsors";
 import {
   buildHero,
@@ -20,6 +22,17 @@ import {
   isRouteEnabled,
   resolveBrandName,
 } from "@/features/site";
+
+/** The homepage says what the site is, under the name alone, with its own canonical address (FR-PUB-14). */
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslate();
+  return pageMetadata({
+    title: { absolute: translate("meta.title") },
+    description: translate("meta.description"),
+    path: "/",
+    siteName: translate("meta.title"),
+  });
+}
 
 /** Where the banner leads; the page leaves the banner out if the route is switched off. */
 const POST_PROPERTY_PATH = "/post-property";

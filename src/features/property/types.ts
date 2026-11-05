@@ -33,6 +33,8 @@ export type PropertyData = {
   label: "featured" | "prime" | "budget" | null;
   /** Whole days since it was published, read when the page was made; null when not known. */
   ageDays: number | null;
+  /** When it was published, as stored (an ISO date and time); null when not known. */
+  publishedAt: string | null;
   /** The cover first, then in the owner's order; at most six. */
   photos: PropertyPhoto[];
 };

@@ -9,8 +9,12 @@ import {
   ProjectLeadCard,
   ProjectMobileBar,
   projectMetaDescription,
+  projectPath,
+  PROJECTS_PATH,
   ProjectScreen,
+  projectStructuredData,
 } from "@/features/projects";
+import { absoluteUrl, breadcrumbList, JsonLd, pageMetadata } from "@/features/seo";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 
@@ -24,11 +28,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const result = await getProject(parsed);
   if (result.status === "missing") return { title: translate("projects.page.notFound.title") };
   const { project } = result;
-  const description = projectMetaDescription(project);
-  return {
+  const cover = project.images[0];
+  return pageMetadata({
     title: project.seoTitle?.trim() || project.name,
-    ...(description === null ? {} : { description }),
-  };
+    description:
+      projectMetaDescription(project) ??
+      translate("projects.page.metaFallback", {
+        name: project.name,
+        developer: project.developer.name,
+        locality: project.locality,
+      }),
+    path: projectPath(project.slug),
+    siteName: translate("meta.title"),
+    image:
+      cover === undefined
+        ? null
+        : publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PROJECT_BUCKET, cover),
+    imageAlt: project.name,
+  });
 }
 
 /**
@@ -51,13 +68,23 @@ export default async function ProjectPage({ params }: PageProps) {
   const translate = await getTranslate();
   const source = (path: string) =>
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PROJECT_BUCKET, path);
+  const imageSources = project.images.map(source);
+  const url = absoluteUrl(projectPath(project.slug));
 
   return (
     // `pb-24` leaves room under the last section for the phone's bar (hidden from 1024 px).
     <main id="main" className="flex-1 pb-24 lg:pb-0">
+      <JsonLd data={projectStructuredData(project, { url, images: imageSources })} />
+      <JsonLd
+        data={breadcrumbList([
+          { name: translate("projects.page.crumb.home"), url: absoluteUrl("/") },
+          { name: translate("projects.page.crumb.projects"), url: absoluteUrl(PROJECTS_PATH) },
+          { name: project.name, url },
+        ])}
+      />
       <ProjectScreen
         project={project}
-        imageSources={project.images.map(source)}
+        imageSources={imageSources}
         floorPlanSources={project.floorPlans.map(source)}
         brochureSource={project.brochurePath === null ? null : source(project.brochurePath)}
         enquiry={

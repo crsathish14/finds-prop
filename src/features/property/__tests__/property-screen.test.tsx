@@ -35,6 +35,7 @@ const HOME: PropertyData = {
   featured: true,
   label: "featured",
   ageDays: 2,
+  publishedAt: "2026-11-03T09:00:00+00:00",
   photos: [
     { path: "a/1.webp", alt: "Living room" },
     { path: "a/2.webp", alt: null },
@@ -178,6 +179,7 @@ describe("PropertyScreen: a sparse listing (S4-T03)", () => {
     areaSqft: null,
     label: "prime",
     ageDays: 21,
+    publishedAt: "2026-11-06T09:00:00+00:00",
     photos: [{ path: "a/1.webp", alt: null }],
   };
 

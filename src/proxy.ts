@@ -81,8 +81,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip static assets. Route handlers under /api run the proxy too, so they get a request id.
+  // Skip static assets, and the two files crawlers fetch by name: robots.txt and sitemap.xml have no
+  // language prefix, so the language rewrite would send them to /en/robots.txt, which does not exist.
+  // Route handlers under /api run the proxy too, so they get a request id.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

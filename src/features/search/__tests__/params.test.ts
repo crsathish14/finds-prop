@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildSearchHref, clearSearchFilters, parseSearchParams, searchRadiusKm } from "../params";
+import {
+  buildSearchHref,
+  canonicalSearchHref,
+  clearSearchFilters,
+  parseSearchParams,
+  searchRadiusKm,
+} from "../params";
 import { FILTER_FIELDS, SEARCH_FIELDS, addressName } from "../schemas";
 
 // The radius and the keyword are `r` and `q` in an address; names are words in code (R-GEN-11).
@@ -269,5 +275,30 @@ describe("search address: Clear all", () => {
       (field) => !(FILTER_FIELDS as readonly string[]).includes(field),
     );
     expect([...settings].sort()).toEqual(["show", "sort", "view"]);
+  });
+});
+
+describe("UT-search-canonical: the canonical address of a search (FR-PUB-14)", () => {
+  it("keeps the filters and drops the sort, the number shown and the view", () => {
+    const params = parseSearchParams({
+      listingType: "sale",
+      bhk: "3",
+      sort: "price_asc",
+      show: "36",
+      view: "list",
+    });
+    expect(canonicalSearchHref(params)).toBe(buildSearchHref({ listingType: "sale", bhk: 3 }));
+  });
+
+  it("gives the same address to a search however it is laid out", () => {
+    const grid = parseSearchParams({ bhk: "2", view: "grid" });
+    const list = parseSearchParams({ bhk: "2", view: "list", sort: "price_desc" });
+    expect(canonicalSearchHref(grid)).toBe(canonicalSearchHref(list));
+  });
+
+  it("is the plain list address when nothing is filtered", () => {
+    expect(canonicalSearchHref(parseSearchParams({ view: "list", sort: "price_asc" }))).toBe(
+      "/properties",
+    );
   });
 });

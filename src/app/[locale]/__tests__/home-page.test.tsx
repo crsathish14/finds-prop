@@ -65,7 +65,7 @@ vi.mock("@/features/home", () => ({
 }));
 
 const { SAMPLE_AD_A } = await import("@/lib/sponsors.fixtures");
-const { default: HomePage } = await import("../(public)/page");
+const { default: HomePage, generateMetadata } = await import("../(public)/page");
 
 const sections = () =>
   screen
@@ -248,5 +248,19 @@ describe("the homepage banner area (S4-T07)", () => {
     // the eyebrow and the trust lines belong to Split only
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
     expect(screen.queryByText("home.hero.trust.compare")).not.toBeInTheDocument();
+  });
+});
+
+describe("the homepage's metadata (FR-PUB-14)", () => {
+  it("is titled by the site name alone, describes the site and has the root as its canonical address", async () => {
+    const metadata = await generateMetadata();
+    expect(metadata.title).toEqual({ absolute: "meta.title" });
+    expect(metadata.description).toBe("meta.description");
+    expect(metadata.alternates?.canonical).toBe("/");
+    expect(metadata.openGraph).toMatchObject({
+      url: "/",
+      siteName: "meta.title",
+      images: [{ url: "/share-image.png" }],
+    });
   });
 });

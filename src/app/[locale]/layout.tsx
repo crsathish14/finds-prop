@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Toaster } from "@/components/patterns/toaster";
 import { SkipLink } from "@/components/ui/skip-link";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { siteOrigin } from "@/features/seo";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 import { fontVariables } from "@/styles/fonts";
@@ -15,7 +16,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const translate = await getTranslations("meta");
+  // The base every page's relative canonical, Open Graph and share-image address is made whole with.
   return {
+    metadataBase: new URL(siteOrigin()),
     title: { default: translate("title"), template: translate("titleTemplate") },
     description: translate("description"),
   };
