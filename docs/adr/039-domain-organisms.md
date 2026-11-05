@@ -111,6 +111,17 @@ The owner approved the plan for PR D on 5 Nov 2026 ("all recommended"): two pull
 - **Small differences from the UX:** the current thumbnail's ring is an outline of 2 px with a 3 px gap (the UX box-shadow rings are not allowed by the style rules); the dots are 8 px apart (UX 6 px) and 7 px high; the count is 12.5 px type (UX 13 px).
 - **Design Lab:** a "Property gallery" entry shows six photos with badges, starting on another photo and not bleeding, one photo, no photo, a failing first photo, twelve photos and loading. The real-browser keyboard tests (arrow keys, thumbnails, the ends) are in `e2e/design-lab/keyboard.spec.ts`.
 
+### Enquiry card, price card, sticky mobile bar and enquiry sheet (sixth pull request of S4-T01, second half of PR D)
+
+The owner approved the plan for PR D on 5 Nov 2026 ("all recommended"). These are the screen states only: nothing here sends an enquiry (the enquiry action is Stage 5).
+
+- **`EnquiryCard`** has the three views of the UX, chosen by the page: **signed out** (lock icon, "Contact the owner", a copper "Sign in to contact" link and a secondary "Create an account" link), **the form** (name and phone required; email and message optional; the message counter "0 / 1000", live and polite; one copper "Send enquiry" button) and **sent** ("Enquiry sent" with a "View my enquiries" link). The form also has the validation errors (each tied to its field, with an icon) and the **send-failed** alert above the form, with what was typed kept. It holds what was typed and hands it to the page on send (`onSubmit`); **Send is never disabled** (an empty form is handed over and the page says what is wrong); while `submitting` the button shows it is working and ignores clicks. **Errors that arrive after the form is shown move focus to the first field with one**; errors present from the start (the Design Lab) do not take focus.
+- **The phone is a plain number of 6 to 15 digits**, as the UX draws it and as the `enquiries` table accepts it (`^[0-9]{6,15}# ADR-039 · Domain organisms and the Design Lab's Domain board
+
+- Status: Accepted
+- Date: 2026-11-03
+- Related: ADR-020, plan 04 section 7 and 7.2, roadmap S4-T01, R-DS-02, R-DS-03, R-FE-12, R-FE-20
+
 ## Consequences
 
 - The Domain board's pages need new baselines each time an entry is added; each pull request needs a second push for them.
