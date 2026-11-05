@@ -150,6 +150,23 @@ describe("EmptyState, Alert, StatTile and SpecTile", () => {
     ).toBeInTheDocument();
   });
 
+  it("draws the icon from 768 px only when asked, so a phone's words get the room", () => {
+    const { container, rerender } = render(
+      <SpecTile label="Property type" value="Apartment" icon={<svg data-testid="glyph" />} />,
+    );
+    expect(screen.getByTestId("glyph").parentElement).toHaveClass("grid");
+    rerender(
+      <SpecTile
+        label="Property type"
+        value="Apartment"
+        icon={<svg data-testid="glyph" />}
+        iconFrom="md"
+      />,
+    );
+    expect(screen.getByTestId("glyph").parentElement).toHaveClass("hidden", "md:grid");
+    expect(container).toHaveTextContent("Apartment");
+  });
+
   it("reads an error alert at once and the other tones politely", () => {
     render(
       <>

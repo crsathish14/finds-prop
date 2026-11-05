@@ -199,7 +199,7 @@ export function PropertyScreen({
                   label={translate(SPEC_LABELS[item.key])}
                   value={specValue(item)}
                   icon={<Icon icon={SPEC_ICONS[item.key]} />}
-                  className="px-3 md:px-4"
+                  iconFrom="md"
                 />
               ))}
             </div>

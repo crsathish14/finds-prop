@@ -2,7 +2,9 @@
  * SpecTile: one fact about a property: a small label over a value, with an optional icon.
  * Purpose: the spec grid on a property page (bedrooms, area, facing...). Owner: design system.
  * Props: label and value (already-translated or formatted text), icon (an Icon element, optional),
- *   missing (the value is not known: shows `value` quietly, e.g. "Not provided"), className.
+ *   iconFrom ("always" default | "md": the icon is drawn from 768 px only, so on a phone the words get
+ *   the room; the property page uses it for a two-column grid), missing (the value is not known: shows
+ *   `value` quietly, e.g. "Not provided"), className.
  * Responsive: two columns on phones in a grid owned by the page; long values wrap.
  * Accessibility: label and value are plain text in reading order. A missing value is still text.
  * States: default, missing. Dependencies: cn.
@@ -16,11 +18,19 @@ type SpecTileProps = {
   label: string;
   value: ReactNode;
   icon?: ReactNode;
+  iconFrom?: "always" | "md";
   missing?: boolean;
   className?: string;
 };
 
-function SpecTile({ label, value, icon, missing = false, className }: SpecTileProps) {
+function SpecTile({
+  label,
+  value,
+  icon,
+  iconFrom = "always",
+  missing = false,
+  className,
+}: SpecTileProps) {
   return (
     <div
       data-slot="spec-tile"
@@ -30,7 +40,12 @@ function SpecTile({ label, value, icon, missing = false, className }: SpecTilePr
       )}
     >
       {icon ? (
-        <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+        <span
+          className={cn(
+            "size-10 shrink-0 place-items-center rounded-md bg-primary-tint text-primary",
+            iconFrom === "md" ? "hidden md:grid" : "grid",
+          )}
+        >
           {icon}
         </span>
       ) : null}
