@@ -2,12 +2,12 @@ import type { DeveloperCardData } from "@/components/domain/developer-card";
 import type { PropertyCardData } from "@/components/domain/property-card";
 import { PROPERTY_TYPES, PROPERTY_TYPE_WORDS, type PropertyType } from "@/config/search-options";
 import { formatListedAgo, type Translate } from "@/lib/format";
-import { publicStorageUrl } from "@/lib/storage-url";
+import { PROJECT_BUCKET, publicStorageUrl } from "@/lib/storage-url";
 import type { DeveloperRow, ListingRow } from "./schemas";
 
 /** The two public storage buckets the pictures come from (the images in next.config allow both). */
 export const LISTING_BUCKET = "listing-photos";
-export const PROJECT_BUCKET = "project-media";
+export { PROJECT_BUCKET };
 
 /** The address of a picture in a public bucket (see `lib/storage-url.ts`). */
 export { publicStorageUrl };

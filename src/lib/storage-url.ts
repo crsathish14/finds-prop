@@ -7,3 +7,6 @@ export function publicStorageUrl(supabaseUrl: string, bucket: string, path: stri
   const encoded = path.split("/").map(encodeURIComponent).join("/");
   return `${base}/storage/v1/object/public/${bucket}/${encoded}`;
 }
+
+/** The public bucket that holds a project's pictures, floor plans and brochure. */
+export const PROJECT_BUCKET = "project-media";
