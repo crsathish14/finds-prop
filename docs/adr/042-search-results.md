@@ -18,3 +18,12 @@
 
 - The page (step C) adds no query of its own; the cards come from `toPropertyCard` (ADR-041).
 - The first read with a bad value (for example a budget the function refuses) shows the "couldn't load" state, not a crash; the address rules already drop such values before they get here.
+
+## Decision for step B: the results bar and the body (components only)
+
+Built in `src/components/domain` (`results-bar.tsx`, `results-list.tsx`) and shown at the end of the Domain board. Controlled and fetch-free, like the other organisms (ADR-039): values in, the choice out, no address logic (step C).
+
+- **ResultsBar** (sort select, grid and list toggle, a slot for the Filters button below 1024 px, rows underneath), **ActiveFilters** (one removable chip per applied filter, each remove button named "Remove filter: 3 BHK", plus Clear all; nothing drawn when none), **LabelFilter** (Show: All, Featured, Prime, Budget, toggle chips).
+- **ResultsGrid** (1, 2 or 3 across by the width of the results area itself, container queries at 576 and 896 px, since the rail takes a share of wide screens), **ResultsSkeleton** (PropertyCard skeletons, busy and named "Loading homes"), **ResultsLoadMore** (the existing `ShowMore`; at the 120-home cap the button is "Refine your search"), **ResultsEmpty** (the existing `EmptyState`; the "Describe it in words" link only when given an address, so AI search off leaves no trace), **ResultsError** (the existing `Alert`, danger, with Try again).
+- **Not as drawn, decided here** (the owner can change them): the open sort list is the browser's own list, as in the filter sheet, not the UX's custom list; the removable chips are 40 px tall (the UX draws a smaller chip); the sort label shows from 768 to 1023 px only (on a phone the select is named for screen readers, so the row fits at 390 px); "Refine your search" is new wording from `frontend.md` 6.2, not drawn in the UX, and needs the owner's approval; the UX's "Proposed" flag is a design note and is not drawn.
+- **Not built here:** the compare bar (S4-T02), the sponsored card (S4-T07), the heading and count line (they belong to the page, step C), focus moving to the first new card after Show more (the list owns it; step C).

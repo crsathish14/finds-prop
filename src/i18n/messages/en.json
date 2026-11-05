@@ -479,6 +479,39 @@
       "show": "Show homes",
       "showCount": "{count, plural, one {Show # home} other {Show # homes}}"
     },
+    "results": {
+      "view": {
+        "label": "View",
+        "grid": "Grid view",
+        "list": "List view"
+      },
+      "active": {
+        "label": "Active filters",
+        "remove": "Remove filter: {label}"
+      },
+      "labels": {
+        "label": "Quick label filter",
+        "leadIn": "Show",
+        "all": "All"
+      },
+      "loading": "Loading homes",
+      "loadMore": {
+        "progress": "{total, plural, one {Showing {shown} of # home} other {Showing {shown} of # homes}}",
+        "button": "Show more homes",
+        "refine": "Refine your search"
+      },
+      "empty": {
+        "title": "No homes match your filters",
+        "body": "Try widening your budget or removing a filter to see more homes. You can also describe what you need in your own words.",
+        "clearAll": "Clear all filters",
+        "describe": "Describe it in words"
+      },
+      "error": {
+        "title": "We couldn't load homes just now",
+        "body": "Your filters are saved. Check your connection and try again.",
+        "retry": "Try again"
+      }
+    },
     "scrollRow": {
       "previous": "Previous",
       "next": "Next"

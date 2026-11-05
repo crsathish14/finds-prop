@@ -469,3 +469,17 @@ test.describe("sponsor slot", () => {
     await expect(page.getByText(en.sponsor.aboutTitle)).toBeVisible();
   });
 });
+
+test.describe("results grid", () => {
+  // A container-query box with no width of its own shrinks to nothing inside a shrink-to-fit
+  // parent: the cards then collapse to a sliver and the board looks empty (found in S4-T04 step B).
+  test("the grids and loading blocks fill their box instead of collapsing", async ({ page }) => {
+    await page.goto("/design-system/domain");
+    await settle(page);
+    const widths = await page
+      .locator("[data-slot=results-grid], [data-slot=results-skeleton]")
+      .evaluateAll((nodes) => nodes.map((node) => Math.round(node.getBoundingClientRect().width)));
+    expect(widths.length).toBeGreaterThanOrEqual(4);
+    for (const width of widths) expect(width).toBeGreaterThan(300);
+  });
+});
