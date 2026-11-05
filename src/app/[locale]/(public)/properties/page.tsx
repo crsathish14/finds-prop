@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PropertyCard } from "@/components/domain/property-card";
+import { CompareCardToggle } from "@/features/compare";
 import { toPropertyCard } from "@/features/home";
 import {
   canonicalRedirect,
@@ -51,14 +52,24 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
         localities={settings.homepage.localities}
         regionName={settings.region.name}
         describeHref={flags.aiSearch ? "/ai-search" : undefined}
-        cards={homes.map((home, index) => (
-          <PropertyCard
-            key={home.short_id}
-            property={toPropertyCard(home, context)}
-            layout={params.view}
-            priority={index < PRIORITY_CARDS}
-          />
-        ))}
+        cards={homes.map((home, index) => {
+          const property = toPropertyCard(home, context);
+          return (
+            <PropertyCard
+              key={home.short_id}
+              property={property}
+              layout={params.view}
+              priority={index < PRIORITY_CARDS}
+              compare={
+                <CompareCardToggle
+                  shortId={home.short_id}
+                  title={home.title}
+                  cover={property.cover?.src ?? null}
+                />
+              }
+            />
+          );
+        })}
       />
     </main>
   );

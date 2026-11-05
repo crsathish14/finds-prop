@@ -6,10 +6,29 @@ import { SectionGrid } from "@/components/domain/section-grid";
 import { SectionHead } from "@/components/domain/section-head";
 import { Link } from "@/components/ui/link";
 import { buildSearchHref } from "@/features/search";
+import { CompareCardToggle } from "@/features/compare";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
-import { toDeveloperCard, toPropertyCard } from "./cards";
+import { toDeveloperCard, toPropertyCard, type CardContext } from "./cards";
+import type { ListingRow } from "./schemas";
 import { getFeaturedHomes, getNewLaunchDevelopers, getNewestHomes } from "./queries";
+
+/** One home as a card, with the Compare checkbox joined to the visitor's selection (S4-T02). */
+function HomeCard({ home, context }: { home: ListingRow; context: CardContext }) {
+  const property = toPropertyCard(home, context);
+  return (
+    <PropertyCard
+      property={property}
+      compare={
+        <CompareCardToggle
+          shortId={home.short_id}
+          title={home.title}
+          cover={property.cover?.src ?? null}
+        />
+      }
+    />
+  );
+}
 
 /** The ids that name each section by its heading. */
 const FEATURED_TITLE = "home-featured-title";
@@ -42,7 +61,7 @@ export async function FeaturedSection() {
       />
       <SectionGrid variant="cards">
         {homes.map((home) => (
-          <PropertyCard key={home.short_id} property={toPropertyCard(home, context)} />
+          <HomeCard key={home.short_id} home={home} context={context} />
         ))}
       </SectionGrid>
     </HomeSection>
@@ -98,7 +117,7 @@ export async function NewestSection({ brandName }: { brandName: string }) {
         label={translate("home.newest.label")}
       >
         {homes.map((home) => (
-          <PropertyCard key={home.short_id} property={toPropertyCard(home, context)} />
+          <HomeCard key={home.short_id} home={home} context={context} />
         ))}
       </ScrollRow>
     </HomeSection>

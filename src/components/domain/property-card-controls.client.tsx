@@ -6,7 +6,8 @@
  *   (property-card.tsx) holds no state; the page passes these in, wired to saving and comparing
  *   (S5-T01 saved homes, S4-T02 compare).
  * Props: SaveButton (saved, onToggle), CompareToggle (compared, disabled when three homes are
- *   already chosen, onToggle), CardCover (src and alt of the cover picture, sizes, priority).
+ *   already chosen, onToggle; it carries `data-compare` so the card can draw its chosen ring from the
+ *   button's own state, with no prop from a server page), CardCover (src and alt of the cover picture, sizes, priority).
  * Responsive: the heart is a 44 px target in the corner of the picture; Compare is a 44 px row in the
  *   card's foot. The picture fills its box at a fixed ratio and never changes the card's size.
  * Accessibility: both are real buttons with aria-pressed. The heart is named "Save to shortlist" or
@@ -62,6 +63,7 @@ function CompareToggle({ compared, disabled = false, onToggle, className }: Comp
     <button
       type="button"
       aria-pressed={compared}
+      data-compare=""
       disabled={disabled}
       title={disabled ? translate("compareLimit") : undefined}
       onClick={onToggle}

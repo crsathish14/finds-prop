@@ -96,7 +96,9 @@ function PropertyCard({
           "group/card relative flex h-full flex-col overflow-hidden rounded-xl border bg-surface",
           "transition-[box-shadow,border-color] duration-(--dur) hover:border-line-strong hover:shadow-hover",
           "has-[a[data-stretched]:focus-visible]:outline-3 has-[a[data-stretched]:focus-visible]:outline-offset-3 has-[a[data-stretched]:focus-visible]:outline-primary",
+          // Chosen for compare: from the prop (the Design Lab) or from the toggle inside the card.
           compared ? "border-primary outline-1 outline-primary" : "border-line",
+          "has-[button[data-compare][aria-pressed=true]]:border-primary has-[button[data-compare][aria-pressed=true]]:outline-1 has-[button[data-compare][aria-pressed=true]]:outline-primary",
           list && "@xl:flex-row",
         )}
       >

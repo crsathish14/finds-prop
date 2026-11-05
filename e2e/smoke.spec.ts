@@ -402,6 +402,112 @@ test.describe("@smoke property page", () => {
   });
 });
 
+// S4-T02: compare. CI has no database behind the app, so these tests look at what does not need a
+// home: the empty comparison, the address rules, and the bar that is drawn from the browser's own
+// selection (put there before the page loads).
+const COMPARE_KEY = "findsprop:compare:v1";
+const CHOSEN = [
+  { id: "k3x9a2bd", title: "Arivu Heights flat, Velachery", cover: null },
+  { id: "m4y8b3ce", title: "Furnished 2 BHK, Perungudi", cover: null },
+];
+
+test.describe("@smoke compare", () => {
+  test("with no homes the comparison asks for at least two and leads to the results", async ({
+    page,
+  }) => {
+    await page.goto("/compare");
+    await expect(page.getByRole("heading", { level: 1, name: en.compare.title })).toBeVisible();
+    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+    await page.getByRole("link", { name: en.compare.empty.browse }).click();
+    await expect(page).toHaveURL(/\/properties$/);
+  });
+
+  test("sends an address that asks for something that is not a home to the plain page", async ({
+    page,
+  }) => {
+    await page.goto("/compare?ids=not-an-id,another-bad-one");
+    await expect(page).toHaveURL(/\/compare$/);
+    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+  });
+
+  test("the bar appears on the results once a home is chosen, and Compare now waits for two", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ([key, value]) => window.localStorage.setItem(key as string, value as string),
+      [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
+    );
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/properties");
+    const bar = page.getByRole("region", { name: en.compare.bar.label });
+    await expect(bar).toBeVisible();
+    await expect(bar.getByText("1 of 3 selected")).toBeVisible();
+    await expect(bar.getByRole("button", { name: en.compare.bar.compareNow })).toBeDisabled();
+    await bar
+      .getByRole("button", {
+        name: en.compare.bar.remove.replace("{title}", CHOSEN[0]?.title ?? ""),
+      })
+      .click();
+    await expect(bar).toBeHidden();
+  });
+
+  test("with two chosen the bar leads to the comparison with both ids", async ({ page }) => {
+    await page.addInitScript(
+      ([key, value]) => window.localStorage.setItem(key as string, value as string),
+      [COMPARE_KEY, JSON.stringify(CHOSEN)],
+    );
+    await page.goto("/");
+    const link = page.getByRole("link", { name: en.compare.bar.compareNow });
+    await expect(link).toHaveAttribute("href", "/compare?ids=k3x9a2bd,m4y8b3ce");
+  });
+
+  test("the bar is not drawn on the comparison itself, and Clear all empties it", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ([key, value]) => window.localStorage.setItem(key as string, value as string),
+      [COMPARE_KEY, JSON.stringify(CHOSEN)],
+    );
+    await page.goto("/compare");
+    await expect(page.getByRole("region", { name: en.compare.bar.label })).toBeHidden();
+    await page.goto("/properties");
+    await page
+      .getByRole("region", { name: en.compare.bar.label })
+      .getByRole("button", { name: en.compare.bar.clearAll })
+      .click();
+    await expect(page.getByRole("region", { name: en.compare.bar.label })).toBeHidden();
+  });
+
+  test("keeps the selection after a reload", async ({ page }) => {
+    await page.goto("/properties");
+    await page.evaluate(
+      ([key, value]) => window.localStorage.setItem(key as string, value as string),
+      [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
+    );
+    await page.reload();
+    await expect(page.getByRole("region", { name: en.compare.bar.label })).toBeVisible();
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/compare");
+      await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+      const results = await new AxeBuilder({ page })
+        .include("#main")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(
+        serious.map((violation) => violation.id),
+        `at ${width} px`,
+      ).toEqual([]);
+    }
+  });
+});
+
 // Text-origin check (ADR-035): every line of text a visitor can see, plus the page title and the
 // label and alt attributes, must be a message from en.json. It catches hard-coded text that the
 // lint rule cannot see, such as a sentence kept in a variable.
@@ -470,6 +576,7 @@ test.describe("@smoke text origin", () => {
     "/properties",
     "/properties?bhk=3&listingType=sale&propertyType=apartment",
     "/properties/not-an-id",
+    "/compare",
     "/this-page-does-not-exist",
     "/builder/login",
     "/builder/login?denied=1",
