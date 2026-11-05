@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { ProjectCard } from "@/components/domain/project-card";
-import { getProjects, ProjectsScreen, toProjectCard } from "@/features/projects";
+import { getProjects, PROJECTS_PATH, ProjectsScreen, toProjectCard } from "@/features/projects";
+import { pageMetadata } from "@/features/seo";
 import { getSiteSettings, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 
 export async function generateMetadata(): Promise<Metadata> {
   const translate = await getTranslate();
-  return { title: translate("projects.list.metaTitle") };
+  return pageMetadata({
+    title: translate("projects.list.metaTitle"),
+    description: translate("projects.list.metaDescription"),
+    path: PROJECTS_PATH,
+    siteName: translate("meta.title"),
+  });
 }
 
 /** The first cards are above the fold on every width, so their pictures load at once. */

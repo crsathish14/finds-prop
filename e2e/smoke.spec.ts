@@ -727,3 +727,76 @@ test.describe("@smoke text origin", () => {
     expect(fromMessages("₹ 12 · 3")).toBe(true);
   });
 });
+
+// FR-PUB-14: what search engines and shared links read. The site address comes from the environment
+// (NEXT_PUBLIC_SITE_URL), so the tests check the path of each whole address, never the host.
+const pathOf = (address: string | null) => {
+  expect(address).toMatch(/^https?:\/\//);
+  const url = new URL(address ?? "");
+  return `${url.pathname}${url.search}`;
+};
+
+test.describe("@smoke search engines", () => {
+  test("the homepage names its canonical address and the share tags, as whole addresses", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    expect(pathOf(await page.locator('link[rel="canonical"]').getAttribute("href"))).toBe("/");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      en.meta.description,
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      "content",
+      en.meta.title,
+    );
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+      "content",
+      "summary_large_image",
+    );
+    expect(pathOf(await page.locator('meta[property="og:image"]').getAttribute("content"))).toBe(
+      "/share-image.png",
+    );
+  });
+
+  test("a results page is canonical at its filters, whatever its sort and view, and says what it shows", async ({
+    page,
+  }) => {
+    await page.goto("/properties?bhk=3&sort=price_asc&view=list");
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1, LIST_WAIT);
+    expect(pathOf(await page.locator('link[rel="canonical"]').getAttribute("href"))).toBe(
+      "/properties?bhk=3",
+    );
+    await expect(page).toHaveTitle(/3 BHK/);
+  });
+
+  test("the comparison asks not to be indexed", async ({ page }) => {
+    await page.goto("/compare");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("robots.txt is a text file, not a page, and names who may not enter", async ({
+    request,
+  }) => {
+    const response = await request.get("/robots.txt");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("text/plain");
+    expect(await response.text()).toContain("User-Agent: *");
+  });
+
+  test("sitemap.xml is its own answer, never the not-found page", async ({ request }) => {
+    // CI has no database, so the list cannot be read and the answer is an error, never a partial list.
+    const response = await request.get("/sitemap.xml", { timeout: 30_000 });
+    expect([200, 500]).toContain(response.status());
+    if (response.status() === 200) {
+      expect(response.headers()["content-type"]).toContain("xml");
+      expect(await response.text()).toContain("<urlset");
+    }
+  });
+
+  test("the default share image is a picture", async ({ request }) => {
+    const response = await request.get("/share-image.png");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toBe("image/png");
+  });
+});

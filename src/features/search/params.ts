@@ -110,6 +110,19 @@ export function buildSearchHref(params: Partial<SearchParams> = {}): string {
   return text === "" ? SEARCH_PATH : `${SEARCH_PATH}?${text}`;
 }
 
+/**
+ * The canonical address of a search (FR-PUB-14): its filters, written as `buildSearchHref` writes
+ * them, without the sort, the number shown and the view. Those change how the same homes are laid out,
+ * not which homes they are, so `?view=list` and `?sort=price-asc` share the filtered page's address.
+ */
+export function canonicalSearchHref(params: SearchParams): string {
+  const filters: Partial<SearchParams> = { ...params };
+  delete filters.sort;
+  delete filters.show;
+  delete filters.view;
+  return buildSearchHref(filters);
+}
+
 /** "Clear all": every filter goes, sort and view stay (frontend.md 6.1 rule 3); "show more" starts again. */
 export function clearSearchFilters(params: SearchParams): SearchParams {
   return parseSearchParams({ sort: params.sort, view: params.view });

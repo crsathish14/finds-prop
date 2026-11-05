@@ -13,6 +13,7 @@ import {
   hasFilters,
   nextShow,
   resultsHeading,
+  resultsMeta,
   searchFromFilterValues,
   withoutFilter,
 } from "../results-view";
@@ -260,5 +261,52 @@ describe("UT-results-view: the canonical address", () => {
     expect(first).not.toBeNull();
     const query = Object.fromEntries(new URL(first ?? "", "http://localhost").searchParams);
     expect(canonicalRedirect(query, parse(query))).toBeNull();
+  });
+});
+
+describe("UT-results-meta: what the results page says about itself (FR-PUB-14)", () => {
+  const meta = (raw: Record<string, string>) => resultsMeta(parse(raw), translate, "en");
+
+  it("is the plain title and a description of the homes when nothing is filtered", () => {
+    expect(meta({})).toEqual({
+      title: "Properties",
+      description: "Homes for sale and rent. Photos, prices and details of homes on Find Prop.",
+    });
+  });
+
+  it("follows the heading when the search is for a place and a kind of home", () => {
+    expect(meta({ listingType: "sale", propertyType: "apartment", locality: "Velachery" })).toEqual(
+      {
+        title: "Apartments for sale in Velachery",
+        description:
+          "Apartments for sale in Velachery. Photos, prices and details of homes on Find Prop.",
+      },
+    );
+  });
+
+  it("adds the bedrooms, budget and keyword the heading does not say, so each search is unique", () => {
+    const three = meta({ listingType: "rent", bhk: "3", maxPrice: "5000000" });
+    const two = meta({ listingType: "rent", bhk: "2", maxPrice: "5000000" });
+    expect(three.title).toMatch(/^Homes for rent, 3 BHK, /);
+    expect(three.title).not.toBe(two.title);
+    expect(three.description).toContain(three.title);
+  });
+
+  it("does not say the place or the kind twice", () => {
+    const { title } = meta({ propertyType: "villa", locality: "ECR", bhk: "4" });
+    expect(title.match(/ECR/g)).toHaveLength(1);
+    expect(title).not.toMatch(/Villa,/);
+  });
+
+  it("gives a different title to a different search", () => {
+    const titles = [
+      meta({}),
+      meta({ listingType: "sale" }),
+      meta({ listingType: "rent" }),
+      meta({ bhk: "3" }),
+      meta({ locality: "Adyar" }),
+      meta({ locality: "Velachery" }),
+    ].map((entry) => entry.title);
+    expect(new Set(titles).size).toBe(titles.length);
   });
 });

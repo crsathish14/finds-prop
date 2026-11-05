@@ -15,7 +15,10 @@ import {
   perSqftRupees,
   propertyPath,
   PropertyScreen,
+  propertyStructuredData,
+  PROPERTIES_PATH,
 } from "@/features/property";
+import { absoluteUrl, breadcrumbList, JsonLd, pageMetadata } from "@/features/seo";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 
@@ -28,11 +31,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (address === null) return { title: translate("property.page.notFound.title") };
   const result = await getProperty(address.shortId);
   if (result.status === "missing") return { title: translate("property.page.notFound.title") };
-  const description = metaDescription(result.property);
-  return {
-    title: result.property.title,
-    ...(description === null ? {} : { description }),
-  };
+  const { property } = result;
+  const cover = property.photos[0];
+  return pageMetadata({
+    title: property.title,
+    description:
+      metaDescription(property) ??
+      translate("property.page.metaFallback", { title: property.title }),
+    path: propertyPath(property.slug, property.shortId),
+    siteName: translate("meta.title"),
+    image:
+      cover === undefined
+        ? null
+        : publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, LISTING_BUCKET, cover.path),
+    imageAlt: cover?.alt ?? property.title,
+  });
 }
 
 /**
@@ -62,10 +75,20 @@ export default async function PropertyPage({ params }: PageProps) {
   const photoSources = property.photos.map((photo) =>
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, LISTING_BUCKET, photo.path),
   );
+  const translate = await getTranslate();
+  const url = absoluteUrl(propertyPath(property.slug, property.shortId));
 
   // `pb-24` leaves room under the last section for the phone's sticky bar (hidden from 1024 px).
   return (
     <main id="main" className="flex-1 pb-24 lg:pb-0">
+      <JsonLd data={propertyStructuredData(property, { url, images: photoSources })} />
+      <JsonLd
+        data={breadcrumbList([
+          { name: translate("property.page.crumb.home"), url: absoluteUrl("/") },
+          { name: translate("property.page.crumb.properties"), url: absoluteUrl(PROPERTIES_PATH) },
+          { name: property.title, url },
+        ])}
+      />
       <PropertyScreen
         property={property}
         photoSources={photoSources}

@@ -29,6 +29,7 @@ const PROPERTY = {
   featured: false,
   label: "prime" as const,
   ageDays: 3,
+  publishedAt: "2026-11-04T09:00:00+00:00",
   photos: [],
 };
 

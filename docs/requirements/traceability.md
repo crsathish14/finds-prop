@@ -28,7 +28,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-PUB-11  | Contact form                       | `forms`                          | S5-T05                       | `contact`                     | E13, IT-forms, UT-dynamic-form                |
 | FR-PUB-12  | AI search                          | —                                | **Deferred**                 | `ai-search` (design retained) | —                                             |
 | FR-PUB-13  | Not-found and error pages          | `app`, `components/ui`           | S1-T10, S2-T08               | `errors`                      | E20                                           |
-| FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10                       | n/a                           | SEO checks (`08` §7)                          |
+| FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10 (ADR-047)             | n/a                           | SEO checks (`08` §7); unit and smoke tests    |
 | FR-PUB-15  | Header, footer, drawer, bottom bar | `components/layout`, `site`      | S2-T06, S4-T06               | `ds-navigation`               | E17, UT-components                            |
 
 ### Location and maps

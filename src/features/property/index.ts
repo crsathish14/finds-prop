@@ -23,3 +23,4 @@ export { PropertyNotFound } from "./property-not-found";
 export { PropertyScreen } from "./property-screen";
 export { PropertySkeleton } from "./property-skeleton";
 export { enquiryLinks } from "./enquiry-links";
+export { propertyStructuredData } from "./structured-data";

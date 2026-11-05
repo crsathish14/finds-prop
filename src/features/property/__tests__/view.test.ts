@@ -31,6 +31,7 @@ const HOME: PropertyData = {
   featured: true,
   label: "featured",
   ageDays: 2,
+  publishedAt: "2026-11-03T09:00:00+00:00",
   photos: [],
 };
 

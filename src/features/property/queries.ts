@@ -116,6 +116,7 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
       featured: row.featured,
       label: labelSchema.parse(label.data),
       ageDays: ageInDays(row.published_at, Date.now()),
+      publishedAt: row.published_at,
       photos: inShowingOrder(photos).map((photo) => ({
         path: photo.storage_path,
         alt: photo.alt_text,

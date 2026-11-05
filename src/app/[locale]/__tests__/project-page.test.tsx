@@ -20,7 +20,10 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
 vi.mock("@/lib/public-env", () => ({
-  publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" },
+  publicEnv: {
+    NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+    NEXT_PUBLIC_SITE_URL: "https://findsprop.test",
+  },
 }));
 vi.mock("@/features/home", () => ({
   PROJECT_BUCKET: "project-media",
@@ -31,8 +34,12 @@ vi.mock("@/features/projects", async () => {
   const view = await vi.importActual<{ projectMetaDescription: unknown; contactLinks: unknown }>(
     "@/features/projects/view",
   );
+  const data = await vi.importActual<{ projectStructuredData: unknown }>(
+    "@/features/projects/structured-data",
+  );
   return {
     ...address,
+    projectStructuredData: data.projectStructuredData,
     projectMetaDescription: view.projectMetaDescription,
     contactLinks: view.contactLinks,
     ProjectLeadCard: (props: { state: string; sendDisabled?: boolean; sendNotice?: string }) => (
@@ -90,6 +97,10 @@ const found = (overrides: Record<string, unknown> = {}) => ({
     floorPlans: ["kadal/plan.webp"],
     brochurePath: "kadal/brochure.pdf",
     contactPhone: "+914412345678",
+    locality: "OMR",
+    developer: { id: "d1", name: "Sea Homes" },
+    amenities: ["Pool"],
+    totalUnits: 120,
     ...overrides,
   },
 });
@@ -173,17 +184,35 @@ describe("the project page (S4-T09)", () => {
     expect(screen.getByTestId("screen")).toHaveAttribute("data-brochure", "");
   });
 
-  it("titles the page from the project's own words, and describes it", async () => {
+  it("titles the page from the project's own words, describes it, and gives it one canonical address", async () => {
     state.result = found({ seoTitle: "  Kadal Vista, OMR  " });
-    expect(await generateMetadata(props("kadal-vista"))).toEqual({
+    const metadata = await generateMetadata(props("kadal-vista"));
+    expect(metadata.title).toBe("Kadal Vista, OMR");
+    expect(metadata.description).toBe("A gated community.");
+    expect(metadata.alternates?.canonical).toBe("/projects/kadal-vista");
+    expect(metadata.openGraph).toMatchObject({
       title: "Kadal Vista, OMR",
-      description: "A gated community.",
+      url: "/projects/kadal-vista",
+      images: [{ url: "https://example.supabase.co/project-media/kadal/1.webp" }],
     });
   });
 
   it("falls back to the project's name when it has no SEO title", async () => {
     state.result = found();
     expect((await generateMetadata(props("kadal-vista"))).title).toBe("Kadal Vista");
+  });
+
+  it("describes a project with no words of its own from its name, developer and place", async () => {
+    state.result = found({ description: null });
+    expect((await generateMetadata(props("kadal-vista"))).description).toBe(
+      "projects.page.metaFallback",
+    );
+  });
+
+  it("shares the default image for a project with no pictures", async () => {
+    state.result = found({ images: [] });
+    const metadata = await generateMetadata(props("kadal-vista"));
+    expect(metadata.openGraph).toMatchObject({ images: [{ url: "/share-image.png" }] });
   });
 
   it("titles a missing project as not found, and does not read for a bad address", async () => {
@@ -195,5 +224,35 @@ describe("the project page (S4-T09)", () => {
       title: "projects.page.notFound.title",
     });
     expect(state.asked).toEqual([]);
+  });
+
+  it("carries the project's structured data and its breadcrumb trail, with whole addresses", async () => {
+    state.result = found();
+    const { container } = render(await ProjectPage(props("kadal-vista")));
+    const documents = [...container.querySelectorAll('script[type="application/ld+json"]')].map(
+      (script) => JSON.parse(script.textContent ?? ""),
+    );
+    expect(documents).toHaveLength(2);
+    expect(documents[0]).toMatchObject({
+      "@type": "ApartmentComplex",
+      name: "Kadal Vista",
+      url: "https://findsprop.test/projects/kadal-vista",
+    });
+    expect(documents[1]).toMatchObject({
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { position: 1, name: "projects.page.crumb.home", item: "https://findsprop.test/" },
+        {
+          position: 2,
+          name: "projects.page.crumb.projects",
+          item: "https://findsprop.test/projects",
+        },
+        {
+          position: 3,
+          name: "Kadal Vista",
+          item: "https://findsprop.test/projects/kadal-vista",
+        },
+      ],
+    });
   });
 });

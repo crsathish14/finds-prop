@@ -199,6 +199,31 @@ export function resultsHeading(
   return { title: translate("results.title.inPlace", { base, place }), emphasis: place };
 }
 
+/**
+ * What the results page says about itself (FR-PUB-14): a title and a description that follow the
+ * search, so each search has its own. With no filter the title is the plain "Properties". With filters
+ * it is the heading ("Apartments for sale in Velachery"), followed by the filters the heading does not
+ * already say (bedrooms, budget, keyword).
+ */
+export function resultsMeta(
+  params: SearchParams,
+  translate: Translate,
+  locale: string,
+): { title: string; description: string } {
+  const heading = resultsHeading(params, translate).title;
+  const extras = appliedFilters(params, translate, locale)
+    .filter((chip) => chip.id === "bhk" || chip.id === "maxPrice" || chip.id === "keyword")
+    .map((chip) => chip.label);
+  const full =
+    extras.length === 0
+      ? heading
+      : translate("results.meta.titleFiltered", { heading, filters: extras.join(", ") });
+  return {
+    title: hasFilters(params) ? full : translate("results.metaTitle"),
+    description: translate("results.meta.description", { title: full }),
+  };
+}
+
 /** The place the results are about, for the count line and the breadcrumb. */
 export function resultsPlace(params: SearchParams): string | undefined {
   return params.place ?? params.locality;

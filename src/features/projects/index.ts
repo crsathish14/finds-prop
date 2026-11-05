@@ -47,3 +47,4 @@ export { ProjectMobileBar } from "./project-mobile-bar";
 export { ProjectNotFound } from "./project-not-found";
 export { ProjectScreen } from "./project-screen";
 export { ProjectSkeleton } from "./project-skeleton";
+export { projectStructuredData } from "./structured-data";

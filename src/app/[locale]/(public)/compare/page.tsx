@@ -8,6 +8,7 @@ import {
   toCompareColumn,
 } from "@/features/compare";
 import { LISTING_BUCKET, publicStorageUrl } from "@/features/home";
+import { NO_INDEX } from "@/features/seo";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 
@@ -17,7 +18,8 @@ type PageProps = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const translate = await getTranslate();
-  return { title: translate("compare.title") };
+  // A comparison is for the visitor who made it, not for search (FR-PUB-14).
+  return { title: translate("compare.title"), ...NO_INDEX };
 }
 
 /**

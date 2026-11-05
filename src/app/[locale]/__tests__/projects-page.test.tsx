@@ -19,6 +19,7 @@ vi.mock("@/lib/public-env", () => ({
 }));
 vi.mock("@/features/projects", () => ({
   getProjects: async () => state.list,
+  PROJECTS_PATH: "/projects",
   toProjectCard: (project: { slug: string; name: string }) => ({
     href: `/projects/${project.slug}`,
     name: project.name,
@@ -90,7 +91,14 @@ describe("the projects page (S4-T09)", () => {
     expect(screenNode).toHaveAttribute("data-count", "0");
   });
 
-  it("titles the page from the words", async () => {
-    expect(await generateMetadata()).toEqual({ title: "projects.list.metaTitle" });
+  it("titles and describes the page from the words, with its canonical address", async () => {
+    const metadata = await generateMetadata();
+    expect(metadata.title).toBe("projects.list.metaTitle");
+    expect(metadata.description).toBe("projects.list.metaDescription");
+    expect(metadata.alternates?.canonical).toBe("/projects");
+    expect(metadata.openGraph).toMatchObject({
+      url: "/projects",
+      images: [{ url: "/share-image.png" }],
+    });
   });
 });

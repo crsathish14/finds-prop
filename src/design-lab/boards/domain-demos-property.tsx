@@ -42,6 +42,7 @@ const FULL: PropertyData = {
   featured: true,
   label: "featured",
   ageDays: 2,
+  publishedAt: "2026-11-03T09:00:00+00:00",
   photos: [
     { path: "1", alt: "Living room with a balcony" },
     { path: "2", alt: "Main bedroom" },
@@ -64,6 +65,7 @@ const SPARSE: PropertyData = {
   featured: false,
   label: "prime",
   ageDays: 21,
+  publishedAt: "2026-11-06T09:00:00+00:00",
   photos: [{ path: "1", alt: null }],
 };
 
