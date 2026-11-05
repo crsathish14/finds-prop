@@ -21,8 +21,9 @@
  *   form is shown, focus moves to the first field with one. The send-failed alert is role="alert". The
  *   confirmation is role="status". The message counter is a polite live region.
  * States: signed out; form (empty, filled); errors on the name and phone; send failed (values kept);
- *   sending; sent; the card and the sheet variants.
- * Dependencies: FormField, Input, Textarea, Alert, Button, Link, Icon, next-intl, cn.
+ *   sending; sent; the card and the sheet variants; loading (EnquiryCardSkeleton: the form's box,
+ *   hidden from screen readers, shown while the sign-in is checked).
+ * Dependencies: FormField, Input, Textarea, Alert, Button, Link, Icon, Skeleton, next-intl, cn.
  * Tests: enquiry-card.test.tsx; Design Lab "Domain" (S4-T01).
  * UX reference: property screen, enquiry card and sheet (s-browse.css .enq-card, .gate, .success-box).
  *   The phone is a plain number of 6 to 15 digits, as the UX draws it and as the database accepts it
@@ -38,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/components/ui/link";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
 
@@ -273,5 +275,26 @@ function EnquiryCard({
   );
 }
 
-export { EnquiryCard };
+/** The card while the visitor's sign-in is being checked: the form's box, so the page does not jump. */
+function EnquiryCardSkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      data-slot="enquiry-card-skeleton"
+      aria-hidden="true"
+      className={cn("rounded-xl border border-line bg-surface p-6 shadow-card", className)}
+    >
+      <Skeleton shape="title" className="h-6 w-1/2" />
+      <Skeleton shape="text" className="mt-3 w-4/5" />
+      <div className="mt-4 flex flex-col gap-4">
+        <Skeleton className="h-11 w-full" />
+        <Skeleton className="h-11 w-full" />
+        <Skeleton className="h-11 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    </div>
+  );
+}
+
+export { EnquiryCard, EnquiryCardSkeleton };
 export type { EnquiryCardProps, EnquiryErrors, EnquiryField, EnquiryValues };

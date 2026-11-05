@@ -155,7 +155,7 @@ export const DOMAIN: LabEntry[] = [
     id: "price-card",
     name: "Price card",
     description:
-      "The price of one home in the sticky column of the property page: the tags, the large price and the price per square foot. Sale with and without the price per square foot, rent and no tags.",
+      "The price of one home in the sticky column of the property page: the tags, the large price and the price per square foot. Sale with and without the price per square foot, rent, no tags and loading.",
     sources: ["domain/price-card.tsx"],
     Demo: PriceCardDemo,
   },
@@ -163,7 +163,7 @@ export const DOMAIN: LabEntry[] = [
     id: "enquiry-card",
     name: "Enquiry card",
     description:
-      "Where a visitor contacts the owner, in each of its states: signed out (sign in or create an account), the form (name, phone, email and message with its counter), errors, send failed with the typed values kept, sending, sent, and long text. Static states: it sends nothing.",
+      "Where a visitor contacts the owner, in each of its states: signed out (sign in or create an account), the form (name, phone, email and message with its counter), errors, send failed with the typed values kept, sending, loading, sent, and long text. Static states: it sends nothing.",
     sources: ["domain/enquiry-card.tsx"],
     Demo: EnquiryCardDemo,
   },

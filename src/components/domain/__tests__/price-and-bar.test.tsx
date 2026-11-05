@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
-import { PriceCard } from "../price-card";
+import { PriceCard, PriceCardSkeleton } from "../price-card";
 import { StickyMobileBar } from "../sticky-mobile-bar";
 
 describe("PriceCard: the price in the sticky column (S4-T01)", () => {
@@ -33,6 +33,15 @@ describe("PriceCard: the price in the sticky column (S4-T01)", () => {
     view.unmount();
     renderWithMessages(<PriceCard rupees={78_00_000} />);
     expect(screen.queryByText("For sale")).not.toBeInTheDocument();
+  });
+});
+
+describe("PriceCardSkeleton (S4-T01)", () => {
+  it("is hidden from screen readers and shows no price", () => {
+    const { container } = renderWithMessages(<PriceCardSkeleton />);
+    expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(container.firstElementChild).toHaveAttribute("data-slot", "price-card-skeleton");
+    expect(screen.queryByText(/₹/)).not.toBeInTheDocument();
   });
 });
 

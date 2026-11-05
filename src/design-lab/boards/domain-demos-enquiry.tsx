@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { EnquiryCard, type EnquiryValues } from "@/components/domain/enquiry-card";
+import {
+  EnquiryCard,
+  EnquiryCardSkeleton,
+  type EnquiryValues,
+} from "@/components/domain/enquiry-card";
 import { EnquirySheet } from "@/components/domain/enquiry-sheet";
-import { PriceCard } from "@/components/domain/price-card";
+import { PriceCard, PriceCardSkeleton } from "@/components/domain/price-card";
 import { StickyMobileBar } from "@/components/domain/sticky-mobile-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +49,9 @@ export function PriceCardDemo() {
       </Specimen>
       <Specimen label="No tags" className={COLUMN}>
         <PriceCard rupees={62_00_000} perSqftRupees={5_900} className="w-full" />
+      </Specimen>
+      <Specimen label="Loading" className={COLUMN}>
+        <PriceCardSkeleton className="w-full" />
       </Specimen>
     </div>
   );
@@ -99,6 +106,9 @@ export function EnquiryCardDemo() {
           className={COLUMN}
         >
           <EnquiryCard state="form" headingAs="h3" submitting values={FILLED} className="w-full" />
+        </Specimen>
+        <Specimen label="Loading: while the sign-in is checked" className={COLUMN}>
+          <EnquiryCardSkeleton className="w-full" />
         </Specimen>
         <Specimen label="Sent" className={COLUMN}>
           <EnquiryCard

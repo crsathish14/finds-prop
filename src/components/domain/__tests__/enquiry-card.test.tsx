@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
-import { EnquiryCard } from "../enquiry-card";
+import { EnquiryCard, EnquiryCardSkeleton } from "../enquiry-card";
 import { EnquirySheet } from "../enquiry-sheet";
 
 const words = messages.domain.enquiry;
@@ -208,6 +208,17 @@ describe("EnquiryCard: the sheet variant (S4-T01)", () => {
     expect(screen.queryByText("0 / 1000")).not.toBeInTheDocument();
     expect(screen.getByText(words.form.leadIn)).toBeVisible();
     expect(screen.getByPlaceholderText(words.form.messagePlaceholderShort)).toBeInTheDocument();
+  });
+});
+
+describe("EnquiryCardSkeleton (S4-T01)", () => {
+  it("is hidden from screen readers and has no heading, field or button", () => {
+    const { container } = renderWithMessages(<EnquiryCardSkeleton />);
+    expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(container.firstElementChild).toHaveAttribute("data-slot", "enquiry-card-skeleton");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });
 
