@@ -12,24 +12,24 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Public discovery
 
-| Req        | Name                               | Modules                          | Stage                        | UX screens                    | Primary tests                                 |
-| ---------- | ---------------------------------- | -------------------------------- | ---------------------------- | ----------------------------- | --------------------------------------------- |
-| FR-PUB-01  | Homepage, Variation A              | `site`, `sponsors`, `search`     | S2 (SponsorSlot), S4-T06/T07 | `home-a`                      | E09, UT-sponsors, VR                          |
-| FR-PUB-02  | Homepage, Variation B              | `site`, `sponsors`               | S4-T07; setting S7-T10       | `home-b`                      | E09, E15, UT-sponsors, VR                     |
-| FR-PUB-03  | No-sponsor fallback                | `sponsors`                       | S4-T07                       | `home-none`                   | E09 (no gap, CLS), UT-sponsors                |
-| FR-PUB-04  | Sponsored banner container         | `sponsors`, `components/layout`  | S2-T06, S4-T07, S7-T11       | `ds-ads`, `search#sponsored`  | UT-sponsors, IT-sponsors, VR, axe             |
-| FR-PUB-05  | Homepage sections (CMS-toggled)    | `site`, `properties`, `projects` | S4-T06                       | `home-*`                      | E01, IT-queries                               |
-| FR-PUB-06  | Property search and results        | `search`, `properties`, `places` | S4-T03/T04/T05               | `search`                      | DB-FN-search, UT-search-schema, UT-label, E01 |
-| FR-PUB-06a | Chips, grid/list, Show more        | `search`                         | S4-T04                       | `search#list`                 | UT-search-schema, E01                         |
-| FR-PUB-07  | Property detail                    | `properties`, `enquiries`        | S4-T08 (+S5-T03)             | `property`                    | E01, E05, IT-queries                          |
-| FR-PUB-08  | Projects listing                   | `projects`                       | S4-T09                       | `projects`                    | E11, IT-queries                               |
-| FR-PUB-09  | Project detail                     | `projects`, `forms`              | S4-T09 (+S5-T05)             | `project`                     | E13, DB-FN-track_project_event                |
-| FR-PUB-10  | Compare                            | `compare`                        | S4-T02, S5-T02               | `compare`                     | UT-compare, E04                               |
-| FR-PUB-11  | Contact form                       | `forms`                          | S5-T05                       | `contact`                     | E13, IT-forms, UT-dynamic-form                |
-| FR-PUB-12  | AI search                          | —                                | **Deferred**                 | `ai-search` (design retained) | —                                             |
-| FR-PUB-13  | Not-found and error pages          | `app`, `components/ui`           | S1-T10, S2-T08               | `errors`                      | E20                                           |
-| FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10 (ADR-047)             | n/a                           | SEO checks (`08` §7); unit and smoke tests    |
-| FR-PUB-15  | Header, footer, drawer, bottom bar | `components/layout`, `site`      | S2-T06, S4-T06               | `ds-navigation`               | E17, UT-components                            |
+| Req        | Name                               | Modules                          | Stage                        | UX screens                    | Primary tests                                             |
+| ---------- | ---------------------------------- | -------------------------------- | ---------------------------- | ----------------------------- | --------------------------------------------------------- |
+| FR-PUB-01  | Homepage, Variation A              | `site`, `sponsors`, `search`     | S2 (SponsorSlot), S4-T06/T07 | `home-a`                      | E09, UT-sponsors, VR                                      |
+| FR-PUB-02  | Homepage, Variation B              | `site`, `sponsors`               | S4-T07; setting S7-T10       | `home-b`                      | E09, E15, UT-sponsors, VR                                 |
+| FR-PUB-03  | No-sponsor fallback                | `sponsors`                       | S4-T07                       | `home-none`                   | E09 (no gap, CLS), UT-sponsors                            |
+| FR-PUB-04  | Sponsored banner container         | `sponsors`, `components/layout`  | S2-T06, S4-T07, S7-T11       | `ds-ads`, `search#sponsored`  | UT-sponsors, IT-sponsors, VR, axe                         |
+| FR-PUB-05  | Homepage sections (CMS-toggled)    | `site`, `properties`, `projects` | S4-T06                       | `home-*`                      | E01, IT-queries                                           |
+| FR-PUB-06  | Property search and results        | `search`, `properties`, `places` | S4-T03/T04/T05               | `search`                      | DB-FN-search, UT-search-schema, UT-label, E01             |
+| FR-PUB-06a | Chips, grid/list, Show more        | `search`                         | S4-T04                       | `search#list`                 | UT-search-schema, E01                                     |
+| FR-PUB-07  | Property detail                    | `properties`, `enquiries`        | S4-T08 (+S5-T03)             | `property`                    | E01, E05, IT-queries                                      |
+| FR-PUB-08  | Projects listing                   | `projects`                       | S4-T09                       | `projects`                    | E11, IT-queries                                           |
+| FR-PUB-09  | Project detail                     | `projects`, `forms`              | S4-T09 (ADR-046; +S5-T05)    | `project`                     | E13, DB-FN-submit_project_lead, DB-FN-track_project_event |
+| FR-PUB-10  | Compare                            | `compare`                        | S4-T02, S5-T02               | `compare`                     | UT-compare, E04                                           |
+| FR-PUB-11  | Contact form                       | `forms`                          | S5-T05                       | `contact`                     | E13, IT-forms, UT-dynamic-form                            |
+| FR-PUB-12  | AI search                          | —                                | **Deferred**                 | `ai-search` (design retained) | —                                                         |
+| FR-PUB-13  | Not-found and error pages          | `app`, `components/ui`           | S1-T10, S2-T08               | `errors`                      | E20                                                       |
+| FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10 (ADR-047)             | n/a                           | SEO checks (`08` §7); unit and smoke tests                |
+| FR-PUB-15  | Header, footer, drawer, bottom bar | `components/layout`, `site`      | S2-T06, S4-T06               | `ds-navigation`               | E17, UT-components                                        |
 
 ### Location and maps
 
@@ -107,19 +107,19 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Cross-cutting and gated
 
-| Req       | Name                  | Modules             | Stage          | UX                   | Tests                                 |
-| --------- | --------------------- | ------------------- | -------------- | -------------------- | ------------------------------------- |
-| FR-SYS-01 | Rate limiting         | `server/rate-limit` | S3-T12         | rate-limited states  | DB-FN-rate_limit_hit, UT-visitor-hash |
-| FR-SYS-02 | CRM retry cron        | `crm`, DB           | S7-T09         | `admin-crm#logs`     | IT-crm                                |
-| FR-SYS-03 | Event tracking        | `projects`          | S5-T05         | n/a                  | DB-FN-track_project_event             |
-| FR-SYS-04 | Form pipeline         | `forms`             | S5-T05         | `contact`, `project` | IT-forms                              |
-| FR-SYS-05 | Buckets with limits   | DB                  | S3-T05         | n/a                  | DB-STO-*                              |
-| FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12 | n/a                  | DB-AUDIT                              |
-| FR-SYS-07 | Seed data             | scripts             | S3-T13         | n/a                  | CI db job                             |
-| FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13 | n/a                  | DB-RLS-column-grants, IT-queries      |
-| FR-SYS-09 | Legal pages           | `app`               | S5-T06, S9-T05 | Gap                  | E01 (links present)                   |
-| FR-SYS-10 | Health and monitoring | `app/api`           | S1-T09, S9-T06 | n/a                  | smoke                                 |
-| FR-PG-01  | PG and hostels        | TBD                 | Track X        | **Gap**              | TBD                                   |
+| Req       | Name                  | Modules             | Stage                                      | UX                   | Tests                                 |
+| --------- | --------------------- | ------------------- | ------------------------------------------ | -------------------- | ------------------------------------- |
+| FR-SYS-01 | Rate limiting         | `server/rate-limit` | S3-T12                                     | rate-limited states  | DB-FN-rate_limit_hit, UT-visitor-hash |
+| FR-SYS-02 | CRM retry cron        | `crm`, DB           | S7-T09                                     | `admin-crm#logs`     | IT-crm                                |
+| FR-SYS-03 | Event tracking        | `projects`          | S4-T09 (views, ADR-046); S5-T05 (the rest) | n/a                  | DB-FN-track_project_event             |
+| FR-SYS-04 | Form pipeline         | `forms`             | S5-T05                                     | `contact`, `project` | IT-forms                              |
+| FR-SYS-05 | Buckets with limits   | DB                  | S3-T05                                     | n/a                  | DB-STO-*                              |
+| FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT                              |
+| FR-SYS-07 | Seed data             | scripts             | S3-T13                                     | n/a                  | CI db job                             |
+| FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries      |
+| FR-SYS-09 | Legal pages           | `app`               | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
+| FR-SYS-10 | Health and monitoring | `app/api`           | S1-T09, S9-T06                             | n/a                  | smoke                                 |
+| FR-PG-01  | PG and hostels        | TBD                 | Track X                                    | **Gap**              | TBD                                   |
 
 ---
 
