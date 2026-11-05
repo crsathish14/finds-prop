@@ -48,7 +48,7 @@ function ResultsGrid({
   className?: string;
 }) {
   return (
-    <div className="@container">
+    <div className="@container w-full">
       <div data-slot="results-grid" className={cn(view === "list" ? LIST : GRID, className)}>
         {children}
       </div>
@@ -72,7 +72,7 @@ function ResultsSkeleton({
       aria-busy="true"
       aria-label={translate("domain.results.loading")}
       role="status"
-      className="@container"
+      className="@container w-full"
     >
       <div className={cn(view === "list" ? LIST : GRID, className)}>
         {Array.from({ length: count }, (_, index) => (
