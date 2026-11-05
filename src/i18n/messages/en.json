@@ -291,6 +291,7 @@
     "rentShort": "{price}/mo",
     "perSqft": "{price} per sq.ft",
     "area": "{value} sq.ft",
+    "acres": "{value} acres",
     "today": "Today",
     "daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
     "monthsAgo": "{count, plural, one {# month ago} other {# months ago}}",
@@ -496,6 +497,80 @@
         "title": "We couldn't load projects",
         "body": "Check your connection and try again.",
         "retry": "Try again"
+      }
+    },
+    "page": {
+      "crumb": {
+        "nav": "Breadcrumb",
+        "home": "Home",
+        "projects": "Projects",
+        "back": "All projects"
+      },
+      "loading": "Loading project",
+      "photoAlt": "{name}: photo {number}",
+      "reraTag": "RERA applicable · {number}",
+      "reraTagBare": "RERA applicable",
+      "actions": {
+        "call": "Call",
+        "whatsapp": "WhatsApp",
+        "brochure": "Brochure"
+      },
+      "overview": {
+        "heading": "Project overview",
+        "priceRange": "Price range",
+        "configuration": "Configuration",
+        "status": "Status",
+        "possession": "Possession",
+        "landArea": "Land area",
+        "totalUnits": "Total units",
+        "availableUnits": "Available units",
+        "rera": "RERA number",
+        "bhk": "{sizes} BHK"
+      },
+      "about": "About this project",
+      "amenities": "Amenities",
+      "specifications": "Specifications",
+      "units": {
+        "heading": "Units",
+        "unit": "Unit",
+        "floor": "Floor",
+        "bhk": "BHK",
+        "area": "Area",
+        "facing": "Facing",
+        "price": "Price",
+        "status": "Status",
+        "showing": "Showing {shown} of {total} units",
+        "swipe": "Swipe sideways on small screens"
+      },
+      "floorPlans": {
+        "heading": "Floor plans",
+        "item": "Floor plan {number}"
+      },
+      "trend": {
+        "title": "Price per sq.ft, last {count} months",
+        "sub": "As entered by the developer (₹ per sq.ft)",
+        "chart": "Price per sq.ft: {start} in {from}, {end} in {to}",
+        "viewTable": "View as table",
+        "month": "Month",
+        "value": "₹ per sq.ft",
+        "tableLabel": "Price per sq.ft by month"
+      },
+      "location": {
+        "heading": "Location advantages",
+        "nearby": "Nearby places"
+      },
+      "videos": {
+        "heading": "Videos",
+        "item": "Video {number}"
+      },
+      "aside": {
+        "label": "Price and contact",
+        "possession": "Possession {date}"
+      },
+      "notFound": {
+        "title": "Project not found",
+        "body": "This project may have been unpublished, or the link may be wrong.",
+        "all": "See all projects"
       }
     }
   },

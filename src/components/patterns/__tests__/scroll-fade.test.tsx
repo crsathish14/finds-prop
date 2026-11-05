@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { CompareScroller } from "../compare-scroller.client";
+import { ScrollFade } from "../scroll-fade.client";
 
 /** jsdom has no layout, so the box's sizes are set by hand and the scroll event asks for a new measure. */
 function size(
@@ -16,7 +16,7 @@ function size(
 
 function setup() {
   const view = render(
-    <CompareScroller>
+    <ScrollFade>
       <table>
         <tbody>
           <tr>
@@ -24,14 +24,14 @@ function setup() {
           </tr>
         </tbody>
       </table>
-    </CompareScroller>,
+    </ScrollFade>,
   );
   const box = view.container.querySelector<HTMLElement>(".overflow-x-auto") as HTMLElement;
-  const hint = () => view.container.querySelector("[data-slot=compare-scroll-hint]");
+  const hint = () => view.container.querySelector("[data-slot=scroll-fade-hint]");
   return { box, hint };
 }
 
-describe("CompareScroller: the fade that says there is more (S4-T02)", () => {
+describe("ScrollFade: the fade that says there is more (S4-T02)", () => {
   it("shows no fade when everything fits", () => {
     const { box, hint } = setup();
     size(box, { scrollWidth: 700, clientWidth: 700, scrollLeft: 0 });

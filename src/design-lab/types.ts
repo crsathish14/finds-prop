@@ -3,7 +3,7 @@ import type { ComponentType } from "react";
 /**
  * The five boards that mirror the approved UX design-system boards (ADR-020), and "domain", which
  * shows the organisms that only appear inside the screens (the cards, search and detail parts), and "discovery": what spans the screens when choosing homes
- * (the compare bar and the comparison, and the projects page).
+ * (the compare bar and the comparison, the projects page and the project page).
  */
 export type LabBoardId =
   "foundations" | "components" | "navigation" | "feedback" | "ads" | "domain" | "discovery";

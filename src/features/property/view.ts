@@ -1,4 +1,5 @@
 import { PROPERTY_TYPES, type PropertyType } from "@/config/search-options";
+import { textParagraphs, uniqueTexts } from "@/lib/text";
 import type { PropertyData } from "./types";
 
 /**
@@ -53,25 +54,12 @@ export function perSqftRupees(property: PropertyData): number | undefined {
  * stays inside its paragraph. Never HTML: the text is shown as text.
  */
 export function descriptionParagraphs(description: string | null): string[] {
-  if (description === null) return [];
-  return description
-    .split(/\r?\n[ \t]*\r?\n/)
-    .map((paragraph) => paragraph.replace(/\r/g, "").trim())
-    .filter((paragraph) => paragraph !== "");
+  return textParagraphs(description);
 }
 
 /** The amenities as the owner wrote them: trimmed, none empty, none twice (capitals ignored), in order. */
 export function amenityList(amenities: readonly string[]): string[] {
-  const seen = new Set<string>();
-  const list: string[] = [];
-  for (const amenity of amenities) {
-    const text = amenity.trim();
-    const key = text.toLowerCase();
-    if (text === "" || seen.has(key)) continue;
-    seen.add(key);
-    list.push(text);
-  }
-  return list;
+  return uniqueTexts(amenities);
 }
 
 /**

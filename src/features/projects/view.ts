@@ -1,4 +1,5 @@
-import type { ProjectData, ProjectStatus, ProjectUnit, TrendPoint } from "./types";
+import { textParagraphs } from "@/lib/text";
+import type { ProjectData, ProjectStatus, ProjectUnit, TrendPoint, UnitStatus } from "./types";
 
 /**
  * The rules the project pages apply between a project and the screen (S4-T09, ADR-046). Pure and
@@ -161,4 +162,148 @@ export function videoLinks(videos: readonly string[]): string[] {
     if (links.size === VIDEOS_SHOWN) break;
   }
   return [...links];
+}
+
+/** What "Call" and "WhatsApp" lead to, each null when the phone does not allow it. */
+export type ContactLinks = { call: string | null; whatsapp: string | null };
+
+const PHONE = /^\+?[0-9]{6,15}$/;
+
+/**
+ * The links for a project's contact number (the database allows an optional plus and 6 to 15 digits).
+ * Call is a `tel:` link. WhatsApp needs the country code, so it is offered only for a number written
+ * with its plus (the international form); a local number could be reached on the wrong code, so it
+ * gets Call alone. A number that does not fit gets neither.
+ */
+export function contactLinks(phone: string | null): ContactLinks {
+  const number = phone?.trim() ?? "";
+  if (!PHONE.test(number)) return { call: null, whatsapp: null };
+  return {
+    call: `tel:${number}`,
+    whatsapp: number.startsWith("+") ? `https://wa.me/${number.slice(1)}` : null,
+  };
+}
+
+/** The specifications as the developer wrote them: name and value pairs, or plain paragraphs. */
+export type SpecificationRows =
+  | { kind: "pairs"; rows: { name: string; value: string }[] }
+  | { kind: "text"; paragraphs: string[] };
+
+const SPECIFICATION_LINE = /^([^:]{1,40}):\s*(\S.*)$/;
+
+/**
+ * The specifications text as the page draws it. When every line reads "Name: value" it is a list of
+ * pairs (the UX's "Structure: RCC framed structure"); otherwise it is paragraphs, a blank line
+ * starting a new one. Nothing typed is dropped and nothing is read as HTML. Null when there is no text.
+ */
+export function specificationRows(text: string | null): SpecificationRows | null {
+  const lines = (text ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+  if (lines.length === 0) return null;
+  const pairs = lines.map((line) => SPECIFICATION_LINE.exec(line));
+  if (pairs.every((pair): pair is RegExpExecArray => pair !== null)) {
+    return {
+      kind: "pairs",
+      rows: pairs.map((pair) => ({
+        name: (pair[1] ?? "").trim(),
+        value: (pair[2] ?? "").trim(),
+      })),
+    };
+  }
+  return { kind: "text", paragraphs: textParagraphs(text) };
+}
+
+/** The scale of the price trend: the lowest and highest value drawn and the ticks between them. */
+export type TrendScale = { min: number; max: number; ticks: number[] };
+
+/** The nearest of 1, 2, 5 and 10 times a power of ten that is not below the value. */
+function niceStep(value: number): number {
+  const power = 10 ** Math.floor(Math.log10(value));
+  const fraction = value / power;
+  const nice = [1, 2, 5, 10].find((candidate) => fraction <= candidate) ?? 10;
+  return nice * power;
+}
+
+/**
+ * The scale for the price trend chart, or null when there are fewer than two months (one month is not
+ * a trend, so the page draws no chart for it). The scale runs from just below the lowest value to just
+ * above the highest, in round steps, so the line fills the chart; months that all have the same value
+ * get a little room either side.
+ */
+export function trendScale(points: readonly TrendPoint[]): TrendScale | null {
+  if (points.length < 2) return null;
+  const values = points.map((point) => point.pricePerSqft);
+  let low = Math.min(...values);
+  let high = Math.max(...values);
+  if (low === high) {
+    const room = Math.max(1, Math.round(low * 0.05));
+    low -= room;
+    high += room;
+  }
+  const step = niceStep((high - low) / 3);
+  const min = Math.max(0, Math.floor(low / step) * step);
+  const max = Math.ceil(high / step) * step;
+  const ticks: number[] = [];
+  for (let value = min; value <= max + step / 2; value += step) {
+    ticks.push(Math.round(value * 1000) / 1000);
+  }
+  return { min, max, ticks };
+}
+
+/** Where a value sits on the scale, from 0 (the bottom) to 1 (the top). */
+export function trendFraction(value: number, scale: TrendScale): number {
+  return (value - scale.min) / (scale.max - scale.min);
+}
+
+/**
+ * Which months get a name under the chart: all when there are four or fewer, otherwise the first, the
+ * last and two between, so the names never touch.
+ */
+export function trendLabelIndexes(count: number): number[] {
+  if (count <= 4) return Array.from({ length: count }, (_, index) => index);
+  const last = count - 1;
+  return [0, Math.round(last / 3), Math.round((2 * last) / 3), last];
+}
+
+/**
+ * The unit statuses as the status badge knows them: the database says "hold", the badge says "onHold".
+ */
+export const UNIT_BADGE_STATUS = {
+  available: "available",
+  hold: "onHold",
+  sold: "sold",
+  blocked: "blocked",
+} as const satisfies Record<UnitStatus, string>;
+
+/** Up to two capital letters from the first words of a name ("Kadal Homes" is "KH"), for a monogram. */
+export function developerInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter((word) => word !== "")
+    .slice(0, 2)
+    .map((word) => (Array.from(word)[0] ?? "").toLocaleUpperCase("en"))
+    .join("");
+}
+
+const DESCRIPTION_LIMIT = 160;
+
+/**
+ * The page description for search engines and shared links: the developer's own SEO description when
+ * there is one, otherwise the first paragraph of the project's description cut at a word. Null when
+ * there is neither.
+ */
+export function projectMetaDescription(
+  project: Pick<ProjectData, "seoDescription" | "description">,
+): string | null {
+  const own = project.seoDescription?.replace(/\s+/g, " ").trim();
+  if (own) return own;
+  const first = textParagraphs(project.description)[0];
+  if (first === undefined) return null;
+  const flat = first.replace(/\s+/g, " ");
+  if (flat.length <= DESCRIPTION_LIMIT) return flat;
+  const cut = flat.slice(0, DESCRIPTION_LIMIT);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 40 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }

@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import messages from "@/i18n/messages/en.json";
 import {
   calendarYear,
+  formatAcres,
   formatArea,
   formatDate,
   formatListedAgo,
+  formatMonth,
   formatPerSqft,
   formatPrice,
   formatRent,
@@ -86,5 +88,23 @@ describe("UT-format: how long ago a listing went live", () => {
     expect(formatListedAgo(translate, 364)).toBe("12 months ago");
     expect(formatListedAgo(translate, 365)).toBe("1 year ago");
     expect(formatListedAgo(translate, 800)).toBe("2 years ago");
+  });
+});
+
+describe("UT-format: acres and months", () => {
+  it("writes land area in acres with at most two decimals", () => {
+    expect(formatAcres(translate, "en", 4.2)).toBe("4.2 acres");
+    expect(formatAcres(translate, "en", 12)).toBe("12 acres");
+    expect(formatAcres(translate, "en", 0.125)).toBe("0.13 acres");
+  });
+  it("writes a stored day as its month and year, or the short month alone", () => {
+    expect(formatMonth("en", "2028-12-31")).toBe("Dec 2028");
+    expect(formatMonth("en", "2026-03-01", "short")).toBe("Mar");
+  });
+  it("does not slip into the day before in any time zone", () => {
+    expect(formatMonth("en", "2026-03-01")).toBe("Mar 2026");
+  });
+  it("gives nothing for text that is not a day", () => {
+    expect(formatMonth("en", "soon")).toBe("");
   });
 });

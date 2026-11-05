@@ -402,6 +402,54 @@ test.describe("@smoke property page", () => {
   });
 });
 
+// S4-T09: the project page. CI has no database behind the app, so these tests look at what does not
+// need a project: an address that is not a slug is "not found", with its one next step. (The page streams
+// under a loading screen, so the answer is a normal status with a noindex tag.)
+test.describe("@smoke project page", () => {
+  test("an address that is not a project's says so and leads to all projects", async ({ page }) => {
+    await page.goto("/projects/not_a_slug");
+    await expect(
+      page.getByRole("heading", { level: 1, name: en.projects.page.notFound.title }),
+    ).toBeVisible();
+    await expect(page.getByText(en.projects.page.notFound.body)).toBeVisible();
+    await page.getByRole("link", { name: en.projects.page.notFound.all }).click();
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: en.projects.list.title }),
+    ).toBeVisible();
+  });
+
+  test("keeps the site header and footer around the not-found screen and is kept out of search results", async ({
+    page,
+  }) => {
+    await page.goto("/projects/not_a_slug");
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
+    await expect(page.locator('head meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/projects/not_a_slug");
+      await expect(
+        page.getByRole("heading", { level: 1, name: en.projects.page.notFound.title }),
+      ).toBeVisible();
+      const results = await new AxeBuilder({ page })
+        .include("#main")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(
+        serious.map((violation) => violation.id),
+        `at ${width} px`,
+      ).toEqual([]);
+    }
+  });
+});
+
 // S4-T02: compare. CI has no database behind the app, so these tests look at what does not need a
 // home: the empty comparison, the address rules, and the bar that is drawn from the browser's own
 // selection (put there before the page loads).
@@ -632,6 +680,7 @@ test.describe("@smoke text origin", () => {
     "/properties/not-an-id",
     "/compare",
     "/projects",
+    "/projects/not_a_slug",
     "/this-page-does-not-exist",
     "/builder/login",
     "/builder/login?denied=1",

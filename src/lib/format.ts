@@ -85,3 +85,27 @@ export function formatListedAgo(translate: Translate, ageDays: number): string {
   }
   return translate("format.yearsAgo", { count: Math.floor(days / DAYS_PER_YEAR) });
 }
+
+/** Land area in acres, at most two decimals: "4.2 acres". */
+export function formatAcres(translate: Translate, locale: string, acres: number): string {
+  return translate("format.acres", { value: number(locale, acres, 2) });
+}
+
+/**
+ * A stored day (`YYYY-MM-DD`, a calendar date with no time) as its month and year, "Dec 2028", or as the
+ * short month alone, "Dec". The day is read as UTC so it never slips into the day before in any
+ * time zone. A text that is not a day gives an empty string.
+ */
+export function formatMonth(
+  locale: string,
+  day: string,
+  style: "short-year" | "short" = "short-year",
+): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    month: "short",
+    ...(style === "short-year" ? { year: "numeric" } : {}),
+    timeZone: "UTC",
+  }).format(date);
+}

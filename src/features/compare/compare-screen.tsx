@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/patterns/breadcrumb";
 import { EmptyState } from "@/components/patterns/empty-state";
+import { ScrollFade } from "@/components/patterns/scroll-fade.client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
@@ -13,7 +14,7 @@ import { PROPERTY_TYPE_WORDS } from "@/config/search-options";
 import { cn } from "@/lib/cn";
 import { formatArea, formatPerSqft, formatPrice, formatRent, type Translate } from "@/lib/format";
 import { CompareRemove } from "./compare-remove.client";
-import { CompareScroller } from "./compare-scroller.client";
+
 import { amenityRows, hasAmenity, type CompareColumn } from "./table";
 
 const FURNISHING_WORDS = {
@@ -116,7 +117,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
 
       {ready ? (
         <>
-          <CompareScroller>
+          <ScrollFade>
             <table
               aria-label={translate("compare.table.label", { count: columns.length })}
               className={cn(
@@ -245,7 +246,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
                 )}
               </tbody>
             </table>
-          </CompareScroller>
+          </ScrollFade>
           <p className="mt-4 text-small text-muted max-md:hidden">{translate("compare.tip")}</p>
         </>
       ) : (
