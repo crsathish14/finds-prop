@@ -3,8 +3,11 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { PROJECT_BUCKET, publicStorageUrl } from "@/features/home";
 import {
   canonicalProjectPath,
+  contactLinks,
   getProject,
   parseProjectSlug,
+  ProjectLeadCard,
+  ProjectMobileBar,
   projectMetaDescription,
   ProjectScreen,
 } from "@/features/projects";
@@ -45,16 +48,26 @@ export default async function ProjectPage({ params }: PageProps) {
   const canonical = canonicalProjectPath(slug, project.slug);
   if (canonical !== null) permanentRedirect(canonical);
 
+  const translate = await getTranslate();
   const source = (path: string) =>
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PROJECT_BUCKET, path);
 
   return (
-    <main id="main" className="flex-1">
+    // `pb-24` leaves room under the last section for the phone's bar (hidden from 1024 px).
+    <main id="main" className="flex-1 pb-24 lg:pb-0">
       <ProjectScreen
         project={project}
         imageSources={project.images.map(source)}
         floorPlanSources={project.floorPlans.map(source)}
         brochureSource={project.brochurePath === null ? null : source(project.brochurePath)}
+        enquiry={
+          <ProjectLeadCard
+            state="form"
+            sendDisabled
+            sendNotice={translate("projects.page.lead.notOpen")}
+          />
+        }
+        mobileEnquiry={<ProjectMobileBar contact={contactLinks(project.contactPhone)} />}
       />
     </main>
   );

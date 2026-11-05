@@ -48,7 +48,7 @@ export const DISCOVERY: LabEntry[] = [
     id: "project-page",
     name: "Project page",
     description:
-      "The project page below the header: the breadcrumb, the developer's monogram and name, the title with the locality and RERA tags, the gallery, Call, WhatsApp and Brochure, then Project overview, About, Amenities, Specifications, the units table (status as a word with a dot; it scrolls sideways on a phone with a soft fade), Floor plans (each opens full size in a new tab), the price per sq.ft trend with a View as table, Location advantages and Nearby places, and Videos. Beside them the price card with the sizes and possession. A project with little given leaves the empty sections out; not found and loading. Nothing here navigates; the enquiry form and the phone bar are the next change.",
+      "The project page below the header: the breadcrumb, the developer's monogram and name, the title with the locality and RERA tags, the gallery, Call, WhatsApp and Brochure, then Project overview, About, Amenities, Specifications, the units table (status as a word with a dot; it scrolls sideways on a phone with a soft fade), Floor plans (each opens full size in a new tab), the price per sq.ft trend with a View as table, Location advantages and Nearby places, and Videos. Beside them the price card with the sizes and possession. A project with little given leaves the empty sections out. The enquiry card (\"Interested in this project?\": Enquire or Site visit, name and phone, email, the date for a visit, message; Send is switched off with a line saying why, because sending is a later task) in its states: Enquire, Site visit, missing fields marked, too many requests this hour, and sent. The phone's bar with Call, WhatsApp and Enquire, which leads to the card, and with no number. Not found and loading. Nothing here navigates.",
     sources: [
       "domain/property-gallery.tsx",
       "domain/property-card-controls.client.tsx",
@@ -57,6 +57,9 @@ export const DISCOVERY: LabEntry[] = [
       "patterns/scroll-fade.client.tsx",
       "ui/avatar.tsx",
       "ui/price.tsx",
+      "ui/segmented-control.tsx",
+      "ui/icon-button.tsx",
+      "patterns/form-field.tsx",
     ],
     Demo: ProjectPageDemo,
   },
