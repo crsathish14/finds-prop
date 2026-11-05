@@ -402,6 +402,11 @@ test.describe("@smoke property page", () => {
   });
 });
 
+// With no database behind the app, the projects list read is retried by the database client (1 + 2 + 4
+// seconds) before the page can show its failed state, so waits for the list use a longer timeout than the
+// usual 5 seconds.
+const LIST_WAIT = { timeout: 20_000 };
+
 // S4-T09: the project page. CI has no database behind the app, so these tests look at what does not
 // need a project: an address that is not a slug is "not found", with its one next step. (The page streams
 // under a loading screen, so the answer is a normal status with a noindex tag.)
@@ -414,9 +419,9 @@ test.describe("@smoke project page", () => {
     await expect(page.getByText(en.projects.page.notFound.body)).toBeVisible();
     await page.getByRole("link", { name: en.projects.page.notFound.all }).click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(
-      page.getByRole("heading", { level: 1, name: en.projects.list.title }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
+      LIST_WAIT,
+    );
   });
 
   test("keeps the site header and footer around the not-found screen and is kept out of search results", async ({
@@ -565,9 +570,9 @@ test.describe("@smoke projects page", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/projects");
-    await expect(
-      page.getByRole("heading", { level: 1, name: en.projects.list.title }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
+      LIST_WAIT,
+    );
     await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · Find Prop`);
     await expect(page.getByText(en.projects.list.overline)).toBeVisible();
     await expect(page.getByText(en.projects.list.sub)).toBeVisible();
@@ -585,7 +590,7 @@ test.describe("@smoke projects page", () => {
     const projects = page.getByRole("region", { name: en.projects.list.listLabel });
     const soon = page.getByRole("heading", { name: en.projects.list.empty.title });
     const failed = page.getByRole("alert").filter({ hasText: en.projects.list.error.title });
-    await expect(projects.or(soon).or(failed).first()).toBeVisible();
+    await expect(projects.or(soon).or(failed).first()).toBeVisible(LIST_WAIT);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
@@ -594,7 +599,7 @@ test.describe("@smoke projects page", () => {
       await page.goto("/projects");
       await expect(
         page.getByRole("heading", { level: 1, name: en.projects.list.title }),
-      ).toBeVisible();
+      ).toBeVisible(LIST_WAIT);
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
