@@ -10,7 +10,7 @@ import {
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
-import { ResultsBarDemo, ResultsBodyDemo } from "./domain-demos-results";
+import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -208,5 +208,13 @@ export const DOMAIN: LabEntry[] = [
       "The body of the results page: the cards as a grid (1, 2 or 3 across by the width of the results area) or a list, loading in both, Show more with its count (default, loading, complete and at the 120-home cap), no match (with and without the AI link) and a failed load with Try again.",
     sources: ["domain/results-list.tsx"],
     Demo: ResultsBodyDemo,
+  },
+  {
+    id: "results-page",
+    name: "Results page",
+    description:
+      "The whole results page below the header, with sample homes: the breadcrumb, the heading with the place in copper, the count, the filter rail from 1024 px and the Filters button below it, the bar with the applied filters, and the cards. Default with filters, and a failed load with the filters kept (the list view and the no-match state are under Results grid and states). Nothing here navigates.",
+    sources: ["domain/results-bar.tsx", "domain/results-list.tsx", "domain/filters.tsx"],
+    Demo: ResultsScreenDemo,
   },
 ];

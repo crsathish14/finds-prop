@@ -390,6 +390,40 @@
       "roleBuilder": "Builder"
     }
   },
+  "results": {
+    "metaTitle": "Properties",
+    "keyword": "“{keyword}”",
+    "title": {
+      "sale": "{kind} for sale",
+      "rent": "{kind} for rent",
+      "any": "{kind} for sale and rent",
+      "inPlace": "{base} in {place}",
+      "label": "Results"
+    },
+    "kind": {
+      "any": "Homes",
+      "apartment": "Apartments",
+      "villa": "Villas",
+      "house": "Houses",
+      "plot": "Plots",
+      "commercial": "Commercial properties"
+    },
+    "count": "{count, plural, one {# home} other {# homes}}",
+    "found": "found",
+    "foundIn": "found in {place}",
+    "foundInRegion": "found in {place}, {region}",
+    "matchFilters": "{count, plural, one {matches these filters} other {match these filters}}",
+    "allLocalities": "All localities",
+    "allLocalitiesIn": "All of {region}",
+    "crumb": {
+      "nav": "Breadcrumb",
+      "home": "Home",
+      "properties": "Properties",
+      "backHome": "Home",
+      "backProperties": "Back to Properties"
+    },
+    "loadingTitle": "Loading homes"
+  },
   "domain": {
     "propertyCard": {
       "forSale": "For sale",

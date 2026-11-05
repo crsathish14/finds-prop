@@ -16,6 +16,10 @@
  *   unknown and the button says "Show homes"), onDraftChange (so the page can count the matches of
  *   what is being chosen), className (the page hides the "Filters" button on a wide screen).
  *   FilterFields: values, onChange, localities, allLocalitiesLabel, showSort.
+ *   FilterRail also takes onClearAll (what Clear all does instead of clearing the four fields).
+ *   All three take budgetNeedsLooking (default off): the results page turns it on, so the budget
+ *   field is left out while Looking to is All and goes back to Any when All is chosen, because a sale
+ *   cap does not cap rents (S4-T04, owner's answer 5 Nov 2026).
  *   Bedrooms are one value (Any or 1 to 4). The budget list follows Looking to: Rent lists monthly
  *   rents, Buy and All list sale amounts (as the UX draws it); an amount the new list does not have
  *   goes back to Any. A locality not in the list is added to it so the box never lies.
@@ -71,6 +75,7 @@ type FilterFieldsProps = {
   localities: readonly string[];
   allLocalitiesLabel: string;
   showSort?: boolean;
+  budgetNeedsLooking?: boolean;
 };
 
 /** One field: its label above, its control below. */
@@ -88,6 +93,7 @@ function FilterFields({
   localities,
   allLocalitiesLabel,
   showSort = false,
+  budgetNeedsLooking = false,
 }: FilterFieldsProps) {
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
@@ -112,7 +118,14 @@ function FilterFields({
           value={values.intent}
           onValueChange={(next) => {
             const intent = parseFilterIntent(next);
-            set({ intent, maxBudget: keepFilterBudget(intent, values.maxBudget) });
+            // With the budget tied to Buy or Rent, All has no amount to keep.
+            set({
+              intent,
+              maxBudget:
+                budgetNeedsLooking && intent === "all"
+                  ? null
+                  : keepFilterBudget(intent, values.maxBudget),
+            });
           }}
           options={[
             { value: "all", label: translate("domain.filters.all") },
@@ -182,26 +195,28 @@ function FilterFields({
         </div>
       </Field>
 
-      <Field>
-        <Label htmlFor={id("budget")}>{translate("domain.searchCard.budget.label")}</Label>
-        <NativeSelect
-          id={id("budget")}
-          className={SELECT_HEIGHT}
-          value={values.maxBudget === null ? "" : String(values.maxBudget)}
-          onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-            set({ maxBudget: parseFilterBudget(values.intent, event.target.value) })
-          }
-        >
-          <option value="">{translate("domain.searchCard.budget.any")}</option>
-          {budgetStepsForFilter(values.intent).map((rupees) => (
-            <option key={rupees} value={rupees}>
-              {translate("domain.searchCard.budget.upTo", {
-                amount: formatPrice(translate, locale, rupees),
-              })}
-            </option>
-          ))}
-        </NativeSelect>
-      </Field>
+      {budgetNeedsLooking && values.intent === "all" ? null : (
+        <Field>
+          <Label htmlFor={id("budget")}>{translate("domain.searchCard.budget.label")}</Label>
+          <NativeSelect
+            id={id("budget")}
+            className={SELECT_HEIGHT}
+            value={values.maxBudget === null ? "" : String(values.maxBudget)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+              set({ maxBudget: parseFilterBudget(values.intent, event.target.value) })
+            }
+          >
+            <option value="">{translate("domain.searchCard.budget.any")}</option>
+            {budgetStepsForFilter(values.intent).map((rupees) => (
+              <option key={rupees} value={rupees}>
+                {translate("domain.searchCard.budget.upTo", {
+                  amount: formatPrice(translate, locale, rupees),
+                })}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+      )}
 
       {showSort ? (
         <Field>
@@ -231,6 +246,9 @@ type FilterRailProps = {
   onChange: (next: FilterValues) => void;
   localities: readonly string[];
   allLocalitiesLabel: string;
+  budgetNeedsLooking?: boolean;
+  /** What Clear all does when the page has more to clear than the four fields (the label, the keyword). */
+  onClearAll?: (() => void) | undefined;
   className?: string | undefined;
 };
 
@@ -240,6 +258,8 @@ function FilterRail({
   onChange,
   localities,
   allLocalitiesLabel,
+  budgetNeedsLooking,
+  onClearAll,
   className,
 }: FilterRailProps) {
   const translate = useTranslations();
@@ -254,7 +274,11 @@ function FilterRail({
         <h2 id={headingId} className="text-title text-ink">
           {translate("domain.filters.title")}
         </h2>
-        <Button variant="ghost" size="sm" onClick={() => onChange(clearFilters(values))}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => (onClearAll ? onClearAll() : onChange(clearFilters(values)))}
+        >
           {translate("domain.filters.clearAll")}
         </Button>
       </div>
@@ -263,6 +287,7 @@ function FilterRail({
         onChange={onChange}
         localities={localities}
         allLocalitiesLabel={allLocalitiesLabel}
+        {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
       />
     </aside>
   );
@@ -275,6 +300,7 @@ type FilterSheetProps = {
   allLocalitiesLabel: string;
   resultCount?: number | null | undefined;
   onDraftChange?: ((values: FilterValues) => void) | undefined;
+  budgetNeedsLooking?: boolean;
   className?: string | undefined;
 };
 
@@ -286,6 +312,7 @@ function FilterSheet({
   allLocalitiesLabel,
   resultCount,
   onDraftChange,
+  budgetNeedsLooking,
   className,
 }: FilterSheetProps) {
   const translate = useTranslations();
@@ -367,6 +394,7 @@ function FilterSheet({
           onChange={change}
           localities={localities}
           allLocalitiesLabel={allLocalitiesLabel}
+          {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
         />
       </SheetContent>
     </Sheet>

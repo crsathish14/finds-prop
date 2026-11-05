@@ -1,5 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { LISTINGS_TAG } from "@/features/search";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import type { Database } from "@/types/database.types";
@@ -12,7 +13,7 @@ import {
 import { listingRowSchema, rankingRowSchema, type DeveloperRow, type ListingRow } from "./schemas";
 
 /** Cache tags the admin actions will refresh when a listing or a project is approved or changed. */
-export const HOME_LISTINGS_TAG = "home-listings";
+export const HOME_LISTINGS_TAG = LISTINGS_TAG;
 export const HOME_PROJECTS_TAG = "home-projects";
 
 /** How many homes each homepage section shows (the UX: Featured homes 6, Newest 8). */

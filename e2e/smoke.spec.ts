@@ -280,6 +280,80 @@ test.describe("@smoke site footer and bottom bar", () => {
   });
 });
 
+// S4-T04: the results page. CI has no database behind the app, so these tests look at what does not
+// depend on homes: the address rules, the heading, the filters and the bar, and (with no database) the
+// failed-load state that keeps the filters.
+test.describe("@smoke results page", () => {
+  test("opens with the heading, the filters and the bar, whatever the data", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/properties");
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: en.results.title.any.replace("{kind}", en.results.kind.any),
+      }),
+    ).toBeVisible();
+    await expect(page).toHaveTitle(`${en.results.metaTitle} · Find Prop`);
+    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
+    await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
+  });
+
+  test("reads the address: the heading and the chips follow it", async ({ page }) => {
+    await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
+    await expect(page.getByRole("heading", { level: 1, name: "Villas for rent" })).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: en.domain.results.active.remove.replace("{label}", "3 BHK"),
+      }),
+    ).toBeVisible();
+  });
+
+  test("sends a hand-edited address to its canonical form", async ({ page }) => {
+    await page.goto("/properties?view=grid&bhk=9&sort=newest&listingType=sale");
+    await expect(page).toHaveURL(/\/properties\?listingType=sale$/);
+  });
+
+  test("a choice rewrites the address and keeps the page", async ({ page }) => {
+    await page.goto("/properties");
+    await page.getByRole("button", { name: en.domain.propertyCard.label.prime }).click();
+    await expect(page).toHaveURL(/\/properties\?label=prime$/);
+    await page
+      .getByRole("combobox", { name: en.domain.filters.sortLabel })
+      .selectOption("price_asc");
+    await expect(page).toHaveURL(/\/properties\?label=prime&sort=price_asc$/);
+  });
+
+  test("on a phone the filters are behind a button, not beside the results", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/properties");
+    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeHidden();
+    await page.getByRole("button", { name: en.domain.filters.button }).click();
+    await expect(page.getByRole("dialog", { name: en.domain.filters.title })).toBeVisible();
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/properties?bhk=3&listingType=sale&propertyType=apartment");
+      // Wait for the page's own bar, not for a quiet network: the site's other links prefetch pages
+      // for a long while when no database answers.
+      await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
+      const results = await new AxeBuilder({ page })
+        .include("#main")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(
+        serious.map((violation) => violation.id),
+        `at ${width} px`,
+      ).toEqual([]);
+    }
+  });
+});
+
 // Text-origin check (ADR-035): every line of text a visitor can see, plus the page title and the
 // label and alt attributes, must be a message from en.json. It catches hard-coded text that the
 // lint rule cannot see, such as a sentence kept in a variable.
@@ -345,6 +419,8 @@ const fromMessages = (text: string) =>
 test.describe("@smoke text origin", () => {
   for (const route of [
     "/",
+    "/properties",
+    "/properties?bhk=3&listingType=sale&propertyType=apartment",
     "/this-page-does-not-exist",
     "/builder/login",
     "/builder/login?denied=1",
@@ -368,9 +444,14 @@ test.describe("@smoke text origin", () => {
               .filter((value): value is string => !!value),
         ),
       );
-      const strangers = [await page.title(), ...lines, ...attributes].filter(
-        (text) => !fromMessages(text),
-      );
+      // A page title is the site's title template around the page's own words: the words are checked.
+      const [titleStart = "", titleEnd = ""] = en.meta.titleTemplate.split("%s");
+      const title = await page.title();
+      const ownTitle =
+        title.startsWith(titleStart) && title.endsWith(titleEnd)
+          ? title.slice(titleStart.length, title.length - titleEnd.length)
+          : title;
+      const strangers = [ownTitle, ...lines, ...attributes].filter((text) => !fromMessages(text));
       expect(strangers, "text that is not in en.json").toEqual([]);
     });
   }
