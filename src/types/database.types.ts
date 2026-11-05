@@ -780,6 +780,9 @@ isOneToOne: false
 "project_is_mine":
 { Args: { "target_project": string }; Returns: boolean
                            },
+"public_project_id":
+{ Args: { "project_slug": string }; Returns: string
+                           },
 "rate_limit_hit":
 { Args: { "limit_scope": string,"limit_subject": string,"max_hits": number,"window_seconds": number }; Returns: {
               "allowed": boolean,"retry_after": number
@@ -801,6 +804,12 @@ isOneToOne: false
                            },
 "storage_project_path_ok":
 { Args: { "object_name": string }; Returns: boolean
+                           },
+"submit_project_lead":
+{ Args: { "p_email"?: string,"p_kind": string,"p_message"?: string,"p_name": string,"p_phone": string,"p_slug": string,"p_visit_date"?: string,"p_visitor_hash": string }; Returns: string
+                           },
+"track_project_event":
+{ Args: { "p_event_type": string,"p_slug": string,"p_visitor_hash": string }; Returns: boolean
                            }
           }
           Enums: {
