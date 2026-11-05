@@ -36,7 +36,7 @@ type CompareScreenProps = {
   titleAs?: "h1" | "h2";
 };
 
-const CELL = "min-w-56 p-4 align-top text-body text-ink";
+const CELL = "p-4 align-top text-body text-ink";
 const ROW_HEAD =
   "sticky left-0 z-10 w-36 min-w-36 bg-surface p-4 text-left align-top text-small font-semibold text-muted";
 
@@ -120,7 +120,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
               aria-label={translate("compare.table.label", { count: columns.length })}
               className={cn(
                 "w-full table-fixed border-collapse text-left",
-                columns.length > 2 ? "min-w-4xl" : "min-w-2xl",
+                columns.length > 2 ? "min-w-2xl" : "min-w-lg",
               )}
             >
               <thead>
@@ -129,7 +129,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
                     <span className="sr-only">{translate("compare.table.corner")}</span>
                   </th>
                   {columns.map((column) => (
-                    <td key={column.shortId} className="min-w-56 p-4 align-top">
+                    <td key={column.shortId} className="p-4 align-top">
                       <div className="flex flex-col gap-3">
                         <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-canvas-sunken">
                           {column.cover ? (
