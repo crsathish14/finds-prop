@@ -10,6 +10,7 @@ import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { PROPERTY_TYPE_WORDS } from "@/config/search-options";
+import { cn } from "@/lib/cn";
 import { formatArea, formatPerSqft, formatPrice, formatRent, type Translate } from "@/lib/format";
 import { CompareRemove } from "./compare-remove.client";
 import { amenityRows, hasAmenity, type CompareColumn } from "./table";
@@ -117,7 +118,10 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
           <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card">
             <table
               aria-label={translate("compare.table.label", { count: columns.length })}
-              className="w-full border-collapse text-left"
+              className={cn(
+                "w-full table-fixed border-collapse text-left",
+                columns.length > 2 ? "min-w-4xl" : "min-w-2xl",
+              )}
             >
               <thead>
                 <tr>

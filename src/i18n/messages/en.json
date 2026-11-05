@@ -18,7 +18,12 @@
     "hero": {
       "title": "Find the place that fits your life.",
       "titleInRegion": "Find the place that fits your life in {region}.",
-      "subtitle": "Shortlist, compare and enquire directly."
+      "subtitle": "Shortlist, compare and enquire directly.",
+      "trust": {
+        "approved": "Approved listings only",
+        "enquire": "Enquire directly",
+        "compare": "Compare up to 3 homes"
+      }
     },
     "explore": {
       "title": "Explore by locality",
@@ -482,6 +487,7 @@
     "bar": {
       "label": "Compare homes",
       "count": "{count} of 3 selected",
+      "countShort": "{count} of 3",
       "chooseMore": "Choose at least 2 homes to compare",
       "clearAll": "Clear all",
       "compareNow": "Compare now",

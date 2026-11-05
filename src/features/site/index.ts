@@ -27,3 +27,5 @@ export { buildHero, type HeroText } from "./home";
 export { getTranslate } from "./translator";
 export { getSiteSettings, SITE_SETTINGS_TAG } from "./queries";
 export type { SiteSettingKey, SiteSettings } from "./schemas";
+export { getSponsorAds } from "./sponsors.server";
+export { toSponsorAds, SPONSOR_BUCKET } from "./sponsors";

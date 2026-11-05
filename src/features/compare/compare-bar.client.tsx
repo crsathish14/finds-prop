@@ -55,15 +55,15 @@ export function CompareBarView({ entries, placement, onRemove, onClear }: Compar
           placement === "above-bottom-bar" && "max-md:mb-3",
         )}
       >
-        <ul className="flex gap-2">
+        <ul className="flex gap-1 md:gap-2">
           {slots.map((entry, index) => (
             <li
               key={entry?.id ?? `empty-${index}`}
               className={cn(
-                "relative h-12 w-14 overflow-hidden rounded-md bg-canvas-sunken md:w-16",
+                "relative h-10 w-11 overflow-hidden rounded-md bg-canvas-sunken md:h-12 md:w-16",
                 entry
                   ? "border-0"
-                  : "border-[length:var(--bw-field)] border-dashed border-line-strong",
+                  : "border-[length:var(--bw-field)] max-md:hidden border-dashed border-line-strong",
               )}
             >
               {entry ? (
@@ -94,17 +94,22 @@ export function CompareBarView({ entries, placement, onRemove, onClear }: Compar
             </li>
           ))}
         </ul>
-        <div className="min-w-0 flex-1 text-small font-bold text-ink">
-          <span aria-live="polite">{translate("bar.count", { count })}</span>
+        <div className="min-w-0 flex-1 text-small font-bold text-ink max-md:flex-none max-md:whitespace-nowrap">
+          <span aria-live="polite" className="max-md:sr-only">
+            {translate("bar.count", { count })}
+          </span>
+          <span aria-hidden="true" className="md:hidden">
+            {translate("bar.countShort", { count })}
+          </span>
           <small className="block text-caption font-medium text-muted max-md:hidden">
             {ready ? hint("compareLimit") : translate("bar.chooseMore")}
           </small>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClear}>
+        <Button variant="ghost" size="sm" onClick={onClear} className="max-md:hidden">
           {translate("bar.clearAll")}
         </Button>
         {ready ? (
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="max-md:ml-auto">
             <Link
               href={compareHref(entries.map((entry) => entry.id))}
               className="text-on-primary no-underline hover:text-on-primary"
@@ -114,7 +119,7 @@ export function CompareBarView({ entries, placement, onRemove, onClear }: Compar
             </Link>
           </Button>
         ) : (
-          <Button size="sm" disabled>
+          <Button size="sm" disabled className="max-md:ml-auto">
             {translate("bar.compareNow")}
             <Icon icon={ArrowRight} size="sm" />
           </Button>

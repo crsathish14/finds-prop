@@ -141,7 +141,8 @@ export function ResultsList({
     const from = moreFrom.current;
     if (from === null || pending || shown <= from) return;
     moreFrom.current = null;
-    const card = listing.current?.querySelector("[data-slot=results-grid]")?.children[from];
+    // The Nth card, not the Nth child: a sponsored banner can sit among the cards (S4-T07).
+    const card = listing.current?.querySelectorAll("[data-slot=property-card]")[from];
     card?.querySelector<HTMLElement>("a")?.focus();
   }, [pending, shown]);
 

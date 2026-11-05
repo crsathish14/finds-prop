@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { parseSearchParams } from "../params";
 import { ResultsScreen } from "../results-screen";
@@ -214,6 +217,44 @@ describe("ResultsScreen: the list and its states (S4-T04)", () => {
     expect(screen.getAllByText("Showing 12 of 48 homes").length).toBeGreaterThan(0);
     await userEvent.click(screen.getByRole("button", { name: "Show more homes" }));
     expect(replace.mock.calls[0]?.[0]).toBe("/properties?show=24");
+  });
+
+  it("moves focus to the first new card after Show more, counting cards, not children, when a banner sits among them", async () => {
+    const homeCard = (name: string) => (
+      <article key={name} data-slot="property-card">
+        <a href={`/properties/${name}`}>{name}</a>
+      </article>
+    );
+    const banner = (
+      <div key="sponsor" className="col-span-full">
+        <a href="https://sponsor.example">A sponsor</a>
+      </div>
+    );
+    const params = parseSearchParams({ show: "12" });
+    const view = renderScreen({
+      params,
+      total: 48,
+      shown: 2,
+      cards: [homeCard("one"), banner, homeCard("two")],
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Show more homes" }));
+    // the longer list arrives: two homes were there, so the third is the first new one
+    view.rerender(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <TooltipProvider>
+          <ResultsScreen
+            params={params}
+            status="ok"
+            total={48}
+            shown={4}
+            localities={LOCALITIES}
+            regionName="Chennai"
+            cards={[homeCard("one"), banner, homeCard("two"), homeCard("three"), homeCard("four")]}
+          />
+        </TooltipProvider>
+      </NextIntlClientProvider>,
+    );
+    expect(await screen.findByRole("link", { name: "three" })).toHaveFocus();
   });
 
   it("becomes Refine your search at the 120-home cap and moves focus to the heading", async () => {

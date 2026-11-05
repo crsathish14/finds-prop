@@ -8,11 +8,14 @@ import {
   NewLaunchesSection,
   WhySection,
 } from "@/features/home";
+import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { HomeSearch } from "@/features/search";
+import { resolveHero } from "@/lib/sponsors";
 import {
   buildHero,
   getFeatureFlags,
   getSiteSettings,
+  getSponsorAds,
   getTranslate,
   isRouteEnabled,
   resolveBrandName,
@@ -33,6 +36,12 @@ export default async function HomePage() {
   const translate = await getTranslate();
   const settings = await getSiteSettings();
   const hero = buildHero(settings, translate);
+  // The banner area: the Split layout needs a panel banner, and without one the page is Search Desk
+  // with nothing in the banner position and no gap (FR-PUB-02, FR-PUB-03).
+  const ads = await getSponsorAds();
+  const arrangement = resolveHero(ads, settings.hero.layout);
+  const split = arrangement.arrangement === "split";
+  const eyebrow = settings.hero.eyebrow?.trim();
   const flags = getFeatureFlags();
   const { homepage, region } = settings;
   const showCta = homepage.showCta && isRouteEnabled(POST_PROPERTY_PATH, flags);
@@ -40,8 +49,29 @@ export default async function HomePage() {
 
   return (
     <main id="main" className="flex-1">
-      <HomeHero title={hero.title} emphasis={hero.emphasis} subtitle={hero.subtitle}>
+      <HomeHero
+        title={hero.title}
+        emphasis={hero.emphasis}
+        subtitle={hero.subtitle}
+        layout={arrangement.arrangement}
+        eyebrow={split && eyebrow ? eyebrow : undefined}
+        trust={
+          split
+            ? [
+                translate("home.hero.trust.approved"),
+                translate("home.hero.trust.enquire"),
+                translate("home.hero.trust.compare"),
+              ]
+            : undefined
+        }
+        sponsor={
+          arrangement.sponsors.length > 0 ? (
+            <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
+          ) : undefined
+        }
+      >
         <HomeSearch
+          layout={split ? "stacked" : "wide"}
           localities={homepage.localities}
           projectsHref="/projects"
           aiSearchHref={flags.aiSearch ? "/ai-search" : undefined}
