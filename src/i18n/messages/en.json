@@ -483,6 +483,17 @@
       "previous": "Previous",
       "next": "Next"
     },
+    "gallery": {
+      "label": "Photos",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "photo": "Photo {number}",
+      "photoLabelled": "Photo {number}: {label}",
+      "slide": "{number} of {total}",
+      "carouselKind": "carousel",
+      "slideKind": "slide",
+      "count": "{current} / {total}"
+    },
     "enquiry": {
       "optional": "(optional)",
       "close": "Close",
