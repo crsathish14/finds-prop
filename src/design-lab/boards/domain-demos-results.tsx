@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { FilterSheet } from "@/components/domain/filters";
 import {
   ActiveFilters,
@@ -18,6 +18,9 @@ import {
   ResultsSkeleton,
 } from "@/components/domain/results-list";
 import type { FilterValues, SortOption } from "@/config/search-options";
+import { parseSearchParams } from "@/features/search/params";
+import type { SearchParams } from "@/features/search/schemas";
+import { ResultsScreen } from "@/features/search/results-screen";
 import { Specimen } from "../frame";
 import { InteractiveCard, RENT_PRIME, SALE_BUDGET, SALE_FEATURED } from "./domain-demos";
 
@@ -156,6 +159,87 @@ export function ResultsBodyDemo() {
       </Specimen>
       <Specimen label="Error: the filters are kept, Try again" className="w-full">
         <ResultsError onRetry={() => undefined} className="w-full" />
+      </Specimen>
+    </div>
+  );
+}
+
+/** The curated localities the page would normally get from the site content. */
+const SAMPLE_LOCALITIES = [
+  { label: "Velachery", lat: 12.9815, lng: 80.2209, radiusKm: 4 },
+  { label: "Adyar", lat: 13.0012, lng: 80.2565, radiusKm: 3 },
+  { label: "Porur", lat: 13.0382, lng: 80.1565, radiusKm: 5 },
+];
+
+const VELACHERY_SEARCH = parseSearchParams({
+  listingType: "sale",
+  propertyType: "apartment",
+  bhk: "3",
+  maxPrice: "15000000",
+  place: "Velachery",
+  lat: "12.9815",
+  lng: "80.2209",
+});
+
+function Screen({
+  params,
+  status = "ok",
+  total,
+  cards = [],
+  titleId,
+}: {
+  params: SearchParams;
+  status?: "ok" | "failed";
+  total: number;
+  cards?: ReactNode[];
+  titleId: string;
+}) {
+  return (
+    <ResultsScreen
+      preview
+      titleAs="h2"
+      titleId={titleId}
+      params={params}
+      status={status}
+      total={total}
+      shown={cards.length}
+      cards={cards}
+      localities={SAMPLE_LOCALITIES}
+      regionName="Chennai"
+      describeHref="#ai-search"
+    />
+  );
+}
+
+/** The whole results page in its states, with sample homes; nothing here navigates (preview). */
+export function ResultsScreenDemo() {
+  return (
+    <div className="flex flex-col gap-14">
+      <Specimen
+        label="Default: Buy, Velachery, Apartment, 3 BHK, up to ₹1.5 Cr; 48 homes, two shown"
+        className="w-full"
+      >
+        <div className="w-full rounded-xl border border-line bg-canvas">
+          <Screen
+            titleId="lab-results-default"
+            params={VELACHERY_SEARCH}
+            total={48}
+            cards={[
+              <InteractiveCard key="a" property={SALE_FEATURED} />,
+              <InteractiveCard key="b" property={SALE_BUDGET} startSaved />,
+            ]}
+          />
+        </div>
+      </Specimen>
+      <Specimen label="The load failed: the filters are kept, Try again" className="w-full">
+        <div className="w-full rounded-xl border border-line bg-canvas">
+          <Screen
+            titleId="lab-results-failed"
+            params={VELACHERY_SEARCH}
+            status="failed"
+            total={0}
+          />
+        </div>
       </Specimen>
     </div>
   );

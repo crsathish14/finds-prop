@@ -367,3 +367,39 @@ describe("FilterSheet: the Filters button and the phone bottom sheet (S4-T01)", 
     view.unmount();
   });
 });
+
+describe("budgetNeedsLooking: no budget while Looking to is All (S4-T04)", () => {
+  function renderTied(values: FilterValues, onChange = vi.fn()) {
+    renderWithMessages(
+      <FilterRail
+        values={values}
+        onChange={onChange}
+        localities={LOCALITIES}
+        allLocalitiesLabel={ALL_LOCALITIES}
+        budgetNeedsLooking
+      />,
+    );
+    return onChange;
+  }
+
+  it("leaves the budget field out while Looking to is All", () => {
+    renderTied(EMPTY);
+    expect(screen.queryByRole("combobox", { name: card.budget.label })).not.toBeInTheDocument();
+  });
+
+  it("draws the budget field again once Buy or Rent is chosen", () => {
+    renderTied(FILLED);
+    expect(budgetSelect()).toHaveValue(String(1_50_00_000));
+  });
+
+  it("puts the budget back to Any when All is chosen", async () => {
+    const onChange = renderTied(FILLED);
+    await userEvent.click(screen.getByRole("radio", { name: words.all }));
+    expect(onChange).toHaveBeenCalledWith({ ...FILLED, intent: "all", maxBudget: null });
+  });
+
+  it("keeps drawing the budget with All when the option is off (the Lab default)", () => {
+    renderRail(EMPTY);
+    expect(budgetSelect()).toBeInTheDocument();
+  });
+});

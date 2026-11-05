@@ -1,9 +1,10 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
-import { HOME_LISTINGS_TAG, listingRowSchema, type ListingRow } from "@/features/home";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
+import { LISTINGS_TAG, listingRowSchema, type ListingRow } from "./listing-row";
 import { toSearchRpcArgs } from "./rpc-args";
 import type { SearchParams } from "./schemas";
 
@@ -38,11 +39,14 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
  * listings and public columns can come back (BR-90). The total is the function's own `total_count`
  * (frontend.md 6.1 rule 6), not a second query. Rows that do not fit are skipped and counted; a
  * failed read is logged by its code only (never the filters, which can hold what a person typed).
- * Cached for minutes under the homes tag, so an approval refreshes it.
+ * Cached for minutes under the homes tag, so an approval refreshes it. A failed read throws, so it is
+ * never cached: "Try again" asks the database again instead of getting the same failure back.
  */
-export async function getSearchResults(params: SearchParams): Promise<SearchResults> {
+async function readResults(
+  params: SearchParams,
+): Promise<Extract<SearchResults, { status: "ok" }>> {
   "use cache";
-  cacheTag(HOME_LISTINGS_TAG);
+  cacheTag(LISTINGS_TAG);
   cacheLife("minutes");
   const { data, error } = await createPublicSupabase().rpc(
     "search_properties",
@@ -50,7 +54,7 @@ export async function getSearchResults(params: SearchParams): Promise<SearchResu
   );
   if (error) {
     logger.error("search results could not be read", { errorCode: error.code });
-    return { status: "failed" };
+    throw new Error("search results could not be read");
   }
   const rows = data ?? [];
   const now = Date.now();
@@ -71,4 +75,15 @@ export async function getSearchResults(params: SearchParams): Promise<SearchResu
   // No rows means no match. A first row with no readable total falls back to what we hold.
   const total = first?.success ? first.data.total_count : homes.length;
   return { status: "ok", homes, total };
+}
+
+/** One page of results, or a failure with no detail (the page offers Try again with the filters kept). */
+export async function getSearchResults(params: SearchParams): Promise<SearchResults> {
+  try {
+    return await readResults(params);
+  } catch (error) {
+    // The prerender signal and redirects are Next.js control flow, not failures of the read.
+    unstable_rethrow(error);
+    return { status: "failed" };
+  }
 }

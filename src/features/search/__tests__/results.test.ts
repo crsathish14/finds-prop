@@ -11,10 +11,6 @@ const error = vi.fn();
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
 vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
-vi.mock("@/features/home", async () => ({
-  HOME_LISTINGS_TAG: "home-listings",
-  listingRowSchema: (await import("@/features/home/schemas")).listingRowSchema,
-}));
 
 const { getSearchResults } = await import("../results");
 
