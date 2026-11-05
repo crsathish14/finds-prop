@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { ProjectLeadCard } from "@/features/projects/project-lead-card.client";
+import { ProjectMobileBar } from "@/features/projects/project-mobile-bar";
 import { ProjectNotFound } from "@/features/projects/project-not-found";
 import { ProjectScreen } from "@/features/projects/project-screen";
 import { ProjectSkeleton } from "@/features/projects/project-skeleton";
@@ -117,6 +120,7 @@ const pictureOf = (path: string) => {
 };
 
 function Screen({ project, brochure }: { project: ProjectData; brochure: boolean }) {
+  const translate = useTranslations("projects.page.lead");
   return (
     <div className={FRAME}>
       <ProjectScreen
@@ -125,13 +129,19 @@ function Screen({ project, brochure }: { project: ProjectData; brochure: boolean
         imageSources={project.images.map(pictureOf)}
         floorPlanSources={project.floorPlans.map(() => `${PICTURES}/home-a.svg`)}
         brochureSource={brochure ? "https://example.com/brochure.pdf" : null}
+        enquiry={<ProjectLeadCard state="form" sendDisabled sendNotice={translate("notOpen")} />}
       />
     </div>
   );
 }
 
-/** The project page with everything, with little given, not found and loading. */
+/** The bar a phone has; the real one is pinned to the bottom of the screen. */
+const IN_PAGE = "static border border-line lg:block";
+
+/** The project page with everything, with little given, not found and loading, then the enquiry card and the phone bar. */
 export function ProjectPageDemo() {
+  const translate = useTranslations("projects.page.lead");
+  const notOpen = translate("notOpen");
   return (
     <div className="flex flex-col gap-14">
       <Specimen
@@ -145,6 +155,66 @@ export function ProjectPageDemo() {
         className="w-full"
       >
         <Screen project={SPARSE} brochure={false} />
+      </Specimen>
+      <Specimen
+        label="Enquiry card: Enquire chosen; Send is off and a line says why (sending is a later task)"
+        className="w-full max-w-md"
+      >
+        <ProjectLeadCard state="form" sendDisabled sendNotice={notOpen} className="w-full" />
+      </Specimen>
+      <Specimen
+        label="Enquiry card: Site visit chosen, which asks for a date"
+        className="w-full max-w-md"
+      >
+        <ProjectLeadCard
+          state="form"
+          className="w-full"
+          defaultKind="site_visit"
+          values={{ name: "Priya Raman", phone: "98400 12345", visitDate: "2026-11-08" }}
+        />
+      </Specimen>
+      <Specimen label="Enquiry card: what is missing is marked" className="w-full max-w-md">
+        <ProjectLeadCard
+          state="form"
+          className="w-full"
+          defaultKind="site_visit"
+          values={{ phone: "98x" }}
+          errors={{
+            name: "Your name is required.",
+            phone: "Enter a valid phone number.",
+            visitDate: "Choose a date for the visit.",
+          }}
+        />
+      </Specimen>
+      <Specimen label="Enquiry card: too many requests this hour" className="w-full max-w-md">
+        <ProjectLeadCard
+          state="form"
+          className="w-full"
+          rateLimited
+          values={{ name: "Priya Raman", phone: "98400 12345" }}
+        />
+      </Specimen>
+      <Specimen label="Enquiry card: sent" className="w-full max-w-md">
+        <ProjectLeadCard state="sent" className="w-full" />
+      </Specimen>
+      <Specimen
+        label="The phone's bar with Call, WhatsApp and Enquire (pinned to the bottom of a phone; here it sits in the page)"
+        className="w-full max-w-md"
+      >
+        <div className="w-full">
+          <ProjectMobileBar
+            contact={{ call: "tel:+914412345678", whatsapp: "https://wa.me/914412345678" }}
+            className={IN_PAGE}
+          />
+        </div>
+      </Specimen>
+      <Specimen
+        label="The phone's bar for a project with no number: Enquire alone"
+        className="w-full max-w-md"
+      >
+        <div className="w-full">
+          <ProjectMobileBar contact={{ call: null, whatsapp: null }} className={IN_PAGE} />
+        </div>
       </Specimen>
       <Specimen label="Project not found" className="w-full">
         <div className={FRAME}>

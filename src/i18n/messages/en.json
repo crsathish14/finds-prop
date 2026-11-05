@@ -571,6 +571,32 @@
         "title": "Project not found",
         "body": "This project may have been unpublished, or the link may be wrong.",
         "all": "See all projects"
+      },
+      "lead": {
+        "title": "Interested in this project?",
+        "kindLabel": "Request type",
+        "enquire": "Enquire",
+        "siteVisit": "Site visit",
+        "name": "Your name",
+        "phone": "Phone",
+        "email": "Email",
+        "visitDate": "Preferred visit date",
+        "message": "Message",
+        "messagePlaceholder": "Tell the developer what you would like to know.",
+        "send": "Send enquiry",
+        "requestVisit": "Request a site visit",
+        "notOpen": "Sending enquiries is not open yet.",
+        "rateLimit": {
+          "title": "Please wait a little",
+          "body": "You can send a limited number of requests per hour. Try again soon."
+        },
+        "sent": {
+          "title": "Thank you, we have your details",
+          "body": "The developer's team will contact you on the number you gave."
+        }
+      },
+      "bar": {
+        "enquire": "Enquire about this project"
       }
     }
   },

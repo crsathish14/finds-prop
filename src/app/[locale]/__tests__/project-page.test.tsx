@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
@@ -27,12 +28,28 @@ vi.mock("@/features/home", () => ({
 }));
 vi.mock("@/features/projects", async () => {
   const address = await vi.importActual("@/features/projects/address");
-  const view = await vi.importActual<{ projectMetaDescription: unknown }>(
+  const view = await vi.importActual<{ projectMetaDescription: unknown; contactLinks: unknown }>(
     "@/features/projects/view",
   );
   return {
     ...address,
     projectMetaDescription: view.projectMetaDescription,
+    contactLinks: view.contactLinks,
+    ProjectLeadCard: (props: { state: string; sendDisabled?: boolean; sendNotice?: string }) => (
+      <div
+        data-testid="lead"
+        data-state={props.state}
+        data-disabled={String(props.sendDisabled ?? false)}
+        data-notice={props.sendNotice ?? ""}
+      />
+    ),
+    ProjectMobileBar: (props: { contact: { call: string | null; whatsapp: string | null } }) => (
+      <div
+        data-testid="bar"
+        data-call={props.contact.call ?? ""}
+        data-whatsapp={props.contact.whatsapp ?? ""}
+      />
+    ),
     getProject: async (slug: string) => {
       state.asked.push(slug);
       return state.result;
@@ -42,6 +59,8 @@ vi.mock("@/features/projects", async () => {
       floorPlanSources: string[];
       brochureSource: string | null;
       project: { name: string };
+      enquiry?: ReactNode;
+      mobileEnquiry?: ReactNode;
     }) => (
       <div
         data-testid="screen"
@@ -50,6 +69,8 @@ vi.mock("@/features/projects", async () => {
         data-brochure={props.brochureSource ?? ""}
       >
         {props.project.name}
+        {props.enquiry}
+        {props.mobileEnquiry}
       </div>
     ),
   };
@@ -68,6 +89,7 @@ const found = (overrides: Record<string, unknown> = {}) => ({
     images: ["kadal/1.webp"],
     floorPlans: ["kadal/plan.webp"],
     brochurePath: "kadal/brochure.pdf",
+    contactPhone: "+914412345678",
     ...overrides,
   },
 });
@@ -114,6 +136,35 @@ describe("the project page (S4-T09)", () => {
       "data-brochure",
       "https://example.supabase.co/project-media/kadal/brochure.pdf",
     );
+  });
+
+  it("draws the enquiry card with Send switched off and says why", async () => {
+    state.result = found();
+    render(await ProjectPage(props("kadal-vista")));
+    const lead = screen.getByTestId("lead");
+    expect(lead).toHaveAttribute("data-state", "form");
+    expect(lead).toHaveAttribute("data-disabled", "true");
+    expect(lead).toHaveAttribute("data-notice", "projects.page.lead.notOpen");
+  });
+
+  it("draws the phone bar with the links the project's number allows", async () => {
+    state.result = found();
+    const first = render(await ProjectPage(props("kadal-vista")));
+    expect(screen.getByTestId("bar")).toHaveAttribute("data-call", "tel:+914412345678");
+    expect(screen.getByTestId("bar")).toHaveAttribute(
+      "data-whatsapp",
+      "https://wa.me/914412345678",
+    );
+    first.unmount();
+    state.result = found({ contactPhone: null });
+    render(await ProjectPage(props("kadal-vista")));
+    expect(screen.getByTestId("bar")).toHaveAttribute("data-call", "");
+  });
+
+  it("leaves room under the last section for the phone bar", async () => {
+    state.result = found();
+    const { container } = render(await ProjectPage(props("kadal-vista")));
+    expect(container.querySelector("main")).toHaveClass("pb-24", "lg:pb-0");
   });
 
   it("gives no brochure address when the project has none", async () => {
