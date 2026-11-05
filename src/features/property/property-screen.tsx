@@ -72,6 +72,8 @@ type PropertyScreenProps = {
   enquiry: ReactNode;
   /** The bar and sheet of a phone. */
   mobileEnquiry: ReactNode;
+  /** The actions under the title (Add to compare); the page gives them, so this feature needs no other. */
+  actions?: ReactNode;
   /** Design Lab only: several screens on one board need a lower heading level. */
   titleAs?: "h1" | "h2";
 };
@@ -89,6 +91,7 @@ export function PropertyScreen({
   photoSources,
   enquiry,
   mobileEnquiry,
+  actions,
   titleAs = "h1",
 }: PropertyScreenProps) {
   const ids = useId();
@@ -186,6 +189,7 @@ export function PropertyScreen({
                 <span>{locationLine}</span>
               </p>
             )}
+            {actions ? <div className="mt-2 flex flex-wrap gap-3">{actions}</div> : null}
           </header>
 
           <section aria-labelledby={sectionId("specs")} className="flex flex-col gap-4">

@@ -1,5 +1,6 @@
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
+import { DISCOVERY } from "./boards/discovery";
 import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
 import { FOUNDATIONS } from "./boards/foundations";
@@ -57,6 +58,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "The organisms that appear only inside the screens: property, project and developer cards, search, filters, gallery and enquiry. They mirror the search, property, projects and home screens.",
     entries: DOMAIN,
+  },
+  {
+    id: "discovery",
+    title: "Discovery",
+    uxBoard: "compare",
+    summary:
+      "What spans the screens when choosing homes: the compare bar and the comparison. It mirrors the compare screen.",
+    entries: DISCOVERY,
   },
 ];
 

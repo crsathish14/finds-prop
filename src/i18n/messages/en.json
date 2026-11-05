@@ -18,7 +18,12 @@
     "hero": {
       "title": "Find the place that fits your life.",
       "titleInRegion": "Find the place that fits your life in {region}.",
-      "subtitle": "Shortlist, compare and enquire directly."
+      "subtitle": "Shortlist, compare and enquire directly.",
+      "trust": {
+        "approved": "Approved listings only",
+        "enquire": "Enquire directly",
+        "compare": "Compare up to 3 homes"
+      }
     },
     "explore": {
       "title": "Explore by locality",
@@ -466,6 +471,62 @@
       "backProperties": "Back to Properties"
     },
     "loadingTitle": "Loading homes"
+  },
+  "compare": {
+    "add": "Add to compare",
+    "title": "Compare homes",
+    "emphasis": "homes",
+    "subtitle": "Side by side, up to three at a time. Your selection is kept on this device.",
+    "crumb": {
+      "nav": "Breadcrumb",
+      "home": "Home",
+      "properties": "Properties",
+      "current": "Compare",
+      "back": "Back to results"
+    },
+    "bar": {
+      "label": "Compare homes",
+      "count": "{count} of 3 selected",
+      "countShort": "{count} of 3",
+      "chooseMore": "Choose at least 2 homes to compare",
+      "clearAll": "Clear all",
+      "compareNow": "Compare now",
+      "remove": "Remove from compare: {title}",
+      "removeUntitled": "Remove this home from compare"
+    },
+    "table": {
+      "label": "{count, plural, one {Comparison of # home} other {Comparison of # homes}}",
+      "corner": "Home",
+      "viewHome": "View home",
+      "remove": "Remove",
+      "removeLabel": "Remove from compare: {title}",
+      "overview": "Overview",
+      "facts": "Facts",
+      "amenities": "Amenities",
+      "price": "Price",
+      "perSqft": "Per sq.ft",
+      "propertyType": "Property type",
+      "locality": "Locality",
+      "area": "Area",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "furnishing": "Furnishing",
+      "yes": "Yes",
+      "notListed": "Not listed",
+      "notApplicable": "Not applicable"
+    },
+    "tip": "Tip: remove a home to make room for another. You can compare up to 3.",
+    "empty": {
+      "title": "Choose at least two homes to compare",
+      "bodyOne": "You have 1 home selected. Add another from the search results and it will appear here.",
+      "bodyNone": "Pick two or more homes from the search results and they will appear here side by side.",
+      "browse": "Browse homes"
+    },
+    "removed": {
+      "title": "Removed from compare",
+      "undo": "Undo"
+    },
+    "loading": "Loading comparison"
   },
   "domain": {
     "propertyCard": {

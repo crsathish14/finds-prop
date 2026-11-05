@@ -14,6 +14,9 @@
 /** How long each banner stays before the next one slides in (owner decision, ADR-038). */
 export const SPONSOR_ROTATION_MS = 5000;
 
+/** The results list shows one sponsored banner after this many homes (the UX: after the sixth). */
+export const RESULTS_SPONSOR_AFTER = 6;
+
 export type SponsorFormat = "strip" | "panel";
 export type SponsorPlacement = "hero" | "results";
 export type HeroLayout = "search_desk" | "split";

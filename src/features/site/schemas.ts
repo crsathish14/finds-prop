@@ -72,12 +72,21 @@ const regionSchema = z.object({
   }),
 });
 
+/**
+ * The sponsored banners (FR-PUB-04, ADR-045). The list is checked one banner at a time when it is read
+ * (`toSponsorAds`), so one unusable banner never takes the others down: here it only has to be a list.
+ */
+const sponsorsSchema = z.object({
+  ads: z.array(z.unknown()).max(30),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
   hero: heroSchema,
   homepage: homepageSchema,
   region: regionSchema,
+  sponsors: sponsorsSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

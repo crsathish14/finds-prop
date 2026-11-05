@@ -2,18 +2,15 @@ import type { DeveloperCardData } from "@/components/domain/developer-card";
 import type { PropertyCardData } from "@/components/domain/property-card";
 import { PROPERTY_TYPES, PROPERTY_TYPE_WORDS, type PropertyType } from "@/config/search-options";
 import { formatListedAgo, type Translate } from "@/lib/format";
+import { publicStorageUrl } from "@/lib/storage-url";
 import type { DeveloperRow, ListingRow } from "./schemas";
 
 /** The two public storage buckets the pictures come from (the images in next.config allow both). */
 export const LISTING_BUCKET = "listing-photos";
 export const PROJECT_BUCKET = "project-media";
 
-/** The address of a picture in a public bucket; each part of the path is encoded on its own. */
-export function publicStorageUrl(supabaseUrl: string, bucket: string, path: string): string {
-  const base = supabaseUrl.replace(/\/+$/, "");
-  const encoded = path.split("/").map(encodeURIComponent).join("/");
-  return `${base}/storage/v1/object/public/${bucket}/${encoded}`;
-}
+/** The address of a picture in a public bucket (see `lib/storage-url.ts`). */
+export { publicStorageUrl };
 
 export type CardContext = {
   translate: Translate;

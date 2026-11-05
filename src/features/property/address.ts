@@ -5,8 +5,8 @@
  * so a link with an old or hand-edited slug still opens it, and is sent to the canonical address.
  */
 
-/** The public id: 8 characters, as the database checks it. */
-const SHORT_ID = /^[a-hjkmnp-z2-9]{8}$/;
+import { isShortId } from "@/lib/short-id";
+
 const SLUG = /^[a-z0-9-]{1,100}$/;
 
 export const PROPERTIES_PATH = "/properties";
@@ -38,7 +38,7 @@ export function parsePropertyAddress(segment: string): PropertyAddress | null {
   if (dash < 1 || text[dash] !== "-") return null;
   const slug = text.slice(0, dash);
   const shortId = text.slice(dash + 1);
-  if (!SHORT_ID.test(shortId) || !SLUG.test(slug)) return null;
+  if (!isShortId(shortId) || !SLUG.test(slug)) return null;
   return { slug, shortId };
 }
 

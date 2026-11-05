@@ -19,4 +19,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   },
   // An approximate box around Tamil Nadu, used only to check that a place lies in the launch area.
   region: { bounds: { south: 8.0, west: 76.2, north: 13.6, east: 80.4 } },
+  // No sponsored banners until the admin adds some (Stage 8): the page shows no banner and no gap.
+  sponsors: { ads: [] },
 };

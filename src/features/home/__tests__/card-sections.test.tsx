@@ -89,11 +89,16 @@ describe("FeaturedSection: Featured homes (S4-T06)", () => {
     );
   });
 
-  it("draws no Save or Compare controls yet", async () => {
+  it("draws the Compare checkbox on each card (S4-T02) and no Save heart yet", async () => {
     state.featured = [home("aaa11111", "First home")];
     renderWithMessages(<>{await FeaturedSection()}</>);
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    // Compare is the only control: a toggle that is not pressed until the visitor chooses the home.
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Compare" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.queryByRole("button", { name: /Save|shortlist/i })).not.toBeInTheDocument();
   });
 });
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { EnquiryCardSkeleton } from "@/components/domain/enquiry-card";
+import { CompareButton } from "@/features/compare";
 import { LISTING_BUCKET, publicStorageUrl } from "@/features/home";
 import {
   canonicalPropertyPath,
@@ -58,15 +59,23 @@ export default async function PropertyPage({ params }: PageProps) {
     propertyPath(property.slug, property.shortId),
   );
   const perSqft = perSqftRupees(property);
+  const photoSources = property.photos.map((photo) =>
+    publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, LISTING_BUCKET, photo.path),
+  );
 
   // `pb-24` leaves room under the last section for the phone's sticky bar (hidden from 1024 px).
   return (
     <main id="main" className="flex-1 pb-24 lg:pb-0">
       <PropertyScreen
         property={property}
-        photoSources={property.photos.map((photo) =>
-          publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, LISTING_BUCKET, photo.path),
-        )}
+        photoSources={photoSources}
+        actions={
+          <CompareButton
+            shortId={property.shortId}
+            title={property.title}
+            cover={photoSources[0] ?? null}
+          />
+        }
         enquiry={
           <Suspense fallback={<EnquiryCardSkeleton />}>
             <EnquiryPanel signInHref={signInHref} createAccountHref={createAccountHref} />
