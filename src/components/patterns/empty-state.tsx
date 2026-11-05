@@ -3,7 +3,7 @@
  * Purpose: one friendly pattern: the arch drawing, a title saying what is missing, one sentence,
  *   and at most one next step. Owner: design system.
  * Props: title and description (already-translated), as (heading level for the title, "h2" by
- *   default; choose the level that fits the page outline), children (the single next step, usually
+ *   default; use "h1" when the page has no other heading, as on a not-found page; choose the level that fits the page outline), children (the single next step, usually
  *   a Button or Link), className.
  * Responsive: centred; the text is capped at 46 characters wide.
  * Accessibility: the title is a real heading; the drawing is hidden from screen readers.
@@ -20,7 +20,7 @@ import { cn } from "@/lib/cn";
 type EmptyStateProps = {
   title: string;
   description: string;
-  as?: "h2" | "h3" | "h4";
+  as?: "h1" | "h2" | "h3" | "h4";
   children?: ReactNode;
   className?: string;
 };

@@ -354,6 +354,54 @@ test.describe("@smoke results page", () => {
   });
 });
 
+// S4-T03: the property page. CI has no database behind the app, so these tests look at what does not
+// need a home: an address that is not a slug and an id is "not found", with its one next step.
+// (The page streams under a loading screen, so the answer is a normal status with a noindex tag.)
+test.describe("@smoke property page", () => {
+  test("an address that is not a home's says so and leads to the available homes", async ({
+    page,
+  }) => {
+    await page.goto("/properties/not-an-id");
+    await expect(
+      page.getByRole("heading", { level: 1, name: en.property.page.notFound.title }),
+    ).toBeVisible();
+    await expect(page.getByText(en.property.page.notFound.body)).toBeVisible();
+    await page.getByRole("link", { name: en.property.page.notFound.browse }).click();
+    await expect(page).toHaveURL(/\/properties$/);
+    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
+  });
+
+  test("keeps the site header and footer around the not-found screen and is kept out of search results", async ({
+    page,
+  }) => {
+    await page.goto("/properties/not-an-id");
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
+    await expect(page.locator('head meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/properties/not-an-id");
+      await expect(
+        page.getByRole("heading", { level: 1, name: en.property.page.notFound.title }),
+      ).toBeVisible();
+      const results = await new AxeBuilder({ page })
+        .include("#main")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(
+        serious.map((violation) => violation.id),
+        `at ${width} px`,
+      ).toEqual([]);
+    }
+  });
+});
+
 // Text-origin check (ADR-035): every line of text a visitor can see, plus the page title and the
 // label and alt attributes, must be a message from en.json. It catches hard-coded text that the
 // lint rule cannot see, such as a sentence kept in a variable.
@@ -421,6 +469,7 @@ test.describe("@smoke text origin", () => {
     "/",
     "/properties",
     "/properties?bhk=3&listingType=sale&propertyType=apartment",
+    "/properties/not-an-id",
     "/this-page-does-not-exist",
     "/builder/login",
     "/builder/login?denied=1",

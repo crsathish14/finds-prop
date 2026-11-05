@@ -196,6 +196,8 @@
   --w-search-card: 970px;
   --w-sponsor-strip: 970px;
   --w-sponsor-panel: 540px;
+  /* The price and enquiry column beside a property page's details (the UX: 380 px). */
+  --w-detail-aside: 380px;
 
   /* Component sizes */
   --size-touch-min: 44px;

@@ -251,3 +251,34 @@ describe("EnquirySheet (S4-T01)", () => {
 function EnquirySheetHost() {
   return <EnquirySheet state="form" trigger={<button type="button">Enquire</button>} />;
 }
+
+describe("EnquiryCard: Send switched off (S4-T03)", () => {
+  it("draws the form with Send disabled and a line under it that describes the button", async () => {
+    const onSubmit = vi.fn();
+    renderWithMessages(
+      <EnquiryCard
+        state="form"
+        sendDisabled
+        sendNotice="Sending is not open yet."
+        onSubmit={onSubmit}
+      />,
+    );
+    const send = screen.getByRole("button", { name: words.form.send });
+    expect(send).toBeDisabled();
+    expect(send).toHaveAccessibleDescription("Sending is not open yet.");
+    // The fields can still be filled in; the form is the real one.
+    await userEvent.type(screen.getByRole("textbox", { name: /Your name/ }), "Priya");
+    await userEvent.click(send);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("is unchanged without the options: Send works and nothing is added under it", async () => {
+    const onSubmit = vi.fn();
+    renderWithMessages(<EnquiryCard state="form" onSubmit={onSubmit} />);
+    const send = screen.getByRole("button", { name: words.form.send });
+    expect(send).toBeEnabled();
+    expect(send).not.toHaveAttribute("aria-describedby");
+    await userEvent.click(send);
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+});

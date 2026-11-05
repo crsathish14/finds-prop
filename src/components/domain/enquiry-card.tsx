@@ -11,7 +11,8 @@
  *   values ({ name, phone, email, message } to start with), errors ({ name, phone, email, message }:
  *   already-translated messages; a field with one is marked invalid), failed (draws the "could not
  *   send" alert above the form; the typed values stay), submitting (the button shows it is working
- *   and ignores clicks), onSubmit (called with the values when the form is sent), variant ("card" the
+ *   and ignores clicks), sendDisabled and sendNotice (Send is switched off and a line under it says why;
+ *   the page uses them until enquiries can be sent), onSubmit (called with the values when the form is sent), variant ("card" the
  *   box beside the details, with its heading, the email field and the message counter | "sheet" the
  *   phone version inside the enquiry sheet: no heading, no email, a shorter message box), headingAs
  *   ("h2" default | "h3"), className.
@@ -32,7 +33,7 @@
  */
 import { CircleCheck, Lock, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,10 @@ type EnquiryCardProps = {
   errors?: EnquiryErrors;
   failed?: boolean;
   submitting?: boolean;
+  /** Send is switched off (the form is drawn and can be filled, but nothing can be sent yet). */
+  sendDisabled?: boolean;
+  /** A line under the Send button, already translated; the button is described by it. */
+  sendNotice?: string;
   onSubmit?: (values: EnquiryValues) => void;
   variant?: "card" | "sheet";
   headingAs?: "h2" | "h3";
@@ -95,6 +100,8 @@ function EnquiryCard({
   errors,
   failed = false,
   submitting = false,
+  sendDisabled = false,
+  sendNotice,
   onSubmit,
   variant = "card",
   headingAs: Heading = "h2",
@@ -110,6 +117,7 @@ function EnquiryCard({
   });
   const form = useRef<HTMLFormElement>(null);
   const shown = useRef(false);
+  const noticeId = useId();
 
   // Errors that arrive after the form is shown take the reader to the first field with one. Errors
   // that are there from the start (the Design Lab shows them) do not steal focus.
@@ -266,10 +274,17 @@ function EnquiryCard({
           size="lg"
           className="w-full"
           loading={submitting}
+          disabled={sendDisabled}
+          {...(sendNotice ? { "aria-describedby": noticeId } : {})}
           iconStart={<Icon icon={Send} />}
         >
           {translate("form.send")}
         </Button>
+        {sendNotice ? (
+          <p id={noticeId} className="-mt-1 text-center text-caption text-muted">
+            {sendNotice}
+          </p>
+        ) : null}
       </form>
     </div>
   );

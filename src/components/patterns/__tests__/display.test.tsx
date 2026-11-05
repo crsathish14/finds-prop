@@ -143,6 +143,13 @@ describe("EmptyState, Alert, StatTile and SpecTile", () => {
     expect(screen.getByRole("link", { name: "Browse homes" })).toBeInTheDocument();
   });
 
+  it("takes an h1 for a page that has no other heading", () => {
+    render(<EmptyState as="h1" title="Property not found" description="The link may be wrong." />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Property not found" }),
+    ).toBeInTheDocument();
+  });
+
   it("reads an error alert at once and the other tones politely", () => {
     render(
       <>
