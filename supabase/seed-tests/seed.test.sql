@@ -3,7 +3,7 @@
 -- in supabase/tests run on a database reset without it, because they assume empty tables.
 -- Every number below follows from the row-number rules in seed.sql; if a rule changes, change both.
 begin;
-select plan(39);
+select plan(53);
 
 -- Customers: phone-only accounts with a profile and the default role
 select is(
@@ -124,8 +124,23 @@ select is(
 -- Content
 select is(
   (select count(*) from public.forms
-   where slug = 'contact-us' and active and kind = 'contact' and jsonb_array_length(fields) = 4)::int,
-  1, 'one active contact form with four fields'
+   where slug = 'kadal-heights-visit' and active and kind = 'site_visit' and placement = 'project_specific'
+     and project_id = '5eed0000-0000-4000-8002-000000000001' and jsonb_array_length(fields) = 4)::int,
+  1, 'one active site-visit form with four fields, made for the first project'
+);
+select is(
+  (select array_agg(slug order by slug) from public.forms where placement = 'contact'),
+  array['contact']::text[],
+  'the default contact form comes from the migration and the seed adds no second one'
+);
+select is(
+  (select public_form.slug from public.public_project_form('kadal-heights-adyar') as public_form),
+  'kadal-heights-visit',
+  'the first project shows its own form'
+);
+select is(
+  (select count(*) from public.public_project_form('kadal-greens-navalur'))::int,
+  0, 'the other projects show no form of their own, so the page uses its built-in card'
 );
 select is(
   (select array_agg(key order by key) from public.site_settings),
@@ -142,6 +157,62 @@ set local role anon;
 select is((select count(*) from public.properties)::int, 42, 'a visitor sees the 42 approved listings');
 select is((select count(*) from public.projects)::int, 9, 'a visitor sees the 9 live projects');
 reset role;
+
+-- Taking the seed out again (supabase/seed-remove.sql): the same statements, run against the seed and the
+-- rows a tester leaves behind on it. Last in this file, because it deletes what the checks above read.
+insert into auth.users (id, email, email_confirmed_at)
+values ('00000000-0000-4000-8000-0000000000d1', 'tester@example.test', now());
+insert into public.enquiries (property_id, user_id, name, phone)
+select id, '00000000-0000-4000-8000-0000000000d1', 'Test Sender', '9000000000'
+from public.properties where short_id like 'seed%' order by short_id limit 1;
+insert into public.saved_properties (user_id, property_id)
+select '00000000-0000-4000-8000-0000000000d1', id
+from public.properties where short_id like 'seed%' order by short_id limit 1;
+insert into public.project_leads (project_id, kind, name, phone)
+values ('5eed0000-0000-4000-8002-000000000001', 'enquiry', 'Test Sender', '9000000000');
+insert into public.form_submissions (form_id, form_name, project_id, name, mobile, crm_status)
+values ('5eed0000-0000-4000-8003-000000000001', 'Kadal Heights site visit',
+        '5eed0000-0000-4000-8002-000000000001', 'Test Sender', '9000000000', 'not_applicable');
+
+select lives_ok(
+  $remove$
+delete from public.project_leads where project_id::text like '5eed0000-0000-4000-8002-%';
+delete from public.form_submissions
+  where form_id::text like '5eed0000-0000-4000-8003-%' or project_id::text like '5eed0000-0000-4000-8002-%';
+delete from public.forms where id::text like '5eed0000-0000-4000-8003-%';
+delete from public.projects where id::text like '5eed0000-0000-4000-8002-%';
+delete from public.builders where id::text like '5eed0000-0000-4000-8001-%';
+delete from public.properties where owner_id::text like '5eed0000-0000-4000-8000-%';
+delete from auth.users where id::text like '5eed0000-0000-4000-8000-%';
+delete from public.site_settings where key in ('homepage', 'region');
+  $remove$,
+  'the removal runs, although a tester has left an enquiry, a saved home, a lead and a form submission'
+);
+select is((select count(*) from auth.users where id::text like '5eed0000-%')::int, 0, 'no seeded customer is left');
+select is((select count(*) from public.properties where short_id like 'seed%')::int, 0, 'no seeded listing is left');
+select is((select count(*) from public.builders where id::text like '5eed0000-%')::int, 0, 'no seeded builder is left');
+select is((select count(*) from public.projects where id::text like '5eed0000-%')::int, 0, 'no seeded project is left');
+select is(
+  (select count(*) from public.project_units where project_id::text like '5eed0000-%')::int
+    + (select count(*) from public.project_price_trends where project_id::text like '5eed0000-%')::int,
+  0, 'and no unit or price trend of theirs'
+);
+select is(
+  (select count(*) from public.project_leads)::int + (select count(*) from public.enquiries)::int
+    + (select count(*) from public.saved_properties)::int + (select count(*) from public.form_submissions)::int,
+  0, 'the tester''s enquiry, saved home, lead and submission went with the listings and projects'
+);
+select is((select count(*) from public.forms where id::text like '5eed0000-%')::int, 0, 'the project form is gone');
+select is(
+  (select array_agg(slug order by slug) from public.forms),
+  array['contact']::text[],
+  'the default contact form stays'
+);
+select is((select count(*) from public.site_settings)::int, 0, 'the two seeded settings are gone');
+select is(
+  (select count(*) from auth.users where id = '00000000-0000-4000-8000-0000000000d1')::int,
+  1, 'an account that is not the seed''s stays'
+);
 
 select * from finish();
 rollback;

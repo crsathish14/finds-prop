@@ -1,15 +1,27 @@
--- Fictional development data (S3-T13). Loaded by `supabase db reset` on the local stack and in CI; the
--- hosted dev project never gets it (migrations only, ADR-034). Never real people, phone numbers,
+-- Fictional development data (S3-T13). Loaded by `supabase db reset` on the local stack and in CI. The
+-- hosted dev project gets it only when the owner pastes this file into the dashboard's SQL editor
+-- (docs/runbooks/dev-seed.md); db-deploy applies migrations only (ADR-034). It can be loaded once: a second
+-- load stops at the first statement. `supabase/seed-remove.sql` takes it out again. Never real people, phone numbers,
 -- addresses or prices: names, emails (`.example`), phone numbers (a 9000 range) and prices are
 -- invented, and the listings describe nothing that exists.
 -- Deterministic: no random(), every id comes from the row number, so two resets give the same data
 -- (dates are relative to the reset). It runs as `postgres`, which the guard triggers treat as the
 -- system, so rows can be written in any status.
 -- What is here: 8 customers, 6 builders (one inactive, one agent), 60 listings across ten cities,
--- 12 projects with units and 12 months of price trends, a default contact form, and two site
--- settings. Photos are not here: listing_media needs files in Storage, which scripts/seed-dev.mjs adds.
+-- 12 projects with units and 12 months of price trends, a site-visit form for one project, and two site
+-- settings. The default contact form is not here: the migration 20261106140000 stores it. Photos are not here: listing_media needs files in Storage, which scripts/seed-dev.mjs adds.
 -- The database tests (supabase/tests) assume empty tables and run before this file is loaded; the seed
 -- has its own tests in supabase/seed-tests.
+
+-- Loading it twice would fail halfway on duplicate ids, so say so before anything is written.
+do $$
+begin
+  if exists (select 1 from auth.users where id::text like '5eed0000-%') then
+    raise exception 'The fictional seed is already loaded in this database. Run supabase/seed-remove.sql first to load it again.'
+      using errcode = 'P0001';
+  end if;
+end
+$$;
 
 -- Customers: phone-only accounts, the way real customers sign in. The identity trigger creates each
 -- profile and its customer role.
@@ -315,20 +327,24 @@ cross join alphabet;
 
 -- The default contact form (placement `contact`). The field type names are the ones the form builder
 -- will validate (S7-T08); change them here if that vocabulary differs.
-insert into public.forms (id, name, slug, kind, placement, button_text, success_message, fields, active)
+-- A form made for one project: Kadal Heights (project 1) asks for a site visit, so that page shows this form
+-- (a signed-in visitor with a verified phone sees it in the enquiry card) and the other projects show the
+-- built-in card (BR-49, ADR-056). The default contact form is stored by a migration, not here.
+insert into public.forms (id, name, slug, kind, placement, project_id, button_text, success_message, fields, active)
 values (
   '5eed0000-0000-4000-8003-000000000001',
-  'Contact us',
-  'contact-us',
-  'contact',
-  'contact',
-  'Send message',
-  'Thank you. We will get back to you soon.',
+  'Kadal Heights site visit',
+  'kadal-heights-visit',
+  'site_visit',
+  'project_specific',
+  '5eed0000-0000-4000-8002-000000000001',
+  'Book a visit',
+  'Thank you. The Kadal Heights team will call you to confirm your visit.',
   '[
     {"label": "Your name", "key": "name", "type": "text", "placeholder": "Your full name", "required": true},
-    {"label": "Mobile number", "key": "mobile", "type": "tel", "placeholder": "10 digit mobile number", "required": true},
-    {"label": "Email", "key": "email", "type": "email", "placeholder": "you@example.com", "required": false},
-    {"label": "Message", "key": "message", "type": "textarea", "placeholder": "How can we help?", "max": 1000, "required": true}
+    {"label": "Mobile", "key": "mobile", "type": "text", "required": true},
+    {"label": "Preferred visit day", "key": "visit_date", "type": "date", "required": true},
+    {"label": "Anything we should know?", "key": "message", "type": "textarea", "max": 300, "required": false}
   ]'::jsonb,
   true
 );
