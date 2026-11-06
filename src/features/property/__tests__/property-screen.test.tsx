@@ -236,14 +236,17 @@ describe("PropertyEnquiryCard: the gate and the form (S4-T03)", () => {
     );
   });
 
-  it("gives a signed-in visitor the real form with Send switched off and a line that says so", () => {
+  it("gives a signed-in visitor the real form with Send on, and the consent line with a link to the privacy page", () => {
     renderWithMessages(
       <PropertyEnquiryCard signedIn signInHref="/auth" createAccountHref="/auth" />,
     );
     expect(screen.getByRole("textbox", { name: /Your name/ })).toBeEnabled();
-    const send = screen.getByRole("button", { name: card.form.send });
-    expect(send).toBeDisabled();
-    expect(send).toHaveAccessibleDescription(words.enquiry.notOpen);
+    expect(screen.getByRole("button", { name: card.form.send })).toBeEnabled();
+    expect(screen.getByText(new RegExp(card.consent.text))).toBeVisible();
+    expect(screen.getByRole("link", { name: card.consent.privacy })).toHaveAttribute(
+      "href",
+      "/privacy",
+    );
   });
 });
 
@@ -267,15 +270,13 @@ describe("MobileEnquiry: the sticky bar and the sheet (S4-T03)", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("opens the enquiry sheet from Enquire for a signed-in visitor, with Send switched off", async () => {
+  it("opens the enquiry sheet from Enquire for a signed-in visitor, with Send on", async () => {
     renderWithMessages(
       <MobileEnquiry signedIn signInHref="/auth" createAccountHref="/auth" {...BAR} />,
     );
     await userEvent.click(screen.getByRole("button", { name: words.enquiry.enquire }));
     const sheet = screen.getByRole("dialog", { name: card.form.title });
-    const send = within(sheet).getByRole("button", { name: card.form.send });
-    expect(send).toBeDisabled();
-    expect(send).toHaveAccessibleDescription(words.enquiry.notOpen);
+    expect(within(sheet).getByRole("button", { name: card.form.send })).toBeEnabled();
   });
 });
 

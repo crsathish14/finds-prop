@@ -9,6 +9,11 @@ const visitor = vi.hoisted(() => ({
 
 vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
 vi.mock("@/features/auth", () => ({ addEmail: vi.fn(), resendEmailLink: vi.fn() }));
+vi.mock("@/features/enquiries", () => ({
+  MyEnquiriesTab: (props: { fallback: React.ReactNode }) => (
+    <div data-testid="my-enquiries-tab">{props.fallback}</div>
+  ),
+}));
 vi.mock("@/features/saved", () => ({
   SavedTab: (props: { fallback: React.ReactNode }) => (
     <div data-testid="saved-tab">{props.fallback}</div>
@@ -135,5 +140,17 @@ describe("the Saved tab (S5-T01)", () => {
   it("does not draw the saved homes on the other tabs", async () => {
     await open({ tab: "sent" });
     expect(screen.queryByTestId("saved-tab")).toBeNull();
+  });
+});
+
+describe("the My enquiries tab (S5-T03)", () => {
+  it("draws the sent enquiries in place of the empty state, through the my-enquiries component", async () => {
+    await open({ tab: "sent" });
+    expect(screen.getByTestId("my-enquiries-tab")).toBeInTheDocument();
+  });
+
+  it("does not draw them on the other tabs", async () => {
+    await open({ tab: "listings" });
+    expect(screen.queryByTestId("my-enquiries-tab")).toBeNull();
   });
 });

@@ -51,9 +51,10 @@ export const DISCOVERY: LabEntry[] = [
     id: "dashboard-page",
     name: "Dashboard page",
     description:
-      "The signed-in person's dashboard below the header: the heading with a line that names them (or leaves the name out), Post a property, and four tabs (Saved, My listings, Enquiries received, My enquiries) that live in the address; the tabs can be chosen here and move with the arrow keys. Each tab with nothing to list shows its own empty state and one next step. The email prompt for someone with no address (a field, Send link and Later) with a wrong address, an address that cannot be used (no reason given), sending and a failure; and the reminder once a link was sent (Email not verified, with Send the link again, on a wait or ready, and a failure). Loading. Nothing here navigates.",
+      "The signed-in person's dashboard below the header: the heading with a line that names them (or leaves the name out), Post a property, and four tabs (Saved, My listings, Enquiries received, My enquiries) that live in the address; the tabs can be chosen here and move with the arrow keys. Each tab with nothing to list shows its own empty state and one next step; My enquiries with enquiries sent lists each with its home, time, reply status and message. The email prompt for someone with no address (a field, Send link and Later) with a wrong address, an address that cannot be used (no reason given), sending and a failure; and the reminder once a link was sent (Email not verified, with Send the link again, on a wait or ready, and a failure). Loading. Nothing here navigates.",
     sources: [
       "patterns/tabs.tsx",
+      "patterns/status-badge.tsx",
       "patterns/empty-state.tsx",
       "patterns/alert.tsx",
       "ui/badge.tsx",
