@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { PropertyCard } from "@/components/domain/property-card";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { CompareCardToggle } from "@/features/compare";
+import { SaveHomeButton } from "@/features/saved";
 import { toPropertyCard } from "@/features/home";
 import {
   canonicalRedirect,
@@ -99,6 +100,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
                 property={property}
                 layout={params.view}
                 priority={index < PRIORITY_CARDS}
+                save={<SaveHomeButton shortId={home.short_id} />}
                 compare={
                   <CompareCardToggle
                     shortId={home.short_id}

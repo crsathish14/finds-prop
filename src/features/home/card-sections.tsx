@@ -7,6 +7,7 @@ import { SectionHead } from "@/components/domain/section-head";
 import { Link } from "@/components/ui/link";
 import { buildSearchHref } from "@/features/search";
 import { CompareCardToggle } from "@/features/compare";
+import { SaveHomeButton } from "@/features/saved";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 import { toDeveloperCard, toPropertyCard, type CardContext } from "./cards";
@@ -19,6 +20,7 @@ function HomeCard({ home, context }: { home: ListingRow; context: CardContext })
   return (
     <PropertyCard
       property={property}
+      save={<SaveHomeButton shortId={home.short_id} />}
       compare={
         <CompareCardToggle
           shortId={home.short_id}

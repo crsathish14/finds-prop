@@ -33,6 +33,8 @@ type PhoneSignInProps = {
   siteKey: string | undefined;
   /** The visitor was sent here by an action that needs an account (?gate=enquire). */
   gate: boolean;
+  /** The visitor was sent here to save a home (?gate=save): the words say so, and the return brings them back to it. */
+  saveGate?: boolean;
   /** Where to go once signed in: an address the page has already checked (BR-06). */
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested (the server only reports it). */
@@ -49,7 +51,13 @@ function minutesToWait(retryAfter: number | undefined): number {
  * server, which also applies the limits (R-BE-03). Once a code is sent the card moves to the code
  * step; the number itself is kept in this component and never goes into the address (R-BE-10).
  */
-export function PhoneSignIn({ siteKey, gate, redirectTo, alreadySignedIn }: PhoneSignInProps) {
+export function PhoneSignIn({
+  siteKey,
+  gate,
+  saveGate = false,
+  redirectTo,
+  alreadySignedIn,
+}: PhoneSignInProps) {
   const translate = useTranslations("auth.phone");
   const translateValidation = useTranslations("validation");
   const [phone, setPhone] = useState("");
@@ -133,7 +141,11 @@ export function PhoneSignIn({ siteKey, gate, redirectTo, alreadySignedIn }: Phon
         </Text>
       </div>
 
-      {gate ? (
+      {saveGate ? (
+        <Alert tone="info" title={translate("saveGateTitle")}>
+          {translate("saveGateBody")}
+        </Alert>
+      ) : gate ? (
         <Alert tone="info" title={translate("gateTitle")}>
           {translate("gateBody")}
         </Alert>

@@ -8,6 +8,7 @@ import {
   parseTab,
 } from "@/features/account";
 import { addEmail, resendEmailLink } from "@/features/auth";
+import { SavedTab } from "@/features/saved";
 import { getTranslate } from "@/features/site";
 
 type PageProps = {
@@ -45,7 +46,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           ) : null
         }
       >
-        <TabEmpty tab={tab} browseHref="/properties" postHref="/post-property" />
+        {tab === "saved" ? (
+          <SavedTab
+            fallback={<TabEmpty tab={tab} browseHref="/properties" postHref="/post-property" />}
+          />
+        ) : (
+          <TabEmpty tab={tab} browseHref="/properties" postHref="/post-property" />
+        )}
       </DashboardScreen>
     </main>
   );
