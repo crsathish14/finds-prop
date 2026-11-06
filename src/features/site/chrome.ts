@@ -152,6 +152,21 @@ function telephoneHref(phone: string): string | undefined {
   return /^\+?\d{5,}$/.test(dialable) ? `tel:${dialable}` : undefined;
 }
 
+/** The address, phone and email the content team set, in that order; a line that is not set is absent. */
+export function buildFooterContacts(
+  footer: Pick<SiteSettings["footer"], "contact">,
+): FooterContactModel[] {
+  const contacts: FooterContactModel[] = [];
+  const { address, phone, email } = footer.contact ?? {};
+  if (address) contacts.push({ kind: "address", text: address });
+  if (phone) {
+    const href = telephoneHref(phone);
+    contacts.push({ kind: "phone", text: phone, ...(href ? { href } : {}) });
+  }
+  if (email) contacts.push({ kind: "email", text: email, href: `mailto:${email}` });
+  return contacts;
+}
+
 export function buildFooter(
   settings: Pick<SiteSettings, "header" | "footer">,
   flags: FeatureFlags,
@@ -173,21 +188,12 @@ export function buildFooter(
       };
     });
 
-  const contacts: FooterContactModel[] = [];
-  const { address, phone, email } = footer.contact ?? {};
-  if (address) contacts.push({ kind: "address", text: address });
-  if (phone) {
-    const href = telephoneHref(phone);
-    contacts.push({ kind: "phone", text: phone, ...(href ? { href } : {}) });
-  }
-  if (email) contacts.push({ kind: "email", text: email, href: `mailto:${email}` });
-
   return {
     brandName,
     ...(footer.about ? { about: footer.about } : {}),
     columnHeading: translate("site.footer.exploreHeading"),
     links,
-    contacts,
+    contacts: buildFooterContacts(footer),
     legalLinks: [
       { label: translate("site.footer.privacy"), href: "/privacy" },
       { label: translate("site.footer.terms"), href: "/terms" },

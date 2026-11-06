@@ -18,7 +18,7 @@ insert into public.projects (id, slug, name, builder_id, locality, moderation, p
 update public.builders set active = false where id = '00000000-0000-4000-b000-0000000000f2';
 
 insert into public.forms (id, name, slug, kind, placement, project_id, fields, active) values
-  ('00000000-0000-4000-d000-0000000000f1', 'Contact', 'contact', 'contact', 'contact', null, '[]', true),
+  ('00000000-0000-4000-d000-0000000000f1', 'Contact', 'contact-form', 'contact', 'contact', null, '[]', true),
   ('00000000-0000-4000-d000-0000000000f2', 'Project enquiry', 'project-enquiry', 'enquiry', 'project', null, '[]', true),
   ('00000000-0000-4000-d000-0000000000f3', 'Vista site visit', 'vista-visit', 'site_visit', 'project_specific', '00000000-0000-4000-c000-0000000000f1', '[]', true),
   ('00000000-0000-4000-d000-0000000000f4', 'Old form', 'old-form', 'contact', 'contact', null, '[]', false),
@@ -41,7 +41,7 @@ select ok(
 
 -- A contact submission
 select ok(
-  public.record_form_submission('contact', repeat('a', 40), '  Priya Raman ', '919840012345', 'priya@example.test',
+  public.record_form_submission('contact-form', repeat('a', 40), '  Priya Raman ', '919840012345', 'priya@example.test',
     '{"interest":"A home to buy","message":"Hello"}', '[]', '/contact', null, '00000000-0000-4000-8000-0000000000a1') is not null,
   'a contact submission is stored and its id returned'
 );
@@ -57,7 +57,7 @@ select results_eq(
 
 -- The same key again stores nothing more and returns the first submission
 select is(
-  public.record_form_submission('contact', repeat('a', 40), 'Priya Raman', '919840012345', null, '{}', '[]', '/contact', null,
+  public.record_form_submission('contact-form', repeat('a', 40), 'Priya Raman', '919840012345', null, '{}', '[]', '/contact', null,
     '00000000-0000-4000-8000-0000000000a1'),
   (select id from public.form_submissions where idempotency_key = '00000000-0000-4000-8000-0000000000a1'),
   'a repeat with the same key returns the first submission'
@@ -70,7 +70,7 @@ select is(
 
 -- Empty contact columns are null
 select lives_ok(
-  $$select public.record_form_submission('contact', repeat('b', 40), '', '', '  ', '{"message":"Only a message"}', '[]', null, null, null)$$,
+  $$select public.record_form_submission('contact-form', repeat('b', 40), '', '', '  ', '{"message":"Only a message"}', '[]', null, null, null)$$,
   'a submission with no name, phone or email is stored'
 );
 select results_eq(
@@ -162,7 +162,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$select public.record_form_submission('contact', 'not-a-hash', 'Priya Raman', '919840012345', null, '{}', '[]', null, null, null)$$,
+  $$select public.record_form_submission('contact-form', 'not-a-hash', 'Priya Raman', '919840012345', null, '{}', '[]', null, null, null)$$,
   '22023', 'form.visitor', 'a visitor that is not a 40 character hash is refused'
 );
 

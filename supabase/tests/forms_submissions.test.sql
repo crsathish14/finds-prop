@@ -82,7 +82,7 @@ select throws_ok(
 
 -- Visitors, customers and builders see active forms, never the CRM link
 set local role anon;
-select is((select count(*) from public.forms)::int, 2, 'anon sees only active forms');
+select is((select count(*) from public.forms)::int, 3, 'anon sees only active forms');
 select lives_ok(
   $$select id, name, slug, kind, placement, project_id, button_text, success_message, fields from public.forms$$,
   'anon can read the public form columns'
@@ -99,7 +99,7 @@ reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000c1", "role": "authenticated"}', true);
-select is((select count(*) from public.forms)::int, 2, 'a customer sees only active forms');
+select is((select count(*) from public.forms)::int, 3, 'a customer sees only active forms');
 select is((select count(*) from public.admin_forms())::int, 0, 'admin_forms is empty for a customer');
 select is((select count(*) from public.form_submissions)::int, 0, 'a customer sees no submissions');
 select is((select count(*) from public.crm_api_logs)::int, 0, 'a customer sees no CRM log');
@@ -124,7 +124,7 @@ select throws_ok(
 
 -- The admin
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000ad", "role": "authenticated"}', true);
-select is((select count(*) from public.admin_forms())::int, 3, 'the admin reads every form through admin_forms');
+select is((select count(*) from public.admin_forms())::int, 4, 'the admin reads every form through admin_forms');
 select ok(
   (select crm_integration_id is not null from public.admin_forms() where slug = 'kadal-vista-visit'),
   'admin_forms includes the CRM link'
@@ -132,7 +132,7 @@ select ok(
 select cmp_ok((select count(*) from public.form_submissions)::int, '>=', 1, 'the admin reads submissions');
 select cmp_ok((select count(*) from public.crm_api_logs)::int, '>=', 1, 'the admin reads the CRM log');
 select lives_ok(
-  $$insert into public.forms (name, slug, kind) values ('Contact', 'contact', 'contact')$$,
+  $$insert into public.forms (name, slug, kind) values ('Contact', 'contact-test', 'contact')$$,
   'the admin can create a form'
 );
 select lives_ok(

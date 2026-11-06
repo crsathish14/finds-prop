@@ -5,6 +5,7 @@ import {
   CACHE_TAGS,
   projectTag,
   propertyTag,
+  tagsAfterFormChange,
   tagsAfterListingChange,
   tagsAfterProjectChange,
   tagsAfterSiteSettingsChange,
@@ -15,12 +16,13 @@ import {
 // that part is not tested here; this proves the lists and the wiring that decide it.
 
 describe("IT-cache: the names", () => {
-  it("keeps the four fixed names the first reads were built with", () => {
+  it("keeps the names the first reads were built with, and adds the forms name", () => {
     expect(CACHE_TAGS).toEqual({
       listings: "home-listings",
       homeProjects: "home-projects",
       projects: "projects",
       siteSettings: "site-settings",
+      forms: "forms",
     });
   });
 
@@ -45,6 +47,10 @@ describe("IT-cache: what a change refreshes", () => {
 
   it("a site content save refreshes the site content", () => {
     expect(tagsAfterSiteSettingsChange()).toEqual(["site-settings"]);
+  });
+
+  it("a form change refreshes the forms", () => {
+    expect(tagsAfterFormChange()).toEqual(["forms"]);
   });
 
   it("two homes never share a page tag", () => {
@@ -93,13 +99,15 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
     HOME_PROJECTS_TAG: CACHE_TAGS.homeProjects,
     PROJECTS_TAG: CACHE_TAGS.projects,
     SITE_SETTINGS_TAG: CACHE_TAGS.siteSettings,
+    FORMS_TAG: CACHE_TAGS.forms,
   };
 
-  /** What the three helpers refresh, whatever the page. */
+  /** What the helpers refresh, whatever the page. */
   const REFRESHED = new Set([
     ...tagsAfterListingChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterProjectChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterSiteSettingsChange(),
+    ...tagsAfterFormChange(),
   ]);
 
   it("finds the cached reads", () => {

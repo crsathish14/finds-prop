@@ -618,6 +618,38 @@
       }
     }
   },
+  "contact": {
+    "crumb": { "nav": "Breadcrumb", "home": "Home", "backHome": "Back to home" },
+    "meta": {
+      "title": "Contact",
+      "description": "Questions about a listing, a project or your account? Send Find Prop a message."
+    },
+    "title": "Talk to us",
+    "loadingTitle": "Loading contact page",
+    "lead": "Questions about a listing, a project or your account? Send us a message.",
+    "sent": {
+      "title": "Thank you, we have your message",
+      "body": "We will reply on the phone number or email you gave.",
+      "backHome": "Back to home"
+    },
+    "loadFailed": {
+      "title": "Could not load the contact form",
+      "body": "Please refresh the page. You can also reach us on the phone number or email beside this form.",
+      "bodyAlone": "Please refresh the page.",
+      "refresh": "Refresh"
+    },
+    "reach": {
+      "heading": "Reach us directly",
+      "label": "Contact details",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address"
+    },
+    "consent": {
+      "text": "We use these details only to reply to you.",
+      "privacy": "Privacy Policy"
+    }
+  },
   "legal": {
     "tag": "Legal",
     "updated": "Last updated: {date}",
@@ -946,6 +978,20 @@
       "consent": {
         "text": "The owner will see your name, phone number and message so they can reply. We don't show your details to anyone else.",
         "privacy": "Privacy Policy"
+      }
+    },
+    "dynamicForm": {
+      "optional": "(optional)",
+      "choose": "Choose an option",
+      "counter": "{count} / {max}",
+      "send": "Send",
+      "failed": {
+        "title": "We couldn't send your message",
+        "body": "Nothing was lost: what you typed is still here. Try again in a moment."
+      },
+      "rateLimit": {
+        "title": "You have reached the limit for now",
+        "body": "You can send a limited number of messages per hour. Please try again a little later."
       }
     }
   }

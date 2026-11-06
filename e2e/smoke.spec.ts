@@ -852,3 +852,34 @@ test.describe("@smoke legal pages", () => {
     }
   });
 });
+
+test.describe("@smoke contact page", () => {
+  test("opens with its title and lead, either with the form or with the notice that it could not load", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    await expect(page.getByRole("heading", { level: 1, name: en.contact.title })).toBeVisible();
+    await expect(page.getByText(en.contact.lead)).toBeVisible();
+    // The form is a stored form: until the database has it (or when it cannot be read) the page says so.
+    const form = page.getByRole("button", { name: "Send message" });
+    const notice = page.getByText(en.contact.loadFailed.title);
+    await expect(form.or(notice)).toBeVisible();
+    await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(0);
+  });
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const size of [
+      { width: 1280, height: 800 },
+      { width: 390, height: 800 },
+    ]) {
+      await page.setViewportSize(size);
+      await page.goto("/contact");
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const results = await new AxeBuilder({ page }).analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(serious.map((violation) => violation.id)).toEqual([]);
+    }
+  });
+});
