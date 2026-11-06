@@ -15,6 +15,7 @@ const words = en.projects.page.lead;
 const PANEL = (
   <ProjectLeadPanel
     slug="kadal-vista"
+    developerName="Kadal Homes"
     phone="+91 98••• ••345"
     visitDateMin="2026-11-06"
     visitDateMax="2027-11-06"
@@ -154,5 +155,18 @@ describe("ProjectViewTracker: recording that the page was opened (S4-T09 D1b)", 
     const { container } = render(<ProjectViewTracker slug="kadal-vista" />);
     await Promise.resolve();
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe("the consent line under Send (S5-T06)", () => {
+  it("names the developer the request goes to, with a link to the privacy page", () => {
+    renderWithMessages(PANEL);
+    expect(
+      screen.getByText(/Your name, phone number and message go to Kadal Homes and Find Prop/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: words.consentPrivacy })).toHaveAttribute(
+      "href",
+      "/privacy",
+    );
   });
 });

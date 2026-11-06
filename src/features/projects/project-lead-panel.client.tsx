@@ -14,6 +14,8 @@ import {
 
 type ProjectLeadPanelProps = {
   slug: string;
+  /** The developer the request goes to, named in the consent line. */
+  developerName: string;
   /** The account's phone as it is shown (masked). The number sent is read from the account on the server. */
   phone: string;
   visitDateMin: string;
@@ -35,6 +37,7 @@ const isField = (name: unknown): name is Field => FIELDS.some((field) => field =
  */
 export function ProjectLeadPanel({
   slug,
+  developerName,
   phone,
   visitDateMin,
   visitDateMax,
@@ -105,6 +108,7 @@ export function ProjectLeadPanel({
     <ProjectLeadCard
       state={sent ? "sent" : "form"}
       phone={phone}
+      developerName={developerName}
       visitDateMin={visitDateMin}
       visitDateMax={visitDateMax}
       errors={errors}

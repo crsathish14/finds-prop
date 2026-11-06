@@ -32,6 +32,8 @@ type ProjectLeadCardProps = {
   createAccountHref?: string;
   /** The account's phone as it is shown (masked): the form cannot change it, the server uses the account's own. */
   phone?: string;
+  /** The developer the request goes to, for the consent line; "the developer" when the page has no name. */
+  developerName?: string;
   /** Which request is chosen first (Enquire by default). */
   defaultKind?: LeadKind;
   values?: Partial<LeadValues>;
@@ -73,6 +75,7 @@ export function ProjectLeadCard({
   signInHref = "#",
   createAccountHref = "#",
   phone = "",
+  developerName,
   defaultKind = "enquiry",
   values,
   visitDateMin,
@@ -271,6 +274,10 @@ export function ProjectLeadCard({
         >
           {siteVisit ? translate("requestVisit") : translate("send")}
         </Button>
+        <p className="text-caption text-muted">
+          {translate("consent", { developer: developerName ?? translate("consentDeveloper") })}{" "}
+          <Link href="/privacy">{translate("consentPrivacy")}</Link>
+        </p>
       </form>
     </div>
   );

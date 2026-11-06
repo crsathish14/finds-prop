@@ -17,7 +17,11 @@ const words = en.projects.page.lead;
 const links = { signInHref: "/auth?gate=enquire&redirect=%2Fp", createAccountHref: "/auth" };
 
 async function show() {
-  const element = await ProjectEnquirySlot({ slug: "kadal-vista", ...links });
+  const element = await ProjectEnquirySlot({
+    slug: "kadal-vista",
+    developerName: "Kadal Homes",
+    ...links,
+  });
   render(
     <NextIntlClientProvider locale="en" messages={en}>
       {element}

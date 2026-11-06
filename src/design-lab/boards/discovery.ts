@@ -1,6 +1,7 @@
 import type { LabEntry } from "../types";
 import { DashboardPageDemo } from "./dashboard-demos";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
+import { LegalPagesDemo } from "./legal-demos";
 import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
 
@@ -79,5 +80,13 @@ export const DISCOVERY: LabEntry[] = [
       "patterns/form-field.tsx",
     ],
     Demo: ProjectPageDemo,
+  },
+  {
+    id: "legal-pages",
+    name: "Legal pages",
+    description:
+      "The Privacy Policy, Terms of Use and Cookie information in one reading layout: the breadcrumb, a switch between the three pages, the title with the Legal tag, a draft notice (the text is a placeholder until the owner's text is in, and the page is kept out of search results), a summary and numbered sections beside an On this page list (a column from 1024 px, a list that opens on a phone), with a table for the data collected and for what the site stores in the browser. Nothing here navigates.",
+    sources: ["patterns/alert.tsx", "patterns/breadcrumb.tsx"],
+    Demo: LegalPagesDemo,
   },
 ];

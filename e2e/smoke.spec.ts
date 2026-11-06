@@ -819,3 +819,36 @@ test.describe("@smoke saving a home", () => {
     await expect(page.getByText(en.auth.phone.saveGateTitle)).toBeVisible();
   });
 });
+
+test.describe("@smoke legal pages", () => {
+  for (const [path, title] of [
+    ["/privacy", en.legal.title.privacy],
+    ["/terms", en.legal.title.terms],
+    ["/cookies", en.legal.title.cookies],
+  ] as const) {
+    test(`${path} opens with its title, a draft notice, and is kept out of search`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+      await expect(page.getByText(en.legal.draft.title)).toBeVisible();
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    });
+  }
+
+  test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
+    for (const size of [
+      { width: 1280, height: 800 },
+      { width: 390, height: 800 },
+    ]) {
+      await page.setViewportSize(size);
+      await page.goto("/privacy");
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const results = await new AxeBuilder({ page }).analyze();
+      const serious = results.violations.filter(
+        (violation) => violation.impact === "serious" || violation.impact === "critical",
+      );
+      expect(serious.map((violation) => violation.id)).toEqual([]);
+    }
+  });
+});
