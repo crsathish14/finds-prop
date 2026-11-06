@@ -41,7 +41,7 @@ Page weight on the wire was about 650 KB on each, with no photos.
 
 Against NFR-01 (LCP 2.5 s or less, CLS 0.1 or less; INP is a field measure):
 
-- **LCP is about 4.3 to 4.7 s on all three, well over 2.5 s**, with nothing heavy on the page: the largest thing is text. So the time is not a photo. The gap between first paint (1.1 to 2.3 s) and the largest text (4.3 s or more) points at what blocks or delays that text: the size of the JavaScript above, the order the page streams its parts, and the font. This is a finding, not fixed here. It needs a look with real data, because a real photo will usually be the largest element and move the number.
+- **LCP is about 4.3 to 4.7 s on all three, well over 2.5 s**, with nothing heavy on the page: the largest thing is text. So the time is not a photo. The gap between first paint (1.1 to 2.3 s) and the largest text (4.3 s or more) points at what blocks or delays that text: the size of the JavaScript above, the order the page streams its parts, and the font. This is a finding, not fixed here. **It was investigated afterwards: see `lcp-investigation.md`.** In short, 4.3 to 4.7 s is Lighthouse's simulated estimate; with the browser throttled to the same profile LCP is 2.2 to 2.5 s. It needs a look with real data, because a real photo will usually be the largest element and move the number.
 - **CLS on `/projects` is 0.094**, just inside the 0.1 limit. Something moves late on that page (not traced; the empty-state block appearing after the list loads is a guess). Worth a look before real content is added.
 - **TBT is 196 to 348 ms** (Lighthouse's "good" is 200 ms or less), highest on the homepage. Consistent with the 1 MB of script.
 - The first homepage run scored 58 against 77 for the other two; the cause was not found (other work on the machine is possible). Use the median, and expect run-to-run noise of about 10 points.
@@ -64,6 +64,7 @@ Against NFR-01 (LCP 2.5 s or less, CLS 0.1 or less; INP is a field measure):
 
 ## 4. How to measure again
 
+0. Use **Node 24** (`.nvmrc`). Under Node 26 the server's Supabase reads fail after about 7 s and the pages show their failed-load state (details in `lcp-investigation.md`).
 1. `npm run build` with the real `.env.local` (a build with CI's placeholder values has no data to show). `route-bundle-stats.json` is then in `.next/diagnostics/`; sum the compressed size of the files in `firstLoadChunkPaths` for a route (gzip level default, brotli default) to get the table in section 1.
 2. `npx next start -p 3100`, and make sure nothing else listens on that port.
 3. `npx lighthouse@12.8.2 http://localhost:3100/<path> --only-categories=performance --output=json --chrome-flags="--headless=new --no-sandbox"` with `CHROME_PATH` set to a Chrome install, three runs per page, and take the median. It is downloaded and run with `npx`; nothing is added to the repo.
