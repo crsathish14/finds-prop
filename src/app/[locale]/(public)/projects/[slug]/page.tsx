@@ -98,6 +98,7 @@ export default async function ProjectPage({ params }: PageProps) {
           <Suspense fallback={<EnquiryCardSkeleton />}>
             <ProjectEnquirySlot
               slug={project.slug}
+              developerName={project.developer.name}
               signInHref={signInHref}
               createAccountHref={createAccountHref}
             />

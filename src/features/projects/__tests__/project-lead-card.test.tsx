@@ -230,3 +230,12 @@ describe("ProjectMobileBar: Call, WhatsApp and Enquire on a phone (S4-T09)", () 
     expect(root).toHaveClass("fixed", "bottom-0", "lg:hidden");
   });
 });
+
+describe("ProjectLeadCard: the consent line without a developer name (S5-T06)", () => {
+  it("says the developer when the page gives no name", () => {
+    renderWithMessages(<ProjectLeadCard state="form" />);
+    expect(
+      screen.getByText(/Your name, phone number and message go to the developer and Find Prop/),
+    ).toBeInTheDocument();
+  });
+});

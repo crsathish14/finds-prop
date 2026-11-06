@@ -596,6 +596,9 @@
         "send": "Send enquiry",
         "requestVisit": "Request a site visit",
         "phoneHint": "The number you signed in with.",
+        "consent": "Your name, phone number and message go to {developer} and Find Prop so they can contact you.",
+        "consentDeveloper": "the developer",
+        "consentPrivacy": "Privacy Policy",
         "failed": "We couldn't send your request. Please try again.",
         "gate": {
           "leadIn": "Sign in with your phone to send an enquiry or request a site visit.",
@@ -614,6 +617,28 @@
       "bar": {
         "enquire": "Enquire about this project"
       }
+    }
+  },
+  "legal": {
+    "tag": "Legal",
+    "updated": "Last updated: {date}",
+    "version": "Version {version}",
+    "contents": "On this page",
+    "switcher": "Legal pages",
+    "crumb": { "nav": "Breadcrumb", "home": "Home", "backHome": "Back to home" },
+    "draft": {
+      "title": "Draft",
+      "body": "This text is a placeholder and is not legal advice. The final text will replace it."
+    },
+    "title": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "cookies": "Cookie information"
+    },
+    "description": {
+      "privacy": "How Find Prop collects, uses and protects your information.",
+      "terms": "The terms for using Find Prop.",
+      "cookies": "What Find Prop stores in your browser and why."
     }
   },
   "saved": {

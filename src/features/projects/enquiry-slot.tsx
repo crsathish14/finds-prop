@@ -32,10 +32,12 @@ async function accountPhone(): Promise<string | null> {
  */
 export async function ProjectEnquirySlot({
   slug,
+  developerName,
   signInHref,
   createAccountHref,
 }: {
   slug: string;
+  developerName: string;
   signInHref: string;
   createAccountHref: string;
 }) {
@@ -54,6 +56,7 @@ export async function ProjectEnquirySlot({
   return (
     <ProjectLeadPanel
       slug={slug}
+      developerName={developerName}
       phone={maskIndianMobile(`+${digits}`)}
       visitDateMin={min}
       visitDateMax={max}
