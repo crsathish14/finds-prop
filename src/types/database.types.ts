@@ -805,6 +805,9 @@ isOneToOne: false
 "storage_project_path_ok":
 { Args: { "object_name": string }; Returns: boolean
                            },
+"submit_enquiry":
+{ Args: { "p_email"?: string,"p_message"?: string,"p_name": string,"p_phone": string,"p_short_id": string,"p_user_id": string }; Returns: string
+                           },
 "submit_project_lead":
 { Args: { "p_email"?: string,"p_kind": string,"p_message"?: string,"p_name": string,"p_phone": string,"p_slug": string,"p_visit_date"?: string,"p_visitor_hash": string }; Returns: string
                            },
