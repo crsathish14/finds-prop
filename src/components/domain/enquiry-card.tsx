@@ -4,13 +4,16 @@
  * EnquiryCard: the box on a property page where a visitor contacts the owner, in each of its states.
  * Purpose: asks a signed-out visitor to sign in, takes an enquiry from a signed-in one, and confirms it
  *   was sent. Owner: design system. It is the screen only: it holds what the visitor has typed and
- *   hands the values over; it sends nothing (the enquiry action is Stage 5). The page chooses the
- *   state and gives it the error words, already translated.
- * Props: state ("signed_out" the gate | "form" the enquiry form | "sent" the confirmation), signInHref,
+ *   hands the values over; it sends nothing itself (the page connects it to the enquiry action). The
+ *   page chooses the state and gives it the error words, already translated.
+ * Props: state ("signed_out" the gate | "form" the enquiry form | "sent" the confirmation | "already" an enquiry about
+ *   this home was sent in the last 24 hours), signInHref,
  *   createAccountHref (the gate's two links), enquiriesHref ("View my enquiries" after sending),
  *   values ({ name, phone, email, message } to start with), errors ({ name, phone, email, message }:
  *   already-translated messages; a field with one is marked invalid), failed (draws the "could not
- *   send" alert above the form; the typed values stay), submitting (the button shows it is working
+ *   send" alert above the form; the typed values stay), rateLimited (draws the "please wait" alert: too many
+ *   enquiries today), ownHome (the visitor owns this home: a note, and Send is off), privacyHref (where the
+ *   consent line's Privacy Policy link leads), submitting (the button shows it is working
  *   and ignores clicks), sendDisabled and sendNotice (Send is switched off and a line under it says why;
  *   the page uses them until enquiries can be sent), onSubmit (called with the values when the form is sent), variant ("card" the
  *   box beside the details, with its heading, the email field and the message counter | "sheet" the
@@ -21,7 +24,8 @@
  *   icon, so colour is not the only signal); required fields are marked. When errors appear after the
  *   form is shown, focus moves to the first field with one. The send-failed alert is role="alert". The
  *   confirmation is role="status". The message counter is a polite live region.
- * States: signed out; form (empty, filled); errors on the name and phone; send failed (values kept);
+ * States: signed out; form (empty, filled); errors on the name and phone; send failed (values kept); too many
+ *   enquiries today; the visitor's own home; already sent (last 24 hours);
  *   sending; sent; the card and the sheet variants; loading (EnquiryCardSkeleton: the form's box,
  *   hidden from screen readers, shown while the sign-in is checked).
  * Dependencies: FormField, Input, Textarea, Alert, Button, Link, Icon, Skeleton, next-intl, cn.
@@ -49,13 +53,16 @@ type EnquiryField = keyof EnquiryValues;
 type EnquiryErrors = Partial<Record<EnquiryField, string>>;
 
 type EnquiryCardProps = {
-  state: "signed_out" | "form" | "sent";
+  state: "signed_out" | "form" | "sent" | "already";
   signInHref?: string;
   createAccountHref?: string;
   enquiriesHref?: string;
   values?: Partial<EnquiryValues>;
   errors?: EnquiryErrors;
   failed?: boolean;
+  rateLimited?: boolean;
+  ownHome?: boolean;
+  privacyHref?: string;
   submitting?: boolean;
   /** Send is switched off (the form is drawn and can be filled, but nothing can be sent yet). */
   sendDisabled?: boolean;
@@ -99,6 +106,9 @@ function EnquiryCard({
   values,
   errors,
   failed = false,
+  rateLimited = false,
+  ownHome = false,
+  privacyHref = "/privacy",
   submitting = false,
   sendDisabled = false,
   sendNotice,
@@ -170,6 +180,28 @@ function EnquiryCard({
     );
   }
 
+  if (state === "already") {
+    return (
+      <div
+        data-slot="enquiry-card"
+        data-state="already"
+        role="status"
+        className={cn(frame, "flex flex-col items-start gap-3")}
+      >
+        <IconDisc tone="info">
+          <Icon icon={CircleCheck} size="lg" />
+        </IconDisc>
+        <Heading className="text-h3 text-primary">{translate("already.title")}</Heading>
+        <p className="text-small text-muted">{translate("already.body")}</p>
+        <Button asChild variant="primary" className="w-full">
+          <Link href={enquiriesHref} className="text-on-primary no-underline hover:text-on-primary">
+            {translate("sent.viewEnquiries")}
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (state === "sent") {
     return (
       <div
@@ -204,6 +236,16 @@ function EnquiryCard({
         </>
       )}
       <form ref={form} noValidate onSubmit={submit} className="flex flex-col gap-4">
+        {ownHome ? (
+          <Alert tone="info" title={translate("ownHome.title")}>
+            {translate("ownHome.body")}
+          </Alert>
+        ) : null}
+        {rateLimited ? (
+          <Alert tone="warning" title={translate("rateLimit.title")}>
+            {translate("rateLimit.body")}
+          </Alert>
+        ) : null}
         {failed ? (
           <Alert tone="danger" title={translate("failed.title")}>
             {translate("failed.body")}
@@ -274,7 +316,7 @@ function EnquiryCard({
           size="lg"
           className="w-full"
           loading={submitting}
-          disabled={sendDisabled}
+          disabled={sendDisabled || ownHome}
           {...(sendNotice ? { "aria-describedby": noticeId } : {})}
           iconStart={<Icon icon={Send} />}
         >
@@ -285,6 +327,9 @@ function EnquiryCard({
             {sendNotice}
           </p>
         ) : null}
+        <p className="text-caption text-muted">
+          {translate("consent.text")} <Link href={privacyHref}>{translate("consent.privacy")}</Link>
+        </p>
       </form>
     </div>
   );

@@ -8,6 +8,7 @@ import {
   parseTab,
 } from "@/features/account";
 import { addEmail, resendEmailLink } from "@/features/auth";
+import { MyEnquiriesTab } from "@/features/enquiries";
 import { SavedTab } from "@/features/saved";
 import { getTranslate } from "@/features/site";
 
@@ -48,6 +49,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       >
         {tab === "saved" ? (
           <SavedTab
+            fallback={<TabEmpty tab={tab} browseHref="/properties" postHref="/post-property" />}
+          />
+        ) : tab === "sent" ? (
+          <MyEnquiriesTab
             fallback={<TabEmpty tab={tab} browseHref="/properties" postHref="/post-property" />}
           />
         ) : (
