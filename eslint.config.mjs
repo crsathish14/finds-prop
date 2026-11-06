@@ -280,6 +280,7 @@ const eslintConfig = defineConfig([
       "src/features/crm/service.ts",
       "src/features/media/service.ts",
       "src/features/projects/service.ts",
+      "src/features/enquiries/service.ts",
       "src/app/api/internal/**/route.ts",
     ],
     rules: { "no-restricted-imports": ["error", { patterns: [TANSTACK] }] },
