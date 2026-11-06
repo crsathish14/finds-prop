@@ -1,20 +1,26 @@
-import { useTranslations } from "next-intl";
 import { EnquiryCard } from "@/components/domain/enquiry-card";
+import { ConnectedEnquiryCard } from "./connected-enquiry-card.client";
+import type { EnquiryConnection } from "./use-enquiry-form.client";
 
 type EnquirySource = {
   signedIn: boolean;
   /** Sign in, asking to come back to this home and to be told why (`/auth?gate=enquire`). */
   signInHref: string;
   createAccountHref: string;
+  /** For a signed-in visitor: how the form sends. Without it the form is drawn and sends nothing. */
+  connection?: EnquiryConnection | undefined;
 };
 
 /**
  * The enquiry card beside the details (from 1024 px): the gate for a visitor who is not signed in, the
- * form for one who is. Sending enquiries is Stage 5 (S5-T03), so until then the form is the real one
- * with Send switched off and a line that says so, rather than a button that does nothing.
+ * form for one who is, connected to the enquiry action (S5-T03).
  */
-export function PropertyEnquiryCard({ signedIn, signInHref, createAccountHref }: EnquirySource) {
-  const translate = useTranslations("property.page.enquiry");
+export function PropertyEnquiryCard({
+  signedIn,
+  signInHref,
+  createAccountHref,
+  connection,
+}: EnquirySource) {
   if (!signedIn) {
     return (
       <EnquiryCard
@@ -24,7 +30,11 @@ export function PropertyEnquiryCard({ signedIn, signInHref, createAccountHref }:
       />
     );
   }
-  return <EnquiryCard state="form" sendDisabled sendNotice={translate("notOpen")} />;
+  return connection ? (
+    <ConnectedEnquiryCard connection={connection} />
+  ) : (
+    <EnquiryCard state="form" />
+  );
 }
 
 export type { EnquirySource };

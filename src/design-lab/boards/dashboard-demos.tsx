@@ -1,12 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { DashboardScreen } from "@/features/account/dashboard-screen";
+import { EnquiryList } from "@/features/enquiries/enquiry-list";
+import type { SentEnquiry } from "@/features/enquiries/view";
 import { DashboardSkeleton } from "@/features/account/dashboard-skeleton";
 import { EmailPromptView, type EmailPromptViewProps } from "@/features/account/email-prompt.client";
 import type { DashboardTab } from "@/features/account/schemas";
 import { TabEmpty } from "@/features/account/tab-empty";
 import { Specimen } from "../frame";
+
+/** Four sent enquiries at a fixed time: waiting, contacted, closed, and one for a home no longer listed. */
+const NOW = Date.parse("2026-11-06T12:00:00Z");
+const SENT: SentEnquiry[] = [
+  {
+    id: "sent-1",
+    sentAt: "2026-11-06T10:00:00Z",
+    status: "new",
+    message: "Is the apartment still available? I can visit this weekend.",
+    home: { href: "#home-1", title: "3 BHK apartment with clubhouse and covered parking" },
+  },
+  {
+    id: "sent-2",
+    sentAt: "2026-11-02T09:00:00Z",
+    status: "contacted",
+    message: "Please share the floor plan.",
+    home: { href: "#home-2", title: "Bright 2 BHK, a short walk from the river" },
+  },
+  {
+    id: "sent-3",
+    sentAt: "2026-10-20T09:00:00Z",
+    status: "closed",
+    message: null,
+    home: { href: "#home-3", title: "2 BHK independent house near the beach" },
+  },
+  {
+    id: "sent-4",
+    sentAt: "2026-11-06T11:58:00Z",
+    status: "new",
+    message: "Can you share the maintenance charges?",
+    home: null,
+  },
+];
 
 const FRAME = "w-full rounded-xl border border-line bg-canvas";
 const NOTHING = () => undefined;
@@ -33,12 +68,14 @@ function Screen({
   name = "Priya Raman",
   notice,
   emailPending = false,
+  panel,
 }: {
   id: string;
   tab?: DashboardTab;
   name?: string | null;
   notice?: EmailPromptViewProps;
   emailPending?: boolean;
+  panel?: ReactNode;
 }) {
   return (
     <div className={FRAME}>
@@ -52,7 +89,7 @@ function Screen({
         onSelect={NOTHING}
         notice={notice ? <EmailPromptView {...notice} /> : null}
       >
-        <TabEmpty tab={tab} browseHref="#homes" postHref="#post" />
+        {panel ?? <TabEmpty tab={tab} browseHref="#homes" postHref="#post" />}
       </DashboardScreen>
     </div>
   );
@@ -96,6 +133,16 @@ export function DashboardPageDemo() {
       </Specimen>
       <Specimen label="My enquiries: nothing to list yet" className="w-full">
         <Screen id="dashboard-sent" tab="sent" />
+      </Specimen>
+      <Specimen
+        label="My enquiries with enquiries sent: the home as a link, how long ago, the reply status, the message; one home is no longer listed"
+        className="w-full"
+      >
+        <Screen
+          id="dashboard-sent-list"
+          tab="sent"
+          panel={<EnquiryList enquiries={SENT} now={NOW} />}
+        />
       </Specimen>
       <Specimen label="No name given at sign-in: the line leaves the name out" className="w-full">
         <Screen id="dashboard-no-name" name={null} />

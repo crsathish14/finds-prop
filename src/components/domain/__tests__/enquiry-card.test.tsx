@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
@@ -280,5 +280,49 @@ describe("EnquiryCard: Send switched off (S4-T03)", () => {
     expect(send).not.toHaveAttribute("aria-describedby");
     await userEvent.click(send);
     expect(onSubmit).toHaveBeenCalledOnce();
+  });
+});
+
+describe("EnquiryCard: the states added with sending (S5-T03)", () => {
+  const words = messages.domain.enquiry;
+
+  it("shows the consent line under Send, with its Privacy Policy link", () => {
+    renderWithMessages(<EnquiryCard state="form" />);
+    expect(screen.getByText(new RegExp(words.consent.text))).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: words.consent.privacy })).toHaveAttribute(
+      "href",
+      "/privacy",
+    );
+  });
+
+  it("sends the Privacy Policy link where it is told", () => {
+    renderWithMessages(<EnquiryCard state="form" privacyHref="/legal/privacy" />);
+    expect(screen.getByRole("link", { name: words.consent.privacy })).toHaveAttribute(
+      "href",
+      "/legal/privacy",
+    );
+  });
+
+  it("asks to wait a little when too many enquiries were sent today", () => {
+    renderWithMessages(<EnquiryCard state="form" rateLimited />);
+    expect(screen.getByRole("status")).toHaveTextContent(words.rateLimit.title);
+    expect(screen.getByText(words.rateLimit.body)).toBeInTheDocument();
+  });
+
+  it("says it is the visitor's own home and switches Send off", () => {
+    renderWithMessages(<EnquiryCard state="form" ownHome />);
+    expect(screen.getByText(words.ownHome.title)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: words.form.send })).toBeDisabled();
+  });
+
+  it("is the already-sent state: a note and a link to My enquiries, with no form", () => {
+    renderWithMessages(<EnquiryCard state="already" enquiriesHref="/dashboard?tab=sent" />);
+    expect(screen.getByRole("status")).toHaveTextContent(words.already.title);
+    expect(screen.getByText(words.already.body)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: words.sent.viewEnquiries })).toHaveAttribute(
+      "href",
+      "/dashboard?tab=sent",
+    );
+    expect(screen.queryByRole("button", { name: words.form.send })).toBeNull();
   });
 });

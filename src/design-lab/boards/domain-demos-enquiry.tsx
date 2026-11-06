@@ -101,6 +101,12 @@ export function EnquiryCardDemo() {
             className="w-full"
           />
         </Specimen>
+        <Specimen label="Too many enquiries today: please wait" className={COLUMN}>
+          <EnquiryCard state="form" headingAs="h3" rateLimited values={FILLED} className="w-full" />
+        </Specimen>
+        <Specimen label="The visitor's own home: a note, and Send is off" className={COLUMN}>
+          <EnquiryCard state="form" headingAs="h3" ownHome values={FILLED} className="w-full" />
+        </Specimen>
         <Specimen
           label="Sending: the button shows it is working and ignores clicks"
           className={COLUMN}
@@ -109,6 +115,17 @@ export function EnquiryCardDemo() {
         </Specimen>
         <Specimen label="Loading: while the sign-in is checked" className={COLUMN}>
           <EnquiryCardSkeleton className="w-full" />
+        </Specimen>
+        <Specimen
+          label="Already sent: an enquiry about this home in the last 24 hours"
+          className={COLUMN}
+        >
+          <EnquiryCard
+            state="already"
+            headingAs="h3"
+            enquiriesHref="#my-enquiries"
+            className="w-full"
+          />
         </Specimen>
         <Specimen label="Sent" className={COLUMN}>
           <EnquiryCard

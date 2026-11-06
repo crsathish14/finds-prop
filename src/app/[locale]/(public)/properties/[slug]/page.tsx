@@ -105,12 +105,17 @@ export default async function PropertyPage({ params }: PageProps) {
         }
         enquiry={
           <Suspense fallback={<EnquiryCardSkeleton />}>
-            <EnquiryPanel signInHref={signInHref} createAccountHref={createAccountHref} />
+            <EnquiryPanel
+              shortId={property.shortId}
+              signInHref={signInHref}
+              createAccountHref={createAccountHref}
+            />
           </Suspense>
         }
         mobileEnquiry={
           <Suspense fallback={null}>
             <MobileEnquirySlot
+              shortId={property.shortId}
               signInHref={signInHref}
               createAccountHref={createAccountHref}
               rupees={property.price}

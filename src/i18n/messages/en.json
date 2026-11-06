@@ -359,8 +359,7 @@
       },
       "enquiry": {
         "signInToEnquire": "Sign in to enquire",
-        "enquire": "Enquire",
-        "notOpen": "Sending enquiries is not open yet."
+        "enquire": "Enquire"
       },
       "notFound": {
         "title": "Property not found",
@@ -614,6 +613,16 @@
       "bar": {
         "enquire": "Enquire about this project"
       }
+    }
+  },
+  "enquiries": {
+    "list": {
+      "listLabel": "Your enquiries",
+      "homeGone": "A home that is no longer listed",
+      "sent": "Sent {when}",
+      "justNow": "just now",
+      "minutesAgo": "{count, plural, one {# minute ago} other {# minutes ago}}",
+      "hoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}"
     }
   },
   "saved": {
@@ -896,6 +905,22 @@
         "title": "Enquiry sent",
         "body": "The owner can now see your details and message. The reply status will show in your dashboard.",
         "viewEnquiries": "View my enquiries"
+      },
+      "already": {
+        "title": "You already contacted this owner",
+        "body": "Your earlier enquiry is in My enquiries, with its reply status."
+      },
+      "rateLimit": {
+        "title": "Please wait a little",
+        "body": "You can send a limited number of enquiries per day. Try again later."
+      },
+      "ownHome": {
+        "title": "This is your own home",
+        "body": "You can't send an enquiry about a home you listed."
+      },
+      "consent": {
+        "text": "The owner will see your name, phone number and message so they can reply. We don't show your details to anyone else.",
+        "privacy": "Privacy Policy"
       }
     }
   }
