@@ -5,7 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 import messages from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
-import { ConnectedForm, type SubmitFormAction } from "../connected-form.client";
+import {
+  ConnectedForm,
+  type SubmitFormAction,
+  type SubmitProjectFormAction,
+} from "../connected-form.client";
 import { CONTACT_FORM } from "../contact-form";
 
 const words = messages.domain.dynamicForm;
@@ -119,5 +123,61 @@ describe("ConnectedForm: the contact form connected to the action (S5-T05)", () 
     await fillAndSend();
     await waitFor(() => expect(send).toHaveBeenCalled());
     expect(send.mock.calls[0]?.[0]).toMatchObject({ projectSlug: "kadal-vista" });
+  });
+});
+
+describe("ConnectedForm: a project's form (S5-T05, change 4)", () => {
+  function setupProject(send: SubmitProjectFormAction) {
+    renderWithMessages(
+      <ConnectedForm
+        form={CONTACT_FORM}
+        sendProject={send}
+        projectSlug="kadal-vista"
+        compact
+        intro={<h2>Interested in this project?</h2>}
+        locked={{ mobile: { value: "+91 98••• ••345" } }}
+        consent="consent line"
+        sent={<p>It was sent</p>}
+      />,
+    );
+  }
+
+  it("sends the project, the answers and a one-time key, with no form named and no source, then shows the confirmation and drops the heading", async () => {
+    const send = vi.fn<SubmitProjectFormAction>().mockResolvedValue(OK);
+    setupProject(send);
+    expect(screen.getByRole("heading", { name: "Interested in this project?" })).toBeVisible();
+    await userEvent.type(screen.getByLabelText(/Your name/), "Priya Raman");
+    await userEvent.click(screen.getByRole("button", { name: "Send message" }));
+    await waitFor(() => expect(screen.getByText("It was sent")).toBeVisible());
+    expect(screen.queryByRole("heading", { name: "Interested in this project?" })).toBeNull();
+    const input = send.mock.calls[0]?.[0];
+    expect(input).toMatchObject({ projectSlug: "kadal-vista", values: { name: "Priya Raman" } });
+    expect(input?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
+    expect(input).not.toHaveProperty("formSlug");
+    expect(input).not.toHaveProperty("source");
+  });
+
+  it("shows the locked phone and keeps the typed answers when the server refuses a field", async () => {
+    const send = vi.fn<SubmitProjectFormAction>().mockResolvedValue({
+      ok: false,
+      code: "VALIDATION",
+      fieldErrors: { name: [{ key: "validation.required" }] },
+    });
+    setupProject(send);
+    expect(screen.getByLabelText(/Mobile/)).toHaveValue("+91 98••• ••345");
+    await userEvent.type(screen.getByLabelText(/Your name/), "P");
+    await userEvent.click(screen.getByRole("button", { name: "Send message" }));
+    await waitFor(() => expect(screen.getByLabelText(/Your name/)).toBeInvalid());
+    expect(screen.getByLabelText(/Your name/)).toHaveValue("P");
+  });
+
+  it("asks the visitor to wait when the limit is reached", async () => {
+    const send = vi
+      .fn<SubmitProjectFormAction>()
+      .mockResolvedValue({ ok: false, code: "RATE_LIMITED", retryAfter: 60 });
+    setupProject(send);
+    await userEvent.type(screen.getByLabelText(/Your name/), "Priya Raman");
+    await userEvent.click(screen.getByRole("button", { name: "Send message" }));
+    await waitFor(() => expect(screen.getByText(words.rateLimit.title)).toBeVisible());
   });
 });

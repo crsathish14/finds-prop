@@ -38,3 +38,33 @@ export async function getContactForm(): Promise<FormDefinition | null> {
   if (form === null) cacheLife("seconds");
   return form;
 }
+
+/**
+ * The form a project page shows (S5-T05, change 4, BR-49): the one the admin chose for the project, else
+ * one made for it alone, else one shown on every project page. The database function follows that chain
+ * and returns only what a visitor may see, because `projects.form_id` is not readable by visitors. `null`
+ * means the page shows its built-in card: no form is assigned, the read failed, or the stored fields do
+ * not fit (the last two are logged). Public data, cached for minutes under the `forms` tag; a failure is
+ * kept for seconds only.
+ */
+export async function getProjectForm(projectSlug: string): Promise<FormDefinition | null> {
+  "use cache";
+  cacheTag(FORMS_TAG);
+  cacheLife("minutes");
+
+  const { data, error } = await createPublicSupabase().rpc("public_project_form", {
+    p_project_slug: projectSlug,
+  });
+  if (error) {
+    logger.error("a project's form could not be read", { errorCode: error.code });
+    cacheLife("seconds");
+    return null;
+  }
+  const row = data[0] ?? null;
+  const form = row === null ? null : parseFormRow(row);
+  if (row !== null && form === null) {
+    logger.error("a project's form has stored fields that do not fit");
+    cacheLife("seconds");
+  }
+  return form;
+}

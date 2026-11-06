@@ -780,6 +780,11 @@ isOneToOne: false
 "project_is_mine":
 { Args: { "target_project": string }; Returns: boolean
                            },
+"public_project_form":
+{ Args: { "p_project_slug": string }; Returns: {
+              "button_text": string,"fields": Json,"kind": string,"name": string,"placement": string,"project_id": string,"slug": string,"success_message": string
+            }[]
+                           },
 "public_project_id":
 { Args: { "project_slug": string }; Returns: string
                            },

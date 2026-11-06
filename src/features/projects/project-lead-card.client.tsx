@@ -13,6 +13,7 @@ import { Link } from "@/components/ui/link";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
+import { LEAD_CARD_FRAME } from "./lead-card-frame";
 
 export type LeadKind = "enquiry" | "site_visit";
 export type LeadValues = {
@@ -120,7 +121,7 @@ export function ProjectLeadCard({
     onSubmit?.(kind, typed);
   }
 
-  const frame = "scroll-mt-6 rounded-xl border border-line bg-surface p-6 shadow-card";
+  const frame = LEAD_CARD_FRAME;
 
   if (state === "signed_out") {
     return (

@@ -4,7 +4,7 @@ import { env } from "@/server/env";
 import { clientIp, visitorHash } from "@/server/rate-limit/visitor-hash";
 import { createAdminSupabase } from "@/server/supabase/admin.server";
 import { createPublicSupabase } from "@/server/supabase/public";
-import { FORM_COLUMNS, mapFormWriteError, type FormWriteStore } from "./form-service";
+import { FORM_COLUMNS, mapFormWriteError, type ProjectFormWriteStore } from "./form-service";
 
 /**
  * The part of the forms that touches the database (S5-T05): the form is read as an anonymous visitor
@@ -14,7 +14,7 @@ import { FORM_COLUMNS, mapFormWriteError, type FormWriteStore } from "./form-ser
  * (docs/engineering/security.md 4.3). The only caller is an action built with `defineAction`, which has
  * already counted the rate limit.
  */
-export function createFormWriteStore(requestId: string): FormWriteStore {
+export function createFormWriteStore(requestId: string): ProjectFormWriteStore {
   const client = createAdminSupabase(requestId);
   return {
     async readForm(slug) {
@@ -26,6 +26,14 @@ export function createFormWriteStore(requestId: string): FormWriteStore {
         .maybeSingle();
       if (error) throw mapFormWriteError({ code: error.code, message: error.message });
       return { row: data, found: data !== null };
+    },
+    async readProjectForm(projectSlug) {
+      const { data, error } = await createPublicSupabase().rpc("public_project_form", {
+        p_project_slug: projectSlug,
+      });
+      if (error) throw mapFormWriteError({ code: error.code, message: error.message });
+      const row = data[0] ?? null;
+      return { row, found: row !== null };
     },
     async insertSubmission(row) {
       const { data, error } = await client.rpc("record_form_submission", {

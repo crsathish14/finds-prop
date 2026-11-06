@@ -218,4 +218,37 @@ describe("DynamicForm: what went wrong", () => {
     );
     expect(screen.getByText("We use these details only to reply.")).toBeVisible();
   });
+
+  it("shows a locked field read-only with the value and hint the page gives, and does not send it", async () => {
+    const onSubmit = vi.fn();
+    renderWithMessages(
+      <DynamicForm
+        fields={CONTACT}
+        locked={{ mobile: { value: "+91 98••• ••345", hint: "The number you signed in with." } }}
+        onSubmit={onSubmit}
+      />,
+    );
+    const mobile = screen.getByLabelText(/Mobile/);
+    expect(mobile).toHaveValue("+91 98••• ••345");
+    expect(mobile).toHaveAttribute("readonly");
+    expect(mobile).toHaveAccessibleDescription("The number you signed in with.");
+    await userEvent.type(mobile, "123");
+    expect(mobile).toHaveValue("+91 98••• ••345");
+    await userEvent.type(screen.getByLabelText(/Your name/), "Priya Raman");
+    await userEvent.click(screen.getByRole("button", { name: words.send }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ name: "Priya Raman", mobile: "" });
+  });
+
+  it("keeps one column at every width when it is compact", () => {
+    const { container } = renderWithMessages(<DynamicForm fields={CONTACT} compact />);
+    const form = container.querySelector("form");
+    expect(form).not.toHaveClass("md:grid-cols-2");
+    expect(container.querySelector(".md\\:col-span-2")).toBeNull();
+  });
+
+  it("is two columns from 768 px when it is not compact", () => {
+    const { container } = renderWithMessages(<DynamicForm fields={CONTACT} />);
+    expect(container.querySelector("form")).toHaveClass("md:grid-cols-2");
+  });
 });

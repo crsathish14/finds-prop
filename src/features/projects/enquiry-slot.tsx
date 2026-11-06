@@ -1,8 +1,10 @@
 import { unstable_rethrow } from "next/navigation";
+import { getProjectForm, submitProjectForm } from "@/features/forms";
 import { maskIndianMobile } from "@/lib/phone";
 import { ActionError } from "@/server/actions/normalise-error";
 import { logger } from "@/server/logger";
 import { visitDateWindow } from "./lead-view";
+import { ProjectAssignedForm } from "./project-assigned-form";
 import { ProjectLeadCard } from "./project-lead-card.client";
 import { ProjectLeadPanel } from "./project-lead-panel.client";
 import { verifiedPhoneDigits } from "./service";
@@ -28,7 +30,8 @@ async function accountPhone(): Promise<string | null> {
  * The enquiry card beside a project's details. Who is looking decides what it shows, so it is read here,
  * in its own piece, and the page puts it behind a Suspense boundary: the details are not held back by
  * the sign-in check (the card has a skeleton while it waits). A visitor who is not signed in with a
- * phone sees the gate; one who is sees the form with the account's phone locked in.
+ * phone sees the gate; one who is sees the project's form with the account's phone locked in: the
+ * assigned form when the project shows one (BR-49), else the built-in Enquire / Site visit card.
  */
 export async function ProjectEnquirySlot({
   slug,
@@ -48,6 +51,20 @@ export async function ProjectEnquirySlot({
         state="signed_out"
         signInHref={signInHref}
         createAccountHref={createAccountHref}
+      />
+    );
+  }
+  // The form is read only for a visitor who may use it. A failed or unusable read gives no form, and
+  // the built-in card is shown: the enquiry must never be lost to a broken form.
+  const form = await getProjectForm(slug);
+  if (form !== null) {
+    return (
+      <ProjectAssignedForm
+        form={form}
+        slug={slug}
+        developerName={developerName}
+        phone={maskIndianMobile(`+${digits}`)}
+        send={submitProjectForm}
       />
     );
   }

@@ -73,21 +73,18 @@ const slugField = z
   .min(2, { error: "validation.invalid" })
   .max(80, { error: "validation.invalid" });
 
+/** The answers by field key. A key the form does not have is dropped by the server. */
+const answersSchema = z
+  .record(
+    z.string().max(40),
+    z.union([z.string().max(5000), z.number(), z.boolean(), z.array(z.string().max(200)).max(40)]),
+  )
+  .refine((values) => Object.keys(values).length <= 40, { error: "validation.invalid" });
+
 /** What the browser sends: the answers by field key, and nothing that says who is sending. */
 export const submitFormSchema = z.object({
   formSlug: slugField,
-  /** The answers by field key. A key the form does not have is dropped by the server. */
-  values: z
-    .record(
-      z.string().max(40),
-      z.union([
-        z.string().max(5000),
-        z.number(),
-        z.boolean(),
-        z.array(z.string().max(200)).max(40),
-      ]),
-    )
-    .refine((values) => Object.keys(values).length <= 40, { error: "validation.invalid" }),
+  values: answersSchema,
   /** The page the form was filled in on (an address on this site), kept with the submission. */
   source: z
     .string()
@@ -101,3 +98,17 @@ export const submitFormSchema = z.object({
 });
 
 export type SubmitFormInput = z.infer<typeof submitFormSchema>;
+
+/**
+ * What the browser sends for a project's form (S5-T05, change 4): the project page it was filled in on
+ * and the answers. It does not name the form (the server finds the one the project shows, BR-49) and
+ * says nothing about who is sending (the phone is the signed-in account's).
+ */
+export const submitProjectFormSchema = z.object({
+  projectSlug: slugField,
+  values: answersSchema,
+  /** One per form, made in the browser, so a double click or a retry stores one submission. */
+  idempotencyKey: z.uuid({ error: "validation.invalid" }),
+});
+
+export type SubmitProjectFormInput = z.infer<typeof submitProjectFormSchema>;

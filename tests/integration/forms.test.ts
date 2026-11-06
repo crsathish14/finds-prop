@@ -12,8 +12,8 @@ import {
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
 const { createFormWriteStore } = await import("@/features/forms/service");
-const { submitFormValues } = await import("@/features/forms/form-service");
-const { submitFormSchema } = await import("@/features/forms/schemas");
+const { submitFormValues, submitProjectFormValues } = await import("@/features/forms/form-service");
+const { submitFormSchema, submitProjectFormSchema } = await import("@/features/forms/schemas");
 
 const RUN = randomUUID().slice(0, 8);
 const VISITOR = "e".repeat(40);
@@ -31,6 +31,7 @@ describe("IT-forms: record_form_submission against a real database (S5-T05, BR-6
     contact: `it-contact-${RUN}`,
     project: `it-project-form-${RUN}`,
     inactive: `it-inactive-${RUN}`,
+    chosen: `it-chosen-${RUN}`,
     project_slug: `it-form-project-${RUN}`,
   };
 
@@ -186,5 +187,53 @@ describe("IT-forms: record_form_submission against a real database (S5-T05, BR-6
     expect(call.error).not.toBeNull();
     const read = await visitor.from("form_submissions").select("id").limit(1);
     expect(read.data ?? []).toEqual([]);
+  });
+
+  it("shows a project the form the admin chose for it, and stores a submission with the account's phone and the project (S5-T05, change 4)", async () => {
+    // A form placed on the contact page, but chosen by this one project (projects.form_id).
+    const chosenId = await addForm({
+      name: "IT chosen",
+      slug: slugs.chosen,
+      kind: "enquiry",
+      placement: "contact",
+      fields: FIELDS,
+    });
+    const chosen = await adminClient()
+      .from("projects")
+      .update({ form_id: chosenId })
+      .eq("id", projectId);
+    expect(chosen.error).toBeNull();
+
+    const read = await store.readProjectForm(slugs.project_slug);
+    expect(read.found).toBe(true);
+    expect(read.row).toMatchObject({ slug: slugs.chosen });
+    expect(JSON.stringify(read.row)).not.toContain("crm");
+
+    // A visitor can ask the function, but cannot read the project's chosen form id directly.
+    const visitor = visitorClient();
+    const asked = await visitor.rpc("public_project_form", { p_project_slug: slugs.project_slug });
+    expect(asked.data?.[0]?.slug).toBe(slugs.chosen);
+
+    const { submissionId } = await submitProjectFormValues(store, {
+      input: submitProjectFormSchema.parse({
+        projectSlug: slugs.project_slug,
+        values: { name: "Priya Raman", mobile: "9000000000", message: "Hello" },
+        idempotencyKey: randomUUID(),
+      }),
+      phone: "919840012345",
+      visitor: VISITOR,
+    });
+    const stored = await adminClient()
+      .from("form_submissions")
+      .select("form_name, mobile, source, project_id, project_lead_id")
+      .eq("id", submissionId)
+      .single();
+    expect(stored.data).toMatchObject({
+      form_name: "IT chosen",
+      mobile: "919840012345",
+      source: `/projects/${slugs.project_slug}`,
+      project_id: projectId,
+    });
+    expect(stored.data?.project_lead_id).not.toBeNull();
   });
 });

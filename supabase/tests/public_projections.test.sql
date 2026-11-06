@@ -110,7 +110,9 @@ select set_eq(
 );
 
 -- 4. The functions a visitor can run. The two helpers are needed by the row policies, which run with
--- the caller's rights; both only answer yes or no about an id.
+-- the caller's rights; both only answer yes or no about an id. public_project_form answers which form a
+-- project page shows (S5-T05, BR-49), because visitors cannot read projects.form_id; it returns only the
+-- columns of an active form a visitor may already read, and nothing for a project they cannot see.
 select set_eq(
   $$
     select proc.proname::text
@@ -119,8 +121,8 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('listing_is_public'), ('listing_label'), ('project_is_live'), ('search_properties')$$,
-  'DB-RLS-column-grants: anon can run only the search, the label and the two row-policy helpers in the public schema'
+  $$values ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_properties')$$,
+  'DB-RLS-column-grants: anon can run only the search, the label, the project form lookup and the two row-policy helpers in the public schema'
 );
 
 -- Data for the rounding checks: one approved home with an exact point, one live project.
