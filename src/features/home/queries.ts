@@ -10,6 +10,7 @@ import {
   PROJECTS_PER_DEVELOPER,
   rankBuilders,
 } from "./new-launches";
+import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "./columns";
 import { listingRowSchema, rankingRowSchema, type DeveloperRow, type ListingRow } from "./schemas";
 
 /** Cache tags the admin actions will refresh when a listing or a project is approved or changed. */
@@ -98,7 +99,7 @@ export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
   const client = createPublicSupabase();
   const ranking = await client
     .from("projects")
-    .select("builder_id")
+    .select(RANKING_COLUMNS)
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(RANKING_READ_LIMIT);
@@ -120,7 +121,7 @@ export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
     ranked.map(async ({ builderId, projectCount }) => {
       const { data, error } = await client
         .from("projects")
-        .select("slug, name, builder_id, images, builders!inner(id, name, description)")
+        .select(DEVELOPER_PROJECT_COLUMNS)
         .eq("builder_id", builderId)
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
