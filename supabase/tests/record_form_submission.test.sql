@@ -162,7 +162,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $select public.record_form_submission('contact', 'not-a-hash', 'Priya Raman', '919840012345', null, '{}', '[]', null, null, null)$,
+  $$select public.record_form_submission('contact', 'not-a-hash', 'Priya Raman', '919840012345', null, '{}', '[]', null, null, null)$$,
   '22023', 'form.visitor', 'a visitor that is not a 40 character hash is refused'
 );
 
