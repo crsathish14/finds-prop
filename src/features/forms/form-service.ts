@@ -1,5 +1,10 @@
 import { ActionError } from "@/server/actions/normalise-error";
-import { formFieldsSchema, type FormDefinition, type SubmitFormInput } from "./schemas";
+import {
+  formFieldsSchema,
+  type FormDefinition,
+  type SubmitFormInput,
+  type SubmitProjectFormInput,
+} from "./schemas";
 import { validateSubmission, type ValidSubmission } from "./validate";
 
 /**
@@ -26,6 +31,12 @@ export interface FormWriteStore {
   readForm(slug: string): Promise<{ row: unknown; found: boolean }>;
   /** Stores the submission and returns its id. Throws an `ActionError` when the database refuses it. */
   insertSubmission(row: SubmissionRow): Promise<string>;
+}
+
+/** The write side for a project's form: the same store, and the read of the form a project shows. */
+export interface ProjectFormWriteStore extends FormWriteStore {
+  /** Reads the form a project page shows (BR-49), or null when it shows none. Throws when the read fails. */
+  readProjectForm(projectSlug: string): Promise<{ row: unknown; found: boolean }>;
 }
 
 /** What the database says when a call fails: the error code and the message the function raised. */
@@ -98,6 +109,40 @@ export async function submitFormValues(
     submission: checked.submission,
     source: input.source ?? null,
     projectSlug: input.projectSlug ?? null,
+    idempotencyKey: input.idempotencyKey,
+  });
+  return { submissionId };
+}
+
+/**
+ * Stores a submission of the form a project page shows (S5-T05, change 4). The form is the one the server
+ * finds for the project, never one the request names (BR-49), and the answers are checked against its
+ * stored fields (BR-60). The mobile is the signed-in account's own phone: it replaces whatever the request
+ * carried, so a submission cannot be made for someone else's number. The page it was filled in on is the
+ * project's own address.
+ */
+export async function submitProjectFormValues(
+  store: ProjectFormWriteStore,
+  parameters: { input: SubmitProjectFormInput; phone: string; visitor: string },
+): Promise<{ submissionId: string }> {
+  const { input, phone } = parameters;
+  const read = await store.readProjectForm(input.projectSlug);
+  if (!read.found) throw new ActionError("NOT_FOUND", "This project shows no form");
+  const form = parseFormRow(read.row);
+  if (!form) throw new ActionError("INTERNAL", "The stored form does not fit its shape");
+
+  const checked = validateSubmission(form.fields, { ...input.values, mobile: phone });
+  if (!checked.ok) {
+    throw new ActionError("VALIDATION", "The answers do not fit the form", {
+      fieldErrors: checked.fieldErrors,
+    });
+  }
+  const submissionId = await store.insertSubmission({
+    formSlug: form.slug,
+    visitor: parameters.visitor,
+    submission: { ...checked.submission, mobile: phone },
+    source: "/projects/" + input.projectSlug,
+    projectSlug: input.projectSlug,
     idempotencyKey: input.idempotencyKey,
   });
   return { submissionId };

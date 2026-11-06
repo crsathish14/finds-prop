@@ -1,5 +1,12 @@
 "use client";
 
+import { DynamicForm, type DynamicFormField } from "@/components/domain/dynamic-form";
+import {
+  ProjectFormCard,
+  ProjectFormConsent,
+  ProjectFormSent,
+  ProjectFormTitle,
+} from "@/features/projects/project-form-card";
 import { ProjectLeadCard } from "@/features/projects/project-lead-card.client";
 import { ProjectMobileBar } from "@/features/projects/project-mobile-bar";
 import { ProjectNotFound } from "@/features/projects/project-not-found";
@@ -9,6 +16,39 @@ import type { ProjectData, ProjectUnit } from "@/features/projects/types";
 import { Specimen } from "../frame";
 
 const PICTURES = "/design-lab/listings";
+
+/** A project's own form, as the form builder could store it (the real ones are the content team's data). */
+const ASSIGNED_FIELDS: DynamicFormField[] = [
+  { label: "Your name", key: "name", type: "text", required: true },
+  { label: "Mobile", key: "mobile", type: "text", required: true },
+  { label: "Preferred visit day", key: "visit_date", type: "date", required: true },
+  {
+    label: "I am looking for",
+    key: "looking_for",
+    type: "dropdown",
+    options: ["2 BHK", "3 BHK", "4 BHK"],
+    required: false,
+  },
+  { label: "Message", key: "message", type: "textarea", max: 300, required: false },
+];
+
+/** The assigned form inside the enquiry card, as the project page draws it (nothing is sent here). */
+function AssignedFormCard(props: Partial<React.ComponentProps<typeof DynamicForm>>) {
+  return (
+    <ProjectFormCard className="w-full">
+      <ProjectFormTitle />
+      <DynamicForm
+        fields={ASSIGNED_FIELDS}
+        buttonText="Book a visit"
+        compact
+        locked={{ mobile: { value: PHONE, hint: "The number you signed in with." } }}
+        consent={<ProjectFormConsent developerName="Kadal Homes" />}
+        onSubmit={() => undefined}
+        {...props}
+      />
+    </ProjectFormCard>
+  );
+}
 const FRAME = "w-full rounded-xl border border-line bg-canvas";
 
 const UNITS: ProjectUnit[] = [
@@ -233,6 +273,41 @@ export function ProjectPageDemo() {
       </Specimen>
       <Specimen label="Enquiry card: sent" className="w-full max-w-md">
         <ProjectLeadCard state="sent" className="w-full" />
+      </Specimen>
+      <Specimen
+        label="Enquiry card with the project's own form (set by the admin): the same card and heading; the phone is the account's and locked; the form's own button words"
+        className="w-full max-w-md"
+      >
+        <AssignedFormCard />
+      </Specimen>
+      <Specimen
+        label="The project's own form: what is missing is marked, and what was typed is kept"
+        className="w-full max-w-md"
+      >
+        <AssignedFormCard
+          values={{ name: "", visit_date: "" }}
+          errors={{ name: "This field is required.", visit_date: "This field is required." }}
+        />
+      </Specimen>
+      <Specimen
+        label="The project's own form: too many requests this hour, and the request could not be sent"
+        className="w-full max-w-md"
+      >
+        <div className="flex w-full flex-col gap-6">
+          <AssignedFormCard
+            rateLimited
+            values={{ name: "Priya Raman", visit_date: "2026-11-08" }}
+          />
+          <AssignedFormCard failed values={{ name: "Priya Raman", visit_date: "2026-11-08" }} />
+        </div>
+      </Specimen>
+      <Specimen
+        label="The project's own form: sent (the form's own success words when it has them)"
+        className="w-full max-w-md"
+      >
+        <ProjectFormCard className="w-full">
+          <ProjectFormSent message="Thank you. Our site team will call you to confirm your visit." />
+        </ProjectFormCard>
       </Specimen>
       <Specimen
         label="The phone's bar with Call, WhatsApp and Enquire (pinned to the bottom of a phone; here it sits in the page)"

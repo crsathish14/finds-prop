@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
   result: { data: null as unknown, error: null as null | { code?: string; message?: string } },
+  rpc: { data: [] as unknown[], error: null as null | { code?: string; message?: string } },
   asked: [] as string[],
 }));
 const cache = vi.hoisted(() => ({ tag: vi.fn(), life: vi.fn() }));
@@ -12,6 +13,10 @@ vi.mock("next/cache", () => ({ cacheTag: cache.tag, cacheLife: cache.life }));
 vi.mock("@/server/logger", () => ({ logger: { error } }));
 vi.mock("@/server/supabase/public", () => ({
   createPublicSupabase: () => ({
+    rpc: async (name: string, args: unknown) => {
+      db.asked.push("rpc " + name + " " + JSON.stringify(args));
+      return db.rpc;
+    },
     from: (table: string) => ({
       select: (columns: string) => {
         db.asked.push(table + ":" + columns);
@@ -36,7 +41,7 @@ vi.mock("@/server/supabase/public", () => ({
   }),
 }));
 
-const { getContactForm, FORMS_TAG } = await import("../queries");
+const { getContactForm, getProjectForm, FORMS_TAG } = await import("../queries");
 
 const ROW = {
   slug: "contact",
@@ -52,6 +57,7 @@ const ROW = {
 beforeEach(() => {
   vi.clearAllMocks();
   db.result = { data: null, error: null };
+  db.rpc = { data: [], error: null };
   db.asked = [];
 });
 
@@ -95,6 +101,43 @@ describe("UT-forms-queries: reading the contact page's form (S5-T05)", () => {
       error: null,
     };
     expect(await getContactForm()).toBeNull();
+    expect(error).toHaveBeenCalled();
+  });
+});
+
+describe("UT-forms-queries: reading the form a project page shows (S5-T05, change 4, BR-49)", () => {
+  it("asks the database function, which follows the chain, and tags the read", async () => {
+    db.rpc = {
+      data: [{ ...ROW, slug: "vista-visit", placement: "project_specific" }],
+      error: null,
+    };
+    const form = await getProjectForm("kadal-vista");
+    expect(form).toMatchObject({ slug: "vista-visit", placement: "project_specific" });
+    expect(db.asked).toEqual(['rpc public_project_form {"p_project_slug":"kadal-vista"}']);
+    expect(cache.tag).toHaveBeenCalledWith(FORMS_TAG);
+  });
+
+  it("is null, and kept as any answer is, when the project shows no form (the normal case)", async () => {
+    expect(await getProjectForm("kadal-vista")).toBeNull();
+    expect(cache.life).toHaveBeenCalledWith("minutes");
+    expect(cache.life).not.toHaveBeenCalledWith("seconds");
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("is null and logs only the error code when the read fails", async () => {
+    db.rpc = { data: [], error: { code: "57P01", message: "private detail" } };
+    expect(await getProjectForm("kadal-vista")).toBeNull();
+    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "57P01" });
+    expect(JSON.stringify(error.mock.calls)).not.toContain("private detail");
+    expect(cache.life).toHaveBeenCalledWith("seconds");
+  });
+
+  it("is null, so the built-in card shows, when the stored fields do not fit", async () => {
+    db.rpc = {
+      data: [{ ...ROW, fields: [{ label: "", key: "Bad Key", type: "magic" }] }],
+      error: null,
+    };
+    expect(await getProjectForm("kadal-vista")).toBeNull();
     expect(error).toHaveBeenCalled();
   });
 });

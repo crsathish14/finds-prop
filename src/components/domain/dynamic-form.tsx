@@ -11,9 +11,10 @@
  *   (draws the "could not send" alert above the fields; what was typed stays), rateLimited (draws the
  *   "limit reached" alert), submitting (the button shows it is working and ignores clicks), consent (the
  *   consent line under the button, already built by the page), onSubmit (called with the values by key),
- *   className.
+ *   compact (one column at every width, for a narrow card), locked (fields shown read-only with a value the
+ *   page gives, by key, such as the signed-in account's phone; the value is not sent), className.
  * Responsive: one column on a phone; two from 768 px, with the long answers (a message, a group of
- *   choices) across both. The button is as wide as the form.
+ *   choices) across both (compact keeps one column). The button is as wide as the form.
  * Accessibility: each field has a label and an error tied to it (aria-describedby, aria-invalid, with an
  *   icon, so colour is not the only signal); required fields are marked; a group of radio buttons or
  *   checkboxes is a fieldset with a legend. When errors appear after the form is shown, focus moves to the
@@ -69,6 +70,9 @@ type DynamicFormValue = string | boolean | string[];
 type DynamicFormValues = Record<string, DynamicFormValue>;
 type DynamicFormErrors = Record<string, string>;
 
+/** A field the visitor cannot change: the text shown in it, and an optional hint under it. */
+type DynamicFormLocked = Record<string, { value: string; hint?: string }>;
+
 type DynamicFormProps = {
   fields: readonly DynamicFormField[];
   buttonText?: string | null | undefined;
@@ -79,6 +83,8 @@ type DynamicFormProps = {
   submitting?: boolean;
   consent?: ReactNode;
   onSubmit?: (values: DynamicFormValues) => void;
+  compact?: boolean;
+  locked?: DynamicFormLocked;
   className?: string;
 };
 
@@ -125,6 +131,8 @@ function DynamicForm({
   submitting = false,
   consent,
   onSubmit,
+  compact = false,
+  locked,
   className,
 }: DynamicFormProps) {
   const translate = useTranslations("domain.dynamicForm");
@@ -369,6 +377,19 @@ function DynamicForm({
 
   function draw(field: DynamicFormField): ReactNode {
     if (field.type === "file") return null;
+    const fixed = locked?.[field.key];
+    if (fixed) {
+      return (
+        <FormField
+          label={field.label}
+          required={field.required}
+          {...(field.required ? {} : { optionalLabel: optional })}
+          {...(fixed.hint ? { hint: fixed.hint } : {})}
+        >
+          <Input name={field.key} readOnly value={fixed.value} {...textHints(field)} />
+        </FormField>
+      );
+    }
     if (isGroup(field)) return group(field);
     if (field.type === "checkbox") return tick(field);
     return (
@@ -389,15 +410,23 @@ function DynamicForm({
       data-slot="dynamic-form"
       noValidate
       onSubmit={submit}
-      className={cn("grid gap-4 md:grid-cols-2", className)}
+      className={cn("grid gap-4", !compact && "md:grid-cols-2", className)}
     >
       {rateLimited ? (
-        <Alert tone="warning" title={translate("rateLimit.title")} className="md:col-span-2">
+        <Alert
+          tone="warning"
+          title={translate("rateLimit.title")}
+          className={cn(!compact && "md:col-span-2")}
+        >
           {translate("rateLimit.body")}
         </Alert>
       ) : null}
       {failed ? (
-        <Alert tone="danger" title={translate("failed.title")} className="md:col-span-2">
+        <Alert
+          tone="danger"
+          title={translate("failed.title")}
+          className={cn(!compact && "md:col-span-2")}
+        >
           {translate("failed.body")}
         </Alert>
       ) : null}
@@ -408,18 +437,18 @@ function DynamicForm({
           <div
             key={field.key}
             data-field={field.key}
-            className={cn("min-w-0", isWide(field) && "md:col-span-2")}
+            className={cn("min-w-0", !compact && isWide(field) && "md:col-span-2")}
           >
             {drawn}
           </div>
         );
       })}
-      <div className="flex flex-col gap-3 md:col-span-2">
+      <div className={cn("flex flex-col gap-3", !compact && "md:col-span-2")}>
         <Button
           type="submit"
           variant="accent"
           size="lg"
-          className="w-full md:w-fit"
+          className={cn("w-full", !compact && "md:w-fit")}
           loading={submitting}
           iconStart={<Icon icon={Send} />}
         >
@@ -435,6 +464,7 @@ export { DynamicForm };
 export type {
   DynamicFormErrors,
   DynamicFormField,
+  DynamicFormLocked,
   DynamicFormProps,
   DynamicFormValue,
   DynamicFormValues,
