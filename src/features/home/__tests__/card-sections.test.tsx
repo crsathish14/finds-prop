@@ -12,6 +12,13 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/features/saved", () => ({
+  SaveHomeButton: () => (
+    <button type="button" aria-pressed="false">
+      Save to shortlist
+    </button>
+  ),
+}));
 vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example-project.supabase.co" },
 }));
@@ -89,16 +96,19 @@ describe("FeaturedSection: Featured homes (S4-T06)", () => {
     );
   });
 
-  it("draws the Compare checkbox on each card (S4-T02) and no Save heart yet", async () => {
+  it("draws the Save heart and the Compare checkbox on each card (S5-T01, S4-T02)", async () => {
     state.featured = [home("aaa11111", "First home")];
     renderWithMessages(<>{await FeaturedSection()}</>);
-    // Compare is the only control: a toggle that is not pressed until the visitor chooses the home.
-    expect(screen.getAllByRole("button")).toHaveLength(1);
+    // Save and Compare are the two controls: each a toggle that is not pressed until the visitor chooses it.
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Save to shortlist" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     expect(screen.getByRole("button", { name: "Compare" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
-    expect(screen.queryByRole("button", { name: /Save|shortlist/i })).not.toBeInTheDocument();
   });
 });
 

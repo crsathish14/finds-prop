@@ -96,6 +96,8 @@
       "lead": "Enter your mobile number and we'll text you a 6-digit code. New to Find Prop? We'll set up your account.",
       "gateTitle": "Sign in to contact the owner",
       "gateBody": "We will take you straight back to the home you were viewing.",
+      "saveGateTitle": "Sign in to save homes",
+      "saveGateBody": "We will bring you back to this page, and the home will be saved to your dashboard.",
       "label": "Mobile number",
       "placeholder": "98765 43210",
       "hint": "Indian mobile numbers only for now. We use it to sign you in.",
@@ -613,6 +615,13 @@
         "enquire": "Enquire about this project"
       }
     }
+  },
+  "saved": {
+    "saved": "Saved to your dashboard",
+    "removed": "Removed from saved homes",
+    "failed": "We couldn't save that home. Please try again.",
+    "button": "Save home",
+    "buttonSaved": "Saved"
   },
   "account": {
     "dashboard": {

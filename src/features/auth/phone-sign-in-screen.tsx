@@ -3,6 +3,7 @@ import { PhoneSignIn } from "./phone-sign-in.client";
 type PhoneSignInScreenProps = {
   siteKey: string | undefined;
   gate: boolean;
+  saveGate?: boolean;
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested. */
   alreadySignedIn: boolean;
@@ -16,6 +17,7 @@ type PhoneSignInScreenProps = {
 export function PhoneSignInScreen({
   siteKey,
   gate,
+  saveGate = false,
   redirectTo,
   alreadySignedIn,
 }: PhoneSignInScreenProps) {
@@ -24,6 +26,7 @@ export function PhoneSignInScreen({
       <PhoneSignIn
         siteKey={siteKey}
         gate={gate}
+        saveGate={saveGate}
         redirectTo={redirectTo}
         alreadySignedIn={alreadySignedIn}
       />

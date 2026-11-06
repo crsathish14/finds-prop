@@ -810,3 +810,12 @@ test.describe("@smoke dashboard", () => {
     await expect(page.getByRole("heading", { name: en.account.dashboard.title })).toHaveCount(0);
   });
 });
+
+test.describe("@smoke saving a home", () => {
+  test("a visitor who taps save without signing in is asked to sign in, with the words for saving", async ({
+    page,
+  }) => {
+    await page.goto("/auth?gate=save&redirect=%2Fproperties");
+    await expect(page.getByText(en.auth.phone.saveGateTitle)).toBeVisible();
+  });
+});

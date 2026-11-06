@@ -27,6 +27,7 @@ export async function PhoneSignInFromQuery({
     <PhoneSignInScreen
       siteKey={publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
       gate={first(gate) === "enquire"}
+      saveGate={first(gate) === "save"}
       redirectTo={safeRedirectPath(first(redirect), "/dashboard")}
       alreadySignedIn={alreadySignedIn}
     />

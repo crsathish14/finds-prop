@@ -9,6 +9,11 @@ const visitor = vi.hoisted(() => ({
 
 vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
 vi.mock("@/features/auth", () => ({ addEmail: vi.fn(), resendEmailLink: vi.fn() }));
+vi.mock("@/features/saved", () => ({
+  SavedTab: (props: { fallback: React.ReactNode }) => (
+    <div data-testid="saved-tab">{props.fallback}</div>
+  ),
+}));
 vi.mock("@/features/account", async () => {
   const { parseTab } = await import("@/features/account/tabs");
   return {
@@ -118,5 +123,17 @@ describe("the dashboard page (S5-T04)", () => {
     visitor.person = null;
     const result = await DashboardPage({ searchParams: Promise.resolve({}) });
     expect(result).toBeNull();
+  });
+});
+
+describe("the Saved tab (S5-T01)", () => {
+  it("draws the saved homes in place of the empty state, through the saved-tab component", async () => {
+    await open({ tab: "saved" });
+    expect(screen.getByTestId("saved-tab")).toBeInTheDocument();
+  });
+
+  it("does not draw the saved homes on the other tabs", async () => {
+    await open({ tab: "sent" });
+    expect(screen.queryByTestId("saved-tab")).toBeNull();
   });
 });

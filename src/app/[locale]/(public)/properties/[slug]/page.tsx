@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { EnquiryCardSkeleton } from "@/components/domain/enquiry-card";
 import { CompareButton } from "@/features/compare";
+import { SaveHomeAction } from "@/features/saved";
 import { LISTING_BUCKET, publicStorageUrl } from "@/features/home";
 import {
   canonicalPropertyPath,
@@ -93,11 +94,14 @@ export default async function PropertyPage({ params }: PageProps) {
         property={property}
         photoSources={photoSources}
         actions={
-          <CompareButton
-            shortId={property.shortId}
-            title={property.title}
-            cover={photoSources[0] ?? null}
-          />
+          <>
+            <SaveHomeAction shortId={property.shortId} />
+            <CompareButton
+              shortId={property.shortId}
+              title={property.title}
+              cover={photoSources[0] ?? null}
+            />
+          </>
         }
         enquiry={
           <Suspense fallback={<EnquiryCardSkeleton />}>
