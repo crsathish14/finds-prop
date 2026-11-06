@@ -12,7 +12,8 @@
  *   values ({ name, phone, email, message } to start with), errors ({ name, phone, email, message }:
  *   already-translated messages; a field with one is marked invalid), failed (draws the "could not
  *   send" alert above the form; the typed values stay), rateLimited (draws the "please wait" alert: too many
- *   enquiries today), ownHome (the visitor owns this home: a note, and Send is off), privacyHref (where the
+ *   enquiries today), sessionEnded (the visitor's session ended before the enquiry was sent: draws the
+ *   "Your session has ended" alert with a Sign in again link; { href, onSignIn }), ownHome (the visitor owns this home: a note, and Send is off), privacyHref (where the
  *   consent line's Privacy Policy link leads), submitting (the button shows it is working
  *   and ignores clicks), sendDisabled and sendNotice (Send is switched off and a line under it says why;
  *   the page uses them until enquiries can be sent), onSubmit (called with the values when the form is sent), variant ("card" the
@@ -24,7 +25,7 @@
  *   icon, so colour is not the only signal); required fields are marked. When errors appear after the
  *   form is shown, focus moves to the first field with one. The send-failed alert is role="alert". The
  *   confirmation is role="status". The message counter is a polite live region.
- * States: signed out; form (empty, filled); errors on the name and phone; send failed (values kept); too many
+ * States: signed out; form (empty, filled); errors on the name and phone; send failed (values kept); session ended (values kept); too many
  *   enquiries today; the visitor's own home; already sent (last 24 hours);
  *   sending; sent; the card and the sheet variants; loading (EnquiryCardSkeleton: the form's box,
  *   hidden from screen readers, shown while the sign-in is checked).
@@ -47,6 +48,7 @@ import { Link } from "@/components/ui/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
+import { SessionEndedAlert } from "./session-ended-alert";
 
 type EnquiryValues = { name: string; phone: string; email: string; message: string };
 type EnquiryField = keyof EnquiryValues;
@@ -61,6 +63,8 @@ type EnquiryCardProps = {
   errors?: EnquiryErrors;
   failed?: boolean;
   rateLimited?: boolean;
+  /** The session ended before the enquiry was sent: where to sign in again, and what to do when that link is pressed. */
+  sessionEnded?: { href: string; onSignIn: () => void };
   ownHome?: boolean;
   privacyHref?: string;
   submitting?: boolean;
@@ -107,6 +111,7 @@ function EnquiryCard({
   errors,
   failed = false,
   rateLimited = false,
+  sessionEnded,
   ownHome = false,
   privacyHref = "/privacy",
   submitting = false,
@@ -236,6 +241,9 @@ function EnquiryCard({
         </>
       )}
       <form ref={form} noValidate onSubmit={submit} className="flex flex-col gap-4">
+        {sessionEnded ? (
+          <SessionEndedAlert href={sessionEnded.href} onSignIn={sessionEnded.onSignIn} />
+        ) : null}
         {ownHome ? (
           <Alert tone="info" title={translate("ownHome.title")}>
             {translate("ownHome.body")}

@@ -35,6 +35,8 @@ type PhoneSignInProps = {
   gate: boolean;
   /** The visitor was sent here to save a home (?gate=save): the words say so, and the return brings them back to it. */
   saveGate?: boolean;
+  /** The visitor's session ended while they were filling in a form (?gate=expired): the words say so and that what they typed is kept. */
+  expiredGate?: boolean;
   /** Where to go once signed in: an address the page has already checked (BR-06). */
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested (the server only reports it). */
@@ -55,6 +57,7 @@ export function PhoneSignIn({
   siteKey,
   gate,
   saveGate = false,
+  expiredGate = false,
   redirectTo,
   alreadySignedIn,
 }: PhoneSignInProps) {
@@ -141,7 +144,11 @@ export function PhoneSignIn({
         </Text>
       </div>
 
-      {saveGate ? (
+      {expiredGate ? (
+        <Alert tone="info" title={translate("expiredGateTitle")}>
+          {translate("expiredGateBody")}
+        </Alert>
+      ) : saveGate ? (
         <Alert tone="info" title={translate("saveGateTitle")}>
           {translate("saveGateBody")}
         </Alert>

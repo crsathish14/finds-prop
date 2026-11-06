@@ -8,6 +8,9 @@ import type {
   EnquiryValues,
 } from "@/components/domain/enquiry-card";
 import { fieldErrorText, type Translator } from "@/i18n/failure-text";
+import { dropDraft, saveDraft } from "@/lib/form-draft";
+import { isSessionEnded, sessionEndedHref } from "@/lib/session-ended";
+import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ActionResult } from "@/types/action";
 
 /** The enquiry action, as the page hands it over (the server action `sendEnquiry`). */
@@ -30,6 +33,9 @@ export type EnquiryConnection = {
 };
 
 const FIELDS = ["name", "phone", "email", "message"] as const;
+/** The answers kept while the visitor signs in again. The phone is left out: the new session's own is used. */
+const DRAFT_FIELDS = ["name", "email", "message"] as const;
+const DRAFT_NAME = "enquiry";
 const isField = (name: unknown): name is (typeof FIELDS)[number] =>
   FIELDS.some((field) => field === name);
 
@@ -40,6 +46,7 @@ type FormProps = Pick<
   | "errors"
   | "failed"
   | "rateLimited"
+  | "sessionEnded"
   | "ownHome"
   | "submitting"
   | "enquiriesHref"
@@ -51,10 +58,16 @@ type FormProps = Pick<
  * idempotency key when the form opens, so a double click or a retry stores one enquiry (R-BE-05), and
  * draws what comes back: the confirmation, "already sent" (an enquiry about this home within 24 hours),
  * the field messages, "please wait" (too many today), "this is your own home", or "try again" for
- * anything else, with what was typed kept. The server checks everything and decides; nothing here
+ * anything else, with what was typed kept. When the visitor's session has ended it says so with a link to
+ * sign in again, which keeps the name, email and message for the way back (S5-T07); the form starts again
+ * with them (give it `formKey` as its key). The server checks everything and decides; nothing here
  * says who is sending. Without a connection (the Design Lab, a test) the form is drawn and sends nothing.
  */
-export function useEnquiryForm(connection: EnquiryConnection | undefined): FormProps {
+export function useEnquiryForm(connection: EnquiryConnection | undefined): {
+  card: FormProps;
+  /** Changes when kept answers are restored, so the form can be started again with them. */
+  formKey: string;
+} {
   // The same cast the helper's own test uses: next-intl's strict translator type is wider than Translator.
   const translate = useTranslations() as unknown as Translator;
   const [key] = useState(() => crypto.randomUUID());
@@ -63,9 +76,22 @@ export function useEnquiryForm(connection: EnquiryConnection | undefined): FormP
   const [rateLimited, setRateLimited] = useState(false);
   const [ownHome, setOwnHome] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState<{
+    href: string;
+    values: Record<string, string>;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
+  const words = useTranslations("domain.sessionEnded");
+  const draft = useRestoredDraft(DRAFT_NAME);
+  useRestoredNotice(DRAFT_NAME, draft, words("restored"));
 
-  if (!connection) return { state: "form" };
+  if (!connection) return { card: { state: "form" }, formKey: "fresh" };
+
+  const kept: Partial<EnquiryValues> = {};
+  for (const field of DRAFT_FIELDS) {
+    const value = draft?.[field];
+    if (typeof value === "string") kept[field] = value;
+  }
 
   function send(values: EnquiryValues) {
     if (!connection) return;
@@ -73,6 +99,7 @@ export function useEnquiryForm(connection: EnquiryConnection | undefined): FormP
     setRateLimited(false);
     setOwnHome(false);
     setFailed(false);
+    setSessionEnded(null);
     startTransition(async () => {
       try {
         const result = await connection.send({
@@ -84,7 +111,15 @@ export function useEnquiryForm(connection: EnquiryConnection | undefined): FormP
           idempotencyKey: key,
         });
         if (result.ok) {
+          dropDraft(DRAFT_NAME, window.location.pathname);
           setOutcome("sent");
+          return;
+        }
+        if (isSessionEnded(result)) {
+          setSessionEnded({
+            href: sessionEndedHref(window.location.pathname),
+            values: { name: values.name, email: values.email, message: values.message },
+          });
           return;
         }
         if (result.code === "CONFLICT") {
@@ -95,7 +130,7 @@ export function useEnquiryForm(connection: EnquiryConnection | undefined): FormP
           setRateLimited(true);
           return;
         }
-        if (result.code === "FORBIDDEN" && result.reason !== "PHONE_NOT_VERIFIED") {
+        if (result.code === "FORBIDDEN") {
           setOwnHome(true);
           return;
         }
@@ -114,14 +149,25 @@ export function useEnquiryForm(connection: EnquiryConnection | undefined): FormP
   }
 
   return {
-    state: outcome,
-    values: connection.prefill,
-    errors,
-    failed,
-    rateLimited,
-    ownHome,
-    submitting: pending,
-    enquiriesHref: connection.enquiriesHref,
-    onSubmit: send,
+    card: {
+      state: outcome,
+      values: { ...connection.prefill, ...kept },
+      errors,
+      failed,
+      rateLimited,
+      ...(sessionEnded
+        ? {
+            sessionEnded: {
+              href: sessionEnded.href,
+              onSignIn: () => saveDraft(DRAFT_NAME, window.location.pathname, sessionEnded.values),
+            },
+          }
+        : {}),
+      ownHome,
+      submitting: pending,
+      enquiriesHref: connection.enquiriesHref,
+      onSubmit: send,
+    },
+    formKey: draft ? "restored" : "fresh",
   };
 }

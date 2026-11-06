@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { SessionEndedAlert } from "@/components/domain/session-ended-alert";
 import { Link } from "@/components/ui/link";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,6 +48,8 @@ type ProjectLeadCardProps = {
   rateLimited?: boolean;
   /** Sending failed for a reason the visitor cannot fix by editing a field: a "try again" alert above the form. */
   failed?: boolean;
+  /** The session ended before the request was sent: the "Your session has ended" alert above the form, with where to sign in again and what to do when that link is pressed. */
+  sessionEnded?: { href: string; onSignIn: () => void };
   submitting?: boolean;
   onSubmit?: (kind: LeadKind, values: LeadValues) => void;
   className?: string;
@@ -84,6 +87,7 @@ export function ProjectLeadCard({
   errors,
   rateLimited = false,
   failed = false,
+  sessionEnded,
   submitting = false,
   onSubmit,
   className,
@@ -211,6 +215,9 @@ export function ProjectLeadCard({
           <Alert tone="warning" title={translate("rateLimit.title")}>
             {translate("rateLimit.body")}
           </Alert>
+        ) : null}
+        {sessionEnded ? (
+          <SessionEndedAlert href={sessionEnded.href} onSignIn={sessionEnded.onSignIn} />
         ) : null}
         {failed ? <Alert tone="danger">{translate("failed")}</Alert> : null}
         <FormField label={translate("name")} required {...errorProp(errors, "name")}>

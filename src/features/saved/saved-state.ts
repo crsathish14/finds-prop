@@ -1,4 +1,5 @@
 import { notify } from "@/lib/notify";
+import { isSessionEnded } from "@/lib/session-ended";
 import { readSavedHomes, saveHomeAction, unsaveHomeAction } from "./actions";
 
 /**
@@ -6,7 +7,9 @@ import { readSavedHomes, saveHomeAction, unsaveHomeAction } from "./actions";
  * who is signed in and which homes they saved; after that a tap changes the set at once and the server
  * is asked to match, and a failure puts the set back. A signed-out tap remembers the home for this tab
  * and sends the visitor to sign in; when they come back signed in, the home is saved once (BR-06:
- * the return address is checked by sign-in, and nothing here is trusted from the address).
+ * the return address is checked by sign-in, and nothing here is trusted from the address). A session that
+ * ended after the page was opened is the same as signed out: the server's "not signed in" sends the
+ * visitor to sign in too, instead of a "could not save" (S5-T07).
  */
 export type SavedSnapshot = {
   ready: boolean;
@@ -65,13 +68,16 @@ function setOne(shortId: string, saved: boolean) {
   emit({ ...snapshot, saved: next });
 }
 
-/** Changes one home at once, then asks the server; a refusal puts the set back. */
-async function change(shortId: string, saved: boolean): Promise<boolean> {
+/**
+ * Changes one home at once, then asks the server; a refusal puts the set back. "ended" means the server
+ * said the visitor is no longer signed in (the session ended after this page was opened).
+ */
+async function change(shortId: string, saved: boolean): Promise<"ok" | "failed" | "ended"> {
   setOne(shortId, saved);
   const result = saved ? await saveHomeAction({ shortId }) : await unsaveHomeAction({ shortId });
-  if (result.ok) return true;
+  if (result.ok) return "ok";
   setOne(shortId, !saved);
-  return false;
+  return isSessionEnded(result) ? "ended" : "failed";
 }
 
 /**
@@ -95,7 +101,7 @@ export function ensureSavedLoaded(savedMessage: string): Promise<boolean> {
     const pending = readPending();
     if (pending !== null && result.data.signedIn) {
       writePending(null);
-      if (!snapshot.saved.has(pending) && (await change(pending, true))) {
+      if (!snapshot.saved.has(pending) && (await change(pending, true)) === "ok") {
         notify.success(savedMessage);
       }
     }
@@ -120,7 +126,16 @@ export async function toggleSaved(
     return "signed-out";
   }
   const saved = !snapshot.saved.has(shortId);
-  return (await change(shortId, saved)) ? (saved ? "saved" : "removed") : "failed";
+  const outcome = await change(shortId, saved);
+  if (outcome === "ended") {
+    // The session ended since the page was opened: from here on this tab is signed out.
+    emit({ ready: true, signedIn: false, saved: new Set() });
+    if (saved) writePending(shortId);
+    go(signInHref);
+    return "signed-out";
+  }
+  if (outcome === "failed") return "failed";
+  return saved ? "saved" : "removed";
 }
 
 /** Test helper: forget everything, as a new page load would. */
