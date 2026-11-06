@@ -800,3 +800,13 @@ test.describe("@smoke search engines", () => {
     expect(response.headers()["content-type"]).toBe("image/png");
   });
 });
+
+test.describe("@smoke dashboard", () => {
+  test("a visitor who is not signed in is sent to sign in, and brought back to the tab they asked for", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard?tab=sent");
+    await expect(page).toHaveURL(/\/auth\?redirect=%2Fdashboard%3Ftab%3Dsent/);
+    await expect(page.getByRole("heading", { name: en.account.dashboard.title })).toHaveCount(0);
+  });
+});

@@ -614,6 +614,56 @@
       }
     }
   },
+  "account": {
+    "dashboard": {
+      "metaTitle": "My dashboard",
+      "title": "My dashboard",
+      "sub": "Homes you saved, listings you manage and your enquiries.",
+      "subNamed": "{name} · homes you saved, listings you manage and your enquiries.",
+      "post": "Post a property",
+      "loadingTitle": "Loading your dashboard",
+      "tabsLabel": "Dashboard sections",
+      "tabs": {
+        "saved": "Saved",
+        "listings": "My listings",
+        "received": "Enquiries received",
+        "sent": "My enquiries"
+      },
+      "empty": {
+        "saved": {
+          "title": "You haven't shortlisted any homes yet",
+          "body": "Tap the heart on a home to save it here, then compare your favourites.",
+          "action": "Browse properties"
+        },
+        "listings": {
+          "title": "You have no listings yet",
+          "body": "Post a home and it will show here with its status while it is reviewed.",
+          "action": "Post your property"
+        },
+        "received": {
+          "title": "No enquiries yet",
+          "body": "When someone enquires about one of your listings, you will see their details here.",
+          "action": "Post your property"
+        },
+        "sent": {
+          "title": "You haven't contacted any owners yet",
+          "body": "Send an enquiry from a home's page and its reply status will show here.",
+          "action": "Browse properties"
+        }
+      },
+      "email": {
+        "badge": "Email not verified",
+        "promptTitle": "Add your email to post a property and get updates",
+        "promptBody": "We'll send a link to confirm it. It takes a minute.",
+        "placeholder": "you@example.com",
+        "send": "Send link",
+        "sending": "Sending link",
+        "later": "Later",
+        "pendingTitle": "Verify your email to post a property",
+        "pendingBody": "We sent a link to {email}. Open it to finish."
+      }
+    }
+  },
   "compare": {
     "add": "Add to compare",
     "title": "Compare homes",
