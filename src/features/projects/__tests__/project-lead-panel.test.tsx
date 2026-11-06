@@ -2,8 +2,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
+import { resetDraftsForTests, saveDraft } from "@/lib/form-draft";
 import { renderWithMessages } from "../../../../tests/render-intl";
 
+const notes = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock("@/lib/notify", () => ({ notify: notes }));
 const submitProjectLead = vi.hoisted(() => vi.fn());
 const trackProjectEvent = vi.hoisted(() => vi.fn());
 vi.mock("../actions", () => ({ submitProjectLead, trackProjectEvent }));
@@ -34,6 +37,8 @@ const idle = (name: string) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.sessionStorage.clear();
+  resetDraftsForTests();
   submitProjectLead.mockResolvedValue({ ok: true, data: { received: true } });
   trackProjectEvent.mockResolvedValue({ ok: true, data: { recorded: true } });
 });
@@ -168,5 +173,85 @@ describe("the consent line under Send (S5-T06)", () => {
       "href",
       "/privacy",
     );
+  });
+});
+
+describe("ProjectLeadPanel: the session ended before the request was sent (S5-T07)", () => {
+  const ended = en.domain.sessionEnded;
+
+  it("says the session has ended, with a link back to the card, and keeps what was typed", async () => {
+    submitProjectLead.mockResolvedValue({ ok: false, code: "UNAUTHENTICATED" });
+    renderWithMessages(PANEL);
+    type(words.name, "Priya Raman");
+    send(words.send);
+    await waitFor(() => expect(screen.getByText(ended.title)).toBeInTheDocument());
+    expect(screen.queryByText(words.failed)).toBeNull();
+    expect(screen.getByRole("link", { name: ended.action })).toHaveAttribute(
+      "href",
+      "/auth?gate=expired&redirect=" + encodeURIComponent(window.location.pathname + "#enquiry"),
+    );
+    expect(screen.getByLabelText(new RegExp("^" + words.name))).toHaveValue("Priya Raman");
+    expect(window.sessionStorage.length).toBe(0);
+  });
+
+  it("also treats a missing verified phone as the session having ended", async () => {
+    submitProjectLead.mockResolvedValue({
+      ok: false,
+      code: "FORBIDDEN",
+      reason: "PHONE_NOT_VERIFIED",
+    });
+    renderWithMessages(PANEL);
+    type(words.name, "Priya Raman");
+    send(words.send);
+    await waitFor(() => expect(screen.getByText(ended.title)).toBeInTheDocument());
+  });
+
+  it("keeps the kind of request and the answers when Sign in again is pressed", async () => {
+    submitProjectLead.mockResolvedValue({ ok: false, code: "UNAUTHENTICATED" });
+    renderWithMessages(PANEL);
+    fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
+    type(words.name, "Priya Raman");
+    type(words.visitDate, "2026-11-20");
+    send(words.requestVisit);
+    await waitFor(() => expect(screen.getByText(ended.title)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("link", { name: ended.action }));
+    const stored = JSON.parse(
+      window.sessionStorage.getItem(window.sessionStorage.key(0) ?? "") ?? "{}",
+    );
+    expect(stored.values).toMatchObject({
+      kind: "site_visit",
+      name: "Priya Raman",
+      visitDate: "2026-11-20",
+    });
+  });
+
+  it("starts again with the kept kind and answers when the visitor comes back, and says so once", async () => {
+    saveDraft("project-lead", window.location.pathname, {
+      kind: "site_visit",
+      name: "Priya Raman",
+      email: "",
+      visitDate: "2026-11-20",
+      message: "Morning please",
+    });
+    renderWithMessages(PANEL);
+    await waitFor(() =>
+      expect(screen.getByLabelText(new RegExp("^" + words.name))).toHaveValue("Priya Raman"),
+    );
+    expect(screen.getByLabelText(new RegExp("^" + words.visitDate))).toHaveValue("2026-11-20");
+    expect(screen.getByLabelText(new RegExp("^" + words.message))).toHaveValue("Morning please");
+    expect(screen.getByRole("button", { name: words.requestVisit })).toBeInTheDocument();
+    expect(notes.info).toHaveBeenCalledTimes(1);
+    expect(notes.info).toHaveBeenCalledWith(ended.restored);
+  });
+
+  it("forgets the kept answers once the request is sent", async () => {
+    saveDraft("project-lead", window.location.pathname, { kind: "enquiry", name: "Priya Raman" });
+    renderWithMessages(PANEL);
+    await waitFor(() =>
+      expect(screen.getByLabelText(new RegExp("^" + words.name))).toHaveValue("Priya Raman"),
+    );
+    send(words.send);
+    await waitFor(() => expect(screen.getByText(words.sent.title)).toBeInTheDocument());
+    expect(window.sessionStorage.length).toBe(0);
   });
 });

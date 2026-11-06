@@ -692,6 +692,7 @@ test.describe("@smoke text origin", () => {
     "/admin/login",
     "/auth",
     "/auth?gate=enquire",
+    "/auth?gate=expired",
     "/auth?email=expired",
   ]) {
     test(`all visible text on ${route} comes from en.json`, async ({ page }) => {

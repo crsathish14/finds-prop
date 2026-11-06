@@ -57,11 +57,12 @@ function answer(result: ActionResult<{ resendAfter: number }>) {
   send.mockResolvedValueOnce(result);
 }
 
-function renderScreen(gate = false, alreadySignedIn = false) {
+function renderScreen(gate = false, alreadySignedIn = false, expiredGate = false) {
   return renderWithMessages(
     <PhoneSignInScreen
       siteKey="site-key"
       gate={gate}
+      expiredGate={expiredGate}
       redirectTo="/dashboard"
       alreadySignedIn={alreadySignedIn}
     />,
@@ -150,6 +151,20 @@ describe("phone sign-in: the gate state", () => {
     renderScreen(true);
     expect(screen.getByText(words.gateTitle)).toBeInTheDocument();
     expect(screen.getByText(words.gateBody)).toBeInTheDocument();
+  });
+});
+
+describe("phone sign-in: the session-ended state (S5-T07)", () => {
+  it("says the session ended, that the visitor goes back to where they were, and that what they typed is kept", () => {
+    renderScreen(false, false, true);
+    expect(screen.getByText(words.expiredGateTitle)).toBeInTheDocument();
+    expect(screen.getByText(words.expiredGateBody)).toBeInTheDocument();
+    expect(screen.queryByText(words.gateTitle)).not.toBeInTheDocument();
+  });
+
+  it("does not show it unless the visitor was sent here because the session ended", () => {
+    renderScreen();
+    expect(screen.queryByText(words.expiredGateTitle)).not.toBeInTheDocument();
   });
 });
 

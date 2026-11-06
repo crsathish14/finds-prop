@@ -29,8 +29,11 @@ export function MobileEnquiry({
   perSqftRupees,
 }: MobileEnquiryProps) {
   const translate = useTranslations("property.page.enquiry");
-  const [open, setOpen] = useState(false);
-  const form = useEnquiryForm(connection);
+  const { card, formKey } = useEnquiryForm(connection);
+  // Until the visitor opens or closes the sheet it follows the page: coming back from signing in again
+  // with kept answers, it is open with them already in it.
+  const [chosen, setOpen] = useState<boolean | null>(null);
+  const open = chosen ?? formKey === "restored";
   return (
     <>
       <StickyMobileBar
@@ -46,11 +49,12 @@ export function MobileEnquiry({
       />
       {signedIn ? (
         <EnquirySheet
+          key={formKey}
           open={open}
           onOpenChange={setOpen}
           signInHref={signInHref}
           createAccountHref={createAccountHref}
-          {...form}
+          {...card}
         />
       ) : null}
     </>

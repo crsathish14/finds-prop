@@ -113,4 +113,33 @@ describe("saved-state: the visitor's saved homes in the browser (S5-T01)", () =>
     expect(outcome).toBe("signed-out");
     expect(go).toHaveBeenCalledTimes(1);
   });
+
+  it("treats a session that ended after the page opened as signed out: remembers the home and sends the visitor to sign in", async () => {
+    actions.read.mockResolvedValue(SIGNED_IN);
+    actions.save.mockResolvedValue({ ok: false, code: "UNAUTHENTICATED" });
+    const go = vi.fn();
+    const outcome = await state.toggleSaved("bbbbbbbb", "/auth?gate=save", go);
+    expect(outcome).toBe("signed-out");
+    expect(go).toHaveBeenCalledWith("/auth?gate=save");
+    expect(window.sessionStorage.getItem("findsprop:pending-save:v1")).toBe("bbbbbbbb");
+    expect(state.getSavedSnapshot().signedIn).toBe(false);
+    expect(state.getSavedSnapshot().saved.has("bbbbbbbb")).toBe(false);
+  });
+
+  it("does the same when the account has no verified phone", async () => {
+    actions.read.mockResolvedValue(SIGNED_IN);
+    actions.save.mockResolvedValue({ ok: false, code: "FORBIDDEN", reason: "PHONE_NOT_VERIFIED" });
+    const go = vi.fn();
+    expect(await state.toggleSaved("bbbbbbbb", "/auth?gate=save", go)).toBe("signed-out");
+    expect(go).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends the visitor to sign in when the session ended on a removal, with nothing to save afterwards", async () => {
+    actions.read.mockResolvedValue(SIGNED_IN);
+    actions.unsave.mockResolvedValue({ ok: false, code: "UNAUTHENTICATED" });
+    const go = vi.fn();
+    expect(await state.toggleSaved("aaaaaaaa", "/auth?gate=save", go)).toBe("signed-out");
+    expect(go).toHaveBeenCalledTimes(1);
+    expect(window.sessionStorage.getItem("findsprop:pending-save:v1")).toBeNull();
+  });
 });

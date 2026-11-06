@@ -7,7 +7,11 @@ import {
   type DynamicFormLocked,
   type DynamicFormValues,
 } from "@/components/domain/dynamic-form";
+import { SessionEndedAlert } from "@/components/domain/session-ended-alert";
 import { fieldErrorText, type Translator } from "@/i18n/failure-text";
+import { dropDraft, saveDraft } from "@/lib/form-draft";
+import { isSessionEnded, sessionEndedHref } from "@/lib/session-ended";
+import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ActionResult } from "@/types/action";
 import type { FormDefinition } from "./schemas";
 
@@ -80,14 +84,31 @@ export function ConnectedForm(props: ConnectedFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [rateLimited, setRateLimited] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState<{
+    href: string;
+    values: DynamicFormValues;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
+  // Only a project's form needs a signed-in visitor, so only it can find the session ended (S5-T07).
+  const draftName = props.sendProject ? "project-form" : "contact-form";
+  const draft = useRestoredDraft(draftName);
+  const words = useTranslations("domain.sessionEnded");
+  useRestoredNotice(draftName, draft, words("restored"));
 
   if (done) return <>{sent}</>;
+
+  // The answers kept before signing in again, for fields the form has and the visitor can change.
+  const kept: DynamicFormValues = {};
+  for (const field of form.fields) {
+    const value = draft?.[field.key];
+    if (value !== undefined && !locked?.[field.key]) kept[field.key] = value;
+  }
 
   function submit(values: DynamicFormValues) {
     setErrors({});
     setRateLimited(false);
     setFailed(false);
+    setSessionEnded(null);
     startTransition(async () => {
       try {
         const result = props.sendProject
@@ -104,7 +125,20 @@ export function ConnectedForm(props: ConnectedFormProps) {
               idempotencyKey: key,
             });
         if (result.ok) {
+          dropDraft(draftName, window.location.pathname);
           setDone(true);
+          return;
+        }
+        if (isSessionEnded(result)) {
+          // What the visitor typed is kept for the way back; a locked field (their phone) is not.
+          const typed: DynamicFormValues = {};
+          for (const [name, value] of Object.entries(values)) {
+            if (!locked?.[name]) typed[name] = value;
+          }
+          setSessionEnded({
+            href: sessionEndedHref(window.location.pathname, "#enquiry"),
+            values: typed,
+          });
           return;
         }
         if (result.code === "RATE_LIMITED") {
@@ -130,7 +164,16 @@ export function ConnectedForm(props: ConnectedFormProps) {
   return (
     <>
       {intro}
+      {sessionEnded ? (
+        <SessionEndedAlert
+          href={sessionEnded.href}
+          onSignIn={() => saveDraft(draftName, window.location.pathname, sessionEnded.values)}
+          className="mb-4"
+        />
+      ) : null}
       <DynamicForm
+        key={draft ? "restored" : "fresh"}
+        {...(draft ? { values: kept } : {})}
         fields={form.fields}
         buttonText={form.buttonText}
         errors={errors}

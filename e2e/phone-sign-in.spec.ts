@@ -54,6 +54,16 @@ test.describe("@smoke phone sign-in page", () => {
     await expect(page.getByText(words.gateTitle)).toBeVisible();
     await expect(page.getByText(words.gateBody)).toBeVisible();
   });
+
+  test("says the session ended, and what happens next, when sent back after it ended mid-form", async ({
+    page,
+  }) => {
+    await page.goto("/auth?gate=expired&redirect=%2Fprojects%2Fkadal-vista%23enquiry");
+    await expect(page.getByText(words.expiredGateTitle)).toBeVisible();
+    await expect(page.getByText(words.expiredGateBody)).toBeVisible();
+    await expect(page.getByText(words.gateTitle)).toHaveCount(0);
+    await expectNoSeriousAccessibilityViolations(page);
+  });
 });
 
 // S3-T09: the email link (ADD-03). A real link needs a signed-in session and the dev project's email,

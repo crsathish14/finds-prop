@@ -4,6 +4,7 @@ type PhoneSignInScreenProps = {
   siteKey: string | undefined;
   gate: boolean;
   saveGate?: boolean;
+  expiredGate?: boolean;
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested. */
   alreadySignedIn: boolean;
@@ -18,6 +19,7 @@ export function PhoneSignInScreen({
   siteKey,
   gate,
   saveGate = false,
+  expiredGate = false,
   redirectTo,
   alreadySignedIn,
 }: PhoneSignInScreenProps) {
@@ -27,6 +29,7 @@ export function PhoneSignInScreen({
         siteKey={siteKey}
         gate={gate}
         saveGate={saveGate}
+        expiredGate={expiredGate}
         redirectTo={redirectTo}
         alreadySignedIn={alreadySignedIn}
       />

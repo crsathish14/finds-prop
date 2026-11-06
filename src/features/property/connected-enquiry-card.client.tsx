@@ -5,5 +5,6 @@ import { useEnquiryForm, type EnquiryConnection } from "./use-enquiry-form.clien
 
 /** The enquiry card beside the details (from 1024 px) for a signed-in visitor, connected to the action. */
 export function ConnectedEnquiryCard({ connection }: { connection: EnquiryConnection }) {
-  return <EnquiryCard {...useEnquiryForm(connection)} />;
+  const { card, formKey } = useEnquiryForm(connection);
+  return <EnquiryCard key={formKey} {...card} />;
 }

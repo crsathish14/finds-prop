@@ -5,11 +5,12 @@ import { ContactPageDemo } from "./contact-demos";
 import { LegalPagesDemo } from "./legal-demos";
 import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
+import { SessionEndedDemo } from "./session-ended-demos";
 
 /**
  * The parts of finding and choosing homes and projects that sit across the screens: the compare bar and the
  * comparison (S4-T02), the projects page and the project page (S4-T09), and the signed-in person's dashboard
- * (S5-T04). They mirror the compare, projects and dashboard screens; the search, property and project cards
+ * (S5-T04), and the warning a form shows when the session ended (S5-T07). They mirror the compare, projects and dashboard screens; the search, property and project cards
  * are on the Domain board.
  */
 export const DISCOVERY: LabEntry[] = [
@@ -107,5 +108,13 @@ export const DISCOVERY: LabEntry[] = [
       "ui/textarea.tsx",
     ],
     Demo: ContactPageDemo,
+  },
+  {
+    id: "session-ended",
+    name: "Session ended",
+    description:
+      "The warning a form shows when the visitor's session ended before they could send it (S5-T07): \"Your session has ended\", that what they typed will be kept, and a Sign in again link. On its own, and inside the property enquiry card, the phone's enquiry sheet, the project's enquiry card and a project's own form, with what was typed still in the form. Nothing here signs in or navigates. The words are not approved yet.",
+    sources: ["domain/session-ended-alert.tsx", "domain/enquiry-card.tsx", "patterns/alert.tsx"],
+    Demo: SessionEndedDemo,
   },
 ];

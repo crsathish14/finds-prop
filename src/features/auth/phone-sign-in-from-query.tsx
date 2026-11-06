@@ -9,7 +9,8 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
 
 /**
  * Reads the page's query string and shows the matching state: `?gate=enquire` says the visitor was
- * sent here by an action that needs an account, and `?redirect=` is where to go after signing in,
+ * sent here by an action that needs an account (`?gate=save` to save a home, `?gate=expired` when their session
+ * ended in the middle of a form), and `?redirect=` is where to go after signing in,
  * accepted only if it is a path on this site (BR-06, FR-AUTH-06). It also says whether the visitor
  * arrived already signed in. It only reports that: the screen decides what to do, because signing in
  * through this page sets a cookie, Next.js then re-renders the page on the server, and a redirect made
@@ -28,6 +29,7 @@ export async function PhoneSignInFromQuery({
       siteKey={publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
       gate={first(gate) === "enquire"}
       saveGate={first(gate) === "save"}
+      expiredGate={first(gate) === "expired"}
       redirectTo={safeRedirectPath(first(redirect), "/dashboard")}
       alreadySignedIn={alreadySignedIn}
     />

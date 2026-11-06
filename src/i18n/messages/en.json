@@ -98,6 +98,8 @@
       "gateBody": "We will take you straight back to the home you were viewing.",
       "saveGateTitle": "Sign in to save homes",
       "saveGateBody": "We will bring you back to this page, and the home will be saved to your dashboard.",
+      "expiredGateTitle": "Sign in again to carry on",
+      "expiredGateBody": "Your session ended. We will take you back to where you were, with what you typed kept.",
       "label": "Mobile number",
       "placeholder": "98765 43210",
       "hint": "Indian mobile numbers only for now. We use it to sign you in.",
@@ -619,7 +621,11 @@
     }
   },
   "contact": {
-    "crumb": { "nav": "Breadcrumb", "home": "Home", "backHome": "Back to home" },
+    "crumb": {
+      "nav": "Breadcrumb",
+      "home": "Home",
+      "backHome": "Back to home"
+    },
     "meta": {
       "title": "Contact",
       "description": "Questions about a listing, a project or your account? Send Find Prop a message."
@@ -656,7 +662,11 @@
     "version": "Version {version}",
     "contents": "On this page",
     "switcher": "Legal pages",
-    "crumb": { "nav": "Breadcrumb", "home": "Home", "backHome": "Back to home" },
+    "crumb": {
+      "nav": "Breadcrumb",
+      "home": "Home",
+      "backHome": "Back to home"
+    },
     "draft": {
       "title": "Draft",
       "body": "This text is a placeholder and is not legal advice. The final text will replace it."
@@ -993,6 +1003,12 @@
         "title": "You have reached the limit for now",
         "body": "You can send a limited number of messages per hour. Please try again a little later."
       }
+    },
+    "sessionEnded": {
+      "title": "Your session has ended",
+      "body": "Sign in again to send this. What you typed will be kept.",
+      "action": "Sign in again",
+      "restored": "We kept what you typed."
     }
   }
 }
