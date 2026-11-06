@@ -226,7 +226,7 @@ describe("UT-project-queries: one project by its slug", () => {
     expect(made.available.calls[0]?.args[1]).toEqual({ count: "exact", head: true });
     expect(made.available.calls.map((call) => call.args)).toContainEqual(["status", "available"]);
     expect(made.trend.calls.at(-1)).toEqual({ method: "limit", args: [12] });
-    expect(tag).toHaveBeenCalledWith(PROJECTS_TAG);
+    expect(tag).toHaveBeenCalledWith(PROJECTS_TAG, "project:kadal-vista");
 
     expect(result.status).toBe("found");
     if (result.status !== "found") return;

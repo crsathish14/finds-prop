@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/search";
+import { propertyTag } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import {
@@ -37,12 +38,12 @@ function inShowingOrder(photos: PhotoRow[]): PhotoRow[] {
  * exists: only approved listings, only the granted columns (BR-90). No home is `missing`, which
  * covers one that was never listed, one that is waiting for review and one that was sold or rented.
  * Anything else that goes wrong throws (and so is never cached): a failed read must not look like a
- * home that is gone. Errors are logged by their code only. Cached for minutes under the homes tag, so
- * an approval or an edit refreshes it.
+ * home that is gone. Errors are logged by their code only. Cached for minutes under the homes tag and the home's own tag,
+ * so an approval, an edit or a sale refreshes it.
  */
 export async function getProperty(shortId: string): Promise<PropertyResult> {
   "use cache";
-  cacheTag(LISTINGS_TAG);
+  cacheTag(LISTINGS_TAG, propertyTag(shortId));
   cacheLife("minutes");
   const client = createPublicSupabase();
 
