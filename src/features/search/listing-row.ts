@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 /**
  * One home from `search_properties()`, checked as it comes in: the public columns only, never the
@@ -33,4 +34,4 @@ export type ListingRow = z.infer<typeof listingRowSchema> & { ageDays: number | 
  * actions refresh it when a listing is approved or changed. Its value is kept from the first
  * version, which was the homepage's.
  */
-export const LISTINGS_TAG = "home-listings";
+export const LISTINGS_TAG = CACHE_TAGS.listings;

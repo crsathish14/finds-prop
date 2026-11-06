@@ -157,7 +157,7 @@ describe("UT-property-queries: one home by its public id", () => {
   it("tags the read so an approval or an edit refreshes it, and keeps it for minutes", async () => {
     arrange();
     await getProperty("k3x9a2bd");
-    expect(tag).toHaveBeenCalledWith("home-listings");
+    expect(tag).toHaveBeenCalledWith("home-listings", "property:k3x9a2bd");
     expect(life).toHaveBeenCalledWith("minutes");
   });
 });

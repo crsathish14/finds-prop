@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
+import { CACHE_TAGS, projectTag } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import {
@@ -18,7 +19,7 @@ import type { ProjectData, ProjectListItem, ProjectUnit, TrendPoint } from "./ty
 import { orderUnits, trendSeries, TREND_MONTHS, UNITS_SHOWN } from "./view";
 
 /** The cache tag the admin actions refresh when a project is approved, published or changed. */
-export const PROJECTS_TAG = "projects";
+export const PROJECTS_TAG = CACHE_TAGS.projects;
 
 /** The most projects the list reads. The UX has no paging; this is far above what the site will hold. */
 export const PROJECT_LIST_LIMIT = 60;
@@ -98,11 +99,11 @@ export async function getProjects(): Promise<ProjectList> {
  * covers one that was never listed, one waiting for review, one not published and one whose builder
  * is not active. Anything else that goes wrong throws (and so is never cached): a failed read must not
  * look like a project that is gone. Errors are logged by their code only. Cached for minutes under
- * the projects tag, so an approval or an edit refreshes it.
+ * the projects tag and the project's own tag, so an approval or an edit refreshes it.
  */
 export async function getProject(slug: string): Promise<ProjectResult> {
   "use cache";
-  cacheTag(PROJECTS_TAG);
+  cacheTag(PROJECTS_TAG, projectTag(slug));
   cacheLife("minutes");
   const client = createPublicSupabase();
 

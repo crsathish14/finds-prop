@@ -1,12 +1,13 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import { mergeSiteSettings } from "./merge";
 import type { SiteSettings } from "./schemas";
 
 /** Cache tag the admin site-content action will refresh when it saves (FR-ADM-10). */
-export const SITE_SETTINGS_TAG = "site-settings";
+export const SITE_SETTINGS_TAG = CACHE_TAGS.siteSettings;
 
 /**
  * The site content with defaults applied. Public data, so it uses the cookie-less client and is
