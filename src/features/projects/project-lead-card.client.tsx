@@ -1,14 +1,15 @@
 "use client";
 
-import { CalendarDays, CircleCheck, Send } from "lucide-react";
+import { CalendarDays, CircleCheck, Lock, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { Link } from "@/components/ui/link";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -16,7 +17,6 @@ import { cn } from "@/lib/cn";
 export type LeadKind = "enquiry" | "site_visit";
 export type LeadValues = {
   name: string;
-  phone: string;
   email: string;
   visitDate: string;
   message: string;
@@ -25,25 +25,32 @@ type LeadField = keyof LeadValues;
 export type LeadErrors = Partial<Record<LeadField, string>>;
 
 type ProjectLeadCardProps = {
-  /** "form" the card, or "sent" the confirmation that replaces it. */
-  state: "form" | "sent";
+  /** "signed_out" the gate, "form" the card, or "sent" the confirmation that replaces it. */
+  state: "signed_out" | "form" | "sent";
+  /** The gate's two links (sign in, asking to come back to this project; create an account). */
+  signInHref?: string;
+  createAccountHref?: string;
+  /** The account's phone as it is shown (masked): the form cannot change it, the server uses the account's own. */
+  phone?: string;
   /** Which request is chosen first (Enquire by default). */
   defaultKind?: LeadKind;
   values?: Partial<LeadValues>;
+  /** The first and last day a visit can be asked for (`YYYY-MM-DD`). */
+  visitDateMin?: string;
+  visitDateMax?: string;
   /** Already-translated messages; a field with one is marked invalid. */
   errors?: LeadErrors;
   /** The visitor sent too many requests in the hour: the "please wait" alert above the form. */
   rateLimited?: boolean;
+  /** Sending failed for a reason the visitor cannot fix by editing a field: a "try again" alert above the form. */
+  failed?: boolean;
   submitting?: boolean;
-  /** Send is switched off (the form can be filled, nothing can be sent yet) and a line says why. */
-  sendDisabled?: boolean;
-  sendNotice?: string;
   onSubmit?: (kind: LeadKind, values: LeadValues) => void;
   className?: string;
 };
 
 const MESSAGE_LIMIT = 1000;
-const FIELD_ORDER: readonly LeadField[] = ["name", "phone", "email", "visitDate", "message"];
+const FIELD_ORDER: readonly LeadField[] = ["name", "email", "visitDate", "message"];
 
 /** The error prop of a field, only when it has an error (the field takes no undefined). */
 function errorProp(errors: LeadErrors | undefined, field: LeadField): { error?: string } {
@@ -53,22 +60,27 @@ function errorProp(errors: LeadErrors | undefined, field: LeadField): { error?: 
 
 /**
  * The box beside a project's details where a visitor asks the developer something or asks for a site
- * visit (UX: "Interested in this project?"): Enquire or Site visit, name and phone (required), email
- * (optional), the preferred date (a site visit only, required) and a message (optional). Anyone can use
- * it, signed in or not. It is the screen only: it holds what the visitor has typed and hands the values
- * over; it sends nothing (the lead action is a later task), so the page switches Send off with a line
- * that says so. Errors, the "please wait" alert and the confirmation are drawn from props. The anchor
- * `#enquiry` is this card, so the phone bar can lead to it.
+ * visit (UX: "Interested in this project?"). Anyone can read the project, but sending needs a phone
+ * sign-in (owner decision, 6 Nov 2026), so a visitor who is not signed in sees the gate (sign in, or
+ * create an account) and a signed-in one sees the form: Enquire or Site visit, name (required), the
+ * account's phone (shown, locked), email (optional), the preferred date (a site visit only, required,
+ * from today to a year ahead) and a message (optional). It is the screen only: it holds what the
+ * visitor has typed and hands the values over. Errors, the "please wait" and "try again" alerts and the
+ * confirmation are drawn from props. The anchor `#enquiry` is this card, so the phone bar can lead to it.
  */
 export function ProjectLeadCard({
   state,
+  signInHref = "#",
+  createAccountHref = "#",
+  phone = "",
   defaultKind = "enquiry",
   values,
+  visitDateMin,
+  visitDateMax,
   errors,
   rateLimited = false,
+  failed = false,
   submitting = false,
-  sendDisabled = false,
-  sendNotice,
   onSubmit,
   className,
 }: ProjectLeadCardProps) {
@@ -77,14 +89,12 @@ export function ProjectLeadCard({
   const [kind, setKind] = useState<LeadKind>(defaultKind);
   const [typed, setTyped] = useState<LeadValues>({
     name: values?.name ?? "",
-    phone: values?.phone ?? "",
     email: values?.email ?? "",
     visitDate: values?.visitDate ?? "",
     message: values?.message ?? "",
   });
   const form = useRef<HTMLFormElement>(null);
   const shown = useRef(false);
-  const noticeId = useId();
 
   // Errors that arrive after the card is shown take the reader to the first field with one. Errors that
   // are there from the start (the Design Lab shows them) do not steal focus.
@@ -108,6 +118,40 @@ export function ProjectLeadCard({
   }
 
   const frame = "scroll-mt-6 rounded-xl border border-line bg-surface p-6 shadow-card";
+
+  if (state === "signed_out") {
+    return (
+      <div
+        id="enquiry"
+        data-slot="project-lead-card"
+        data-state="signed_out"
+        className={cn(frame, className)}
+      >
+        <span
+          aria-hidden="true"
+          className="grid size-12 place-items-center rounded-pill bg-info-tint text-info"
+        >
+          <Icon icon={Lock} size="lg" />
+        </span>
+        <Heading as="h2" size="3" className="mt-3">
+          {translate("title")}
+        </Heading>
+        <p className="mt-2 mb-4 text-small text-muted">{translate("gate.leadIn")}</p>
+        <div className="flex flex-col gap-3">
+          <Button asChild variant="accent" className="w-full">
+            <Link href={signInHref} className="text-on-cta no-underline hover:text-on-cta">
+              {translate("gate.signIn")}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" className="w-full">
+            <Link href={createAccountHref} className="text-primary no-underline hover:text-primary">
+              {translate("gate.createAccount")}
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (state === "sent") {
     return (
@@ -164,6 +208,7 @@ export function ProjectLeadCard({
             {translate("rateLimit.body")}
           </Alert>
         ) : null}
+        {failed ? <Alert tone="danger">{translate("failed")}</Alert> : null}
         <FormField label={translate("name")} required {...errorProp(errors, "name")}>
           <Input
             name="name"
@@ -172,15 +217,8 @@ export function ProjectLeadCard({
             onChange={(event) => change("name", event.target.value)}
           />
         </FormField>
-        <FormField label={translate("phone")} required {...errorProp(errors, "phone")}>
-          <Input
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            value={typed.phone}
-            onChange={(event) => change("phone", event.target.value)}
-          />
+        <FormField label={translate("phone")} hint={translate("phoneHint")}>
+          <Input name="phone" type="tel" readOnly value={phone} />
         </FormField>
         <FormField
           label={translate("email")}
@@ -202,6 +240,8 @@ export function ProjectLeadCard({
             <Input
               name="visitDate"
               type="date"
+              {...(visitDateMin ? { min: visitDateMin } : {})}
+              {...(visitDateMax ? { max: visitDateMax } : {})}
               value={typed.visitDate}
               onChange={(event) => change("visitDate", event.target.value)}
             />
@@ -227,17 +267,10 @@ export function ProjectLeadCard({
           size="lg"
           className="w-full"
           loading={submitting}
-          disabled={sendDisabled}
-          {...(sendNotice ? { "aria-describedby": noticeId } : {})}
           iconStart={<Icon icon={siteVisit ? CalendarDays : Send} />}
         >
           {siteVisit ? translate("requestVisit") : translate("send")}
         </Button>
-        {sendNotice ? (
-          <p id={noticeId} className="-mt-1 text-center text-caption text-muted">
-            {sendNotice}
-          </p>
-        ) : null}
       </form>
     </div>
   );

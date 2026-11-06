@@ -593,7 +593,13 @@
         "messagePlaceholder": "Tell the developer what you would like to know.",
         "send": "Send enquiry",
         "requestVisit": "Request a site visit",
-        "notOpen": "Sending enquiries is not open yet.",
+        "phoneHint": "The number you signed in with.",
+        "failed": "We couldn't send your request. Please try again.",
+        "gate": {
+          "leadIn": "Sign in with your phone to send an enquiry or request a site visit.",
+          "signIn": "Sign in to enquire",
+          "createAccount": "Create an account"
+        },
         "rateLimit": {
           "title": "Please wait a little",
           "body": "You can send a limited number of requests per hour. Try again soon."
