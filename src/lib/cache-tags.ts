@@ -8,7 +8,7 @@
  * this change touch" answers in one file means a new cached read cannot be forgotten: a test
  * (`IT-cache`) fails when a read uses a tag that no helper below refreshes.
  *
- * The four fixed names keep the values the first reads were built with, so nothing cached changes.
+ * The first four names keep the values the first reads were built with, so nothing cached changes.
  */
 export const CACHE_TAGS = {
   /** Every list of homes: the homepage sections, the results page, the sitemap, and each home page. */
@@ -19,6 +19,8 @@ export const CACHE_TAGS = {
   projects: "projects",
   /** The site content: header, hero, footer, homepage switches, sponsors. */
   siteSettings: "site-settings",
+  /** The forms a visitor fills in: the contact page's form (S5-T05). */
+  forms: "forms",
 } as const;
 
 /** The tag of one home page, by its short id: a sold, rejected or edited home leaves it at once. */
@@ -50,4 +52,9 @@ export function tagsAfterProjectChange(slug: string): string[] {
 /** The site content was saved (FR-ADM-10). */
 export function tagsAfterSiteSettingsChange(): string[] {
   return [CACHE_TAGS.siteSettings];
+}
+
+/** A form was created, edited, switched on or off, or moved to another placement (FR-ADM-08). */
+export function tagsAfterFormChange(): string[] {
+  return [CACHE_TAGS.forms];
 }

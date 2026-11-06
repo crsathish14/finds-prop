@@ -5,6 +5,7 @@ import {
   buildAccountMenu,
   buildBottomBar,
   buildFooter,
+  buildFooterContacts,
   buildHeader,
   initialsFrom,
   isBottomBarVisible,
@@ -226,6 +227,16 @@ describe("UT-site-chrome: footer", () => {
       2027,
     );
     expect(footer.copyright).toBe("© 2027 Nest Finder");
+  });
+});
+
+describe("UT-site-chrome: the contact lines on their own (the contact page's Reach us directly)", () => {
+  it("is empty when nothing is set, and holds only the lines that are", () => {
+    expect(buildFooterContacts({})).toEqual([]);
+    expect(buildFooterContacts({ contact: {} })).toEqual([]);
+    expect(buildFooterContacts({ contact: { email: "hi@example.org" } })).toEqual([
+      { kind: "email", text: "hi@example.org", href: "mailto:hi@example.org" },
+    ]);
   });
 });
 

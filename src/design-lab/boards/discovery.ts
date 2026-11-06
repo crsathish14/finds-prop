@@ -1,6 +1,7 @@
 import type { LabEntry } from "../types";
 import { DashboardPageDemo } from "./dashboard-demos";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
+import { ContactPageDemo } from "./contact-demos";
 import { LegalPagesDemo } from "./legal-demos";
 import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
@@ -88,5 +89,22 @@ export const DISCOVERY: LabEntry[] = [
       "The Privacy Policy, Terms of Use and Cookie information in one reading layout: the breadcrumb, a switch between the three pages, the title with the Legal tag, a draft notice (the text is a placeholder until the owner's text is in, and the page is kept out of search results), a summary and numbered sections beside an On this page list (a column from 1024 px, a list that opens on a phone), with a table for the data collected and for what the site stores in the browser. Nothing here navigates.",
     sources: ["patterns/alert.tsx", "patterns/breadcrumb.tsx"],
     Demo: LegalPagesDemo,
+  },
+  {
+    id: "contact-page",
+    name: "Contact page",
+    description:
+      'The contact page below the header: the breadcrumb, "Talk to us" and the form in a card with "Reach us directly" beside it (below it on a phone). The form is the default contact form drawn by the form renderer: name and mobile needed, email, "I\'m interested in" and a message optional, then Send message and the consent line with the Privacy Policy link. States: wrong answers (each message beside its field, what was typed kept), too many messages this hour, could not be sent, sending, sent, the form could not be loaded (with Refresh), no contact details set (the column is left out) and loading. Also the renderer with one of every kind of field: text, number, email, dropdown, date, radio buttons, checkboxes, a single checkbox and a long answer with a counter. Nothing here sends or navigates.',
+    sources: [
+      "domain/dynamic-form.tsx",
+      "patterns/form-field.tsx",
+      "patterns/alert.tsx",
+      "patterns/breadcrumb.tsx",
+      "ui/native-select.tsx",
+      "ui/checkbox.tsx",
+      "ui/radio-group.tsx",
+      "ui/textarea.tsx",
+    ],
+    Demo: ContactPageDemo,
   },
 ];

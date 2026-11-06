@@ -3,6 +3,7 @@ export {
   buildAccountMenu,
   buildBottomBar,
   buildFooter,
+  buildFooterContacts,
   buildHeader,
   initialsFrom,
   isBottomBarVisible,

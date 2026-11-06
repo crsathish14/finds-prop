@@ -4,7 +4,7 @@ import { env } from "@/server/env";
 import { clientIp, visitorHash } from "@/server/rate-limit/visitor-hash";
 import { createAdminSupabase } from "@/server/supabase/admin.server";
 import { createPublicSupabase } from "@/server/supabase/public";
-import { mapFormWriteError, type FormWriteStore } from "./form-service";
+import { FORM_COLUMNS, mapFormWriteError, type FormWriteStore } from "./form-service";
 
 /**
  * The part of the forms that touches the database (S5-T05): the form is read as an anonymous visitor
@@ -14,9 +14,6 @@ import { mapFormWriteError, type FormWriteStore } from "./form-service";
  * (docs/engineering/security.md 4.3). The only caller is an action built with `defineAction`, which has
  * already counted the rate limit.
  */
-const FORM_COLUMNS =
-  "slug, name, kind, placement, project_id, button_text, success_message, fields";
-
 export function createFormWriteStore(requestId: string): FormWriteStore {
   const client = createAdminSupabase(requestId);
   return {

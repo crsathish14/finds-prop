@@ -7,6 +7,10 @@ import { validateSubmission, type ValidSubmission } from "./validate";
  * tested with stand-ins. The real store and the form read are in `service.ts`.
  */
 
+/** The columns of a form a visitor may read: never the CRM link (the database grants no more). */
+export const FORM_COLUMNS =
+  "slug, name, kind, placement, project_id, button_text, success_message, fields";
+
 /** One submission as the database function takes it. */
 export interface SubmissionRow {
   formSlug: string;
