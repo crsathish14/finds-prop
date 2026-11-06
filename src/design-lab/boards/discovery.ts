@@ -1,12 +1,14 @@
 import type { LabEntry } from "../types";
+import { DashboardPageDemo } from "./dashboard-demos";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
 import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
 
 /**
  * The parts of finding and choosing homes and projects that sit across the screens: the compare bar and the
- * comparison (S4-T02) and the projects page and the project page (S4-T09). They mirror the compare and projects screens; the
- * search, property and project cards are on the Domain board.
+ * comparison (S4-T02), the projects page and the project page (S4-T09), and the signed-in person's dashboard
+ * (S5-T04). They mirror the compare, projects and dashboard screens; the search, property and project cards
+ * are on the Domain board.
  */
 export const DISCOVERY: LabEntry[] = [
   {
@@ -43,6 +45,20 @@ export const DISCOVERY: LabEntry[] = [
       "patterns/empty-state.tsx",
     ],
     Demo: ProjectsPageDemo,
+  },
+  {
+    id: "dashboard-page",
+    name: "Dashboard page",
+    description:
+      "The signed-in person's dashboard below the header: the heading with a line that names them (or leaves the name out), Post a property, and four tabs (Saved, My listings, Enquiries received, My enquiries) that live in the address; the tabs can be chosen here and move with the arrow keys. Each tab with nothing to list shows its own empty state and one next step. The email prompt for someone with no address (a field, Send link and Later) with a wrong address, an address that cannot be used (no reason given), sending and a failure; and the reminder once a link was sent (Email not verified, with Send the link again, on a wait or ready, and a failure). Loading. Nothing here navigates.",
+    sources: [
+      "patterns/tabs.tsx",
+      "patterns/empty-state.tsx",
+      "patterns/alert.tsx",
+      "ui/badge.tsx",
+      "ui/skeleton.tsx",
+    ],
+    Demo: DashboardPageDemo,
   },
   {
     id: "project-page",
