@@ -5,6 +5,7 @@ import { PROJECTS_TAG } from "@/features/projects";
 import { LISTINGS_TAG } from "@/features/search";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
+import { SITEMAP_HOME_COLUMNS, SITEMAP_PROJECT_COLUMNS } from "./columns";
 import { homesRoom, SITEMAP_PROJECTS_MAX, type SitemapHome, type SitemapProject } from "./entries";
 
 /** PostgREST answers at most this many rows at a time (`max_rows` in the project), so the reads page. */
@@ -33,7 +34,7 @@ async function readHomes(limit: number): Promise<SitemapHome[]> {
     const to = Math.min(from + PAGE_SIZE, limit) - 1;
     const { data, error } = await client
       .from("properties")
-      .select("slug, short_id, updated_at")
+      .select(SITEMAP_HOME_COLUMNS)
       .order("updated_at", { ascending: false })
       .order("short_id", { ascending: true })
       .range(from, to);
@@ -69,7 +70,7 @@ async function readProjects(): Promise<SitemapProject[]> {
     const to = Math.min(from + PAGE_SIZE, SITEMAP_PROJECTS_MAX) - 1;
     const { data, error } = await client
       .from("projects")
-      .select("slug, updated_at, builders!inner(id)")
+      .select(SITEMAP_PROJECT_COLUMNS)
       .order("updated_at", { ascending: false })
       .order("slug", { ascending: true })
       .range(from, to);
