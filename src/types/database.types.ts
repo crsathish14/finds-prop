@@ -788,6 +788,9 @@ isOneToOne: false
               "allowed": boolean,"retry_after": number
             }[]
                            },
+"record_form_submission":
+{ Args: { "p_data"?: Json,"p_email"?: string,"p_files"?: Json,"p_form_slug": string,"p_idempotency_key"?: string,"p_mobile"?: string,"p_name"?: string,"p_project_slug"?: string,"p_source"?: string,"p_visitor_hash": string }; Returns: string
+                           },
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
