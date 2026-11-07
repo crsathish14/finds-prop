@@ -1,44 +1,12 @@
-// Which changed files need which checks: one list, used by CI (scripts/ci-changes.mjs) and by the
-// local runner (scripts/lib/ci-local-core.mjs), so the two cannot drift apart (R-GIT-05).
+// Which changed files need which CI jobs: one list, read by scripts/ci-changes.mjs in the `changes` job
+// of .github/workflows/ci.yml (docs/engineering/quality-gates.md, section 7).
 //
-// Two questions are answered here:
-//   1. For the local runner: which lanes does a change need (database, pictures, everything)?
-//   2. For CI: which of the three expensive jobs (db, integration, build) does a change need?
+// Which of the three expensive jobs (db, integration, build) does a change need?
 //
 // The rule that keeps this safe: when in doubt, run. An unreadable list of changed files, a change to
 // the workflow or the package list, and anything aimed at `main` all run every job. A job is skipped
 // only when no changed file can affect it. Skipping is never a pass for a failing job: a skipped job
 // is simply not needed, and `all-checks-passed` still fails if any job that did run fails.
-
-/** The local runner's database lane (the db job and the integration tests share one stack). */
-export const DATABASE_PATHS = [
-  /^supabase\//,
-  /^src\/types\/database\.types\.ts$/,
-  /^tests\/integration\//,
-  /^vitest\.integration\./,
-  /^src\/server\//,
-  /^src\/app\/(api|auth)\//,
-  /^src\/features\/.+\/(queries|service|[\w-]+-service|[\w-]+\.server|store|actions)\.tsx?$/,
-];
-
-/** The local runner's Linux picture lane. */
-export const PICTURE_PATHS = [
-  /^src\/design-lab\//,
-  /^src\/components\//,
-  /^src\/styles\//,
-  /^src\/i18n\/messages\//,
-  /^e2e\/design-lab\//,
-  /^playwright\.config\./,
-  /^package-lock\.json$/,
-];
-
-/** The local runner runs every lane when one of these changes. */
-export const EVERYTHING_PATHS = [
-  /^\.github\//,
-  /^scripts\/(ci-local|lib\/ci-local)/,
-  /^package\.json$/,
-  /^\.nvmrc$/,
-];
 
 /** CI runs every job when one of these changes: they can change how any job behaves. */
 export const CI_FULL_PATHS = [
@@ -62,12 +30,17 @@ export const CI_DB_PATHS = [
 
 /**
  * The CI integration job: the real src/server code against a real local Supabase. Beyond the database
- * paths, the tests import the shared libraries, the types and the config, and a few feature files that
- * hold column lists, schemas and image fixtures.
+ * paths, it covers the server-side routes and feature code (queries, services, actions, stores), and the
+ * tests import the shared libraries, the types and the config, and a few feature files that hold column
+ * lists, schemas and image fixtures.
  */
 export const CI_INTEGRATION_PATHS = [
   ...CI_DB_PATHS,
-  ...DATABASE_PATHS,
+  /^tests\/integration\//,
+  /^vitest\.integration\./,
+  /^src\/server\//,
+  /^src\/app\/(api|auth)\//,
+  /^src\/features\/.+\/(queries|service|[\w-]+-service|[\w-]+\.server|store|actions)\.tsx?$/,
   /^src\/(lib|config|types)\//,
   /^src\/features\/media\//,
   /^src\/features\/.+\/(schemas|[\w-]+-schemas|columns|public-columns)\.tsx?$/,

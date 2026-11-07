@@ -10,8 +10,8 @@
 //
 // Fail-safe: anything it cannot work out (no base, a commit that is gone, a git error) runs every job.
 // So does a change to the workflow or the package list, and anything aimed at `main` (docs/engineering/
-// quality-gates.md, section 7). The path lists live in scripts/lib/ci-paths.mjs, shared with the local
-// runner. It reads only the file names, never their content, and prints no secret.
+// quality-gates.md, section 7). The path lists live in scripts/lib/ci-paths.mjs. It reads only the file
+// names, never their content, and prints no secret.
 import fs from "node:fs";
 import { CI_JOB_IDS, selectCiJobs } from "./lib/ci-paths.mjs";
 import { git, isMain, repoRoot } from "./lib/core.mjs";
