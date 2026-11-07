@@ -17,6 +17,7 @@ export const BOARDS = [
   "domain",
   "discovery",
   "seller",
+  "admin",
 ] as const;
 
 export async function settle(page: Page) {

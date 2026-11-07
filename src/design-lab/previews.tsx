@@ -22,6 +22,7 @@ import { Logo } from "@/components/ui/logo";
 import { Text } from "@/components/ui/text";
 import { resolveHero, type HeroLayout, type SponsorAd } from "@/lib/sponsors";
 import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "@/lib/sponsors.fixtures";
+import { AdminListingsPreview, AdminRejectPreview, AdminReviewPreview } from "./boards/admin-pages";
 import { SearchCardHost } from "./boards/domain-demos-search";
 import { BasicsStep, FailedAlert, ReviewStep, SampleWizard } from "./boards/seller-parts";
 import type { PreviewName } from "./preview-names";
@@ -294,4 +295,7 @@ export const PREVIEWS: Record<PreviewName, () => ReactNode> = {
       <ReviewStep />
     </SampleWizard>
   ),
+  "admin-listings": AdminListingsPreview,
+  "admin-review": AdminReviewPreview,
+  "admin-reject": AdminRejectPreview,
 };

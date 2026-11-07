@@ -15,6 +15,9 @@ export const PREVIEW_NAMES = [
   "hero-split-without-ad",
   "wizard-basics",
   "wizard-review",
+  "admin-listings",
+  "admin-review",
+  "admin-reject",
 ] as const;
 
 export type PreviewName = (typeof PREVIEW_NAMES)[number];

@@ -66,6 +66,7 @@ The five approved design-system boards are built in the Design Lab (ADR-020) wit
 | `/design-system/domain`      | `docs/ux/final-ux/screens/search.html`         | The organisms that appear only inside the screens (S4-T01): the property, project and developer cards, the locality tile, the search card and the filter rail and sheet now; the rest follow              |
 | `/design-system/discovery`   | `docs/ux/final-ux/screens/compare.html`        | What spans the screens when choosing homes and projects: the compare bar and the comparison (S4-T02), the projects page and the project page (S4-T09), and the dashboard (S5-T04), in each state          |
 | `/design-system/seller`      | `docs/ux/final-ux/screens/post-property.html`  | What an owner uses to post a property (S6-T02): the wizard frame and footer, the choice cards, the amenity chips, the review list and next-steps box, the posting gate and the drafts list, in each state |
+| `/design-system/admin`       | `docs/ux/final-ux/screens/admin-listings.html` | What the admin uses to review listings (S6-T04): the listing queue, the review drawer and the reject dialog, in each state                                                                                |
 
 Whole-page previews of the layout components at 390, 820 and 1280 px are served at `/design-system/preview/<name>` (names in `src/design-lab/preview-names.ts`).
 

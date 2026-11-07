@@ -1,3 +1,4 @@
+import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
 import { DISCOVERY } from "./boards/discovery";
@@ -75,6 +76,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What an owner uses to post a property: the wizard's frame and footer, the choice cards, the amenity chips, the review list, the gate and the drafts list. It mirrors the post-property screen.",
     entries: SELLER,
+  },
+  {
+    id: "admin",
+    title: "Admin",
+    uxBoard: "admin-listings",
+    summary:
+      "What the admin uses to review the listings owners post: the queue with its tabs and filters, the review drawer and the reject dialog. It mirrors the admin listings screen.",
+    entries: ADMIN,
   },
 ];
 
