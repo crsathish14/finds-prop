@@ -10,7 +10,7 @@ export const ADMIN: LabEntry[] = [
     id: "listing-queue",
     name: "Listing queue",
     description:
-      "The rows of the admin's listings page: a table from 896 px of room and cards below that, each with the picture, title, owner, price, when it was submitted, its state and its buttons. Shown under the tabs and filters it sits in, with Show more, with featured, rejected (with its reason), sold, a very long title, a working button, and nothing to review.",
+      "The rows of the admin's listings page: a table from 1024 px of room and cards below that, each with the picture, title, owner, price, when it was submitted, its state and its buttons. Shown under the tabs and filters it sits in, with Show more, with featured, rejected (with its reason), sold, a very long title, a working button, and nothing to review.",
     sources: ["domain/listing-queue.tsx"],
     Demo: ListingQueueDemo,
   },

@@ -11,7 +11,7 @@
  *   { id, label, forName, tone "primary" | "secondary" | "danger-outline", icon "check" | "cross" | "star",
  *   onClick, pending }. `forName` is the listing's title, heard after the visible word ("Approve" then
  *   "Independent villa"), because several buttons with the same word are on the page.
- * Responsive: it asks its own width, not the screen's: a table from 896 px of room, a stack of cards below
+ * Responsive: it asks its own width, not the screen's: a table from 1024 px of room, a stack of cards below
  *   that (each card: picture and title, then Owner, Price, Submitted and Status with their words, then the
  *   buttons). Long titles are cut after two lines.
  * Accessibility: a real table with its roles kept in the card layout, so it is still read as a table; the
@@ -77,9 +77,9 @@ type ListingQueueProps = {
 
 const ICONS = { check: Check, cross: X, star: Star } as const;
 
-/** The word above a value on a card; the table's heading says it from 896 px. */
+/** The word above a value on a card; the table's heading says it from 1024 px. */
 const valueLabel =
-  "before:mb-1 before:block before:text-caption before:font-semibold before:text-muted before:content-[attr(data-label)] @4xl:before:hidden";
+  "before:mb-1 before:block before:text-caption before:font-semibold before:text-muted before:content-[attr(data-label)] @5xl:before:hidden";
 
 function QueueActionButtons({
   actions,
@@ -89,7 +89,7 @@ function QueueActionButtons({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap gap-2 @4xl:justify-end", className)}>
+    <div className={cn("flex flex-wrap gap-2 @5xl:justify-end", className)}>
       {actions.map((action) => (
         <Button
           key={action.id}
@@ -112,11 +112,19 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
     <div data-slot="listing-queue" className={cn("@container min-w-0", className)}>
       <table
         role="table"
-        className="block w-full border-collapse text-left @4xl:table @4xl:rounded-lg @4xl:border @4xl:border-line @4xl:bg-surface"
+        className="block w-full border-collapse text-left @5xl:table @5xl:table-fixed @5xl:rounded-lg @5xl:border @5xl:border-line @5xl:bg-surface"
       >
         <caption className="sr-only">{caption}</caption>
-        <thead role="rowgroup" className="sr-only @4xl:not-sr-only @4xl:table-header-group">
-          <tr role="row" className="@4xl:border-b @4xl:border-line">
+        <colgroup className="hidden @5xl:table-column-group">
+          <col className="@5xl:w-[24%]" />
+          <col className="@5xl:w-[16%]" />
+          <col className="@5xl:w-[12%]" />
+          <col className="@5xl:w-[12%]" />
+          <col className="@5xl:w-[13%]" />
+          <col className="@5xl:w-[23%]" />
+        </colgroup>
+        <thead role="rowgroup" className="sr-only @5xl:not-sr-only @5xl:table-header-group">
+          <tr role="row" className="@5xl:border-b @5xl:border-line">
             {(
               [
                 ["listing", columns.listing],
@@ -132,7 +140,7 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
                 role="columnheader"
                 scope="col"
                 className={cn(
-                  "px-4 py-3 text-caption font-semibold text-muted",
+                  "px-3 py-3 text-caption font-semibold text-muted",
                   key === "price" && "text-right",
                   key === "actions" && "text-right",
                 )}
@@ -142,23 +150,25 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
             ))}
           </tr>
         </thead>
-        <tbody role="rowgroup" className="flex flex-col gap-3 @4xl:table-row-group">
+        <tbody role="rowgroup" className="flex flex-col gap-3 @5xl:table-row-group">
           {rows.map((row) => (
             <tr
               key={row.id}
               role="row"
-              className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 @4xl:table-row @4xl:rounded-none @4xl:border-0 @4xl:border-t @4xl:border-line @4xl:p-0 @4xl:first:border-t-0"
+              className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 @5xl:table-row @5xl:rounded-none @5xl:border-0 @5xl:border-t @5xl:border-line @5xl:p-0 @5xl:first:border-t-0"
             >
               <td
                 role="cell"
-                className="min-w-0 @4xl:table-cell @4xl:px-4 @4xl:py-3 @4xl:align-middle"
+                className="min-w-0 @5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:align-middle"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-canvas-sunken">
                     <CardCover src={row.cover?.src} alt={row.cover?.alt ?? ""} sizes="64px" />
                   </div>
                   <div className="flex min-w-0 flex-col gap-1">
-                    <p className="line-clamp-2 font-bold break-words text-ink">{row.title}</p>
+                    <p className="line-clamp-2 font-bold text-ink [overflow-wrap:anywhere]">
+                      {row.title}
+                    </p>
                     <p className="text-small text-muted">{row.meta}</p>
                     {row.note ? <div className="mt-1 text-small text-ink">{row.note}</div> : null}
                   </div>
@@ -168,20 +178,24 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
                 role="cell"
                 data-label={columns.owner}
                 className={cn(
-                  "min-w-0 @4xl:table-cell @4xl:px-4 @4xl:py-3 @4xl:align-middle",
+                  "min-w-0 @5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:align-middle",
                   valueLabel,
                 )}
               >
-                <span className="font-semibold break-words text-ink">{row.ownerName}</span>
+                <span className="font-semibold text-ink [overflow-wrap:anywhere]">
+                  {row.ownerName}
+                </span>
                 {row.ownerEmail ? (
-                  <span className="block text-small break-words text-muted">{row.ownerEmail}</span>
+                  <span className="block text-small text-muted [overflow-wrap:anywhere]">
+                    {row.ownerEmail}
+                  </span>
                 ) : null}
               </td>
               <td
                 role="cell"
                 data-label={columns.price}
                 className={cn(
-                  "font-bold text-ink tabular-nums @4xl:table-cell @4xl:whitespace-nowrap @4xl:px-4 @4xl:py-3 @4xl:text-right @4xl:align-middle",
+                  "font-bold text-ink tabular-nums @5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:text-right @5xl:align-middle",
                   valueLabel,
                 )}
               >
@@ -191,7 +205,7 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
                 role="cell"
                 data-label={columns.submitted}
                 className={cn(
-                  "text-small text-ink @4xl:table-cell @4xl:whitespace-nowrap @4xl:px-4 @4xl:py-3 @4xl:align-middle",
+                  "text-small text-ink @5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:align-middle",
                   valueLabel,
                 )}
               >
@@ -200,15 +214,12 @@ function ListingQueue({ caption, columns, rows, className }: ListingQueueProps) 
               <td
                 role="cell"
                 data-label={columns.status}
-                className={cn("@4xl:table-cell @4xl:px-4 @4xl:py-3 @4xl:align-middle", valueLabel)}
+                className={cn("@5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:align-middle", valueLabel)}
               >
                 <div className="flex flex-wrap items-center gap-2">{row.status}</div>
               </td>
-              <td
-                role="cell"
-                className="@4xl:w-px @4xl:table-cell @4xl:px-4 @4xl:py-3 @4xl:align-middle"
-              >
-                <QueueActionButtons actions={row.actions} className="@4xl:flex-nowrap" />
+              <td role="cell" className="@5xl:table-cell @5xl:px-3 @5xl:py-3 @5xl:align-middle">
+                <QueueActionButtons actions={row.actions} />
               </td>
             </tr>
           ))}
