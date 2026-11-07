@@ -52,6 +52,8 @@ export const RATE_LIMITS = {
   listing_create: [{ who: "user", windowSeconds: DAY, max: 10 }],
   /** 30 upload addresses per user per hour. */
   upload_url: [{ who: "user", windowSeconds: HOUR, max: 30 }],
+  /** 120 listing decisions (approve, reject, feature) per admin per hour (S6-T04). */
+  admin_decision: [{ who: "user", windowSeconds: HOUR, max: 120 }],
   /** 60 place searches per visitor per minute (protects the provider quota). */
   places: [{ who: "visitor", windowSeconds: MINUTE, max: 60 }],
   /** 60 map searches per visitor per minute. */
