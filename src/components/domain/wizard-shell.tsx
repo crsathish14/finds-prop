@@ -52,21 +52,21 @@ function WizardShell({
   className,
 }: WizardShellProps) {
   return (
-    <Container data-slot="wizard-shell" className={cn("py-6 pb-28 md:py-10 md:pb-10", className)}>
+    <Container data-slot="wizard-shell" className={cn("py-6 pb-24 md:py-10 md:pb-10", className)}>
       <div className="mb-6 flex flex-col gap-2 md:mb-8">
         <Heading as={titleAs} size="1" id={titleId} tabIndex={-1}>
           <TitleWithEmphasis title={title} emphasis={emphasis} />
         </Heading>
         <Text tone="muted">{description}</Text>
       </div>
-      <div className="grid gap-6 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:items-start lg:gap-10">
+      <div className="grid gap-6 md:grid-cols-3 md:items-start lg:grid-cols-4 lg:gap-10">
         <div>
           <Stepper steps={steps} progressLabel={progressLabel} />
           <p className="mt-3 text-small text-muted md:hidden">{progressLabel}</p>
         </div>
         <section
           aria-labelledby={titleId}
-          className="flex flex-col gap-6 rounded-xl border border-line bg-surface p-5 md:p-8"
+          className="flex flex-col gap-6 rounded-xl border border-line bg-surface p-5 md:col-span-2 md:p-8 lg:col-span-3"
         >
           {alert}
           {children}

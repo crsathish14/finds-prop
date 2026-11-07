@@ -112,7 +112,7 @@ export function BasicsStep({ withErrors = false }: { withErrors?: boolean }) {
       >
         <Input defaultValue={withErrors ? "" : "12, Second Cross Street, Velachery"} />
       </FormField>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <FormField label="Locality" required>
           <Input defaultValue="Velachery" />
         </FormField>
@@ -142,7 +142,7 @@ export function DetailsStep() {
         <h2 className="text-h3 text-primary">Tell us about the home</h2>
         <p className="text-body text-muted">Accurate size and price help buyers find it.</p>
       </div>
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-3">
         <FormField label="Bedrooms (BHK)">
           <NativeSelect defaultValue="3">
             <option value="1">1</option>

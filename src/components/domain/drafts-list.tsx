@@ -5,7 +5,7 @@
  * Props: heading (already translated), headingAs (heading level, "h2" by default), items ({ id, title,
  *   meta, updated, continueHref, continueText, continueFor, deleteText, deleteFor, onDelete, pending }),
  *   className. `title` is the listing's own title, or the page's "Untitled draft" when it has none.
- * Responsive: the text above the buttons on phones; text and buttons on one line from 640 px. A long
+ * Responsive: the text above the buttons on phones; text and buttons on one line from 768 px. A long
  *   title is cut after two lines.
  * Accessibility: a list; the Continue link and the Delete button have a visible word followed by hidden
  *   text naming the draft ("Continue 3 BHK apartment"), so several of them on one page are told apart;
@@ -54,7 +54,7 @@ function DraftsList({ heading, headingAs = "h2", items, className }: DraftsListP
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+            className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:gap-4"
           >
             <div className="flex min-w-0 flex-col gap-1">
               <p className="line-clamp-2 font-bold break-words text-ink">{item.title}</p>

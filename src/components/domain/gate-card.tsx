@@ -72,7 +72,7 @@ function GateCard({
       {children}
       {note ? (
         <p className="flex items-start gap-2 text-small text-muted">
-          <Icon icon={CircleCheck} size="sm" className="mt-0.5 text-success" />
+          <Icon icon={CircleCheck} size="sm" className="mt-1 text-success" />
           <span>{note}</span>
         </p>
       ) : null}

@@ -3,7 +3,7 @@
  * Purpose: the first question of the post-property wizard (S6-T02, FR-ACC-06). Owner: design system.
  * Props: legend (the question, already translated), name, options ({ value, label, hint? }), value,
  *   onChange, error (already-translated message), disabled, className.
- * Responsive: two cards side by side from 640 px, one under the other below that.
+ * Responsive: two cards side by side from 768 px, one under the other below that.
  * Accessibility: native radio buttons in a fieldset with a legend, so one tab stop for the group and the
  *   arrow keys move and choose; each radio covers its whole card, so the focus ring is drawn around the
  *   card; the chosen card also shows a tick, so the choice is not shown by colour alone; an error is
@@ -49,7 +49,7 @@ function ChoiceCards({
       className={cn("min-w-0", className)}
     >
       <legend className="mb-2 text-small font-semibold text-ink">{legend}</legend>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         {options.map((option) => (
           <label
             key={option.value}
@@ -90,7 +90,7 @@ function ChoiceCards({
       </div>
       {error ? (
         <p id={errorId} className="mt-2 flex items-start gap-2 text-small text-danger">
-          <Icon icon={CircleAlert} size="sm" className="mt-0.5" />
+          <Icon icon={CircleAlert} size="sm" className="mt-1" />
           <span>{error}</span>
         </p>
       ) : null}
