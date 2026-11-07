@@ -10,6 +10,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
   it("holds exactly the agreed scopes", () => {
     expect([...RATE_LIMIT_SCOPES].sort()).toEqual(
       [
+        "admin_decision",
         "email_link",
         "enquiry",
         "form_submit",
@@ -34,6 +35,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["enquiry", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["listing_create", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["upload_url", [{ who: "user", windowSeconds: 3600, max: 30 }]],
+    ["admin_decision", [{ who: "user", windowSeconds: 3600, max: 120 }]],
     ["places", [{ who: "visitor", windowSeconds: 60, max: 60 }]],
     ["map_search", [{ who: "visitor", windowSeconds: 60, max: 60 }]],
   ])("%s has the agreed rule", (scope, rules) => {
