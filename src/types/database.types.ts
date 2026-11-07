@@ -505,6 +505,19 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_listing_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "approved": number,"closed": number,"pending": number,"rejected": number,"total": number
+            }[]
+                           },
+"admin_listing_localities":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"admin_listing_queue":
+{ Args: { "p_after_at"?: string,"p_after_id"?: string,"p_kind"?: string,"p_limit"?: number,"p_locality"?: string,"p_tab"?: string }; Returns: {
+              "address": string,"amenities": (string)[],"area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"description": string,"featured": boolean,"furnishing": string,"id": string,"listing_type": string,"locality": string,"owner_email": string,"owner_name": string,"photos": Json,"pincode": string,"price": number,"property_type": string,"rejection_reason": string,"short_id": string,"status": string,"submitted_at": string,"title": string
+            }[]
+                           },
 "admin_projects":
 { Args: Record<PropertyKey, never>; Returns: {
               "address": string | null,
@@ -661,6 +674,11 @@ isOneToOne: false
                            },
 "listing_label":
 { Args: { "is_featured": boolean,"listing_kind": string,"listing_price": number }; Returns: string
+                           },
+"moderate_listing":
+{ Args: { "p_action": string,"p_listing": string,"p_reason"?: string }; Returns: {
+              "featured": boolean,"id": string,"short_id": string,"status": string
+            }[]
                            },
 "my_builder":
 { Args: Record<PropertyKey, never>; Returns: {
