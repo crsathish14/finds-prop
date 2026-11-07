@@ -13,11 +13,11 @@ import { dropDraft, saveDraft, type DraftValues } from "@/lib/form-draft";
 import { notify } from "@/lib/notify";
 import { isSessionEnded, sessionEndedHref } from "@/lib/session-ended";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
-import {
+import type {
+  PhotoActions,
   PhotoUploaderConnected,
-  type PhotoActions,
-  type PhotoUploaderStatus,
-  type SavedPhoto,
+  PhotoUploaderStatus,
+  SavedPhoto,
 } from "@/features/media";
 import type { ActionFailure, ActionResult, FieldError } from "@/types/action";
 import {
@@ -56,12 +56,20 @@ export type WizardActions = {
   photos: PhotoActions;
 };
 
+/**
+ * The photo uploader, handed in by the page. It is a client component of the media feature, whose index also
+ * holds server code, so this file takes it as a prop instead of importing it (as the connected forms take
+ * their actions).
+ */
+export type PhotoUploaderComponent = typeof PhotoUploaderConnected;
+
 export type PostingWizardProps = {
   /** The draft being continued, or null for a new listing. */
   listingId: string | null;
   values?: WizardValues;
   photos?: SavedPhoto[];
   actions: WizardActions;
+  uploader: PhotoUploaderComponent;
   /** Where "Submit for review" leads (My listings). */
   doneHref: string;
 };
@@ -117,6 +125,7 @@ function WizardBody({
   values: initialValues,
   photos: savedPhotos = [],
   actions,
+  uploader: Uploader,
   doneHref,
 }: PostingWizardProps & { values: WizardValues }) {
   const words = useTranslations("postProperty");
@@ -135,7 +144,7 @@ function WizardBody({
     null,
   );
   const [sessionEnded, setSessionEnded] = useState<{ href: string } | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [busyAction, setBusyAction] = useState<"next" | "draft" | "submit" | null>(null);
   const [createKey] = useState(() => crypto.randomUUID());
   const [submitKey] = useState(() => crypto.randomUUID());
@@ -351,7 +360,9 @@ function WizardBody({
     };
   });
 
-  const working = pending || busyAction !== null;
+  // The wizard's own state decides what is switched off: the transition's pending flag can stay on a moment
+  // after the next step is already drawn, and a quick press then would be ignored.
+  const working = busyAction !== null;
   const bodyProps = {
     values,
     errors,
@@ -367,7 +378,7 @@ function WizardBody({
     // The first Continue started the draft, so the photos always have a listing to belong to.
     body = listingId ? (
       <PhotosStepFrame headingRef={headingRef} error={photoError ?? undefined}>
-        <PhotoUploaderConnected
+        <Uploader
           listingId={listingId}
           saved={savedPhotos}
           actions={actions.photos}

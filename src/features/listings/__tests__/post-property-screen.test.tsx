@@ -12,6 +12,7 @@ vi.mock("@/features/account", () => ({ getEmailState: async () => state.email })
 vi.mock("@/features/auth", () => ({ addEmail: vi.fn(), resendEmailLink: vi.fn() }));
 vi.mock("@/features/media", () => ({
   PHOTO_BUCKET: "listing-photos",
+  PhotoUploaderConnected: () => null,
   finalizePhoto: vi.fn(),
   removePhoto: vi.fn(),
   requestPhotoUpload: vi.fn(),

@@ -3,6 +3,7 @@ import { getEmailState } from "@/features/account";
 import { addEmail, resendEmailLink } from "@/features/auth";
 import {
   finalizePhoto,
+  PhotoUploaderConnected,
   PHOTO_BUCKET,
   removePhoto,
   requestPhotoUpload,
@@ -87,6 +88,7 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
         listingId={draft?.id ?? null}
         {...(draft ? { values: valuesFromDraft(draft), photos } : {})}
         actions={ACTIONS}
+        uploader={PhotoUploaderConnected}
         doneHref={MY_LISTINGS_HREF}
       />
     </main>

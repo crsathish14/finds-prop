@@ -1,19 +1,26 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import type { ActionResult } from "@/types/action";
+
+// The full suite runs many test files at once, so every wait is patient (they pass in about two seconds alone).
+configure({ asyncUtilTimeout: 8000 });
+vi.setConfig({ testTimeout: 30_000 });
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/lib/notify", () => ({ notify: toast }));
-vi.mock("@/features/media", () => ({
-  PhotoUploaderConnected: (props: {
-    listingId: string;
-    onStatus?: (status: { count: number; busy: boolean }) => void;
-  }) => (
+const { PostingWizard } = await import("../wizard.client");
+type Actions = React.ComponentProps<typeof PostingWizard>["actions"];
+
+function UploaderStub(props: {
+  listingId: string;
+  onStatus?: (status: { count: number; busy: boolean }) => void;
+}) {
+  return (
     <div data-testid="uploader" data-listing={props.listingId}>
       <button type="button" onClick={() => props.onStatus?.({ count: 1, busy: false })}>
         stub add photo
@@ -22,11 +29,8 @@ vi.mock("@/features/media", () => ({
         stub busy
       </button>
     </div>
-  ),
-}));
-
-const { PostingWizard } = await import("../wizard.client");
-type Actions = React.ComponentProps<typeof PostingWizard>["actions"];
+  );
+}
 
 const LISTING = "00000000-0000-4000-9000-000000000001";
 const ok = <T,>(data: T): ActionResult<T> => ({ ok: true, data });
@@ -48,7 +52,13 @@ function actions(overrides: Partial<Actions> = {}) {
 
 function open(fake: Actions, props: Partial<React.ComponentProps<typeof PostingWizard>> = {}) {
   return renderWithMessages(
-    <PostingWizard listingId={null} actions={fake} doneHref="/dashboard?tab=listings" {...props} />,
+    <PostingWizard
+      listingId={null}
+      actions={fake}
+      uploader={UploaderStub as never}
+      doneHref="/dashboard?tab=listings"
+      {...props}
+    />,
   );
 }
 
