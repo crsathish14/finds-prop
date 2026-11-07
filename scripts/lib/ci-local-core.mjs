@@ -22,6 +22,8 @@
 // side by side anyway, and runs a lane that failed again on its own, so a timeout from a busy machine is
 // told apart from a real failure.
 
+import { DATABASE_PATHS, EVERYTHING_PATHS, PICTURE_PATHS } from "./ci-paths.mjs";
+
 export const LANE_IDS = ["small", "app", "db", "linux"];
 
 /** The values CI builds with (its jobs have no Supabase and no keys). */
@@ -44,36 +46,12 @@ export const KNOWN_LOCAL_SMOKE_FAILURES = [
 
 export class UsageError extends Error {}
 
-/**
- * Which lanes a change needs (R-GIT-05, docs/runbooks/ci-locally.md, "Which jobs for which change").
- * The small and app lanes always run. The db lane runs when the change can touch the database, the Linux
- * lane when it can change a picture, and everything runs when the workflow, this runner or the package
- * list changes, or when the list of changed files could not be read.
- */
-export const DATABASE_PATHS = [
-  /^supabase\//,
-  /^src\/types\/database\.types\.ts$/,
-  /^tests\/integration\//,
-  /^vitest\.integration\./,
-  /^src\/server\//,
-  /^src\/app\/(api|auth)\//,
-  /^src\/features\/.+\/(queries|service|[\w-]+-service|[\w-]+\.server|store|actions)\.tsx?$/,
-];
-export const PICTURE_PATHS = [
-  /^src\/design-lab\//,
-  /^src\/components\//,
-  /^src\/styles\//,
-  /^src\/i18n\/messages\//,
-  /^e2e\/design-lab\//,
-  /^playwright\.config\./,
-  /^package-lock\.json$/,
-];
-export const EVERYTHING_PATHS = [
-  /^\.github\//,
-  /^scripts\/(ci-local|lib\/ci-local)/,
-  /^package\.json$/,
-  /^\.nvmrc$/,
-];
+// Which lanes a change needs (R-GIT-05, docs/runbooks/ci-locally.md, "Which jobs for which change").
+// The small and app lanes always run. The db lane runs when the change can touch the database, the Linux
+// lane when it can change a picture, and everything runs when the workflow, this runner or the package
+// list changes, or when the list of changed files could not be read. The path lists are shared with CI
+// and live in ci-paths.mjs.
+export { DATABASE_PATHS, EVERYTHING_PATHS, PICTURE_PATHS };
 
 /** @param {string[] | null} files the changed files (repo-relative, forward slashes), or null if unknown */
 export function selectLanes(files) {
