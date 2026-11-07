@@ -38,3 +38,19 @@ export type SentEnquiry = {
   message: string | null;
   home: { href: string; title: string } | null;
 };
+
+/**
+ * One enquiry on the owner's own listing, ready to draw (S6-T03). The sender's details are the ones typed on
+ * the enquiry form. `home.href` is the home's public page, or null when it is no longer Live (in review, sold,
+ * rented), because that page is not open to anyone then.
+ */
+export type ReceivedEnquiry = {
+  id: string;
+  receivedAt: string;
+  status: EnquiryStatus;
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  home: { title: string | null; href: string | null } | null;
+};

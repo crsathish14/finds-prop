@@ -143,3 +143,95 @@ export function toDraftSummaries(rows: readonly unknown[]): DraftSummary[] {
     ];
   });
 }
+
+/** The states a listing outside the drafts can be in, as the dashboard lists them. */
+export const MY_LISTING_STATUSES = ["pending", "approved", "rejected", "sold", "rented"] as const;
+export type MyListingStatus = (typeof MY_LISTING_STATUSES)[number];
+
+/** One line of "My listings" on the dashboard (S6-T03, FR-ACC-09), ready to draw. */
+export interface MyListing {
+  id: string;
+  shortId: string;
+  slug: string;
+  status: MyListingStatus;
+  listingType: ListingType | null;
+  propertyType: PropertyType | null;
+  title: string | null;
+  price: number | null;
+  locality: string | null;
+  /** Why an admin did not approve it; set only while the listing is rejected. */
+  rejectionReason: string | null;
+  createdAt: string;
+  /** The address of the first photo, or null when it has none. */
+  coverUrl: string | null;
+}
+
+/** The columns read for "My listings". */
+export const MY_LISTING_COLUMNS =
+  "id, short_id, slug, status, listing_type, property_type, title, price, locality, rejection_reason, created_at";
+
+const myListingRowSchema = z.object({
+  id: z.string(),
+  short_id: z.string(),
+  slug: z.string(),
+  status: z.enum(MY_LISTING_STATUSES),
+  listing_type: z.string().nullable(),
+  property_type: z.string().nullable(),
+  title: z.string().nullable(),
+  price: z.number().nullable(),
+  locality: z.string().nullable(),
+  rejection_reason: z.string().nullable(),
+  created_at: z.string(),
+});
+
+const coverRowSchema = z.object({
+  listing_id: z.string(),
+  storage_path: z.string(),
+  position: z.number(),
+});
+
+/**
+ * Pure: the owner's listing rows and their photo rows into the lines of "My listings", in the order the rows
+ * came. A row that is not shaped as a listing (a draft, an unknown state) is left out, and each listing's
+ * cover is its first photo by position. `coverAddress` turns a path in the photo bucket into an address.
+ */
+export function toMyListings(
+  rows: readonly unknown[],
+  photoRows: readonly unknown[],
+  coverAddress: (path: string) => string,
+): MyListing[] {
+  const firstPhoto = new Map<string, { path: string; position: number }>();
+  for (const photo of photoRows) {
+    const found = coverRowSchema.safeParse(photo);
+    if (!found.success) continue;
+    const seen = firstPhoto.get(found.data.listing_id);
+    if (!seen || found.data.position < seen.position) {
+      firstPhoto.set(found.data.listing_id, {
+        path: found.data.storage_path,
+        position: found.data.position,
+      });
+    }
+  }
+  return rows.flatMap((row) => {
+    const parsed = myListingRowSchema.safeParse(row);
+    if (!parsed.success) return [];
+    const listing = parsed.data;
+    const cover = firstPhoto.get(listing.id);
+    return [
+      {
+        id: listing.id,
+        shortId: listing.short_id,
+        slug: listing.slug,
+        status: listing.status,
+        listingType: known(LISTING_TYPES, listing.listing_type),
+        propertyType: known(PROPERTY_TYPES, listing.property_type),
+        title: listing.title,
+        price: listing.price,
+        locality: listing.locality,
+        rejectionReason: listing.status === "rejected" ? listing.rejection_reason : null,
+        createdAt: listing.created_at,
+        coverUrl: cover ? coverAddress(cover.path) : null,
+      },
+    ];
+  });
+}

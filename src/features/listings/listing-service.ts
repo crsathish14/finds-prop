@@ -93,6 +93,12 @@ export function mapListingError(failure: DatabaseFailure): ActionError {
       ),
     });
   }
+  if (message === "listing.wrong_outcome" || message === "listing.bad_outcome") {
+    // Marking a sale listing rented, or a rent listing sold: the screen only offers the right one.
+    return new ActionError("VALIDATION", "The outcome does not fit the listing", {
+      fieldErrors: { outcome: [{ key: "validation.invalid" }] },
+    });
+  }
   if (message === "listing.not_found" || code === "P0002") {
     return new ActionError("NOT_FOUND", "The listing was not found");
   }

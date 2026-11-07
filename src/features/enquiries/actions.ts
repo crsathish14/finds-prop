@@ -2,9 +2,11 @@
 
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
-import { sendEnquiryConfig } from "./action-config";
+import { sendEnquiryConfig, setEnquiryStatusConfig } from "./action-config";
 import { submitEnquiry } from "./enquiry-service";
 import { createEnquiryWriteStore } from "./service";
+import { moveEnquiry } from "./status-service";
+import { createEnquiryStatusStore } from "./status-store";
 
 /**
  * Sends an enquiry about a home to its owner. The caller is a signed-in visitor with a verified phone;
@@ -22,5 +24,16 @@ export const sendEnquiry = defineAction({
     });
     log.info("enquiry stored", { enquiryId });
     return { received: true as const };
+  },
+});
+
+/** The owner of a listing marks an enquiry on it as Contacted or Closed. */
+export const setEnquiryStatus = defineAction({
+  ...setEnquiryStatusConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await moveEnquiry(await createEnquiryStatusStore(), input);
+    log.info("enquiry moved", { enquiryId: done.enquiryId, status: done.status });
+    return done;
   },
 });

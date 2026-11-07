@@ -1,4 +1,4 @@
-import { sendEnquirySchema, type SendEnquiryInput } from "./schemas";
+import { sendEnquirySchema, setEnquiryStatusSchema, type SendEnquiryInput } from "./schemas";
 
 /**
  * How the enquiry action runs, kept apart from the "use server" file so a test can build it. Sending an
@@ -13,4 +13,17 @@ export const sendEnquiryConfig = {
   auth: "verified-phone" as const,
   rateLimit: { scope: "enquiry" as const },
   idempotencyKey: (input: SendEnquiryInput) => input.idempotencyKey,
+};
+
+/**
+ * The owner moves an enquiry on their listing to Contacted or Closed (S6-T03). It needs a signed-in account
+ * with a verified phone, like everything an owner does on the dashboard. No rate limit and no key: each
+ * enquiry can move forward at most twice, so the work is bounded by the enquiries that exist, and a repeated
+ * call finds the enquiry already moved. Enquiries are private, so no public page is refreshed and the
+ * database triggers write no audit entry for them.
+ */
+export const setEnquiryStatusConfig = {
+  name: "setEnquiryStatus",
+  input: setEnquiryStatusSchema,
+  auth: "verified-phone" as const,
 };
