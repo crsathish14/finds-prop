@@ -28,7 +28,7 @@ How any contributor, human or AI, takes a change from request to merged code. Pl
 | R-GIT-02 | Conventional commit messages and pull request titles                                                                                             | G-17 (title), L-01 (commit-msg) | plan 09 §3   |
 | R-GIT-03 | One concern per pull request. A migration goes in its own commit                                                                                 | Review                          | plan 09 §3   |
 | R-GIT-04 | The pull request template is complete: requirement IDs, UX keys, class, real verification results, checklists, `Gate-change` line                | G-17                            | plan 08 §8.1 |
-| R-GIT-05 | Before asking to push, run every CI job locally and fix what fails first (`docs/runbooks/ci-locally.md`). Say in the PR what could not run       | Review (PR Verification)        | Owner 7 Nov  |
+| R-GIT-05 | Before asking to push, run the CI jobs the change can affect (`docs/runbooks/ci-locally.md`), fix failures first. Say in the PR what was not run | Review (PR Verification)        | Owner 7 Nov  |
 | R-DOC-01 | A change to behaviour, configuration or architecture updates docs in the same PR. A significant decision gets an ADR                             | PR template; Review             | plan 13 §1   |
 | R-DOC-02 | The traceability row for the feature is updated                                                                                                  | PR template; Review             | plan 11      |
 | R-DOC-03 | Instruction files respect their size limits, mention only paths, scripts and documents that exist, and leave the Next.js managed block untouched | G-16                            | `01` §8      |
@@ -217,7 +217,7 @@ Of the 100 rules above, 89 have at least one automated or preventive control and
 | R-BE-14 no new infrastructure                 | Decision, not syntax                        | Stop-and-ask trigger (`04` §2.1)                                 |
 | R-DB-09 index justification                   | Needs query knowledge                       | `EXPLAIN` note in the PR                                         |
 | R-GIT-03 one concern per PR                   | Judgment                                    | Reviewer; a migration in its own commit is visible in history    |
-| R-GIT-05 run CI jobs locally before a push    | Only the author knows what was run          | Reviewer reads the PR's Verification section                     |
+| R-GIT-05 run the CI jobs a change affects     | Only the author knows what was run          | Reviewer reads the PR's Verification section                     |
 | R-TEST-07 failing test first                  | Process                                     | `review-change` asks for evidence                                |
 
 ### 10.2 Partly enforced (a check exists but cannot judge the whole rule)

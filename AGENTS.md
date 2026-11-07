@@ -22,11 +22,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 | Touched server code                        | `npm run test:integration` (needs Docker)                         |
 | Touched src/components or src/styles       | `npm run test:ds`                                                 |
 | Touched a user journey or route            | `npm run test:e2e:smoke`                                          |
-| Before you ask to push                     | every job CI runs: `docs/runbooks/ci-locally.md` (R-GIT-05)       |
+| Before you ask to push                     | `npm run ci:local` · `docs/runbooks/ci-locally.md` (R-GIT-05)     |
 | Before a pull request on class C2          | `npm run verify`                                                  |
 | Touched `AGENTS.md`, docs, skills or hooks | `npm run harness:check`                                           |
 
-Before you ask to push, run every job CI runs, locally, and fix what fails first (R-GIT-05, `docs/runbooks/ci-locally.md`). If a check truly cannot run here, say which and why in the pull request. Never report a check as passed that you did not run.
+Before you ask to push, run locally every CI job your change can affect, and fix what fails first (R-GIT-05, `docs/runbooks/ci-locally.md`, which says which jobs for which change; `npm run ci:local` picks them). Small and app (lint, types, unit tests, build, smoke) always run; the database jobs run when you touch the database, the picture check when you touch the Design Lab or its components. If a check truly cannot run here, say which and why in the pull request. Never report a check as passed that you did not run.
 
 ## Router: read before you work in that area
 

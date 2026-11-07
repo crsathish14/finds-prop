@@ -1,8 +1,36 @@
 # Running every CI job locally, before a push
 
-Rule R-GIT-05 (owner, 7 Nov 2026): before you ask to push, run every job CI runs, on the same commit, and fix what fails first. CI should pass on its first run. If one truly cannot run on your machine, the pull request says which and why ("Not run, and why"). Never report a check as passed that you did not run.
+Rule R-GIT-05 (owner, 7 Nov 2026, narrowed the same day): before you ask to push, run locally every CI job your change can affect, on the same commit, and fix what fails first. CI should pass on its first run. A job the change cannot affect is left to CI (the table below says which). If one that applies truly cannot run on your machine, the pull request says which and why ("Not run, and why"). Never report a check as passed that you did not run.
 
-The jobs are in `.github/workflows/ci.yml`. This page is the local version of each one. Use the repository's Node (`.nvmrc`, Node 24; on Windows `fnm exec --using=24.22.2 cmd /c "<command>"` from PowerShell).
+The jobs are in `.github/workflows/ci.yml`. This page is the local version of each one. The commands below are what each lane runs, for running one by hand. Use the repository's Node (`.nvmrc`, Node 24; on Windows `fnm exec --using=24.22.2 cmd /c "<command>"` from PowerShell).
+
+## One command
+
+```
+npm run ci:local                       # the jobs this change needs, one after another
+npm run ci:local -- --all              # every job
+npm run ci:local -- --only=app,small   # exactly these lanes
+npm run ci:local -- --pr-event=<file>  # also the pull request check, on a drafted title and body
+npm run ci:local -- --list             # what each lane runs, and why it was picked
+```
+
+On Windows run it with the project's Node: `fnm exec --using=24.22.2 cmd /c "npm run ci:local"`. Each step writes its own log under `node_modules/.cache/ci-local/<time>/`, and the summary says which step failed and where its log is. Exit code 0: everything that ran passed. 1: a step failed. 2: nothing failed, but a check could not run (for example the pull request check without `--pr-event`, or Docker not running), so say so in the pull request.
+
+It compares your files with `origin/develop` (commits, uncommitted and new files) and picks the lanes from the table below. It changes nothing in the repository, pushes nothing and opens nothing. The lanes run one after another: run side by side on a 12-CPU, 15 GB machine they were no faster and failed timing-sensitive steps that pass alone (measured 7 Nov 2026). `--parallel` exists, runs a failed lane again on its own to tell load from a defect, and is for machines with room to spare.
+
+Measured serial times (7 Nov 2026, this machine): small 3 s, app about 5 minutes, db about 5 minutes, Linux pictures about 7 minutes.
+
+## Which jobs for which change
+
+| Lane  | Runs                                                                                        | When                                                                                                                                                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| small | npm audit, secret scan, the pull request check                                              | always                                                                                                                                                                                                                                    |
+| app   | `npm run check`, knip (a report), the CI-style build, the smoke tests                       | always                                                                                                                                                                                                                                    |
+| db    | migrations check, `supabase start`, `check:db`, performance check, reset, integration tests | a changed file is under `supabase/`, `tests/integration/`, `src/server/`, `src/app/api/` or `src/app/auth/`; is `src/types/database.types.ts`; or is a feature's `queries`, `service`, `*-service`, `*.server`, `store` or `actions` file |
+| linux | Design Lab checks with pictures, in the Linux Playwright image                              | a changed file is under `src/design-lab/`, `src/components/`, `src/styles/`, `src/i18n/messages/` or `e2e/design-lab/`, or is `package-lock.json`                                                                                         |
+| all   | every lane                                                                                  | `.github/`, `package.json`, `.nvmrc` or the runner itself changes, or the list of changed files cannot be read                                                                                                                            |
+
+Running more than the table asks is always allowed; skipping a lane the table asks for is not, unless the pull request says why. The path lists live in `scripts/lib/ci-local-core.mjs` (`DATABASE_PATHS`, `PICTURE_PATHS`, `EVERYTHING_PATHS`); when a new kind of file starts to talk to the database or to change a picture, add it there and here in the same pull request.
 
 ## Needs
 
