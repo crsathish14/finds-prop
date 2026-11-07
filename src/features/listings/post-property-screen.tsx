@@ -16,7 +16,7 @@ import { publicStorageUrl } from "@/lib/storage-url";
 import { createListingDraft, deleteListingDraft, saveListingDraft, submitListing } from "./actions";
 import { YourDrafts, type DraftRowView } from "./drafts.client";
 import { PostingGate } from "./posting-gate.client";
-import { listMyDrafts } from "./queries";
+import { isSignedIn, listMyDrafts } from "./queries";
 import type { DraftView } from "./view";
 import { PostingWizard, type WizardActions } from "./wizard.client";
 import { valuesFromDraft } from "./wizard-state";
@@ -44,6 +44,8 @@ type PostPropertyScreenProps = {
  * wizard when there are any. The page only composes: the rules are in the actions and the database.
  */
 export async function PostPropertyScreen({ draft = null }: PostPropertyScreenProps) {
+  // Nobody signed in: the layout's gate is already sending them to sign in; read nothing for them.
+  if (!(await isSignedIn())) return null;
   const email = await getEmailState();
   if (email.kind === "none" || email.kind === "pending") {
     return (

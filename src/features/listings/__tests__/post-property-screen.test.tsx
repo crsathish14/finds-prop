@@ -3,12 +3,19 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
+  signedIn: true,
+  reads: [] as string[],
   email: { kind: "verified", email: "priya@example.com" } as { kind: string; email?: string },
   drafts: [] as unknown[],
 }));
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/features/account", () => ({ getEmailState: async () => state.email }));
+vi.mock("@/features/account", () => ({
+  getEmailState: async () => {
+    state.reads.push("email");
+    return state.email;
+  },
+}));
 vi.mock("@/features/auth", () => ({ addEmail: vi.fn(), resendEmailLink: vi.fn() }));
 vi.mock("@/features/media", () => ({
   PHOTO_BUCKET: "listing-photos",
@@ -30,7 +37,13 @@ vi.mock("../actions", () => ({
   saveListingDraft: vi.fn(),
   submitListing: vi.fn(),
 }));
-vi.mock("../queries", () => ({ listMyDrafts: async () => state.drafts }));
+vi.mock("../queries", () => ({
+  isSignedIn: async () => state.signedIn,
+  listMyDrafts: async () => {
+    state.reads.push("drafts");
+    return state.drafts;
+  },
+}));
 vi.mock("../posting-gate.client", () => ({
   PostingGate: (props: { pendingEmail: string | null }) => (
     <p data-testid="gate" data-pending={props.pendingEmail ?? ""} />
@@ -85,11 +98,20 @@ const draft = {
 };
 
 beforeEach(() => {
+  state.signedIn = true;
+  state.reads = [];
   state.email = { kind: "verified", email: "priya@example.com" };
   state.drafts = [];
 });
 
 describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
+  it("draws nothing and reads nothing for a visitor, because the layout is already sending them to sign in", async () => {
+    state.signedIn = false;
+    const { container } = render(await PostPropertyScreen({}));
+    expect(container).toBeEmptyDOMElement();
+    expect(state.reads).toEqual([]);
+  });
+
   it("shows the gate to someone with no email, and to someone whose link is not used yet", async () => {
     state.email = { kind: "none" };
     const view = render(await PostPropertyScreen({}));

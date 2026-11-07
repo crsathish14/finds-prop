@@ -848,7 +848,6 @@
       "address": "Address",
       "size": "Size",
       "sizeWithBedrooms": "{bhk} BHK · {baths} bath · {area}",
-      "sizeAreaOnly": "{area}",
       "price": "Price",
       "rentPrice": "{price} a month",
       "photos": "Photos",

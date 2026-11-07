@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
-import { getMyDraft, MY_LISTINGS_HREF, PostPropertyScreen } from "@/features/listings";
+import { getMyDraft, isSignedIn, MY_LISTINGS_HREF, PostPropertyScreen } from "@/features/listings";
 import { getTranslate } from "@/features/site";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -19,6 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function ContinueDraftPage({ params }: PageProps) {
   const { id } = await params;
+  // Nobody signed in: the layout's gate is already sending them to sign in.
+  if (!(await isSignedIn())) return null;
   if (!z.uuid().safeParse(id).success) notFound();
   const draft = await getMyDraft(id.toLowerCase());
   if (!draft) notFound();

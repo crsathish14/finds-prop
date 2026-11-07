@@ -348,7 +348,7 @@ export function ReviewStep({
         baths: values.bathrooms === "" ? "–" : values.bathrooms,
         area: areaText,
       })
-    : words("sizeAreaOnly", { area: areaText });
+    : areaText;
   const priceText =
     price === null
       ? ""

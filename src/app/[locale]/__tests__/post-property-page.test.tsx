@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const visitor = vi.hoisted(() => ({
+  signedIn: true,
+  reads: [] as string[],
   email: { kind: "verified", email: "priya@example.com" } as { kind: string; email?: string },
   draft: null as null | { id: string; status: string; photos: { id: string; path: string }[] },
   drafts: [] as { id: string }[],
@@ -25,8 +27,11 @@ vi.mock("@/features/site", () => ({
 }));
 vi.mock("@/features/listings", () => ({
   MY_LISTINGS_HREF: "/dashboard?tab=listings",
-  getMyDraft: async (id: string) =>
-    visitor.draft && visitor.draft.id === id ? visitor.draft : null,
+  isSignedIn: async () => visitor.signedIn,
+  getMyDraft: async (id: string) => {
+    visitor.reads.push(id);
+    return visitor.draft && visitor.draft.id === id ? visitor.draft : null;
+  },
   PostPropertyScreen: (props: { draft?: { id: string } | null }) => (
     <p data-testid="screen" data-draft={props.draft?.id ?? ""} />
   ),
@@ -42,6 +47,8 @@ const ID = "00000000-0000-4000-9000-000000000001";
 beforeEach(() => {
   vi.clearAllMocks();
   visitor.draft = null;
+  visitor.signedIn = true;
+  visitor.reads = [];
 });
 
 describe("the post-property pages (S6-T02)", () => {
@@ -75,6 +82,13 @@ describe("the post-property pages (S6-T02)", () => {
       "NEXT_NOT_FOUND",
     );
     expect(nav.notFound).toHaveBeenCalledTimes(2);
+  });
+
+  it("draws nothing and reads nothing for a visitor, because the layout is already sending them to sign in", async () => {
+    visitor.signedIn = false;
+    visitor.draft = { id: ID, status: "draft", photos: [] };
+    expect(await ContinueDraftPage({ params: Promise.resolve({ id: ID }) })).toBeNull();
+    expect(visitor.reads).toEqual([]);
   });
 
   it("sends a listing that is no longer a draft to My listings", async () => {
