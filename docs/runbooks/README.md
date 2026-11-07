@@ -15,6 +15,7 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | Staff Google sign-in (`staff-google-sign-in.md`)                  | S3 (written, 2 Nov 2026)  |
 | Environment variables (`environment-variables.md`)                | S3 (written, 2 Nov 2026)  |
 | Fictional seed on the dev database (`dev-seed.md`)                | S5 (written, 7 Nov 2026)  |
+| Sweeping unclaimed photo files (`media-sweep.md`)                 | S6 (written, 7 Nov 2026)  |
 | OTP abuse response                                                | S5                        |
 | CRM outage and manual retry                                       | S7                        |
 | Staff second-factor lost device                                   | S3                        |

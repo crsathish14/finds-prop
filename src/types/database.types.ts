@@ -602,6 +602,9 @@ isOneToOne: false
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"arm_media_sweep":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "audit_actor_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -625,6 +628,12 @@ isOneToOne: false
                            },
 "disarm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"disarm_media_sweep":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"finalize_listing_media":
+{ Args: { "p_bytes": number,"p_height": number,"p_listing": string,"p_mime": string,"p_owner": string,"p_path": string,"p_width": number }; Returns: string
                            },
 "has_role":
 { Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
@@ -770,6 +779,11 @@ isOneToOne: false
       } },
 "normalise_phone":
 { Args: { "raw_phone": string }; Returns: string
+                           },
+"orphan_listing_photos":
+{ Args: { "p_limit"?: number,"p_older_than_hours"?: number }; Returns: {
+              "name": string
+            }[]
                            },
 "owns_property":
 { Args: { "target_property": string }; Returns: boolean
