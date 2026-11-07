@@ -18,14 +18,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 | ------------------------------------------ | ----------------------------------------------------------------- |
 | Set up or diagnose                         | `npm ci` · `npm run doctor` (`npm run db:start` only with Docker) |
 | After every change                         | `npm run check` (format, lint, types, unit tests, policy checks)  |
-| Touched `supabase/`                        | `npm run check:db` (needs Docker; else CI) · `npm run gen:types`  |
-| Touched server code                        | `npm run test:integration` (needs Docker; else CI)                |
+| Touched `supabase/`                        | `npm run check:db` (needs Docker) · `npm run gen:types`           |
+| Touched server code                        | `npm run test:integration` (needs Docker)                         |
 | Touched src/components or src/styles       | `npm run test:ds`                                                 |
 | Touched a user journey or route            | `npm run test:e2e:smoke`                                          |
+| Before you ask to push                     | every job CI runs: `docs/runbooks/ci-locally.md` (R-GIT-05)       |
 | Before a pull request on class C2          | `npm run verify`                                                  |
 | Touched `AGENTS.md`, docs, skills or hooks | `npm run harness:check`                                           |
 
-If Docker is unavailable (the owner's machine runs without it, ADR-034), say so when `check:db` or `test:integration` cannot run and read the CI `db` job instead. Never report a check as passed that you did not run.
+Before you ask to push, run every job CI runs, locally, and fix what fails first (R-GIT-05, `docs/runbooks/ci-locally.md`). If a check truly cannot run here, say which and why in the pull request. Never report a check as passed that you did not run.
 
 ## Router: read before you work in that area
 
