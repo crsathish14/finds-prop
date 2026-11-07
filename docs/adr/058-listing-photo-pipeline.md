@@ -19,7 +19,7 @@
 
 ## Consequences
 
-- Five new visitor-facing messages, **not approved**, under `validation.*` in `en.json`: "Use a JPEG, PNG or WebP photo.", "This photo is too large. Photos can be up to {maximum} MB.", "You can add up to {maximum} photos.", "This photo is too small or too large in size. Try another one.", "This photo could not be prepared. Please add it again." No screen shows them until the browser side (next pull request) and the wizard (S6-T02).
+- Five new visitor-facing messages (**approved by the owner on 7 Nov 2026**), under `validation.*` in `en.json`: "Use a JPEG, PNG or WebP photo.", "This photo is too large. Photos can be up to {maximum} MB.", "You can add up to {maximum} photos.", "This photo is too small or too large in size. Try another one.", "This photo could not be prepared. Please add it again." No screen shows them until the browser side (next pull request) and the wizard (S6-T02).
 - Nothing visible changes in this pull request. The pipeline is exercised by unit tests, pgTAP (`media_pipeline.test.sql`) and integration tests (`tests/integration/media.test.ts`); the last two run only in CI (no Docker on the owner's machine).
 - `finalizePhoto` reads up to 10 MB into memory to inspect it, and is not rate limited on its own: each call needs an upload token that was issued under `upload_url`. If abuse shows, add a scope in `limits.ts`.
 - The real-phone check of the browser resize and EXIF removal (S6-SPK-01) needs a page that hosts the uploader; the first one is the post-property wizard (S6-T02).

@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { bytes, jpeg, png } from "@/features/media/__tests__/image-fixtures";
+import { bytes, jpeg, png, webpLossy } from "@/features/media/__tests__/image-fixtures";
 import { adminClient } from "./support/clients";
 import { removeTestUser, signInTestCustomer, type TestUser } from "./support/users";
 
@@ -15,6 +15,7 @@ const { photoCallerStore, createPhotoServerStore, createSweepStore } =
 const { acceptPhoto, dropPhoto, issuePhotoUpload } = await import("@/features/media/media-service");
 const { sweepOrphanPhotos } = await import("@/features/media/sweep");
 const { PHOTO_BUCKET } = await import("@/features/media/constants");
+const { uploadToTarget } = await import("@/features/media/upload-to-target");
 
 const RUN = randomUUID().slice(0, 8);
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -143,6 +144,29 @@ describe("IT-media: the listing photo pipeline against a real database and stora
       .eq("id", done.photoId)
       .single();
     expect(data).toMatchObject({ width: 1600, height: 1200, mime: "image/jpeg" });
+  });
+
+  it("takes a photo sent with the page's own upload helper (the request the browser makes)", async () => {
+    const file = webpLossy(1280, 960);
+    const issued = await issuePhotoUpload(photoCallerStore(owner.client), {
+      input: { listingId, mime: "image/webp", bytes: file.byteLength },
+      userId: owner.userId,
+      newId: () => randomUUID(),
+    });
+    const options = {
+      baseUrl: process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "",
+      apiKey: process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"] ?? "",
+    };
+    const target = { bucket: PHOTO_BUCKET, path: issued.path, token: issued.token };
+    const sent = await uploadToTarget(target, new Blob([file], { type: "image/webp" }), options);
+    expect(sent).toEqual({ ok: true });
+    uploaded.push(issued.path);
+    const done = await accept(issued.path);
+    expect(done.path).toBe(issued.path);
+    expect((await photoRows()).map((row) => row.storage_path)).toContain(issued.path);
+    // Sending to the same path again is refused: nothing is overwritten (x-upsert is false).
+    const again = await uploadToTarget(target, new Blob([file], { type: "image/webp" }), options);
+    expect(again.ok).toBe(false);
   });
 
   it("refuses an SVG that was uploaded as a JPEG, and deletes the file", async () => {

@@ -11,6 +11,7 @@ import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { PropertyGalleryDemo } from "./domain-demos-gallery";
 import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
 import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
+import { PhotoUploaderDemo } from "./photo-uploader-demos";
 import { PropertyPageDemo } from "./domain-demos-property";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
@@ -225,5 +226,17 @@ export const DOMAIN: LabEntry[] = [
       "The whole property page below the header, with sample homes: the breadcrumb, the gallery with its tags, the title and place, At a glance, About this home, the amenities, and beside them the price card and the enquiry card. A full listing for a visitor who is not signed in (the gate), a sparse listing for one who is (the form with Send switched off until enquiries can be sent: long title, one photo, details left out and a note saying so), loading, and not found. Nothing here navigates or sends.",
     sources: ["domain/price-card.tsx", "domain/enquiry-card.tsx", "domain/property-gallery.tsx"],
     Demo: PropertyPageDemo,
+  },
+  {
+    id: "photo-uploader",
+    name: "Photo uploader",
+    description:
+      "The photo step of posting a property (S6-T01): the drop area, the list of photos with a small picture, a progress bar and the step name, the cover tag on the first saved photo, refusals with their reasons, the full state at six photos and the session-ended notice. The last specimen is live: this browser makes the chosen photo smaller and removes its camera data, and the server's own checks are run on the result (nothing is uploaded). The words are not approved yet.",
+    sources: [
+      "domain/photo-uploader.tsx",
+      "patterns/upload-zone.tsx",
+      "domain/session-ended-alert.tsx",
+    ],
+    Demo: PhotoUploaderDemo,
   },
 ];

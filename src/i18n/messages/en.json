@@ -1014,6 +1014,26 @@
       "body": "Sign in again to send this. What you typed will be kept.",
       "action": "Sign in again",
       "restored": "We kept what you typed."
+    },
+    "photoUploader": {
+      "title": "Drag photos here, or choose files",
+      "hint": "JPG, PNG or WEBP. Up to 20 MB each.",
+      "cover": "Cover",
+      "remove": "Remove {name}",
+      "counter": "{count} of {max} photos",
+      "stage": {
+        "preparing": "Preparing",
+        "uploading": "Uploading",
+        "saving": "Saving",
+        "removing": "Removing"
+      },
+      "errors": {
+        "notImage": "This file is not a photo.",
+        "tooLarge": "This photo is larger than {maximum} MB.",
+        "unreadable": "This photo cannot be read here. Use a JPEG, PNG or WebP photo.",
+        "uploadFailed": "We couldn't upload this photo. Remove it and try again.",
+        "removeFailed": "We couldn't remove this photo. Try again."
+      }
     }
   }
 }
