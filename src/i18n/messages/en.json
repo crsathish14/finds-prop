@@ -292,7 +292,12 @@
     "photoTooLarge": "This photo is too large. Photos can be up to {maximum} MB.",
     "photoLimit": "You can add up to {maximum} photos.",
     "photoDimensions": "This photo is too small or too large in size. Try another one.",
-    "photoNotPrepared": "This photo could not be prepared. Please add it again."
+    "photoNotPrepared": "This photo could not be prepared. Please add it again.",
+    "titleTooShort": "Make the title at least 8 characters.",
+    "addressRequired": "Add the street or building.",
+    "pincodeInvalid": "Enter the 6-digit pincode.",
+    "photoRequired": "Add at least one photo before you submit.",
+    "openListingLimit": "You already have {maximum} listings waiting. Finish or delete one first."
   },
   "format": {
     "rupees": "₹{value}",
