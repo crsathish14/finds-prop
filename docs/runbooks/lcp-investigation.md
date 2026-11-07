@@ -67,7 +67,11 @@ All against the same baseline, medians of 3, `/` and `/properties`.
 
 ## Layout shift (CLS)
 
-On `/projects` the whole CLS of 0.094 is one shift of the **footer**, which moves down once when the streamed page replaces the loading outline (the outline is shorter than the real content). On `/properties` the same shift appeared once in three runs at 0.103, which is over the 0.1 limit. With real data the size will change. A fix is to give the loading outline the height of a typical result.
+Fixed on 7 Nov 2026. Every large shift was one shift of the **footer**: it was drawn high up while the page streamed in (an empty sign-in page, a loading outline shorter or taller than the real page, a not-found page shorter than its outline) and then jumped. With the seed loaded, desktop `/projects` was 0.138, `/auth`, `/builder/login`, `/dashboard` and `/post-property` 0.28, and the "no such home" and "no such project" pages 0.12 to 0.34.
+
+The fix is in the layouts: the page sits in a `flex min-h-dvh flex-col` box between the header and the footer (public, sign-in and account layouts), so the footer starts below the fold in every state, and `/auth` and `/builder/login` show the centred spinner (`PageLoading`) instead of nothing while their form is read. After the fix every public page measured 0.0000 to 0.004 on desktop and phone, and at most 0.02 on a slow phone (1440x900, 390x844, and 390x844 with 1.6 Mbps, 150 ms and a 4x slower CPU; production build under Node 24, session-window CLS).
+
+Two small shifts remain on the slow phone only, neither of them the footer: the content block on `/auth` moves 29 px down (0.019) and a section on `/projects` moves 25 px (0.019). Both are under the 0.1 limit and not looked into further. Cost of the fix: a short page always needs a small scroll to reach the footer. The signed-in pages (account layout) have the same box but were not measured, because they need a phone sign-in.
 
 ## Options, ranked
 
@@ -75,7 +79,7 @@ None of these is started. Each would be its own plan.
 
 1. **Measure with the right tool (no code).** Take the field number (Vercel Speed Insights after launch, PageSpeed Insights on a preview before it) as the judge of NFR-01. If a Lighthouse CI job is added, do not gate on the simulated LCP of 2.5 s; use it to compare runs, or gate on the applied number. This belongs in the gated change you already plan before launch.
 2. **Trim the shared script (a small plan, measured gain only for TBT and the simulated number).** The candidates are loading the toast area and the locality picker only when needed (about 13 KB gzip together), tracing what the auth barrel file pulls in (up to 10 KB gzip), and keeping the zod schemas out of the search card's address helpers (up to 33 KB gzip). All sizes are estimates, and none of these was tried. Expected real LCP gain: under 0.15 s.
-3. **Loading outline height (small, with visible pictures).** Fixes the footer shift; touches `loading.tsx` of `/properties` and `/projects`, so the screenshots change and need your approval.
+3. ~~Loading outline height~~ Not needed: the footer shift is fixed in the layouts (see the CLS section above).
 4. **Drop the Fraunces italic (design decision).** About 0.1 s real, 0.3 to 0.45 s simulated. It changes the look of the emphasis words, so it is yours to decide.
 5. **Fewer steps before text** (not tested): inlining the critical stylesheet or removing a font from the chain. This is the only idea aimed at the real cause, but it needs tooling this repo does not have, so it should only be tried if the field numbers on a preview show a problem.
 

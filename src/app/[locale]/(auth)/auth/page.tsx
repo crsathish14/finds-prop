@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { PageLoading } from "@/app/[locale]/_components/page-loading";
 import { EmailResultFromQuery, PhoneSignInFromQuery } from "@/features/auth";
 import { parseEmailResult } from "@/lib/url/email-result";
 
@@ -9,7 +10,7 @@ import { parseEmailResult } from "@/lib/url/email-result";
 // with the visitor signed in, in the middle of the name and email steps.
 export default function AuthPage({ searchParams }: PageProps<"/[locale]/auth">) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoading />}>
       <AuthContent searchParams={searchParams} />
     </Suspense>
   );
