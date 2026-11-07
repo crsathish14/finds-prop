@@ -67,6 +67,7 @@ const locality = z.preprocess(
   tidy,
   z
     .string({ error: wrongKind("validation.required") })
+    .min(1, { error: "validation.required" })
     .min(LOCALITY_MIN)
     .max(LOCALITY_MAX)
     .regex(NO_CONTROL, { error: "validation.invalid" }),

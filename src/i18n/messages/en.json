@@ -759,6 +759,145 @@
       }
     }
   },
+  "postProperty": {
+    "metaTitle": "Post a property",
+    "title": "Post your property",
+    "titleEmphasis": "property",
+    "description": "Your listing is reviewed before it goes live. It takes about five minutes.",
+    "progress": "Step {current} of {total}: {name}",
+    "steps": {
+      "basics": {
+        "label": "Basics",
+        "description": "Type, address"
+      },
+      "details": {
+        "label": "Details",
+        "description": "Size, price, amenities"
+      },
+      "photos": {
+        "label": "Photos",
+        "description": "Up to 6 photos"
+      },
+      "description": {
+        "label": "Description",
+        "description": "Title and details"
+      },
+      "review": {
+        "label": "Review and submit",
+        "description": "Check everything"
+      },
+      "needsAttention": "Needs attention"
+    },
+    "basics": {
+      "heading": "What are you listing?",
+      "lead": "Start with the basics. You can change these later.",
+      "iWantTo": "I want to",
+      "sell": "Sell",
+      "sellHint": "List a home for sale",
+      "rent": "Rent out",
+      "rentHint": "List a home for rent",
+      "propertyType": "Property type",
+      "typeApartment": "Apartment",
+      "typeVilla": "Villa",
+      "typeHouse": "Independent House",
+      "typePlot": "Plot / Land",
+      "typeCommercial": "Commercial",
+      "address": "Address",
+      "addressHint": "Shown to people viewing your listing. Up to 300 characters.",
+      "locality": "Locality",
+      "city": "City",
+      "state": "State",
+      "stateHint": "Tamil Nadu only for now.",
+      "pincode": "Pincode"
+    },
+    "details": {
+      "heading": "Tell us about the home",
+      "lead": "Accurate size and price help buyers find it.",
+      "bedrooms": "Bedrooms (BHK)",
+      "bathrooms": "Bathrooms",
+      "area": "Area (sq.ft)",
+      "price": "Price (₹)",
+      "priceHint": "For rentals, enter the monthly rent.",
+      "furnishing": "Furnishing",
+      "furnishingNone": "Not specified",
+      "unfurnished": "Unfurnished",
+      "semi": "Semi-furnished",
+      "full": "Fully furnished",
+      "amenities": "Amenities (choose any)"
+    },
+    "photos": {
+      "heading": "Add photos",
+      "lead": "Good photos get more enquiries. Add up to 6. The first one is the cover.",
+      "photoName": "Photo {number}"
+    },
+    "describe": {
+      "heading": "Describe your home",
+      "lead": "A clear title and a few sentences are enough.",
+      "title": "Title",
+      "titleHint": "8 to 140 characters. Mention the type, size and one standout feature.",
+      "counter": "{count} / {max}",
+      "description": "Description",
+      "optional": "(optional)"
+    },
+    "review": {
+      "heading": "Review and submit",
+      "lead": "Check your details. You can go back to change anything.",
+      "listing": "Listing",
+      "forSale": "For sale · {type}",
+      "forRent": "For rent · {type}",
+      "address": "Address",
+      "size": "Size",
+      "sizeWithBedrooms": "{bhk} BHK · {baths} bath · {area}",
+      "sizeAreaOnly": "{area}",
+      "price": "Price",
+      "rentPrice": "{price} a month",
+      "photos": "Photos",
+      "photoCount": "{count, plural, one {# photo} other {# photos}}",
+      "title": "Title",
+      "edit": "Edit",
+      "nextTitle": "What happens next",
+      "nextBody": "Your listing is saved as pending. It stays hidden until it is approved, then goes live. You can follow its status in My listings."
+    },
+    "actions": {
+      "back": "Back",
+      "saveDraft": "Save draft",
+      "continue": "Continue",
+      "submit": "Submit for review",
+      "submitting": "Submitting"
+    },
+    "notices": {
+      "draftSavedTitle": "Draft saved",
+      "draftSavedBody": "You can pick it up again from Post a property.",
+      "submitted": "Your listing was submitted for review.",
+      "saveFailed": "We couldn't save your draft. Your answers are still on this page.",
+      "failedTitle": "We couldn't submit your listing",
+      "failedBody": "Your answers are saved on this page. Check your connection and try again.",
+      "tooMany": "You've started too many listings today. Please try again tomorrow.",
+      "restored": "We kept what you typed."
+    },
+    "drafts": {
+      "heading": "Your drafts",
+      "untitled": "Untitled draft",
+      "saved": "Saved {date}",
+      "continue": "Continue",
+      "delete": "Delete",
+      "deleteTitle": "Delete this draft?",
+      "deleteBody": "Its photos are deleted too. This can't be undone.",
+      "deleteConfirm": "Delete draft",
+      "deleteCancel": "Keep it",
+      "deleted": "Draft deleted",
+      "deleteFailed": "We couldn't delete the draft. Please try again."
+    },
+    "gate": {
+      "title": "Verify your email to post a property",
+      "lead": "We use it to tell you when your listing is reviewed and to keep your account safe. It takes a minute.",
+      "note": "Nothing you've entered is lost. You'll come back to this step of your listing.",
+      "notNow": "Not now, back to browsing",
+      "sentLead": "We sent a link to {email}. Open it, then come back here to keep going.",
+      "sentInfo": "This page updates by itself once the email is verified.",
+      "sentNote": "Your draft is saved. You can close this tab and return later."
+    }
+  },
   "compare": {
     "add": "Add to compare",
     "title": "Compare homes",
