@@ -605,6 +605,9 @@ isOneToOne: false
 "arm_media_sweep":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"assert_open_listing_room":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "audit_actor_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -829,6 +832,9 @@ isOneToOne: false
                            },
 "submit_enquiry":
 { Args: { "p_email"?: string,"p_message"?: string,"p_name": string,"p_phone": string,"p_short_id": string,"p_user_id": string }; Returns: string
+                           },
+"submit_listing":
+{ Args: { "p_listing": string }; Returns: string
                            },
 "submit_project_lead":
 { Args: { "p_email"?: string,"p_kind": string,"p_message"?: string,"p_name": string,"p_phone": string,"p_slug": string,"p_visit_date"?: string,"p_visitor_hash": string }; Returns: string
