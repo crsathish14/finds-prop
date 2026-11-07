@@ -69,3 +69,16 @@ export type QueueFilters = {
   kind?: QueueKind | undefined;
   after?: string | undefined;
 };
+
+/**
+ * "Show more" on the queue (S6-T04): the filters of the page being shown and the cursor the last page gave. Here
+ * a value that is not valid fails the call instead of falling back, because a quiet fallback would hand back the
+ * first page again and show the same rows twice.
+ */
+export const loadMoreSchema = z.object({
+  tab: z.enum(QUEUE_TABS, { error: "validation.invalid" }),
+  locality: z.string().min(1).max(LOCALITY_FILTER_MAX).optional(),
+  kind: z.enum(QUEUE_KINDS, { error: "validation.invalid" }).optional(),
+  after: z.string({ error: "validation.invalid" }).min(1).max(200),
+});
+export type LoadMoreInput = z.infer<typeof loadMoreSchema>;

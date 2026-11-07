@@ -1178,5 +1178,171 @@
         "removeFailed": "We couldn't remove this photo. Try again."
       }
     }
+  },
+  "admin": {
+    "shell": {
+      "navLabel": "Admin",
+      "portalTag": "Admin",
+      "menuOpen": "Open menu",
+      "menuTitle": "Admin menu",
+      "menuClose": "Close menu",
+      "viewSite": "View public site"
+    },
+    "nav": {
+      "overview": "Overview",
+      "moderation": "Moderation",
+      "listings": "Listings",
+      "projects": "Projects",
+      "inventory": "Inventory",
+      "units": "Units",
+      "builders": "Builders",
+      "leadsAndCrm": "Leads and CRM",
+      "leads": "Leads",
+      "forms": "Forms",
+      "crm": "CRM",
+      "siteContent": "Site content",
+      "header": "Header",
+      "hero": "Hero",
+      "homepage": "Homepage",
+      "footer": "Footer"
+    },
+    "listings": {
+      "metaTitle": "Listings",
+      "title": "Listings",
+      "intro": "Review listings posted by owners. Only approved listings appear on Find Prop.",
+      "loadingTitle": "Loading listings",
+      "tabsLabel": "Filter by status",
+      "tabs": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "closed": "Sold or rented",
+        "all": "All"
+      },
+      "filters": {
+        "localityLabel": "Locality",
+        "allLocalities": "All localities",
+        "kindLabel": "Type",
+        "allKinds": "For sale and rent",
+        "sale": "For sale",
+        "rent": "For rent"
+      },
+      "table": {
+        "caption": "Listings to review",
+        "listing": "Listing",
+        "owner": "Owner",
+        "price": "Price",
+        "submitted": "Submitted",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "showMore": {
+        "progress": "Showing {shown} of {total}",
+        "progressFiltered": "Showing {shown}",
+        "button": "Show more listings",
+        "failed": "More listings could not be loaded. Please try again."
+      },
+      "actions": {
+        "review": "Review",
+        "approve": "Approve",
+        "reject": "Reject",
+        "feature": "Feature",
+        "unfeature": "Remove from featured"
+      },
+      "featured": "Featured",
+      "untitled": "Untitled listing",
+      "noOwnerName": "No name given",
+      "notProvided": "Not provided",
+      "submitted": "{date}, {time}",
+      "reason": "Reason: {reason}",
+      "empty": {
+        "pending": {
+          "title": "Nothing is waiting for review",
+          "text": "New listings from owners will show up here."
+        },
+        "approved": {
+          "title": "No approved listings yet",
+          "text": "Approved listings will show up here."
+        },
+        "rejected": {
+          "title": "No rejected listings",
+          "text": "Listings you reject will show up here."
+        },
+        "closed": {
+          "title": "No sold or rented listings",
+          "text": "Listings marked sold or rented will show up here."
+        },
+        "all": {
+          "title": "No listings yet",
+          "text": "Listings posted by owners will show up here."
+        },
+        "filtered": {
+          "title": "No listings match these filters",
+          "text": "Try another locality or type."
+        }
+      },
+      "review": {
+        "title": "Review listing",
+        "close": "Close",
+        "photos": "Photos ({count})",
+        "noPhotos": "This listing has no photos",
+        "photoAlt": "Photo {number} of {count}",
+        "specs": {
+          "bedrooms": "Bedrooms",
+          "bathrooms": "Bathrooms",
+          "area": "Area",
+          "locality": "Locality",
+          "furnishing": "Furnishing",
+          "type": "Property type"
+        },
+        "bedroomsValue": "{count} BHK",
+        "furnishing": {
+          "unfurnished": "Unfurnished",
+          "semi": "Semi-furnished",
+          "full": "Fully furnished"
+        },
+        "sections": {
+          "reason": "Reason it was not approved",
+          "description": "Description",
+          "address": "Address",
+          "owner": "Owner"
+        },
+        "owner": {
+          "name": "Name",
+          "email": "Email",
+          "posted": "Posted"
+        }
+      },
+      "reject": {
+        "title": "Reject this listing?",
+        "description": "“{title}” stays off Find Prop and the owner will see it as not approved, with the reason you give.",
+        "reasonLabel": "Reason for the owner",
+        "reasonHint": "The owner reads this, so say what to fix.",
+        "counter": "{count} / {max}",
+        "confirm": "Reject listing",
+        "cancel": "Cancel",
+        "required": "Tell the owner what to fix.",
+        "tooLong": "Use at most {max} characters."
+      },
+      "toast": {
+        "approved": {
+          "title": "Listing approved",
+          "text": "It is now live on Find Prop."
+        },
+        "rejected": {
+          "title": "Listing rejected",
+          "text": "The owner will see your reason."
+        },
+        "featured": {
+          "title": "Listing featured",
+          "text": "It is marked as featured on Find Prop."
+        },
+        "unfeatured": {
+          "title": "Removed from featured",
+          "text": "It stays live on Find Prop."
+        }
+      },
+      "conflict": "Someone has already decided this listing. The list has been refreshed."
+    }
   }
 }
