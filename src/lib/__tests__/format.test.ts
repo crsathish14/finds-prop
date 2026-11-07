@@ -6,6 +6,7 @@ import {
   formatAcres,
   formatArea,
   formatDate,
+  formatTime,
   formatListedAgo,
   formatMonth,
   formatPerSqft,
@@ -57,6 +58,11 @@ describe("UT-format: dates are stored in UTC and shown in India time", () => {
   it("shows the Indian calendar day, not the UTC one", () => {
     // 20:00 UTC on 30 Oct is already 1:30 am on 31 Oct in India.
     expect(formatDate("en", "2026-10-30T20:00:00Z", "medium")).toBe("31 Oct 2026");
+  });
+
+  it("shows the Indian time of day", () => {
+    // 20:00 UTC is 1:30 am the next day in India.
+    expect(formatTime("en", "2026-10-30T20:00:00Z")).toMatch(/^1:30\s?am$/i);
   });
 });
 

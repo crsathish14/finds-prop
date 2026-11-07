@@ -2,7 +2,7 @@
 
 import { Link } from "@/components/ui/link";
 import { signInHref } from "./chrome";
-import { useClientPathname } from "./client-pathname";
+import { useClientPathname } from "@/lib/client-pathname";
 
 /**
  * The header's Sign in link, which asks to come back to the page the visitor is on. Until the page

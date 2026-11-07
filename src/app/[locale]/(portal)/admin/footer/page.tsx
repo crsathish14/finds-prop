@@ -1,5 +1,5 @@
 import { RoutePlaceholder } from "@/app/[locale]/_components/route-placeholder";
 
 export default function Page() {
-  return <RoutePlaceholder route="/admin/footer" />;
+  return <RoutePlaceholder route="/admin/footer" framed />;
 }

@@ -68,6 +68,14 @@ export function formatDate(
   );
 }
 
+/** The time of day in India time, such as "3:42 pm" (the admin's queue shows when a listing was submitted). */
+export function formatTime(locale: string, date: Date | string): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    timeStyle: "short",
+    timeZone: TIME_ZONE,
+  }).format(typeof date === "string" ? new Date(date) : date);
+}
+
 const DAYS_PER_MONTH = 30;
 const DAYS_PER_YEAR = 365;
 

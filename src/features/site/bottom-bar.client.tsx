@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { BottomBar } from "@/components/layout/bottom-bar";
 import { useBottomBarRequested } from "@/lib/bottom-bar-request";
 import { bottomBarCurrentKey, isBottomBarVisible, type BottomBarKey } from "./chrome";
-import { useClientPathname } from "./client-pathname";
+import { useClientPathname } from "@/lib/client-pathname";
 
 type BottomBarNavProps = {
   navLabel: string;

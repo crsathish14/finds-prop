@@ -812,6 +812,17 @@ test.describe("@smoke dashboard", () => {
   });
 });
 
+test.describe("@smoke admin listings", () => {
+  test("a visitor who is not signed in is sent to the administrator sign-in and sees nothing of the queue", async ({
+    page,
+  }) => {
+    await page.goto("/admin/listings?tab=approved");
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    await expect(page.getByRole("heading", { name: en.admin.listings.title })).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: en.admin.shell.navLabel })).toHaveCount(0);
+  });
+});
+
 test.describe("@smoke saving a home", () => {
   test("a visitor who taps save without signing in is asked to sign in, with the words for saving", async ({
     page,
