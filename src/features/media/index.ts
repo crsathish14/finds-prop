@@ -1,6 +1,7 @@
 export { finalizePhoto, removePhoto, requestPhotoUpload } from "./actions";
 export { finalizePhotoConfig, removePhotoConfig, requestPhotoUploadConfig } from "./action-config";
 export {
+  PHOTO_BUCKET,
   PHOTO_EXTENSIONS,
   PHOTO_MAX_BYTES,
   PHOTO_MAX_COUNT,

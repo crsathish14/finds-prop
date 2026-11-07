@@ -1,4 +1,5 @@
 import "server-only";
+import { getSessionView } from "@/server/auth/get-session-view";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import { DRAFTS_LIMIT } from "./constants";
@@ -10,6 +11,15 @@ import {
   type DraftSummary,
   type DraftView,
 } from "./view";
+
+/**
+ * Whether anyone is signed in. The layout's gate sends a visitor away, but a page is rendered alongside its
+ * layout, not after it (and the header's "Post property" link is prefetched on every page), so a page asks
+ * for itself and draws nothing for a visitor instead of reading the database for nobody.
+ */
+export async function isSignedIn(): Promise<boolean> {
+  return (await getSessionView()) !== null;
+}
 
 /**
  * The signed-in owner's draft, for the wizard to open at `/post-property/[id]` (S6-T02, FR-ACC-08), or
