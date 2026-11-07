@@ -639,6 +639,11 @@ isOneToOne: false
 "changed_columns":
 { Args: { "new_row": Json,"old_row": Json }; Returns: Json
                            },
+"close_listing":
+{ Args: { "p_listing": string,"p_outcome": string }; Returns: {
+              "id": string,"short_id": string,"status": string
+            }[]
+                           },
 "current_builder_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
