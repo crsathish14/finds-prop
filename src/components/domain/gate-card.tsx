@@ -29,7 +29,7 @@ type GateCardProps = {
   note?: string;
   footer?: ReactNode;
   status?: boolean;
-  as?: "h1" | "h2";
+  as?: "h1" | "h2" | "h3";
   className?: string;
 };
 
