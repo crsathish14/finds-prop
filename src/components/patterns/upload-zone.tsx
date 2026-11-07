@@ -5,7 +5,8 @@
  * Purpose: the photo and document steps of the post-property flow. Owner: design system. It does
  *   not upload anything: the feature passes onFiles, then reports progress and errors back through
  *   `files`. Validation of type and size is the feature's job (and the server's).
- * Props: files ({ id, name, progress? 0 to 100, error?, cover? }), onFiles, onRemove, accept,
+ *   A file can show a small picture of itself (`previewUrl`) and a line of progress text (`status`).
+ * Props: files ({ id, name, progress? 0 to 100, error?, cover?, previewUrl?, status? }), onFiles, onRemove, accept,
  *   multiple, disabled, labels ({ title, hint, browse, remove(name) -> text, cover }, all already-
  *   translated), className.
  * Responsive: full width; the list stacks under the zone.
@@ -17,13 +18,24 @@
  * UX reference: ds-components, upload zone (c-data.css .drop).
  */
 import { CircleAlert, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import { useId, useState, type DragEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
 
-type UploadFile = { id: string; name: string; progress?: number; error?: string; cover?: boolean };
+type UploadFile = {
+  id: string;
+  name: string;
+  progress?: number;
+  error?: string;
+  cover?: boolean;
+  /** A small picture of the file (an address the browser can show). Decorative: the name says what it is. */
+  previewUrl?: string;
+  /** A line of progress text under the name while the file is on its way, such as "Uploading". */
+  status?: string;
+};
 
 type UploadLabels = {
   title: string;
@@ -111,6 +123,16 @@ function UploadZone({
                 file.error && "border-danger",
               )}
             >
+              {file.previewUrl ? (
+                <Image
+                  src={file.previewUrl}
+                  alt=""
+                  width={48}
+                  height={48}
+                  unoptimized
+                  className="size-12 shrink-0 rounded-md object-cover"
+                />
+              ) : null}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-small font-semibold text-ink">{file.name}</p>
                 {file.error ? (
@@ -119,12 +141,15 @@ function UploadZone({
                     {file.error}
                   </p>
                 ) : file.progress !== undefined && file.progress < 100 ? (
-                  <progress
-                    aria-label={file.name}
-                    value={file.progress}
-                    max={100}
-                    className="mt-1 h-1.5 w-full appearance-none overflow-hidden rounded-pill bg-line-strong [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-line-strong [&::-webkit-progress-value]:bg-primary"
-                  />
+                  <>
+                    {file.status ? <p className="text-caption text-muted">{file.status}</p> : null}
+                    <progress
+                      aria-label={file.name}
+                      value={file.progress}
+                      max={100}
+                      className="mt-1 h-1.5 w-full appearance-none overflow-hidden rounded-pill bg-line-strong [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-line-strong [&::-webkit-progress-value]:bg-primary"
+                    />
+                  </>
                 ) : null}
               </div>
               {file.cover ? <Badge tone="featured">{labels.cover}</Badge> : null}
