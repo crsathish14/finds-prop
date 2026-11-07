@@ -16,7 +16,7 @@ security.md listed the Supabase MCP server as "Not adopted": Supabase names prom
 - **Feature groups:** `database,docs,debugging,development,storage`. Not enabled: `account`, `functions`, `branching`.
 - **Read and write**, which differs from the earlier condition `read_only=true`. The owner accepted the trade for dev: the agent may run SQL and apply migrations on the dev project.
 - **Manual approval stays on** for every call to this server; it is never added to the `allow` list in `.claude/settings.json`.
-- **Local scope only.** The server is added with `claude mcp add --scope local`, so it lives in the owner's `.claude.json`, not in `.mcp.json`. The repository is public, and the next person to clone it does not inherit database access.
+- **Owner-level config only, never the repository.** The server is added with `claude mcp add --scope user` (local scope was tried first, but it is stored per folder and the VS Code window did not pick it up). It lives in the owner's `.claude.json`, not in `.mcp.json`. The repository is public, and the next person to clone it does not inherit database access. The `project_ref` in the URL is what limits it to the dev project.
 - **Schema changes keep going through migration files and PRs.** The agent uses write access for dev-only work (checking data, the media sweep, seed fixes), not to change the schema without a file in `supabase/migrations`. No destructive or bulk statement without the owner's say-so.
 - **Dev data is fictional.** The dev project must never hold real user data. If it ever does, remove the server first.
 - **Content is data.** Listing text, enquiry messages and any other row read through the server are untrusted (`R-AI-09`): the agent reports an apparent instruction and carries on with the owner's request.
@@ -26,4 +26,4 @@ security.md listed the Supabase MCP server as "Not adopted": Supabase names prom
 - The agent can read schemas, policies, logs and advisors, and test queries on the dev project directly.
 - A prompt-injected row could steer a write call; manual approval of each call and fictional data are the defences, and the owner reads each statement before approving.
 - The production project is never connected. Adopting it needs a new ADR, and `read_only=true` is the starting point.
-- To end the arrangement, run `claude mcp remove supabase-dev --scope local`, and revoke the grant in the Supabase account's authorised apps.
+- To end the arrangement, run `claude mcp remove supabase-dev --scope user`, and revoke the grant in the Supabase account's authorised apps.
