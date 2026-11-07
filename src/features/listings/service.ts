@@ -18,9 +18,11 @@ export async function createListingCallerStore(): Promise<ListingCallerStore> {
 export function listingCallerStore(supabase: SupabaseClient<Database>): ListingCallerStore {
   return {
     async insertDraft(row) {
+      // The generated type asks for `short_id` and `slug`, which the database fills in before the row is
+      // checked (the identity trigger); the owner comes from the session (the column default).
       const { data, error } = await supabase
         .from("properties")
-        .insert(row)
+        .insert(row as Database["public"]["Tables"]["properties"]["Insert"])
         .select("id, short_id")
         .single();
       if (error || !data) throw mapListingError(error ?? {});

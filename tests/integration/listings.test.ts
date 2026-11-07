@@ -1,5 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import type { DraftFields } from "@/features/listings/schemas";
 import { adminClient } from "./support/clients";
 import { removeTestUser, signInTestCustomer, type TestUser } from "./support/users";
 
@@ -20,16 +21,16 @@ const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
 const madeUpShortId = () =>
   Array.from({ length: 8 }, () => ALPHABET.charAt(randomInt(ALPHABET.length))).join("");
 
-const stepOne = {
+const stepOne: DraftFields = {
   listingType: "sale",
   propertyType: "apartment",
   address: "12, Second Cross Street, Velachery",
   locality: "Velachery",
   city: "Chennai",
   pincode: "600042",
-} as const;
+};
 
-const restOfListing = {
+const restOfListing: DraftFields = {
   bhk: 3,
   bathrooms: 2,
   areaSqft: 1420,
@@ -38,7 +39,7 @@ const restOfListing = {
   amenities: ["Gym", "Lift"],
   title: `3 BHK apartment ${RUN}`,
   description: "A bright apartment.",
-} as const;
+};
 
 async function failureOf(run: () => Promise<unknown>) {
   try {
