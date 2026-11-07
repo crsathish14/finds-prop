@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useOptimistic, useTransition, type ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/patterns/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { dashboardTabSchema, type DashboardTab } from "./schemas";
+import { dashboardTabSchema, type DashboardTab, type TabCounts } from "./schemas";
 import { tabHref } from "./tabs";
 
 const TAB_ORDER: readonly DashboardTab[] = ["saved", "listings", "received", "sent"];
@@ -29,6 +29,8 @@ type DashboardTabsViewProps = {
   labels: Record<DashboardTab, string>;
   /** What the tab list is called for a screen reader, already translated. */
   listLabel: string;
+  /** The numbers on the tabs, if any (S6-T03). A count is part of the tab's name for a screen reader. */
+  counts?: TabCounts;
   onSelect: (tab: DashboardTab) => void;
   children: ReactNode;
 };
@@ -39,6 +41,7 @@ export function DashboardTabsView({
   chosen = active,
   labels,
   listLabel,
+  counts,
   onSelect,
   children,
 }: DashboardTabsViewProps) {
@@ -52,7 +55,13 @@ export function DashboardTabsView({
     >
       <TabsList aria-label={listLabel}>
         {TAB_ORDER.map((tab) => (
-          <TabsTrigger key={tab} value={tab}>
+          <TabsTrigger
+            key={tab}
+            value={tab}
+            {...(counts?.[tab]
+              ? { count: counts[tab].value, countTone: counts[tab].tone ?? "default" }
+              : {})}
+          >
             {labels[tab]}
           </TabsTrigger>
         ))}

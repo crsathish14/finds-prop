@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { DashboardPageDemo } from "./dashboard-demos";
+import { MyListingsDemo, ReceivedEnquiriesDemo } from "./dashboard-owner-demos";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
 import { ContactPageDemo } from "./contact-demos";
 import { LegalPagesDemo } from "./legal-demos";
@@ -63,6 +64,27 @@ export const DISCOVERY: LabEntry[] = [
       "ui/skeleton.tsx",
     ],
     Demo: DashboardPageDemo,
+  },
+  {
+    id: "my-listings",
+    name: "My listings",
+    description:
+      "The owner's listings on the dashboard (S6-T03), one line each: the picture, the title (a link only while Live), the price, place and when it was posted, the kind, the state as a badge and the buttons for that state. Live: Mark as sold or rented and Delete; Pending review: Delete, with a note that it is waiting for review; Not approved: the admin's reason under it; Sold and Rented out: Delete. Also a very long title, a button that is working, no picture or price, the line shown when an update fails (nothing was changed, with Try again), and the three confirmations (mark as sold, mark as rented, delete). The tabs carry their numbers.",
+    sources: [
+      "domain/my-listing-row.tsx",
+      "patterns/status-badge.tsx",
+      "patterns/confirm-dialog.tsx",
+      "patterns/alert.tsx",
+    ],
+    Demo: MyListingsDemo,
+  },
+  {
+    id: "received-enquiries",
+    name: "Enquiries received",
+    description:
+      "The enquiries other people sent about the owner's listings (S6-T03), one block each: the sender's name, a phone link and an email link when given, the state as a badge, which home it is about and when, what they wrote with its line breaks, and the buttons for that state. New: Mark contacted and Close enquiry; Contacted: Close enquiry; Closed: none. Also a long name, email and message, a button that is working, no email, no message, a home that is no longer listed, and the line shown when an update fails.",
+    sources: ["domain/received-enquiry-row.tsx", "patterns/status-badge.tsx", "patterns/alert.tsx"],
+    Demo: ReceivedEnquiriesDemo,
   },
   {
     id: "project-page",
