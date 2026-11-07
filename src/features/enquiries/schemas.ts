@@ -52,3 +52,16 @@ export const sendEnquirySchema = z.object({
 });
 
 export type SendEnquiryInput = z.infer<typeof sendEnquirySchema>;
+
+/**
+ * The owner moves an enquiry on their listing forward (S6-T03, FR-ACC-04, BR-52): to Contacted or to Closed.
+ * "New" is never asked for, because nothing moves back to it. Which move is allowed from which state is the
+ * database's rule (`guard_enquiries`); the person is the session, and the database lets only the owner of the
+ * listing change the row.
+ */
+export const setEnquiryStatusSchema = z.object({
+  enquiryId: z.uuid({ error: "validation.invalid" }).transform((value) => value.toLowerCase()),
+  status: z.enum(["contacted", "closed"], { error: "validation.invalid" }),
+});
+
+export type SetEnquiryStatusInput = z.infer<typeof setEnquiryStatusSchema>;

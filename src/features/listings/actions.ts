@@ -3,12 +3,16 @@
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
+  closeListingConfig,
   createDraftConfig,
   deleteDraftConfig,
+  deleteListingConfig,
   saveDraftConfig,
   submitListingConfig,
 } from "./action-config";
 import { discardDraft, keepDraft, sendForReview, startDraft } from "./listing-service";
+import { closeOwnListing, deleteOwnListing } from "./my-listings-service";
+import { createMyListingsStore } from "./my-listings-store";
 import { createListingCallerStore } from "./service";
 
 /**
@@ -54,6 +58,28 @@ export const submitListing = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await sendForReview(await createListingCallerStore(), input);
     log.info("listing submitted", { listingId: done.listingId });
+    return done;
+  },
+});
+
+/** Marks one of the caller's Live listings as sold or rented. It leaves search and its page at once. */
+export const closeListing = defineAction({
+  ...closeListingConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await closeOwnListing(await createMyListingsStore(), input);
+    log.info("listing closed", { listingId: done.listingId, status: done.status });
+    return done;
+  },
+});
+
+/** Deletes one of the caller's listings in any state, with its enquiries; its photo files go to the sweeper. */
+export const deleteListing = defineAction({
+  ...deleteListingConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await deleteOwnListing(await createMyListingsStore(), input);
+    log.info("listing deleted", { listingId: done.listingId });
     return done;
   },
 });

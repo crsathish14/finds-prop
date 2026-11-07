@@ -9,6 +9,8 @@ const db = vi.hoisted(() => ({
 const errors = vi.hoisted(() => ({ calls: [] as unknown[][] }));
 
 vi.mock("server-only", () => ({}));
+// The queries file also reads "My listings", which needs the photo bucket's name from the media feature.
+vi.mock("@/features/media", () => ({ PHOTO_BUCKET: "listing-photos" }));
 vi.mock("@/server/logger", () => ({
   logger: { error: (...args: unknown[]) => errors.calls.push(args) },
 }));

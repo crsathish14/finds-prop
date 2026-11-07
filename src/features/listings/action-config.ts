@@ -1,6 +1,9 @@
+import { tagsAfterListingChange } from "@/lib/cache-tags";
 import {
+  closeListingSchema,
   createDraftSchema,
   deleteDraftSchema,
+  deleteListingSchema,
   saveDraftSchema,
   submitListingSchema,
   type CreateDraftInput,
@@ -42,4 +45,27 @@ export const submitListingConfig = {
   input: submitListingSchema,
   auth: "verified-phone" as const,
   idempotencyKey: (input: SubmitListingInput) => input.idempotencyKey,
+};
+
+/**
+ * Marking a Live listing as sold or rented, and deleting a listing, from the dashboard (S6-T03, FR-ACC-10 and
+ * FR-ACC-11). Both need a signed-in account with a verified phone, the same rule as posting. Neither has a rate
+ * limit or a key: each works on one listing the caller owns, closing is terminal (a repeated call finds the
+ * listing closed and is refused), and a delete of a deleted listing finds nothing. Both change what the public
+ * site shows (a closed or deleted home leaves search and its page at once), so the tags of the lists and of that
+ * home's page are refreshed, taken from the database's answer. The change is recorded in the audit log by the
+ * database triggers, with the owner as the actor.
+ */
+export const closeListingConfig = {
+  name: "closeListing",
+  input: closeListingSchema,
+  auth: "verified-phone" as const,
+  invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
+};
+
+export const deleteListingConfig = {
+  name: "deleteListing",
+  input: deleteListingSchema,
+  auth: "verified-phone" as const,
+  invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
 };

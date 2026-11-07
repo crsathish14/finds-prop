@@ -215,3 +215,17 @@ export const submitListingSchema = z.object({
   idempotencyKey: z.uuid({ error: "validation.invalid" }),
 });
 export type SubmitListingInput = z.infer<typeof submitListingSchema>;
+
+/**
+ * Mark a Live listing as sold or rented (S6-T03, FR-ACC-10). The outcome has to fit the listing (sold for a sale
+ * listing, rented for a rent listing); the database checks that, and that the listing is the caller's and Live.
+ */
+export const closeListingSchema = z.object({
+  listingId: uuid,
+  outcome: z.enum(["sold", "rented"], { error: "validation.invalid" }),
+});
+export type CloseListingInput = z.infer<typeof closeListingSchema>;
+
+/** Delete one of the caller's own listings in any state (S6-T03, FR-ACC-11). */
+export const deleteListingSchema = z.object({ listingId: uuid });
+export type DeleteListingInput = z.infer<typeof deleteListingSchema>;

@@ -1,15 +1,21 @@
 import "server-only";
+import { PHOTO_BUCKET } from "@/features/media";
 import { getSessionView } from "@/server/auth/get-session-view";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
+import { publicEnv } from "@/lib/public-env";
+import { publicStorageUrl } from "@/lib/storage-url";
 import { DRAFTS_LIMIT } from "./constants";
 import {
   DRAFT_COLUMNS,
   DRAFT_SUMMARY_COLUMNS,
+  MY_LISTING_COLUMNS,
   toDraftSummaries,
   toDraftView,
+  toMyListings,
   type DraftSummary,
   type DraftView,
+  type MyListing,
 } from "./view";
 
 /**
@@ -66,4 +72,41 @@ export async function listMyDrafts(): Promise<DraftSummary[]> {
     throw error;
   }
   return toDraftSummaries(data);
+}
+
+/** The most listings "My listings" reads; the newest first. */
+export const MY_LISTINGS_LIMIT = 200;
+
+/**
+ * The signed-in owner's listings outside the drafts, newest first, with the first photo of each (S6-T03,
+ * FR-ACC-09). `my_properties()` returns only the caller's own rows, rejection reason included. Drafts are left
+ * out: they have their own list on the post-property page. A failed read throws, so the account's error
+ * page shows it.
+ */
+export async function getMyListings(): Promise<MyListing[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .rpc("my_properties")
+    .select(MY_LISTING_COLUMNS)
+    .neq("status", "draft")
+    .order("created_at", { ascending: false })
+    .limit(MY_LISTINGS_LIMIT);
+  if (error) {
+    logger.error("my listings could not be read", { errorCode: error.code });
+    throw error;
+  }
+  const ids = data.map((row) => row.id);
+  if (ids.length === 0) return [];
+  const photos = await supabase
+    .from("listing_media")
+    .select("listing_id, storage_path, position")
+    .in("listing_id", ids)
+    .order("position", { ascending: true });
+  if (photos.error) {
+    logger.error("the photos of my listings could not be read", { errorCode: photos.error.code });
+    throw photos.error;
+  }
+  return toMyListings(data, photos.data, (path) =>
+    publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PHOTO_BUCKET, path),
+  );
 }
