@@ -59,14 +59,14 @@ function WizardShell({
         </Heading>
         <Text tone="muted">{description}</Text>
       </div>
-      <div className="grid gap-6 md:grid-cols-3 md:items-start lg:grid-cols-4 lg:gap-10">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:items-start lg:grid-cols-4 lg:gap-10">
         <div>
           <Stepper steps={steps} progressLabel={progressLabel} />
           <p className="mt-3 text-small text-muted md:hidden">{progressLabel}</p>
         </div>
         <section
           aria-labelledby={titleId}
-          className="flex flex-col gap-6 rounded-xl border border-line bg-surface p-5 md:col-span-2 md:p-8 lg:col-span-3"
+          className="flex min-w-0 flex-col gap-6 rounded-xl border border-line bg-surface p-5 md:col-span-2 md:p-8 lg:col-span-3"
         >
           {alert}
           {children}

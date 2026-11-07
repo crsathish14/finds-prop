@@ -68,8 +68,11 @@ export function WizardShellDemo() {
           </SampleWizard>
         </Stage>
       </Specimen>
-      <Specimen label="On a phone the footer is fixed to the bottom of the screen (whole-page previews)">
-        <div className="flex flex-wrap items-start gap-6">
+      <Specimen
+        label="On a phone the footer is fixed to the bottom of the screen (whole-page previews)"
+        className="w-full"
+      >
+        <div className="flex w-full flex-wrap items-start gap-6">
           <DeviceFrame preview="wizard-basics" size="phone" />
           <DeviceFrame preview="wizard-review" size="phone" />
         </div>
