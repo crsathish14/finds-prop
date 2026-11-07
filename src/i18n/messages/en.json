@@ -287,7 +287,12 @@
     "emailTaken": "We couldn't use that email. Try a different address.",
     "captchaFailed": "We couldn't confirm you're a person. Check your connection and run the check again.",
     "nameTooShort": "Enter your name, at least 2 characters.",
-    "visitDateRange": "Choose a date from today to one year ahead."
+    "visitDateRange": "Choose a date from today to one year ahead.",
+    "photoType": "Use a JPEG, PNG or WebP photo.",
+    "photoTooLarge": "This photo is too large. Photos can be up to {maximum} MB.",
+    "photoLimit": "You can add up to {maximum} photos.",
+    "photoDimensions": "This photo is too small or too large in size. Try another one.",
+    "photoNotPrepared": "This photo could not be prepared. Please add it again."
   },
   "format": {
     "rupees": "₹{value}",
