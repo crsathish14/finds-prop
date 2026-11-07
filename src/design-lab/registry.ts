@@ -5,6 +5,7 @@ import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
 import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
+import { SELLER } from "./boards/seller";
 import type { LabBoard, LabBoardId } from "./types";
 
 /**
@@ -66,6 +67,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What spans the screens when choosing homes and projects: the compare bar and the comparison, the projects page and the project page. It mirrors the compare, projects and project screens.",
     entries: DISCOVERY,
+  },
+  {
+    id: "seller",
+    title: "Seller",
+    uxBoard: "post-property",
+    summary:
+      "What an owner uses to post a property: the wizard's frame and footer, the choice cards, the amenity chips, the review list, the gate and the drafts list. It mirrors the post-property screen.",
+    entries: SELLER,
   },
 ];
 

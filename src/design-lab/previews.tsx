@@ -23,6 +23,7 @@ import { Text } from "@/components/ui/text";
 import { resolveHero, type HeroLayout, type SponsorAd } from "@/lib/sponsors";
 import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "@/lib/sponsors.fixtures";
 import { SearchCardHost } from "./boards/domain-demos-search";
+import { BasicsStep, FailedAlert, ReviewStep, SampleWizard } from "./boards/seller-parts";
 import type { PreviewName } from "./preview-names";
 import {
   ACCOUNT_GROUPS,
@@ -283,4 +284,14 @@ export const PREVIEWS: Record<PreviewName, () => ReactNode> = {
   "hero-b-near-miss": () => <HeroPage ads={[NEAR_MISS_AD]} layout="split" />,
   "hero-none": () => <HeroPage ads={[]} layout="search_desk" />,
   "hero-split-without-ad": () => <HeroPage ads={[]} layout="split" />,
+  "wizard-basics": () => (
+    <SampleWizard current={1} inline={false}>
+      <BasicsStep />
+    </SampleWizard>
+  ),
+  "wizard-review": () => (
+    <SampleWizard current={5} inline={false} alert={<FailedAlert />}>
+      <ReviewStep />
+    </SampleWizard>
+  ),
 };
