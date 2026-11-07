@@ -11,7 +11,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <PublicHeader />
-      {children}
+      {/* Keeps the footer below the fold while the page streams in, so it cannot jump (layout shift). */}
+      <div className="flex min-h-dvh flex-col">{children}</div>
       <PublicFooter />
     </>
   );

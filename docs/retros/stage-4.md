@@ -47,11 +47,11 @@ Pull request #87 was closed and redone as #88 (see "What cost time").
 ## Measured, and not yet fixed
 
 - **About 1 MB of script (320 KB gzip) on every public page**, reported in `docs/runbooks/performance-baseline.md`. Worth trimming for blocking time; it is not what holds LCP up.
-- **Footer layout shift.** First seen on `/projects` and `/properties` (0.094, `docs/runbooks/lcp-investigation.md`). A full audit on 7 Nov 2026 found the same single footer shift on `/auth` (0.28), `/builder/login`, `/dashboard` and `/post-property` (they redirect to `/auth`), and the "no such project" and "no such home" pages (0.12 to 0.34). The cause: the page above the footer is short while content streams in, so the footer starts high and jumps down. The proposed fix is a full-height wrapper in the public and sign-in layouts and a loading outline on `/auth`. It needs its own plan and approval and is best re-measured with the seed loaded.
+- **Footer layout shift.** First seen on `/projects` and `/properties` (0.094, `docs/runbooks/lcp-investigation.md`). A full audit on 7 Nov 2026 found the same single footer shift on `/auth` (0.28), `/builder/login`, `/dashboard` and `/post-property` (they redirect to `/auth`), and the "no such project" and "no such home" pages (0.12 to 0.34). The cause: the page above the footer is short while content streams in, so the footer starts high and jumps down. The proposed fix is a full-height wrapper in the public and sign-in layouts and a loading outline on `/auth`. It was planned, built and re-measured with the seed loaded on 7 Nov 2026 (every page under 0.1; see `docs/runbooks/lcp-investigation.md`).
 
 ## Carry forward
 
-1. The footer shift fix, above (plan first; pictures may change).
+1. ~~The footer shift fix~~ Done on 7 Nov 2026 (no component changed, so no picture is expected to change).
 2. Judge LCP with field data once the site is live; do not gate on Lighthouse's simulated 2.5 s.
 3. `docs/engineering/backend.md` still lists older cache tag names; ADR-048 says the built names are in force. Ask the owner before editing it (protected).
 4. The sponsored banner change (2-second carousel, ADR-038) is not yet in the UX source; update the UX package, `docs/ux/final-ux/` and the plan together (R-DS-05).

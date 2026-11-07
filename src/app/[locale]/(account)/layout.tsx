@@ -10,9 +10,12 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <PublicHeader />
-      <Suspense fallback={null}>
-        <PageGate area="customer">{children}</PageGate>
-      </Suspense>
+      {/* Keeps the footer below the fold while the page streams in, so it cannot jump (layout shift). */}
+      <div className="flex min-h-dvh flex-col">
+        <Suspense fallback={null}>
+          <PageGate area="customer">{children}</PageGate>
+        </Suspense>
+      </div>
       <PublicFooter />
       <PublicBottomBar />
     </>
