@@ -13,6 +13,8 @@ export const PREVIEW_NAMES = [
   "hero-b-near-miss",
   "hero-none",
   "hero-split-without-ad",
+  "wizard-basics",
+  "wizard-review",
 ] as const;
 
 export type PreviewName = (typeof PREVIEW_NAMES)[number];
