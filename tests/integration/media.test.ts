@@ -66,6 +66,24 @@ describe("IT-media: the listing photo pipeline against a real database and stora
     return issued.path;
   }
 
+  /**
+   * Leaves a file in the bucket that is never finished, the way a closed tab does: signed straight
+   * against the bucket (its own rules still apply), with no address asked for, so it works even when
+   * the listing already holds six photos.
+   */
+  async function leaveUnfinished(file: Uint8Array<ArrayBuffer>): Promise<string> {
+    const path = `${owner.userId}/${listingId}/${randomUUID()}.jpg`;
+    const signed = await owner.client.storage.from(PHOTO_BUCKET).createSignedUploadUrl(path);
+    if (signed.error) throw new Error(`Could not sign (${signed.error.message})`);
+    const sent = await owner.client.storage
+      .from(PHOTO_BUCKET)
+      .uploadToSignedUrl(path, signed.data.token, new Blob([file], { type: "image/jpeg" }), {
+        contentType: "image/jpeg",
+      });
+    if (sent.error) throw new Error(`Could not upload (${sent.error.message})`);
+    return path;
+  }
+
   const accept = (path: string) =>
     acceptPhoto(photoCallerStore(owner.client), server, {
       input: { listingId, path },
@@ -274,7 +292,7 @@ describe("IT-media: the listing photo pipeline against a real database and stora
 
     it("lists a file with no photo row and leaves recorded photos alone", async () => {
       const admin = adminClient();
-      const lost = await upload(jpeg({ width: 640, height: 480 }));
+      const lost = await leaveUnfinished(jpeg({ width: 640, height: 480 }));
       // Zero hours means "everything older than now", so the new file counts without waiting a day.
       const { data, error } = await admin.rpc("orphan_listing_photos", { p_older_than_hours: 0 });
       expect(error).toBeNull();
@@ -301,7 +319,7 @@ describe("IT-media: the listing photo pipeline against a real database and stora
       expect(await store.readToken()).toBe(token);
       await expect(sweepOrphanPhotos(store, "wrong-token")).resolves.toEqual({ allowed: false });
 
-      const lost = await upload(jpeg({ width: 320, height: 240 }));
+      const lost = await leaveUnfinished(jpeg({ width: 320, height: 240 }));
       const listed = await admin.rpc("orphan_listing_photos", { p_older_than_hours: 0 });
       const names = (listed.data ?? []).map((row) => row.name);
       expect(names).toContain(lost);
