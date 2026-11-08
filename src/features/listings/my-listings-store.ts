@@ -27,6 +27,25 @@ export function myListingsStore(supabase: SupabaseClient<Database>): MyListingsS
       if (error || !row) throw mapListingError(error ?? {});
       return { listingId: row.id, shortId: row.short_id, status: row.status };
     },
+    async current(listingId) {
+      const { data, error } = await supabase
+        .rpc("my_properties")
+        .select("short_id, status")
+        .eq("id", listingId)
+        .maybeSingle();
+      if (error) throw mapListingError(error);
+      return data ? { shortId: data.short_id, status: data.status } : null;
+    },
+    async update(listingId, row, expectedStatus) {
+      const { data, error } = await supabase
+        .from("properties")
+        .update(row)
+        .eq("id", listingId)
+        .eq("status", expectedStatus)
+        .select("status");
+      if (error) throw mapListingError(error);
+      return data[0]?.status ?? null;
+    },
     async remove(listingId) {
       const { data, error } = await supabase
         .from("properties")

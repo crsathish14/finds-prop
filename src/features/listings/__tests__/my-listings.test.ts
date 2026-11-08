@@ -16,6 +16,9 @@ import { toMyListings } from "../view";
 
 const LISTING = "00000000-0000-4000-9000-000000000001";
 
+/** The two calls the editing flow adds to the store; the closing and deleting tests do not use them. */
+const EDITING = { current: vi.fn(), update: vi.fn() };
+
 const owner: SessionView = {
   userId: "00000000-0000-4000-8000-0000000000a1",
   roles: ["customer"],
@@ -128,13 +131,13 @@ describe("UT-my-listings-service: what the owner's calls hand back (S6-T03)", ()
 
   it("closes with the listing and the outcome, and returns what the database answered", async () => {
     const close = vi.fn<MyListingsStore["close"]>().mockResolvedValue(closed);
-    const store: MyListingsStore = { close, remove: vi.fn() };
+    const store: MyListingsStore = { close, remove: vi.fn(), ...EDITING };
     expect(await closeOwnListing(store, { listingId: LISTING, outcome: "sold" })).toEqual(closed);
     expect(close).toHaveBeenCalledWith(LISTING, "sold");
   });
 
   it("deletes and returns the short id for the cache tags", async () => {
-    const store: MyListingsStore = { close: vi.fn(), remove: async () => "abcd2345" };
+    const store: MyListingsStore = { close: vi.fn(), remove: async () => "abcd2345", ...EDITING };
     expect(await deleteOwnListing(store, { listingId: LISTING })).toEqual({
       listingId: LISTING,
       shortId: "abcd2345",
@@ -142,7 +145,7 @@ describe("UT-my-listings-service: what the owner's calls hand back (S6-T03)", ()
   });
 
   it("answers not found when nothing was deleted (not theirs, or already gone)", async () => {
-    const store: MyListingsStore = { close: vi.fn(), remove: async () => null };
+    const store: MyListingsStore = { close: vi.fn(), remove: async () => null, ...EDITING };
     await expect(deleteOwnListing(store, { listingId: LISTING })).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
@@ -156,6 +159,7 @@ describe("UT-my-listings-errors: the database's answers as action errors (S6-T03
     [{ message: "listing.not_allowed", code: "42501" }, "FORBIDDEN"],
     [{ message: "listing.wrong_outcome", code: "22023" }, "VALIDATION"],
     [{ message: "listing.bad_outcome", code: "22023" }, "VALIDATION"],
+    [{ message: "properties.terminal_status", code: "P0001" }, "CONFLICT"],
   ])("maps %j to %s", (failure, code) => {
     const error = mapListingError(failure);
     expect(error).toBeInstanceOf(ActionError);

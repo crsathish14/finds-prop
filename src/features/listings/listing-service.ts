@@ -102,6 +102,10 @@ export function mapListingError(failure: DatabaseFailure): ActionError {
   if (message === "listing.not_found" || code === "P0002") {
     return new ActionError("NOT_FOUND", "The listing was not found");
   }
+  if (message === "properties.terminal_status") {
+    // Sold and rented are final: the screen does not offer Edit there.
+    return new ActionError("CONFLICT", "A sold or rented listing cannot be changed");
+  }
   if (message === "listing.not_submittable" || code === "55000") {
     return new ActionError("CONFLICT", "The listing cannot be submitted in its state");
   }
