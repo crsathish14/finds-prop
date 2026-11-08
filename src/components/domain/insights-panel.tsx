@@ -12,8 +12,8 @@
  *   tiles: { id, label, value, icon, iconTone, note }[] }), children (charts), className.
  * Responsive: it asks its own width: two tiles to a line on a phone, three from 768 px of room, and four or five
  *   (as many as the group has) from 1024 px. A number of seven or more characters is set smaller in a narrow area so it stays
- *   inside its tile. The date choice and the project box wrap under each other on a phone; the date choice scrolls
- *   sideways if its four buttons are wider than the area.
+ *   inside its tile, and a tile whose name and icon do not fit side by side puts the icon on a second line. The date choice and the project box wrap under each other on a phone; the date choice is set
+ *   tighter in a narrow area so its four buttons fit, and scrolls sideways if they still do not.
  * Accessibility: each group is a labelled region with its own heading, one level under the title; the date choice is a radio group named by
  *   its label; the project box has its name; a tile reads as its label then its value; nothing is said by colour
  *   alone.
@@ -118,6 +118,7 @@ function InsightsPanel({
         <div className="max-w-full min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <SegmentedControl
             size="sm"
+            className="@max-md:[&>button]:px-2"
             aria-label={range.label}
             options={range.options}
             value={range.value}
@@ -169,7 +170,10 @@ function InsightsPanel({
             {group.label}
           </GroupHeading>
           <div
-            className={cn("grid grid-cols-2 gap-3 @3xl:grid-cols-3", columnsOf(group.tiles.length))}
+            className={cn(
+              "grid grid-cols-2 gap-3 @3xl:grid-cols-3 [&_[data-slot=stat-tile]>div:first-child]:flex-wrap",
+              columnsOf(group.tiles.length),
+            )}
           >
             {group.tiles.map((tile) => (
               <StatTile
