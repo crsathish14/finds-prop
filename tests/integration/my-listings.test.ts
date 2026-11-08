@@ -302,4 +302,87 @@ describe("IT-actions-listing: closing, deleting and enquiry status against a rea
       expect(listings.every((listing) => listing.status !== ("draft" as string))).toBe(true);
     });
   });
+
+  describe("the numbers on the dashboard tabs", () => {
+    it("counts the owner's listings outside the drafts in the database, the same rows the list reads", async () => {
+      await newListing("approved");
+      await newListing("pending");
+      await newListing("approved", "sale", stranger.userId);
+      const rows = await owner.client.rpc("my_properties").select("id").neq("status", "draft");
+      const counted = await owner.client
+        .rpc("my_properties", undefined, { count: "exact", head: true })
+        .neq("status", "draft");
+      expect(rows.error).toBeNull();
+      expect(counted.error).toBeNull();
+      expect(counted.count).toBe(rows.data?.length);
+      expect(counted.count).toBeGreaterThanOrEqual(2);
+    });
+
+    it("counts the enquiries received and the New ones among them, over the owner's own listings only", async () => {
+      const mine = await newListing("approved");
+      const theirs = await newListing("approved", "sale", stranger.userId);
+      const first = await newEnquiry(mine.id, "Divya Krishnan");
+      await newEnquiry(mine.id, "Arjun Menon");
+      await newEnquiry(theirs.id, "Karthik S");
+      const ids = [mine.id, theirs.id];
+      const total = () =>
+        owner.client
+          .from("enquiries")
+          .select("id", { count: "exact", head: true })
+          .in("property_id", ids);
+      const fresh = () =>
+        owner.client
+          .from("enquiries")
+          .select("id", { count: "exact", head: true })
+          .in("property_id", ids)
+          .eq("status", "new");
+      expect((await total()).count).toBe(2);
+      expect((await fresh()).count).toBe(2);
+      await moveEnquiry(enquiryStatusStore(owner.client), {
+        enquiryId: first,
+        status: "contacted",
+      });
+      expect((await total()).count).toBe(2);
+      expect((await fresh()).count).toBe(1);
+    });
+
+    it("counts the enquiries a visitor sent, by their own id", async () => {
+      const listing = await newListing("approved", "sale", stranger.userId);
+      const sent = await admin
+        .from("enquiries")
+        .insert({
+          property_id: listing.id,
+          user_id: owner.userId,
+          name: "Priya Raman",
+          phone: "9841055512",
+        })
+        .select("id")
+        .single();
+      expect(sent.error).toBeNull();
+      const counted = await owner.client
+        .from("enquiries")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", owner.userId);
+      expect(counted.error).toBeNull();
+      expect(counted.count).toBeGreaterThanOrEqual(1);
+    });
+
+    it("counts the saved homes through the same inner join as the list", async () => {
+      const listing = await newListing("approved", "sale", stranger.userId);
+      const saved = await owner.client
+        .from("saved_properties")
+        .insert({ user_id: owner.userId, property_id: listing.id });
+      expect(saved.error).toBeNull();
+      const rows = await owner.client
+        .from("saved_properties")
+        .select("created_at, properties!inner(short_id)");
+      const counted = await owner.client
+        .from("saved_properties")
+        .select("properties!inner(short_id)", { count: "exact", head: true });
+      expect(rows.error).toBeNull();
+      expect(counted.error).toBeNull();
+      expect(counted.count).toBe(rows.data?.length);
+      expect(counted.count).toBeGreaterThanOrEqual(1);
+    });
+  });
 });
