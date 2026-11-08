@@ -9,6 +9,7 @@ import {
   WizardFooterDemo,
   WizardShellDemo,
 } from "./seller-demos";
+import { ListingEditDemo } from "./seller-edit-demos";
 
 /**
  * What an owner uses to post a property (S6-T02). The wizard's screens are made of these parts; the board
@@ -70,6 +71,19 @@ export const SELLER: LabEntry[] = [
       "The centred card that stands in for the wizard until the email is verified: the ask with its form, and the sent state read aloud as a status.",
     sources: ["domain/gate-card.tsx"],
     Demo: GateCardDemo,
+  },
+  {
+    id: "listing-edit",
+    name: "Edit a listing",
+    description:
+      "The wizard when the owner edits a listing that is already sent (S6-T05): a Live listing (with the line that says what sends it back to review, and Save changes), one in review, and one that was not approved (with the admin's reason and Resubmit for review). Save changes on a Live listing asks first when the change would send it back to review; try it.",
+    sources: [
+      "domain/wizard-shell.tsx",
+      "domain/wizard-footer.tsx",
+      "patterns/confirm-dialog.tsx",
+      "patterns/alert.tsx",
+    ],
+    Demo: ListingEditDemo,
   },
   {
     id: "drafts-list",
