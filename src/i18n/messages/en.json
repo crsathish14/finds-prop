@@ -342,6 +342,12 @@
       "approved": "Approved",
       "rejected": "Rejected"
     },
+    "crm": {
+      "success": "Delivered",
+      "failed": "Failed",
+      "pending": "Retrying",
+      "not_applicable": "Not sent"
+    },
     "unit": {
       "available": "Available",
       "onHold": "On hold",

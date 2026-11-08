@@ -34,6 +34,12 @@ export const STATUS_TONES = {
     approved: "success",
     rejected: "danger",
   },
+  crm: {
+    success: "success",
+    failed: "danger",
+    pending: "warning",
+    not_applicable: "neutral",
+  },
   unit: {
     available: "success",
     onHold: "warning",

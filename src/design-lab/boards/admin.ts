@@ -1,5 +1,10 @@
 import type { LabEntry } from "../types";
 import { BuilderFormDemo, BuilderTableDemo, SignInAddressDemo } from "./admin-builders-demos";
+import {
+  SubmissionDetailDemo,
+  SubmissionsFiltersDemo,
+  SubmissionsTableDemo,
+} from "./admin-submissions-demos";
 import { InsightsPanelDemo } from "./admin-insights-demos";
 import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
@@ -14,7 +19,7 @@ import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-d
  * The board mirrors the admin listings screen (the queue with its tabs and filters, the review drawer and the
  * dialog that confirms a rejection) and the admin builders screen (the table, the invite and edit forms and the
  * address passed on after inviting), then the lists the admin and the builder share (S7-T01): the table that becomes
- * cards, the drawer for adding and editing a row, the Projects page in both modes, the Units page and its form, the Leads table and the Insights numbers.
+ * cards, the drawer for adding and editing a row, the Projects page in both modes, the Units page and its form, the Leads table, the form submissions (table, filters and details) and the Insights numbers.
  */
 export const ADMIN: LabEntry[] = [
   {
@@ -124,5 +129,29 @@ export const ADMIN: LabEntry[] = [
       "The numbers of the builder's Dashboard and Insights pages, and of the admin's overview: a choice of dates (7 days, 30 days, This month, Custom, which shows two dates), a choice of project on the full page, and the numbers in groups (Portfolio, Activity, Actions), two to a line on a phone and four or five from 1024 px of room. Charts are not part of it: they come with the chart spike. Shown as the dashboard with a notice above it, as the Insights page, and with a custom range, very large numbers and a long note.",
     sources: ["domain/insights-panel.tsx"],
     Demo: InsightsPanelDemo,
+  },
+  {
+    id: "submissions-table",
+    name: "Submissions table",
+    description:
+      "The forms people filled in, for the admin's Form submissions tab: when, name, mobile (a call link), project, source, form, whether the CRM got it (Delivered with its own id, Failed, Retrying, Not sent) and a Details button. A table from 1024 px of room and cards below that. Shown with five submissions (a dash for what was not given) and a very long name, project and form.",
+    sources: ["domain/submissions-table.tsx"],
+    Demo: SubmissionsTableDemo,
+  },
+  {
+    id: "submissions-filters",
+    name: "Submissions filters",
+    description:
+      "The boxes above the form submissions: date range (7, 30, 90 days or all time), form, project, source, CRM status and a Reset button. One box to a line on a phone, two on a tablet, all five and Reset on one line on a wide area. Shown with nothing chosen but the last 30 days, and with some chosen.",
+    sources: ["domain/submissions-filters.tsx"],
+    Demo: SubmissionsFiltersDemo,
+  },
+  {
+    id: "submission-detail",
+    name: "Submission details",
+    description:
+      "Everything one form submission holds, for the drawer that opens from the list: when, name, mobile, email, form, project and source, the answers with the form's own questions, and how the CRM stands, with the reason and the next retry when the delivery failed. Shown as a failed delivery, a delivered one with a very long answer, one with almost nothing in it, and in its drawer.",
+    sources: ["domain/submission-detail.tsx"],
+    Demo: SubmissionDetailDemo,
   },
 ];
