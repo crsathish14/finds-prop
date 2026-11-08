@@ -62,6 +62,23 @@ describe("InsightsPanel: the numbers of the dashboard and insights pages (S7-T01
     ).toBeVisible();
   });
 
+  it("sets a long number smaller in a narrow area, so it stays inside its tile", () => {
+    panel({
+      groups: [
+        {
+          id: "big",
+          label: "Activity",
+          tiles: [
+            { id: "short", label: "Leads", value: "18,600" },
+            { id: "long", label: "Project views", value: "1,284,560" },
+          ],
+        },
+      ],
+    });
+    expect(screen.getByText("1,284,560")).toHaveClass("@max-md:text-title");
+    expect(screen.getByText("18,600")).not.toHaveClass("@max-md:text-title");
+  });
+
   it("puts the groups one level under the title, whichever level the title has", () => {
     panel();
     expect(

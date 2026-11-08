@@ -11,7 +11,9 @@
  *   "custom"), project (the full page only: { label, allLabel, options, value, onChange }), groups ({ id, label,
  *   tiles: { id, label, value, icon, iconTone, note }[] }), children (charts), className.
  * Responsive: it asks its own width: two tiles to a line on a phone, three from 768 px of room, and four or five
- *   (as many as the group has) from 1024 px. The date choice and the project box wrap under each other on a phone.
+ *   (as many as the group has) from 1024 px. A number of seven or more characters is set smaller in a narrow area so it stays
+ *   inside its tile. The date choice and the project box wrap under each other on a phone; the date choice scrolls
+ *   sideways if its four buttons are wider than the area.
  * Accessibility: each group is a labelled region with its own heading, one level under the title; the date choice is a radio group named by
  *   its label; the project box has its name; a tile reads as its label then its value; nothing is said by colour
  *   alone.
@@ -113,13 +115,15 @@ function InsightsPanel({
       </div>
       {notice}
       <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
-        <SegmentedControl
-          size="sm"
-          aria-label={range.label}
-          options={range.options}
-          value={range.value}
-          onValueChange={range.onChange}
-        />
+        <div className="max-w-full min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <SegmentedControl
+            size="sm"
+            aria-label={range.label}
+            options={range.options}
+            value={range.value}
+            onValueChange={range.onChange}
+          />
+        </div>
         {customRange && range.value === "custom" ? (
           <div className="flex flex-wrap gap-3">
             <FormField label={customRange.fromLabel}>
@@ -171,7 +175,11 @@ function InsightsPanel({
               <StatTile
                 key={tile.id}
                 label={tile.label}
-                value={tile.value}
+                value={
+                  <span className={cn(tile.value.length > 6 && "@max-md:text-title")}>
+                    {tile.value}
+                  </span>
+                }
                 {...(tile.icon ? { icon: tile.icon } : {})}
                 {...(tile.iconTone ? { iconTone: tile.iconTone } : {})}
                 {...(tile.note ? { note: tile.note } : {})}
