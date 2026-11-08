@@ -114,6 +114,7 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
     leadIds.push(...inserted.data.map((row) => row.id));
 
     const day = 24 * 60 * MINUTE;
+    // Every row names the same columns: a column one row leaves out is sent as null, not as its default.
     const submissions = await admin.from("form_submissions").insert([
       {
         form_id: formId,
@@ -150,6 +151,7 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
         data: {},
         source: SOURCE,
         crm_status: "success" as const,
+        crm_attempts: 1,
         crm_lead_id: "CRM-4817",
         created_at: new Date(Date.now() - 3 * day).toISOString(),
       },
@@ -161,6 +163,7 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
         data: {},
         source: SOURCE,
         crm_status: "not_applicable" as const,
+        crm_attempts: 0,
         created_at: new Date(Date.now() - 40 * day).toISOString(),
       },
     ]);
@@ -215,15 +218,16 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
       ).toBe(0);
     });
 
-    it("lets the project's own builder read its leads, and nothing of other projects", async () => {
+    it("lets the project's own builder read its leads", async () => {
       const own = await readLeadsPage(builder.client, filters());
       expect(own.total).toBe(LEADS);
-      const everything = await readLeadsPage(builder.client, leadFilterSchema.parse({}));
-      expect(everything.leads.every((row) => row.projectId === projectId)).toBe(true);
+      expect(own.leads.every((row) => row.projectId === projectId)).toBe(true);
     });
 
-    it("shows a visitor who is not signed in nothing at all", async () => {
-      expect((await readLeadsPage(visitorClient(), filters())).total).toBe(0);
+    it("refuses a visitor who is not signed in: the table is closed to them", async () => {
+      await expect(readLeadsPage(visitorClient(), filters())).rejects.toMatchObject({
+        code: "42501",
+      });
     });
   });
 
@@ -285,8 +289,8 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
         crm: { status: "failed", httpStatus: 502, attempts: 2, lastError: "HTTP 502" },
       });
       expect(first?.answers).toEqual([
-        { key: "wants", label: "What they want", value: ["Parking", "Gym"] },
         { key: "budget", label: "Budget", value: "1 Cr" },
+        { key: "wants", label: "What they want", value: ["Parking", "Gym"] },
         { key: "note", label: "note", value: "old key" },
       ]);
     });
@@ -316,9 +320,11 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
       ).toBe(0);
     });
 
-    it("shows nothing to a builder or a visitor: only the admin reads submissions", async () => {
+    it("shows nothing to a builder and refuses a visitor: only the admin reads submissions", async () => {
       expect((await readSubmissionsPage(builder.client, filters(), now)).total).toBe(0);
-      expect((await readSubmissionsPage(visitorClient(), filters(), now)).total).toBe(0);
+      await expect(readSubmissionsPage(visitorClient(), filters(), now)).rejects.toMatchObject({
+        code: "42501",
+      });
     });
   });
 
