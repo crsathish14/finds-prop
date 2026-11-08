@@ -1,6 +1,6 @@
 "use client";
 
-import { useClientPathname } from "./client-pathname";
+import { useClientPathname } from "@/lib/client-pathname";
 import { HeaderView, type HeaderViewProps } from "./header-view";
 
 /**

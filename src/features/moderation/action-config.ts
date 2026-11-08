@@ -1,5 +1,5 @@
 import { tagsAfterListingChange } from "@/lib/cache-tags";
-import { moderateListingSchema } from "./schemas";
+import { loadMoreSchema, moderateListingSchema } from "./schemas";
 
 /**
  * How the admin's decision runs, kept apart from the "use server" file so a test can build it (S6-T04).
@@ -17,4 +17,15 @@ export const moderateListingConfig = {
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_decision" as const },
   invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
+};
+
+/**
+ * "Show more" on the queue (S6-T04): a read, so it changes nothing and has no cache tags, audit entry or
+ * idempotency key. Only a super admin may call it, and the database checks that again. It has no rate limit of its
+ * own: each call reads one page of 25 for a person who is already signed in as an admin.
+ */
+export const loadMoreListingsConfig = {
+  name: "loadMoreListings",
+  input: loadMoreSchema,
+  auth: { role: "super_admin" as const },
 };

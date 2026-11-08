@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { markCurrent, type NavLink } from "./chrome";
-import { useClientPathname } from "./client-pathname";
+import { useClientPathname } from "@/lib/client-pathname";
 
 export type AccountDrawerProps = {
   labels: { trigger: string; title: string; close: string };

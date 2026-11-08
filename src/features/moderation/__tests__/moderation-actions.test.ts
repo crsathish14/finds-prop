@@ -3,7 +3,7 @@ import { createDefineAction, type ActionDeps } from "@/server/actions/define-act
 import { ActionError } from "@/server/actions/normalise-error";
 import type { SessionView } from "@/server/auth/session";
 import { createLogger } from "@/server/logger";
-import { moderateListingConfig } from "../action-config";
+import { loadMoreListingsConfig, moderateListingConfig } from "../action-config";
 
 const LISTING = "00000000-0000-4000-9000-000000000001";
 
@@ -54,7 +54,14 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
       return { listingId: LISTING, shortId: "abcd2345", status: "approved", featured: false };
     },
   });
-  return { calls, decide };
+  const more = define({
+    ...loadMoreListingsConfig,
+    handler: async () => {
+      calls.push("handler");
+      return { items: [], nextCursor: null, skipped: 0 };
+    },
+  });
+  return { calls, decide, more };
 }
 
 describe("UT-moderation-action: who may decide, and what it does (S6-T04)", () => {
@@ -122,5 +129,34 @@ describe("UT-moderation-action: who may decide, and what it does (S6-T04)", () =
     const answer = await decide({ decision: "approve", listingId: LISTING });
     expect(answer).toMatchObject({ ok: false, code: "RATE_LIMITED", retryAfter: 1200 });
     expect(calls).toEqual(["rateLimit:admin_decision"]);
+  });
+});
+
+describe("UT-moderation-action: Show more is a read for admins only (S6-T04)", () => {
+  const input = { tab: "pending", after: "abc" };
+
+  it("lets a super admin read the next page, with no limit, cache refresh or audit entry", async () => {
+    const { more, calls } = harness();
+    const answer = await more(input);
+    expect(answer.ok).toBe(true);
+    expect(calls).toEqual(["handler"]);
+  });
+
+  it.each([
+    ["a visitor", null, "UNAUTHENTICATED"],
+    ["a customer", customer, "FORBIDDEN"],
+    ["a builder", builder, "FORBIDDEN"],
+  ] as const)("refuses %s before reading anything", async (_who, session, code) => {
+    const { more, calls } = harness({ session });
+    const answer = await more(input);
+    expect(answer).toMatchObject({ ok: false, code });
+    expect(calls).toEqual([]);
+  });
+
+  it("refuses a call with no cursor instead of giving the first page again", async () => {
+    const { more, calls } = harness();
+    const answer = await more({ tab: "pending" });
+    expect(answer).toMatchObject({ ok: false, code: "VALIDATION" });
+    expect(calls).toEqual([]);
   });
 });
