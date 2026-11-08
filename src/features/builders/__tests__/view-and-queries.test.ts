@@ -93,7 +93,8 @@ describe("UT-builder-view: the rows of the Builders table (S7-T05)", () => {
 describe("UT-builder-queries: the admin's list of builders (S7-T05)", () => {
   it("asks for admin_builder_overview and maps what comes back", async () => {
     db.answer = { data: [row()], error: null };
-    const rows = await getBuilderOverview();
+    const { builders: rows, now } = await getBuilderOverview();
+    expect(typeof now).toBe("number");
     expect(db.asked).toEqual(["admin_builder_overview"]);
     expect(rows.map((item) => item.name)).toEqual(["Kadal Homes"]);
   });

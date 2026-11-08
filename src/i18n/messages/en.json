@@ -1427,6 +1427,98 @@
         }
       },
       "conflict": "Someone has already decided this listing. The list has been refreshed."
+    },
+    "builders": {
+      "metaTitle": "Builders",
+      "title": "Builders",
+      "intro": "Invite builders and manage their access. Accounts are created by invitation only.",
+      "neverSignedIn": "Hasn't signed in yet",
+      "signedInToday": "Today, {time}",
+      "kindBuilder": "Builder",
+      "kindAgent": "Agent",
+      "close": "Close",
+      "cancel": "Cancel",
+      "conflict": "This builder has changed since the page was loaded. The page has been refreshed.",
+      "count": "{count, plural, one {# builder} other {# builders}}",
+      "footnote": "Builders can be deactivated but not deleted.",
+      "table": {
+        "caption": "Builders and agents",
+        "company": "Company",
+        "status": "Status",
+        "projects": "Projects",
+        "leads": "Leads",
+        "lastSignIn": "Last sign-in",
+        "actions": "Actions"
+      },
+      "actions": {
+        "new": "New builder",
+        "edit": "Edit",
+        "editDetails": "Edit details",
+        "resend": "Resend invitation",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "more": "More actions for {name}"
+      },
+      "empty": {
+        "title": "No builders yet",
+        "text": "Invite a builder and share the sign-in address with them."
+      },
+      "form": {
+        "name": "Company name",
+        "email": "Login email",
+        "emailHint": "They sign in with Google using this email.",
+        "emailLockedHint": "The login email cannot be changed.",
+        "kind": "Type",
+        "contactPerson": "Contact person",
+        "phone": "Phone",
+        "logoUrl": "Logo link",
+        "website": "Website",
+        "description": "About",
+        "optional": "(optional)"
+      },
+      "invite": {
+        "title": "New builder",
+        "text": "They sign in with Google, so no password is needed.",
+        "submit": "Invite builder"
+      },
+      "edit": {
+        "title": "Edit details",
+        "text": "Change the details of this builder. The login email stays the same.",
+        "submit": "Save changes"
+      },
+      "address": {
+        "title": "Sign-in address",
+        "invitedTitle": "Builder invited",
+        "text": "Nothing is emailed. Pass this address on to them.",
+        "ask": "Ask {email} to sign in with Google using that same email.",
+        "label": "Sign-in address",
+        "copy": "Copy address",
+        "copied": "Copied",
+        "hint": "They must use the Google account with the email above.",
+        "done": "Done"
+      },
+      "deactivate": {
+        "title": "Deactivate {name}?",
+        "text": "They will lose access to the builder portal and will no longer appear in the developer showcase on the home page. You can activate them again at any time."
+      },
+      "toast": {
+        "invited": {
+          "title": "Builder invited",
+          "text": "{email} can now sign in with Google."
+        },
+        "saved": {
+          "title": "Details saved",
+          "text": "The builder's details have been updated."
+        },
+        "activated": {
+          "title": "Builder activated",
+          "text": "{name} can sign in again."
+        },
+        "deactivated": {
+          "title": "Builder deactivated",
+          "text": "{name} can no longer sign in to the builder portal."
+        }
+      }
     }
   }
 }
