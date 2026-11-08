@@ -1,12 +1,18 @@
 import type { LabEntry } from "../types";
 import { BuilderFormDemo, BuilderTableDemo, SignInAddressDemo } from "./admin-builders-demos";
+import {
+  ManagerDrawerDemo,
+  ProjectsManagerDemo,
+  ResponsiveTableDemo,
+} from "./admin-managers-demos";
 import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-demos";
 
 /**
  * What the admin uses to review the listings owners post (S6-T04) and to invite and manage builders (S7-T05).
  * The board mirrors the admin listings screen (the queue with its tabs and filters, the review drawer and the
  * dialog that confirms a rejection) and the admin builders screen (the table, the invite and edit forms and the
- * address passed on after inviting).
+ * address passed on after inviting), then the lists the admin and the builder share (S7-T01): the table that becomes
+ * cards, the drawer for adding and editing a row, and the Projects page in both modes.
  */
 export const ADMIN: LabEntry[] = [
   {
@@ -60,5 +66,29 @@ export const ADMIN: LabEntry[] = [
       "The address an invited builder signs in at, with a Copy address button that says Copied for a few seconds. Nothing is emailed in v1, so the admin passes this on. A normal address and a very long one on a narrow card.",
     sources: ["domain/sign-in-address.tsx"],
     Demo: SignInAddressDemo,
+  },
+  {
+    id: "responsive-table",
+    name: "Responsive table",
+    description:
+      "The base of the lists in the admin and builder portals: one definition of the columns and rows draws a table from 1024 px of room and cards below that, each value under its word and the buttons at the foot. Shown wide, in a narrow area, and with a very long name.",
+    sources: ["patterns/responsive-table.tsx"],
+    Demo: ResponsiveTableDemo,
+  },
+  {
+    id: "manager-drawer",
+    name: "Manager drawer",
+    description:
+      "The side drawer where a row is added or edited: a title and a line, the form, and a footer with Cancel and the main button that stay in view while the form scrolls. The main button works for a moment when sending; a drawer that only shows something has one Close button.",
+    sources: ["patterns/manager-drawer.tsx"],
+    Demo: ManagerDrawerDemo,
+  },
+  {
+    id: "projects-manager",
+    name: "Projects manager",
+    description:
+      "The Projects page of the admin and of a builder in one component: the heading and Add project, the status tabs with counts, the search box, the list (a table, or cards on a phone) with a menu on each row, and the line under it. The admin sees the Builder column, a filter for builders and the moderation buttons (Approve, Reject, Publish, Unpublish, Feature); a builder sees a warning that edits go back for approval, and Edit and View live. Shown with every state of a project, a refused delete, a working button, a very long name, nothing yet, and the question before rejecting.",
+    sources: ["domain/projects-manager.tsx"],
+    Demo: ProjectsManagerDemo,
   },
 ];
