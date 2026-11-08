@@ -333,6 +333,12 @@
       "invited": "Invited",
       "inactive": "Inactive"
     },
+    "project": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
     "unit": {
       "available": "Available",
       "onHold": "On hold",

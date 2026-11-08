@@ -28,6 +28,12 @@ export const STATUS_TONES = {
     invited: "warning",
     inactive: "neutral",
   },
+  project: {
+    draft: "neutral",
+    pending: "warning",
+    approved: "success",
+    rejected: "danger",
+  },
   unit: {
     available: "success",
     onHold: "warning",
