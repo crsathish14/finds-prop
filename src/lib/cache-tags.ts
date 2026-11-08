@@ -49,6 +49,14 @@ export function tagsAfterProjectChange(slug: string): string[] {
   return [CACHE_TAGS.projects, projectTag(slug), CACHE_TAGS.homeProjects];
 }
 
+/**
+ * A builder was activated, deactivated or had their details saved (S7-T05): the projects list and each project page
+ * (the builder's name and logo), and the homepage's developers, which leave the showcase with a deactivated builder.
+ */
+export function tagsAfterBuilderChange(): string[] {
+  return [CACHE_TAGS.projects, CACHE_TAGS.homeProjects];
+}
+
 /** The site content was saved (FR-ADM-10). */
 export function tagsAfterSiteSettingsChange(): string[] {
   return [CACHE_TAGS.siteSettings];
