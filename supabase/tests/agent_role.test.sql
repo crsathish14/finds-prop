@@ -96,7 +96,7 @@ select throws_ok(
   'P0002', 'listing.not_found', 'an agent cannot close another owner''s listing'
 );
 select throws_ok(
-  $insert into public.user_roles (user_id, role) values ('00000000-0000-4000-8000-0000000000a1', 'builder')$,
+  $$insert into public.user_roles (user_id, role) values ('00000000-0000-4000-8000-0000000000a1', 'builder')$$,
   '42501', null, 'an agent cannot give themselves another role'
 );
 
