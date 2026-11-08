@@ -9,7 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { DashboardTabs, DashboardTabsView } from "./dashboard-tabs.client";
-import type { DashboardTab } from "./schemas";
+import type { DashboardTab, TabCounts } from "./schemas";
 
 type DashboardScreenProps = {
   /** The name the person gave, or null when they skipped that step. */
@@ -22,6 +22,8 @@ type DashboardScreenProps = {
   emailPending?: boolean;
   /** The email prompt or its reminder, between the heading and the tabs. */
   notice?: ReactNode;
+  /** The numbers on the tabs, if any. */
+  counts?: TabCounts;
   /** What the active tab shows. */
   children: ReactNode;
   /** Design Lab only: change the tab without going anywhere. */
@@ -43,6 +45,7 @@ export function DashboardScreen({
   postHref,
   emailPending = false,
   notice,
+  counts,
   children,
   onSelect,
   titleAs = "h1",
@@ -52,6 +55,7 @@ export function DashboardScreen({
   const trimmed = name?.trim();
   const tabProps = {
     active,
+    ...(counts ? { counts } : {}),
     listLabel: translate("tabsLabel"),
     labels: {
       saved: translate("tabs.saved"),

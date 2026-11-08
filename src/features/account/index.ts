@@ -5,4 +5,4 @@ export { getDashboardPerson, getEmailState } from "./queries";
 export { TabEmpty } from "./tab-empty";
 export { DASHBOARD_PATH, parseTab } from "./tabs";
 export type { EmailState } from "./email-state";
-export type { DashboardTab } from "./schemas";
+export type { DashboardTab, TabCount, TabCounts } from "./schemas";
