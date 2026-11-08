@@ -274,13 +274,13 @@ function ProjectsManager({
 }: ProjectsManagerProps) {
   const admin = mode === "admin";
   const tableColumns: ResponsiveTableColumn[] = [
-    { id: "project", heading: columns.project, role: "main", width: admin ? 30 : 38 },
+    { id: "project", heading: columns.project, role: "main", width: admin ? 26 : 38 },
     ...(admin
-      ? [{ id: "builder", heading: columns.builder, width: 16 } satisfies ResponsiveTableColumn]
+      ? [{ id: "builder", heading: columns.builder, width: 14 } satisfies ResponsiveTableColumn]
       : []),
-    { id: "priceRange", heading: columns.priceRange, align: "end", width: 14, nowrap: true },
-    { id: "status", heading: columns.status, width: admin ? 18 : 24 },
-    { id: "actions", heading: columns.actions, role: "actions", width: admin ? 22 : 24 },
+    { id: "priceRange", heading: columns.priceRange, align: "end", width: 15, nowrap: true },
+    { id: "status", heading: columns.status, width: admin ? 19 : 24 },
+    { id: "actions", heading: columns.actions, role: "actions", width: admin ? 26 : 23 },
   ];
   const tableRows: ResponsiveTableRow[] = rows.map((row) => ({
     id: row.id,
