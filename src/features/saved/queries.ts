@@ -41,3 +41,19 @@ export async function savedHomes(): Promise<PropertyData[]> {
   const results = await Promise.all(ids.map((shortId) => getProperty(shortId)));
   return results.flatMap((result) => (result.status === "found" ? [result.property] : []));
 }
+
+/**
+ * How many saved homes the visitor can still see (the number on the Saved tab), counted the way the list is
+ * read: through the inner join, so a home the database no longer shows is not counted. A failed read throws.
+ */
+export async function countSavedHomes(): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .from("saved_properties")
+    .select("properties!inner(short_id)", { count: "exact", head: true });
+  if (error) {
+    logger.error("saved homes could not be counted", { errorCode: error.code });
+    throw error;
+  }
+  return count ?? 0;
+}

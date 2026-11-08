@@ -173,3 +173,62 @@ export async function getReceivedEnquiries(): Promise<{
   // The time is taken here, in the read, so the list says "2 hours ago" as of this request.
   return { enquiries: rows, now: Date.now() };
 }
+
+/** How many enquiries the signed-in owner has received, and how many of them nobody has moved yet. */
+export interface ReceivedCounts {
+  total: number;
+  fresh: number;
+}
+
+/**
+ * The numbers on the Enquiries received tab (S6-T03): all received and the New ones, counted by the database
+ * for the owner's own listings (read the same way as the list). An owner with no listings has none. A failed
+ * read throws, so the account's error page shows it.
+ */
+export async function countReceivedEnquiries(): Promise<ReceivedCounts> {
+  const supabase = await createServerSupabase();
+  const own = await supabase
+    .rpc("my_properties")
+    .select("id")
+    .neq("status", "draft")
+    .limit(OWN_LISTINGS_LIMIT);
+  if (own.error) {
+    logger.error("the owner's listings could not be read to count their enquiries", {
+      errorCode: own.error.code,
+    });
+    throw own.error;
+  }
+  const ids = own.data.map((row) => row.id);
+  if (ids.length === 0) return { total: 0, fresh: 0 };
+  const [all, fresh] = await Promise.all([
+    supabase.from("enquiries").select("id", { count: "exact", head: true }).in("property_id", ids),
+    supabase
+      .from("enquiries")
+      .select("id", { count: "exact", head: true })
+      .in("property_id", ids)
+      .eq("status", "new"),
+  ]);
+  const failure = all.error ?? fresh.error;
+  if (failure) {
+    logger.error("received enquiries could not be counted", { errorCode: failure.code });
+    throw failure;
+  }
+  return { total: all.count ?? 0, fresh: fresh.count ?? 0 };
+}
+
+/**
+ * How many enquiries the visitor sent (the number on the My enquiries tab), asked for by their own id like the
+ * list is. A failed read throws, so the account's error page shows it.
+ */
+export async function countSentEnquiries(userId: string): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .from("enquiries")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if (error) {
+    logger.error("sent enquiries could not be counted", { errorCode: error.code });
+    throw error;
+  }
+  return count ?? 0;
+}

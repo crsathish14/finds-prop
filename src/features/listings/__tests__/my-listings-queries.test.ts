@@ -94,7 +94,8 @@ describe("UT-my-listings-queries: the owner's listings (S6-T03)", () => {
       data: [{ listing_id: "l2", storage_path: "u/l2/a.jpg", position: 0 }],
       error: null,
     };
-    const listings = await getMyListings();
+    const { listings, now } = await getMyListings();
+    expect(now).toBeGreaterThan(0);
     expect(db.asked).toContain("rpc:my_properties:{}");
     expect(db.asked).toContain("neq:status:draft");
     expect(db.asked).toContain("order:created_at:false");
@@ -107,7 +108,7 @@ describe("UT-my-listings-queries: the owner's listings (S6-T03)", () => {
   });
 
   it("does not ask for photos when there are no listings", async () => {
-    expect(await getMyListings()).toEqual([]);
+    expect((await getMyListings()).listings).toEqual([]);
     expect(db.asked.some((entry) => entry.startsWith("in:listing_media"))).toBe(false);
   });
 

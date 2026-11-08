@@ -80,10 +80,10 @@ export const MY_LISTINGS_LIMIT = 200;
 /**
  * The signed-in owner's listings outside the drafts, newest first, with the first photo of each (S6-T03,
  * FR-ACC-09). `my_properties()` returns only the caller's own rows, rejection reason included. Drafts are left
- * out: they have their own list on the post-property page. A failed read throws, so the account's error
- * page shows it.
+ * out: they have their own list on the post-property page. The time is taken here, in the read, so the list
+ * says "posted 2 days ago" as of this request. A failed read throws, so the account's error page shows it.
  */
-export async function getMyListings(): Promise<MyListing[]> {
+export async function getMyListings(): Promise<{ listings: MyListing[]; now: number }> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase
     .rpc("my_properties")
@@ -96,7 +96,7 @@ export async function getMyListings(): Promise<MyListing[]> {
     throw error;
   }
   const ids = data.map((row) => row.id);
-  if (ids.length === 0) return [];
+  if (ids.length === 0) return { listings: [], now: Date.now() };
   const photos = await supabase
     .from("listing_media")
     .select("listing_id, storage_path, position")
@@ -106,7 +106,24 @@ export async function getMyListings(): Promise<MyListing[]> {
     logger.error("the photos of my listings could not be read", { errorCode: photos.error.code });
     throw photos.error;
   }
-  return toMyListings(data, photos.data, (path) =>
+  const listings = toMyListings(data, photos.data, (path) =>
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PHOTO_BUCKET, path),
   );
+  return { listings, now: Date.now() };
+}
+
+/**
+ * How many listings the signed-in owner has outside the drafts (the number on the My listings tab), counted by
+ * the database. A failed read throws, so the account's error page shows it.
+ */
+export async function countMyListings(): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .rpc("my_properties", undefined, { count: "exact", head: true })
+    .neq("status", "draft");
+  if (error) {
+    logger.error("my listings could not be counted", { errorCode: error.code });
+    throw error;
+  }
+  return count ?? 0;
 }
