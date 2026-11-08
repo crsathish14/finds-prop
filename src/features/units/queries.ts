@@ -1,4 +1,6 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database.types";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import { UNITS_PAGE_SIZE } from "./constants";
@@ -9,15 +11,18 @@ import { toUnitViews, type ProjectOption, type UnitsPage } from "./view";
 /**
  * The admin's Units reads (S7-T07, FR-ADM-05), as the signed-in admin through their own session: the policies of
  * `project_units` and `projects` let an admin read every project's units, and anyone else would get nothing. Never
- * cached: the numbers must be right after every change. A failed read throws, so the error page shows it.
+ * cached: the numbers must be right after every change. A failed read throws, so the error page shows it. The `read…`
+ * functions take the client, so the integration tests can pass the admin's; the `get…` ones make it from the cookies.
  */
 
 const COLUMNS =
   "id, unit_number, floor_number, bhk, area_sqft, facing, price, available_from, floor_plan_path, status";
 
 /** One page of a project's units by unit number, with the number of units the filters match. Unit numbers are unique in a project, so the number is the cursor. */
-export async function getUnitsPage(filters: UnitFilters): Promise<UnitsPage> {
-  const supabase = await createServerSupabase();
+export async function readUnitsPage(
+  supabase: SupabaseClient<Database>,
+  filters: UnitFilters,
+): Promise<UnitsPage> {
   const like = filters.search ? `%${escapeLike(filters.search)}%` : null;
 
   let page = supabase.from("project_units").select(COLUMNS).eq("project_id", filters.projectId);
@@ -59,8 +64,9 @@ export async function getUnitsPage(filters: UnitFilters): Promise<UnitsPage> {
 }
 
 /** Every project, by name, for the picker. The admin sees them all (`admin_projects`). */
-export async function getProjectOptions(): Promise<ProjectOption[]> {
-  const supabase = await createServerSupabase();
+export async function readProjectOptions(
+  supabase: SupabaseClient<Database>,
+): Promise<ProjectOption[]> {
   const { data, error } = await supabase
     .rpc("admin_projects")
     .select("id, name")
@@ -70,4 +76,14 @@ export async function getProjectOptions(): Promise<ProjectOption[]> {
     throw error;
   }
   return data.map((project) => ({ id: project.id, name: project.name }));
+}
+
+/** The page of units for the signed-in admin. */
+export async function getUnitsPage(filters: UnitFilters): Promise<UnitsPage> {
+  return readUnitsPage(await createServerSupabase(), filters);
+}
+
+/** The project picker for the signed-in admin. */
+export async function getProjectOptions(): Promise<ProjectOption[]> {
+  return readProjectOptions(await createServerSupabase());
 }

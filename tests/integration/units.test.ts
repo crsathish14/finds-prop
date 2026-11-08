@@ -19,7 +19,9 @@ vi.mock("next/headers", () => ({
 
 const { unitStore } = await import("@/features/units/service");
 const { addUnitTo, removeUnit, saveUnit } = await import("@/features/units/unit-service");
-const { addUnitSchema, updateUnitSchema } = await import("@/features/units/schemas");
+const { addUnitSchema, unitFilterSchema, updateUnitSchema } =
+  await import("@/features/units/schemas");
+const { readProjectOptions, readUnitsPage } = await import("@/features/units/queries");
 const { ActionError } = await import("@/server/actions/normalise-error");
 
 const SLUG = `it-units-${randomUUID().slice(0, 8)}`;
@@ -166,6 +168,51 @@ describe("IT-units: the admin's unit changes against a real database (S7-T07, FR
     expect(await failureOf(() => removeUnit(unitStore(staff.client), made.unitId))).toMatchObject({
       code: "NOT_FOUND",
     });
+  });
+
+  it("reads a project's units by unit number, 25 to a page, with the count and the cursor for the rest", async () => {
+    const rows = Array.from({ length: 27 }, (_unused, index) => ({
+      project_id: projectId,
+      unit_number: `PG-${String(index + 1).padStart(2, "0")}`,
+      status: index < 3 ? ("hold" as const) : ("available" as const),
+    }));
+    const inserted = await admin.from("project_units").insert(rows);
+    if (inserted.error) throw new Error(`Could not add the units (${inserted.error.code})`);
+    const filters = (extra: Record<string, unknown> = {}) =>
+      unitFilterSchema.parse({ projectId, search: "PG-", ...extra });
+
+    const first = await readUnitsPage(staff.client, filters());
+    expect(first.units).toHaveLength(25);
+    expect(first.total).toBe(27);
+    expect(first.units[0]?.unitNumber).toBe("PG-01");
+    expect(first.nextCursor).toBe("PG-25");
+
+    const second = await readUnitsPage(staff.client, filters({ after: first.nextCursor }));
+    expect(second.units.map((unit) => unit.unitNumber)).toEqual(["PG-26", "PG-27"]);
+    expect(second.nextCursor).toBeNull();
+    expect(second.total).toBe(27);
+
+    const held = await readUnitsPage(staff.client, filters({ state: "hold" }));
+    expect(held.total).toBe(3);
+    expect(held.units.every((unit) => unit.status === "hold")).toBe(true);
+  });
+
+  it("looks for a unit number as letters, so a % or _ in the search is not a wildcard", async () => {
+    const wild = await readUnitsPage(
+      staff.client,
+      unitFilterSchema.parse({ projectId, search: "%" }),
+    );
+    expect(wild.total).toBe(0);
+    const some = await readUnitsPage(
+      staff.client,
+      unitFilterSchema.parse({ projectId, search: "pg-0" }),
+    );
+    expect(some.total).toBe(9);
+  });
+
+  it("lists every project for the picker, by name", async () => {
+    const options = await readProjectOptions(staff.client);
+    expect(options).toContainEqual({ id: projectId, name: "Units Integration Project" });
   });
 
   it("refuses a visitor who is not signed in (the database, not the action, says no)", async () => {
