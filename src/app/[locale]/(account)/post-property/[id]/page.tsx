@@ -13,9 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Continue a draft (S6-T02, FR-ACC-08). An address that is not a listing id, a listing that is not the
- * signed-in person's, and one that does not exist all look the same: not found. A listing that is no longer a
- * draft (sent for review, live, sold) leads to My listings; editing those is a later task (S6-T05).
+ * Continue a draft, or edit a listing that is already sent (S6-T02, S6-T05, FR-ACC-08, FR-ACC-09). An address
+ * that is not a listing id, a listing that is not the signed-in person's, and one that does not exist all look
+ * the same: not found. A draft is continued; a listing in review, Live or not approved opens the wizard to edit
+ * it; a sold or rented listing is final and leads to My listings.
  */
 export default async function ContinueDraftPage({ params }: PageProps) {
   const { id } = await params;
@@ -24,6 +25,6 @@ export default async function ContinueDraftPage({ params }: PageProps) {
   if (!z.uuid().safeParse(id).success) notFound();
   const draft = await getMyDraft(id.toLowerCase());
   if (!draft) notFound();
-  if (draft.status !== "draft") redirect(MY_LISTINGS_HREF);
+  if (draft.status === "sold" || draft.status === "rented") redirect(MY_LISTINGS_HREF);
   return <PostPropertyScreen draft={draft} />;
 }

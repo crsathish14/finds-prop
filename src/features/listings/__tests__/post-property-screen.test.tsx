@@ -34,6 +34,7 @@ vi.mock("@/lib/public-env", () => ({
 vi.mock("../actions", () => ({
   createListingDraft: vi.fn(),
   deleteListingDraft: vi.fn(),
+  saveListingChanges: vi.fn(),
   saveListingDraft: vi.fn(),
   submitListing: vi.fn(),
 }));
@@ -62,9 +63,11 @@ vi.mock("../wizard.client", () => ({
     doneHref: string;
     photos?: { id: string; name: string; previewUrl: string }[];
     values?: { title: string };
+    edit?: { state: string; reason: string | null };
   }) => (
     <div
       data-testid="wizard"
+      data-edit={props.edit ? `${props.edit.state}|${props.edit.reason ?? ""}` : ""}
       data-listing={props.listingId ?? ""}
       data-done={props.doneHref}
       data-title={props.values?.title ?? ""}
@@ -79,6 +82,7 @@ const draft = {
   id: "00000000-0000-4000-9000-000000000001",
   shortId: "abcd2345",
   status: "draft",
+  rejectionReason: null as string | null,
   listingType: "sale" as const,
   propertyType: "apartment" as const,
   address: null,
@@ -150,6 +154,27 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
     state.drafts = [];
     render(await PostPropertyScreen({}));
     expect(screen.queryByTestId("drafts")).toBeNull();
+  });
+
+  it("continues a draft, and edits a listing that is already sent, with the state and the reason it was not approved", async () => {
+    const draftView = render(await PostPropertyScreen({ draft }));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-edit", "");
+    draftView.unmount();
+    const live = render(await PostPropertyScreen({ draft: { ...draft, status: "approved" } }));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-edit", "approved|");
+    live.unmount();
+    const waiting = render(await PostPropertyScreen({ draft: { ...draft, status: "pending" } }));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-edit", "pending|");
+    waiting.unmount();
+    render(
+      await PostPropertyScreen({
+        draft: { ...draft, status: "rejected", rejectionReason: "Add a photo of the home." },
+      }),
+    );
+    expect(screen.getByTestId("wizard")).toHaveAttribute(
+      "data-edit",
+      "rejected|Add a photo of the home.",
+    );
   });
 
   it("opens a draft in the wizard with its values and its photos, and no list of drafts", async () => {

@@ -91,3 +91,44 @@ describe("UT-listings-view: a draft as the wizard reopens it (S6-T02)", () => {
     ]);
   });
 });
+
+describe("UT-listings-view: the reason a listing was not approved reaches the wizard (S6-T05)", () => {
+  const base = {
+    id: "l1",
+    short_id: "abcd2345",
+    status: "rejected",
+    rejection_reason: "Add a photo of the home.",
+    listing_type: "sale",
+    property_type: "apartment",
+    address: "12 Beach Road",
+    locality: "Adyar",
+    city: "Chennai",
+    pincode: "600020",
+    bhk: 3,
+    bathrooms: 2,
+    area_sqft: 950,
+    price: 8500000,
+    furnishing: null,
+    amenities: [],
+    title: "Flat in Adyar near the beach",
+    description: null,
+    updated_at: "2026-11-07T10:00:00+00:00",
+  };
+
+  it("keeps the reason while the listing is not approved", () => {
+    expect(toDraftView(base, [])?.rejectionReason).toBe("Add a photo of the home.");
+  });
+
+  it("has no reason for a listing in any other state, even if the row still holds one", () => {
+    expect(toDraftView({ ...base, status: "pending" }, [])?.rejectionReason).toBeNull();
+    expect(
+      toDraftView({ ...base, status: "draft", rejection_reason: null }, [])?.rejectionReason,
+    ).toBeNull();
+  });
+
+  it("reads a row without the column as having no reason", () => {
+    const without: Record<string, unknown> = { ...base };
+    delete without["rejection_reason"];
+    expect(toDraftView(without, [])?.rejectionReason).toBeNull();
+  });
+});

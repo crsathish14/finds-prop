@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { ageInDays, outcomeFor, ownerActions, statusAfterClose } from "../my-listings-rules";
+import {
+  ageInDays,
+  editHref,
+  outcomeFor,
+  ownerActions,
+  statusAfterClose,
+} from "../my-listings-rules";
 
 describe("ownerActions: the buttons a listing offers by its state (S6-T03)", () => {
-  it("lets only a Live listing be closed, and any listing be deleted", () => {
-    expect(ownerActions("approved")).toEqual(["close", "delete"]);
-    expect(ownerActions("pending")).toEqual(["delete"]);
-    expect(ownerActions("rejected")).toEqual(["delete"]);
+  it("lets a listing in review, Live or not approved be edited, only a Live one be closed, and any be deleted", () => {
+    expect(ownerActions("approved")).toEqual(["edit", "close", "delete"]);
+    expect(ownerActions("pending")).toEqual(["edit", "delete"]);
+    expect(ownerActions("rejected")).toEqual(["edit", "delete"]);
     expect(ownerActions("sold")).toEqual(["delete"]);
     expect(ownerActions("rented")).toEqual(["delete"]);
   });
@@ -35,5 +41,13 @@ describe("ageInDays: how long ago a listing was posted", () => {
   it("is never negative when a clock is ahead, and 0 for a time that is not a date", () => {
     expect(ageInDays("2026-11-09T10:00:00Z", NOW)).toBe(0);
     expect(ageInDays("not a date", NOW)).toBe(0);
+  });
+});
+
+describe("editHref: where a listing is edited (S6-T05)", () => {
+  it("is the wizard opened on that listing", () => {
+    expect(editHref("00000000-0000-4000-9000-000000000001")).toBe(
+      "/post-property/00000000-0000-4000-9000-000000000001",
+    );
   });
 });

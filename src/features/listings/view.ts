@@ -19,6 +19,8 @@ export interface DraftView {
   id: string;
   shortId: string;
   status: string;
+  /** Why an admin did not approve it; set only while the listing is not approved. */
+  rejectionReason: string | null;
   listingType: ListingType | null;
   propertyType: PropertyType | null;
   address: string | null;
@@ -49,7 +51,7 @@ export interface DraftSummary {
 
 /** The columns read for a draft (never the location or the moderation columns). */
 export const DRAFT_COLUMNS =
-  "id, short_id, status, listing_type, property_type, address, locality, city, pincode, bhk, bathrooms, area_sqft, price, furnishing, amenities, title, description, updated_at";
+  "id, short_id, status, rejection_reason, listing_type, property_type, address, locality, city, pincode, bhk, bathrooms, area_sqft, price, furnishing, amenities, title, description, updated_at";
 
 export const DRAFT_SUMMARY_COLUMNS = "id, title, locality, property_type, listing_type, updated_at";
 
@@ -60,6 +62,7 @@ const draftRowSchema = z.object({
   id: z.string(),
   short_id: z.string(),
   status: z.string(),
+  rejection_reason: z.string().nullable().optional(),
   listing_type: z.string().nullable(),
   property_type: z.string().nullable(),
   address: z.string().nullable(),
@@ -104,6 +107,7 @@ export function toDraftView(row: unknown, photoRows: readonly unknown[]): DraftV
     id: draft.id,
     shortId: draft.short_id,
     status: draft.status,
+    rejectionReason: draft.status === "rejected" ? (draft.rejection_reason ?? null) : null,
     listingType: known(LISTING_TYPES, draft.listing_type),
     propertyType: known(PROPERTY_TYPES, draft.property_type),
     address: draft.address,
