@@ -6,6 +6,8 @@ export {
   updateBuilderConfig,
 } from "./action-config";
 export { getBuilderOverview } from "./queries";
+export { BuildersBoard } from "./builders-board.client";
+export type { BuildersBoardActions } from "./builders-board.client";
 export {
   BUILDER_CONTACT_MAX,
   BUILDER_DESCRIPTION_MAX,
