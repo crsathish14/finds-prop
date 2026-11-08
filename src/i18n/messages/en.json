@@ -327,6 +327,11 @@
       "closed": "Closed",
       "waitingForOwner": "Waiting for owner"
     },
+    "builder": {
+      "active": "Active",
+      "invited": "Invited",
+      "inactive": "Inactive"
+    },
     "unit": {
       "available": "Available",
       "onHold": "On hold",
