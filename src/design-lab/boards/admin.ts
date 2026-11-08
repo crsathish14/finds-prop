@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { BuilderFormDemo, BuilderTableDemo, SignInAddressDemo } from "./admin-builders-demos";
+import { InsightsPanelDemo } from "./admin-insights-demos";
 import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
   ManagerDrawerDemo,
@@ -13,7 +14,7 @@ import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-d
  * The board mirrors the admin listings screen (the queue with its tabs and filters, the review drawer and the
  * dialog that confirms a rejection) and the admin builders screen (the table, the invite and edit forms and the
  * address passed on after inviting), then the lists the admin and the builder share (S7-T01): the table that becomes
- * cards, the drawer for adding and editing a row, the Projects page in both modes, the Units page and its form, and the Leads table.
+ * cards, the drawer for adding and editing a row, the Projects page in both modes, the Units page and its form, the Leads table and the Insights numbers.
  */
 export const ADMIN: LabEntry[] = [
   {
@@ -115,5 +116,13 @@ export const ADMIN: LabEntry[] = [
       "The people who enquired about projects, for the admin and for a builder: when, which project, what they asked for, name, phone (a call link), email, message and a box to change the lead's state, which is the only thing that can be changed. A table from 1024 px of room and cards below that. Shown with four leads (one saving, some with no email or message), the builder's line under the table, and a very long name, email and message.",
     sources: ["domain/leads-table.tsx"],
     Demo: LeadsTableDemo,
+  },
+  {
+    id: "insights-panel",
+    name: "Insights panel",
+    description:
+      "The numbers of the builder's Dashboard and Insights pages, and of the admin's overview: a choice of dates (7 days, 30 days, This month, Custom, which shows two dates), a choice of project on the full page, and the numbers in groups (Portfolio, Activity, Actions), two to a line on a phone and four or five from 1024 px of room. Charts are not part of it: they come with the chart spike. Shown as the dashboard with a notice above it, as the Insights page, and with a custom range, very large numbers and a long note.",
+    sources: ["domain/insights-panel.tsx"],
+    Demo: InsightsPanelDemo,
   },
 ];
