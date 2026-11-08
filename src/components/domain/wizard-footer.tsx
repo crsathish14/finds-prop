@@ -6,6 +6,8 @@
  *   next (label, onClick, kind "continue" | "submit", loading, disabled), className.
  * Responsive: a row at the foot of the card from 768 px; on phones a bar fixed to the bottom of the screen
  *   with Back and the main button only (the draft is saved by Continue). `WizardShell` leaves room for it.
+ *   When Back and a long main label (such as "Resubmit for review") do not fit side by side on a very narrow
+ *   screen, the main button drops to its own line instead of running off the edge.
  * Accessibility: native buttons in reading order (Back, Save draft, main); loading keeps the label, sets
  *   aria-busy and ignores clicks (Button); there is one copper button (Submit) and it only appears on the
  *   last step, the other steps use the forest Continue.
@@ -33,8 +35,8 @@ function WizardFooter({ back, saveDraft, next, className }: WizardFooterProps) {
     <div
       data-slot="wizard-footer"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-sticky flex items-center gap-3 border-t border-line-strong bg-surface px-gutter py-3 shadow-float",
-        "md:static md:z-auto md:justify-between md:border-line md:bg-transparent md:px-0 md:pt-6 md:pb-0 md:shadow-none",
+        "fixed inset-x-0 bottom-0 z-sticky flex flex-wrap items-center gap-3 border-t border-line-strong bg-surface px-gutter py-3 shadow-float",
+        "md:static md:z-auto md:flex-nowrap md:justify-between md:border-line md:bg-transparent md:px-0 md:pt-6 md:pb-0 md:shadow-none",
         className,
       )}
     >
