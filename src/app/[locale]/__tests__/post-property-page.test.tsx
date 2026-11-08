@@ -91,11 +91,24 @@ describe("the post-property pages (S6-T02)", () => {
     expect(visitor.reads).toEqual([]);
   });
 
-  it("sends a listing that is no longer a draft to My listings", async () => {
-    visitor.draft = { id: ID, status: "pending", photos: [] };
-    await expect(ContinueDraftPage({ params: Promise.resolve({ id: ID }) })).rejects.toThrow(
-      "NEXT_REDIRECT",
-    );
-    expect(nav.redirect).toHaveBeenCalledWith("/dashboard?tab=listings");
-  });
+  it.each(["pending", "approved", "rejected"])(
+    "opens a %s listing to be edited",
+    async (status) => {
+      visitor.draft = { id: ID, status, photos: [] };
+      render(await ContinueDraftPage({ params: Promise.resolve({ id: ID }) }));
+      expect(screen.getByTestId("screen")).toHaveAttribute("data-draft", ID);
+      expect(nav.redirect).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["sold", "rented"])(
+    "sends a %s listing, which is final, to My listings",
+    async (status) => {
+      visitor.draft = { id: ID, status, photos: [] };
+      await expect(ContinueDraftPage({ params: Promise.resolve({ id: ID }) })).rejects.toThrow(
+        "NEXT_REDIRECT",
+      );
+      expect(nav.redirect).toHaveBeenCalledWith("/dashboard?tab=listings");
+    },
+  );
 });

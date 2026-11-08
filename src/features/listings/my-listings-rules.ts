@@ -2,17 +2,25 @@ import type { ListingType } from "./constants";
 import type { MyListingStatus } from "./view";
 
 /** What the owner can do to a listing from the dashboard. */
-export type OwnerAction = "close" | "delete";
+export type OwnerAction = "edit" | "close" | "delete";
 
 /** How a listing can be closed: the outcome the database accepts for its kind (ADR-067). */
 export type CloseOutcome = "sold" | "rented";
 
 /**
- * The buttons a listing offers, by its state (S6-T03, FR-ACC-10 and FR-ACC-11): only a Live listing can be
- * marked sold or rented; a listing in any state can be deleted. Edit is not here: it arrives with S6-T05.
+ * The buttons a listing offers, by its state (S6-T03 and S6-T05, FR-ACC-09 to FR-ACC-12): a listing in review,
+ * Live or not approved can be edited; only a Live listing can be marked sold or rented; a listing in any state
+ * can be deleted. Sold and rented listings are final, so they only offer Delete.
  */
 export function ownerActions(status: MyListingStatus): OwnerAction[] {
-  return status === "approved" ? ["close", "delete"] : ["delete"];
+  if (status === "approved") return ["edit", "close", "delete"];
+  if (status === "pending" || status === "rejected") return ["edit", "delete"];
+  return ["delete"];
+}
+
+/** Where a listing is edited: the wizard, opened on that listing. */
+export function editHref(listingId: string): string {
+  return `/post-property/${listingId}`;
 }
 
 /** A sale is sold and a rental is rented. A listing with no kind cannot be closed. */

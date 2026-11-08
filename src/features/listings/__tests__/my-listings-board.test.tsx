@@ -7,7 +7,7 @@ import type { ActionResult } from "@/types/action";
 import type { MyListingsActions } from "../my-listings.client";
 import type { MyListing } from "../view";
 
-const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+const router = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/lib/notify", () => ({ notify: toast }));
@@ -122,6 +122,22 @@ describe("MyListingsBoard: what the owner sees and can do (S6-T03)", () => {
     expect(button(words.delete, "Flat number 3")).toBeVisible();
     expect(screen.queryByRole("button", { name: `${words.sold} Flat number 5` })).toBeNull();
     expect(button(words.delete, "Flat number 5")).toBeVisible();
+  });
+
+  it("offers Edit on a listing in review, Live or not approved, and takes the owner to the wizard", () => {
+    open({
+      listings: [
+        listing(ID_LIVE),
+        listing(ID_WAIT, { status: "pending" }),
+        listing(ID_NO, { status: "rejected", rejectionReason: "Add a photo." }),
+        listing(ID_SOLD, { status: "sold" }),
+      ],
+    });
+    expect(button(words.edit, "Flat number 3")).toBeVisible();
+    expect(button(words.edit, "Flat number 4")).toBeVisible();
+    expect(screen.queryByRole("button", { name: `${words.edit} Flat number 5` })).toBeNull();
+    fireEvent.click(button(words.edit, "Flat number 1"));
+    expect(router.push).toHaveBeenCalledWith(`/post-property/${ID_LIVE}`);
   });
 
   it("offers Mark as rented, not Mark as sold, on a rental", () => {

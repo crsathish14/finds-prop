@@ -322,11 +322,14 @@ export function ReviewStep({
   photoCount,
   onEdit,
   headingRef,
+  copy,
 }: {
   values: WizardValues;
   photoCount: number;
   onEdit: (step: WizardStep) => void;
   headingRef: Ref<HTMLHeadingElement>;
+  /** The heading and the "what happens next" line when a sent listing is being edited (S6-T05); the new listing's by default. */
+  copy?: { heading: string; nextBody: string };
 }) {
   const words = useTranslations("postProperty.review");
   const types = useTranslations("postProperty.basics");
@@ -365,7 +368,11 @@ export function ReviewStep({
   });
   return (
     <div className="flex flex-col gap-5">
-      <StepHeading headingRef={headingRef} title={words("heading")} lead={words("lead")} />
+      <StepHeading
+        headingRef={headingRef}
+        title={copy?.heading ?? words("heading")}
+        lead={words("lead")}
+      />
       <ReviewList
         rows={[
           row(
@@ -388,7 +395,7 @@ export function ReviewStep({
           row("title", words("title"), values.title, 4),
         ]}
       />
-      <NextSteps title={words("nextTitle")}>{words("nextBody")}</NextSteps>
+      <NextSteps title={words("nextTitle")}>{copy?.nextBody ?? words("nextBody")}</NextSteps>
     </div>
   );
 }

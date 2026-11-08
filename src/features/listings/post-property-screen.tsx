@@ -13,12 +13,18 @@ import { getTranslate } from "@/features/site";
 import { formatDate } from "@/lib/format";
 import { publicEnv } from "@/lib/public-env";
 import { publicStorageUrl } from "@/lib/storage-url";
-import { createListingDraft, deleteListingDraft, saveListingDraft, submitListing } from "./actions";
+import {
+  createListingDraft,
+  deleteListingDraft,
+  saveListingChanges,
+  saveListingDraft,
+  submitListing,
+} from "./actions";
 import { YourDrafts, type DraftRowView } from "./drafts.client";
 import { PostingGate } from "./posting-gate.client";
 import { isSignedIn, listMyDrafts } from "./queries";
 import type { DraftView } from "./view";
-import { PostingWizard, type WizardActions } from "./wizard.client";
+import { PostingWizard, type WizardActions, type WizardEdit } from "./wizard.client";
 import { valuesFromDraft } from "./wizard-state";
 
 /** Where a submitted listing is followed (the dashboard's My listings tab). */
@@ -29,13 +35,27 @@ const ACTIONS: WizardActions = {
   createDraft: createListingDraft,
   saveDraft: saveListingDraft,
   submit: submitListing,
+  saveChanges: saveListingChanges,
   photos: { requestUpload: requestPhotoUpload, finalize: finalizePhoto, remove: removePhoto },
 };
 
 type PostPropertyScreenProps = {
-  /** The draft being continued (`/post-property/[id]`), or none for a new listing (`/post-property`). */
+  /**
+   * The listing being continued or edited (`/post-property/[id]`), or none for a new listing (`/post-property`).
+   * A draft is continued; a listing in review, Live or not approved is edited (S6-T05).
+   */
   draft?: DraftView | null;
 };
+
+/** How a listing that is already sent is edited, or null for a draft (and for a state that cannot be edited). */
+function editOf(draft: DraftView | null): WizardEdit | null {
+  if (!draft) return null;
+  if (draft.status === "approved" || draft.status === "pending") {
+    return { state: draft.status, reason: null };
+  }
+  if (draft.status === "rejected") return { state: "rejected", reason: draft.rejectionReason };
+  return null;
+}
 
 /**
  * The post-property page (S6-T02, FR-ACC-06, FR-ACC-08). A signed-in person without a verified email sees the
@@ -44,6 +64,7 @@ type PostPropertyScreenProps = {
  * wizard when there are any. The page only composes: the rules are in the actions and the database.
  */
 export async function PostPropertyScreen({ draft = null }: PostPropertyScreenProps) {
+  const editing = editOf(draft);
   // Nobody signed in: the layout's gate is already sending them to sign in; read nothing for them.
   if (!(await isSignedIn())) return null;
   const email = await getEmailState();
@@ -92,6 +113,7 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
         actions={ACTIONS}
         uploader={PhotoUploaderConnected}
         doneHref={MY_LISTINGS_HREF}
+        {...(editing ? { edit: editing } : {})}
       />
     </main>
   );

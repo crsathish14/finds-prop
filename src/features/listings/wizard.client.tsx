@@ -1,5 +1,6 @@
 "use client";
 
+import { TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -7,7 +8,9 @@ import { SessionEndedAlert } from "@/components/domain/session-ended-alert";
 import { WizardFooter } from "@/components/domain/wizard-footer";
 import { WizardShell } from "@/components/domain/wizard-shell";
 import { Alert } from "@/components/patterns/alert";
+import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import type { Step } from "@/components/patterns/stepper";
+import { Icon } from "@/components/ui/icon";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { dropDraft, saveDraft, type DraftValues } from "@/lib/form-draft";
 import { notify } from "@/lib/notify";
@@ -20,6 +23,7 @@ import type {
   SavedPhoto,
 } from "@/features/media";
 import type { ActionFailure, ActionResult, FieldError } from "@/types/action";
+import { changesNeedReview } from "./review-rule";
 import {
   BasicsStep,
   DescriptionStep,
@@ -53,8 +57,20 @@ export type WizardActions = {
     listingId: string;
     idempotencyKey: string;
   }) => Promise<ActionResult<{ listingId: string; shortId: string }>>;
+  /** Saves the changes to a listing that is already sent (S6-T05); only used when the wizard edits one. */
+  saveChanges: (input: { listingId: string; fields: Record<string, unknown> }) => Promise<
+    ActionResult<{
+      listingId: string;
+      shortId: string;
+      status: string;
+      wentBackToReview: boolean;
+    }>
+  >;
   photos: PhotoActions;
 };
+
+/** A listing that is already sent and is being edited: its state, and why it was not approved if it was not. */
+export type WizardEdit = { state: "approved" | "pending" | "rejected"; reason: string | null };
 
 /**
  * The photo uploader, handed in by the page. It is a client component of the media feature, whose index also
@@ -72,6 +88,8 @@ export type PostingWizardProps = {
   uploader: PhotoUploaderComponent;
   /** Where "Submit for review" leads (My listings). */
   doneHref: string;
+  /** Set when the wizard edits a listing that is already sent (S6-T05) instead of continuing a draft. */
+  edit?: WizardEdit;
 };
 
 const FORM_NAME = "post-property";
@@ -117,7 +135,14 @@ export function PostingWizard(props: PostingWizardProps) {
   const words = useTranslations("postProperty");
   useRestoredNotice(FORM_NAME, restored, words("notices.restored"));
   const start = mergeRestored(props.values ?? EMPTY_VALUES, restored);
-  return <WizardBody key={restored ? "restored" : "fresh"} {...props} values={start} />;
+  return (
+    <WizardBody
+      key={restored ? "restored" : "fresh"}
+      {...props}
+      values={start}
+      baseline={props.values ?? EMPTY_VALUES}
+    />
+  );
 }
 
 function WizardBody({
@@ -127,7 +152,9 @@ function WizardBody({
   actions,
   uploader: Uploader,
   doneHref,
-}: PostingWizardProps & { values: WizardValues }) {
+  edit,
+  baseline,
+}: PostingWizardProps & { values: WizardValues; baseline: WizardValues }) {
   const words = useTranslations("postProperty");
   const translate = useTranslations() as unknown as Translator;
   const router = useRouter();
@@ -145,7 +172,8 @@ function WizardBody({
   );
   const [sessionEnded, setSessionEnded] = useState<{ href: string } | null>(null);
   const [, startTransition] = useTransition();
-  const [busyAction, setBusyAction] = useState<"next" | "draft" | "submit" | null>(null);
+  const [busyAction, setBusyAction] = useState<"next" | "draft" | "submit" | "save" | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [createKey] = useState(() => crypto.randomUUID());
   const [submitKey] = useState(() => crypto.randomUUID());
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -277,6 +305,12 @@ function WizardBody({
     const found = validateStep(step, values);
     if (Object.keys(found).length > 0) return refuse(found);
     setErrors({});
+    // Editing a sent listing saves nothing until the last step: a change to a moderated field of a Live listing
+    // sends it back to review, which the owner has to agree to first.
+    if (edit) {
+      setStep((now) => (now < 5 ? ((now + 1) as WizardStep) : now));
+      return;
+    }
     setBusyAction("next");
     startTransition(async () => {
       const saved = await persist(STEP_ORDER.filter((each) => each <= step && each !== 3));
@@ -335,13 +369,93 @@ function WizardBody({
     });
   }
 
+  const moderated = (from: WizardValues) => ({
+    listingType: from.listingType,
+    propertyType: from.propertyType,
+    title: from.title,
+    description: from.description,
+    address: from.address,
+  });
+
+  /** Save changes (or Resubmit) on the last step of an edit: check everything, and ask first if it sends a Live listing back. */
+  function saveEdits() {
+    clearNotices();
+    if (!listingId || !edit) return;
+    const found: StepErrors = {
+      ...validateStep(1, values),
+      ...validateStep(2, values),
+      ...validateStep(4, values),
+    };
+    if (Object.keys(found).length > 0) {
+      const first = stepsWithErrors(found)[0] ?? step;
+      refuse(found);
+      setStep(first);
+      return;
+    }
+    if (photoStatus.count === 0) {
+      setPhotoError(translate("validation.photoRequired"));
+      setStep(3);
+      return;
+    }
+    if (changesNeedReview(edit.state, moderated(baseline), moderated(values))) {
+      setConfirmOpen(true);
+      return;
+    }
+    commitEdits();
+  }
+
+  /** Saves the changes; a listing that was not approved is then sent for review again. */
+  function commitEdits() {
+    if (!listingId || !edit) return;
+    setConfirmOpen(false);
+    setBusyAction("save");
+    startTransition(async () => {
+      try {
+        const saved = await actions.saveChanges({
+          listingId,
+          fields: draftInput(values, ALL_BOX_STEPS),
+        });
+        if (!saved.ok) {
+          if (saved.code === "CONFLICT") setAlert({ kind: "limit", text: words("edit.conflict") });
+          else showFailure(saved);
+          return;
+        }
+        if (edit.state === "rejected") {
+          const sent = await actions.submit({ listingId, idempotencyKey: submitKey });
+          if (!sent.ok) {
+            showFailure(sent);
+            return;
+          }
+          dropDraft(FORM_NAME, window.location.pathname);
+          notify.success(words("notices.submitted"));
+        } else {
+          dropDraft(FORM_NAME, window.location.pathname);
+          notify.success(
+            saved.data.wentBackToReview
+              ? words("edit.savedBackToReviewToast")
+              : words("edit.savedToast"),
+          );
+        }
+        router.push(doneHref);
+      } catch {
+        setAlert({ kind: "failed" });
+      } finally {
+        setBusyAction(null);
+      }
+    });
+  }
+
   const errorSteps = stepsWithErrors(errors);
   const stepNames = [
     words("steps.basics.label"),
     words("steps.details.label"),
     words("steps.photos.label"),
     words("steps.description.label"),
-    words("steps.review.label"),
+    !edit
+      ? words("steps.review.label")
+      : edit.state === "rejected"
+        ? words("edit.reviewResubmit")
+        : words("edit.reviewSave"),
   ];
   const descriptions = [
     words("steps.basics.description"),
@@ -394,6 +508,19 @@ function WizardBody({
         values={values}
         photoCount={photoStatus.count}
         headingRef={headingRef}
+        {...(edit
+          ? {
+              copy: {
+                heading: stepNames[4] ?? "",
+                nextBody:
+                  edit.state === "approved"
+                    ? words("edit.nextApproved")
+                    : edit.state === "pending"
+                      ? words("edit.nextPending")
+                      : words("edit.nextRejected"),
+              },
+            }
+          : {})}
         onEdit={(target) => {
           clearNotices();
           setStep(target);
@@ -402,9 +529,27 @@ function WizardBody({
     );
   }
 
+  const notice: ReactNode =
+    edit?.state === "approved" ? (
+      <Alert tone="info" title={words("edit.liveNoticeTitle")}>
+        {words("edit.liveNoticeBody")}
+      </Alert>
+    ) : edit?.state === "rejected" ? (
+      <Alert tone="danger" title={words("edit.rejectedNoticeTitle")}>
+        {edit.reason ? words("edit.rejectedNoticeBody", { reason: edit.reason }) : null}
+      </Alert>
+    ) : null;
+
+  // Saving an edit says "we couldn't save your changes"; sending a rejected listing again says "we couldn't submit".
+  const failedWords =
+    edit && edit.state !== "rejected"
+      ? { title: words("edit.failedTitle"), body: words("edit.failedBody") }
+      : { title: words("notices.failedTitle"), body: words("notices.failedBody") };
+
   const alerts: ReactNode =
-    sessionEnded || alert ? (
+    sessionEnded || alert || notice ? (
       <div className="flex flex-col gap-3">
+        {notice}
         {sessionEnded ? (
           <SessionEndedAlert
             href={sessionEnded.href}
@@ -412,8 +557,8 @@ function WizardBody({
           />
         ) : null}
         {alert?.kind === "failed" ? (
-          <Alert tone="danger" title={words("notices.failedTitle")}>
-            {words("notices.failedBody")}
+          <Alert tone="danger" title={failedWords.title}>
+            {failedWords.body}
           </Alert>
         ) : null}
         {alert?.kind === "save" ? <Alert tone="danger">{words("notices.saveFailed")}</Alert> : null}
@@ -421,52 +566,96 @@ function WizardBody({
       </div>
     ) : null;
 
+  const saveWords =
+    edit?.state === "rejected"
+      ? { label: words("edit.resubmit"), busy: words("edit.resubmitting") }
+      : { label: words("edit.save"), busy: words("edit.saving") };
+
   return (
-    <WizardShell
-      title={words("title")}
-      emphasis={words("titleEmphasis")}
-      description={words("description")}
-      steps={steps}
-      progressLabel={words("progress", {
-        current: step,
-        total: 5,
-        name: stepNames[step - 1] ?? "",
-      })}
-      alert={alerts}
-      footer={
-        <WizardFooter
-          {...(step > 1
-            ? { back: { label: words("actions.back"), onClick: back, disabled: working } }
-            : {})}
-          saveDraft={{
-            label: words("actions.saveDraft"),
-            onClick: keepDraft,
-            disabled: working || photoStatus.busy,
-          }}
-          next={
-            step === 5
-              ? {
-                  label:
-                    busyAction === "submit" ? words("actions.submitting") : words("actions.submit"),
-                  onClick: submit,
-                  kind: "submit",
-                  loading: busyAction === "submit",
-                  disabled: working && busyAction !== "submit",
-                }
+    <>
+      <WizardShell
+        title={edit ? words("edit.title") : words("title")}
+        emphasis={edit ? words("edit.titleEmphasis") : words("titleEmphasis")}
+        description={
+          !edit
+            ? words("description")
+            : edit.state === "approved"
+              ? words("edit.descriptionApproved")
+              : edit.state === "pending"
+                ? words("edit.descriptionPending")
+                : words("edit.descriptionRejected")
+        }
+        steps={steps}
+        progressLabel={words("progress", {
+          current: step,
+          total: 5,
+          name: stepNames[step - 1] ?? "",
+        })}
+        alert={alerts}
+        footer={
+          <WizardFooter
+            {...(step > 1
+              ? { back: { label: words("actions.back"), onClick: back, disabled: working } }
+              : {})}
+            {...(edit
+              ? {}
               : {
-                  label: words("actions.continue"),
-                  onClick: next,
-                  kind: "continue",
-                  loading: busyAction === "next",
-                  disabled: (working && busyAction !== "next") || (step === 3 && photoStatus.busy),
-                }
-          }
-        />
-      }
-    >
-      <div ref={cardRef} className="flex flex-col gap-5">
-        {body}
-      </div>
-    </WizardShell>
+                  saveDraft: {
+                    label: words("actions.saveDraft"),
+                    onClick: keepDraft,
+                    disabled: working || photoStatus.busy,
+                  },
+                })}
+            next={
+              step === 5 && edit
+                ? {
+                    label: busyAction === "save" ? saveWords.busy : saveWords.label,
+                    onClick: saveEdits,
+                    kind: "submit",
+                    loading: busyAction === "save",
+                    disabled: (working && busyAction !== "save") || photoStatus.busy,
+                  }
+                : step === 5
+                  ? {
+                      label:
+                        busyAction === "submit"
+                          ? words("actions.submitting")
+                          : words("actions.submit"),
+                      onClick: submit,
+                      kind: "submit",
+                      loading: busyAction === "submit",
+                      disabled: working && busyAction !== "submit",
+                    }
+                  : {
+                      label: words("actions.continue"),
+                      onClick: next,
+                      kind: "continue",
+                      loading: busyAction === "next",
+                      disabled:
+                        (working && busyAction !== "next") || (step === 3 && photoStatus.busy),
+                    }
+            }
+          />
+        }
+      >
+        <div ref={cardRef} className="flex flex-col gap-5">
+          {body}
+        </div>
+      </WizardShell>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          if (!open && busyAction !== "save") setConfirmOpen(false);
+        }}
+        tone="warning"
+        icon={<Icon icon={TriangleAlert} size="lg" />}
+        title={words("edit.confirmTitle")}
+        description={words("edit.confirmBody")}
+        confirmLabel={words("edit.confirmSave")}
+        cancelLabel={words("edit.confirmKeep")}
+        loading={busyAction === "save"}
+        onConfirm={commitEdits}
+      />
+    </>
   );
 }

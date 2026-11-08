@@ -15,7 +15,13 @@ import type { Translator } from "@/i18n/failure-text";
 import { formatListedAgo, formatPrice, formatRent } from "@/lib/format";
 import { notify } from "@/lib/notify";
 import type { ActionResult } from "@/types/action";
-import { ageInDays, outcomeFor, ownerActions, statusAfterClose } from "./my-listings-rules";
+import {
+  ageInDays,
+  editHref,
+  outcomeFor,
+  ownerActions,
+  statusAfterClose,
+} from "./my-listings-rules";
 import type { ClosedListing } from "./my-listings-service";
 import type { CloseListingInput, DeleteListingInput } from "./schemas";
 import type { MyListing, MyListingStatus } from "./view";
@@ -136,6 +142,17 @@ export function MyListingsBoard({ listings, now, empty, actions }: MyListingsBoa
     const outcome = outcomeFor(listing.listingType);
     const busy = (kind: Kind) => working?.id === listing.id && working.kind === kind;
     return ownerActions(status).flatMap((action): QueueAction[] => {
+      if (action === "edit") {
+        return [
+          {
+            id: "edit",
+            label: translate("edit"),
+            forName: title,
+            tone: "secondary",
+            onClick: () => router.push(editHref(listing.id)),
+          },
+        ];
+      }
       if (action === "delete") {
         return [
           {

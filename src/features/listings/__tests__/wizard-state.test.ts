@@ -31,6 +31,7 @@ const draftView: DraftView = {
   id: "00000000-0000-4000-9000-000000000001",
   shortId: "abcd2345",
   status: "draft",
+  rejectionReason: null,
   listingType: "rent",
   propertyType: "villa",
   address: "1 Beach Road",
