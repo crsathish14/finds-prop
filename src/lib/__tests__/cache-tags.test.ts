@@ -5,6 +5,7 @@ import {
   CACHE_TAGS,
   projectTag,
   propertyTag,
+  tagsAfterBuilderChange,
   tagsAfterFormChange,
   tagsAfterListingChange,
   tagsAfterProjectChange,
@@ -142,5 +143,11 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
     }
     expect([...used].some((piece) => piece.startsWith("propertyTag("))).toBe(true);
     expect([...used].some((piece) => piece.startsWith("projectTag("))).toBe(true);
+  });
+});
+
+describe("IT-cache: what a change to a builder refreshes (S7-T05)", () => {
+  it("refreshes the projects and the homepage's developers, because a deactivated builder leaves the showcase", () => {
+    expect(tagsAfterBuilderChange()).toEqual([CACHE_TAGS.projects, CACHE_TAGS.homeProjects]);
   });
 });

@@ -459,7 +459,12 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_builders":
+            "admin_builder_overview":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,"contact_person": string,"description": string,"email": string,"id": string,"invited_at": string,"kind": string,"last_sign_in_at": string,"leads": number,"logo_url": string,"name": string,"phone": string,"projects": number,"website": string
+            }[]
+                           },
+"admin_builders":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,
 "contact_person": string | null,
