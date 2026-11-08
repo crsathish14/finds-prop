@@ -568,7 +568,7 @@ export function ProjectsManagerDemo() {
       </Specimen>
       <Specimen label="A very long project, builder and place name" className="w-full">
         <Stage tone="canvas" className="w-full">
-          <Manager mode="admin" rows={LONG_PROJECT} />
+          <Manager mode="admin" rows={LONG_PROJECT} count="1 project" />
         </Stage>
       </Specimen>
       <Specimen label="No projects yet, for a builder" className="w-full">
