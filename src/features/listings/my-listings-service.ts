@@ -1,5 +1,6 @@
 import { ActionError } from "@/server/actions/normalise-error";
-import type { CloseListingInput } from "./schemas";
+import { toDraftRow, type DraftRow } from "./listing-service";
+import type { CloseListingInput, SaveListingChangesInput } from "./schemas";
 
 /**
  * What an owner does to a listing from the dashboard (S6-T03, FR-ACC-10 and FR-ACC-11), apart from the code
@@ -23,6 +24,52 @@ export interface MyListingsStore {
   close(listingId: string, outcome: CloseListingInput["outcome"]): Promise<ClosedListing>;
   /** Deletes one of the caller's own listings; the short id of what was deleted, or null when there was none. */
   remove(listingId: string): Promise<string | null>;
+  /** The caller's own listing as it is now, or null when it is not theirs or does not exist. */
+  current(listingId: string): Promise<{ shortId: string; status: string } | null>;
+  /**
+   * Changes the caller's listing if it is still in the state it was read in; the state after the change (the
+   * database may have sent a Live listing back to review), or null when it was no longer in that state.
+   */
+  update(listingId: string, row: DraftRow, expectedStatus: string): Promise<string | null>;
+}
+
+/** The states a listing can be edited in: not a draft (the wizard saves those) and not sold or rented (final). */
+const EDITABLE_STATES = ["pending", "approved", "rejected"];
+
+/** What saving changes to a listing came to. */
+export interface SavedChanges {
+  listingId: string;
+  shortId: string;
+  /** The state after the save. */
+  status: string;
+  /** True when a Live listing was sent back to review by this save (DEC-09, policy C). */
+  wentBackToReview: boolean;
+}
+
+/**
+ * Saves changes to a listing that is in review, Live or not approved. Someone else's listing and one that does
+ * not exist look the same. A draft is saved by the wizard's own action, and a sold or rented listing is final, so
+ * both are a conflict. The database applies policy C: changing a moderated field of a Live listing sends it back
+ * to review, and the answer says so, so the screen can tell the owner.
+ */
+export async function saveOwnChanges(
+  store: MyListingsStore,
+  input: SaveListingChangesInput,
+): Promise<SavedChanges> {
+  const found = await store.current(input.listingId);
+  if (!found) throw new ActionError("NOT_FOUND", "The listing was not found");
+  if (!EDITABLE_STATES.includes(found.status)) {
+    throw new ActionError("CONFLICT", "The listing cannot be changed in its state");
+  }
+  const after = await store.update(input.listingId, toDraftRow(input.fields), found.status);
+  if (after === null)
+    throw new ActionError("CONFLICT", "The listing changed while it was being saved");
+  return {
+    listingId: input.listingId,
+    shortId: found.shortId,
+    status: after,
+    wentBackToReview: found.status === "approved" && after === "pending",
+  };
 }
 
 /** Marks a Live listing sold or rented. */

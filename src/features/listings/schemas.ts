@@ -226,6 +226,13 @@ export const closeListingSchema = z.object({
 });
 export type CloseListingInput = z.infer<typeof closeListingSchema>;
 
+/**
+ * Save the changes to a listing that is not a draft any more (S6-T05, FR-ACC-09): one in review, Live or not
+ * approved. Any of the wizard's fields; each one given is checked by its own rule.
+ */
+export const saveListingChangesSchema = z.object({ listingId: uuid, fields: draftFieldsSchema });
+export type SaveListingChangesInput = z.infer<typeof saveListingChangesSchema>;
+
 /** Delete one of the caller's own listings in any state (S6-T03, FR-ACC-11). */
 export const deleteListingSchema = z.object({ listingId: uuid });
 export type DeleteListingInput = z.infer<typeof deleteListingSchema>;

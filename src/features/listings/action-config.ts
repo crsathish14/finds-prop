@@ -5,6 +5,7 @@ import {
   deleteDraftSchema,
   deleteListingSchema,
   saveDraftSchema,
+  saveListingChangesSchema,
   submitListingSchema,
   type CreateDraftInput,
   type SubmitListingInput,
@@ -66,6 +67,21 @@ export const closeListingConfig = {
 export const deleteListingConfig = {
   name: "deleteListing",
   input: deleteListingSchema,
+  auth: "verified-phone" as const,
+  invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
+};
+
+/**
+ * Saving changes to a listing that is in review, Live or not approved (S6-T05, FR-ACC-09). It needs a signed-in
+ * account with a verified phone, like the rest. It has no rate limit or key: it changes one listing the caller
+ * owns, and the same save twice leaves the same listing. Whatever it changes may be public (a Live listing's
+ * price shows on the site at once, and a Live listing whose title, description, kind, type or address changed
+ * goes back to review and leaves the site), so the tags of the lists and of that home's page are refreshed, taken
+ * from the answer. The change is recorded in the audit log by the database triggers, with the owner as the actor.
+ */
+export const saveListingChangesConfig = {
+  name: "saveListingChanges",
+  input: saveListingChangesSchema,
   auth: "verified-phone" as const,
   invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
 };

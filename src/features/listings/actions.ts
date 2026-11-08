@@ -8,10 +8,11 @@ import {
   deleteDraftConfig,
   deleteListingConfig,
   saveDraftConfig,
+  saveListingChangesConfig,
   submitListingConfig,
 } from "./action-config";
 import { discardDraft, keepDraft, sendForReview, startDraft } from "./listing-service";
-import { closeOwnListing, deleteOwnListing } from "./my-listings-service";
+import { closeOwnListing, deleteOwnListing, saveOwnChanges } from "./my-listings-service";
 import { createMyListingsStore } from "./my-listings-store";
 import { createListingCallerStore } from "./service";
 
@@ -80,6 +81,24 @@ export const deleteListing = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await deleteOwnListing(await createMyListingsStore(), input);
     log.info("listing deleted", { listingId: done.listingId });
+    return done;
+  },
+});
+
+/**
+ * Saves changes to the caller's listing that is in review, Live or not approved (S6-T05). Answers the new state
+ * and whether a Live listing was sent back to review, so the page can say so.
+ */
+export const saveListingChanges = defineAction({
+  ...saveListingChangesConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveOwnChanges(await createMyListingsStore(), input);
+    log.info("listing changes saved", {
+      listingId: done.listingId,
+      status: done.status,
+      wentBackToReview: done.wentBackToReview,
+    });
     return done;
   },
 });
