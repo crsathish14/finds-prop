@@ -54,6 +54,8 @@ export const RATE_LIMITS = {
   upload_url: [{ who: "user", windowSeconds: HOUR, max: 30 }],
   /** 120 listing decisions (approve, reject, feature) per admin per hour (S6-T04). */
   admin_decision: [{ who: "user", windowSeconds: HOUR, max: 120 }],
+  /** 600 edits per admin per hour: the units of a project, a lead's state and the like (S7-T07). */
+  admin_edit: [{ who: "user", windowSeconds: HOUR, max: 600 }],
   /** 60 place searches per visitor per minute (protects the provider quota). */
   places: [{ who: "visitor", windowSeconds: MINUTE, max: 60 }],
   /** 60 map searches per visitor per minute. */

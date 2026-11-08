@@ -116,6 +116,8 @@ Values marked **new** are proposals (`DEC-31`, `DEC-33`, `DEC-26`). BR values ar
 | Enquiry               | 10 / user / day; 1 open per user+property / 24 h       | user id               | **new** (`DEC-26`) |
 | Listing create/submit | 10 / user / day; max 5 `draft`+`pending`               | user id               | **new**            |
 | Upload URL issuance   | 30 / user / hour                                       | user id               | **new**            |
+| Admin decision        | 120 / admin / hour (listing review, builder changes)   | user id               | **new** (S6-T04)   |
+| Admin edit            | 600 / admin / hour (units, a lead's state)             | user id               | **new** (S7-T07)   |
 | Places autocomplete   | 60 / visitor / minute (protects provider quota)        | visitor hash          | **new**            |
 | Map search            | 60 / visitor / minute                                  | visitor hash          | **new**            |
 | Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour              | visitor hash, IP hash | **new** (S3-T10)   |
