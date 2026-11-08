@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { BuilderFormDemo, BuilderTableDemo, SignInAddressDemo } from "./admin-builders-demos";
+import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
   ManagerDrawerDemo,
   ProjectsManagerDemo,
@@ -12,7 +13,7 @@ import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-d
  * The board mirrors the admin listings screen (the queue with its tabs and filters, the review drawer and the
  * dialog that confirms a rejection) and the admin builders screen (the table, the invite and edit forms and the
  * address passed on after inviting), then the lists the admin and the builder share (S7-T01): the table that becomes
- * cards, the drawer for adding and editing a row, and the Projects page in both modes.
+ * cards, the drawer for adding and editing a row, the Projects page in both modes, the Units page and its form, and the Leads table.
  */
 export const ADMIN: LabEntry[] = [
   {
@@ -90,5 +91,29 @@ export const ADMIN: LabEntry[] = [
       "The Projects page of the admin and of a builder in one component: the heading and Add project, the status tabs with counts, the search box, the list (a table, or cards on a phone) with a menu on each row, and the line under it. The admin sees the Builder column, a filter for builders and the moderation buttons (Approve, Reject, Publish, Unpublish, Feature); a builder sees a warning that edits go back for approval, and Edit and View live. Shown with every state of a project, a refused delete, a working button, a very long name, nothing yet, and the question before rejecting.",
     sources: ["domain/projects-manager.tsx"],
     Demo: ProjectsManagerDemo,
+  },
+  {
+    id: "unit-form",
+    name: "Unit form",
+    description:
+      "The fields of the Add unit and Edit unit drawer: unit number, floor, bedrooms, area, facing, price, state, the date it is available from and a link to its floor plan. Empty, with errors on three boxes, filled in, and while saving (every box off).",
+    sources: ["domain/unit-form.tsx"],
+    Demo: UnitFormDemo,
+  },
+  {
+    id: "units-manager",
+    name: "Units manager",
+    description:
+      "The Units page of a project, the same for the admin and for a builder: the heading and Add unit, the choice of project, a search for a unit number, the state chips, the list (a table, or cards on a phone) with Edit and Delete on each row, and the line under it. Shown with six units, a unit with nothing but a number and an area, a very long unit number, a unit being deleted, nothing yet, the drawer that opens from Add unit, and the question before deleting.",
+    sources: ["domain/units-manager.tsx"],
+    Demo: UnitsManagerDemo,
+  },
+  {
+    id: "leads-table",
+    name: "Leads table",
+    description:
+      "The people who enquired about projects, for the admin and for a builder: when, which project, what they asked for, name, phone (a call link), email, message and a box to change the lead's state, which is the only thing that can be changed. A table from 1024 px of room and cards below that. Shown with four leads (one saving, some with no email or message), the builder's line under the table, and a very long name, email and message.",
+    sources: ["domain/leads-table.tsx"],
+    Demo: LeadsTableDemo,
   },
 ];
