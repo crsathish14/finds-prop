@@ -14,7 +14,8 @@ export {
   saveDraftConfig,
   submitListingConfig,
 } from "./action-config";
-export { getMyDraft, getMyListings, isSignedIn, listMyDrafts } from "./queries";
+export { countMyListings, getMyDraft, getMyListings, isSignedIn, listMyDrafts } from "./queries";
+export { MyListingsTab } from "./my-listings-tab";
 export {
   ADDRESS_MAX,
   AMENITY_OPTIONS,

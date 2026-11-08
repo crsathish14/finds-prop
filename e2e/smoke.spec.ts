@@ -810,6 +810,19 @@ test.describe("@smoke dashboard", () => {
     await expect(page).toHaveURL(/\/auth\?redirect=%2Fdashboard%3Ftab%3Dsent/);
     await expect(page.getByRole("heading", { name: en.account.dashboard.title })).toHaveCount(0);
   });
+
+  for (const tab of ["listings", "received"] as const) {
+    test(`the ${tab} tab shows nothing to a visitor who is not signed in, and brings them back after sign-in`, async ({
+      page,
+    }) => {
+      await page.goto(`/dashboard?tab=${tab}`);
+      await expect(page).toHaveURL(new RegExp(`/auth\\?redirect=%2Fdashboard%3Ftab%3D${tab}`));
+      await expect(page.getByRole("heading", { name: en.account.dashboard.title })).toHaveCount(0);
+      await expect(
+        page.getByRole("list", { name: en.account.dashboard[tab].listLabel }),
+      ).toHaveCount(0);
+    });
+  }
 });
 
 test.describe("@smoke admin listings", () => {

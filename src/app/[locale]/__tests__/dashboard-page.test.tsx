@@ -5,19 +5,39 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const visitor = vi.hoisted(() => ({
   person: { name: "Priya Raman" } as { name: string | null } | null,
   email: { kind: "none" } as { kind: string; email?: string },
+  signedIn: true,
+  received: { total: 4, fresh: 1 },
 }));
 
-vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
+vi.mock("@/features/site", () => ({
+  getTranslate: async () => (key: string, values?: Record<string, string | number>) =>
+    values ? `${key} ${JSON.stringify(values)}` : key,
+}));
 vi.mock("@/features/auth", () => ({ addEmail: vi.fn(), resendEmailLink: vi.fn() }));
 vi.mock("@/features/enquiries", () => ({
   MyEnquiriesTab: (props: { fallback: React.ReactNode }) => (
     <div data-testid="my-enquiries-tab">{props.fallback}</div>
   ),
+  ReceivedEnquiriesTab: (props: { fallback: React.ReactNode }) => (
+    <div data-testid="received-tab">{props.fallback}</div>
+  ),
+  countReceivedEnquiries: async () => visitor.received,
+  countSentEnquiries: async (userId: string) => (userId === "user-1" ? 2 : -1),
+}));
+vi.mock("@/features/listings", () => ({
+  MyListingsTab: (props: { fallback: React.ReactNode }) => (
+    <div data-testid="my-listings-tab">{props.fallback}</div>
+  ),
+  countMyListings: async () => 5,
+}));
+vi.mock("@/server/auth/get-session-view", () => ({
+  getSessionView: async () => (visitor.signedIn ? { userId: "user-1" } : null),
 }));
 vi.mock("@/features/saved", () => ({
   SavedTab: (props: { fallback: React.ReactNode }) => (
     <div data-testid="saved-tab">{props.fallback}</div>
   ),
+  countSavedHomes: async () => 3,
 }));
 vi.mock("@/features/account", async () => {
   const { parseTab } = await import("@/features/account/tabs");
@@ -25,11 +45,21 @@ vi.mock("@/features/account", async () => {
     parseTab,
     getDashboardPerson: async () => visitor.person,
     getEmailState: async () => visitor.email,
+    tabCountsFrom: (
+      raw: {
+        saved: number;
+        listings: number;
+        received: { total: number; fresh: number };
+        sent: number;
+      },
+      newWord: (count: number) => string,
+    ) => ({ raw, news: newWord(raw.received.fresh) }),
     DashboardScreen: (props: {
       name: string | null;
       active: string;
       postHref: string;
       emailPending: boolean;
+      counts: unknown;
       notice: React.ReactNode;
       children: React.ReactNode;
     }) => (
@@ -39,6 +69,7 @@ vi.mock("@/features/account", async () => {
         data-active={props.active}
         data-post={props.postHref}
         data-pending={String(props.emailPending)}
+        data-counts={JSON.stringify(props.counts)}
       >
         {props.notice}
         {props.children}
@@ -62,6 +93,8 @@ const open = async (search: Record<string, string | string[] | undefined> = {}) 
 beforeEach(() => {
   visitor.person = { name: "Priya Raman" };
   visitor.email = { kind: "none" };
+  visitor.signedIn = true;
+  visitor.received = { total: 4, fresh: 1 };
 });
 
 describe("the dashboard page (S5-T04)", () => {
@@ -152,5 +185,46 @@ describe("the My enquiries tab (S5-T03)", () => {
   it("does not draw them on the other tabs", async () => {
     await open({ tab: "listings" });
     expect(screen.queryByTestId("my-enquiries-tab")).toBeNull();
+  });
+});
+
+describe("the My listings and Enquiries received tabs (S6-T03)", () => {
+  it("draws the owner's listings through the my-listings component, on that tab only", async () => {
+    await open({ tab: "listings" });
+    expect(screen.getByTestId("my-listings-tab")).toBeInTheDocument();
+    expect(screen.queryByTestId("received-tab")).toBeNull();
+    expect(screen.queryByTestId("my-enquiries-tab")).toBeNull();
+  });
+
+  it("draws the enquiries received through the received component, on that tab only", async () => {
+    await open({ tab: "received" });
+    expect(screen.getByTestId("received-tab")).toBeInTheDocument();
+    expect(screen.queryByTestId("my-listings-tab")).toBeNull();
+  });
+
+  it("gives each tab its empty state as the fallback", async () => {
+    await open({ tab: "listings" });
+    expect(screen.getByTestId("empty")).toHaveTextContent("listings /properties /post-property");
+  });
+});
+
+describe("the numbers on the tabs (S6-T03)", () => {
+  it("reads the four counts together and words the New ones", async () => {
+    await open();
+    const counts = JSON.parse(screen.getByTestId("screen").getAttribute("data-counts") ?? "{}");
+    expect(counts.raw).toEqual({
+      saved: 3,
+      listings: 5,
+      received: { total: 4, fresh: 1 },
+      sent: 2,
+    });
+    expect(counts.news).toBe('account.dashboard.counts.new {"count":1}');
+  });
+
+  it("reads nothing for a visitor who is not signed in", async () => {
+    visitor.signedIn = false;
+    visitor.person = null;
+    const result = await DashboardPage({ searchParams: Promise.resolve({}) });
+    expect(result).toBeNull();
   });
 });

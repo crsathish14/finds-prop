@@ -1,7 +1,15 @@
 export { sendEnquiry, setEnquiryStatus } from "./actions";
 export { sendEnquiryConfig, setEnquiryStatusConfig } from "./action-config";
-export { getEnquiryContact, getReceivedEnquiries, type EnquiryContact } from "./queries";
+export {
+  countReceivedEnquiries,
+  countSentEnquiries,
+  getEnquiryContact,
+  getReceivedEnquiries,
+  type EnquiryContact,
+  type ReceivedCounts,
+} from "./queries";
 export { MyEnquiriesTab } from "./my-enquiries-tab";
+export { ReceivedEnquiriesTab } from "./received-tab";
 export {
   ENQUIRY_MESSAGE_MAX,
   ENQUIRY_NAME_MAX,
