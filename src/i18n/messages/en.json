@@ -1534,6 +1534,111 @@
           "text": "{name} can no longer sign in to the builder portal."
         }
       }
+    },
+    "units": {
+      "metaTitle": "Units",
+      "title": "Units",
+      "intro": "Manage the units of any project.",
+      "dash": "—",
+      "conflict": "This unit has changed since the page was loaded. The page has been refreshed.",
+      "close": "Close",
+      "cancel": "Cancel",
+      "project": "Project",
+      "search": {
+        "label": "Search units",
+        "placeholder": "Search unit number"
+      },
+      "states": {
+        "label": "Filter by state",
+        "all": "All",
+        "available": "Available",
+        "hold": "On hold",
+        "sold": "Sold",
+        "blocked": "Blocked"
+      },
+      "table": {
+        "caption": "Units",
+        "unit": "Unit",
+        "floor": "Floor",
+        "bhk": "BHK",
+        "area": "Area",
+        "facing": "Facing",
+        "price": "Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "add": "Add unit",
+        "edit": "Edit",
+        "editFor": "unit {number}",
+        "delete": "Delete unit {number}"
+      },
+      "count": "{shown} of {total, plural, one {# unit} other {# units}}",
+      "note": "Units can't be moved to another project.",
+      "empty": {
+        "title": "No units in this project yet",
+        "text": "Add units so buyers can see what is available."
+      },
+      "noProjects": {
+        "title": "No projects yet",
+        "text": "Add a project first, then add its units here."
+      },
+      "showMore": {
+        "button": "Show more units",
+        "failed": "More units could not be loaded. Please try again."
+      },
+      "form": {
+        "unitNumber": "Unit number",
+        "floor": "Floor",
+        "bhk": "BHK",
+        "area": "Area (sq.ft)",
+        "facing": "Facing",
+        "price": "Price (₹)",
+        "status": "Status",
+        "availableFrom": "Available from",
+        "floorPlanUrl": "Floor plan link",
+        "optional": "(optional)",
+        "notSet": "Not set"
+      },
+      "facing": {
+        "east": "East",
+        "northEast": "North-east",
+        "north": "North",
+        "northWest": "North-west",
+        "west": "West",
+        "southWest": "South-west",
+        "south": "South",
+        "southEast": "South-east"
+      },
+      "add": {
+        "title": "Add unit",
+        "text": "Add a unit so buyers can see what is available.",
+        "submit": "Save unit"
+      },
+      "edit": {
+        "title": "Edit unit",
+        "text": "Change the details of this unit.",
+        "submit": "Save unit"
+      },
+      "delete": {
+        "title": "Delete unit {number}?",
+        "text": "This removes the unit from the project. This can't be undone.",
+        "confirm": "Delete unit"
+      },
+      "toast": {
+        "added": {
+          "title": "Unit added",
+          "text": "{number} is now in the project."
+        },
+        "saved": {
+          "title": "Unit saved",
+          "text": "The details of {number} have been updated."
+        },
+        "deleted": {
+          "title": "Unit deleted",
+          "text": "{number} has been removed from the project."
+        }
+      }
     }
   }
 }
