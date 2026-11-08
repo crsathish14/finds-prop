@@ -298,7 +298,10 @@
     "addressRequired": "Add the street or building.",
     "pincodeInvalid": "Enter the 6-digit pincode.",
     "photoRequired": "Add at least one photo before you submit.",
-    "openListingLimit": "You already have {maximum} listings waiting. Finish or delete one first."
+    "openListingLimit": "You already have {maximum} listings waiting. Finish or delete one first.",
+    "unitNumberTaken": "This unit number is already used in this project.",
+    "numberInvalid": "Enter a number.",
+    "linkInvalid": "Enter a full address, starting with https://"
   },
   "format": {
     "rupees": "₹{value}",
