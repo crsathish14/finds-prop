@@ -197,7 +197,19 @@ export function DescriptionStep() {
   );
 }
 
-export function ReviewStep({ children }: { children?: ReactNode }) {
+export function ReviewStep({
+  children,
+  title = "Review and submit",
+  intro = "Check your details. You can go back to change anything.",
+  nextTitle = "What happens next",
+  next = "Your listing is saved as pending. It stays hidden until it is approved, then goes live. You can follow its status in My listings.",
+}: {
+  children?: ReactNode;
+  title?: string;
+  intro?: string;
+  nextTitle?: string;
+  next?: string;
+}) {
   const row = (id: string, label: string, value: ReactNode, editFor: string) => ({
     id,
     label,
@@ -209,10 +221,8 @@ export function ReviewStep({ children }: { children?: ReactNode }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1">
-        <h2 className="text-h3 text-primary">Review and submit</h2>
-        <p className="text-body text-muted">
-          Check your details. You can go back to change anything.
-        </p>
+        <h2 className="text-h3 text-primary">{title}</h2>
+        <p className="text-body text-muted">{intro}</p>
       </div>
       <ReviewList
         rows={[
@@ -229,10 +239,7 @@ export function ReviewStep({ children }: { children?: ReactNode }) {
           row("title", "Title", "3 BHK apartment with clubhouse and covered parking", "title"),
         ]}
       />
-      <NextSteps title="What happens next">
-        Your listing is saved as pending. It stays hidden until it is approved, then goes live. You
-        can follow its status in My listings.
-      </NextSteps>
+      <NextSteps title={nextTitle}>{next}</NextSteps>
       {children}
     </div>
   );
