@@ -23,6 +23,11 @@ export const STATUS_TONES = {
     closed: "neutral",
     waitingForOwner: "warning",
   },
+  builder: {
+    active: "success",
+    invited: "warning",
+    inactive: "neutral",
+  },
   unit: {
     available: "success",
     onHold: "warning",
