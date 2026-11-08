@@ -369,9 +369,7 @@ describe("IT-actions-listing: closing, deleting and enquiry status against a rea
 
     it("counts the saved homes through the same inner join as the list", async () => {
       const listing = await newListing("approved", "sale", stranger.userId);
-      const saved = await owner.client
-        .from("saved_properties")
-        .insert({ user_id: owner.userId, property_id: listing.id });
+      const saved = await owner.client.from("saved_properties").insert({ property_id: listing.id });
       expect(saved.error).toBeNull();
       const rows = await owner.client
         .from("saved_properties")
