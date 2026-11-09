@@ -320,7 +320,7 @@ function layoutNote(samples: Sample[], layout: SponsorHeroLayout): ReactNode {
         tone="warning"
         title={`${missing} of ${active} sponsors ${missing === 1 ? "doesn't" : "don't"} have the ${name} format`}
       >
-        {`${missing === 1 ? "It won't" : "They won't"} be shown while ${name} is live. Add a ${image} image to each in Sponsors below.`}
+        {`${missing === 1 ? "It won't" : "They won't"} be shown while ${name} is live. Add a ${image} image to ${missing === 1 ? "it" : "each"} in Sponsors below.`}
       </Alert>
     );
   }

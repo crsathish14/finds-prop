@@ -54,6 +54,11 @@ describe("UT-sponsor-hero-preview: the hero with the sponsor in it (S7-T11)", ()
     expect(screen.queryByText("The phone image is used below 1024 px.")).not.toBeInTheDocument();
   });
 
+  it("loads its pictures at once, so a photograph of a long page never shows an empty box", () => {
+    render(<SponsorHeroPreview {...preview()} />);
+    expect(picture()).toHaveAttribute("loading", "eager");
+  });
+
   it("starts on the phone when asked to", () => {
     render(<SponsorHeroPreview {...preview({ defaultDevice: "phone" })} />);
     expect(screen.getByRole("radio", { name: "Phone" })).toBeChecked();

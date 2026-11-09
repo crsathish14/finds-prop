@@ -17,6 +17,8 @@
  *   line under the phone drawing) }), className.
  * Responsive: fills the preview column; the phone drawing is a narrow frame in its middle, with the banner under the
  *   text in both layouts, as on a phone.
+ * Loading: the pictures load at once (a preview is small and sits low on a long page; a lazy picture would show as an
+ *   empty box in a photograph of the page).
  * Accessibility: the switch is a labelled group of two options (arrow keys move, one stays chosen); the drawing is
  *   aria-hidden; the note about a missing banner is a status. The banner's picture is shown at the slot's true shape
  *   and is never stretched.
@@ -101,6 +103,7 @@ function SponsorHeroPreview({
           alt=""
           fill
           unoptimized
+          loading="eager"
           sizes="320px"
           className="object-cover"
         />
