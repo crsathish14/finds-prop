@@ -85,8 +85,9 @@ export async function readFormOptions(supabase: Client): Promise<FormOption[]> {
 export async function readMyProjectList(supabase: Client): Promise<ProjectListRow[]> {
   const { data, error } = await supabase
     .rpc("my_projects")
+    // `created_at` is read only to order by: PostgREST orders a function's rows by a column that is also selected.
     .select(
-      "id, name, slug, locality, price_min, price_max, images, moderation, published, featured",
+      "id, name, slug, locality, price_min, price_max, images, moderation, published, featured, created_at",
     )
     .order("created_at", { ascending: false });
   if (error) {

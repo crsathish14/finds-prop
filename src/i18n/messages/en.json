@@ -2009,7 +2009,7 @@
         "actions": "Actions"
       },
       "noPrice": "Not set",
-      "coverAlt": "{name}",
+      "coverAlt": "Cover picture of {name}",
       "badges": {
         "published": "Published",
         "unpublished": "Unpublished",

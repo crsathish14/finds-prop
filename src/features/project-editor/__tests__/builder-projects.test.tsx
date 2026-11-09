@@ -131,12 +131,16 @@ describe("BuilderProjects: the builder's Projects page (S7-T03)", () => {
 
   it("shows the cover from the media bucket when there is one", () => {
     open();
-    const image = within(rowOf("Kadal Vista")).getByRole("img", { name: "Kadal Vista" });
+    const image = within(rowOf("Kadal Vista")).getByRole("img", {
+      name: "Cover picture of Kadal Vista",
+    });
     // Next serves the picture through its own address, with the bucket's address inside it.
     expect(decodeURIComponent(image.getAttribute("src") ?? "")).toContain(
       `${BASE}/storage/v1/object/public/project-media/${PROJECT}/3f2a9c1b-front.jpg`,
     );
-    expect(within(rowOf("Kadal Courts")).queryByRole("img", { name: "Kadal Courts" })).toBeNull();
+    expect(
+      within(rowOf("Kadal Courts")).queryByRole("img", { name: "Cover picture of Kadal Courts" }),
+    ).toBeNull();
   });
 
   it("filters by the chosen tab and updates the line under the list", () => {
