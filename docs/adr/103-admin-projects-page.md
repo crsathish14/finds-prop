@@ -1,4 +1,4 @@
-# ADR-101 · The admin's Projects page (S7-T04, part B)
+# ADR-103 · The admin's Projects page (S7-T04, part B)
 
 - Status: Accepted (the wording below awaits the owner's confirmation)
 - Date: 2026-11-09
