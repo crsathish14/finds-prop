@@ -14,7 +14,14 @@ export { contactMetadata } from "./metadata";
 export { getContactForm, getProjectForm, FORMS_TAG } from "./queries";
 export { RefreshButton } from "./refresh-button.client";
 export { validateSubmission } from "./validate";
-export { FIELD_TYPES, formFieldSchema, formFieldsSchema, submitFormSchema } from "./schemas";
+export {
+  FIELD_TYPES,
+  FORM_KINDS,
+  FORM_PLACEMENTS,
+  formFieldSchema,
+  formFieldsSchema,
+  submitFormSchema,
+} from "./schemas";
 export type {
   FieldType,
   FormDefinition,
