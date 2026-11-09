@@ -22,7 +22,7 @@
  * States: any number of rows; active, inactive, needs images; a format ready or missing; one sponsor only (both
  *   arrows off); a very long name; a sponsor with no name; nothing yet; a row that is being saved (its buttons are off).
  * Dependencies: ResponsiveTable, Badge, EmptyState, Button, IconButton, Heading, Text. Tests:
- *   sponsors-manager.test.tsx; Design Lab "Sponsor manager" (S7-T11).
+ *   sponsors-manager.test.tsx; Design Lab "Sponsor list" (S7-T11).
  * UX reference: admin-sponsors screen (the Sponsors panel: .sp-table, .adv, .fmt-ok, .fmt-no, empty-note). The
  *   "Booking" line under each name is left out (ADR-105), and a Delete button is added to each row because the screen
  *   shows the question but not what opens it (ADR-109).

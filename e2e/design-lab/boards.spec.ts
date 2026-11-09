@@ -56,7 +56,7 @@ test.describe("Design Lab routes", () => {
       "Admin",
       "Site content",
       "Sponsors",
-      "Sponsor manager",
+      "Sponsor list",
     ]) {
       await expect(page.getByRole("link", { name: board })).toBeVisible();
     }

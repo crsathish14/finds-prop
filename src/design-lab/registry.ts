@@ -106,7 +106,7 @@ export const LAB_BOARDS: LabBoard[] = [
   },
   {
     id: "sponsor-manager",
-    title: "Sponsor manager",
+    title: "Sponsor list",
     uxBoard: "admin-sponsors",
     summary:
       "What the admin uses to manage the sponsors of the Hero page: the list with its order arrows, the hero preview with the banner in it, and the whole Hero page with both. It mirrors the admin Hero and sponsors screen.",

@@ -23,7 +23,7 @@
  * States: Search Desk and Split, each on desktop and phone, with a banner; no sponsors at all; sponsors but none with
  *   the format the layout needs (Split is drawn as Search Desk without a banner, as visitors see it).
  * Dependencies: SiteHeroPreview, SegmentedControl, Badge, Alert, next/image. Tests: sponsor-hero-preview.test.tsx;
- *   Design Lab "Sponsor manager" (S7-T11).
+ *   Design Lab "Sponsor list" (S7-T11).
  * UX reference: admin-sponsors screen (the live preview card: .live-prev, .lp-bar, .seg).
  */
 import Image from "next/image";
