@@ -7,6 +7,7 @@ import {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveSponsorsConfig,
 } from "./action-config";
 import {
   saveFooterContent,
@@ -15,6 +16,8 @@ import {
   saveHomepageContent,
 } from "./content-service";
 import { createContentStore } from "./service";
+import { saveSponsorsContent } from "./sponsor-service";
+import { createSponsorStore } from "./sponsors.server";
 
 /** Saves the header: the site name, the links and the button. Shown on every public page at once. */
 export const saveHeader = defineAction({
@@ -57,6 +60,17 @@ export const saveFooter = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveFooterContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the sponsors: the whole list in its order, each picture checked against its stored file. */
+export const saveSponsors = defineAction({
+  ...saveSponsorsConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveSponsorsContent(await createSponsorStore(), input, log);
+    log.info("sponsors saved", { count: done.count, active: done.active });
     return done;
   },
 });

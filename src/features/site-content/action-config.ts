@@ -5,6 +5,7 @@ import {
   heroInputSchema,
   homepageInputSchema,
 } from "./schemas";
+import { sponsorsInputSchema } from "./sponsor-schemas";
 
 /**
  * How the admin's site content actions run, kept apart from the "use server" file so a test can build them
@@ -41,6 +42,18 @@ export const saveHomepageConfig = {
 export const saveFooterConfig = {
   name: "saveFooter",
   input: footerInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The sponsors save (S7-T11, FR-ADM-11): the whole list replaces the stored one, so the same limits and cache tag apply
+ * (`admin_edit`, the site content tag). The pictures are checked against their files on the server (ADR-105).
+ */
+export const saveSponsorsConfig = {
+  name: "saveSponsors",
+  input: sponsorsInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),
