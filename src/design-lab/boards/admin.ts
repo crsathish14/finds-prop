@@ -6,6 +6,11 @@ import {
   SubmissionsTableDemo,
 } from "./admin-submissions-demos";
 import { InsightsPanelDemo } from "./admin-insights-demos";
+import {
+  ProjectFormDemo,
+  ProjectSectionNavDemo,
+  TagListFieldDemo,
+} from "./admin-project-form-demos";
 import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
   ManagerDrawerDemo,
@@ -153,5 +158,34 @@ export const ADMIN: LabEntry[] = [
       "Everything one form submission holds, for the drawer that opens from the list: when, name, mobile, email, form, project and source, the answers with the form's own questions, and how the CRM stands, with the reason and the next retry when the delivery failed. Shown as a failed delivery, a delivered one with a very long answer, one with almost nothing in it, and in its drawer.",
     sources: ["domain/submission-detail.tsx"],
     Demo: SubmissionDetailDemo,
+  },
+  {
+    id: "project-form",
+    name: "Project form",
+    description:
+      "The sectioned form where the admin and a builder describe a project: Basics (name, builder for the admin, types, status, price range, BHK options, land area, units, possession, phone), Location (locality, address, latitude and longitude, advantages and nearby places as lists), RERA (a switch that turns the number box on and off), Details (description, specifications, amenities with suggestions) and SEO (page title, slug, meta description), in cards with the section list beside them, the Enquiry form box for the admin only and the save bar. Shown filled for the admin, empty with errors, for a builder (the approval warning, no Builder box, the page address of an approved project locked) and while saving. The media section and the price trends come next.",
+    sources: [
+      "domain/project-fields.tsx",
+      "domain/project-form-layout.tsx",
+      "domain/project-save-bar.tsx",
+      "patterns/form-section.tsx",
+    ],
+    Demo: ProjectFormDemo,
+  },
+  {
+    id: "project-section-nav",
+    name: "Project section list",
+    description:
+      "The list of the form's sections (Basics, Location, RERA, Details, Media, SEO) with the current one marked and a tick or a warning on a section that is done or needs work, in words for a screen reader too. A row that scrolls sideways on phones and tablets and a column from 1100 px of screen. Shown with nothing done, some done and two needing attention.",
+    sources: ["domain/project-section-nav.tsx"],
+    Demo: ProjectSectionNavDemo,
+  },
+  {
+    id: "tag-list-field",
+    name: "Tag list field",
+    description:
+      "A list of short phrases typed in one at a time and removed with the x, for amenities, location advantages and nearby places: a box with Add (Enter works too), the count (3 / 30), chips that wrap, and suggestions to tap. Shown empty with suggestions, with a hint and a very long phrase, full, with an error and off while saving.",
+    sources: ["patterns/tag-list-field.tsx"],
+    Demo: TagListFieldDemo,
   },
 ];
