@@ -4,7 +4,7 @@
  *   page, with the name and kind, the slug, how many fields, where the form is shown, which CRM it is linked to, an
  *   Active switch, and Edit, Duplicate and Delete. Owner: design system. It holds no state: the page passes the rows,
  *   already translated, and what each button does.
- * Props: title, intro, newLabel and newHref (the "New form" button, a link), caption (names the table for a screen
+ * Props: title, headingLevel ("h1" default | "h2", for the Design Lab), intro, newLabel and newHref (the "New form" button, a link), caption (names the table for a screen
  *   reader), columns ({ name, slug, fields, placement, crm, active, actions }, the heading words), rows ({ id, name,
  *   kind (the words under the name, such as "Contact"), slug, fields (the count), placement, crm (the words,
  *   such as "Not linked"), active ({ checked, onChange, label (names the switch for the form), disabled }), edit
@@ -62,6 +62,7 @@ type FormRowView = {
 
 type FormsManagerProps = {
   title: string;
+  headingLevel?: "h1" | "h2";
   intro: string;
   newLabel: string;
   newHref: string;
@@ -84,6 +85,7 @@ type FormsManagerProps = {
 
 function FormsManager({
   title,
+  headingLevel = "h1",
   intro,
   newLabel,
   newHref,
@@ -161,7 +163,7 @@ function FormsManager({
     <div data-slot="forms-manager" className={cn("flex min-w-0 flex-col gap-4", className)}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <Heading as="h1" size="1">
+          <Heading as={headingLevel} size="1">
             {title}
           </Heading>
           <Text tone="muted">{intro}</Text>

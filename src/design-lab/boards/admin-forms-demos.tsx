@@ -117,6 +117,7 @@ function Manager({ seeds, copying, count }: { seeds: Seed[]; copying?: string; c
   return (
     <FormsManager
       title="Forms"
+      headingLevel="h2"
       intro="Forms shown on project pages and the contact page."
       newLabel="New form"
       newHref="#"

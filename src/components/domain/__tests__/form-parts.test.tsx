@@ -43,10 +43,11 @@ function row(extra: Partial<FormRowView> = {}): FormRowView {
   };
 }
 
-function manager(rows: FormRowView[]) {
+function manager(rows: FormRowView[], headingLevel: "h1" | "h2" = "h1") {
   renderWithMessages(
     <FormsManager
       title="Forms"
+      headingLevel={headingLevel}
       intro="Forms shown on project pages and the contact page."
       newLabel="New form"
       newHref="/admin/forms/new"
@@ -60,6 +61,12 @@ function manager(rows: FormRowView[]) {
 }
 
 describe("FormsManager: the admin's list of forms (S7-T08)", () => {
+  it("draws the heading one level lower when asked (the Design Lab has one h1)", () => {
+    manager([row()], "h2");
+    expect(screen.getByRole("heading", { level: 2, name: "Forms" })).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+  });
+
   it("shows the heading, New form as a link, and a row with its name, kind, slug, fields, placement and CRM", () => {
     manager([row()]);
     expect(screen.getByRole("heading", { level: 1, name: "Forms" })).toBeVisible();
