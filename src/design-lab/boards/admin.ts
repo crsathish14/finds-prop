@@ -12,11 +12,6 @@ import {
   TagListFieldDemo,
 } from "./admin-project-form-demos";
 import {
-  LinkListFieldDemo,
-  SiteContentFrameDemo,
-  SiteFooterDemo,
-} from "./admin-site-content-demos";
-import {
   MediaGroupFieldDemo,
   PriceTrendsEditorDemo,
   ProjectMediaDemo,
@@ -221,39 +216,5 @@ export const ADMIN: LabEntry[] = [
       "The admin's box for the monthly price per sq.ft behind the chart on the project page: a month box, a price box and a remove button on each row, Add month and the count (up to 120 months), at the width of the form's side column. Shown empty, with four months, with problems, full and while saving.",
     sources: ["domain/price-trends-editor.tsx"],
     Demo: PriceTrendsEditorDemo,
-  },
-  {
-    id: "site-content-page",
-    name: "Site content page",
-    description:
-      "The frame of the admin's Header, Hero, Homepage and Footer pages: the heading, the four page tabs (the current one marked), the form beside a live preview (under the form below 1100 px of screen, in a column on the right and in view while the form scrolls from 1100 px), an alert for problems and the save bar (Discard, Save changes). Shown as the Header page filled, with nothing saved (the preview shows the standard name), with problems marked on the boxes and in the alert, and while saving.",
-    sources: [
-      "domain/site-content-layout.tsx",
-      "domain/site-header-fields.tsx",
-      "domain/site-header-preview.tsx",
-      "domain/project-save-bar.tsx",
-    ],
-    Demo: SiteContentFrameDemo,
-  },
-  {
-    id: "link-list-field",
-    name: "Link list field",
-    description:
-      "A list of links, each a label and where it goes, for the header and the footer: rows that are dragged or moved with the up and down arrows, a box for each part, a button to remove the row, Add link (off when the list is full) and the count (3 / 12). On a phone a row stacks its boxes; from 768 px they sit side by side. Shown empty, with three links, with problems on two rows, full, with a very long name and address, and off while saving.",
-    sources: ["patterns/link-list-field.tsx", "patterns/sortable-list.tsx"],
-    Demo: LinkListFieldDemo,
-  },
-  {
-    id: "site-footer-page",
-    name: "Site footer page",
-    description:
-      "The Footer page of the admin's Site content and the two previews: the boxes (about text, phone, email, address, the links and the copyright line) beside the dark footer preview, and the header and footer previews alone in the width of their column. Shown filled, with nothing saved (only the standard copyright line), with a bad email and a link without a name, and the previews with a long name and many links.",
-    sources: [
-      "domain/site-footer-fields.tsx",
-      "domain/site-footer-preview.tsx",
-      "domain/site-header-preview.tsx",
-      "domain/site-content-layout.tsx",
-    ],
-    Demo: SiteFooterDemo,
   },
 ];
