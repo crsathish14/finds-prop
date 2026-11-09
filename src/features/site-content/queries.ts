@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   buildFooter,
   buildHeader,
+  buildHero,
   getCurrentYear,
   getFeatureFlags,
   getTranslate,
@@ -16,12 +17,18 @@ import { EDITABLE_SETTINGS, type EditableSetting } from "./constants";
 import {
   footerFormOf,
   headerFormOf,
+  heroFormOf,
+  homepageFormOf,
   standardFooterOf,
   standardHeaderOf,
+  standardHeroOf,
   type FooterFormValues,
   type HeaderFormValues,
+  type HeroFormValues,
+  type HomepageFormValues,
   type StandardFooter,
   type StandardHeader,
+  type StandardHero,
 } from "./form";
 
 /**
@@ -89,4 +96,32 @@ export async function getFooterPage(): Promise<FooterPage> {
     ),
   );
   return { initial: footerFormOf(settings.footer, standard), standard };
+}
+
+export interface HeroPage {
+  initial: HeroFormValues;
+  standard: StandardHero;
+}
+
+/**
+ * What the Hero page opens with: the saved hero, with the headline visitors see today in the headline box when none is
+ * saved (the box cannot be left empty), and the standard headline and subtitle for the picture, worked out by the same
+ * builder the home page uses.
+ */
+export async function getHeroPage(): Promise<HeroPage> {
+  const [{ settings }, translate] = await Promise.all([getSiteContent(), getTranslate()]);
+  const standard = standardHeroOf(
+    buildHero({ ...settings, hero: { layout: settings.hero.layout } }, translate),
+  );
+  return { initial: heroFormOf(settings.hero, standard), standard };
+}
+
+export interface HomepagePage {
+  initial: HomepageFormValues;
+}
+
+/** What the Homepage page opens with: the saved switches and localities (the defaults where nothing is saved). */
+export async function getHomepagePage(): Promise<HomepagePage> {
+  const { settings } = await getSiteContent();
+  return { initial: homepageFormOf(settings.homepage) };
 }

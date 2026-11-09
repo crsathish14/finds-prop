@@ -2036,6 +2036,103 @@
           "title": "Footer saved",
           "text": "The change is live on the public site."
         }
+      },
+      "hero": {
+        "metaTitle": "Site content: Hero",
+        "title": "Hero",
+        "description": "The first thing visitors see on the home page.",
+        "text": {
+          "title": "Text"
+        },
+        "layout": {
+          "title": "Layout",
+          "description": "Both layouts use the same text, search and header. If no sponsor is booked, the page shows Search Desk without a banner.",
+          "searchDesk": {
+            "label": "Search Desk",
+            "hint": "Centred search with a banner strip underneath."
+          },
+          "split": {
+            "label": "Split",
+            "hint": "Search on the left and a larger sponsored image on the right."
+          }
+        },
+        "eyebrow": "Eyebrow",
+        "eyebrowHint": "A small line above the headline. Shown in the Split layout.",
+        "headline": "Headline",
+        "subtitle": "Subtitle",
+        "saved": {
+          "title": "Hero saved",
+          "text": "The change is live on the public site."
+        }
+      },
+      "homepage": {
+        "metaTitle": "Site content: Homepage",
+        "title": "Homepage sections",
+        "description": "Choose which sections appear below the hero, and which localities are featured.",
+        "sections": {
+          "title": "Sections",
+          "description": "Turn sections on or off. A hidden section is not rendered at all.",
+          "featured": {
+            "label": "Featured listings",
+            "hint": "Up to six featured homes."
+          },
+          "projectTypes": {
+            "label": "Browse by what matters",
+            "hint": "Featured, Prime, Budget and locality entry points."
+          },
+          "discovery": {
+            "label": "Explore by locality",
+            "hint": "The locality tiles below. Needs at least one locality."
+          },
+          "whyUs": {
+            "label": "Why Find Prop",
+            "hint": "Three short value points."
+          },
+          "cta": {
+            "label": "Post-property call to action",
+            "hint": "The closing banner."
+          }
+        },
+        "localities": {
+          "title": "Explore by locality",
+          "description": "Tiles shown under the search. The first {popular} also appear as Popular chips in the search card. Visitors who click one see homes within the radius.",
+          "add": "Add locality",
+          "limitTitle": "You've reached the limit of {max} localities",
+          "limitText": "Remove one to add another.",
+          "emptyTitle": "No localities yet",
+          "emptyText": "The \"Explore by locality\" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.",
+          "orderHint": "Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches.",
+          "row": "Locality",
+          "label": "Label",
+          "lat": "Latitude",
+          "lng": "Longitude",
+          "radius": "Radius",
+          "km": "km",
+          "remove": "Remove",
+          "drag": "Drag",
+          "moveUp": "Move up",
+          "moveDown": "Move down"
+        },
+        "preview": {
+          "popular": "Popular chips in the search card",
+          "explore": "Explore by locality",
+          "on": "On",
+          "off": "Off",
+          "hiddenTitle": "Section hidden",
+          "hiddenText": "With no localities, visitors see the search card followed directly by Featured homes.",
+          "sections": {
+            "hero": "Hero and search",
+            "discovery": "Explore by locality",
+            "featured": "Featured homes",
+            "projectTypes": "Browse by what matters",
+            "whyUs": "Why Find Prop",
+            "cta": "Call to action"
+          }
+        },
+        "saved": {
+          "title": "Homepage saved",
+          "text": "The change is live on the public site."
+        }
       }
     }
   },
