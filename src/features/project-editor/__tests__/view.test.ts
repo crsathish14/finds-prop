@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toProjectEditView, type ProjectDbRow } from "../view";
+import { toProjectEditView, toProjectListRow, type ProjectDbRow } from "../view";
 
 const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   id: "00000000-0000-4000-a000-000000000001",
@@ -79,5 +79,37 @@ describe("UT-project-view: the project as the form opens it (S7-T02)", () => {
       { month: "2026-08", pricePerSqft: 8100 },
       { month: "2026-10", pricePerSqft: 8350 },
     ]);
+  });
+});
+
+describe("UT-project-list-row: a project as the builder's list shows it (S7-T03)", () => {
+  it("keeps what the list shows and takes the first image as the cover", () => {
+    const listed = toProjectListRow(
+      row({
+        images: ["a/first.jpg", "a/second.jpg"],
+        moderation: "approved",
+        published: true,
+        featured: true,
+      }),
+    );
+    expect(listed).toEqual({
+      id: "00000000-0000-4000-a000-000000000001",
+      name: "Kadal Vista",
+      slug: "kadal-vista",
+      locality: "OMR Navalur",
+      priceMin: 7800000,
+      priceMax: 14200000,
+      cover: "a/first.jpg",
+      moderation: "approved",
+      published: true,
+      featured: true,
+    });
+  });
+
+  it("has no cover for a project without images, and keeps a missing price as none", () => {
+    const listed = toProjectListRow(row({ images: [], price_min: null, price_max: null }));
+    expect(listed.cover).toBeNull();
+    expect(listed.priceMin).toBeNull();
+    expect(listed.priceMax).toBeNull();
   });
 });

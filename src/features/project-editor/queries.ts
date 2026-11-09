@@ -6,10 +6,12 @@ import type { Database } from "@/types/database.types";
 import type { EditorScope } from "./service";
 import {
   toProjectEditView,
+  toProjectListRow,
   type BuilderOption,
   type FormOption,
   type ProjectDbRow,
   type ProjectEditView,
+  type ProjectListRow,
 } from "./view";
 
 /**
@@ -76,6 +78,24 @@ export async function readFormOptions(supabase: Client): Promise<FormOption[]> {
   return (data ?? []).filter((form) => form.active).map(({ id, name }) => ({ id, name }));
 }
 
+/**
+ * The signed-in builder's own projects for their list, newest first (S7-T03). `my_projects()` returns only the projects
+ * of the builder (or agent) asking, whatever their state; the columns are the ones the list shows.
+ */
+export async function readMyProjectList(supabase: Client): Promise<ProjectListRow[]> {
+  const { data, error } = await supabase
+    .rpc("my_projects")
+    .select(
+      "id, name, slug, locality, price_min, price_max, images, moderation, published, featured",
+    )
+    .order("created_at", { ascending: false });
+  if (error) {
+    logger.error("the builder's projects could not be read", { errorCode: error.code });
+    throw error;
+  }
+  return (data ?? []).map(toProjectListRow);
+}
+
 /** The project to open on the admin's edit page. */
 export async function getProjectForEdit(
   scope: EditorScope,
@@ -92,4 +112,9 @@ export async function getBuilderOptions(): Promise<BuilderOption[]> {
 /** The forms to choose from, for the signed-in admin. */
 export async function getFormOptions(): Promise<FormOption[]> {
   return readFormOptions(await createServerSupabase());
+}
+
+/** The projects to list on the builder's Projects page. */
+export async function getMyProjectList(): Promise<ProjectListRow[]> {
+  return readMyProjectList(await createServerSupabase());
 }
