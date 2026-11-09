@@ -7,7 +7,7 @@
  * Props: title, description (the page heading and its line), tabs ({ key, label, href, current }[]; the four pages,
  *   each a link), tabsLabel (names the tabs), previewLabel (names the preview and is shown above it), preview (what the
  *   preview draws), top (an alert about errors, optional), children (the form sections), footer (the save bar),
- *   className.
+ *   headingLevel ("h1" default | "h2", for a page that already has an h1, such as the Design Lab), className.
  * Responsive: one column up to 1100 px of screen: the tabs scroll sideways, the preview sits under the form. From
  *   1100 px the preview takes a column on the right and stays in view while the form scrolls.
  * Accessibility: a named navigation of links with aria-current on the page the admin is on; the preview is a named
@@ -34,6 +34,7 @@ type SiteContentLayoutProps = {
   top?: ReactNode;
   children: ReactNode;
   footer: ReactNode;
+  headingLevel?: "h1" | "h2";
   className?: string;
 };
 
@@ -47,12 +48,13 @@ function SiteContentLayout({
   top,
   children,
   footer,
+  headingLevel = "h1",
   className,
 }: SiteContentLayoutProps) {
   return (
     <div data-slot="site-content-layout" className={cn("flex min-w-0 flex-col gap-6", className)}>
       <header className="flex flex-col gap-1">
-        <Heading as="h1" size="1">
+        <Heading as={headingLevel} size="1">
           {title}
         </Heading>
         <Text tone="muted">{description}</Text>

@@ -194,6 +194,7 @@ function HeaderPage({
       preview={headerPreview(values)}
       {...(top ? { top } : {})}
       footer={<SaveBar saving={saving} />}
+      headingLevel="h2"
     >
       <SiteHeaderFields
         values={values}
@@ -218,6 +219,7 @@ function FooterPage({ initial, errors }: { initial: SiteFooterValues; errors?: S
       previewLabel="Preview"
       preview={footerPreview(values)}
       footer={<SaveBar />}
+      headingLevel="h2"
     >
       <SiteFooterFields
         values={values}

@@ -299,6 +299,25 @@ describe("UT-site-content-layout: the frame of the four pages (S7-T10)", () => {
     expect(within(nav).getByRole("link", { name: "Footer" })).not.toHaveAttribute("aria-current");
   });
 
+  it("takes a second-level heading when the page already has an h1", () => {
+    render(
+      <SiteContentLayout
+        title="Hero"
+        description="d"
+        tabs={tabs}
+        tabsLabel="Site content"
+        previewLabel="Preview"
+        preview={<p>p</p>}
+        footer={<p>f</p>}
+        headingLevel="h2"
+      >
+        <p>b</p>
+      </SiteContentLayout>,
+    );
+    expect(screen.getByRole("heading", { level: 2, name: "Hero" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+  });
+
   it("names the preview, and reads in order: boxes, preview, save bar", () => {
     setup();
     const preview = screen.getByRole("region", { name: "Preview" });
