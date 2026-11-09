@@ -3,12 +3,16 @@
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
+  addMyUnitConfig,
   addUnitConfig,
+  deleteMyUnitConfig,
   deleteUnitConfig,
+  loadMoreMyUnitsConfig,
   loadMoreUnitsConfig,
+  updateMyUnitConfig,
   updateUnitConfig,
 } from "./action-config";
-import { getUnitsPage } from "./queries";
+import { getMyUnitsPage, getUnitsPage } from "./queries";
 import { createUnitStore } from "./service";
 import { addUnitTo, removeUnit, saveUnit } from "./unit-service";
 
@@ -52,5 +56,56 @@ export const loadMoreUnits = defineAction({
   handler: async ({ input, session }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     return getUnitsPage(input);
+  },
+});
+
+/**
+ * The builder's own unit actions (S7-T03). They run as the signed-in builder through their own session, so the
+ * database's policies decide whose units they may touch: a project or unit that is not theirs is refused or
+ * "not found", whatever is sent.
+ */
+
+/** Adds a unit to one of the signed-in builder's projects. Answers the unit's id and its project, for the page to refresh. */
+export const addMyUnit = defineAction({
+  ...addMyUnitConfig,
+  handler: async ({ input, session, log }) => {
+    // defineAction has already refused anyone who is not a builder; this keeps the type honest.
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await addUnitTo(await createUnitStore(), input);
+    log.info("unit added by a builder", { unitId: done.unitId, projectId: done.projectId });
+    return done;
+  },
+});
+
+/** Saves a unit's details. A unit never moves to another project. */
+export const updateMyUnit = defineAction({
+  ...updateMyUnitConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveUnit(await createUnitStore(), input);
+    log.info("unit saved by a builder", { unitId: done.unitId, projectId: done.projectId });
+    return done;
+  },
+});
+
+/** Deletes a unit of the builder's own project. */
+export const deleteMyUnit = defineAction({
+  ...deleteMyUnitConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await removeUnit(await createUnitStore(), input.unitId);
+    log.info("unit deleted by a builder", { unitId: done.unitId, projectId: done.projectId });
+    return done;
+  },
+});
+
+/** The next page of one of the builder's projects' units, for "Show more"; "not found" for a project that is not theirs. */
+export const loadMoreMyUnits = defineAction({
+  ...loadMoreMyUnitsConfig,
+  handler: async ({ input, session }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const page = await getMyUnitsPage(input);
+    if (!page) throw new ActionError("NOT_FOUND", "That project was not found");
+    return page;
   },
 });

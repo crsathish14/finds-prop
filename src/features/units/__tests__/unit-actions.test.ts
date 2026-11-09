@@ -4,9 +4,13 @@ import { ActionError } from "@/server/actions/normalise-error";
 import type { SessionView } from "@/server/auth/session";
 import { createLogger } from "@/server/logger";
 import {
+  addMyUnitConfig,
   addUnitConfig,
+  deleteMyUnitConfig,
   deleteUnitConfig,
+  loadMoreMyUnitsConfig,
   loadMoreUnitsConfig,
+  updateMyUnitConfig,
   updateUnitConfig,
 } from "../action-config";
 import type { UnitDone } from "../unit-service";
@@ -65,6 +69,16 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     add: define({ ...addUnitConfig, handler }),
     update: define({ ...updateUnitConfig, handler }),
     remove: define({ ...deleteUnitConfig, handler }),
+    addMine: define({ ...addMyUnitConfig, handler }),
+    updateMine: define({ ...updateMyUnitConfig, handler }),
+    removeMine: define({ ...deleteMyUnitConfig, handler }),
+    moreMine: define({
+      ...loadMoreMyUnitsConfig,
+      handler: async () => {
+        calls.push("handler");
+        return { units: [], total: 0, nextCursor: null };
+      },
+    }),
     more: define({
       ...loadMoreUnitsConfig,
       handler: async () => {
@@ -134,5 +148,61 @@ describe("UT-unit-actions: who may manage units, and what it refreshes (S7-T07)"
     const { add, calls } = harness({ rateLimited: true });
     expect(await add(newUnit)).toMatchObject({ ok: false, code: "RATE_LIMITED", retryAfter: 600 });
     expect(calls).toEqual(["rateLimit:admin_edit"]);
+  });
+});
+
+describe("UT-builder-unit-actions: the builder's own unit actions (S7-T03)", () => {
+  it("lets a builder add a unit: the builder_edit limit, the handler, the project's tags, the same audit entry", async () => {
+    const { addMine, calls } = harness({ session: builder });
+    expect((await addMine(newUnit)).ok).toBe(true);
+    expect(calls).toEqual([
+      "rateLimit:builder_edit",
+      "handler",
+      "invalidate:projects|project:kadal-vista|home-projects",
+      `audit:unit.created:unit:${UNIT}`,
+    ]);
+  });
+
+  it("does the same for a save and a delete, each with the builder_edit limit and its own audit entry", async () => {
+    const { updateMine, removeMine, calls } = harness({ session: builder });
+    expect((await updateMine(savedUnit)).ok).toBe(true);
+    expect((await removeMine({ unitId: UNIT })).ok).toBe(true);
+    expect(calls.filter((call) => call.startsWith("audit"))).toEqual([
+      `audit:unit.updated:unit:${UNIT}`,
+      `audit:unit.deleted:unit:${UNIT}`,
+    ]);
+    expect(calls.filter((call) => call.startsWith("rateLimit"))).toEqual([
+      "rateLimit:builder_edit",
+      "rateLimit:builder_edit",
+    ]);
+  });
+
+  it("runs Show more with no limit, no refresh and no audit entry", async () => {
+    const { moreMine, calls } = harness({ session: builder });
+    expect((await moreMine({ projectId: PROJECT })).ok).toBe(true);
+    expect(calls).toEqual(["handler"]);
+  });
+
+  it.each([
+    ["a visitor", null, "UNAUTHENTICATED"],
+    ["a customer", customer, "FORBIDDEN"],
+    ["a super admin", admin, "FORBIDDEN"],
+  ] as const)("refuses %s before anything runs, on every action", async (_who, session, code) => {
+    const { addMine, updateMine, removeMine, moreMine, calls } = harness({ session });
+    expect(await addMine(newUnit)).toMatchObject({ ok: false, code });
+    expect(await updateMine(savedUnit)).toMatchObject({ ok: false, code });
+    expect(await removeMine({ unitId: UNIT })).toMatchObject({ ok: false, code });
+    expect(await moreMine({ projectId: PROJECT })).toMatchObject({ ok: false, code });
+    expect(calls).toEqual([]);
+  });
+
+  it("answers a rate limit with the wait, and does not run the handler", async () => {
+    const { addMine, calls } = harness({ session: builder, rateLimited: true });
+    expect(await addMine(newUnit)).toMatchObject({
+      ok: false,
+      code: "RATE_LIMITED",
+      retryAfter: 600,
+    });
+    expect(calls).toEqual(["rateLimit:builder_edit"]);
   });
 });

@@ -56,6 +56,8 @@ export const RATE_LIMITS = {
   admin_decision: [{ who: "user", windowSeconds: HOUR, max: 120 }],
   /** 600 edits per admin per hour: the units of a project, a lead's state and the like (S7-T07). */
   admin_edit: [{ who: "user", windowSeconds: HOUR, max: 600 }],
+  /** 300 edits per builder per hour: their units, a lead's state and their profile (S7-T03). */
+  builder_edit: [{ who: "user", windowSeconds: HOUR, max: 300 }],
   /** 60 project saves per user per hour: the admin's and a builder's project form (S7-T02). */
   project_save: [{ who: "user", windowSeconds: HOUR, max: 60 }],
   /** 60 place searches per visitor per minute (protects the provider quota). */

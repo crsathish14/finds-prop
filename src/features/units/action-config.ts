@@ -57,3 +57,37 @@ export const loadMoreUnitsConfig = {
   input: unitFilterSchema,
   auth: { role: "super_admin" as const },
 };
+
+/**
+ * The builder's own versions of the four unit actions (S7-T03): the same inputs, cache tags and audit entries, for
+ * the builder role. A builder's units are limited with their other edits (`builder_edit`, 300 an hour). The database
+ * decides whose units a builder may touch (the policies of `project_units` allow only the builder's own projects);
+ * a unit or project that is not theirs is refused or "not found", never changed. "Show more" is a read, so it has no
+ * rate limit, and its handler checks that the project is the builder's own.
+ */
+export const addMyUnitConfig = {
+  ...addUnitConfig,
+  name: "addMyUnit",
+  auth: { role: "builder" as const },
+  rateLimit: { scope: "builder_edit" as const },
+};
+
+export const updateMyUnitConfig = {
+  ...updateUnitConfig,
+  name: "updateMyUnit",
+  auth: { role: "builder" as const },
+  rateLimit: { scope: "builder_edit" as const },
+};
+
+export const deleteMyUnitConfig = {
+  ...deleteUnitConfig,
+  name: "deleteMyUnit",
+  auth: { role: "builder" as const },
+  rateLimit: { scope: "builder_edit" as const },
+};
+
+export const loadMoreMyUnitsConfig = {
+  ...loadMoreUnitsConfig,
+  name: "loadMoreMyUnits",
+  auth: { role: "builder" as const },
+};

@@ -78,6 +78,46 @@ export async function readProjectOptions(
   return data.map((project) => ({ id: project.id, name: project.name }));
 }
 
+/**
+ * The signed-in builder's own projects, by name, for the picker (S7-T03). `my_projects()` returns only the projects of
+ * the builder (or agent) asking.
+ */
+export async function readMyProjectOptions(
+  supabase: SupabaseClient<Database>,
+): Promise<ProjectOption[]> {
+  const { data, error } = await supabase
+    .rpc("my_projects")
+    .select("id, name")
+    .order("name", { ascending: true });
+  if (error) {
+    logger.error("builder project options could not be read", { errorCode: error.code });
+    throw error;
+  }
+  return data.map((project) => ({ id: project.id, name: project.name }));
+}
+
+/**
+ * One page of a project's units for a builder, or null when the project is not theirs. The policies of `project_units`
+ * also let a builder read the units of any live project (they are public), so the project is checked here first: the
+ * Units page of a builder shows their own projects only.
+ */
+export async function readMyUnitsPage(
+  supabase: SupabaseClient<Database>,
+  filters: UnitFilters,
+): Promise<UnitsPage | null> {
+  const { data, error } = await supabase
+    .rpc("my_projects")
+    .select("id")
+    .eq("id", filters.projectId)
+    .maybeSingle();
+  if (error) {
+    logger.error("builder project could not be checked", { errorCode: error.code });
+    throw error;
+  }
+  if (!data) return null;
+  return readUnitsPage(supabase, filters);
+}
+
 /** The page of units for the signed-in admin. */
 export async function getUnitsPage(filters: UnitFilters): Promise<UnitsPage> {
   return readUnitsPage(await createServerSupabase(), filters);
@@ -86,4 +126,14 @@ export async function getUnitsPage(filters: UnitFilters): Promise<UnitsPage> {
 /** The project picker for the signed-in admin. */
 export async function getProjectOptions(): Promise<ProjectOption[]> {
   return readProjectOptions(await createServerSupabase());
+}
+
+/** The project picker for the signed-in builder. */
+export async function getMyProjectOptions(): Promise<ProjectOption[]> {
+  return readMyProjectOptions(await createServerSupabase());
+}
+
+/** The page of units for the signed-in builder; null when the project is not theirs. */
+export async function getMyUnitsPage(filters: UnitFilters): Promise<UnitsPage | null> {
+  return readMyUnitsPage(await createServerSupabase(), filters);
 }

@@ -5,8 +5,10 @@ import type { SessionView } from "@/server/auth/session";
 import { createLogger } from "@/server/logger";
 import {
   loadMoreLeadsConfig,
+  loadMoreMyLeadsConfig,
   loadMoreSubmissionsConfig,
   setLeadStatusConfig,
+  setMyLeadStatusConfig,
 } from "../action-config";
 import type { LeadDone } from "../lead-service";
 
@@ -68,6 +70,14 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
         return done;
       },
     }),
+    setMyStatus: define({
+      ...setMyLeadStatusConfig,
+      handler: async () => {
+        calls.push("handler");
+        return done;
+      },
+    }),
+    moreMyLeads: define({ ...loadMoreMyLeadsConfig, handler: read }),
     moreLeads: define({ ...loadMoreLeadsConfig, handler: read }),
     moreSubmissions: define({ ...loadMoreSubmissionsConfig, handler: read }),
   };
@@ -124,5 +134,53 @@ describe("UT-lead-actions: who may change a lead, and what it records (S7-T07)",
       retryAfter: 600,
     });
     expect(calls).toEqual(["rateLimit:admin_edit"]);
+  });
+});
+
+describe("UT-builder-lead-actions: the builder's own lead actions (S7-T03)", () => {
+  it("lets a builder change a lead's state: the builder_edit limit, the handler, the same audit entry, no cache refresh", async () => {
+    const { setMyStatus, calls } = harness({ session: builder });
+    expect((await setMyStatus({ leadId: LEAD, status: "contacted" })).ok).toBe(true);
+    expect(calls).toEqual([
+      "rateLimit:builder_edit",
+      "handler",
+      `audit:lead.status_changed:lead:${LEAD}`,
+    ]);
+  });
+
+  it("runs Show more with no limit, no refresh and no audit entry", async () => {
+    const { moreMyLeads, calls } = harness({ session: builder });
+    expect((await moreMyLeads({})).ok).toBe(true);
+    expect(calls).toEqual(["handler"]);
+  });
+
+  it.each([
+    ["a visitor", null, "UNAUTHENTICATED"],
+    ["a customer", customer, "FORBIDDEN"],
+    ["a super admin", admin, "FORBIDDEN"],
+  ] as const)("refuses %s before anything runs, on both actions", async (_who, session, code) => {
+    const { setMyStatus, moreMyLeads, calls } = harness({ session });
+    expect(await setMyStatus({ leadId: LEAD, status: "closed" })).toMatchObject({
+      ok: false,
+      code,
+    });
+    expect(await moreMyLeads({})).toMatchObject({ ok: false, code });
+    expect(calls).toEqual([]);
+  });
+
+  it("refuses a state that does not exist before the handler, and answers a rate limit with the wait", async () => {
+    const { setMyStatus, calls } = harness({ session: builder });
+    expect(await setMyStatus({ leadId: LEAD, status: "won" })).toMatchObject({
+      ok: false,
+      code: "VALIDATION",
+    });
+    expect(calls).toEqual([]);
+    const limited = harness({ session: builder, rateLimited: true });
+    expect(await limited.setMyStatus({ leadId: LEAD, status: "closed" })).toMatchObject({
+      ok: false,
+      code: "RATE_LIMITED",
+      retryAfter: 600,
+    });
+    expect(limited.calls).toEqual(["rateLimit:builder_edit"]);
   });
 });

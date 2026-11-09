@@ -21,7 +21,8 @@ const { unitStore } = await import("@/features/units/service");
 const { addUnitTo, removeUnit, saveUnit } = await import("@/features/units/unit-service");
 const { addUnitSchema, unitFilterSchema, updateUnitSchema } =
   await import("@/features/units/schemas");
-const { readProjectOptions, readUnitsPage } = await import("@/features/units/queries");
+const { readMyProjectOptions, readMyUnitsPage, readProjectOptions, readUnitsPage } =
+  await import("@/features/units/queries");
 const { ActionError } = await import("@/server/actions/normalise-error");
 
 const SLUG = `it-units-${randomUUID().slice(0, 8)}`;
@@ -41,6 +42,10 @@ describe("IT-units: the admin's unit changes against a real database (S7-T07, FR
   let staff: TestUser;
   let builder: TestUser;
   let projectId: string;
+  // Another builder's project and unit (S7-T03): a builder must never reach them.
+  let otherBuilderId: string;
+  let otherProjectId: string;
+  let otherUnitId: string;
 
   const row = async (unitId: string) => {
     const { data, error } = await admin
@@ -83,11 +88,44 @@ describe("IT-units: the admin's unit changes against a real database (S7-T07, FR
       .single();
     if (error) throw new Error(`Could not create the test project (${error.code})`);
     projectId = data.id;
+
+    const other = await admin
+      .from("builders")
+      .insert({ email: `it-units-other-${SLUG}@example.test`, name: "Other Units Builder" })
+      .select("id")
+      .single();
+    if (other.error) throw new Error(`Could not add the other builder (${other.error.code})`);
+    otherBuilderId = other.data.id;
+    const theirs = await admin
+      .from("projects")
+      .insert({
+        slug: `${SLUG}-theirs`,
+        name: "Their Units Project",
+        builder_id: otherBuilderId,
+        locality: "Integration Test Locality",
+        moderation: "approved",
+        published: true,
+        moderated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (theirs.error) throw new Error(`Could not add their project (${theirs.error.code})`);
+    otherProjectId = theirs.data.id;
+    const theirUnit = await admin
+      .from("project_units")
+      .insert({ project_id: otherProjectId, unit_number: "THEIRS-1", status: "available" })
+      .select("id")
+      .single();
+    if (theirUnit.error) throw new Error(`Could not add their unit (${theirUnit.error.code})`);
+    otherUnitId = theirUnit.data.id;
   });
 
   afterAll(async () => {
     await admin.from("project_units").delete().eq("project_id", projectId);
+    await admin.from("project_units").delete().eq("project_id", otherProjectId);
     await admin.from("projects").delete().eq("id", projectId);
+    await admin.from("projects").delete().eq("id", otherProjectId);
+    await admin.from("builders").delete().eq("id", otherBuilderId);
     await removeTestUser();
     await removeTestAdmin();
   });
@@ -231,5 +269,54 @@ describe("IT-units: the admin's unit changes against a real database (S7-T07, FR
       addUnitSchema.parse({ projectId, unitNumber: "OWN-1", status: "hold" }),
     );
     expect(await row(done.unitId)).toMatchObject({ unit_number: "OWN-1", status: "hold" });
+  });
+
+  describe("a builder's own units (S7-T03)", () => {
+    it("lists only the builder's own projects for the picker", async () => {
+      const options = await readMyProjectOptions(builder.client);
+      expect(options).toContainEqual({ id: projectId, name: "Units Integration Project" });
+      expect(options.some((option) => option.id === otherProjectId)).toBe(false);
+    });
+
+    it("reads the units of the builder's own project, and nothing for a project that is not theirs, though its units are public", async () => {
+      const own = await readMyUnitsPage(builder.client, unitFilterSchema.parse({ projectId }));
+      expect(own?.total).toBeGreaterThan(0);
+      expect(
+        await readMyUnitsPage(
+          builder.client,
+          unitFilterSchema.parse({ projectId: otherProjectId }),
+        ),
+      ).toBeNull();
+    });
+
+    it("refuses a builder a unit on another builder's project", async () => {
+      const error = await failureOf(() =>
+        addUnitTo(
+          unitStore(builder.client),
+          addUnitSchema.parse({
+            projectId: otherProjectId,
+            unitNumber: "SNEAK-1",
+            status: "available",
+          }),
+        ),
+      );
+      expect(error).toMatchObject({ code: "FORBIDDEN" });
+    });
+
+    it("says not found when a builder saves or deletes another builder's unit, and changes nothing", async () => {
+      const saved = await failureOf(() =>
+        saveUnit(
+          unitStore(builder.client),
+          updateUnitSchema.parse({ unitId: otherUnitId, unitNumber: "THEIRS-1", status: "sold" }),
+        ),
+      );
+      expect(saved).toMatchObject({ code: "NOT_FOUND" });
+      const removed = await failureOf(() => removeUnit(unitStore(builder.client), otherUnitId));
+      expect(removed).toMatchObject({ code: "NOT_FOUND" });
+      expect(await row(otherUnitId)).toMatchObject({
+        unit_number: "THEIRS-1",
+        status: "available",
+      });
+    });
   });
 });
