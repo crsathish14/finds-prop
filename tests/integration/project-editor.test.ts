@@ -111,7 +111,12 @@ describe("IT-project-editor: the project form's saves and reads against a real d
     const forms = await admin
       .from("forms")
       .insert([
-        { name: `IT editor form ${RUN}`, slug: `it-editor-form-${RUN}`, kind: "enquiry" },
+        {
+          name: `IT editor form ${RUN}`,
+          slug: `it-editor-form-${RUN}`,
+          kind: "enquiry",
+          active: true,
+        },
         {
           name: `IT editor off ${RUN}`,
           slug: `it-editor-off-${RUN}`,
