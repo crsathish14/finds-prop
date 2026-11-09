@@ -16,7 +16,7 @@
  * Dependencies: FormSection, FormField, ChoiceCards, Input, cn. Tests: site-content-parts.test.tsx; Design Lab
  *   "Site content" (S7-T10).
  * UX reference: admin-cms screen (#hero: Text, Layout). The "Background image" card is left out: neither approved
- *   layout uses an image, so the box would have no effect (ADR-093).
+ *   layout uses an image, so the box would have no effect (ADR-096).
  */
 import { ChoiceCards } from "@/components/domain/choice-cards";
 import { FormField } from "@/components/patterns/form-field";

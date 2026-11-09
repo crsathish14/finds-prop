@@ -6,7 +6,7 @@
  * Purpose: the places the home page shows as "Explore by locality" tiles and, for the first four, as Popular chips in
  *   the search card (S7-T10, FR-ADM-10, ADD-11, DEC-13). Owner: design system. It holds no list of its own: the page
  *   keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
- *   Coordinates are typed for now; a place picker will fill the same two boxes when the place search exists (ADR-093).
+ *   Coordinates are typed for now; a place picker will fill the same two boxes when the place search exists (ADR-096).
  * Props: localities ({ id, label, lat, lng, radiusKm }[], all text as typed; an id is kept by the page and never
  *   shown), onChange (the new list), max (how many the list may hold), radii (the distances offered, in km),
  *   defaultRadius (the distance a new row starts with), errors (the message of each box with a problem, by row id),
