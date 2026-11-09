@@ -2057,6 +2057,62 @@
       "toast": {
         "title": "Profile saved"
       }
+    },
+    "insights": {
+      "dashboard": {
+        "metaTitle": "Dashboard",
+        "title": "Dashboard",
+        "intro": "A quick look at how your projects are doing."
+      },
+      "insights": {
+        "metaTitle": "Insights",
+        "title": "Insights",
+        "intro": "How visitors find and respond to your projects."
+      },
+      "range": {
+        "label": "Date range",
+        "days7": "7 days",
+        "days30": "30 days",
+        "thisMonth": "This month",
+        "custom": "Custom",
+        "from": "From",
+        "to": "To"
+      },
+      "project": {
+        "label": "Project",
+        "all": "All projects"
+      },
+      "groups": {
+        "portfolio": "Portfolio",
+        "activityMonth": "Activity this month",
+        "activity": "Activity",
+        "actions": "Actions"
+      },
+      "tiles": {
+        "projects": "Projects",
+        "activeProjects": "Active projects",
+        "totalUnits": "Total units",
+        "availableUnits": "Available units",
+        "views": "Project views",
+        "visitors": "Unique visitors",
+        "enquiries": "Enquiries",
+        "leads": "Leads",
+        "shortlists": "Shortlists",
+        "comparisons": "Comparisons",
+        "brochures": "Brochure downloads",
+        "calls": "Calls",
+        "whatsapp": "WhatsApp clicks",
+        "siteVisits": "Site visit requests"
+      },
+      "notes": {
+        "activeProjects": "Approved and published",
+        "soldUnits": "{count} sold"
+      },
+      "pending": {
+        "title": "{count, plural, one {# project is} other {# projects are}} waiting for approval",
+        "one": "{name} was edited and is hidden from the public site until it is approved.",
+        "many": "They are hidden from the public site until they are approved."
+      }
     }
   }
 }
