@@ -7,7 +7,7 @@
 
 ## Decision
 
-- **Parts first, in the Design Lab "Admin" board, three entries.** No page is connected here; the pages are the next changes. The parts hold no state of their own (the page keeps the values, the errors and the words, already translated), as the project form parts do.
+- **Parts first, in the Design Lab, three entries on a board of their own, "Site content".** The Admin board had grown so tall (the project form, the media parts and these) that its 1440 px picture timed out in CI twice at the 5 second limit, so the Site content parts have their own board and page (`/design-system/site-content`, mirroring the admin Site content screen); the Admin board and its pictures stay as they were. No page is connected here; the pages are the next changes. The parts hold no state of their own (the page keeps the values, the errors and the words, already translated), as the project form parts do.
   - **`SiteContentLayout`** (domain): the frame of the four pages: heading and line, the four page tabs as links (the current one marked `aria-current="page"`), an alert slot, the form, the preview and the save bar. One column up to 1100 px; from 1100 px the preview takes a column on the right and stays in view while the form scrolls.
   - **`LinkListField`** (patterns): a list of links (label and address) that are edited, removed, added and reordered. It is built on `SortableList`, so a row can be dragged or moved with the up and down arrows, and the first row cannot go up nor the last down.
   - **`SiteHeaderFields`** and **`SiteFooterFields`** (domain): the boxes of the Header page (site name, navigation links, call to action) and of the Footer page (about text, phone, email, address, links, copyright line), in the project form's section cards.
@@ -34,5 +34,5 @@ From the approved screen and used as written: "Header", "The navigation across t
 
 ## Consequences
 
-- No migration, package, gate, environment or server change. Three Design Lab entries (so the Admin board's pictures change: three new ones, taken in CI at 390, 820 and 1440 px and committed as baselines after your approval).
-- Rollback: delete the six parts, the demos, the three entries, the tests and this ADR. Nothing else uses them yet.
+- No migration, package, gate, environment or server change. A new Design Lab board, "Site content", with three entries: its page, its row in `docs/ux-reference.md`, its registry entry and the two e2e lists that name the boards (the count in the index test is now ten). Three new pictures, taken in CI at 390, 820 and 1440 px and committed as baselines after your approval; the Admin board's pictures do not change.
+- Rollback: delete the six parts, the demos, the board with its page, row and registry entry, the e2e board names, the tests and this ADR. Nothing else uses them yet.
