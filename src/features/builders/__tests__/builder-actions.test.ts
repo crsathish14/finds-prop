@@ -8,6 +8,7 @@ import {
   resendInvitationConfig,
   setBuilderActiveConfig,
   updateBuilderConfig,
+  updateMyProfileConfig,
 } from "../action-config";
 
 const BUILDER = "00000000-0000-4000-b000-000000000001";
@@ -62,6 +63,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     resend: define({ ...resendInvitationConfig, handler }),
     activate: define({ ...setBuilderActiveConfig, handler }),
     update: define({ ...updateBuilderConfig, handler }),
+    saveMine: define({ ...updateMyProfileConfig, handler }),
   };
 }
 
@@ -127,5 +129,44 @@ describe("UT-builder-actions: who may manage builders, and what it refreshes (S7
       retryAfter: 600,
     });
     expect(calls).toEqual(["rateLimit:admin_decision"]);
+  });
+});
+
+describe("UT-builder-profile-action: the builder's own profile action (S7-T03)", () => {
+  it("lets a builder save their profile: the builder_edit limit, the handler, the showcase tags refreshed", async () => {
+    const { saveMine, calls } = harness({ session: builder });
+    expect((await saveMine({ name: "Kadal Homes" })).ok).toBe(true);
+    expect(calls).toEqual([
+      "rateLimit:builder_edit",
+      "handler",
+      "invalidate:projects|home-projects",
+    ]);
+  });
+
+  it.each([
+    ["a visitor", null, "UNAUTHENTICATED"],
+    ["a customer", customer, "FORBIDDEN"],
+    ["a super admin", admin, "FORBIDDEN"],
+  ] as const)("refuses %s before anything runs", async (_who, session, code) => {
+    const { saveMine, calls } = harness({ session });
+    expect(await saveMine({ name: "Kadal Homes" })).toMatchObject({ ok: false, code });
+    expect(calls).toEqual([]);
+  });
+
+  it("refuses a profile that is not valid, before the handler, with the box named", async () => {
+    const { saveMine, calls } = harness({ session: builder });
+    const answer = await saveMine({ name: "", website: "kadal.example" });
+    expect(answer).toMatchObject({ ok: false, code: "VALIDATION" });
+    expect(calls).toEqual([]);
+  });
+
+  it("answers a rate limit with the wait, and does not run the handler", async () => {
+    const { saveMine, calls } = harness({ session: builder, rateLimited: true });
+    expect(await saveMine({ name: "Kadal Homes" })).toMatchObject({
+      ok: false,
+      code: "RATE_LIMITED",
+      retryAfter: 600,
+    });
+    expect(calls).toEqual(["rateLimit:builder_edit"]);
   });
 });
