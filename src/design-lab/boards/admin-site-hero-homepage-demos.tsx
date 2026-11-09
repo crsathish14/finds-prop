@@ -30,7 +30,7 @@ import { SaveBar, tabs } from "./admin-site-content-demos";
  * The Site content editor's Hero and Homepage parts in their states (S7-T10, part B2): the Hero boxes with the layout
  * choice and their preview, the Homepage switches with the localities list and their preview, and the localities
  * list on its own. Plain English text; nothing here goes anywhere. The words that are not in the approved UX files
- * are listed in ADR-091 for the owner to confirm.
+ * are listed in ADR-093 for the owner to confirm.
  */
 
 const STANDARD_HEADLINE = "Find the place that fits your life in Tamil Nadu.";

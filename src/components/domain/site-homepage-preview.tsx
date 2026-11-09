@@ -13,7 +13,7 @@
  * Accessibility: aria-hidden; the real page is read on the home page. An off section shows the word Off as well as
  *   being dimmed, so the state is not shown by colour alone.
  * States: all on, some off, with localities, without (the note).
- * Dependencies: Icon, cn. Tests: site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ * Dependencies: Icon, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the homepage preview card) and admin-localities screen (the preview card).
  */
 import { Info } from "lucide-react";
@@ -55,7 +55,7 @@ function SiteHomepagePreview({
             <span className="min-w-0 break-words">{section.label}</span>
             <span
               className={cn(
-                "shrink-0 rounded-pill px-2 py-0.5 text-caption font-bold",
+                "shrink-0 rounded-pill px-2 py-1 text-caption font-bold",
                 section.on ? "bg-success-tint text-success" : "bg-canvas-sunken text-muted",
               )}
             >
@@ -91,7 +91,7 @@ function SiteHomepagePreview({
         </div>
       ) : (
         <div className="flex items-start gap-2 rounded-md border border-line bg-canvas-sunken p-3 text-small">
-          <Icon icon={Info} size="sm" className="mt-0.5 shrink-0 text-muted" />
+          <Icon icon={Info} size="sm" className="mt-1 shrink-0 text-muted" />
           <div className="flex min-w-0 flex-col gap-1">
             <p className="font-bold text-ink">{hiddenNote.title}</p>
             <p className="text-muted">{hiddenNote.text}</p>

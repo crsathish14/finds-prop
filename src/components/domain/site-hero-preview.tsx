@@ -11,7 +11,7 @@
  * Responsive: fills the preview column; the Split drawing keeps the text on the left and the banner on the right.
  * Accessibility: aria-hidden; the real hero is read on the home page.
  * States: Search Desk, Split, with and without an eyebrow and a subtitle.
- * Dependencies: cn. Tests: site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ * Dependencies: cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the hero preview card).
  */
 import { cn } from "@/lib/cn";

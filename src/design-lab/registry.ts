@@ -7,6 +7,7 @@ import { FEEDBACK } from "./boards/feedback";
 import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
 import { SELLER } from "./boards/seller";
+import { SITE_CONTENT } from "./boards/site-content";
 import type { LabBoard, LabBoardId } from "./types";
 
 /**
@@ -84,6 +85,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to review the listings owners post: the queue with its tabs and filters, the review drawer and the reject dialog. It mirrors the admin listings screen.",
     entries: ADMIN,
+  },
+  {
+    id: "site-content",
+    title: "Site content",
+    uxBoard: "admin-cms",
+    summary:
+      "What the admin uses to edit the header, hero, homepage and footer of the public site: the page frame with its tabs, live preview and save bar, the list of links, the Header, Footer, Hero and Homepage boxes with their previews, and the localities list. It mirrors the admin Site content screen.",
+    entries: SITE_CONTENT,
   },
 ];
 

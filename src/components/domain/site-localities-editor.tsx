@@ -6,7 +6,7 @@
  * Purpose: the places the home page shows as "Explore by locality" tiles and, for the first four, as Popular chips in
  *   the search card (S7-T10, FR-ADM-10, ADD-11, DEC-13). Owner: design system. It holds no list of its own: the page
  *   keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
- *   Coordinates are typed for now; a place picker will fill the same two boxes when the place search exists (ADR-091).
+ *   Coordinates are typed for now; a place picker will fill the same two boxes when the place search exists (ADR-093).
  * Props: localities ({ id, label, lat, lng, radiusKm }[], all text as typed; an id is kept by the page and never
  *   shown), onChange (the new list), max (how many the list may hold), radii (the distances offered, in km),
  *   defaultRadius (the distance a new row starts with), errors (the message of each box with a problem, by row id),
@@ -19,7 +19,7 @@
  *   Add is off and a note says so; the list is a named group.
  * States: empty, some localities, at the limit, with errors on rows, disabled.
  * Dependencies: SortableList, SortableRow, FormField, Input, NativeSelect, Button, Alert, Icon, cn. Tests:
- *   site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ *   site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-localities screen (the Explore by locality panel). The "Place" box is two boxes, Latitude and
  *   Longitude, until the place search is built; the radius choices include 6 km, which the stored data already uses.
  */

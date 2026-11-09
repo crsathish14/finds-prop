@@ -16,9 +16,9 @@
  *   (aria-describedby); the switch says on or off by its state, not by colour alone.
  * States: all on, some off, the localities empty, at the limit, with errors, saving (all disabled).
  * Dependencies: FormSection, SiteLocalitiesEditor, Switch, Label, cn. Tests: site-content-parts.test.tsx; Design
- *   Lab "Admin" (S7-T10).
+ *   Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (#homepage: Sections) and admin-localities screen. The "Featured section title" box
- *   is left out: the title is part of the page's own wording and changing it is a separate change (ADR-091).
+ *   is left out: the title is part of the page's own wording and changing it is a separate change (ADR-093).
  */
 import { useId } from "react";
 import {

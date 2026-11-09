@@ -1762,6 +1762,224 @@
         "hours": "{count, plural, one {# hour} other {# hours}}",
         "days": "{count, plural, one {# day} other {# days}}"
       }
+    },
+    "projectForm": {
+      "metaTitleNew": "New project",
+      "metaTitleEdit": "Edit project",
+      "newTitle": "New project",
+      "newIntro": "Add the details buyers see first. Media and price trends can be added once the project is saved.",
+      "editIntro": "Change the details of this project.",
+      "nav": {
+        "label": "Form sections",
+        "done": "Complete",
+        "error": "Needs attention"
+      },
+      "sections": {
+        "basics": {
+          "title": "Basics",
+          "text": "The essentials buyers see first."
+        },
+        "location": {
+          "title": "Location",
+          "text": "Where the project is and what is nearby."
+        },
+        "rera": {
+          "title": "RERA",
+          "text": "Registration details for this project."
+        },
+        "details": {
+          "title": "Details",
+          "text": "Description, specifications and amenities."
+        },
+        "media": {
+          "title": "Media",
+          "text": "Images, floor plans, elevations and the brochure. JPG, PNG, WEBP or PDF, up to 10 MB each."
+        },
+        "seo": {
+          "title": "SEO",
+          "text": "How the project appears in search engines."
+        }
+      },
+      "fields": {
+        "name": "Project name",
+        "builder": "Builder",
+        "builderHint": "Only admins can assign a project to a builder.",
+        "unset": "Not set",
+        "projectType": "Project type",
+        "propertyType": "Property type",
+        "projectStatus": "Status",
+        "priceMin": "Price from (₹)",
+        "priceMax": "Price to (₹)",
+        "bhk": "BHK options",
+        "landArea": "Land area (acres)",
+        "totalUnits": "Total units",
+        "possession": "Possession",
+        "contactPhone": "Contact phone",
+        "locality": "Locality",
+        "address": "Address",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "advantages": "Location advantages",
+        "nearby": "Nearby places",
+        "reraApplicable": "RERA applicable",
+        "reraNumber": "RERA number",
+        "description": "Description",
+        "specifications": "Specifications",
+        "amenities": "Amenities",
+        "seoTitle": "Page title",
+        "slug": "Slug",
+        "slugHint": "Page address: /projects/",
+        "slugLockedHint": "The page address cannot be changed once the project is approved.",
+        "seoDescription": "Meta description",
+        "optional": "(optional)"
+      },
+      "tags": {
+        "placeholder": "Add another and press Enter",
+        "add": "Add",
+        "remove": "Remove",
+        "suggestions": "Suggestions",
+        "full": "The list is full."
+      },
+      "options": {
+        "projectType": {
+          "residential": "Residential",
+          "commercial": "Commercial",
+          "plottedLayout": "Plotted layout"
+        },
+        "propertyType": {
+          "apartment": "Apartment",
+          "villa": "Villa"
+        },
+        "status": {
+          "newLaunch": "New launch",
+          "underConstruction": "Under construction",
+          "readyToMove": "Ready to move"
+        }
+      },
+      "amenitySuggestions": {
+        "clubhouse": "Clubhouse",
+        "swimmingPool": "Swimming pool",
+        "gym": "Gym",
+        "security": "24x7 security",
+        "powerBackup": "Power backup",
+        "lift": "Lift"
+      },
+      "enquiry": {
+        "title": "Enquiry form",
+        "text": "Which form buyers see on the project page. If none is chosen, the standard enquiry form is used.",
+        "standard": "Standard enquiry form"
+      },
+      "trends": {
+        "title": "Price trends",
+        "description": "Monthly price per sq.ft shown as a chart on the project page.",
+        "month": "Month",
+        "price": "₹ per sq.ft",
+        "monthFormat": "yyyy-mm",
+        "add": "Add month",
+        "remove": "Remove {month}",
+        "empty": "No months yet. Add a month to start the chart.",
+        "full": "The list is full.",
+        "fix": "Fix the months marked in the price trends before saving.",
+        "errors": {
+          "monthMissing": "Choose the month.",
+          "monthTwice": "This month is listed twice.",
+          "priceMissing": "Enter the price.",
+          "priceNumber": "Enter a whole number.",
+          "priceRange": "Enter a price from 1 to 1,00,00,000."
+        }
+      },
+      "media": {
+        "locked": "Save the project first, then add its images, floor plans and brochure.",
+        "groups": {
+          "images": {
+            "label": "Project images",
+            "hint": "The first image is the cover."
+          },
+          "floorPlans": {
+            "label": "Floor plans"
+          },
+          "elevations": {
+            "label": "Elevations"
+          },
+          "plotImages": {
+            "label": "Plot images"
+          },
+          "brochure": {
+            "label": "Brochure (PDF)"
+          }
+        },
+        "files": {
+          "add": "Add files",
+          "remove": "Remove: {name}",
+          "uploading": "Uploading",
+          "removing": "Removing",
+          "full": "The group is full."
+        },
+        "videos": {
+          "label": "Videos",
+          "hint": "Links that start with https://.",
+          "placeholder": "Paste a video link"
+        },
+        "errors": {
+          "type": "This type of file is not accepted here.",
+          "size": "Too large. The most is {size} MB.",
+          "upload": "The file could not be uploaded. Try again."
+        },
+        "wait": "Wait for the files to finish uploading, then save."
+      },
+      "problems": {
+        "name": "Enter the project name.",
+        "builder": "Choose the builder.",
+        "locality": "Enter the locality."
+      },
+      "alert": {
+        "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",
+        "text": "Check {fields} before saving.",
+        "generic": "Check the marked boxes before saving."
+      },
+      "warning": {
+        "title": "Saving sends this project for approval",
+        "text": "It is set to Pending and hidden from the public site until it is approved again."
+      },
+      "save": {
+        "cancel": "Cancel",
+        "save": "Save project",
+        "saving": "Saving",
+        "noteAdmin": "Admins can save without re-approval.",
+        "noteBuilder": "Saving sends this project for approval."
+      },
+      "toast": {
+        "created": {
+          "title": "Project added",
+          "text": "{name} is waiting for approval. You can now add its media and price trends."
+        },
+        "saved": {
+          "title": "Project saved",
+          "text": "The changes are live."
+        },
+        "savedBuilder": {
+          "title": "Project saved",
+          "text": "It is back in review and hidden until it is approved."
+        }
+      }
+    }
+  },
+  "builderPortal": {
+    "shell": {
+      "navLabel": "Builder",
+      "portalTag": "Builder",
+      "menuOpen": "Open menu",
+      "menuTitle": "Builder menu",
+      "menuClose": "Close menu",
+      "viewSite": "View public site"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "units": "Units",
+      "leads": "Leads",
+      "insights": "Insights",
+      "profile": "Profile"
     }
   }
 }
