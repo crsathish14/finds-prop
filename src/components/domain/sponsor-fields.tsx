@@ -18,7 +18,7 @@
  * Dependencies: FormField, Input, Label, Switch, SponsorImageSlot, Heading, cn. Tests: sponsor-parts.test.tsx; Design Lab
  *   "Sponsors" (S7-T11).
  * UX reference: admin-sponsors screen (the drawer: .form-grid, .tgl-row, .slots). The "Booking" line of the table is not
- *   a box here: the drawer has no field for it (ADR-104).
+ *   a box here: the drawer has no field for it (ADR-105).
  */
 import { useId } from "react";
 import {

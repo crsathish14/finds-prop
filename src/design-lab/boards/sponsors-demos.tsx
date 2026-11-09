@@ -19,7 +19,7 @@ import { Specimen } from "../frame";
  * The sponsor manager's form parts in their states (S7-T11, part B1): one picture slot in every state it can be in, and
  * the Add and Edit sponsor form with its four slots. Plain English text; nothing here is sent anywhere. The sample
  * pictures are the approved UX stand-ins (SVG, which the real form refuses). The words that are not in the approved
- * UX file are listed in ADR-105 for the owner to confirm.
+ * UX file are listed in ADR-106 for the owner to confirm.
  */
 
 const ADS = "/design-lab/ads";
