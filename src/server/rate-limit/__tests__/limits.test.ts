@@ -22,6 +22,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "places",
         "project_event",
         "project_lead",
+        "project_save",
         "staff_sign_in",
         "upload_url",
       ].sort(),
@@ -38,6 +39,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["upload_url", [{ who: "user", windowSeconds: 3600, max: 30 }]],
     ["admin_decision", [{ who: "user", windowSeconds: 3600, max: 120 }]],
     ["admin_edit", [{ who: "user", windowSeconds: 3600, max: 600 }]],
+    ["project_save", [{ who: "user", windowSeconds: 3600, max: 60 }]],
     ["places", [{ who: "visitor", windowSeconds: 60, max: 60 }]],
     ["map_search", [{ who: "visitor", windowSeconds: 60, max: 60 }]],
   ])("%s has the agreed rule", (scope, rules) => {
