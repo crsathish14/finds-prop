@@ -11,6 +11,11 @@ import {
   ProjectSectionNavDemo,
   TagListFieldDemo,
 } from "./admin-project-form-demos";
+import {
+  MediaGroupFieldDemo,
+  PriceTrendsEditorDemo,
+  ProjectMediaDemo,
+} from "./admin-project-media-demos";
 import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
   ManagerDrawerDemo,
@@ -163,7 +168,7 @@ export const ADMIN: LabEntry[] = [
     id: "project-form",
     name: "Project form",
     description:
-      "The sectioned form where the admin and a builder describe a project: Basics (name, builder for the admin, types, status, price range, BHK options, land area, units, possession, phone), Location (locality, address, latitude and longitude, advantages and nearby places as lists), RERA (a switch that turns the number box on and off), Details (description, specifications, amenities with suggestions) and SEO (page title, slug, meta description), in cards with the section list beside them, the Enquiry form box for the admin only and the save bar. Shown filled for the admin, empty with errors, for a builder (the approval warning, no Builder box, the page address of an approved project locked) and while saving. The media section and the price trends come next.",
+      "The sectioned form where the admin and a builder describe a project: Basics (name, builder for the admin, types, status, price range, BHK options, land area, units, possession, phone), Location (locality, address, latitude and longitude, advantages and nearby places as lists), RERA (a switch that turns the number box on and off), Details (description, specifications, amenities with suggestions) and SEO (page title, slug, meta description), in cards with the section list beside them, the Enquiry form box for the admin only and the save bar. Shown filled for the admin, empty with errors, for a builder (the approval warning, no Builder box, the page address of an approved project locked) and while saving. The media section and the price trends are in the entries below.",
     sources: [
       "domain/project-fields.tsx",
       "domain/project-form-layout.tsx",
@@ -187,5 +192,29 @@ export const ADMIN: LabEntry[] = [
       "A list of short phrases typed in one at a time and removed with the x, for amenities, location advantages and nearby places: a box with Add (Enter works too), the count (3 / 30), chips that wrap, and suggestions to tap. Shown empty with suggestions, with a hint and a very long phrase, full, with an error and off while saving.",
     sources: ["patterns/tag-list-field.tsx"],
     Demo: TagListFieldDemo,
+  },
+  {
+    id: "project-media",
+    name: "Project media",
+    description:
+      "The inside of the project form's Media section: four groups of pictures (Project images, Floor plans, Elevations, Plot images, up to 20 each), the Brochure (one PDF) and up to 5 video links, with the count of each group. A new project is not saved yet, so a note says to save first and every box is off. Shown for a new project, a saved one with files in each group, files on their way (uploading, being removed, too large, not a PDF) and while saving.",
+    sources: ["domain/project-media.tsx"],
+    Demo: ProjectMediaDemo,
+  },
+  {
+    id: "media-group-field",
+    name: "Media group field",
+    description:
+      "One group of files on a form: a grid of tiles with a small picture or a file icon, the name, an x on each and a tile to add more (choose or drop), two to a line on a phone, three from 768 px and four from 1100 px of screen. Shown empty, with pictures and a PDF, as a one-file group (full), with an error on the group and off while saving.",
+    sources: ["patterns/media-group-field.tsx"],
+    Demo: MediaGroupFieldDemo,
+  },
+  {
+    id: "price-trends-editor",
+    name: "Price trends editor",
+    description:
+      "The admin's box for the monthly price per sq.ft behind the chart on the project page: a month box, a price box and a remove button on each row, Add month and the count (up to 120 months), at the width of the form's side column. Shown empty, with four months, with problems, full and while saving.",
+    sources: ["domain/price-trends-editor.tsx"],
+    Demo: PriceTrendsEditorDemo,
   },
 ];
