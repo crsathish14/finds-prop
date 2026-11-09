@@ -301,7 +301,12 @@
     "openListingLimit": "You already have {maximum} listings waiting. Finish or delete one first.",
     "unitNumberTaken": "This unit number is already used in this project.",
     "numberInvalid": "Enter a number.",
-    "linkInvalid": "Enter a full address, starting with https://"
+    "linkInvalid": "Enter a full address, starting with https://",
+    "slugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 80 characters.",
+    "slugTaken": "This page address is already used by another project.",
+    "slugLocked": "The page address cannot be changed once the project is approved.",
+    "priceRange": "The highest price must be the same as or more than the lowest.",
+    "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty."
   },
   "format": {
     "rupees": "₹{value}",
