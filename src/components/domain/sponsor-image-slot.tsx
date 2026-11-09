@@ -131,6 +131,8 @@ function SponsorImageSlot({
         style={shape}
         className={cn(
           "relative block w-full overflow-hidden rounded-md border border-line bg-canvas",
+          // A strip is a thin shape: without a picture the box keeps room for the icon and both lines of the picker.
+          !showsPicture && "min-h-24",
           !locked && "cursor-pointer",
           locked && "cursor-not-allowed",
           dragging && "border-primary bg-primary-tint",
