@@ -2032,6 +2032,14 @@
         "title": "No projects match",
         "text": "Try another status or search."
       }
+    },
+    "units": {
+      "metaTitle": "Units",
+      "intro": "Manage the units of your projects."
+    },
+    "leads": {
+      "metaTitle": "Leads",
+      "intro": "People who enquired about your projects. You can change a lead's state."
     }
   }
 }
