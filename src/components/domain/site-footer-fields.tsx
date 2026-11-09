@@ -13,7 +13,7 @@
  *   the box and also show an icon.
  * States: standard (empty), filled, with errors, saving (all disabled).
  * Dependencies: FormSection, FormField, LinkListField, Input, Textarea, cn. Tests: site-content-parts.test.tsx;
- *   Design Lab "Admin" (S7-T10).
+ *   Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (#footer: About and contact, Links).
  */
 import { FormField } from "@/components/patterns/form-field";

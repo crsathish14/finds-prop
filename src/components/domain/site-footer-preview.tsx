@@ -10,7 +10,7 @@
  * Responsive: one column; long lines wrap.
  * Accessibility: aria-hidden; the real footer is read in the public pages.
  * States: full, with only a copyright line.
- * Dependencies: Logo, cn. Tests: site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ * Dependencies: Logo, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the footer preview card, the dark card).
  */
 import { Logo } from "@/components/ui/logo";

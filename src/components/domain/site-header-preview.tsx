@@ -10,7 +10,7 @@
  * Responsive: the name, the links and the button wrap onto more lines in a narrow column.
  * Accessibility: aria-hidden; the real header is read in the public pages.
  * States: with links and a button, with links only, with no links.
- * Dependencies: Logo, cn. Tests: site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ * Dependencies: Logo, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the header preview card).
  */
 import { Logo } from "@/components/ui/logo";

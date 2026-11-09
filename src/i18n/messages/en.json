@@ -1965,6 +1965,78 @@
           "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
       }
+    },
+    "siteContent": {
+      "previewLabel": "Preview",
+      "optional": "(optional)",
+      "save": {
+        "note": "Saved changes appear on the public site straight away.",
+        "cancel": "Discard",
+        "save": "Save changes",
+        "saving": "Saving"
+      },
+      "problems": {
+        "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",
+        "text": "Check the boxes marked below, then save again."
+      },
+      "links": {
+        "row": "Link",
+        "label": "Label",
+        "link": "Link address",
+        "add": "Add link",
+        "remove": "Remove",
+        "drag": "Drag",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "empty": "No links yet.",
+        "full": "The list is full."
+      },
+      "header": {
+        "metaTitle": "Site content: Header",
+        "title": "Header",
+        "description": "The navigation across the top of every public page.",
+        "brand": {
+          "title": "Brand",
+          "text": "Leave the name empty to use {brandName}."
+        },
+        "navigation": {
+          "title": "Navigation links",
+          "text": "Shown across the top of every page. Leave the list empty to use the standard links."
+        },
+        "cta": {
+          "title": "Call to action",
+          "text": "A button at the right end of the header. Leave both boxes empty to use the standard button."
+        },
+        "name": "Site name",
+        "ctaLabel": "Button label",
+        "ctaHref": "Button link",
+        "saved": {
+          "title": "Header saved",
+          "text": "The change is live on the public site."
+        }
+      },
+      "footer": {
+        "metaTitle": "Site content: Footer",
+        "title": "Footer",
+        "description": "The text, contact details and links at the bottom of every public page.",
+        "contact": {
+          "title": "About and contact",
+          "text": "Shown at the bottom of every page. An empty box is left out."
+        },
+        "navigation": {
+          "title": "Links",
+          "text": "Shown in the footer, in this order. Leave the list empty to use the standard links."
+        },
+        "about": "About text",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "copyright": "Copyright line",
+        "saved": {
+          "title": "Footer saved",
+          "text": "The change is live on the public site."
+        }
+      }
     }
   },
   "builderPortal": {

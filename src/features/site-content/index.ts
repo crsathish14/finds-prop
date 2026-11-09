@@ -5,8 +5,12 @@ export {
   saveHeroConfig,
   saveHomepageConfig,
 } from "./action-config";
-export { getSiteContent } from "./queries";
-export type { SiteContent } from "./queries";
+export { getFooterPage, getHeaderPage, getSiteContent } from "./queries";
+export type { FooterPage, HeaderPage, SiteContent } from "./queries";
+export { FooterForm } from "./footer-form.client";
+export type { FooterFormProps } from "./footer-form.client";
+export { HeaderForm } from "./header-form.client";
+export type { HeaderFormProps } from "./header-form.client";
 export {
   DEFAULT_LOCALITY_RADIUS_KM,
   EDITABLE_SETTINGS,
