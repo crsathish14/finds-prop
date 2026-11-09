@@ -1,4 +1,4 @@
-# ADR-104 · Sponsor management: the server side (S7-T11, part A)
+# ADR-105 · Sponsor management: the server side (S7-T11, part A)
 
 - Status: Accepted
 - Date: 2026-11-09

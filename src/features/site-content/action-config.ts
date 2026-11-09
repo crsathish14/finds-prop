@@ -49,7 +49,7 @@ export const saveFooterConfig = {
 
 /**
  * The sponsors save (S7-T11, FR-ADM-11): the whole list replaces the stored one, so the same limits and cache tag apply
- * (`admin_edit`, the site content tag). The pictures are checked against their files on the server (ADR-104).
+ * (`admin_edit`, the site content tag). The pictures are checked against their files on the server (ADR-105).
  */
 export const saveSponsorsConfig = {
   name: "saveSponsors",
