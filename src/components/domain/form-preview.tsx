@@ -11,7 +11,7 @@
  * Accessibility: the card is a labelled region; its content is inert and hidden from screen readers, because it is
  *   a picture of a form and not a form to fill in (the editor beside it is the real one).
  * States: with fields, with a choice field and a long text, without fields (the note instead).
- * Dependencies: DynamicForm, Text, cn. Tests: form-parts.test.tsx; Design Lab "Admin" (S7-T08).
+ * Dependencies: DynamicForm, Text, cn. Tests: form-parts.test.tsx; Design Lab "Forms" (S7-T08).
  * UX reference: admin-forms screen, editor, the preview card (preview-card, pv-label).
  */
 import type { ComponentProps } from "react";

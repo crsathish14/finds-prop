@@ -14,7 +14,7 @@
  *   words; the Project box is off (not hidden) unless the placement is "one project", and says why; Active is a
  *   switch inside its label, so the whole line is the target.
  * States: empty, filled, with errors (a slug already used), a placement that needs a project, saving (all off).
- * Dependencies: FormField, Input, NativeSelect, Switch, Label, cn. Tests: form-parts.test.tsx; Design Lab "Admin"
+ * Dependencies: FormField, Input, NativeSelect, Switch, Label, cn. Tests: form-parts.test.tsx; Design Lab "Forms"
  *   (S7-T08).
  * UX reference: admin-forms screen, editor, Settings (form-grid two, field, select, switch).
  */

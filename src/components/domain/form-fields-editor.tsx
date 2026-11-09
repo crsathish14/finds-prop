@@ -21,7 +21,7 @@
  *   words, never colour alone.
  * States: no fields, some fields, one open, a row with errors (a key already used), at the limit, disabled.
  * Dependencies: SortableList, SortableRow, FormField, Input, Textarea, NativeSelect, Switch, Chip, Badge, Button,
- *   IconButton, Icon, Alert, cn. Tests: form-parts.test.tsx; Design Lab "Admin" (S7-T08).
+ *   IconButton, Icon, Alert, cn. Tests: form-parts.test.tsx; Design Lab "Forms" (S7-T08).
  * UX reference: admin-forms screen, editor, Fields (dnd, dnd-head, dnd-body, chip-row, badge, switch). The arrow
  *   buttons are the shared sortable row's (beside the grip), so the Move up and Move down buttons are not repeated
  *   inside the open row.
