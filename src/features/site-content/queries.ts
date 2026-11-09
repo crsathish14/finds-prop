@@ -10,6 +10,7 @@ import {
   mergeSiteSettings,
   type SiteSettings,
 } from "@/features/site";
+import { publicEnv } from "@/lib/public-env";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import type { Database } from "@/types/database.types";
@@ -30,6 +31,7 @@ import {
   type StandardHeader,
   type StandardHero,
 } from "./form";
+import { sponsorEditViewsOf, type SponsorEditView } from "./sponsor-view";
 
 /**
  * What the Site content pages start from (S7-T10, FR-ADM-10): the settings as the public site would show them (the
@@ -124,4 +126,21 @@ export interface HomepagePage {
 export async function getHomepagePage(): Promise<HomepagePage> {
   const { settings } = await getSiteContent();
   return { initial: homepageFormOf(settings.homepage) };
+}
+
+export interface SponsorsPage {
+  sponsors: SponsorEditView[];
+  /** Stored entries the editor could not read (kept out of the list). */
+  skipped: number;
+}
+
+/** What the sponsor manager opens with: the stored sponsors in their order, each with the addresses of its pictures. */
+export async function getSponsorsPage(): Promise<SponsorsPage> {
+  const { settings } = await getSiteContent();
+  const { sponsors, skipped } = sponsorEditViewsOf(
+    settings.sponsors.ads,
+    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  if (skipped > 0) logger.warn("sponsors the editor could not read were left out", { skipped });
+  return { sponsors, skipped };
 }

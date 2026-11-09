@@ -1,9 +1,10 @@
-export { saveFooter, saveHeader, saveHero, saveHomepage } from "./actions";
+export { saveFooter, saveHeader, saveHero, saveHomepage, saveSponsors } from "./actions";
 export {
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveSponsorsConfig,
 } from "./action-config";
 export {
   getFooterPage,
@@ -11,8 +12,16 @@ export {
   getHeroPage,
   getHomepagePage,
   getSiteContent,
+  getSponsorsPage,
 } from "./queries";
-export type { FooterPage, HeaderPage, HeroPage, HomepagePage, SiteContent } from "./queries";
+export type {
+  FooterPage,
+  HeaderPage,
+  HeroPage,
+  HomepagePage,
+  SiteContent,
+  SponsorsPage,
+} from "./queries";
 export { HeroForm } from "./hero-form.client";
 export type { HeroFormProps } from "./hero-form.client";
 export { HomepageForm } from "./homepage-form.client";
@@ -38,3 +47,23 @@ export {
   homepageInputSchema,
 } from "./schemas";
 export type { FooterInput, HeaderInput, HeroInput, HomepageInput } from "./schemas";
+export { sponsorsInputSchema } from "./sponsor-schemas";
+export type { SponsorsInput } from "./sponsor-schemas";
+export {
+  SLOT_SIZES,
+  SPONSOR_IMAGE_MAX_SIDE,
+  SPONSOR_SLOTS,
+  readImageInfo,
+  slotFit,
+  slotProblem,
+} from "./sponsor-rules";
+export type {
+  ImageInfo,
+  SlotProblem,
+  SponsorDevice,
+  SponsorFormat,
+  SponsorImageType,
+  SponsorSlot,
+} from "./sponsor-rules";
+export type { SponsorCreativesView, SponsorEditView, SponsorPictureView } from "./sponsor-view";
+export { SPONSORS_MAX, SPONSOR_IMAGE_MAX_BYTES, SPONSOR_IMAGE_MAX_KB } from "./constants";

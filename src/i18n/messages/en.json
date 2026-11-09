@@ -309,7 +309,12 @@
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
     "localityLabelTaken": "Another row already uses this name.",
-    "outsideRegion": "This place is outside the area the site covers. Check the latitude and longitude."
+    "outsideRegion": "This place is outside the area the site covers. Check the latitude and longitude.",
+    "sponsorImageMissing": "We could not find this picture. Choose it again.",
+    "sponsorImageType": "Use a JPG, PNG or WEBP picture.",
+    "sponsorImageSize": "This picture is too heavy. The limit is {maximum} KB.",
+    "sponsorImageSmall": "This picture is too small. Supply at least {width} × {height} pixels.",
+    "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape."
   },
   "format": {
     "rupees": "₹{value}",

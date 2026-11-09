@@ -37,3 +37,17 @@ export const FOOTER_PHONE_MAX = 30;
 export const FOOTER_COPYRIGHT_MAX = 200;
 export const LOCALITY_LABEL_MAX = 60;
 export const LOCALITY_RADIUS_MAX_KM = 100;
+
+/**
+ * How many sponsors the admin may keep (owner decision 9 Nov 2026); the public side still reads up to 30, so a longer
+ * list that is already stored stays readable and only a save is held to this limit.
+ */
+export const SPONSORS_MAX = 10;
+
+/** The most a sponsor's picture may weigh: 150 KB (the approved screen, DEC-15). The bucket's own hard cap is 500 KB. */
+export const SPONSOR_IMAGE_MAX_KB = 150;
+export const SPONSOR_IMAGE_MAX_BYTES = SPONSOR_IMAGE_MAX_KB * 1024;
+
+export const SPONSOR_ADVERTISER_MAX = 80;
+export const SPONSOR_ALT_MAX = 200;
+export const SPONSOR_HREF_MAX = 2000;
