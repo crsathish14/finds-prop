@@ -10,8 +10,8 @@
  *   hiddenNote ({ title, text }: shown instead of the lists when there are no localities), words ({ popular, explore,
  *   on, off }), className.
  * Responsive: the tiles wrap onto as many lines as they need in the narrow column.
- * Accessibility: aria-hidden; the real page is read on the home page. An off section shows the word Off as well as
- *   being dimmed, so the state is not shown by colour alone.
+ * Accessibility: aria-hidden; the real page is read on the home page. An off section shows the word Off and a dashed
+ *   edge, so the state is not shown by colour alone; it is not dimmed, because dimmed text fails the contrast rule.
  * States: all on, some off, with localities, without (the note).
  * Dependencies: Icon, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the homepage preview card) and admin-localities screen (the preview card).
@@ -49,14 +49,16 @@ function SiteHomepagePreview({
             key={`${index}-${section.label}`}
             className={cn(
               "flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-3 py-2 text-small",
-              section.on ? "font-semibold text-ink" : "text-muted opacity-70",
+              section.on ? "font-semibold text-ink" : "border-dashed text-muted",
             )}
           >
             <span className="min-w-0 break-words">{section.label}</span>
             <span
               className={cn(
                 "shrink-0 rounded-pill px-2 py-1 text-caption font-bold",
-                section.on ? "bg-success-tint text-success" : "bg-canvas-sunken text-muted",
+                section.on
+                  ? "bg-success-tint text-success"
+                  : "border border-line-strong bg-surface text-muted",
               )}
             >
               {section.on ? words.on : words.off}
