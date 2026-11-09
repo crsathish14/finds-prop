@@ -76,3 +76,18 @@ export function toBuilderRows(rows: readonly unknown[]): BuilderRowView[] {
     ];
   });
 }
+
+/** The signed-in builder's own record for the profile page (S7-T03), with how many of their projects buyers can see. */
+export interface MyProfileView {
+  id: string;
+  name: string;
+  email: string;
+  kind: BuilderKind;
+  contactPerson: string | null;
+  phone: string | null;
+  logoUrl: string | null;
+  website: string | null;
+  description: string | null;
+  /** Approved, published projects: what the buyer's card says. */
+  liveProjects: number;
+}

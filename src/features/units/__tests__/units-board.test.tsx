@@ -53,6 +53,8 @@ function open(
     page?: Partial<UnitsPage>;
     filters?: Partial<Parameters<typeof UnitsBoard>[0]["filters"]>;
     actions?: Partial<UnitsBoardActions>;
+    path?: string;
+    intro?: string;
   } = {},
 ) {
   const actions: UnitsBoardActions = {
@@ -72,6 +74,8 @@ function open(
       filters={{ projectId: PROJECT, state: "all", ...options.filters }}
       page={page}
       actions={actions}
+      {...(options.path ? { path: options.path } : {})}
+      {...(options.intro ? { intro: options.intro } : {})}
     />,
   );
   return actions;
@@ -114,6 +118,14 @@ describe("UnitsBoard: the admin's Units page (S7-T07)", () => {
     expect(box).toHaveValue(PROJECT);
     fireEvent.change(box, { target: { value: OTHER } });
     expect(router.push).toHaveBeenCalledWith(`/admin/units?project=${OTHER}`);
+  });
+
+  it("keeps its links under the path it is given, and says the line it is given (the builder's page, S7-T03)", () => {
+    open({ path: "/builder/units", intro: "Manage the units of your projects." });
+    expect(screen.getByText("Manage the units of your projects.")).toBeVisible();
+    expect(screen.queryByText(words.intro)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(words.project), { target: { value: OTHER } });
+    expect(router.push).toHaveBeenCalledWith(`/builder/units?project=${OTHER}`);
   });
 
   it("goes to the page for a state chip, keeping the project and the search", () => {

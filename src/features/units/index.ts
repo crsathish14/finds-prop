@@ -33,4 +33,4 @@ export type { AddUnitInput, DeleteUnitInput, UnitFilters, UpdateUnitInput } from
 export type { ProjectOption, UnitView, UnitsPage } from "./view";
 export { UnitsBoard } from "./units-board.client";
 export type { UnitsBoardActions } from "./units-board.client";
-export { UNITS_PATH, unitsHref } from "./href";
+export { BUILDER_UNITS_PATH, UNITS_PATH, unitsHref } from "./href";

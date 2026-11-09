@@ -78,15 +78,17 @@ const description = clearable(
   ),
 );
 
-const details = {
+/** What a builder may say about their own company (S7-T03): the same boxes, with no type and no email. */
+const profile = {
   name,
-  kind,
   contactPerson,
   phone,
   logoUrl: link(BUILDER_LOGO_MAX),
   website: link(BUILDER_WEBSITE_MAX),
   description,
 };
+
+const details = { ...profile, kind };
 
 /** The invitation: who they are and the email they will sign in with. */
 export const inviteBuilderSchema = z.object({ ...details, email });
@@ -104,3 +106,7 @@ export type SetBuilderActiveInput = z.infer<typeof setBuilderActiveSchema>;
 
 export const resendInvitationSchema = z.object({ builderId: uuid });
 export type ResendInvitationInput = z.infer<typeof resendInvitationSchema>;
+
+/** The builder's own company profile (S7-T03, FR-BLD-05). Whose profile is the session, never an input. */
+export const updateMyProfileSchema = z.object(profile);
+export type UpdateMyProfileInput = z.infer<typeof updateMyProfileSchema>;

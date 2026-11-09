@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
 import { loadSessionView } from "@/server/auth/get-session-view";
 import { builderStore } from "@/features/builders/service";
+import { saveMyProfile } from "@/features/builders/profile-service";
 import {
   inviteBuilder,
   resendInvitation,
@@ -205,6 +206,54 @@ describe("IT-builder-invite: inviting a builder against a real database (S7-T05)
         )
       ).code,
     ).toBe("NOT_FOUND");
+  });
+
+  it("lets a signed-in builder save their own profile, and never the email, the type or another builder's record (S7-T03)", async () => {
+    const email = emailFor("profile");
+    const { builderId } = await inviteBuilder(store, details(email));
+    madeBuilders.push(builderId);
+    const other = await inviteBuilder(store, details(emailFor("profile-other")));
+    madeBuilders.push(other.builderId);
+    const client = await signInAs(email);
+
+    const done = await saveMyProfile(client, {
+      name: `Kadal Group ${RUN}`,
+      phone: "+919841055512",
+      description: "Mid-rise apartments.",
+    });
+    expect(done).toEqual({ builderId });
+    const record = await admin.from("builders").select("*").eq("id", builderId).single();
+    expect(record.data).toMatchObject({
+      name: `Kadal Group ${RUN}`,
+      phone: "+919841055512",
+      description: "Mid-rise apartments.",
+      contact_person: null,
+      email,
+      kind: "builder",
+      active: true,
+    });
+
+    // The columns that are the admin's are closed to the builder, whatever is asked of the table directly.
+    const kind = await client.from("builders").update({ kind: "agent" }).eq("id", builderId);
+    expect(kind.error).not.toBeNull();
+    const mail = await client
+      .from("builders")
+      .update({ email: "x@example.test" })
+      .eq("id", builderId);
+    expect(mail.error).not.toBeNull();
+    // Another builder's record changes nothing: the policy lets a builder update only their own row.
+    const theirs = await client
+      .from("builders")
+      .update({ name: "Hijacked" })
+      .eq("id", other.builderId)
+      .select("id");
+    expect(theirs.data ?? []).toEqual([]);
+    const untouched = await admin
+      .from("builders")
+      .select("name")
+      .eq("id", other.builderId)
+      .single();
+    expect(untouched.data?.name).not.toBe("Hijacked");
   });
 
   it("records the invitation, the deactivation and the activation in the audit log, without the email", async () => {

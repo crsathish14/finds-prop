@@ -2032,6 +2032,31 @@
         "title": "No projects match",
         "text": "Try another status or search."
       }
+    },
+    "units": {
+      "metaTitle": "Units",
+      "intro": "Manage the units of your projects."
+    },
+    "leads": {
+      "metaTitle": "Leads",
+      "intro": "People who enquired about your projects. You can change a lead's state."
+    },
+    "profile": {
+      "metaTitle": "Profile",
+      "title": "Company profile",
+      "intro": "How your company appears on Find Prop.",
+      "details": "Details",
+      "emailLockedHint": "Only a Find Prop admin can change your login email.",
+      "save": "Save profile",
+      "saving": "Saving",
+      "note": "Changes to your profile don't need approval.",
+      "preview": {
+        "label": "How it looks to buyers",
+        "note": "This card appears in the developer showcase on the home page while your account is active."
+      },
+      "toast": {
+        "title": "Profile saved"
+      }
     }
   }
 }

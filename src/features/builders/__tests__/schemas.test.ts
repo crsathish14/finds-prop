@@ -4,6 +4,7 @@ import {
   resendInvitationSchema,
   setBuilderActiveSchema,
   updateBuilderSchema,
+  updateMyProfileSchema,
 } from "../schemas";
 
 const BUILDER = "00000000-0000-4000-b000-000000000001";
@@ -90,5 +91,50 @@ describe("UT-builder-schemas: the admin's builder forms (S7-T05)", () => {
     );
     expect(resendInvitationSchema.parse({ builderId: BUILDER })).toEqual({ builderId: BUILDER });
     expect(resendInvitationSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("UT-builder-schemas: the builder's own profile (S7-T03)", () => {
+  it("takes the company name alone, and reads blank boxes as no value", () => {
+    expect(updateMyProfileSchema.parse({ name: "Kadal Homes" })).toEqual({ name: "Kadal Homes" });
+    expect(
+      updateMyProfileSchema.parse({
+        name: " Kadal  Homes ",
+        contactPerson: " ",
+        phone: "+91 98410-55512",
+        logoUrl: "",
+        website: "https://kadalhomes.example",
+        description: "",
+      }),
+    ).toEqual({
+      name: "Kadal Homes",
+      contactPerson: null,
+      phone: "+919841055512",
+      logoUrl: null,
+      website: "https://kadalhomes.example",
+      description: null,
+    });
+  });
+
+  it("refuses a missing name, a link that is not https and a phone that is not a number", () => {
+    expect(updateMyProfileSchema.safeParse({ name: " " }).success).toBe(false);
+    expect(
+      updateMyProfileSchema.safeParse({ name: "Kadal Homes", website: "http://kadal.example" })
+        .success,
+    ).toBe(false);
+    expect(updateMyProfileSchema.safeParse({ name: "Kadal Homes", phone: "call me" }).success).toBe(
+      false,
+    );
+  });
+
+  it("leaves out what a builder may not set: the type, the email and whose profile it is", () => {
+    expect(
+      updateMyProfileSchema.parse({
+        name: "Kadal Homes",
+        kind: "agent",
+        email: "other@example.test",
+        builderId: BUILDER,
+      }),
+    ).toEqual({ name: "Kadal Homes" });
   });
 });
