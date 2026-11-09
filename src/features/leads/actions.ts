@@ -4,8 +4,10 @@ import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
   loadMoreLeadsConfig,
+  loadMoreMyLeadsConfig,
   loadMoreSubmissionsConfig,
   setLeadStatusConfig,
+  setMyLeadStatusConfig,
 } from "./action-config";
 import { decodeCursor } from "./cursor";
 import { changeLeadStatus } from "./lead-service";
@@ -50,5 +52,32 @@ export const loadMoreSubmissions = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     requireCursor(input.after);
     return getSubmissionsPage(input);
+  },
+});
+
+/**
+ * The builder's own lead actions (S7-T03). They run as the signed-in builder through their own session, so the
+ * database decides whose leads they see and change: only the leads of their own projects, and only the state.
+ */
+
+/** Sets a lead's state (New, Contacted, Closed) on one of the builder's own leads. The state is the only thing about a lead that can change (BR-47). */
+export const setMyLeadStatus = defineAction({
+  ...setMyLeadStatusConfig,
+  handler: async ({ input, session, log }) => {
+    // defineAction has already refused anyone who is not a builder; this keeps the type honest.
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await changeLeadStatus(await createLeadStore(), input);
+    log.info("lead state changed by a builder", { leadId: done.leadId, status: done.status });
+    return done;
+  },
+});
+
+/** The next page of the builder's project leads after the cursor the last page gave, for "Show more". */
+export const loadMoreMyLeads = defineAction({
+  ...loadMoreMyLeadsConfig,
+  handler: async ({ input, session }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    requireCursor(input.after);
+    return getLeadsPage(input);
   },
 });

@@ -337,7 +337,9 @@ export function ProjectForm({
       setErrors({});
       if (projectId === null) {
         notify.success(translate("toast.created.title"), {
-          description: translate("toast.created.text", { name: values.name.trim() }),
+          description: admin
+            ? translate("toast.created.text", { name: values.name.trim() })
+            : translate("toast.createdBuilder.text", { name: values.name.trim() }),
         });
         router.replace(`${editBase}/${result.data.projectId}`);
         return;

@@ -1960,6 +1960,9 @@
         "savedBuilder": {
           "title": "Project saved",
           "text": "It is back in review and hidden until it is approved."
+        },
+        "createdBuilder": {
+          "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
       }
     }
@@ -1980,6 +1983,55 @@
       "leads": "Leads",
       "insights": "Insights",
       "profile": "Profile"
+    },
+    "projects": {
+      "metaTitle": "Projects",
+      "metaTitleNew": "New project",
+      "metaTitleEdit": "Edit project",
+      "title": "Projects",
+      "intro": "Your projects. Saving an edit sends the project for approval.",
+      "add": "Add project",
+      "tabsLabel": "Filter by status",
+      "tabs": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "draft": "Draft"
+      },
+      "search": "Search projects",
+      "caption": "Projects",
+      "columns": {
+        "project": "Project",
+        "builder": "Builder",
+        "priceRange": "Price range",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "noPrice": "Not set",
+      "coverAlt": "Cover picture of {name}",
+      "badges": {
+        "published": "Published",
+        "unpublished": "Unpublished",
+        "featured": "Featured"
+      },
+      "actions": {
+        "edit": "Edit",
+        "viewLive": "View live"
+      },
+      "count": "{count, plural, one {# project} other {# projects}}",
+      "reapproval": {
+        "title": "Edits go back for approval",
+        "text": "When you save a change, the project is set to Pending and is hidden from the public site until it is approved again."
+      },
+      "empty": {
+        "title": "No projects yet",
+        "text": "Add your first project. It is reviewed before it goes live."
+      },
+      "noMatch": {
+        "title": "No projects match",
+        "text": "Try another status or search."
+      }
     }
   }
 }

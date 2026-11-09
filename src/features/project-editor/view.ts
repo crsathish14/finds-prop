@@ -160,3 +160,49 @@ export function toProjectEditView(
       .sort((first, second) => first.month.localeCompare(second.month)),
   };
 }
+
+/** One project as the builder's list shows it (S7-T03): the name and place, the price range, where it stands and a cover. */
+export interface ProjectListRow {
+  id: string;
+  name: string;
+  slug: string;
+  locality: string;
+  priceMin: number | null;
+  priceMax: number | null;
+  /** The first image's path in the media bucket, or none. */
+  cover: string | null;
+  moderation: string;
+  published: boolean;
+  featured: boolean;
+}
+
+/** The columns the list reads from `my_projects()`. */
+export type ProjectListDbRow = Pick<
+  ProjectDbRow,
+  | "id"
+  | "name"
+  | "slug"
+  | "locality"
+  | "price_min"
+  | "price_max"
+  | "images"
+  | "moderation"
+  | "published"
+  | "featured"
+>;
+
+/** Pure: a project row as the list shows it. */
+export function toProjectListRow(row: ProjectListDbRow): ProjectListRow {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    locality: row.locality,
+    priceMin: row.price_min,
+    priceMax: row.price_max,
+    cover: row.images[0] ?? null,
+    moderation: row.moderation,
+    published: row.published,
+    featured: row.featured,
+  };
+}

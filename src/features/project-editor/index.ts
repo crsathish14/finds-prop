@@ -5,7 +5,7 @@ export {
   updateMyProjectConfig,
   updateProjectConfig,
 } from "./action-config";
-export { getBuilderOptions, getFormOptions, getProjectForEdit } from "./queries";
+export { getBuilderOptions, getFormOptions, getMyProjectList, getProjectForEdit } from "./queries";
 export {
   ADVANTAGES_MAX,
   AMENITIES_MAX,
@@ -36,4 +36,5 @@ export type {
 export { ProjectForm } from "./project-form.client";
 export type { ProjectFormProps } from "./project-form.client";
 export type { ProjectDone } from "./project-service";
-export type { BuilderOption, FormOption, ProjectEditView, TrendView } from "./view";
+export type { BuilderOption, FormOption, ProjectEditView, ProjectListRow, TrendView } from "./view";
+export { BuilderProjects } from "./builder-projects.client";
