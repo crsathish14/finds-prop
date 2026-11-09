@@ -21,7 +21,7 @@ import { Specimen, Stage } from "../frame";
 /**
  * The admin's form builder in its states (S7-T08): the list of forms, the settings box, and the fields box with its
  * live preview. Plain English text; nothing here goes anywhere. The words that are not in the approved admin-forms
- * screen are listed in ADR-105 for the owner to confirm.
+ * screen are listed in ADR-108 for the owner to confirm.
  */
 
 const COLUMNS = {
