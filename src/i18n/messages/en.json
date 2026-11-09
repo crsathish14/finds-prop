@@ -1763,6 +1763,90 @@
         "days": "{count, plural, one {# day} other {# days}}"
       }
     },
+    "projects": {
+      "metaTitle": "Projects",
+      "title": "Projects",
+      "intro": "Review, moderate and manage every builder project.",
+      "add": "Add project",
+      "tabsLabel": "Filter by status",
+      "tabs": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "draft": "Draft"
+      },
+      "search": "Search projects",
+      "builderFilter": {
+        "label": "Builder",
+        "all": "All builders"
+      },
+      "caption": "Projects",
+      "columns": {
+        "project": "Project",
+        "builder": "Builder",
+        "priceRange": "Price range",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "noPrice": "Not set",
+      "coverAlt": "Cover picture of {name}",
+      "moreFor": "More actions for {name}",
+      "badges": {
+        "published": "Published",
+        "unpublished": "Unpublished",
+        "featured": "Featured"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+      },
+      "menu": {
+        "edit": "Edit project",
+        "feature": "Feature",
+        "unfeature": "Remove from featured",
+        "viewLive": "View live page",
+        "delete": "Delete",
+        "deleteBlocked": "Delete (has {count, plural, one {# lead} other {# leads}})"
+      },
+      "count": "{count, plural, one {# project} other {# projects}}",
+      "rejectDialog": {
+        "title": "Reject {name}?",
+        "text": "The builder will see the project as Rejected and it stays off the public site. You can approve it later.",
+        "confirm": "Reject project"
+      },
+      "deleteDialog": {
+        "title": "Delete {name}?",
+        "text": "This permanently deletes the project and its units. It has no leads, so it can be deleted. This can't be undone.",
+        "confirm": "Delete project"
+      },
+      "deleteBlocked": {
+        "title": "This project can't be deleted",
+        "text": "It has {count, plural, one {# lead} other {# leads}}. Unpublish it instead to take it off the public site."
+      },
+      "cancel": "Cancel",
+      "toast": {
+        "approve": "{name} approved",
+        "reject": "{name} rejected",
+        "publish": "{name} published",
+        "unpublish": "{name} unpublished",
+        "feature": "{name} featured",
+        "unfeature": "{name} removed from featured",
+        "delete": "{name} deleted"
+      },
+      "conflict": "This project has changed since the page was loaded. The page has been refreshed.",
+      "truncated": "Showing the newest 500 projects. Older ones are not listed here.",
+      "empty": {
+        "title": "No projects yet",
+        "text": "Projects created by builders will appear here for review."
+      },
+      "noMatch": {
+        "title": "No projects match",
+        "text": "Try another status, builder or search."
+      }
+    },
     "projectForm": {
       "metaTitleNew": "New project",
       "metaTitleEdit": "Edit project",

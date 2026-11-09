@@ -1,5 +1,6 @@
 export { deleteProject, moderateProject } from "./actions";
 export { deleteProjectConfig, moderateProjectConfig } from "./action-config";
+export { AdminProjects } from "./admin-projects.client";
 export { getAdminProjects } from "./queries";
 export type { AdminProjectList } from "./queries";
 export { PROJECT_DECISIONS, PROJECT_LIST_MAX } from "./constants";
