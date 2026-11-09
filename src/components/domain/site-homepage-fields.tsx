@@ -18,7 +18,7 @@
  * Dependencies: FormSection, SiteLocalitiesEditor, Switch, Label, cn. Tests: site-content-parts.test.tsx; Design
  *   Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (#homepage: Sections) and admin-localities screen. The "Featured section title" box
- *   is left out: the title is part of the page's own wording and changing it is a separate change (ADR-096).
+ *   is left out: the title is part of the page's own wording and changing it is a separate change (ADR-099).
  */
 import { useId } from "react";
 import {

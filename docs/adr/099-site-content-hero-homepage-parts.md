@@ -1,4 +1,4 @@
-# ADR-096 · Site content: the Hero and Homepage parts and the localities editor (S7-T10, part B2)
+# ADR-099 · Site content: the Hero and Homepage parts and the localities editor (S7-T10, part B2)
 
 - Status: Accepted
 - Date: 2026-11-09
