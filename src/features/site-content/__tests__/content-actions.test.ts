@@ -8,6 +8,7 @@ import {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveSponsorsConfig,
 } from "../action-config";
 
 const admin: SessionView = {
@@ -60,6 +61,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     hero: define({ ...saveHeroConfig, handler }),
     homepage: define({ ...saveHomepageConfig, handler }),
     footer: define({ ...saveFooterConfig, handler }),
+    sponsors: define({ ...saveSponsorsConfig, handler }),
   };
 }
 
@@ -74,16 +76,18 @@ const validHomepage = {
   localities: [],
 };
 const validFooter = { links: [] };
+const validSponsors = { sponsors: [] };
 
 describe("UT-site-content-actions: who may edit the site content, and what it refreshes (S7-T10)", () => {
-  it("lets a super admin save any of the four: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
-    const { header, hero, homepage, footer, calls } = harness();
+  it("lets a super admin save any of the five: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
+    const { header, hero, homepage, footer, sponsors, calls } = harness();
     expect((await header(validHeader)).ok).toBe(true);
     expect((await hero(validHero)).ok).toBe(true);
     expect((await homepage(validHomepage)).ok).toBe(true);
     expect((await footer(validFooter)).ok).toBe(true);
+    expect((await sponsors(validSponsors)).ok).toBe(true);
     const one = ["rateLimit:admin_edit", "handler", "invalidate:site-settings"];
-    expect(calls).toEqual([...one, ...one, ...one, ...one]);
+    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one]);
   });
 
   it.each([
@@ -91,16 +95,17 @@ describe("UT-site-content-actions: who may edit the site content, and what it re
     ["a customer", customer, "FORBIDDEN"],
     ["a builder", builder, "FORBIDDEN"],
   ] as const)("refuses %s before anything runs, on every action", async (_who, session, code) => {
-    const { header, hero, homepage, footer, calls } = harness({ session });
+    const { header, hero, homepage, footer, sponsors, calls } = harness({ session });
     expect(await header(validHeader)).toMatchObject({ ok: false, code });
     expect(await hero(validHero)).toMatchObject({ ok: false, code });
     expect(await homepage(validHomepage)).toMatchObject({ ok: false, code });
     expect(await footer(validFooter)).toMatchObject({ ok: false, code });
+    expect(await sponsors(validSponsors)).toMatchObject({ ok: false, code });
     expect(calls).toEqual([]);
   });
 
   it("refuses a value that is not valid before the handler, naming the box", async () => {
-    const { hero, header, calls } = harness();
+    const { hero, header, sponsors, calls } = harness();
     expect(await hero({ title: "", layout: "split" })).toMatchObject({
       ok: false,
       code: "VALIDATION",
@@ -110,6 +115,15 @@ describe("UT-site-content-actions: who may edit the site content, and what it re
       ok: false,
       code: "VALIDATION",
       fieldErrors: { "links.0.href": [{ key: "validation.linkTarget" }] },
+    });
+    expect(
+      await sponsors({
+        sponsors: [{ id: "a", advertiser: "X", alt: "y", href: "http://x.example", active: true }],
+      }),
+    ).toMatchObject({
+      ok: false,
+      code: "VALIDATION",
+      fieldErrors: { "sponsors.0.href": [{ key: "validation.linkInvalid" }] },
     });
     expect(calls).toEqual([]);
   });

@@ -8,6 +8,7 @@ import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
 import { SELLER } from "./boards/seller";
 import { SITE_CONTENT } from "./boards/site-content";
+import { SPONSORS } from "./boards/sponsors";
 import type { LabBoard, LabBoardId } from "./types";
 
 /**
@@ -93,6 +94,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to edit the header, hero, homepage and footer of the public site: the page frame with its tabs, live preview and save bar, the list of links, the Header, Footer, Hero and Homepage boxes with their previews, and the localities list. It mirrors the admin Site content screen.",
     entries: SITE_CONTENT,
+  },
+  {
+    id: "sponsors",
+    title: "Sponsors",
+    uxBoard: "admin-sponsors",
+    summary:
+      "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, and the Add and Edit sponsor form. It mirrors the admin Hero and sponsors screen.",
+    entries: SPONSORS,
   },
 ];
 
