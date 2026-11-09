@@ -1,8 +1,16 @@
-export { loadMoreLeads, loadMoreSubmissions, setLeadStatus } from "./actions";
+export {
+  loadMoreLeads,
+  loadMoreMyLeads,
+  loadMoreSubmissions,
+  setLeadStatus,
+  setMyLeadStatus,
+} from "./actions";
 export {
   loadMoreLeadsConfig,
+  loadMoreMyLeadsConfig,
   loadMoreSubmissionsConfig,
   setLeadStatusConfig,
+  setMyLeadStatusConfig,
 } from "./action-config";
 export { getFilterOptions, getLeadCounts, getLeadsPage, getSubmissionsPage } from "./queries";
 export {

@@ -3,8 +3,7 @@ import type { LeadDone } from "./lead-service";
 
 /**
  * How the admin's lead actions run, kept apart from the "use server" file so a test can build them (S7-T07). Only
- * a super admin may call them now (the builder portal, S7-T03, adds the builder, whose own leads the database
- * limits them to). A state change is limited with the admin's other edits (`admin_edit`, 600 an hour: working
+ * a super admin may call them (the builder's own versions are below, S7-T03). A state change is limited with the admin's other edits (`admin_edit`, 600 an hour: working
  * through a morning of new leads is well inside it, a stuck script is not). No idempotency key: it sets a value, so a
  * repeat changes nothing more. Leads are never shown to the public, so no cache tags are refreshed. The database does
  * not audit leads, so the change adds its own entry to the audit log (`lead.status_changed`, entity `lead` and its
@@ -36,4 +35,24 @@ export const loadMoreSubmissionsConfig = {
   name: "loadMoreSubmissions",
   input: submissionFilterSchema,
   auth: { role: "super_admin" as const },
+};
+
+/**
+ * The builder's own versions (S7-T03): a lead's state and "Show more" on the project leads list, for the builder role.
+ * The database limits a builder to the leads of their own projects (the policies of `project_leads`, and a guard that
+ * lets them change only the state), so a lead that is not theirs is "not found", whatever is sent. A state change is
+ * limited with the builder's other edits (`builder_edit`, 300 an hour) and adds the same audit entry; "Show more" is a
+ * read with no rate limit of its own. A builder has no form submissions, so there is no version of that read.
+ */
+export const setMyLeadStatusConfig = {
+  ...setLeadStatusConfig,
+  name: "setMyLeadStatus",
+  auth: { role: "builder" as const },
+  rateLimit: { scope: "builder_edit" as const },
+};
+
+export const loadMoreMyLeadsConfig = {
+  ...loadMoreLeadsConfig,
+  name: "loadMoreMyLeads",
+  auth: { role: "builder" as const },
 };

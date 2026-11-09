@@ -46,6 +46,10 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
   let builder: TestUser;
   let projectId: string;
   let formId: string;
+  // Another builder's project and lead (S7-T03): a builder must never see or change them.
+  let otherBuilderId: string;
+  let otherProjectId: string;
+  let otherLeadId: string;
   const leadIds: string[] = [];
 
   const lead = async (id: string) => {
@@ -78,6 +82,42 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
       .single();
     if (project.error) throw new Error(`Could not create the project (${project.error.code})`);
     projectId = project.data.id;
+
+    const other = await admin
+      .from("builders")
+      .insert({ email: `it-leads-other-${RUN}@example.test`, name: `Other Builder ${RUN}` })
+      .select("id")
+      .single();
+    if (other.error) throw new Error(`Could not add the other builder (${other.error.code})`);
+    otherBuilderId = other.data.id;
+    const theirs = await admin
+      .from("projects")
+      .insert({
+        slug: `it-leads-theirs-${RUN}`,
+        name: `Their Leads Project ${RUN}`,
+        builder_id: otherBuilderId,
+        locality: "Integration Test Locality",
+        moderation: "approved",
+        published: true,
+        moderated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (theirs.error) throw new Error(`Could not add their project (${theirs.error.code})`);
+    otherProjectId = theirs.data.id;
+    const theirLead = await admin
+      .from("project_leads")
+      .insert({
+        project_id: otherProjectId,
+        kind: "enquiry" as const,
+        name: `Their lead ${RUN}`,
+        phone: "9841055513",
+        status: "new" as const,
+      })
+      .select("id")
+      .single();
+    if (theirLead.error) throw new Error(`Could not add their lead (${theirLead.error.code})`);
+    otherLeadId = theirLead.data.id;
 
     const form = await admin
       .from("forms")
@@ -175,8 +215,11 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
   afterAll(async () => {
     await admin.from("form_submissions").delete().eq("form_id", formId);
     await admin.from("project_leads").delete().eq("project_id", projectId);
+    await admin.from("project_leads").delete().eq("project_id", otherProjectId);
     await admin.from("forms").delete().eq("id", formId);
     await admin.from("projects").delete().eq("id", projectId);
+    await admin.from("projects").delete().eq("id", otherProjectId);
+    await admin.from("builders").delete().eq("id", otherBuilderId);
     await removeTestUser();
     await removeTestAdmin();
   });
@@ -224,6 +267,14 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
       expect(own.leads.every((row) => row.projectId === projectId)).toBe(true);
     });
 
+    it("shows a builder none of another builder's leads, even when asked for that project (S7-T03)", async () => {
+      const asked = await readLeadsPage(builder.client, filters({ project: otherProjectId }));
+      expect(asked.leads).toEqual([]);
+      expect(asked.total).toBe(0);
+      const all = await readLeadsPage(builder.client, filters());
+      expect(all.leads.some((row) => row.id === otherLeadId)).toBe(false);
+    });
+
     it("refuses a visitor who is not signed in: the table is closed to them", async () => {
       await expect(readLeadsPage(visitorClient(), filters())).rejects.toMatchObject({
         code: "42501",
@@ -256,6 +307,13 @@ describe("IT-leads: the admin's leads and form submissions against a real databa
       const target = leadIds[1];
       if (!target) throw new Error("no lead");
       expect((await set(builder.client, target, "contacted")).status).toBe("contacted");
+    });
+
+    it("says not found when a builder changes the state of another builder's lead, and changes nothing (S7-T03)", async () => {
+      expect(await failureOf(() => set(builder.client, otherLeadId, "closed"))).toMatchObject({
+        code: "NOT_FOUND",
+      });
+      expect(await lead(otherLeadId)).toEqual({ status: "new" });
     });
 
     it("refuses a visitor who is not signed in (the database, not the action, says no)", async () => {

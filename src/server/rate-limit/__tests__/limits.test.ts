@@ -12,6 +12,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
       [
         "admin_decision",
         "admin_edit",
+        "builder_edit",
         "email_link",
         "enquiry",
         "form_submit",
