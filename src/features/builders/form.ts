@@ -14,8 +14,16 @@ export const EMPTY_BUILDER_VALUES: BuilderFormValues = {
   description: "",
 };
 
-/** The edit form when it opens: what is on record, with a blank box for anything not given. */
-export function valuesOf(row: BuilderRowView): BuilderFormValues {
+/**
+ * The edit form when it opens: what is on record, with a blank box for anything not given. The builder's own profile
+ * page uses it too (S7-T03), so it asks only for the columns the form shows.
+ */
+export function valuesOf(
+  row: Pick<
+    BuilderRowView,
+    "name" | "email" | "kind" | "contactPerson" | "phone" | "logoUrl" | "website" | "description"
+  >,
+): BuilderFormValues {
   return {
     name: row.name,
     email: row.email,

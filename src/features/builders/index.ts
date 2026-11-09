@@ -1,13 +1,22 @@
-export { inviteBuilder, resendInvitation, setBuilderActive, updateBuilder } from "./actions";
+export {
+  inviteBuilder,
+  resendInvitation,
+  setBuilderActive,
+  updateBuilder,
+  updateMyProfile,
+} from "./actions";
 export {
   inviteBuilderConfig,
   resendInvitationConfig,
   setBuilderActiveConfig,
   updateBuilderConfig,
+  updateMyProfileConfig,
 } from "./action-config";
-export { getBuilderOverview } from "./queries";
+export { getBuilderOverview, getMyProfile } from "./queries";
 export { BuildersBoard } from "./builders-board.client";
 export type { BuildersBoardActions } from "./builders-board.client";
+export { BuilderProfile } from "./builder-profile.client";
+export type { BuilderProfileActions } from "./builder-profile.client";
 export {
   BUILDER_CONTACT_MAX,
   BUILDER_DESCRIPTION_MAX,
@@ -25,11 +34,13 @@ export {
   resendInvitationSchema,
   setBuilderActiveSchema,
   updateBuilderSchema,
+  updateMyProfileSchema,
 } from "./schemas";
 export type {
   InviteBuilderInput,
   ResendInvitationInput,
   SetBuilderActiveInput,
   UpdateBuilderInput,
+  UpdateMyProfileInput,
 } from "./schemas";
-export type { BuilderRowView, BuilderStatus } from "./view";
+export type { BuilderRowView, BuilderStatus, MyProfileView } from "./view";

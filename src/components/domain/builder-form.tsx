@@ -3,7 +3,8 @@
  * Purpose: what the admin types to invite or change a builder (S7-T05, FR-ADM-04): the company, the login email,
  *   the type, a contact person and phone, a logo link, a website and a few words about them. Owner: design system.
  *   It holds no state: the page keeps the values and the errors and passes the words, already translated.
- * Props: mode ("invite" | "edit"; in edit the email is shown but cannot be changed), values ({ name, email, kind
+ * Props: mode ("invite" | "edit"; in edit the email is shown but cannot be changed), showKind (false leaves out the
+ *   Type box: the builder's own profile, S7-T03), values ({ name, email, kind
  *   "builder" | "agent", contactPerson, phone, logoUrl, website, description }, all text), errors (the message of
  *   each field with a problem, by field), onChange (field, value), disabled (while sending), words (the labels,
  *   hints and options), className.
@@ -59,6 +60,8 @@ type BuilderFormProps = {
   errors?: Partial<Record<BuilderFormField, string>>;
   onChange: (field: BuilderFormField, value: string) => void;
   disabled?: boolean;
+  /** Whether the Type box is shown; the builder's own profile leaves it out, as only the admin sets the type. */
+  showKind?: boolean;
   words: BuilderFormWords;
   className?: string;
 };
@@ -69,6 +72,7 @@ function BuilderForm({
   errors = {},
   onChange,
   disabled = false,
+  showKind = true,
   words,
   className,
 }: BuilderFormProps) {
@@ -98,12 +102,14 @@ function BuilderForm({
           disabled={disabled || mode === "edit"}
         />
       </FormField>
-      <FormField label={words.kind} {...(errors.kind ? { error: errors.kind } : {})}>
-        <NativeSelect {...text("kind")}>
-          <option value="builder">{words.kindBuilder}</option>
-          <option value="agent">{words.kindAgent}</option>
-        </NativeSelect>
-      </FormField>
+      {showKind ? (
+        <FormField label={words.kind} {...(errors.kind ? { error: errors.kind } : {})}>
+          <NativeSelect {...text("kind")}>
+            <option value="builder">{words.kindBuilder}</option>
+            <option value="agent">{words.kindAgent}</option>
+          </NativeSelect>
+        </FormField>
+      ) : null}
       <div className="grid gap-5 md:grid-cols-2">
         <FormField
           label={words.contactPerson}

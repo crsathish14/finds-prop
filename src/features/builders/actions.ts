@@ -2,12 +2,14 @@
 
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
+import { createServerSupabase } from "@/server/supabase/server";
 import { publicEnv } from "@/lib/public-env";
 import {
   inviteBuilderConfig,
   resendInvitationConfig,
   setBuilderActiveConfig,
   updateBuilderConfig,
+  updateMyProfileConfig,
 } from "./action-config";
 import {
   inviteBuilder as makeInvitation,
@@ -16,6 +18,7 @@ import {
   updateBuilderDetails,
 } from "./builder-service";
 import { BUILDER_SIGN_IN_PATH } from "./constants";
+import { saveMyProfile } from "./profile-service";
 import { createBuilderStore } from "./service";
 
 /** Where the admin tells the builder to sign in (Google only), built from our own address and never from a request header. */
@@ -68,6 +71,18 @@ export const updateBuilder = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await updateBuilderDetails(createBuilderStore(requestId), input);
     log.info("builder details saved", { builderId: done.builderId });
+    return done;
+  },
+});
+
+/** Saves the signed-in builder's own company profile, as themselves. No approval is needed for a profile change. */
+export const updateMyProfile = defineAction({
+  ...updateMyProfileConfig,
+  handler: async ({ input, session, log }) => {
+    // defineAction has already refused anyone who is not a builder; this keeps the type honest.
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveMyProfile(await createServerSupabase(), input);
+    log.info("builder profile saved", { builderId: done.builderId });
     return done;
   },
 });

@@ -160,6 +160,14 @@ describe("BuilderForm: the invite and edit fields (S7-T05)", () => {
     expect(screen.queryByText(WORDS.emailHint)).toBeNull();
   });
 
+  it("leaves out the Type box when asked, for the builder's own profile (S7-T03)", () => {
+    renderWithMessages(
+      <BuilderForm mode="edit" showKind={false} values={VALUES} onChange={vi.fn()} words={WORDS} />,
+    );
+    expect(screen.queryByLabelText(/^Type/)).toBeNull();
+    expect(screen.getByLabelText(/^Company name/)).toBeVisible();
+  });
+
   it("turns every box off while sending", () => {
     renderWithMessages(
       <BuilderForm mode="invite" values={VALUES} onChange={vi.fn()} words={WORDS} disabled />,

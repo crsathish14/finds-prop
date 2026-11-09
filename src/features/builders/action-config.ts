@@ -4,6 +4,7 @@ import {
   resendInvitationSchema,
   setBuilderActiveSchema,
   updateBuilderSchema,
+  updateMyProfileSchema,
 } from "./schemas";
 
 /**
@@ -43,5 +44,21 @@ export const updateBuilderConfig = {
   input: updateBuilderSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_decision" as const },
+  invalidate: () => tagsAfterBuilderChange(),
+};
+
+/**
+ * The builder's own profile (S7-T03, FR-BLD-05): their company's name, contact person, phone, logo, website and
+ * introduction. It runs as the signed-in builder (an agent too), not the service role: the database lets a builder
+ * change those columns of their own record only. Limited with the builder's other edits (`builder_edit`); refreshes
+ * what the public pages show of a builder (the developer showcase and the name and logo on project pages). A profile
+ * change needs no approval, and has no audit entry: the database records only activation and type changes of a
+ * builder, and the company's own description of itself is not a decision.
+ */
+export const updateMyProfileConfig = {
+  name: "updateMyProfile",
+  input: updateMyProfileSchema,
+  auth: { role: "builder" as const },
+  rateLimit: { scope: "builder_edit" as const },
   invalidate: () => tagsAfterBuilderChange(),
 };
