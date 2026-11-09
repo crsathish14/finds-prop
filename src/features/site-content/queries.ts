@@ -1,10 +1,28 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { mergeSiteSettings, type SiteSettings } from "@/features/site";
+import {
+  buildFooter,
+  buildHeader,
+  getCurrentYear,
+  getFeatureFlags,
+  getTranslate,
+  mergeSiteSettings,
+  type SiteSettings,
+} from "@/features/site";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import type { Database } from "@/types/database.types";
 import { EDITABLE_SETTINGS, type EditableSetting } from "./constants";
+import {
+  footerFormOf,
+  headerFormOf,
+  standardFooterOf,
+  standardHeaderOf,
+  type FooterFormValues,
+  type HeaderFormValues,
+  type StandardFooter,
+  type StandardHeader,
+} from "./form";
 
 /**
  * What the Site content pages start from (S7-T10, FR-ADM-10): the settings as the public site would show them (the
@@ -32,4 +50,43 @@ export async function readSiteContent(supabase: SupabaseClient<Database>): Promi
 
 export async function getSiteContent(): Promise<SiteContent> {
   return readSiteContent(await createServerSupabase());
+}
+
+export interface HeaderPage {
+  initial: HeaderFormValues;
+  standard: StandardHeader;
+}
+
+/**
+ * What the Header page opens with: the saved header (or, where nothing is saved, the links and the button visitors see
+ * today) and the standard header for the empty boxes and the picture. The standard one is worked out by the same
+ * builder the public header uses, so the two cannot drift apart.
+ */
+export async function getHeaderPage(): Promise<HeaderPage> {
+  const [{ settings }, translate] = await Promise.all([getSiteContent(), getTranslate()]);
+  const standard = standardHeaderOf(buildHeader({ links: [] }, getFeatureFlags(), translate));
+  return { initial: headerFormOf(settings.header, standard), standard };
+}
+
+export interface FooterPage {
+  initial: FooterFormValues;
+  standard: StandardFooter;
+}
+
+/** What the Footer page opens with, worked out the same way with `buildFooter` (the brand name is the saved header's). */
+export async function getFooterPage(): Promise<FooterPage> {
+  const [{ settings }, translate, year] = await Promise.all([
+    getSiteContent(),
+    getTranslate(),
+    getCurrentYear(),
+  ]);
+  const standard = standardFooterOf(
+    buildFooter(
+      { header: settings.header, footer: { links: [] } },
+      getFeatureFlags(),
+      translate,
+      year,
+    ),
+  );
+  return { initial: footerFormOf(settings.footer, standard), standard };
 }

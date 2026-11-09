@@ -16,7 +16,7 @@
  *   without dragging (the arrows). A problem shows an icon and words, tied to its box, not colour alone.
  * States: empty, some links, full, with errors on a row, disabled.
  * Dependencies: SortableList, SortableRow, Input, Button, IconButton, Icon, cn. Tests: site-content-parts.test.tsx;
- *   Design Lab "Admin" (S7-T10).
+ *   Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (.kvrow with "Add link"); reordering is an addition, see ADR-090.
  */
 import { CircleAlert, Plus, Trash2 } from "lucide-react";

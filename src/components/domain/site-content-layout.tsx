@@ -13,7 +13,7 @@
  * Accessibility: a named navigation of links with aria-current on the page the admin is on; the preview is a named
  *   region. The order in the page is the reading order: heading, tabs, alert, form, preview, save bar.
  * States: any of the four tabs current; with and without the alert.
- * Dependencies: Heading, Text, Link, cn. Tests: site-content-parts.test.tsx; Design Lab "Admin" (S7-T10).
+ * Dependencies: Heading, Text, Link, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (.phead, .ptabs, .cms-grid, .preview-card).
  */
 import type { ReactNode } from "react";

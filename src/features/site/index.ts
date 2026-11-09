@@ -23,6 +23,7 @@ export {
 export { PublicBottomBar } from "./public-bottom-bar";
 export { PublicFooter } from "./public-footer";
 export { PublicHeader } from "./public-header";
+export { getCurrentYear } from "./current-year";
 export { getFeatureFlags, type FeatureFlags } from "./flags";
 export { buildHero, type HeroText } from "./home";
 export { getTranslate } from "./translator";

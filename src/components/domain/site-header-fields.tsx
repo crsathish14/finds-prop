@@ -11,7 +11,7 @@
  *   read with the box; an error also shows an icon.
  * States: standard (empty), filled, with errors, saving (all disabled).
  * Dependencies: FormSection, FormField, LinkListField, Input, cn. Tests: site-content-parts.test.tsx; Design Lab
- *   "Admin" (S7-T10).
+ *   "Site content" (S7-T10).
  * UX reference: admin-cms screen (#header: Brand, Navigation links, Call to action). The "Logo link" box is left
  *   out: the header uses the Find Prop mark and the box would have no effect (ADR-090).
  */
