@@ -641,6 +641,11 @@ isOneToOne: false
 "build_property_slug":
 { Args: { "locality": string,"title": string }; Returns: string
                            },
+"builder_insights":
+{ Args: { "p_from": string,"p_project"?: string,"p_to": string }; Returns: {
+              "active_projects": number,"available_units": number,"brochures": number,"calls": number,"comparisons": number,"enquiries": number,"leads": number,"projects": number,"shortlists": number,"site_visits": number,"sold_units": number,"total_units": number,"views": number,"visitors": number,"whatsapp": number
+            }[]
+                           },
 "changed_columns":
 { Args: { "new_row": Json,"old_row": Json }; Returns: Json
                            },
