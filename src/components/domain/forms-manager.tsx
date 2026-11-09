@@ -19,7 +19,7 @@
  * States: any number of forms; active and inactive; linked and not linked; a form being copied (the button is
  *   working) or switched (the switch is off); nothing yet (the empty page, with New form).
  * Dependencies: ResponsiveTable, EmptyState, Switch, Button, IconButton, Icon, Heading, Text, VisuallyHidden.
- *   Tests: form-parts.test.tsx; Design Lab "Admin" (S7-T08).
+ *   Tests: form-parts.test.tsx; Design Lab "Forms" (S7-T08).
  * UX reference: admin-forms screen, the list (tbl, tbl--stack, switch, acts).
  */
 import { Copy, Pencil, Plus, Trash2 } from "lucide-react";
