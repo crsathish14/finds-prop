@@ -39,7 +39,7 @@ select is(
 );
 select results_eq(
   $$select moderation, rejection_reason is null, moderated_by, moderated_at is not null
-    from public.projects where id = '00000000-0000-4000-c000-000000000001'$$,
+    from public.admin_projects() where id = '00000000-0000-4000-c000-000000000001'$$,
   $$values ('approved', true, '00000000-0000-4000-8000-0000000000ad'::uuid, true)$$,
   'with the admin and the time recorded, and no reason'
 );
@@ -54,14 +54,14 @@ select is(
   'rejected', 'rejecting a pending project makes it rejected'
 );
 select results_eq(
-  $$select moderation, rejection_reason, published from public.projects where id = '00000000-0000-4000-c000-000000000005'$$,
+  $$select moderation, rejection_reason, published from public.admin_projects() where id = '00000000-0000-4000-c000-000000000005'$$,
   $$values ('rejected', 'Rejected by an admin.', false)$$,
   'with a short fixed reason when none is given, as the table needs one'
 );
 select results_eq(
   $$select p.rejection_reason
     from public.moderate_project('00000000-0000-4000-c000-000000000007', 'reject', '  Brochure is missing  ') as decided
-    join public.projects as p on p.id = decided.id$$,
+    join public.admin_projects() as p on p.id = decided.id$$,
   $$values ('Brochure is missing')$$,
   'or the reason that is given, trimmed'
 );
@@ -76,7 +76,7 @@ select is(
   'approved', 'a rejected project can be approved later'
 );
 select is(
-  (select rejection_reason from public.projects where id = '00000000-0000-4000-c000-000000000005'),
+  (select rejection_reason from public.admin_projects() where id = '00000000-0000-4000-c000-000000000005'),
   null, 'which clears the reason'
 );
 
