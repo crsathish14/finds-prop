@@ -2231,6 +2231,151 @@
           "text": "The change is live on the public site."
         }
       }
+    },
+    "forms": {
+      "metaTitle": "Forms",
+      "metaTitleNew": "New form",
+      "metaTitleEdit": "Edit form",
+      "title": "Forms",
+      "intro": "Forms shown on project pages and the contact page.",
+      "new": "New form",
+      "caption": "Forms",
+      "columns": {
+        "name": "Name",
+        "slug": "Slug",
+        "fields": "Fields",
+        "placement": "Placement",
+        "crm": "CRM",
+        "active": "Active",
+        "actions": "Actions"
+      },
+      "count": "{count, plural, one {# form} other {# forms}}",
+      "empty": {
+        "title": "No forms yet",
+        "text": "Make a form to show on the contact page or a project page."
+      },
+      "kinds": {
+        "enquiry": "Enquiry",
+        "site_visit": "Site visit",
+        "brochure": "Brochure",
+        "callback": "Callback",
+        "contact": "Contact",
+        "whatsapp": "WhatsApp"
+      },
+      "placements": {
+        "none": "None",
+        "project": "Project pages",
+        "project_specific": "One project",
+        "contact": "Contact page"
+      },
+      "placementOnly": "{name} only",
+      "crmNone": "Not linked",
+      "activeFor": "Active: {name}",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "deleteFor": "Delete {name}",
+      "cancel": "Cancel",
+      "conflict": "This form has changed or been removed since the page was loaded. The page has been refreshed.",
+      "toast": {
+        "on": "{name} is now active",
+        "off": "{name} is now off",
+        "duplicated": "Copy made",
+        "duplicatedText": "The copy is called {slug} and is switched off.",
+        "deleted": "{name} deleted"
+      },
+      "deleteDialog": {
+        "title": "Delete \"{name}\"?",
+        "text": "Project pages that use it will fall back to the standard enquiry form. Past submissions are kept. This can't be undone.",
+        "confirm": "Delete form"
+      },
+      "editor": {
+        "newTitle": "New form",
+        "editTitle": "Edit form",
+        "crumb": {
+          "nav": "Breadcrumb",
+          "forms": "Forms",
+          "back": "Back to Forms"
+        },
+        "settingsTitle": "Settings",
+        "settings": {
+          "name": "Name",
+          "slug": "Slug",
+          "kind": "Kind",
+          "placement": "Placement",
+          "project": "Project",
+          "projectNotNeeded": "Not needed for this placement",
+          "projectChoose": "Choose a project",
+          "crm": "CRM integration",
+          "crmNone": "Not linked",
+          "buttonText": "Button text",
+          "status": "Status",
+          "active": "Active",
+          "successMessage": "Success message"
+        },
+        "fields": {
+          "title": "Fields",
+          "dragHint": "Drag to reorder, or use the move buttons",
+          "quickAdd": "Quick add",
+          "add": "Add field",
+          "limitTitle": "This form has the most fields it can hold",
+          "limitText": "Remove a field to add another.",
+          "empty": "No fields yet. Add one, or use a quick add.",
+          "label": "Label",
+          "key": "Key",
+          "type": "Type",
+          "placeholder": "Placeholder",
+          "options": "Choices",
+          "optionsHint": "One choice on each line.",
+          "min": "Smallest",
+          "max": "Largest",
+          "required": "Required",
+          "requiredBadge": "required",
+          "remove": "Remove",
+          "edit": "Edit field {name}",
+          "collapse": "Collapse field {name}",
+          "drag": "Drag field {name}",
+          "moveUp": "Move field {name} up",
+          "moveDown": "Move field {name} down",
+          "removeField": "Remove field {name}",
+          "unnamed": "New field"
+        },
+        "types": {
+          "text": "Text",
+          "number": "Number",
+          "email": "Email",
+          "dropdown": "Dropdown",
+          "radio": "Radio",
+          "checkbox": "Checkbox",
+          "textarea": "Textarea",
+          "date": "Date",
+          "file": "File"
+        },
+        "quickAddChips": {
+          "name": "Name",
+          "mobile": "Mobile",
+          "email": "Email",
+          "city": "City",
+          "budget": "Budget",
+          "bhk": "BHK"
+        },
+        "preview": {
+          "label": "Live preview (read only)",
+          "empty": "Add a field to see the form."
+        },
+        "save": {
+          "note": "Submissions are checked against these fields on the server.",
+          "cancel": "Cancel",
+          "save": "Save form",
+          "saving": "Saving"
+        },
+        "saved": "Form saved",
+        "keyTaken": "Key \"{key}\" is already used by another field.",
+        "problems": {
+          "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",
+          "text": "Check the boxes marked below, then save again."
+        },
+        "skipped": "{count, plural, one {# stored field does not fit the builder and is not shown. Saving removes it.} other {# stored fields do not fit the builder and are not shown. Saving removes them.}}"
+      }
     }
   },
   "builderPortal": {

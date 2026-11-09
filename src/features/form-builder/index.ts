@@ -6,6 +6,8 @@ export {
   setFormActiveConfig,
   updateFormConfig,
 } from "./action-config";
+export { FormEditor } from "./form-editor.client";
+export { AdminForms } from "./forms-list.client";
 export { getFormBuilderData } from "./queries";
 export type { FormBuilderData } from "./queries";
 export {
