@@ -17,6 +17,7 @@ import {
   toSources,
   toSubmissionViews,
   type FilterOptions,
+  type LeadCounts,
   type LeadsPage,
   type SubmissionsPage,
 } from "./view";
@@ -152,6 +153,7 @@ export async function readSubmissionsPage(
     submissions,
     total: count.count ?? submissions.length,
     nextCursor: hasMore && last ? encodeCursor(last) : null,
+    readAt: now.getTime(),
   };
 }
 
@@ -180,6 +182,21 @@ export async function readFilterOptions(supabase: Client): Promise<FilterOptions
   };
 }
 
+/** The numbers on the two tabs: all project leads and all form submissions. */
+export async function readLeadCounts(supabase: Client): Promise<LeadCounts> {
+  const [leads, submissions] = await Promise.all([
+    supabase.from("project_leads").select("id", { count: "exact", head: true }),
+    supabase.from("form_submissions").select("id", { count: "exact", head: true }),
+  ]);
+  for (const result of [leads, submissions]) {
+    if (result.error) {
+      logger.error("admin lead counts could not be read", { errorCode: result.error.code });
+      throw result.error;
+    }
+  }
+  return { leads: leads.count ?? 0, submissions: submissions.count ?? 0 };
+}
+
 /** The page of project leads for the signed-in admin. */
 export async function getLeadsPage(filters: LeadFilters): Promise<LeadsPage> {
   return readLeadsPage(await createServerSupabase(), filters);
@@ -188,6 +205,11 @@ export async function getLeadsPage(filters: LeadFilters): Promise<LeadsPage> {
 /** The page of form submissions for the signed-in admin, counted from now. */
 export async function getSubmissionsPage(filters: SubmissionFilters): Promise<SubmissionsPage> {
   return readSubmissionsPage(await createServerSupabase(), filters, new Date());
+}
+
+/** The tab numbers for the signed-in admin. */
+export async function getLeadCounts(): Promise<LeadCounts> {
+  return readLeadCounts(await createServerSupabase());
 }
 
 /** The filter choices for the signed-in admin. */

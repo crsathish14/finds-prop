@@ -1639,6 +1639,121 @@
           "text": "{number} has been removed from the project."
         }
       }
+    },
+    "leads": {
+      "metaTitle": "Leads",
+      "title": "Leads",
+      "intro": "Project leads and form submissions across the platform.",
+      "dash": "—",
+      "close": "Close",
+      "conflict": "This lead has changed since the page was loaded. The page has been refreshed.",
+      "tabs": {
+        "label": "Lead sources",
+        "leads": "Project leads",
+        "submissions": "Form submissions"
+      },
+      "kinds": {
+        "enquiry": "Enquiry",
+        "siteVisit": "Site visit",
+        "brochure": "Brochure"
+      },
+      "states": {
+        "new": "New",
+        "contacted": "Contacted",
+        "closed": "Closed"
+      },
+      "table": {
+        "caption": "Project leads",
+        "date": "Date",
+        "project": "Project",
+        "type": "Type",
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "message": "Message",
+        "status": "Status",
+        "statusFor": "Status for {name}"
+      },
+      "count": "{shown} of {total, plural, one {# lead} other {# leads}}",
+      "empty": {
+        "title": "No leads yet",
+        "text": "Leads from your projects will appear here."
+      },
+      "showMore": {
+        "leads": "Show more leads",
+        "submissions": "Show more submissions",
+        "failed": "More could not be loaded. Please try again."
+      },
+      "submissions": {
+        "table": {
+          "caption": "Form submissions",
+          "created": "Created",
+          "name": "Name",
+          "mobile": "Mobile",
+          "project": "Project",
+          "source": "Source",
+          "form": "Form",
+          "crm": "CRM",
+          "actions": "Actions"
+        },
+        "details": "Details",
+        "note": "Select Details to see the full submission.",
+        "count": "{shown} of {total, plural, one {# submission} other {# submissions}}",
+        "filters": {
+          "range": "Date range",
+          "form": "Form",
+          "project": "Project",
+          "source": "Source",
+          "crm": "CRM status",
+          "allForms": "All forms",
+          "allProjects": "All projects",
+          "allSources": "All sources",
+          "anyCrm": "Any",
+          "reset": "Reset",
+          "ranges": {
+            "days7": "Last 7 days",
+            "days30": "Last 30 days",
+            "days90": "Last 90 days",
+            "all": "All time"
+          }
+        },
+        "empty": {
+          "title": "No form submissions yet",
+          "text": "Submissions from the site's forms will appear here."
+        },
+        "noMatch": {
+          "title": "No submissions match",
+          "text": "Try other dates, or reset the filters."
+        }
+      },
+      "detail": {
+        "title": "Submission details",
+        "created": "Created",
+        "name": "Name",
+        "mobile": "Mobile",
+        "email": "Email",
+        "form": "Form",
+        "project": "Project",
+        "source": "Source",
+        "answers": "Answers",
+        "crm": "CRM",
+        "crmId": "CRM id",
+        "yes": "Yes",
+        "no": "No",
+        "failed": {
+          "title": "CRM delivery failed",
+          "withCode": "HTTP {code} on attempt {attempts}.",
+          "noCode": "The delivery failed on attempt {attempts}.",
+          "retryIn": "The next automatic retry is in {time}.",
+          "noRetry": "No more automatic retries are planned."
+        }
+      },
+      "time": {
+        "soon": "a moment",
+        "minutes": "{count, plural, one {# minute} other {# minutes}}",
+        "hours": "{count, plural, one {# hour} other {# hours}}",
+        "days": "{count, plural, one {# day} other {# days}}"
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ export {
   loadMoreSubmissionsConfig,
   setLeadStatusConfig,
 } from "./action-config";
-export { getFilterOptions, getLeadsPage, getSubmissionsPage } from "./queries";
+export { getFilterOptions, getLeadCounts, getLeadsPage, getSubmissionsPage } from "./queries";
 export {
   CRM_FILTERS,
   CRM_STATUSES,
@@ -28,6 +28,7 @@ export type { LeadFilters, SetLeadStatusInput, SubmissionFilters } from "./schem
 export type {
   AnswerValue,
   FilterOptions,
+  LeadCounts,
   LeadView,
   LeadsPage,
   SubmissionAnswer,
@@ -35,3 +36,6 @@ export type {
   SubmissionView,
   SubmissionsPage,
 } from "./view";
+export { LEADS_PATH, leadsHref } from "./format";
+export { LeadsBoard } from "./leads-board.client";
+export type { LeadsBoardActions } from "./leads-board.client";

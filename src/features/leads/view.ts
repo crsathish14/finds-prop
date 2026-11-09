@@ -73,6 +73,14 @@ export interface SubmissionsPage {
   submissions: SubmissionView[];
   total: number;
   nextCursor: string | null;
+  /** When the page was read (ms), so "in 30 minutes" is worked out from one moment on the server and in the browser. */
+  readAt: number;
+}
+
+/** The numbers on the two tabs: every project lead and every form submission, whatever the filters. */
+export interface LeadCounts {
+  leads: number;
+  submissions: number;
 }
 
 /** The choices of the filters. */
