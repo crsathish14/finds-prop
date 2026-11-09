@@ -314,7 +314,15 @@
     "sponsorImageType": "Use a JPG, PNG or WEBP picture.",
     "sponsorImageSize": "This picture is too heavy. The limit is {maximum} KB.",
     "sponsorImageSmall": "This picture is too small. Supply at least {width} × {height} pixels.",
-    "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape."
+    "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape.",
+    "formSlugTaken": "This slug is already used by another form.",
+    "fieldKeyInvalid": "Use lower case letters, numbers and underscores, starting with a letter.",
+    "fieldKeyTaken": "This key is already used by another field.",
+    "optionsRequired": "Add at least one choice.",
+    "optionsDuplicate": "Each choice must be different.",
+    "fieldsRequired": "Add at least one field.",
+    "projectRequired": "Choose the project this form is for.",
+    "rangeOrder": "The largest value must be the same as or more than the smallest."
   },
   "format": {
     "rupees": "₹{value}",
