@@ -24,7 +24,7 @@ import {
  * clears an optional field, so the default shows again (BR-81). The saved value is built from these in
  * `content-service.ts` and checked once more against the shapes the public side reads.
  */
-const tidy = (typed: unknown): unknown =>
+export const tidy = (typed: unknown): unknown =>
   typeof typed === "string" ? typed.trim().replace(/[ \t]+/g, " ") : typed;
 
 const isBlank = (typed: unknown): boolean =>
@@ -46,7 +46,7 @@ const text = (max: number) =>
 
 const optionalLine = (max: number) => clearable(text(max));
 
-const requiredLine = (max: number) =>
+export const requiredLine = (max: number) =>
   z.preprocess(
     tidy,
     z
