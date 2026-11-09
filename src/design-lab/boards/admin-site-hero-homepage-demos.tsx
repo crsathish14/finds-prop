@@ -33,9 +33,9 @@ import { SaveBar, tabs } from "./admin-site-content-demos";
  * are listed in ADR-099 for the owner to confirm.
  */
 
-const STANDARD_HEADLINE = "Find the place that fits your life in Tamil Nadu.";
+export const STANDARD_HEADLINE = "Find the place that fits your life in Tamil Nadu.";
 
-const HERO_WORDS: SiteHeroFieldsWords = {
+export const HERO_WORDS: SiteHeroFieldsWords = {
   text: { title: "Text" },
   layout: {
     title: "Layout",
