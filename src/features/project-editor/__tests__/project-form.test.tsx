@@ -431,6 +431,23 @@ describe("ProjectForm: a builder's form (S7-T02, part C)", () => {
     expect((box(words.fields.slug) as HTMLInputElement).readOnly).toBe(false);
   });
 
+  it("creates a builder's own project without a builder box, and says it waits for approval without mentioning price trends", async () => {
+    const { save } = open({ scope: "builder" });
+    await userEvent.type(box(words.fields.name), "Kadal Vista");
+    await userEvent.type(box(words.fields.locality), "OMR Navalur");
+    await userEvent.click(saveButton());
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    const sent = save.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect("builderId" in sent).toBe(false);
+    expect("formId" in sent).toBe(false);
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(words.toast.created.title, {
+        description:
+          "Kadal Vista is waiting for approval. You can now add its images, floor plans and brochure.",
+      }),
+    );
+  });
+
   it("sends a builder's save without the enquiry form or the price trends, and says it is back in review", async () => {
     const { save } = open({
       scope: "builder",

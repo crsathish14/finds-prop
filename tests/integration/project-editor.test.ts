@@ -19,7 +19,7 @@ vi.mock("next/headers", () => ({
 
 const { projectStore } = await import("@/features/project-editor/service");
 const { addProject, saveProject } = await import("@/features/project-editor/project-service");
-const { readBuilderOptions, readFormOptions, readProjectForEdit } =
+const { readBuilderOptions, readFormOptions, readMyProjectList, readProjectForEdit } =
   await import("@/features/project-editor/queries");
 const { createMyProjectSchema, createProjectSchema, updateMyProjectSchema, updateProjectSchema } =
   await import("@/features/project-editor/schemas");
@@ -422,6 +422,22 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         id: otherProjectId,
         builderId: otherBuilderId,
       });
+    });
+
+    it("lists a builder's own projects for their Projects page, and no one else's", async () => {
+      const made = await makeMine("list-own");
+      const listed = await readMyProjectList(builder.client);
+      expect(listed).toContainEqual(
+        expect.objectContaining({
+          id: made.projectId,
+          slug: slug("list-own"),
+          moderation: "pending",
+          published: false,
+          featured: false,
+          cover: null,
+        }),
+      );
+      expect(listed.some((project) => project.id === otherProjectId)).toBe(false);
     });
 
     it("gives a builder nothing from the admin's list, and refuses a visitor", async () => {
