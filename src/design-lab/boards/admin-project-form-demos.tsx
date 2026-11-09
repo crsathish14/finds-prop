@@ -196,7 +196,7 @@ function NavDemoState({
 }) {
   const [current, setCurrent] = useState<ProjectSectionId>(first);
   return (
-    <div className="w-full max-w-205">
+    <div className="w-full max-w-205 portal:max-w-48">
       <ProjectSectionNav
         sections={sections(states)}
         current={current}
@@ -278,6 +278,7 @@ function LiveForm({
             note={note}
             words={{ cancel: "Cancel", save: "Save project", saving: "Saving" }}
             saving={saving}
+            sticky={false}
             onCancel={() => undefined}
           />
         }

@@ -414,6 +414,16 @@ describe("UT-project-save-bar: the bar under the form (S7-T02)", () => {
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
   });
 
+  it("sticks to the bottom of the area unless told not to", () => {
+    const words = { cancel: "Cancel", save: "Save project", saving: "Saving" };
+    const { container, rerender } = render(
+      <ProjectSaveBar note="x" words={words} onCancel={() => undefined} />,
+    );
+    expect(container.firstElementChild).toHaveClass("sticky");
+    rerender(<ProjectSaveBar note="x" words={words} sticky={false} onCancel={() => undefined} />);
+    expect(container.firstElementChild).not.toHaveClass("sticky");
+  });
+
   it("can be switched off when there is nothing to save", () => {
     render(
       <ProjectSaveBar

@@ -4,7 +4,7 @@
  *   system. It holds no state: the page says whether it is saving and passes the words already translated. Save is
  *   a submit button, so put the bar inside the page's form.
  * Props: note (the line on the left: "Admins can save without re-approval." or what a builder's save does), words
- *   ({ cancel, save, saving }), saving, disabled (nothing to save yet), onCancel, className.
+ *   ({ cancel, save, saving }), saving, disabled (nothing to save yet), sticky (default true), onCancel, className.
  * Responsive: the note sits above the buttons on a phone and beside them from 768 px; the bar sticks to the bottom
  *   of the area while the form scrolls.
  * Accessibility: Save says Saving and is marked busy while it works; the note is plain text before the buttons.
@@ -20,6 +20,8 @@ type ProjectSaveBarProps = {
   words: { cancel: string; save: string; saving: string };
   saving?: boolean;
   disabled?: boolean;
+  /** Stick to the bottom of the area while the form scrolls (the default); the Design Lab turns it off. */
+  sticky?: boolean;
   onCancel: () => void;
   className?: string;
 };
@@ -29,6 +31,7 @@ function ProjectSaveBar({
   words,
   saving = false,
   disabled = false,
+  sticky = true,
   onCancel,
   className,
 }: ProjectSaveBarProps) {
@@ -36,7 +39,8 @@ function ProjectSaveBar({
     <div
       data-slot="project-save-bar"
       className={cn(
-        "sticky bottom-0 z-10 flex flex-col gap-3 border-t border-line bg-surface px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6",
+        "z-10 flex flex-col gap-3 border-t border-line bg-surface px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6",
+        sticky && "sticky bottom-0",
         className,
       )}
     >

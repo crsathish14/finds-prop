@@ -8,6 +8,8 @@
  *   error }), onSelect (called with the id when a link is chosen; the link still jumps by its anchor), className.
  * Responsive: a row that scrolls sideways on phones and tablets; a column from 1100 px of screen, where the page
  *   keeps it beside the form.
+ * Note: the list is its own positioning box (relative), so the words for a screen reader, which are positioned
+ *   out of sight, are cut off with the row and never make the page scroll sideways.
  * Accessibility: a named navigation; the current link has aria-current; the done and error states are said in words
  *   for a screen reader and shown by an icon, not by colour alone.
  * States: nothing done, some done, one with an error, current on each section.
@@ -64,7 +66,7 @@ function ProjectSectionNav({
 }: ProjectSectionNavProps) {
   return (
     <nav aria-label={words.nav} data-slot="project-section-nav" className={className}>
-      <ul className="flex gap-2 overflow-x-auto pb-2 portal:flex-col portal:overflow-visible portal:pb-0">
+      <ul className="relative flex gap-2 overflow-x-auto pb-2 portal:flex-col portal:overflow-visible portal:pb-0">
         {sections.map((section) => {
           const active = section.id === current;
           return (

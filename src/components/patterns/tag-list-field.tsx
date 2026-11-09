@@ -89,6 +89,7 @@ function TagBox({ draft, onDraft, onAdd, addLabel, blocked, disabled, ...props }
       <Button
         type="button"
         variant="secondary"
+        className="h-(--size-control)"
         disabled={disabled || blocked || tidy(draft) === ""}
         onClick={onAdd}
       >
@@ -155,7 +156,7 @@ function TagListField({
                 onRemove={() =>
                   disabled ? undefined : onChange(tags.filter((one) => one !== tag))
                 }
-                className="max-w-full whitespace-normal"
+                className="h-auto min-h-(--size-chip) max-w-full py-1 whitespace-normal"
               >
                 {tag}
               </RemovableChip>
