@@ -91,7 +91,7 @@ export const LAB_BOARDS: LabBoard[] = [
     title: "Site content",
     uxBoard: "admin-cms",
     summary:
-      "What the admin uses to edit the header, hero, homepage and footer of the public site: the page frame with its tabs, live preview and save bar, the list of links, and the Header and Footer boxes with their previews. It mirrors the admin Site content screen.",
+      "What the admin uses to edit the header, hero, homepage and footer of the public site: the page frame with its tabs, live preview and save bar, the list of links, the Header, Footer, Hero and Homepage boxes with their previews, and the localities list. It mirrors the admin Site content screen.",
     entries: SITE_CONTENT,
   },
 ];

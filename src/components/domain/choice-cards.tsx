@@ -1,8 +1,10 @@
 /**
  * ChoiceCards: choose one of a few options drawn as large cards, such as "Sell" or "Rent out".
  * Purpose: the first question of the post-property wizard (S6-T02, FR-ACC-06). Owner: design system.
- * Props: legend (the question, already translated), name, options ({ value, label, hint? }), value,
- *   onChange, error (already-translated message), disabled, className.
+ * Props: legend (the question, already translated), hideLegend (say it to a screen reader only, for a group that
+ *   a heading above already names), name, options ({ value, label, hint?, visual? }; visual is a small drawing
+ *   of the choice, shown above its name and hidden from screen readers), value, onChange, error (already-translated
+ *   message), disabled, className.
  * Responsive: two cards side by side from 768 px, one under the other below that.
  * Accessibility: native radio buttons in a fieldset with a legend, so one tab stop for the group and the
  *   arrow keys move and choose; each radio covers its whole card, so the focus ring is drawn around the
@@ -13,14 +15,15 @@
  * UX reference: post-property screen, "I want to" (seg-cards).
  */
 import { Check, CircleAlert } from "lucide-react";
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 
-type ChoiceOption = { value: string; label: string; hint?: string };
+type ChoiceOption = { value: string; label: string; hint?: string; visual?: ReactNode };
 
 type ChoiceCardsProps = {
   legend: string;
+  hideLegend?: boolean;
   name: string;
   options: ChoiceOption[];
   value: string | null | undefined;
@@ -32,6 +35,7 @@ type ChoiceCardsProps = {
 
 function ChoiceCards({
   legend,
+  hideLegend = false,
   name,
   options,
   value,
@@ -48,7 +52,9 @@ function ChoiceCards({
       aria-describedby={error ? errorId : undefined}
       className={cn("min-w-0", className)}
     >
-      <legend className="mb-2 text-small font-semibold text-ink">{legend}</legend>
+      <legend className={cn("text-small font-semibold text-ink", hideLegend ? "sr-only" : "mb-2")}>
+        {legend}
+      </legend>
       <div className="grid gap-3 md:grid-cols-2">
         {options.map((option) => (
           <label
@@ -71,7 +77,12 @@ function ChoiceCards({
                 error ? "border-danger" : "border-line-input",
               )}
             >
-              <span className="flex min-w-0 flex-col gap-1">
+              <span className={cn("flex min-w-0 flex-col gap-1", option.visual && "flex-1")}>
+                {option.visual ? (
+                  <span aria-hidden="true" className="mb-2 block">
+                    {option.visual}
+                  </span>
+                ) : null}
                 <span className="font-bold text-ink">{option.label}</span>
                 {option.hint ? <span className="text-small text-muted">{option.hint}</span> : null}
               </span>

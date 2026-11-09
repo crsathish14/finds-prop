@@ -86,7 +86,7 @@ const tab = (key: string, label: string, current: string): SiteContentTab => ({
   current: key === current,
 });
 
-const tabs = (current: string) => [
+export const tabs = (current: string) => [
   tab("header", "Header", current),
   tab("hero", "Hero", current),
   tab("homepage", "Homepage", current),
@@ -132,7 +132,7 @@ const FOOTER_STANDARD: SiteFooterValues = {
 const SAVE_NOTE = "Saved changes appear on the public site straight away.";
 const SAVE_WORDS = { cancel: "Discard", save: "Save changes", saving: "Saving" };
 
-function SaveBar({ saving = false }: { saving?: boolean }) {
+export function SaveBar({ saving = false }: { saving?: boolean }) {
   return (
     <ProjectSaveBar
       note={SAVE_NOTE}
