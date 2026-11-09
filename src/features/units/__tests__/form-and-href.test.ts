@@ -98,4 +98,10 @@ describe("UT-units-href: the address of the Units page (S7-T07)", () => {
       `/admin/units?project=${PROJECT}&state=sold&search=A+1%262`,
     );
   });
+
+  it("stays under the path it is given, so the builder's links do not leave the builder portal (S7-T03)", () => {
+    expect(unitsHref({ projectId: PROJECT, state: "sold" }, "/builder/units")).toBe(
+      `/builder/units?project=${PROJECT}&state=sold`,
+    );
+  });
 });

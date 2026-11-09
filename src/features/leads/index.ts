@@ -45,5 +45,6 @@ export type {
   SubmissionsPage,
 } from "./view";
 export { LEADS_PATH, leadsHref } from "./format";
+export { BuilderLeadsBoard } from "./builder-leads-board.client";
 export { LeadsBoard } from "./leads-board.client";
 export type { LeadsBoardActions } from "./leads-board.client";

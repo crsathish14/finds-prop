@@ -47,6 +47,10 @@ type UnitsBoardProps = {
   filters: { projectId: string; state: UnitStateFilter; search?: string | undefined };
   page: UnitsPage;
   actions: UnitsBoardActions;
+  /** The page's own address, so links stay in the portal it is shown in; the admin's by default. */
+  path?: string;
+  /** The line under the heading, when the portal has its own; the admin's by default. */
+  intro?: string;
 };
 
 type Panel = { kind: "add" } | { kind: "edit"; id: string };
@@ -62,7 +66,7 @@ const SEARCH_DELAY = 350;
  * keeps nothing the server does not also know: after each change the page is read again, and "Show more" adds the
  * next units in place.
  */
-export function UnitsBoard({ projects, filters, page, actions }: UnitsBoardProps) {
+export function UnitsBoard({ projects, filters, page, actions, path, intro }: UnitsBoardProps) {
   const translate = useTranslations("admin.units");
   const everything = useTranslations() as unknown as Translator;
   const locale = useLocale();
@@ -95,15 +99,18 @@ export function UnitsBoard({ projects, filters, page, actions }: UnitsBoardProps
     if (typed === (filters.search ?? "")) return;
     const timer = window.setTimeout(() => {
       router.replace(
-        unitsHref({
-          projectId: filters.projectId,
-          state: filters.state,
-          search: typed === "" ? undefined : typed,
-        }),
+        unitsHref(
+          {
+            projectId: filters.projectId,
+            state: filters.state,
+            search: typed === "" ? undefined : typed,
+          },
+          path,
+        ),
       );
     }, SEARCH_DELAY);
     return () => window.clearTimeout(timer);
-  }, [search, filters.search, filters.projectId, filters.state, router]);
+  }, [search, filters.search, filters.projectId, filters.state, router, path]);
 
   const units = [...page.units, ...more];
   const nextCursor = loadedMore ? laterCursor : page.nextCursor;
@@ -252,13 +259,13 @@ export function UnitsBoard({ projects, filters, page, actions }: UnitsBoardProps
   });
 
   const go = (choice: { projectId: string; state: UnitStateFilter; search?: string | undefined }) =>
-    router.push(unitsHref(choice));
+    router.push(unitsHref(choice, path));
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <UnitsManager
         title={translate("title")}
-        intro={translate("intro")}
+        intro={intro ?? translate("intro")}
         addLabel={translate("actions.add")}
         onAdd={openAdd}
         project={{
