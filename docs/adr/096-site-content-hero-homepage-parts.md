@@ -30,7 +30,7 @@ From the approved screens and used as written: "Hero", "Text", "Eyebrow", "Headl
 - "(optional)" beside the Eyebrow and Subtitle boxes.
 - The limit notice: "You've reached the limit of 8 localities" and "Remove one to add another."
 - The accessible names "Locality 2" (a row), "Label 2", "Latitude 2", "Longitude 2", "Radius 2", "Remove: Adyar", "Drag: Adyar", "Move up: Adyar" and "Move down: Adyar", and "km" after a distance.
-- In the Lab demos only (the pages will use the real messages): "Add a headline before saving." and "1 thing needs attention".
+- In the Lab demos only (the pages will use the real messages): "Add a headline before saving.", "1 thing needs attention", "This field is required.", "Another row already uses this name." and "This place is outside the area the site covers. Check the latitude and longitude."
 
 ## Consequences
 
