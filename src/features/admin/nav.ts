@@ -19,7 +19,9 @@ export type AdminIconName =
   | "header"
   | "hero"
   | "homepage"
-  | "footer";
+  | "footer"
+  | "insights"
+  | "profile";
 
 export type AdminNavItem = {
   key: string;

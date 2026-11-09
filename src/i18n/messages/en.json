@@ -1963,5 +1963,23 @@
         }
       }
     }
+  },
+  "builderPortal": {
+    "shell": {
+      "navLabel": "Builder",
+      "portalTag": "Builder",
+      "menuOpen": "Open menu",
+      "menuTitle": "Builder menu",
+      "menuClose": "Close menu",
+      "viewSite": "View public site"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "units": "Units",
+      "leads": "Leads",
+      "insights": "Insights",
+      "profile": "Profile"
+    }
   }
 }

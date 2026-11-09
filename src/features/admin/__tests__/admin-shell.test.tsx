@@ -67,4 +67,47 @@ describe("AdminShell: the frame of every admin page (S6-T04)", () => {
     );
     expect(within(nav).getByRole("link", { name: /Listings/ })).not.toHaveAttribute("aria-current");
   });
+
+  it("also draws the builder's navigation, with its Insights and Profile links (S7-T03)", () => {
+    path.current = "/builder/insights";
+    const builderGroups: AdminNavGroup[] = [
+      {
+        items: [
+          { key: "dashboard", href: "/builder/dashboard", label: "Dashboard", icon: "dashboard" },
+          { key: "insights", href: "/builder/insights", label: "Insights", icon: "insights" },
+          { key: "profile", href: "/builder/profile", label: "Profile", icon: "profile" },
+        ],
+      },
+    ];
+    renderWithMessages(
+      <AdminShell
+        groups={builderGroups}
+        viewSite={{ label: "View public site", href: "/" }}
+        labels={{
+          nav: "Builder",
+          tag: "Builder",
+          menuOpen: "Open menu",
+          menuTitle: "Builder menu",
+          menuClose: "Close menu",
+        }}
+        brand={<span>Find Prop</span>}
+        mobileLogo={<span>Find Prop</span>}
+        topBar={<button type="button">Account menu</button>}
+      >
+        <p>the page</p>
+      </AdminShell>,
+    );
+    const nav = screen.getAllByRole("navigation", { name: "Builder" })[0];
+    if (!nav) throw new Error("no navigation");
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Dashboard", "Insights", "Profile", "View public site"]);
+    expect(within(nav).getByRole("link", { name: "Insights" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(nav).getByRole("link", { name: "Profile" }).querySelector("svg")).not.toBeNull();
+  });
 });

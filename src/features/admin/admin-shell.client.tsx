@@ -3,6 +3,7 @@
 import {
   Building2,
   Briefcase,
+  ChartColumn,
   ExternalLink,
   FileText,
   House,
@@ -14,6 +15,7 @@ import {
   PanelBottom,
   PanelTop,
   Plug,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -35,6 +37,8 @@ const ICONS: Record<AdminIconName, LucideIcon> = {
   hero: ImageIcon,
   homepage: House,
   footer: PanelBottom,
+  insights: ChartColumn,
+  profile: UserRound,
 };
 
 type AdminShellProps = {
@@ -48,7 +52,8 @@ type AdminShellProps = {
 };
 
 /**
- * The admin portal's frame: the shared PortalShell with the admin navigation, marking the page the admin is on. The
+ * The portal frame of the admin and of a builder (S7-T03): the shared PortalShell with the navigation it is given,
+ * marking the page the person is on. The
  * mark is filled in once the page is hydrated (`useClientPathname`), because a page reached through the language
  * rewrite has a different path on the server and on first load in the browser (repo-gotchas). The sidebar's words
  * and numbers arrive ready from the server; this only chooses the icon of each link and the current one.
