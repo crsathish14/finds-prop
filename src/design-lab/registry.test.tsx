@@ -29,7 +29,7 @@ const allEntries = LAB_BOARDS.flatMap((board) => board.entries.map((entry) => ({
 const registered = new Set(allEntries.flatMap(({ entry }) => entry.sources));
 
 describe("Design Lab registry", () => {
-  it("has the five boards of the approved UX, in order, then the domain, discovery, seller, admin and site content boards", () => {
+  it("has the five boards of the approved UX, in order, then the domain, discovery, seller, admin, site content and sponsors boards", () => {
     expect(LAB_BOARDS.map((board) => board.id)).toEqual([
       "foundations",
       "components",
@@ -41,6 +41,7 @@ describe("Design Lab registry", () => {
       "seller",
       "admin",
       "site-content",
+      "sponsors",
     ]);
     expect(LAB_BOARDS.map((board) => board.uxBoard)).toEqual([
       "ds-foundations",
@@ -53,6 +54,7 @@ describe("Design Lab registry", () => {
       "post-property",
       "admin-listings",
       "admin-cms",
+      "admin-sponsors",
     ]);
   });
 
@@ -78,6 +80,13 @@ describe("Design Lab registry", () => {
   });
 });
 
+/** The approved screens are in docs/ux/final-ux; the ones the UX addendum added (sponsors, localities) are in docs/ux/ux-addendum. */
+const root = path.resolve(__dirname, "..", "..");
+const uxScreenFolder = (uxBoard: string) =>
+  fs.existsSync(path.resolve(root, "docs/ux/final-ux/screens", `${uxBoard}.html`))
+    ? "docs/ux/final-ux/screens"
+    : "docs/ux/ux-addendum/screens";
+
 describe("Design Lab and docs/ux-reference.md", () => {
   const reference = fs.readFileSync(
     path.resolve(__dirname, "..", "..", "docs", "ux-reference.md"),
@@ -88,22 +97,14 @@ describe("Design Lab and docs/ux-reference.md", () => {
     "lists the %s board, its route and its UX board file (%s)",
     (id, uxBoard) => {
       expect(reference).toContain(`/design-system/${id}`);
-      expect(reference).toContain(`docs/ux/final-ux/screens/${uxBoard}.html`);
+      expect(reference).toContain(`${uxScreenFolder(uxBoard)}/${uxBoard}.html`);
     },
   );
 
   it.each(LAB_BOARDS.map((board) => board.uxBoard))("the UX board file %s exists", (uxBoard) => {
-    const file = path.resolve(
-      __dirname,
-      "..",
-      "..",
-      "docs",
-      "ux",
-      "final-ux",
-      "screens",
-      `${uxBoard}.html`,
+    expect(fs.existsSync(path.resolve(root, uxScreenFolder(uxBoard), `${uxBoard}.html`))).toBe(
+      true,
     );
-    expect(fs.existsSync(file)).toBe(true);
   });
 });
 
