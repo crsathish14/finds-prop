@@ -306,7 +306,10 @@
     "slugTaken": "This page address is already used by another project.",
     "slugLocked": "The page address cannot be changed once the project is approved.",
     "priceRange": "The highest price must be the same as or more than the lowest.",
-    "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty."
+    "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
+    "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
+    "localityLabelTaken": "Another row already uses this name.",
+    "outsideRegion": "This place is outside the area the site covers. Check the latitude and longitude."
   },
   "format": {
     "rupees": "₹{value}",
