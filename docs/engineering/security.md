@@ -106,24 +106,24 @@ Anything else importing `admin.server.ts` fails lint and code review.
 
 Values marked **new** are proposals (`DEC-31`, `DEC-33`, `DEC-26`). BR values are verified existing rules.
 
-| Scope                 | Limit                                                     | Identity              | Source             |
-| --------------------- | --------------------------------------------------------- | --------------------- | ------------------ |
-| Form submission       | 5 / visitor / form / hour                                 | visitor hash          | BR-61, BR-70       |
-| Project event         | 30 / visitor / minute; one `view` per project per hour    | visitor hash          | BR-71              |
-| Project lead          | 5 / visitor / hour                                        | visitor hash          | BR-72              |
-| OTP request           | 5 / phone / hour, 20 / IP / day, resend ≥ 60 s            | phone hash, IP hash   | **new**            |
-| OTP verify attempts   | 10 / phone / hour                                         | phone hash            | **new**            |
-| Enquiry               | 10 / user / day; 1 open per user+property / 24 h          | user id               | **new** (`DEC-26`) |
-| Listing create/submit | 10 / user / day; max 5 `draft`+`pending`                  | user id               | **new**            |
-| Upload URL issuance   | 30 / user / hour                                          | user id               | **new**            |
-| Admin decision        | 120 / admin / hour (listing review, builder changes)      | user id               | **new** (S6-T04)   |
-| Admin edit            | 600 / admin / hour (units, a lead's state)                | user id               | **new** (S7-T07)   |
-| Builder edit          | 300 / builder / hour (units, a lead's state, the profile) | user id               | **new** (S7-T03)   |
-| Project save          | 60 / user / hour (the project form, admin or builder)     | user id               | **new** (S7-T02)   |
-| Places autocomplete   | 60 / visitor / minute (protects provider quota)           | visitor hash          | **new**            |
-| Map search            | 60 / visitor / minute                                     | visitor hash          | **new**            |
-| Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour                 | visitor hash, IP hash | **new** (S3-T10)   |
-| AI search             | reserved (10/min/IP, 100/day global, 50 leads/h)          |                       | BR-73/74, deferred |
+| Scope                 | Limit                                                  | Identity              | Source             |
+| --------------------- | ------------------------------------------------------ | --------------------- | ------------------ |
+| Form submission       | 5 / visitor / form / hour                              | visitor hash          | BR-61, BR-70       |
+| Project event         | 30 / visitor / minute; one `view` per project per hour | visitor hash          | BR-71              |
+| Project lead          | 5 / visitor / hour                                     | visitor hash          | BR-72              |
+| OTP request           | 5 / phone / hour, 20 / IP / day, resend ≥ 60 s         | phone hash, IP hash   | **new**            |
+| OTP verify attempts   | 10 / phone / hour                                      | phone hash            | **new**            |
+| Enquiry               | 10 / user / day; 1 open per user+property / 24 h       | user id               | **new** (`DEC-26`) |
+| Listing create/submit | 10 / user / day; max 5 `draft`+`pending`               | user id               | **new**            |
+| Upload URL issuance   | 30 / user / hour                                       | user id               | **new**            |
+| Admin decision        | 120 / admin / hour (listing review, builder changes)   | user id               | **new** (S6-T04)   |
+| Admin edit            | 600 / admin / hour (units, a lead's state)             | user id               | **new** (S7-T07)   |
+| Builder edit          | 300 / builder / hour (units, a lead's state, profile)  | user id               | **new** (S7-T03)   |
+| Project save          | 60 / user / hour (the project form, admin or builder)  | user id               | **new** (S7-T02)   |
+| Places autocomplete   | 60 / visitor / minute (protects provider quota)        | visitor hash          | **new**            |
+| Map search            | 60 / visitor / minute                                  | visitor hash          | **new**            |
+| Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour              | visitor hash, IP hash | **new** (S3-T10)   |
+| AI search             | reserved (10/min/IP, 100/day global, 50 leads/h)       |                       | BR-73/74, deferred |
 
 All use `rate_limit_hit()`; exceeded → `RATE_LIMITED` with `retryAfter` and the UX rate-limited states.
 
