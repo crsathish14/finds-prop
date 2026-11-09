@@ -287,3 +287,209 @@ export function footerPictureOf(
     copyright: values.copyright.trim() || standard.copyright,
   };
 }
+
+// --- hero --------------------------------------------------------------------------------------------------------
+
+/** What the public hero shows when nothing is saved, as `buildHero` works it out (the headline can name the region). */
+export interface StandardHero {
+  title: string;
+  subtitle: string;
+}
+
+export type HeroLayoutValue = "search_desk" | "split";
+
+export interface HeroFormValues {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  layout: HeroLayoutValue;
+}
+
+/** The standard hero from what `buildHero` returned for a hero with only the layout saved. */
+export function standardHeroOf(model: { title: string; subtitle: string }): StandardHero {
+  return { title: model.title, subtitle: model.subtitle };
+}
+
+/**
+ * Where the Hero page's boxes start. The headline is needed (it cannot be left empty), so with none saved the box starts
+ * on the headline visitors see today; saving it unchanged keeps that wording. The eyebrow and the subtitle start empty
+ * when none is saved, and the picture shows the standard subtitle.
+ */
+export function heroFormOf(saved: SiteSettings["hero"], standard: StandardHero): HeroFormValues {
+  return {
+    eyebrow: saved.eyebrow ?? "",
+    title: saved.title ?? standard.title,
+    subtitle: saved.subtitle ?? "",
+    layout: saved.layout,
+  };
+}
+
+export function heroPayloadOf(values: HeroFormValues): Record<string, unknown> {
+  return {
+    eyebrow: values.eyebrow,
+    title: values.title,
+    subtitle: values.subtitle,
+    layout: values.layout,
+  };
+}
+
+export interface HeroProblems {
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+}
+
+export function heroProblemsOf(problems: Problems): HeroProblems {
+  return {
+    ...(problems.eyebrow ? { eyebrow: problems.eyebrow } : {}),
+    ...(problems.title ? { title: problems.title } : {}),
+    ...(problems.subtitle ? { subtitle: problems.subtitle } : {}),
+  };
+}
+
+export interface HeroPicture {
+  title: string;
+  subtitle: string;
+  eyebrow?: string;
+  layout: HeroLayoutValue;
+}
+
+/** The small picture of the hero: the typed words, or the standard ones where a box is empty (BR-81). */
+export function heroPictureOf(values: HeroFormValues, standard: StandardHero): HeroPicture {
+  const eyebrow = values.eyebrow.trim();
+  return {
+    title: values.title.trim() || standard.title,
+    subtitle: values.subtitle.trim() || standard.subtitle,
+    ...(eyebrow ? { eyebrow } : {}),
+    layout: values.layout,
+  };
+}
+
+// --- homepage ----------------------------------------------------------------------------------------------------
+
+/** How many curated localities become Popular chips in the search card (the same count the search feature uses, ADD-11). */
+export const POPULAR_CHIPS = 4;
+
+export const HOMEPAGE_SWITCHES = [
+  "showFeatured",
+  "showProjectTypes",
+  "showDiscovery",
+  "showWhyUs",
+  "showCta",
+] as const;
+
+export type HomepageSwitch = (typeof HOMEPAGE_SWITCHES)[number];
+
+/** A locality as the boxes hold it: all text as typed (the server reads the numbers). */
+export interface LocalityFormRow {
+  label: string;
+  lat: string;
+  lng: string;
+  radiusKm: string;
+}
+
+export interface LocalityRowValue extends LocalityFormRow {
+  id: string;
+}
+
+export type HomepageFormValues = Record<HomepageSwitch, boolean> & {
+  localities: LocalityFormRow[];
+};
+
+/** Where the Homepage page's boxes start: the saved switches and localities (the defaults when nothing is saved). */
+export function homepageFormOf(saved: SiteSettings["homepage"]): HomepageFormValues {
+  return {
+    showFeatured: saved.showFeatured,
+    showProjectTypes: saved.showProjectTypes,
+    showDiscovery: saved.showDiscovery,
+    showWhyUs: saved.showWhyUs,
+    showCta: saved.showCta,
+    localities: saved.localities.map((place) => ({
+      label: place.label,
+      lat: String(place.lat),
+      lng: String(place.lng),
+      radiusKm: String(place.radiusKm),
+    })),
+  };
+}
+
+export function localityRowsOf(
+  localities: readonly LocalityFormRow[],
+  prefix: string,
+): LocalityRowValue[] {
+  return localities.map((place, index) => ({ id: `${prefix}-${index + 1}`, ...place }));
+}
+
+export function homepagePayloadOf(
+  values: Record<HomepageSwitch, boolean> & { localities: readonly LocalityFormRow[] },
+): Record<string, unknown> {
+  return {
+    showFeatured: values.showFeatured,
+    showProjectTypes: values.showProjectTypes,
+    showDiscovery: values.showDiscovery,
+    showWhyUs: values.showWhyUs,
+    showCta: values.showCta,
+    localities: values.localities.map((place) => ({
+      label: place.label,
+      lat: place.lat,
+      lng: place.lng,
+      radiusKm: place.radiusKm,
+    })),
+  };
+}
+
+export type LocalityProblems = Partial<Record<keyof LocalityFormRow, string>>;
+
+/** The localities' problems, put on the row at the place the server names (`localities.2.lat`). */
+export function localityProblemsOf(
+  problems: Problems,
+  rows: readonly { id: string }[],
+): Record<string, LocalityProblems> {
+  const found: Record<string, LocalityProblems> = {};
+  for (const [path, message] of Object.entries(problems)) {
+    const match = /^localities\.(\d+)\.(label|lat|lng|radiusKm)$/.exec(path);
+    const place = match?.[1];
+    const box = match?.[2] as keyof LocalityFormRow | undefined;
+    const row = place === undefined ? undefined : rows[Number(place)];
+    if (!row || !box) continue;
+    found[row.id] = { ...found[row.id], [box]: message };
+  }
+  return found;
+}
+
+export type HomepageSectionKey =
+  "hero" | "discovery" | "featured" | "projectTypes" | "whyUs" | "cta";
+
+export interface HomepagePicture {
+  sections: { key: HomepageSectionKey; on: boolean }[];
+  popular: string[];
+  tiles: string[];
+}
+
+/**
+ * The small picture of the home page: the sections in the order of the page with their state, the Popular chips (the
+ * first four localities) and the locality tiles. A locality section with no localities is drawn Off, as the public page
+ * leaves out a section with nothing to show (FR-PUB-05).
+ */
+export function homepagePictureOf(values: {
+  showFeatured: boolean;
+  showProjectTypes: boolean;
+  showDiscovery: boolean;
+  showWhyUs: boolean;
+  showCta: boolean;
+  localities: readonly { label: string }[];
+}): HomepagePicture {
+  const labels = values.localities.map((place) => place.label.trim()).filter(Boolean);
+  return {
+    sections: [
+      { key: "hero", on: true },
+      { key: "discovery", on: values.showDiscovery && labels.length > 0 },
+      { key: "featured", on: values.showFeatured },
+      { key: "projectTypes", on: values.showProjectTypes },
+      { key: "whyUs", on: values.showWhyUs },
+      { key: "cta", on: values.showCta },
+    ],
+    popular: labels.slice(0, POPULAR_CHIPS),
+    tiles: labels,
+  };
+}

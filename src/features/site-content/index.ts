@@ -5,8 +5,18 @@ export {
   saveHeroConfig,
   saveHomepageConfig,
 } from "./action-config";
-export { getFooterPage, getHeaderPage, getSiteContent } from "./queries";
-export type { FooterPage, HeaderPage, SiteContent } from "./queries";
+export {
+  getFooterPage,
+  getHeaderPage,
+  getHeroPage,
+  getHomepagePage,
+  getSiteContent,
+} from "./queries";
+export type { FooterPage, HeaderPage, HeroPage, HomepagePage, SiteContent } from "./queries";
+export { HeroForm } from "./hero-form.client";
+export type { HeroFormProps } from "./hero-form.client";
+export { HomepageForm } from "./homepage-form.client";
+export type { HomepageFormProps } from "./homepage-form.client";
 export { FooterForm } from "./footer-form.client";
 export type { FooterFormProps } from "./footer-form.client";
 export { HeaderForm } from "./header-form.client";

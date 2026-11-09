@@ -90,20 +90,20 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Admin portal
 
-| Req       | Name                | Modules                  | Stage      | UX                               | Tests                             |
-| --------- | ------------------- | ------------------------ | ---------- | -------------------------------- | --------------------------------- |
-| FR-ADM-01 | Overview            | `admin-overview`         | S7-T06     | `admin-overview`                 | chart tests, IT-AUTHZ-admin       |
-| FR-ADM-02 | Listings moderation | `moderation`             | **S6-T04** | `admin-listings`                 | DB-FN-lifecycle, E06/E08          |
-| FR-ADM-03 | Projects moderation | `moderation`, `projects` | S7-T04     | `admin-projects`                 | DB-TRG-projects-guard, E11/E12    |
-| FR-ADM-04 | Project form        | `projects`               | S7-T02     | `admin-project-form`             | E11                               |
-| FR-ADM-05 | Units               | `projects`               | S7-T07     | `admin-units`                    | E16                               |
-| FR-ADM-06 | Builders            | `builders`               | S7-T05     | `admin-builders`                 | IT-builder-invite, E11            |
-| FR-ADM-07 | Leads               | `projects`, `forms`      | S7-T07     | `admin-leads`                    | IT-forms, E14                     |
-| FR-ADM-08 | Form builder        | `forms`                  | S7-T08     | `admin-forms`                    | UT-dynamic-form, E14              |
-| FR-ADM-09 | CRM                 | `crm`                    | S7-T09     | `admin-crm`                      | UT-crm-url, UT-retry, IT-crm, E14 |
-| FR-ADM-10 | CMS                 | `site`                   | S7-T10     | `admin-cms`                      | IT-sponsors, E15                  |
-| FR-ADM-11 | Hero layout setting | `site`, `sponsors`       | S7-T10     | `admin-cms#hero`                 | E09, E15                          |
-| FR-ADM-12 | Banner management   | `sponsors`               | S7-T11     | Partial (`admin-cms#hero`) + Gap | IT-sponsors, E15                  |
+| Req       | Name                | Modules                            | Stage      | UX                               | Tests                             |
+| --------- | ------------------- | ---------------------------------- | ---------- | -------------------------------- | --------------------------------- |
+| FR-ADM-01 | Overview            | `admin-overview`                   | S7-T06     | `admin-overview`                 | chart tests, IT-AUTHZ-admin       |
+| FR-ADM-02 | Listings moderation | `moderation`                       | **S6-T04** | `admin-listings`                 | DB-FN-lifecycle, E06/E08          |
+| FR-ADM-03 | Projects moderation | `moderation`, `projects`           | S7-T04     | `admin-projects`                 | DB-TRG-projects-guard, E11/E12    |
+| FR-ADM-04 | Project form        | `projects`                         | S7-T02     | `admin-project-form`             | E11                               |
+| FR-ADM-05 | Units               | `projects`                         | S7-T07     | `admin-units`                    | E16                               |
+| FR-ADM-06 | Builders            | `builders`                         | S7-T05     | `admin-builders`                 | IT-builder-invite, E11            |
+| FR-ADM-07 | Leads               | `projects`, `forms`                | S7-T07     | `admin-leads`                    | IT-forms, E14                     |
+| FR-ADM-08 | Form builder        | `forms`                            | S7-T08     | `admin-forms`                    | UT-dynamic-form, E14              |
+| FR-ADM-09 | CRM                 | `crm`                              | S7-T09     | `admin-crm`                      | UT-crm-url, UT-retry, IT-crm, E14 |
+| FR-ADM-10 | CMS                 | `site`, `site-content`             | S7-T10     | `admin-cms`                      | IT-sponsors, E15                  |
+| FR-ADM-11 | Hero layout setting | `site`, `sponsors`, `site-content` | S7-T10     | `admin-cms#hero`                 | E09, E15                          |
+| FR-ADM-12 | Banner management   | `sponsors`                         | S7-T11     | Partial (`admin-cms#hero`) + Gap | IT-sponsors, E15                  |
 
 ### Cross-cutting and gated
 
@@ -148,10 +148,10 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | P-18    | `/admin/leads`          | `/admin/leads`                          | `admin-leads`                              | projects, forms                     | S7       | E14              |
 | P-19    | `/admin/forms`          | `/admin/forms`                          | `admin-forms`                              | forms                               | S7       | E14              |
 | P-20    | `/admin/crm`            | `/admin/crm`                            | `admin-crm`                                | crm                                 | S7       | E14              |
-| P-21    | `/admin/header`         | `/admin/header`                         | `admin-cms#header`                         | site                                | S7       | E15              |
-| P-22    | `/admin/hero`           | `/admin/hero`                           | `admin-cms#hero`                           | site, sponsors                      | S7       | E15              |
-| P-23    | `/admin/homepage`       | `/admin/homepage`                       | `admin-cms#homepage`                       | site                                | S7       | E15              |
-| P-24    | `/admin/footer`         | `/admin/footer`                         | `admin-cms#footer`                         | site                                | S7       | E15              |
+| P-21    | `/admin/header`         | `/admin/header`                         | `admin-cms#header`                         | site, site-content                  | S7       | E15              |
+| P-22    | `/admin/hero`           | `/admin/hero`                           | `admin-cms#hero`                           | site, sponsors, site-content        | S7       | E15              |
+| P-23    | `/admin/homepage`       | `/admin/homepage`                       | `admin-cms#homepage`                       | site, site-content                  | S7       | E15              |
+| P-24    | `/admin/footer`         | `/admin/footer`                         | `admin-cms#footer`                         | site, site-content                  | S7       | E15              |
 | new     | —                       | `/admin/listings`                       | `admin-listings`                           | moderation                          | S6       | E06, E08         |
 | —       | `/builder/`             | `/builder` → `/builder/dashboard`       | —                                          | app                                 | S3       | E10              |
 | P-25    | `/builder/dashboard`    | `/builder/dashboard`                    | `builder-dashboard`                        | projects                            | S7       | E11              |
