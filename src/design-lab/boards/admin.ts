@@ -23,6 +23,11 @@ import {
   ResponsiveTableDemo,
 } from "./admin-managers-demos";
 import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-demos";
+import {
+  FormFieldsEditorDemo,
+  FormSettingsFieldsDemo,
+  FormsManagerDemo,
+} from "./admin-forms-demos";
 
 /**
  * What the admin uses to review the listings owners post (S6-T04) and to invite and manage builders (S7-T05).
@@ -216,5 +221,29 @@ export const ADMIN: LabEntry[] = [
       "The admin's box for the monthly price per sq.ft behind the chart on the project page: a month box, a price box and a remove button on each row, Add month and the count (up to 120 months), at the width of the form's side column. Shown empty, with four months, with problems, full and while saving.",
     sources: ["domain/price-trends-editor.tsx"],
     Demo: PriceTrendsEditorDemo,
+  },
+  {
+    id: "forms-manager",
+    name: "Forms manager",
+    description:
+      "The Forms page of the admin: the heading and New form, and the list of forms (a table from 1024 px of room, cards below that) with the name and kind, the slug, how many fields, where the form is shown, the CRM it is linked to, an Active switch, and Edit, Duplicate and Delete on each row. Shown with four forms (one off), a form being copied with a very long name and slug, and nothing yet.",
+    sources: ["domain/forms-manager.tsx"],
+    Demo: FormsManagerDemo,
+  },
+  {
+    id: "form-settings-fields",
+    name: "Form settings fields",
+    description:
+      "The Settings box of the form editor: name, slug, kind, placement, the project (on only for one project), the CRM integration, the button text, the Active switch and the success message, in two columns from 768 px. Shown filled in, for one project, with errors (a project not chosen, a slug already used) and while saving.",
+    sources: ["domain/form-settings-fields.tsx"],
+    Demo: FormSettingsFieldsDemo,
+  },
+  {
+    id: "form-fields-editor",
+    name: "Form fields editor",
+    description:
+      "The Fields box of the form editor, with the live preview beside it: quick-add chips, a row for each field (label, kind, required) that opens to its label, key, kind, placeholder, choices, smallest and largest, and Required, reordered by dragging or with the arrow buttons, and Add field. The preview is read only and drawn by the same part visitors see. Shown with the second field open, a dropdown and a number open, errors on two fields, at the limit, empty, and while saving.",
+    sources: ["domain/form-fields-editor.tsx", "domain/form-preview.tsx"],
+    Demo: FormFieldsEditorDemo,
   },
 ];
