@@ -33,5 +33,7 @@ export type {
   UpdateMyProjectInput,
   UpdateProjectInput,
 } from "./schemas";
+export { ProjectForm } from "./project-form.client";
+export type { ProjectFormProps } from "./project-form.client";
 export type { ProjectDone } from "./project-service";
 export type { BuilderOption, FormOption, ProjectEditView, TrendView } from "./view";
