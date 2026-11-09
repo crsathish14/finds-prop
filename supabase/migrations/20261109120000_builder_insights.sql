@@ -2,9 +2,9 @@
 -- One function answers every tile for the signed-in builder: their projects and units (the portfolio), and the
 -- visitor activity and the actions taken on their projects between two days. It runs as the caller (not a definer
 -- function), so the row-level policies of the tables still apply, and it also restricts every count to the projects
--- of the builder's own record: the policies of `project_units` let any signed-in person read the units of a live
--- project, and a super admin may read every project, so the policies alone are not "my projects". Anyone who is
--- not an active builder is refused. A project that is not the builder's, asked for by id, counts as no project.
+-- of the builder's own record (read through `my_projects()`, as the projects table is not open to a client): the
+-- policies of `project_units` let any signed-in person read the units of a live project, so the policies alone are
+-- not "my projects". Anyone who is not an active builder is refused. A project that is not the builder's, asked for by id, counts as no project.
 -- Days are whole days in India time (the first day from its first minute, the last day to its last minute), and a
 -- range may not be longer than a year. A visitor is counted once however many times they viewed.
 -- Rollback note: nothing here is destructive. Drop the function, or fix forward with a new migration.
@@ -51,10 +51,10 @@ begin
   window_start := p_from::timestamp at time zone 'Asia/Kolkata';
   window_end := (p_to + 1)::timestamp at time zone 'Asia/Kolkata';
 
+  -- `my_projects()` is the builder's own list: the table itself is not open to a client for reading.
   select coalesce(array_agg(project.id), '{}') into own_projects
-  from public.projects as project
-  where project.builder_id = own_builder
-    and (p_project is null or project.id = p_project);
+  from public.my_projects() as project
+  where p_project is null or project.id = p_project;
 
   return query
   select
@@ -77,7 +77,7 @@ begin
     select
       count(*) as projects,
       count(*) filter (where project.moderation = 'approved' and project.published) as active_projects
-    from public.projects as project
+    from public.my_projects() as project
     where project.id = any (own_projects)
   ) as portfolio
   cross join (
