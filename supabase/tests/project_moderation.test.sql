@@ -1,7 +1,7 @@
 -- F04 follow-up: the admin's project moderation (S7-T04). Tests: DB-FN-moderate_project, DB-FN-admin_project_overview,
 -- DB-PRIV-project-moderation, DB-CON-project_leads-restrict (BR-44).
 begin;
-select plan(36);
+select plan(37);
 
 -- ad is the reserved admin; b1 is a builder; c1 is a customer.
 insert into auth.users (id, email, email_confirmed_at) values
@@ -58,12 +58,13 @@ select results_eq(
   $$values ('rejected', 'Rejected by an admin.', false)$$,
   'with a short fixed reason when none is given, as the table needs one'
 );
-select results_eq(
-  $$select p.rejection_reason
-    from public.moderate_project('00000000-0000-4000-c000-000000000007', 'reject', '  Brochure is missing  ') as decided
-    join public.admin_projects() as p on p.id = decided.id$$,
-  $$values ('Brochure is missing')$$,
-  'or the reason that is given, trimmed'
+select is(
+  (select moderation from public.moderate_project('00000000-0000-4000-c000-000000000007', 'reject', '  Brochure is missing  ')),
+  'rejected', 'a rejection can carry a reason of its own'
+);
+select is(
+  (select rejection_reason from public.admin_projects() where id = '00000000-0000-4000-c000-000000000007'),
+  'Brochure is missing', 'which is kept, trimmed'
 );
 select throws_ok(
   $$select * from public.moderate_project('00000000-0000-4000-c000-000000000002', 'reject')$$, '55000',

@@ -23,5 +23,5 @@
 
 ## Consequences
 
-- One migration and its pgTAP test (36 checks, run in CI); a feature with its unit tests (who may call each action, the error mapping, the stores, the rows and the read) and an integration test (run in CI) of the decisions, the delete refused for leads, the list and a builder refused. The hosted dev database changes only through the db-deploy workflow, after the owner merges. No package, environment, CI or protected-file change.
+- One migration and its pgTAP test (37 checks, run in CI); a feature with its unit tests (who may call each action, the error mapping, the stores, the rows and the read) and an integration test (run in CI) of the decisions, the delete refused for leads, the list and a builder refused. The hosted dev database changes only through the db-deploy workflow, after the owner merges. No package, environment, CI or protected-file change.
 - Rollback: drop both functions (`drop function public.moderate_project(uuid, text, text)`, `drop function public.admin_project_overview()`) and delete the feature. Decisions already made stay as ordinary values of the project's state.
