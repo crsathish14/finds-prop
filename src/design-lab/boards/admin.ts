@@ -21,6 +21,11 @@ import {
   PriceTrendsEditorDemo,
   ProjectMediaDemo,
 } from "./admin-project-media-demos";
+import {
+  SiteHeroDemo,
+  SiteHomepageDemo,
+  SiteLocalitiesDemo,
+} from "./admin-site-hero-homepage-demos";
 import { LeadsTableDemo, UnitFormDemo, UnitsManagerDemo } from "./admin-units-leads-demos";
 import {
   ManagerDrawerDemo,
@@ -255,5 +260,39 @@ export const ADMIN: LabEntry[] = [
       "domain/site-content-layout.tsx",
     ],
     Demo: SiteFooterDemo,
+  },
+  {
+    id: "site-hero-page",
+    name: "Site hero page",
+    description:
+      "The Hero page of the admin's Site content: the eyebrow, headline and subtitle boxes, the choice between the Search Desk and Split layouts (two cards with a small drawing each, one tab stop with the arrow keys choosing) and a preview that follows what is typed and chosen (the eyebrow shows in Split only). Shown filled with Split chosen, with the optional boxes empty on Search Desk, with the headline missing, and while saving.",
+    sources: [
+      "domain/site-hero-fields.tsx",
+      "domain/site-hero-preview.tsx",
+      "domain/choice-cards.tsx",
+      "domain/site-content-layout.tsx",
+    ],
+    Demo: SiteHeroDemo,
+  },
+  {
+    id: "site-homepage-page",
+    name: "Site homepage page",
+    description:
+      "The Homepage page of the admin's Site content: a switch for each section below the hero (the whole row is the click target), the list of curated localities and a preview of the home page with each section On or Off, the Popular chips and the locality tiles. Shown with every section on and five localities, with two sections off and no localities (the preview says the section is hidden), and while saving.",
+    sources: [
+      "domain/site-homepage-fields.tsx",
+      "domain/site-homepage-preview.tsx",
+      "domain/site-localities-editor.tsx",
+      "domain/site-content-layout.tsx",
+    ],
+    Demo: SiteHomepageDemo,
+  },
+  {
+    id: "site-localities-editor",
+    name: "Localities editor",
+    description:
+      "The list of localities the home page features: for each a label, a latitude and a longitude (typed until the place search is built), a radius of 2 to 6 km, the grip and the arrows to change the order, and Remove; Add locality (off at the limit of 8, with a notice) and a note when the list is empty. On a phone every box is on its own line; from 768 px the latitude, longitude and radius share a line. Shown with five localities, empty, with problems on three rows, at the limit, with a very long name and a distance that is not offered, and off while saving.",
+    sources: ["domain/site-localities-editor.tsx", "patterns/sortable-list.tsx"],
+    Demo: SiteLocalitiesDemo,
   },
 ];
