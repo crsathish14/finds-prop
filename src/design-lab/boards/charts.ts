@@ -51,7 +51,7 @@ export const CHARTS: LabEntry[] = [
     id: "overview-page",
     name: "Admin overview",
     description:
-      "The whole Overview page put together from these parts and the Insights panel: the numbers in three groups (Listings, People, Leads and engagement), the date choice with Today and Yesterday, the three charts and the recent leads. Shown normally, and with the error notice and Try again while the charts are dimmed for a reload.",
+      "The whole Overview page put together from these parts and the Insights panel: the numbers in three groups (Listings, People, Leads and engagement), the date choice with Today and Yesterday, the three charts and the recent leads. Shown normally, and with the error notice and Try again while it reloads (an Updating line; the text is not dimmed).",
     sources: ["domain/insights-panel.tsx"],
     Demo: OverviewPageDemo,
   },

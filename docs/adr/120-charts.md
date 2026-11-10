@@ -23,7 +23,7 @@ If a later chart needs more than this (many series, a zoom, thousands of points)
 - **A chart is never the only way to read its numbers.** A line chart has a table twin; a share bar is drawn above a table that says the same in words (the bar itself is hidden from a screen reader); a bar list is a list whose rows say their numbers in text. The line chart has one focusable picture with a name; the left and right arrow keys, Home and End move the crosshair, Escape hides it, and a polite line says the day and every series' number.
 - **Two end names that finish at the same height are moved apart** (16 px), and on a phone (under 480 px) the end names go and fewer day labels are drawn; the legend still names every series.
 - **Two props for the Design Lab only,** `defaultPoint` on the line chart and `defaultView` on the card, so a picture can show the crosshair and the table view. They are documented in the parts' headers; nothing else uses them.
-- **The Lab gets a board of its own, "Charts"** (`/design-system/charts`, mirroring the admin Overview screen), because the Admin board is already too tall to photograph in time at 820 and 1440 px. Five entries: the line chart, the card and the table view, the share bar and the bar list, the recent leads, and the whole Overview page put together from these parts and the Insights panel, with its error notice and its dimmed reload state.
+- **The Lab gets a board of its own, "Charts"** (`/design-system/charts`, mirroring the admin Overview screen), because the Admin board is already too tall to photograph in time at 820 and 1440 px. Five entries: the line chart, the card and the table view, the share bar and the bar list, the recent leads, and the whole Overview page put together from these parts and the Insights panel, with its error notice and its Updating line while it reloads.
 - **Not in this change:** the data, the database function, the page and its date handling (parts 2 and 3). The numbers on the Lab board are a repeatable wave, not real data.
 
 ## Wording to confirm (owner)
@@ -34,6 +34,10 @@ The approved admin-overview screen gives the page's headings, the date choices, 
 - The "Recent leads" box with nothing in it: "No leads yet" with "New leads will show here."
 - The table view's first column heading, "Date" (the screen's prototype has it; the screen's text does not show it).
 - In the share bar, the name "Other" for the parts added together (the screen says only "≤ 4, then Other"), and the demo's "Other forms" for leads that did not come through a project page (the page's own names come with part 3).
+
+## Reloading is shown with a line, not by dimming (to confirm)
+
+The approved screen dims the page while the numbers reload. Dimming text fails the contrast rule that the Design Lab checks in CI (at 60% the muted text is 2.65:1, the ink 4.11:1, and the white-on-green switch 3.34:1; 4.5:1 is needed), and it did fail on the first CI run. So the numbers stay at full contrast, are not clickable while loading, and an "Updating the numbers…" line with a spinner (read aloud as a status) shows above them. The owner can ask for a lighter dim (90% passes, but is hardly visible) instead.
 
 ## Consequences
 

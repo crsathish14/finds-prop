@@ -31,6 +31,7 @@ import { ShareBar } from "@/components/patterns/share-bar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
 import { Specimen, Stage } from "../frame";
 
@@ -486,11 +487,14 @@ function Overview({
     >
       <div
         aria-busy={refetching}
-        className={cn(
-          "flex flex-col gap-4 transition-opacity",
-          refetching && "pointer-events-none opacity-60",
-        )}
+        className={cn("flex flex-col gap-4", refetching && "pointer-events-none")}
       >
+        {refetching ? (
+          <p className="flex items-center gap-3 text-small text-muted">
+            <Spinner label="Updating the numbers" />
+            Updating the numbers…
+          </p>
+        ) : null}
         <div className="grid gap-4 lg:grid-cols-3">
           <ChartCard
             className="lg:col-span-2"
@@ -534,7 +538,7 @@ export function OverviewPageDemo() {
         </Stage>
       </Specimen>
       <Specimen
-        label="The overview could not load: the last numbers stay with a way to try again, and the charts are dimmed while it reloads"
+        label="The overview could not load: the last numbers stay with a way to try again, and an Updating line shows while it reloads"
         className="w-full"
       >
         <Stage tone="canvas" className="w-full">

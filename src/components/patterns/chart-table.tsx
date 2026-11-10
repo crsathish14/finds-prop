@@ -7,7 +7,7 @@
  *   for each), series ({ id, name, data }[], one column each), unit (a suffix), locale, className.
  * Responsive: a tall table scrolls inside its own box (about 280 px high), with the headings kept at the top, so the
  *   page does not grow with the number of days; a wide one scrolls sideways.
- * Accessibility: a real table with a caption; each row starts with a row heading (the day), each column has a heading.
+ * Accessibility: the scrolling box is a focusable named region (so the keyboard can scroll it); a real table with a caption; each row starts with a row heading (the day), each column has a heading.
  * States: one or several series, many rows (scrolls), a unit.
  * Dependencies: lib/chart-scale, cn. Tests: line-chart.test.tsx; Design Lab "Charts" (S7-T06).
  * UX reference: admin-overview screen, the Table view of "Leads, enquiries and shortlists".
@@ -37,6 +37,9 @@ function ChartTable({
   return (
     <div
       data-slot="chart-table"
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
       className={cn("max-h-70 overflow-auto rounded-md border border-line", className)}
     >
       <table className="w-full border-collapse text-small">

@@ -221,6 +221,12 @@ describe("ChartTable (S7-T06)", () => {
     expect(within(grid).getByRole("rowheader", { name: "3 Oct" })).toBeVisible();
   });
 
+  it("scrolls in a named box the keyboard can reach", () => {
+    table();
+    const box = screen.getByRole("region", { name: "Leads, enquiries and shortlists per day" });
+    expect(box).toHaveAttribute("tabindex", "0");
+  });
+
   it("says the same numbers as the chart", () => {
     table();
     const row = screen.getByRole("rowheader", { name: "4 Oct" }).closest("tr") as HTMLElement;
