@@ -4,6 +4,7 @@ import { COMPONENTS } from "./boards/components";
 import { DISCOVERY } from "./boards/discovery";
 import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
+import { FORMS } from "./boards/forms";
 import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
 import { SELLER } from "./boards/seller";
@@ -103,6 +104,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, and the Add and Edit sponsor form. It mirrors the admin Hero and sponsors screen.",
     entries: SPONSORS,
+  },
+  {
+    id: "forms",
+    title: "Forms",
+    uxBoard: "admin-forms",
+    summary:
+      "What the admin uses to build the forms shown on project pages and the contact page: the list of forms with its Active switches, the editor's Settings box, and the Fields editor with its live preview. It mirrors the admin Forms screen.",
+    entries: FORMS,
   },
   {
     id: "sponsor-manager",

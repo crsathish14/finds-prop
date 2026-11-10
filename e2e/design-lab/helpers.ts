@@ -20,6 +20,7 @@ export const BOARDS = [
   "admin",
   "site-content",
   "sponsors",
+  "forms",
   "sponsor-manager",
 ] as const;
 

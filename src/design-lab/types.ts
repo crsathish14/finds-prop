@@ -17,6 +17,7 @@ export type LabBoardId =
   | "admin"
   | "site-content"
   | "sponsors"
+  | "forms"
   | "sponsor-manager";
 
 export type LabEntry = {
