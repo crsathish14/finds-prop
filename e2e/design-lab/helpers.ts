@@ -22,6 +22,7 @@ export const BOARDS = [
   "sponsors",
   "forms",
   "crm",
+  "charts",
 ] as const;
 
 export async function settle(page: Page) {
