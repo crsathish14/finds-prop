@@ -66,7 +66,8 @@ export async function expectNoHorizontalOverflow(page: Page) {
         const box = element.getBoundingClientRect();
         const slot = element.closest("[data-slot]")?.getAttribute("data-slot") ?? "";
         const classes = (element.getAttribute("class") ?? "").slice(0, 80);
-        return `${element.tagName.toLowerCase()}[${slot}] ${Math.round(box.left)}-${Math.round(box.right)} ${classes}`;
+        const parent = element.parentElement?.getBoundingClientRect().width ?? 0;
+        return `${element.tagName.toLowerCase()}[${slot}] ${Math.round(box.left)}-${Math.round(box.right)} (parent ${Math.round(parent)} wide) ${classes}`;
       });
     return { scrollWidth: document.documentElement.scrollWidth, clientWidth, culprits };
   });

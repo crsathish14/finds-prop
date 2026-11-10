@@ -231,7 +231,7 @@ const PROJECTS = [
 export function ShareAndBarsDemo() {
   return (
     <div className="flex flex-col gap-10">
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Specimen label="Leads by source: three parts, as one bar with a 2 px gap and a table">
           <Stage tone="canvas" className="w-full">
             <ChartCard title="Leads by source" description="Share of 806 leads" headingLevel={3}>
@@ -255,7 +255,7 @@ export function ShareAndBarsDemo() {
           </Stage>
         </Specimen>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Specimen label="Enquiries by project: six rows, biggest first">
           <Stage tone="canvas" className="w-full">
             <ChartCard title="Enquiries by project" description="Top 6 projects" headingLevel={3}>
@@ -335,7 +335,7 @@ const ALL_LEADS = (
 
 export function RecentLeadsDemo() {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Specimen label="Five lines, with the link to every lead">
         <Stage tone="canvas" className="w-full">
           <ChartCard title="Recent leads" action={ALL_LEADS} headingLevel={3}>
@@ -495,7 +495,7 @@ function Overview({
             Updating the numbers…
           </p>
         ) : null}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <ChartCard
             className="lg:col-span-2"
             title="Leads, enquiries and shortlists"
@@ -509,7 +509,7 @@ function Overview({
             <ShareBar title="Leads by source" parts={SOURCES} />
           </ChartCard>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <ChartCard title="Enquiries by project" description="Top 6 projects">
             <BarList title="Enquiries by project" rows={PROJECTS} />
           </ChartCard>
