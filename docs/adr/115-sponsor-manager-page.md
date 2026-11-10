@@ -1,4 +1,4 @@
-# ADR-113 · Sponsor management: the manager on the Hero page (S7-T11, part C)
+# ADR-115 · Sponsor management: the manager on the Hero page (S7-T11, part C)
 
 - Status: Accepted
 - Date: 2026-11-10
