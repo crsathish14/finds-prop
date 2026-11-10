@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FormEditor, getFormBuilderData, updateForm } from "@/features/form-builder";
+import { EDITOR_LISTS, FormEditor, getFormBuilderData, updateForm } from "@/features/form-builder";
 import { getTranslate } from "@/features/site";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -25,6 +25,12 @@ export default async function EditFormPage({ params }: PageProps) {
   const form = forms.find((candidate) => candidate.id === id.toLowerCase());
   if (!form) notFound();
   return (
-    <FormEditor form={form} projects={projects} integrations={integrations} save={updateForm} />
+    <FormEditor
+      form={form}
+      projects={projects}
+      integrations={integrations}
+      lists={EDITOR_LISTS}
+      save={updateForm}
+    />
   );
 }

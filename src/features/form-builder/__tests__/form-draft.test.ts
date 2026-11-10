@@ -164,18 +164,21 @@ describe("what the save action takes", () => {
 
 describe("the live preview's fields", () => {
   it("draws only fields that have a label, in order, with their choices and limits", () => {
-    const fields = previewFieldsOf([
-      { ...blankDraft("a"), label: "Name", key: "name", required: true },
-      blankDraft("b"),
-      {
-        ...blankDraft("c"),
-        label: "City",
-        type: "dropdown",
-        options: "Chennai\nMadurai",
-        placeholder: "Choose",
-      },
-      { ...blankDraft("d"), label: "Budget", type: "number", min: "10", max: "" },
-    ]);
+    const fields = previewFieldsOf(
+      [
+        { ...blankDraft("a"), label: "Name", key: "name", required: true },
+        blankDraft("b"),
+        {
+          ...blankDraft("c"),
+          label: "City",
+          type: "dropdown",
+          options: "Chennai\nMadurai",
+          placeholder: "Choose",
+        },
+        { ...blankDraft("d"), label: "Budget", type: "number", min: "10", max: "" },
+      ],
+      ["text", "number", "dropdown"],
+    );
     expect(fields.map((field) => field.label)).toEqual(["Name", "City", "Budget"]);
     expect(fields[1]).toMatchObject({ key: "c", options: ["Chennai", "Madurai"] });
     expect(fields[2]).toMatchObject({ min: 10, max: undefined });

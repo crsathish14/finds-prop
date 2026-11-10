@@ -19,7 +19,6 @@ import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { Alert } from "@/components/patterns/alert";
 import { Breadcrumb } from "@/components/patterns/breadcrumb";
 import { Heading } from "@/components/ui/heading";
-import { FIELD_TYPES, FORM_KINDS, FORM_PLACEMENTS } from "@/features/forms";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { notify } from "@/lib/notify";
 import type { ActionResult } from "@/types/action";
@@ -51,6 +50,8 @@ type FormEditorProps = {
   form: AdminFormView | null;
   projects: { id: string; name: string }[];
   integrations: { id: string; name: string }[];
+  /** The kinds, placements and field types the forms feature knows (passed in by the page, which may read them). */
+  lists: { kinds: readonly string[]; placements: readonly string[]; types: readonly string[] };
   /** Makes a form (when `form` is none) or saves changes to it. */
   save: (input: Record<string, unknown>) => Promise<ActionResult<{ formId: string; slug: string }>>;
 };
@@ -63,7 +64,7 @@ type FormEditorProps = {
  * A key used twice is caught before sending. After a change to a form that exists the page is read again; a new form
  * opens on its own page once it is made.
  */
-export function FormEditor({ form, projects, integrations, save }: FormEditorProps) {
+export function FormEditor({ form, projects, integrations, lists, save }: FormEditorProps) {
   const translate = useTranslations("admin.forms.editor");
   const everything = useTranslations() as unknown as Translator;
   const router = useRouter();
@@ -290,11 +291,11 @@ export function FormEditor({ form, projects, integrations, save }: FormEditorPro
               values={settings}
               errors={problems.settings}
               onChange={changeSetting}
-              kinds={FORM_KINDS.map((value) => ({
+              kinds={lists.kinds.map((value) => ({
                 value,
                 label: everything(`admin.forms.kinds.${value}`),
               }))}
-              placements={FORM_PLACEMENTS.map((value) => ({
+              placements={lists.placements.map((value) => ({
                 value,
                 label: everything(`admin.forms.placements.${value}`),
               }))}
@@ -308,7 +309,7 @@ export function FormEditor({ form, projects, integrations, save }: FormEditorPro
             fields={drafts}
             openId={openId}
             errors={problems.fields}
-            types={FIELD_TYPES.map((value) => ({
+            types={lists.types.map((value) => ({
               value,
               label: everything(`admin.forms.editor.types.${value}`),
             }))}
@@ -331,7 +332,7 @@ export function FormEditor({ form, projects, integrations, save }: FormEditorPro
           <FormPreview
             label={translate("preview.label")}
             empty={translate("preview.empty")}
-            fields={previewFieldsOf(drafts)}
+            fields={previewFieldsOf(drafts, lists.types)}
             buttonText={settings.buttonText.trim() || undefined}
           />
         </div>

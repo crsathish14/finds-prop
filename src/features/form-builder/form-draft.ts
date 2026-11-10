@@ -3,7 +3,7 @@ import type {
   FormSettingsField,
   FormSettingsValues,
 } from "@/components/domain/form-settings-fields";
-import { FIELD_TYPES, type FieldType, type FormField } from "@/features/forms";
+import type { FieldType, FormField } from "@/features/forms";
 import type { AdminFormView } from "./view";
 
 /**
@@ -261,17 +261,20 @@ export function duplicateKeyProblems(
   return found;
 }
 
-const isFieldType = (value: string): value is FieldType =>
-  (FIELD_TYPES as readonly string[]).includes(value);
+const isKnown = (known: readonly string[], value: string): value is FieldType =>
+  known.includes(value);
 
 /**
  * The fields as the live preview draws them: the ones that already have a label, in order. A field with no key yet
  * is drawn under its box's id, and a limit that is not a number is left out.
  */
-export function previewFieldsOf(drafts: readonly FormFieldDraft[]): FormField[] {
+export function previewFieldsOf(
+  drafts: readonly FormFieldDraft[],
+  known: readonly string[],
+): FormField[] {
   return drafts.flatMap((draft) => {
     const label = draft.label.trim();
-    if (label === "" || !isFieldType(draft.type)) return [];
+    if (label === "" || !isKnown(known, draft.type)) return [];
     const options = CHOICE_TYPES.includes(draft.type)
       ? draft.options
           .split("\n")

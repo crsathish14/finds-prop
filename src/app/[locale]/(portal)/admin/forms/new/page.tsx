@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createForm, FormEditor, getFormBuilderData } from "@/features/form-builder";
+import { createForm, EDITOR_LISTS, FormEditor, getFormBuilderData } from "@/features/form-builder";
 import { getTranslate } from "@/features/site";
 
 // The portal layout already says the page is never indexed.
@@ -15,6 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function NewFormPage() {
   const { projects, integrations } = await getFormBuilderData();
   return (
-    <FormEditor form={null} projects={projects} integrations={integrations} save={createForm} />
+    <FormEditor
+      form={null}
+      projects={projects}
+      integrations={integrations}
+      lists={EDITOR_LISTS}
+      save={createForm}
+    />
   );
 }

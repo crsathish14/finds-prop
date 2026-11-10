@@ -15,6 +15,12 @@ const { FormEditor } = await import("../form-editor.client");
 
 const words = en.admin.forms.editor;
 
+const LISTS = {
+  kinds: ["enquiry", "site_visit", "brochure", "callback", "contact", "whatsapp"],
+  placements: ["none", "project", "project_specific", "contact"],
+  types: ["text", "number", "email", "dropdown", "radio", "checkbox", "textarea", "date", "file"],
+};
+
 const PROJECTS = [{ id: "00000000-0000-4000-b000-0000000000a1", name: "Kadal Vista" }];
 const INTEGRATIONS = [{ id: "00000000-0000-4000-b000-0000000000c1", name: "Sample CRM" }];
 
@@ -52,7 +58,13 @@ function open(form: AdminFormView | null, answer: Result = okAnswer("new-id")) {
     .fn<(input: Record<string, unknown>) => Promise<Result>>()
     .mockResolvedValue(answer);
   renderWithMessages(
-    <FormEditor form={form} projects={PROJECTS} integrations={INTEGRATIONS} save={save as never} />,
+    <FormEditor
+      form={form}
+      projects={PROJECTS}
+      integrations={INTEGRATIONS}
+      lists={LISTS}
+      save={save as never}
+    />,
   );
   return { save };
 }
