@@ -22,6 +22,7 @@ export const BOARDS = [
   "sponsors",
   "forms",
   "crm",
+  "charts",
 ] as const;
 
 export async function settle(page: Page) {
@@ -47,11 +48,33 @@ export async function expectNoSeriousAccessibilityViolations(page: Page) {
 
 /** The page itself must not scroll sideways (wide specimens scroll inside their own box). */
 export async function expectNoHorizontalOverflow(page: Page) {
-  const overflow = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-  }));
-  expect(overflow.scrollWidth, "page scrolls sideways").toBeLessThanOrEqual(overflow.clientWidth);
+  const overflow = await page.evaluate(() => {
+    const clientWidth = document.documentElement.clientWidth;
+    // The elements that stick out past the page and are not clipped by a box of their own: the first
+    // ones named in the failure message, so a wide part can be found without a browser.
+    const clipped = (element: Element) => {
+      for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+        if (getComputedStyle(parent).overflowX !== "visible") return true;
+      }
+      return false;
+    };
+    const culprits = Array.from(document.body.querySelectorAll("*"))
+      .filter((element) => element.getBoundingClientRect().right > clientWidth + 1)
+      .filter((element) => !clipped(element))
+      .slice(0, 8)
+      .map((element) => {
+        const box = element.getBoundingClientRect();
+        const slot = element.closest("[data-slot]")?.getAttribute("data-slot") ?? "";
+        const classes = (element.getAttribute("class") ?? "").slice(0, 80);
+        const parent = element.parentElement?.getBoundingClientRect().width ?? 0;
+        return `${element.tagName.toLowerCase()}[${slot}] ${Math.round(box.left)}-${Math.round(box.right)} (parent ${Math.round(parent)} wide) ${classes}`;
+      });
+    return { scrollWidth: document.documentElement.scrollWidth, clientWidth, culprits };
+  });
+  expect(
+    overflow.scrollWidth,
+    `page scrolls sideways; sticking out: ${overflow.culprits.join(" | ")}`,
+  ).toBeLessThanOrEqual(overflow.clientWidth);
 }
 
 /**

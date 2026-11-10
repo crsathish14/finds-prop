@@ -1,6 +1,7 @@
 import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
+import { CHARTS } from "./boards/charts";
 import { CRM } from "./boards/crm";
 import { DISCOVERY } from "./boards/discovery";
 import { DOMAIN } from "./boards/domain";
@@ -120,6 +121,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to connect the site to a CRM: the connection cards, the API logs, the editor's Connection, Credentials and Headers and body boxes, and the Agent column and Retry delivery now on the Leads page. It mirrors the admin CRM screen.",
     entries: CRM,
+  },
+  {
+    id: "charts",
+    title: "Charts",
+    uxBoard: "admin-overview",
+    summary:
+      "What the admin's Overview page is drawn with: the line chart with its crosshair and tooltip, the Chart / Table card, the part-to-whole bar, the horizontal bars, the recent leads, and the whole page with its error and reloading states. It mirrors the admin Overview screen.",
+    entries: CHARTS,
   },
 ];
 

@@ -27,7 +27,7 @@ export function LabBoardPage({ board: id }: { board: LabBoardId }) {
           {board.summary}
         </Text>
         <nav aria-label="Design Lab boards">
-          <ul className="flex flex-wrap gap-x-5 gap-y-1">
+          <ul className="flex flex-wrap gap-x-3 gap-y-1">
             {LAB_BOARDS.map((candidate) => (
               <li key={candidate.id}>
                 <Link
