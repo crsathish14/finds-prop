@@ -528,6 +528,9 @@ isOneToOne: false
               "address": string,"amenities": (string)[],"area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"description": string,"featured": boolean,"furnishing": string,"id": string,"listing_type": string,"locality": string,"owner_email": string,"owner_name": string,"photos": Json,"pincode": string,"price": number,"property_type": string,"rejection_reason": string,"short_id": string,"status": string,"submitted_at": string,"title": string
             }[]
                            },
+"admin_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
 "admin_project_overview":
 { Args: Record<PropertyKey, never>; Returns: {
               "builder_id": string,"builder_name": string,"cover": string,"created_at": string,"featured": boolean,"id": string,"leads": number,"locality": string,"moderation": string,"name": string,"price_max": number,"price_min": number,"published": boolean,"slug": string
