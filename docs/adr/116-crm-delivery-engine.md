@@ -1,0 +1,28 @@
+# ADR-116 · The CRM delivery engine, the retry route and "Retry delivery now" (S7-T09, part B2)
+
+- Status: Accepted
+- Date: 2026-11-10
+- Related: ADR-113 (the connections and the sender), ADR-114 (the claim and record functions), ADR-058 (the media sweep, the same route pattern), FR-ADM-09, FR-SYS-02, BR-64 to BR-67, DEC-28
+- Plan for S7-T09 part B approved by the owner on 10 Nov 2026 ("approved"), taking the decisions in the plan: submissions on an inactive connection wait, a manual retry restarts the schedule, the job is armed only when needed. No UI and no new words in this change.
+
+## Decision
+
+- **The engine (`features/crm/delivery.ts`)** takes what the database leased to this run (`claim_crm_deliveries`), sends each submission with the part A sender and records the result (`record_crm_delivery`). It reaches nothing itself: the store, `fetch` and the address lookup come in, so every path is a unit test.
+  - **What a template can use:** the form's answers as text (a list is joined with ", "; anything else is empty), the contact columns (a filled-in column wins over an answer of the same name), `form_name`, `project_id`, `project_name`, `project_slug`, `project_code` (the connection's own code for that project, or nothing), `source`, `submitted_at` and `submission_id`, besides the connection's `lead_source` and secrets.
+  - **A failure is a failure, whatever its cause:** a CRM that answers badly, an address that is no longer public, a connection that vanished after the claim, or an unexpected error is recorded as a failed attempt with a plain sentence and follows the schedule (1, 5, 30, 120 and 720 minutes; none after the sixth). Only a result that cannot be recorded is "lost": the lease ends after five minutes and the sweep takes the submission again. In that rare case a CRM can receive the same lead twice (the CRM's own de-duplication is the guard); this is written in the runbook.
+  - **Three at a time,** ten per run, so a slow CRM cannot hold a run for long.
+- **The retry route** `POST /api/internal/crm-retry` answers only to the token `crm_retry` in `x-cron-token`, compared in constant time like the media sweep (BR-67). A wrong or missing token, or no token set, is a plain 401 and nothing is claimed. A good call answers only `{ claimed, sent, failed }`; a failure is a plain 500.
+- **The job is armed when needed (BR-66).**
+  - After a delivery that left a retry waiting, or lost a result, the job is armed (`arm_crm_retry`). So is it when the admin saves a connection that is on, because submissions wait while a connection is off; the job sends them and turns itself off. Inside the job's own run it is disarmed (`disarm_crm_retry`) once nothing waits any more (no pending submission and no failed one with a retry time, on an active connection); it is never re-armed from inside itself.
+  - Changing the job can fail, because the site address (`app.public_url`) or the token is not set yet. That is logged and never raised, so a visitor's form and the admin's button are not affected; the submission is still recorded and its next try scheduled, and the runbook says how to set the two values. The owner sets them once per environment (`docs/runbooks/crm-retry.md`).
+  - The rare case where the immediate send and the arming are both lost leaves a pending submission nobody sweeps until the next failed delivery arms the job; "Retry delivery now" covers it.
+- **The send right after a form is stored.** The two form actions call `deliverSubmissionNow` in `after()`: the visitor has already been answered and never waits for the CRM. It names the submission, so a form with no CRM connection finds nothing to claim and ends (one cheap call). It never throws; if it cannot even try, it arms the job so the sweep takes the submission.
+- **`retryCrmDelivery`** is the server side of "Retry delivery now" (the button is part D): a super admin names a submission and it is sent at once, on a fresh schedule (attempt 1, so a submission that used its six attempts can be retried), under the `admin_decision` limit like a test, since it calls somebody else's server. A submission that is already sent, being sent, on an inactive connection or gone is a conflict. It answers whether it worked and the CRM's status (or none); a failure leaves the next try scheduled and arms the job.
+- **The service role** is used by the delivery store for the claim, the record, the secrets and the job (`features/crm/service`, already on the allow-list in `docs/engineering/security.md` 4.3, and the internal route, which the lint rule already allows). No new rate-limit scope and no change to a protected file.
+- **Not in this change:** the screens (parts C and D), the leads page's button and the CRM page's logs.
+
+## Consequences
+
+- Unit tests (the lead values, every outcome of one delivery, the batch and its concurrency, a lost result, the job arming rules, "retry now", the route's door and counts, the immediate send, the store's calls, the action's rules) and an integration test (run in CI) of the whole path on a real database: a stored submission sent, the log line, a failure with its next try and no secret in the log, an address that is no longer public, a retry after six attempts, a conflict, an inactive connection waiting, and the route's token. The sweep itself is covered by the pgTAP test of ADR-114.
+- A new runbook, `docs/runbooks/crm-retry.md` (it replaces the planned "CRM outage and manual retry" stub). No package, environment, CI, database or protected-file change.
+- Rollback: remove the route, the two `after()` calls in the form actions and the new files; submissions already sent keep their state, and a disarmed job needs nothing.

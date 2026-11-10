@@ -5,6 +5,7 @@ import type { SessionView } from "@/server/auth/session";
 import { createLogger } from "@/server/logger";
 import {
   deleteIntegrationConfig,
+  retryDeliveryConfig,
   saveIntegrationConfig,
   testIntegrationConfig,
 } from "../action-config";
@@ -61,6 +62,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     save: define({ ...saveIntegrationConfig, handler }),
     remove: define({ ...deleteIntegrationConfig, handler }),
     test: define({ ...testIntegrationConfig, handler }),
+    retry: define({ ...retryDeliveryConfig, handler }),
   };
 }
 
@@ -117,5 +119,41 @@ describe("UT-crm-actions: who may manage the CRM connections, and what it counts
     const { save, calls } = harness({ rateLimited: true });
     expect(await save(SAVE)).toMatchObject({ ok: false, code: "RATE_LIMITED", retryAfter: 600 });
     expect(calls).toEqual(["rateLimit:admin_edit"]);
+  });
+
+  describe("Retry delivery now", () => {
+    const SUBMISSION = "00000000-0000-4000-a000-000000000001";
+
+    it("is limited with the admin's decisions, like a test, and has no cache tag or audit entry", async () => {
+      const { retry, calls } = harness();
+      expect((await retry({ submissionId: SUBMISSION })).ok).toBe(true);
+      expect(calls).toEqual(["rateLimit:admin_decision", "handler"]);
+    });
+
+    it.each([
+      ["a visitor", null, "UNAUTHENTICATED"],
+      ["a customer", customer, "FORBIDDEN"],
+      ["a builder", builder, "FORBIDDEN"],
+    ] as const)("refuses %s before anything runs", async (_who, session, code) => {
+      const { retry, calls } = harness({ session });
+      expect(await retry({ submissionId: SUBMISSION })).toMatchObject({ ok: false, code });
+      expect(calls).toEqual([]);
+    });
+
+    it("refuses an id that is not an id, and answers a rate limit with the wait", async () => {
+      const first = harness();
+      expect(await first.retry({ submissionId: "nope" })).toMatchObject({
+        ok: false,
+        code: "VALIDATION",
+      });
+      expect(first.calls).toEqual([]);
+      const limited = harness({ rateLimited: true });
+      expect(await limited.retry({ submissionId: SUBMISSION })).toMatchObject({
+        ok: false,
+        code: "RATE_LIMITED",
+        retryAfter: 600,
+      });
+      expect(limited.calls).toEqual(["rateLimit:admin_decision"]);
+    });
   });
 });

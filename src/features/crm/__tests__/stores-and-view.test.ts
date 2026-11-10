@@ -186,6 +186,7 @@ describe("UT-crm-send-store: the calls made with the service role (S7-T09, BR-64
     lead_id_path: "id",
     headers: { "X-Api-Key": "{{api_key}}", Odd: 5 },
     body_mapping: { fullName: "{{name}}" },
+    project_codes: { "00000000-0000-4000-b000-000000000001": "KV-01", Odd: 7 },
   };
 
   function reader(
@@ -223,6 +224,7 @@ describe("UT-crm-send-store: the calls made with the service role (S7-T09, BR-64
         headers: { "X-Api-Key": "{{api_key}}" },
         bodyMapping: { fullName: "{{name}}" },
       },
+      projectCodes: { "00000000-0000-4000-b000-000000000001": "KV-01" },
       secrets: { apiKey: "k-1", apiSecret: null, accessToken: "t-1" },
     });
     expect(from).toHaveBeenCalledWith("crm_integration_secrets");

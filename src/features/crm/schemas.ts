@@ -175,3 +175,7 @@ export type DeleteIntegrationInput = z.infer<typeof deleteIntegrationSchema>;
 
 export const testIntegrationSchema = z.object({ integrationId: uuid });
 export type TestIntegrationInput = z.infer<typeof testIntegrationSchema>;
+
+/** "Retry delivery now" for one form submission. */
+export const retryDeliverySchema = z.object({ submissionId: uuid });
+export type RetryDeliveryInput = z.infer<typeof retryDeliverySchema>;

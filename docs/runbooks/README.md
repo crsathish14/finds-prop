@@ -17,7 +17,7 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | Fictional seed on the dev database (`dev-seed.md`)                | S5 (written, 7 Nov 2026)  |
 | Sweeping unclaimed photo files (`media-sweep.md`)                 | S6 (written, 7 Nov 2026)  |
 | OTP abuse response                                                | S5                        |
-| CRM outage and manual retry                                       | S7                        |
+| CRM outage and manual retry (`crm-retry.md`)                      | S7 (written, 10 Nov 2026) |
 | Staff second-factor lost device                                   | S3                        |
 | Moderation backlog                                                | S6                        |
 | Domain and DNS                                                    | S9                        |
