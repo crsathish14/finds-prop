@@ -147,14 +147,14 @@ isOneToOne: false
                   ]
                 },"form_submissions": {
                   Row: {
-                    "created_at": string,"crm_attempts": number,"crm_http_status": number | null,"crm_integration_id": string | null,"crm_lead_id": string | null,"crm_status": string,"data": NonNullable<Json>,"email": string | null,"files": NonNullable<Json>,"form_id": string | null,"form_name": string,"id": string,"idempotency_key": string | null,"last_error": string | null,"mobile": string | null,"name": string | null,"next_retry_at": string | null,"project_id": string | null,"project_lead_id": string | null,"source": string | null,"visitor_hash": string | null
+                    "created_at": string,"crm_attempts": number,"crm_claimed_until": string | null,"crm_http_status": number | null,"crm_integration_id": string | null,"crm_lead_id": string | null,"crm_status": string,"data": NonNullable<Json>,"email": string | null,"files": NonNullable<Json>,"form_id": string | null,"form_name": string,"id": string,"idempotency_key": string | null,"last_error": string | null,"mobile": string | null,"name": string | null,"next_retry_at": string | null,"project_id": string | null,"project_lead_id": string | null,"source": string | null,"visitor_hash": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"crm_attempts"?: number,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name": string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
+                    "created_at"?: string,"crm_attempts"?: number,"crm_claimed_until"?: string | null,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name": string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"crm_attempts"?: number,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name"?: string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
+                    "created_at"?: string,"crm_attempts"?: number,"crm_claimed_until"?: string | null,"crm_http_status"?: number | null,"crm_integration_id"?: string | null,"crm_lead_id"?: string | null,"crm_status"?: string,"data"?: NonNullable<Json>,"email"?: string | null,"files"?: NonNullable<Json>,"form_id"?: string | null,"form_name"?: string,"id"?: string,"idempotency_key"?: string | null,"last_error"?: string | null,"mobile"?: string | null,"name"?: string | null,"next_retry_at"?: string | null,"project_id"?: string | null,"project_lead_id"?: string | null,"source"?: string | null,"visitor_hash"?: string | null
                   }
                   Relationships: [
                     {
@@ -659,6 +659,11 @@ isOneToOne: false
 "changed_columns":
 { Args: { "new_row": Json,"old_row": Json }; Returns: Json
                            },
+"claim_crm_deliveries":
+{ Args: { "p_limit"?: number,"p_submission"?: string }; Returns: {
+              "attempt": number,"created_at": string,"data": Json,"email": string,"form_name": string,"integration_id": string,"mobile": string,"name": string,"project_id": string,"project_name": string,"project_slug": string,"source": string,"submission_id": string
+            }[]
+                           },
 "close_listing":
 { Args: { "p_listing": string,"p_outcome": string }; Returns: {
               "id": string,"short_id": string,"status": string
@@ -857,6 +862,9 @@ isOneToOne: false
 { Args: { "limit_scope": string,"limit_subject": string,"max_hits": number,"window_seconds": number }; Returns: {
               "allowed": boolean,"retry_after": number
             }[]
+                           },
+"record_crm_delivery":
+{ Args: { "p_attempt": number,"p_http_status"?: number,"p_integration_name": string,"p_lead_id"?: string,"p_next_retry"?: string,"p_ok": boolean,"p_snippet"?: string,"p_submission": string }; Returns: string
                            },
 "record_form_submission":
 { Args: { "p_data"?: Json,"p_email"?: string,"p_files"?: Json,"p_form_slug": string,"p_idempotency_key"?: string,"p_mobile"?: string,"p_name"?: string,"p_project_slug"?: string,"p_source"?: string,"p_visitor_hash": string }; Returns: string
