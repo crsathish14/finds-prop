@@ -463,10 +463,12 @@ function Overview({
       {...(failed
         ? {
             notice: (
-              <Alert
-                tone="danger"
-                title="We couldn't load the overview"
-                action={
+              <Alert tone="danger" title="We couldn't load the overview">
+                <p>
+                  Check your connection and try again. The numbers below are from the last
+                  successful load.
+                </p>
+                <div className="mt-3">
                   <Button
                     type="button"
                     size="sm"
@@ -475,10 +477,7 @@ function Overview({
                   >
                     Try again
                   </Button>
-                }
-              >
-                Check your connection and try again. The numbers below are from the last successful
-                load.
+                </div>
               </Alert>
             ),
           }

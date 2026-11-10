@@ -66,7 +66,10 @@ function ChartTable({
         <tbody>
           {labels.map((label, index) => (
             <tr key={`${index}-${label}`} className="border-b border-line last:border-b-0">
-              <th scope="row" className="px-3 py-2 text-start font-medium text-ink">
+              <th
+                scope="row"
+                className="px-3 py-2 text-start font-medium whitespace-nowrap text-ink"
+              >
                 {label}
               </th>
               {series.map((entry) => (
