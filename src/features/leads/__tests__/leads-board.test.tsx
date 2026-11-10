@@ -49,6 +49,7 @@ const submission = (id: string, extra: Partial<SubmissionView> = {}): Submission
   mobile: "9840012345",
   email: null,
   source: "project_page",
+  agentName: "Sales team",
   crm: {
     status: "success",
     httpStatus: null,
@@ -89,6 +90,10 @@ function actions(extra: Partial<LeadsBoardActions> = {}): LeadsBoardActions {
     loadMoreSubmissions: vi.fn(async () => ({
       ok: true as const,
       data: { submissions: [submission("9")], total: 3, nextCursor: null, readAt: READ_AT },
+    })),
+    retryDelivery: vi.fn(async (input) => ({
+      ok: true as const,
+      data: { submissionId: input.submissionId, ok: true, status: 200 },
     })),
     ...extra,
   };
@@ -132,6 +137,24 @@ function submissionsTab(
     />,
   );
   return given;
+}
+
+function renderSubmissionsWith(given: LeadsBoardActions) {
+  return renderWithMessages(
+    <LeadsBoard
+      tab="submissions"
+      counts={COUNTS}
+      actions={given}
+      submissions={{
+        submissions: [submission("1"), FAILED],
+        total: 2,
+        nextCursor: null,
+        readAt: READ_AT,
+      }}
+      filters={{ range: "30", crm: "any" }}
+      options={{ projects: [], forms: [], sources: [] }}
+    />,
+  );
 }
 
 beforeEach(() => {
@@ -280,6 +303,76 @@ describe("LeadsBoard: the Form submissions tab (S7-T07)", () => {
     expect(within(drawer).getByRole("alert")).toHaveTextContent(
       "HTTP 502 on attempt 2. The next automatic retry is in 30 minutes.",
     );
+  });
+
+  it("shows the CRM connection that took each submission in an Agent column, and a dash when none did (S7-T09)", () => {
+    submissionsTab({
+      submissions: [submission("1"), submission("4", { agentName: null })],
+      total: 2,
+    });
+    const table = screen.getByRole("table", { name: words.submissions.table.caption });
+    expect(
+      within(table).getByRole("columnheader", { name: words.submissions.table.agent }),
+    ).toBeVisible();
+    const rows = within(table).getAllByRole("row");
+    expect(within(rows[1] as HTMLElement).getByText("Sales team")).toBeVisible();
+    expect(within(rows[2] as HTMLElement).queryByText("Sales team")).toBeNull();
+    expect(within(rows[2] as HTMLElement).getAllByText(words.dash).length).toBeGreaterThan(0);
+  });
+
+  it("offers Retry delivery now only under a failed delivery, and sends that submission to its CRM (S7-T09)", async () => {
+    const given = actions();
+    const { unmount } = renderSubmissionsWith(given);
+    fireEvent.click(screen.getByRole("button", { name: "Details Person 1" }));
+    const first = await screen.findByRole("dialog", { name: words.detail.title });
+    expect(within(first).queryByRole("button", { name: words.detail.retry })).toBeNull();
+    unmount();
+
+    renderSubmissionsWith(given);
+    fireEvent.click(screen.getByRole("button", { name: "Details Person 2" }));
+    const drawer = await screen.findByRole("dialog", { name: words.detail.title });
+    fireEvent.click(within(drawer).getByRole("button", { name: words.detail.retry }));
+    await waitFor(() => expect(given.retryDelivery).toHaveBeenCalledWith({ submissionId: "2" }));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(en.admin.crm.toast.retried, {
+        description: en.admin.crm.toast.retriedText,
+      }),
+    );
+    expect(router.refresh).toHaveBeenCalled();
+  });
+
+  it("says when the CRM answered the retry with a failure, with its code, or with no answer", async () => {
+    const answers = [
+      { ok: false, status: 502, text: "The CRM answered HTTP 502. The next try is scheduled." },
+      { ok: false, status: null, text: "The CRM did not answer. The next try is scheduled." },
+    ];
+    for (const answer of answers) {
+      vi.clearAllMocks();
+      const retryDelivery = vi.fn(async () => ({
+        ok: true as const,
+        data: { submissionId: "2", ok: answer.ok, status: answer.status },
+      }));
+      const { unmount } = renderSubmissionsWith(actions({ retryDelivery }));
+      fireEvent.click(screen.getByRole("button", { name: "Details Person 2" }));
+      const drawer = await screen.findByRole("dialog", { name: words.detail.title });
+      fireEvent.click(within(drawer).getByRole("button", { name: words.detail.retry }));
+      await waitFor(() =>
+        expect(toast.error).toHaveBeenCalledWith(en.admin.crm.toast.retryFailed, {
+          description: answer.text,
+        }),
+      );
+      unmount();
+    }
+  });
+
+  it("says the submission cannot be sent now (already sent, or its connection is off) and reads the page again", async () => {
+    const retryDelivery = vi.fn(async () => ({ ok: false as const, code: "CONFLICT" as const }));
+    renderSubmissionsWith(actions({ retryDelivery }));
+    fireEvent.click(screen.getByRole("button", { name: "Details Person 2" }));
+    const drawer = await screen.findByRole("dialog", { name: words.detail.title });
+    fireEvent.click(within(drawer).getByRole("button", { name: words.detail.retry }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(en.admin.crm.toast.retryConflict));
+    expect(router.refresh).toHaveBeenCalled();
   });
 
   it("says no more retries are planned when none is due, and names a failure that has no code", async () => {

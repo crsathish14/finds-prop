@@ -1715,6 +1715,7 @@
           "project": "Project",
           "source": "Source",
           "form": "Form",
+          "agent": "Agent",
           "crm": "CRM",
           "actions": "Actions"
         },
@@ -1768,7 +1769,8 @@
           "noCode": "The delivery failed on attempt {attempts}.",
           "retryIn": "The next automatic retry is in {time}.",
           "noRetry": "No more automatic retries are planned."
-        }
+        },
+        "retry": "Retry delivery now"
       },
       "time": {
         "soon": "a moment",
@@ -2499,6 +2501,85 @@
           "text": "Check the boxes marked below, then save again."
         },
         "skipped": "{count, plural, one {# stored field does not fit the builder and is not shown. Saving removes it.} other {# stored fields do not fit the builder and are not shown. Saving removes them.}}"
+      }
+    },
+    "crm": {
+      "metaTitle": "CRM integrations",
+      "title": "CRM integrations",
+      "intro": "Send form submissions to your CRM, and see what was delivered.",
+      "new": "New connection",
+      "dash": "—",
+      "cancel": "Cancel",
+      "tabs": {
+        "label": "CRM sections",
+        "connections": "Connections",
+        "logs": "API logs",
+        "failed": "{count} failed"
+      },
+      "cards": {
+        "endpoint": "Endpoint",
+        "secretSet": "Set",
+        "secretNotSet": "Not set",
+        "secretsNote": "Secret values are stored on the server and are never shown again.",
+        "apiKey": "API key",
+        "apiSecret": "API secret",
+        "accessToken": "Access token",
+        "active": "Active",
+        "inactive": "Inactive",
+        "test": "Test API",
+        "edit": "Edit",
+        "deleteFor": "Delete {name}",
+        "empty": {
+          "title": "No connections yet",
+          "text": "Add a CRM connection to send form submissions to it."
+        }
+      },
+      "test": {
+        "succeededTitle": "Test succeeded",
+        "succeeded": "{name} answered with HTTP {status} in {ms} ms. A test lead was logged.",
+        "failedTitle": "Test failed",
+        "failed": "{name} answered with HTTP {status}. Check the API key, then test again.",
+        "noAnswer": "{name} did not answer. Check the address, then test again."
+      },
+      "deleteDialog": {
+        "title": "Delete \"{name}\"?",
+        "text": "Forms linked to it will stop sending submissions. Delivery history is kept. This can't be undone.",
+        "confirm": "Delete connection"
+      },
+      "conflict": "This connection has changed or been removed since the page was loaded. The page has been refreshed.",
+      "toast": {
+        "deleted": "{name} deleted",
+        "retried": "Delivery sent",
+        "retriedText": "The CRM accepted the lead.",
+        "retryFailed": "The delivery failed again",
+        "retryFailedHttp": "The CRM answered HTTP {status}. The next try is scheduled.",
+        "retryFailedNoAnswer": "The CRM did not answer. The next try is scheduled.",
+        "retryConflict": "This submission can't be sent now. It may already be sent, or its connection may be off. The page has been refreshed."
+      },
+      "logs": {
+        "caption": "API logs",
+        "columns": {
+          "time": "Time",
+          "crm": "CRM",
+          "form": "Form",
+          "status": "Status",
+          "http": "HTTP",
+          "attempt": "Attempt",
+          "response": "Response",
+          "actions": "Actions"
+        },
+        "status": {
+          "success": "Success",
+          "failed": "Failed"
+        },
+        "retry": "Retry",
+        "count": "{count, plural, one {# delivery} other {# deliveries}}",
+        "countLatest": "The newest {count} deliveries",
+        "note": "Failed deliveries retry automatically after {minutes} minutes, up to {attempts} attempts.",
+        "empty": {
+          "title": "No deliveries yet",
+          "text": "Calls to your CRMs show here, newest first."
+        }
       }
     }
   },

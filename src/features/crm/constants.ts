@@ -44,3 +44,6 @@ export const DELIVERY_CONCURRENCY = 3;
 
 /** The name of the retry job's token in `internal_cron_tokens` (BR-67). */
 export const RETRY_TOKEN_NAME = "crm_retry";
+
+/** The API logs tab shows this many of the newest lines (FR-ADM-09). */
+export const CRM_LOGS_LIMIT = 100;

@@ -63,6 +63,8 @@ export interface SubmissionView {
   mobile: string | null;
   email: string | null;
   source: string | null;
+  /** The CRM connection that took the submission (its name), or null when none has: not linked, or since deleted. */
+  agentName: string | null;
   crm: SubmissionCrm;
   /** The answers other than the name, mobile and email, which have their own fields. */
   answers: SubmissionAnswer[];
@@ -150,6 +152,7 @@ export interface SubmissionDbRow {
   last_error: string | null;
   created_at: string;
   projects: { name: string } | null;
+  crm_integrations: { name: string } | null;
 }
 
 /** The questions of a form by key: only `key` and `label` are read, so a form saved by a later builder still reads. */
@@ -217,6 +220,7 @@ export function toSubmissionViews(
       mobile: row.mobile,
       email: row.email,
       source: row.source,
+      agentName: row.crm_integrations?.name ?? null,
       crm: {
         status: row.crm_status,
         httpStatus: row.crm_http_status,

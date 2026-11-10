@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { retryCrmDelivery } from "@/features/crm";
 import {
   getFilterOptions,
   getLeadCounts,
@@ -38,6 +39,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
     setStatus: setLeadStatus,
     loadMore: loadMoreLeads,
     loadMoreSubmissions,
+    retryDelivery: retryCrmDelivery,
   };
 
   if (first(params.tab) === "submissions") {
