@@ -7,13 +7,17 @@
  *   rules the home page uses (the standard headline when none is saved) and passes them in. The banner is drawn as a
  *   plain stand-in: which sponsor shows is chosen elsewhere.
  * Props: title, subtitle (left out when empty), eyebrow (left out when empty; shown in the Split layout only, as on the
- *   home page), layout ("search_desk" | "split"), className.
- * Responsive: fills the preview column; the Split drawing keeps the text on the left and the banner on the right.
+ *   home page), layout ("search_desk" | "split"), banner (what sits where the sponsored banner goes: left out, a plain
+ *   stand-in is drawn; null, nothing is drawn, as when no sponsor can be shown; or a node, such as a picture; S7-T11),
+ *   stacked (the Split layout drawn with the banner under the text, as on a phone), className.
+ * Responsive: fills the preview column; the Split drawing keeps the text on the left and the banner on the right
+ *   (under the text when stacked).
  * Accessibility: aria-hidden; the real hero is read on the home page.
  * States: Search Desk, Split, with and without an eyebrow and a subtitle.
  * Dependencies: cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (the hero preview card).
  */
+import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 type SiteHeroPreviewProps = {
@@ -21,11 +25,22 @@ type SiteHeroPreviewProps = {
   subtitle?: string;
   eyebrow?: string;
   layout: "search_desk" | "split";
+  banner?: ReactNode | null;
+  stacked?: boolean;
   className?: string;
 };
 
-function SiteHeroPreview({ title, subtitle, eyebrow, layout, className }: SiteHeroPreviewProps) {
+function SiteHeroPreview({
+  title,
+  subtitle,
+  eyebrow,
+  layout,
+  banner,
+  stacked = false,
+  className,
+}: SiteHeroPreviewProps) {
   const split = layout === "split";
+  const beside = split && !stacked;
   const search = (
     <span className="mt-1 block h-10 w-full rounded-md border border-line-input bg-surface" />
   );
@@ -40,8 +55,8 @@ function SiteHeroPreview({ title, subtitle, eyebrow, layout, className }: SiteHe
         className,
       )}
     >
-      <div className={cn("flex min-w-0 gap-3", split ? "flex-row items-stretch" : "flex-col")}>
-        <div className={cn("flex min-w-0 flex-col gap-2", split && "flex-1")}>
+      <div className={cn("flex min-w-0 gap-3", beside ? "flex-row items-stretch" : "flex-col")}>
+        <div className={cn("flex min-w-0 flex-col gap-2", beside && "flex-1")}>
           {split && eyebrow ? (
             <p className="text-overline text-cta-text break-words">{eyebrow}</p>
           ) : null}
@@ -49,10 +64,16 @@ function SiteHeroPreview({ title, subtitle, eyebrow, layout, className }: SiteHe
           {subtitle ? <p className="text-small break-words text-muted">{subtitle}</p> : null}
           {search}
         </div>
-        {split ? (
-          <span className="block w-2/5 shrink-0 rounded-md bg-cta-tint" />
-        ) : (
-          <span className="mx-auto block h-3 w-4/5 rounded-sm bg-cta-tint" />
+        {banner === undefined ? (
+          beside ? (
+            <span className="block w-2/5 shrink-0 rounded-md bg-cta-tint" />
+          ) : split ? (
+            <span className="block h-10 w-full rounded-md bg-cta-tint" />
+          ) : (
+            <span className="mx-auto block h-3 w-4/5 rounded-sm bg-cta-tint" />
+          )
+        ) : banner === null ? null : (
+          <div className={cn("min-w-0 text-left", beside && "w-2/5 shrink-0")}>{banner}</div>
         )}
       </div>
     </div>

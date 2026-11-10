@@ -7,11 +7,13 @@
  * Props: title, description (the page heading and its line), tabs ({ key, label, href, current }[]; the four pages,
  *   each a link), tabsLabel (names the tabs), previewLabel (names the preview and is shown above it), preview (what the
  *   preview draws), top (an alert about errors, optional), children (the form sections), footer (the save bar),
+ *   after (a full-width section between the form and the save bar, such as the sponsors list; optional, S7-T11),
  *   headingLevel ("h1" default | "h2", for a page that already has an h1, such as the Design Lab), className.
  * Responsive: one column up to 1100 px of screen: the tabs scroll sideways, the preview sits under the form. From
  *   1100 px the preview takes a column on the right and stays in view while the form scrolls.
  * Accessibility: a named navigation of links with aria-current on the page the admin is on; the preview is a named
- *   region. The order in the page is the reading order: heading, tabs, alert, form, preview, save bar.
+ *   region. The order in the page is the reading order: heading, tabs, alert, form, preview, the full-width section,
+ *   save bar.
  * States: any of the four tabs current; with and without the alert.
  * Dependencies: Heading, Text, Link, cn. Tests: site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-cms screen (.phead, .ptabs, .cms-grid, .preview-card).
@@ -33,6 +35,7 @@ type SiteContentLayoutProps = {
   preview: ReactNode;
   top?: ReactNode;
   children: ReactNode;
+  after?: ReactNode;
   footer: ReactNode;
   headingLevel?: "h1" | "h2";
   className?: string;
@@ -47,6 +50,7 @@ function SiteContentLayout({
   preview,
   top,
   children,
+  after,
   footer,
   headingLevel = "h1",
   className,
@@ -92,6 +96,7 @@ function SiteContentLayout({
           {preview}
         </section>
       </div>
+      {after}
       {footer}
     </div>
   );

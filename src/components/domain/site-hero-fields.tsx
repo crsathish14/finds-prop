@@ -6,7 +6,8 @@
  *   and passes the words, already translated. An empty eyebrow or subtitle means "use the standard one" (BR-81); the
  *   headline is needed.
  * Props: values ({ eyebrow, title, subtitle, layout }), errors (the message of each box with a problem, by box),
- *   onChange (the new values), disabled (while saving), words (the headings, labels, hints and the two layouts'
+ *   onChange (the new values), layoutNote (what the page shows under the two layout cards, such as which layout is live
+ *   and a warning about the sponsors; optional, S7-T11), disabled (while saving), words (the headings, labels, hints and the two layouts'
  *   names and lines), className.
  * Responsive: two cards stacked one above the other; the two layout cards sit side by side from 768 px.
  * Accessibility: every box has a visible label tied to it; the layout is a radio group (one tab stop, arrow keys
@@ -18,6 +19,7 @@
  * UX reference: admin-cms screen (#hero: Text, Layout). The "Background image" card is left out: neither approved
  *   layout uses an image, so the box would have no effect (ADR-099).
  */
+import type { ReactNode } from "react";
 import { ChoiceCards } from "@/components/domain/choice-cards";
 import { FormField } from "@/components/patterns/form-field";
 import { FormSection } from "@/components/patterns/form-section";
@@ -57,6 +59,7 @@ type SiteHeroFieldsProps = {
   values: SiteHeroValues;
   errors?: SiteHeroErrors;
   onChange: (values: SiteHeroValues) => void;
+  layoutNote?: ReactNode;
   disabled?: boolean;
   words: SiteHeroFieldsWords;
   className?: string;
@@ -93,6 +96,7 @@ function SiteHeroFields({
   values,
   errors = {},
   onChange,
+  layoutNote,
   disabled = false,
   words,
   className,
@@ -167,6 +171,7 @@ function SiteHeroFields({
             },
           ]}
         />
+        {layoutNote}
       </FormSection>
     </div>
   );
