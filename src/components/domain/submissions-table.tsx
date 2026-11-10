@@ -6,7 +6,9 @@
  *   Details button does. The project leads have their own table (LeadsTable); the filters are SubmissionsFilters and
  *   the whole submission is SubmissionDetail.
  * Props: caption (names the table), columns ({ created, name, mobile, project, source, form, crm, actions }, the
- *   heading words), rows ({ id, created, name, mobile { text, href } or none, project, source, form, crm (a StatusBadge,
+ *   heading words; `agent` is optional: leave it out and the column is not drawn), rows ({ id, created, name, mobile { text,
+ *   href } or none, project, source, form, agent (the CRM connection that took it, such as "Sales team"; a dash when none),
+ *   crm (a StatusBadge,
  *   with the CRM's own id beside it once delivered), openLabel ("Details"), openFor (who it is about, heard after
  *   the visible word), onOpen }), countText ("4 submissions"), note (a second line under the list, such as "Select
  *   Details to see the full submission."), className. A missing name, mobile, project or source is text already
@@ -17,7 +19,7 @@
  *   button's visible word is followed by hidden text naming the person, because every row has one; the CRM state is
  *   a word, never colour alone.
  * States: any number of rows; delivered, retrying, failed, not sent; no name, mobile, project or source (a dash); a
- *   long name and form.
+ *   long name and form; with and without the Agent column.
  * Dependencies: ResponsiveTable, Button. Tests: submissions-parts.test.tsx; Design Lab "Admin" (S7-T07).
  * UX reference: admin-leads screen, "Form submissions" (fp-leadspage, subs).
  */
@@ -42,6 +44,8 @@ type SubmissionRow = {
   project: string;
   source: string;
   form: string;
+  /** The CRM connection that took the submission; drawn only when the table has an Agent column. */
+  agent?: string;
   crm: ReactNode;
   openLabel: string;
   openFor: string;
@@ -57,6 +61,8 @@ type SubmissionsTableProps = {
     project: string;
     source: string;
     form: string;
+    /** The Agent column is drawn only when this is given. */
+    agent?: string;
     crm: string;
     actions: string;
   };
@@ -83,9 +89,12 @@ function SubmissionsTable({
     { id: "mobile", heading: columns.mobile, width: 11, nowrap: true },
     { id: "project", heading: columns.project, width: 13 },
     { id: "source", heading: columns.source, width: 11 },
-    { id: "form", heading: columns.form, width: 13 },
-    { id: "crm", heading: columns.crm, width: 14 },
-    { id: "actions", heading: columns.actions, role: "actions", width: 14 },
+    { id: "form", heading: columns.form, width: columns.agent ? 11 : 13 },
+    ...(columns.agent
+      ? [{ id: "agent", heading: columns.agent, width: 10 } satisfies ResponsiveTableColumn]
+      : []),
+    { id: "crm", heading: columns.crm, width: columns.agent ? 12 : 14 },
+    { id: "actions", heading: columns.actions, role: "actions", width: columns.agent ? 12 : 14 },
   ];
   const tableRows: ResponsiveTableRow[] = rows.map((row) => ({
     id: row.id,
@@ -105,6 +114,9 @@ function SubmissionsTable({
       project: <span className="[overflow-wrap:anywhere]">{row.project}</span>,
       source: <span className="[overflow-wrap:anywhere]">{row.source}</span>,
       form: <span className="[overflow-wrap:anywhere]">{row.form}</span>,
+      ...(columns.agent
+        ? { agent: <span className="[overflow-wrap:anywhere]">{row.agent ?? ""}</span> }
+        : {}),
       crm: <div className="flex flex-col items-start gap-1">{row.crm}</div>,
       actions: (
         <Button
