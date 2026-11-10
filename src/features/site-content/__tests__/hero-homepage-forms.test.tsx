@@ -6,6 +6,7 @@ import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import type { HeroFormValues, HomepageFormValues, StandardHero } from "../form";
+import type { SponsorEditView } from "../sponsor-view";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -32,9 +33,48 @@ const HERO: HeroFormValues = {
 
 beforeEach(() => vi.clearAllMocks());
 
+/** A sponsor with a panel, so Split has a banner to draw. */
+const PANEL_SPONSOR: SponsorEditView = {
+  id: "a",
+  advertiser: "Alpha",
+  active: true,
+  alt: "Alpha banner",
+  href: "https://alpha.example",
+  panel: {
+    desktop: {
+      path: "sponsors/a/pd.webp",
+      url: "https://files.test/pd.webp",
+      width: 1048,
+      height: 988,
+      bytes: null,
+      type: "image/webp",
+    },
+    compact: {
+      path: "sponsors/a/pp.webp",
+      url: "https://files.test/pp.webp",
+      width: 1280,
+      height: 640,
+      bytes: null,
+      type: "image/webp",
+    },
+  },
+};
+
 describe("UT-hero-page: the Hero page (S7-T10)", () => {
-  const open = (save = vi.fn().mockResolvedValue(ok), initial = HERO) => {
-    renderWithMessages(<HeroForm initial={initial} standard={STANDARD} save={save} />);
+  const open = (
+    save = vi.fn().mockResolvedValue(ok),
+    initial = HERO,
+    sponsors: SponsorEditView[] = [],
+  ) => {
+    renderWithMessages(
+      <HeroForm
+        initial={initial}
+        standard={STANDARD}
+        save={save}
+        sponsors={sponsors}
+        saveSponsors={vi.fn()}
+      />,
+    );
     return save;
   };
 
@@ -53,7 +93,7 @@ describe("UT-hero-page: the Hero page (S7-T10)", () => {
   });
 
   it("draws the standard subtitle until one is typed, and the eyebrow in Split only", async () => {
-    open();
+    open(undefined, HERO, [PANEL_SPONSOR]);
     const hero = () => picture("site-hero-preview");
     expect(hero()?.textContent).toContain(STANDARD.subtitle);
     await userEvent.type(screen.getByRole("textbox", { name: /Eyebrow/ }), "Tamil Nadu");

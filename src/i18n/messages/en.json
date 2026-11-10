@@ -2162,6 +2162,129 @@
           "text": "The change is live on the public site."
         }
       },
+      "sponsors": {
+        "title": "Sponsors",
+        "intro": "Shown in this order, one after another.",
+        "add": "Add sponsor",
+        "caption": "Sponsors",
+        "note": "A campaign needs both the desktop and the phone image of a format.",
+        "full": "You can keep up to {maximum} sponsors. Delete one to add another.",
+        "count": "{total, plural, one {# sponsor} other {# sponsors}} · {active} active",
+        "columns": {
+          "advertiser": "Advertiser",
+          "status": "Status",
+          "strip": "Strip",
+          "panel": "Panel",
+          "order": "Order",
+          "actions": "Actions"
+        },
+        "ready": "Ready",
+        "missing": "Missing",
+        "statuses": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "needsImages": "Needs images"
+        },
+        "unnamed": "Unnamed sponsor",
+        "empty": {
+          "title": "No sponsors yet",
+          "text": "The homepage shows no banner and no empty space. Add a sponsor to show a banner under the search (Search Desk) or beside it (Split)."
+        },
+        "edit": "Edit",
+        "moveUp": "Move {name} up",
+        "moveDown": "Move {name} down",
+        "deleteLabel": "Delete {name}",
+        "saved": {
+          "title": "Sponsor saved",
+          "text": "It appears on the homepage straight away."
+        },
+        "drawer": {
+          "addTitle": "Add sponsor",
+          "editTitle": "Edit sponsor",
+          "save": "Save sponsor",
+          "cancel": "Cancel",
+          "close": "Close"
+        },
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "text": "This removes the sponsor and its images. Visitors stop seeing it straight away. This can't be undone.",
+          "confirm": "Delete sponsor",
+          "cancel": "Cancel"
+        },
+        "fields": {
+          "advertiser": "Advertiser name",
+          "advertiserPlaceholder": "Name shown to staff only",
+          "alt": "Alt text",
+          "altPlaceholder": "Describe the banner for screen readers",
+          "altHint": "Read aloud by screen readers. Describe what the banner says, not just \"banner\".",
+          "href": "Destination link",
+          "hrefPlaceholder": "https://",
+          "hrefHint": "Opens in a new tab. Must start with https://.",
+          "activeLabel": "Active",
+          "activeHint": "Inactive sponsors are never shown.",
+          "imagesTitle": "Banner images",
+          "imagesText": "Finished images supplied by the advertiser. Supply each at twice the size for sharp screens. JPG, PNG or WEBP only, up to {maximum} KB each.",
+          "imagesClosing": "Supplying both the desktop and phone image of a format makes it ready. A sponsor with no ready format is never shown."
+        },
+        "slot": {
+          "stripDesktop": "Strip · desktop",
+          "stripPhone": "Strip · phone",
+          "panelDesktop": "Panel · desktop",
+          "panelPhone": "Panel · phone",
+          "note": "Shown at {shownWidth} × {shownHeight} · supply {width} × {height}",
+          "dropTitle": "Drop an image here",
+          "dropText": "or choose a file",
+          "choose": "Choose file",
+          "replace": "Replace",
+          "remove": "Remove",
+          "chooseAnother": "Choose another file",
+          "keep": "Keep as is",
+          "checking": "Checking the picture",
+          "previewAlt": "Preview of the chosen picture",
+          "fills": "Fills the slot",
+          "details": "{width} × {height} · {type}",
+          "detailsWeight": "{width} × {height} · {type} · {weight} KB",
+          "nearTitle": "Will be shown whole on a plain background",
+          "nearText": "The shape is 8 to 30 percent away from the slot, so we don't crop it. For the best result supply {width} × {height}.",
+          "typeTitle": "Rejected: this file isn't accepted",
+          "typeText": "Upload a JPG, PNG or WEBP instead. SVG files can contain scripts.",
+          "sizeTitle": "Rejected: {weight} KB is too large",
+          "sizeText": "The limit is {maximum} KB. Compress the image and try again.",
+          "smallTitle": "Rejected: too small",
+          "smallText": "This is {width} × {height}. Supply at least {minimumWidth} × {minimumHeight} so it stays sharp on high-density screens.",
+          "largeTitle": "Rejected: too large in pixels",
+          "largeText": "This is {width} × {height}. The most allowed on a side is {maximum} pixels.",
+          "shapeTitle": "Rejected: wrong shape",
+          "shapeText": "This image is much {direction, select, taller {taller} other {wider}} than the slot (about {image} : 1, the slot is about {slot} : 1). Supply one close to the slot's shape.",
+          "otherTitle": "This picture was not accepted",
+          "uploadTitle": "The picture could not be sent",
+          "uploadText": "Check your connection and try again.",
+          "neededTitle": "This picture is needed",
+          "neededText": "A format needs both its desktop and its phone picture. Add this one, or remove the other."
+        },
+        "preview": {
+          "device": "Preview size",
+          "desktop": "Desktop",
+          "phone": "Phone",
+          "sponsored": "Sponsored",
+          "noSponsors": "No sponsors",
+          "noneEligible": "Split → Search Desk",
+          "noneTitle": "No banner is shown",
+          "noneText": "Visitors see the search card and then the next section. No frame, label or gap.",
+          "phoneNote": "The phone image is used below 1024 px. Nothing is stretched.",
+          "caption": "{name} · first of {count} active"
+        },
+        "layout": {
+          "live": "Live layout: {layout}. Changes apply on the next page load after you save.",
+          "formatStrip": "Strip",
+          "formatPanel": "Panel",
+          "noneTitle": "No sponsor can be shown in {layout}",
+          "noneTextSplit": "Visitors will see the Search Desk homepage without a banner until a sponsor supplies the {format} format.",
+          "noneTextSearchDesk": "Visitors will see the homepage without a banner until a sponsor supplies the {format} format.",
+          "someTitle": "{missing, plural, one {# of {active} sponsors doesn't have the {layout} format} other {# of {active} sponsors don't have the {layout} format}}",
+          "someText": "{missing, plural, one {It won't be shown} other {They won't be shown}} while {layout} is live. Add a {format} image to {missing, plural, one {it} other {each}} in Sponsors below."
+        }
+      },
       "homepage": {
         "metaTitle": "Site content: Homepage",
         "title": "Homepage sections",

@@ -9,7 +9,7 @@ import {
   type SiteHeroFieldsWords,
   type SiteHeroValues,
 } from "@/components/domain/site-hero-fields";
-import { SiteHeroPreview } from "@/components/domain/site-hero-preview";
+import { SponsorHeroPreview } from "@/components/domain/sponsor-hero-preview";
 import { Alert } from "@/components/patterns/alert";
 import {
   heroPayloadOf,
@@ -19,6 +19,10 @@ import {
   type Problems,
   type StandardHero,
 } from "./form";
+import { heroViewOf, layoutWarningOf } from "./sponsor-draft";
+import type { SponsorStorage } from "./sponsor-storage";
+import type { SponsorEditView } from "./sponsor-view";
+import { SponsorsPanel, useSponsors, type SaveSponsors } from "./sponsors-panel.client";
 import {
   useSaveFlow,
   useScrollToProblems,
@@ -33,6 +37,12 @@ export type HeroFormProps = {
   standard: StandardHero;
   /** The save action. */
   save: SaveContent;
+  /** The sponsors as saved, in their order (S7-T11). */
+  sponsors: readonly SponsorEditView[];
+  /** The action that saves the sponsor list: every sponsor change goes through it at once. */
+  saveSponsors: SaveSponsors;
+  /** Where sponsor pictures are sent; the real bucket unless a test gives its own. */
+  storage?: SponsorStorage;
 };
 
 const NO_PROBLEMS: Problems = {};
@@ -44,7 +54,14 @@ const NO_PROBLEMS: Problems = {};
  * Discard puts the boxes back to what was loaded. The eyebrow shows on the home page in Split only, and only when a
  * sponsor banner is booked; the layout card says so.
  */
-export function HeroForm({ initial, standard, save }: HeroFormProps) {
+export function HeroForm({
+  initial,
+  standard,
+  save,
+  sponsors,
+  saveSponsors,
+  storage,
+}: HeroFormProps) {
   const translate = useTranslations("admin.siteContent");
   const frame = useSiteContentFrame("hero");
   const flow = useSaveFlow(save, {
@@ -53,6 +70,11 @@ export function HeroForm({ initial, standard, save }: HeroFormProps) {
   });
   const [values, setValues] = useState<SiteHeroValues>(initial);
   const [problems, setProblems] = useState<Problems>(NO_PROBLEMS);
+  const sponsorState = useSponsors({
+    sponsors,
+    save: saveSponsors,
+    ...(storage ? { storage } : {}),
+  });
   const alertAt = useScrollToProblems(problems);
 
   const submit = async (event: FormEvent) => {
@@ -84,6 +106,14 @@ export function HeroForm({ initial, standard, save }: HeroFormProps) {
 
   const count = Object.keys(problems).length;
   const picture = heroPictureOf(values, standard);
+  const sponsorWords = sponsorState.words;
+  const hero = heroViewOf(sponsorState.drafts, values.layout);
+  const warning = layoutWarningOf(hero.coverage);
+  const layoutName =
+    values.layout === "split"
+      ? sponsorWords.preview.layouts.split
+      : sponsorWords.preview.layouts.search_desk;
+  const say = sponsorWords.say;
 
   return (
     <form onSubmit={submit} noValidate>
@@ -94,13 +124,25 @@ export function HeroForm({ initial, standard, save }: HeroFormProps) {
         tabsLabel={frame.tabsLabel}
         previewLabel={frame.previewLabel}
         preview={
-          <SiteHeroPreview
+          <SponsorHeroPreview
             title={picture.title}
             subtitle={picture.subtitle}
             layout={picture.layout}
+            banner={hero.banner}
+            words={sponsorWords.preview}
             {...(picture.eyebrow ? { eyebrow: picture.eyebrow } : {})}
+            {...(hero.reason ? { reason: hero.reason } : {})}
+            {...(hero.first
+              ? {
+                  caption: say.caption(
+                    hero.first.advertiser || sponsorWords.manager.words.unnamed,
+                    hero.first.shown,
+                  ),
+                }
+              : {})}
           />
         }
+        after={<SponsorsPanel state={sponsorState} />}
         top={
           count > 0 ? (
             <div ref={alertAt} tabIndex={-1}>
@@ -128,6 +170,24 @@ export function HeroForm({ initial, standard, save }: HeroFormProps) {
           onChange={setValues}
           disabled={flow.saving}
           words={words}
+          layoutNote={
+            <>
+              <p className="text-caption text-muted">{say.layoutLive(layoutName)}</p>
+              {warning?.kind === "none_can_show" ? (
+                <Alert tone="warning" title={say.layoutNoneTitle(layoutName)}>
+                  {say.layoutNoneText(values.layout === "split", say.formatName(warning.format))}
+                </Alert>
+              ) : null}
+              {warning?.kind === "some_missing" ? (
+                <Alert
+                  tone="warning"
+                  title={say.layoutSomeTitle(warning.missing, warning.active, layoutName)}
+                >
+                  {say.layoutSomeText(warning.missing, layoutName, say.formatName(warning.format))}
+                </Alert>
+              ) : null}
+            </>
+          }
         />
       </SiteContentLayout>
     </form>
