@@ -74,25 +74,30 @@ describe("IT-crm-delivery: sending form submissions to a CRM against a real data
   };
 
   beforeAll(async () => {
-    const made = await service
+    // One insert each: a bulk insert gives a column a row leaves out NULL, not its default.
+    const active = await service
       .from("crm_integrations")
-      .insert([
-        {
-          name: `IT Delivery ${RUN}`,
-          base_url: "https://93.184.216.34",
-          endpoint: "/leads",
-          method: "POST",
-          lead_id_path: "lead.id",
-          active: true,
-          headers: { "X-Api-Key": "{{api_key}}" },
-          body_mapping: { fullName: "{{name}}", note: "{{message}}" },
-        },
-        { name: `IT Delivery off ${RUN}`, base_url: "https://93.184.216.34", active: false },
-      ])
-      .select("id, active");
-    if (made.error) throw new Error(`Could not add connections (${made.error.code})`);
-    integrationId = made.data.find((entry) => entry.active)?.id ?? "";
-    inactiveId = made.data.find((entry) => !entry.active)?.id ?? "";
+      .insert({
+        name: `IT Delivery ${RUN}`,
+        base_url: "https://93.184.216.34",
+        endpoint: "/leads",
+        method: "POST",
+        lead_id_path: "lead.id",
+        active: true,
+        headers: { "X-Api-Key": "{{api_key}}" },
+        body_mapping: { fullName: "{{name}}", note: "{{message}}" },
+      })
+      .select("id")
+      .single();
+    if (active.error) throw new Error(`Could not add a connection (${active.error.code})`);
+    integrationId = active.data.id;
+    const inactive = await service
+      .from("crm_integrations")
+      .insert({ name: `IT Delivery off ${RUN}`, base_url: "https://93.184.216.34", active: false })
+      .select("id")
+      .single();
+    if (inactive.error) throw new Error(`Could not add a connection (${inactive.error.code})`);
+    inactiveId = inactive.data.id;
     await service
       .from("crm_integration_secrets")
       .insert({ integration_id: integrationId, api_key: `fake-key-for-tests-${RUN}` });
