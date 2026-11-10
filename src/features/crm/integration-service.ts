@@ -57,9 +57,12 @@ export interface CrmLogEntry {
 /** Calls made with the service role, for what only the server may see. */
 export interface CrmSendStore {
   /** The connection with its secrets, or null when there is none. */
-  readForSend(
-    integrationId: string,
-  ): Promise<{ name: string; connection: CrmConnection; secrets: CrmSecrets } | null>;
+  readForSend(integrationId: string): Promise<{
+    name: string;
+    connection: CrmConnection;
+    secrets: CrmSecrets;
+    projectCodes: Record<string, string>;
+  } | null>;
   writeLog(entry: CrmLogEntry): Promise<void>;
 }
 

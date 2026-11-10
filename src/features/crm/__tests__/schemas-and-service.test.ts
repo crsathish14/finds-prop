@@ -303,6 +303,7 @@ describe("UT-crm-test: the test lead (S7-T09)", () => {
       bodyMapping: { fullName: "{{name}}", note: "{{message}}" },
     },
     secrets: { apiKey: "fake-key-for-tests", apiSecret: null, accessToken: null },
+    projectCodes: {},
   };
   const storeWith = (read: typeof found | null) => {
     const writeLog = vi.fn(async () => undefined);

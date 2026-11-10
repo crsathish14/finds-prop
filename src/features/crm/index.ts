@@ -1,6 +1,14 @@
-export { deleteCrmIntegration, saveCrmIntegration, testCrmIntegration } from "./actions";
+export {
+  deleteCrmIntegration,
+  retryCrmDelivery,
+  saveCrmIntegration,
+  testCrmIntegration,
+} from "./actions";
+export { deliverSubmissionNow } from "./deliver-now";
+export { handleCrmRetry } from "./retry-handler";
 export {
   deleteIntegrationConfig,
+  retryDeliveryConfig,
   saveIntegrationConfig,
   testIntegrationConfig,
 } from "./action-config";

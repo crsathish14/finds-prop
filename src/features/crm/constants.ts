@@ -37,3 +37,10 @@ export const BLOCKED_HEADERS = [
 
 export const CRM_METHODS = ["POST", "PUT"] as const;
 export type CrmMethod = (typeof CRM_METHODS)[number];
+
+/** How many due submissions one run of the retry job takes, and how many it sends at the same time. */
+export const DELIVERY_BATCH = 10;
+export const DELIVERY_CONCURRENCY = 3;
+
+/** The name of the retry job's token in `internal_cron_tokens` (BR-67). */
+export const RETRY_TOKEN_NAME = "crm_retry";
