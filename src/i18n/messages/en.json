@@ -322,7 +322,8 @@
     "optionsDuplicate": "Each choice must be different.",
     "fieldsRequired": "Add at least one field.",
     "projectRequired": "Choose the project this form is for.",
-    "rangeOrder": "The largest value must be the same as or more than the smallest."
+    "rangeOrder": "The largest value must be the same as or more than the smallest.",
+    "crmUrlNotAllowed": "Must be https and a public address."
   },
   "format": {
     "rupees": "₹{value}",
