@@ -2,23 +2,29 @@
  * SubmissionDetail: everything one form submission holds, for the drawer that opens from the list.
  * Purpose: read a whole submission (S7-T07, FR-ADM-06): when it came, who, how to reach them, the form and project, the
  *   answers with the form's own questions, and how the CRM stands, with the reason when the delivery failed. Owner:
- *   design system. It holds no state and has no button of its own: it fills a ManagerDrawer, whose footer closes it.
- *   "Retry delivery now" is not here: the delivery engine and its retry come with the CRM task (S7-T09).
+ *   design system. It holds no state: it fills a ManagerDrawer, whose footer closes it. Under a failed delivery it can
+ *   show "Retry delivery now" (S7-T09), which the page turns on only when the submission can be sent again.
  * Props: details (what the submission holds: { created, name, mobile { text, href } or none, email, form, project,
  *   source }, each already formatted, a dash where there is nothing), answers ({ id, label, value }[], the value
  *   already formatted), crm ({ badge (a StatusBadge), leadId (the CRM's own id once delivered) }), failure ({ title,
- *   text }, only for a failed delivery: "CRM delivery failed" and its reason), words ({ created, name, mobile, email,
+ *   text }, only for a failed delivery: "CRM delivery failed" and its reason), retry ({ label, onClick, pending }, the
+ *   button under the failure; leave it out when the delivery cannot be retried), words ({ created, name, mobile, email,
  *   form, project, source, answers, crm, crmId }, the labels; `answers` is the heading over the answers), className.
  * Responsive: one column of label and value pairs; a long value breaks anywhere.
  * Accessibility: a description list (a term, then its value), the answers under their own heading; the CRM state is
- *   a word; the failure is an Alert that is read at once.
- * States: delivered, retrying, not sent, failed (with its reason); no answers; a long answer; a list of answers.
- * Dependencies: Alert, Heading. Tests: submissions-parts.test.tsx; Design Lab "Admin" (S7-T07).
+ *   a word; the failure is an Alert that is read at once; the retry button is a real button and is marked busy while it
+ *   works.
+ * States: delivered, retrying, not sent, failed (with its reason, with and without Retry delivery now, and while it
+ *   retries); no answers; a long answer; a list of answers.
+ * Dependencies: Alert, Button, Icon, Heading. Tests: submissions-parts.test.tsx; Design Lab "Admin" (S7-T07).
  * UX reference: admin-leads screen, "Submission details" drawer (kv, alert).
  */
+import { RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { Alert } from "@/components/patterns/alert";
+import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 
 type SubmissionDetailAnswer = { id: string; label: string; value: string };
@@ -38,6 +44,8 @@ type SubmissionDetailProps = {
   answers: SubmissionDetailAnswer[];
   crm: { badge: ReactNode; leadId?: string | null };
   failure?: { title: string; text: string };
+  /** Under the failure: send the submission again now. Left out when it cannot be sent again. */
+  retry?: { label: string; onClick: () => void; pending?: boolean };
   words: {
     created: string;
     name: string;
@@ -62,6 +70,7 @@ function SubmissionDetail({
   answers,
   crm,
   failure,
+  retry,
   words,
   className,
 }: SubmissionDetailProps) {
@@ -139,6 +148,19 @@ function SubmissionDetail({
           <Alert tone="danger" title={failure.title}>
             {failure.text}
           </Alert>
+        ) : null}
+        {failure && retry ? (
+          <div>
+            <Button
+              type="button"
+              variant="primary"
+              loading={retry.pending ?? false}
+              iconStart={<Icon icon={RefreshCw} size="sm" />}
+              onClick={retry.onClick}
+            >
+              {retry.label}
+            </Button>
+          </div>
         ) : null}
       </section>
     </div>

@@ -1,6 +1,7 @@
 import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
+import { CRM } from "./boards/crm";
 import { DISCOVERY } from "./boards/discovery";
 import { DOMAIN } from "./boards/domain";
 import { FEEDBACK } from "./boards/feedback";
@@ -111,6 +112,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to build the forms shown on project pages and the contact page: the list of forms with its Active switches, the editor's Settings box, and the Fields editor with its live preview. It mirrors the admin Forms screen.",
     entries: FORMS,
+  },
+  {
+    id: "crm",
+    title: "CRM",
+    uxBoard: "admin-crm",
+    summary:
+      "What the admin uses to connect the site to a CRM: the connection cards, the API logs, the editor's Connection, Credentials and Headers and body boxes, and the Agent column and Retry delivery now on the Leads page. It mirrors the admin CRM screen.",
+    entries: CRM,
   },
 ];
 
