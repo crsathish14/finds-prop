@@ -488,6 +488,11 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_crm_integrations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,"base_url": string,"body_mapping": Json,"created_at": string,"endpoint": string,"forms": number,"has_access_token": boolean,"has_api_key": boolean,"has_api_secret": boolean,"headers": Json,"id": string,"lead_id_path": string,"lead_source": string,"method": string,"name": string,"project_codes": Json,"updated_at": string
+            }[]
+                           },
 "admin_forms":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,
@@ -858,6 +863,9 @@ isOneToOne: false
                            },
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"save_crm_integration":
+{ Args: { "p_integration"?: string,"p_secrets"?: Json,"p_values": Json }; Returns: string
                            },
 "save_project_price_trends":
 { Args: { "p_project": string,"p_rows": Json }; Returns: number
