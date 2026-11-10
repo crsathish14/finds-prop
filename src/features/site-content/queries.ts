@@ -103,6 +103,8 @@ export async function getFooterPage(): Promise<FooterPage> {
 export interface HeroPage {
   initial: HeroFormValues;
   standard: StandardHero;
+  /** The sponsors as saved, in their order, for the manager under the hero boxes (S7-T11). */
+  sponsors: SponsorEditView[];
 }
 
 /**
@@ -115,7 +117,8 @@ export async function getHeroPage(): Promise<HeroPage> {
   const standard = standardHeroOf(
     buildHero({ ...settings, hero: { layout: settings.hero.layout } }, translate),
   );
-  return { initial: heroFormOf(settings.hero, standard), standard };
+  const { sponsors } = sponsorsPageOf(settings);
+  return { initial: heroFormOf(settings.hero, standard), standard, sponsors };
 }
 
 export interface HomepagePage {
@@ -137,6 +140,11 @@ export interface SponsorsPage {
 /** What the sponsor manager opens with: the stored sponsors in their order, each with the addresses of its pictures. */
 export async function getSponsorsPage(): Promise<SponsorsPage> {
   const { settings } = await getSiteContent();
+  return sponsorsPageOf(settings);
+}
+
+/** The stored sponsors as the editor shows them; an entry it cannot read is left out, counted and logged. */
+function sponsorsPageOf(settings: SiteSettings): SponsorsPage {
   const { sponsors, skipped } = sponsorEditViewsOf(
     settings.sponsors.ads,
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,

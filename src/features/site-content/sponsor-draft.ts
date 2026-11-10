@@ -223,7 +223,7 @@ export const hasProblems = (problems: DraftProblems): boolean =>
 
 /* ---- what is sent ---- */
 
-export interface SponsorPayload {
+export type SponsorPayload = {
   sponsors: {
     id: string;
     advertiser: string;
@@ -233,7 +233,7 @@ export interface SponsorPayload {
     strip?: { desktop?: string; compact?: string };
     panel?: { desktop?: string; compact?: string };
   }[];
-}
+};
 
 /**
  * The `saveSponsors` input for a list in which every picture is already stored (a chosen one has been put in the bucket
