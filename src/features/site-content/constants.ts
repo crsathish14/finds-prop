@@ -48,6 +48,13 @@ export const SPONSORS_MAX = 10;
 export const SPONSOR_IMAGE_MAX_KB = 150;
 export const SPONSOR_IMAGE_MAX_BYTES = SPONSOR_IMAGE_MAX_KB * 1024;
 
+/**
+ * The public bucket the sponsors' pictures are kept in, under `sponsors/<the sponsor's id>/`. The same name as the
+ * public side's `SPONSOR_BUCKET` (a test holds them together); it is repeated here because the browser code of this
+ * feature may not take values from another feature's index.
+ */
+export const SPONSOR_IMAGE_BUCKET = "site-assets";
+
 export const SPONSOR_ADVERTISER_MAX = 80;
 export const SPONSOR_ALT_MAX = 200;
 export const SPONSOR_HREF_MAX = 2000;
