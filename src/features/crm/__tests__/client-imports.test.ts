@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
  * client file that imports a value from the index, from the server or from those files cannot be built. Types are
  * erased and are fine. Vitest cannot see this, but the production build fails on it (it did, once, in another feature).
  */
-const CLIENT_FILES = ["crm-page.client.tsx"];
+const CLIENT_FILES = ["crm-page.client.tsx", "crm-editor.client.tsx", "editor-draft.ts"];
 const VALUE_IMPORT = /^import\s+(?!type\b)[^;]*?from\s+["']@\/features\/(crm|leads|forms)["']/ms;
 const SERVER_FILE =
   /^import\s+(?!type\b)[^;]*?from\s+["']\.\/(send|safe-url|service|queries|delivery|integration-service|actions)["']/ms;

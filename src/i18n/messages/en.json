@@ -2580,6 +2580,84 @@
           "title": "No deliveries yet",
           "text": "Calls to your CRMs show here, newest first."
         }
+      },
+      "metaTitleNew": "New connection",
+      "metaTitleEdit": "Edit connection",
+      "editor": {
+        "newTitle": "New connection",
+        "crumb": {
+          "nav": "Breadcrumb",
+          "back": "Back to CRM integrations",
+          "crm": "CRM integrations"
+        },
+        "problems": {
+          "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",
+          "text": "Check the boxes marked below, then save again."
+        },
+        "saved": "Connection saved",
+        "connection": {
+          "title": "Connection",
+          "name": "Name",
+          "leadSource": "Lead source",
+          "baseUrl": "Base URL",
+          "baseUrlHint": "Use an https address on a public domain. Local and private addresses aren't allowed.",
+          "endpoint": "Endpoint",
+          "method": "HTTP method",
+          "leadIdPath": "Lead ID path",
+          "status": "Status",
+          "active": "Active"
+        },
+        "credentials": {
+          "title": "Credentials",
+          "description": "Stored on the server only. Leave a field alone to keep the saved value.",
+          "apiKey": "API key",
+          "apiSecret": "API secret",
+          "accessToken": "Access token",
+          "replace": "Replace",
+          "clear": "Clear",
+          "undo": "Undo",
+          "cancel": "Cancel",
+          "notSet": "Not set",
+          "willClear": "Will be removed when you save."
+        },
+        "headersBody": {
+          "title": "Headers and body",
+          "headers": {
+            "heading": "Headers",
+            "name": "Header name",
+            "value": "Header value",
+            "add": "Add header",
+            "empty": "No headers.",
+            "remove": "Remove header {name}",
+            "removeBlank": "Remove header"
+          },
+          "mapping": {
+            "heading": "Body mapping",
+            "note": "(use {token} from the form)",
+            "name": "CRM field",
+            "value": "Template",
+            "add": "Add mapping",
+            "empty": "No mapping.",
+            "remove": "Remove mapping {name}",
+            "removeBlank": "Remove mapping"
+          },
+          "codes": {
+            "heading": "Project codes",
+            "name": "Project",
+            "value": "CRM code",
+            "choose": "Choose a project",
+            "add": "Add code",
+            "empty": "No codes.",
+            "remove": "Remove code for {name}",
+            "removeBlank": "Remove code"
+          }
+        },
+        "save": {
+          "note": "Credentials are never sent back to your browser.",
+          "cancel": "Cancel",
+          "save": "Save integration",
+          "saving": "Saving…"
+        }
       }
     }
   },

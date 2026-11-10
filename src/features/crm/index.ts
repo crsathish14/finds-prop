@@ -13,6 +13,7 @@ export {
   testIntegrationConfig,
 } from "./action-config";
 export { AdminCrm } from "./crm-page.client";
+export { CrmEditor } from "./crm-editor.client";
 export type { AdminCrmActions, AdminCrmTab } from "./crm-page.client";
 export { getCrmIntegrations, getCrmLogs } from "./queries";
 export { MAX_ATTEMPTS, RETRY_MINUTES } from "./constants";
