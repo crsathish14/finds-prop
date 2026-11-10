@@ -75,6 +75,7 @@ const submission = (extra: Partial<SubmissionDbRow> = {}): SubmissionDbRow => ({
   last_error: "HTTP 502",
   created_at: "2026-10-28T11:02:00+00:00",
   projects: { name: "Kadal Vista" },
+  crm_integrations: { name: "Sales team" },
   ...extra,
 });
 
@@ -130,6 +131,13 @@ describe("UT-submission-view: the form submissions as the page shows them (S7-T0
         leadId: null,
       },
     });
+  });
+
+  it("names the CRM connection that took the submission, or none when it has none or was deleted (S7-T09)", () => {
+    expect(toSubmissionViews([submission()], labels).submissions[0]?.agentName).toBe("Sales team");
+    expect(
+      toSubmissionViews([submission({ crm_integrations: null })], labels).submissions[0]?.agentName,
+    ).toBeNull();
   });
 
   it("leaves out, and counts, a submission with a CRM state the page does not know", () => {

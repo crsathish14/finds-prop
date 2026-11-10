@@ -36,7 +36,7 @@ const LEAD_COLUMNS =
   "id, project_id, kind, name, phone, email, message, visit_date, status, created_at, projects(name)";
 
 const SUBMISSION_COLUMNS =
-  "id, form_id, form_name, name, mobile, email, data, source, crm_status, crm_lead_id, crm_http_status, crm_attempts, next_retry_at, last_error, created_at, projects(name)";
+  "id, form_id, form_name, name, mobile, email, data, source, crm_status, crm_lead_id, crm_http_status, crm_attempts, next_retry_at, last_error, created_at, projects(name), crm_integrations(name)";
 
 /** The "after this row" condition of a newest-first list: older, or the same moment with a smaller id. */
 const olderThan = (cursor: { at: string; id: string }) =>

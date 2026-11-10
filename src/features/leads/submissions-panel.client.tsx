@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/patterns/empty-state";
 import { ManagerDrawer } from "@/components/patterns/manager-drawer";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Button } from "@/components/ui/button";
-import type { Translator } from "@/i18n/failure-text";
+import { failureText, type Translator } from "@/i18n/failure-text";
 import { formatDate, formatTime } from "@/lib/format";
 import { notify } from "@/lib/notify";
 import type { ActionResult } from "@/types/action";
@@ -30,6 +30,10 @@ import type { FilterOptions, SubmissionView, SubmissionsPage } from "./view";
 
 export type SubmissionsActions = {
   loadMore: (input: SubmissionFilters) => Promise<ActionResult<SubmissionsPage>>;
+  /** "Retry delivery now" for one submission; it comes from the CRM feature, passed in by the page. */
+  retry: (input: {
+    submissionId: string;
+  }) => Promise<ActionResult<{ submissionId: string; ok: boolean; status: number | null }>>;
 };
 
 type Filters = {
@@ -44,7 +48,9 @@ type Filters = {
  * The "Form submissions" tab (S7-T07, FR-ADM-06): the forms people filled in, the boxes that narrow them and the
  * details of one. The choices are in the address, so the page is read again for them and the count is right.
  * "Show more" adds the next submissions in place, and a page read again starts the list over from its first.
- * "Retry delivery now" is not here: the delivery engine comes with the CRM task (S7-T09).
+ * A failed delivery has "Retry delivery now" in its details (S7-T09): it sends the submission to its CRM at once and
+ * says how it went; the page is read again after, so the state shown is the server's. The list has an Agent column:
+ * the CRM connection that took the submission.
  */
 export function SubmissionsPanel({
   page,
@@ -67,6 +73,7 @@ export function SubmissionsPanel({
   const [loadedMore, setLoadedMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   // A page read again (for other choices) starts the list over from its first submissions.
   const [seen, setSeen] = useState(page);
@@ -123,6 +130,38 @@ export function SubmissionsPanel({
     setLoadedMore(true);
   };
 
+  const retryNow = async (submission: SubmissionView) => {
+    if (retrying) return;
+    setRetrying(true);
+    try {
+      const result = await actions.retry({ submissionId: submission.id });
+      if (!result.ok) {
+        if (result.code === "CONFLICT" || result.code === "NOT_FOUND") {
+          notify.error(everything("admin.crm.toast.retryConflict"));
+          router.refresh();
+        } else {
+          notify.error(failureText(everything, result));
+        }
+        return;
+      }
+      if (result.data.ok) {
+        notify.success(everything("admin.crm.toast.retried"), {
+          description: everything("admin.crm.toast.retriedText"),
+        });
+      } else {
+        notify.error(everything("admin.crm.toast.retryFailed"), {
+          description:
+            result.data.status === null
+              ? everything("admin.crm.toast.retryFailedNoAnswer")
+              : everything("admin.crm.toast.retryFailedHttp", { status: result.data.status }),
+        });
+      }
+      router.refresh();
+    } finally {
+      setRetrying(false);
+    }
+  };
+
   const createdText = (iso: string) =>
     `${formatDate(locale, iso, "medium")}, ${formatTime(locale, iso)}`;
 
@@ -143,6 +182,7 @@ export function SubmissionsPanel({
     project: submission.projectName ?? dash,
     source: submission.source ?? dash,
     form: submission.formName,
+    agent: submission.agentName ?? dash,
     crm: crmBadge(submission),
     openLabel: translate("submissions.details"),
     openFor: submission.name ?? submission.formName,
@@ -246,6 +286,7 @@ export function SubmissionsPanel({
             project: translate("submissions.table.project"),
             source: translate("submissions.table.source"),
             form: translate("submissions.table.form"),
+            agent: translate("submissions.table.agent"),
             crm: translate("submissions.table.crm"),
             actions: translate("submissions.table.actions"),
           }}
@@ -297,6 +338,15 @@ export function SubmissionsPanel({
               leadId: opened.crm.leadId,
             }}
             {...(failure ? { failure } : {})}
+            {...(failure && opened
+              ? {
+                  retry: {
+                    label: translate("detail.retry"),
+                    onClick: () => void retryNow(opened),
+                    pending: retrying,
+                  },
+                }
+              : {})}
             words={detailWords}
           />
         ) : null}

@@ -1,4 +1,5 @@
 import { REQUEST_TIMEOUT_MS, RESPONSE_BYTES_MAX, SNIPPET_MAX, type CrmMethod } from "./constants";
+import { joinUrl } from "./address";
 import { assertSafeUrl, UnsafeUrlError, type HostLookup } from "./safe-url";
 
 /**
@@ -49,12 +50,6 @@ export function fillTemplate(template: string, values: Record<string, string>): 
     /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g,
     (_whole, key: string) => values[key] ?? "",
   );
-}
-
-/** The address of the call: the base and the endpoint joined with one slash. */
-export function joinUrl(base: string, endpoint: string | null): string {
-  if (!endpoint) return base;
-  return `${base.replace(/\/+$/, "")}/${endpoint.replace(/^\/+/, "")}`;
 }
 
 /** A value inside a JSON answer by its dotted path (`data.lead.id`); only text and numbers count. */
@@ -197,3 +192,5 @@ export async function sendToCrm(
   }
   return { ok, status: response.status, snippet, leadId, durationMs };
 }
+
+export { joinUrl };

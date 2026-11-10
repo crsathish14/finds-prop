@@ -13,6 +13,7 @@ import type { FilterOptions, LeadCounts, LeadsPage, SubmissionsPage } from "./vi
 
 export type LeadsBoardActions = ProjectLeadsActions & {
   loadMoreSubmissions: SubmissionsActions["loadMore"];
+  retryDelivery: SubmissionsActions["retry"];
 };
 
 type LeadsBoardProps = {
@@ -79,7 +80,7 @@ export function LeadsBoard(props: LeadsBoardProps) {
               page={props.submissions}
               filters={props.filters}
               options={props.options}
-              actions={{ loadMore: actions.loadMoreSubmissions }}
+              actions={{ loadMore: actions.loadMoreSubmissions, retry: actions.retryDelivery }}
             />
           )}
         </TabsContent>

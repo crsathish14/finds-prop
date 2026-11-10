@@ -12,10 +12,13 @@ export {
   saveIntegrationConfig,
   testIntegrationConfig,
 } from "./action-config";
-export { getCrmIntegrations } from "./queries";
+export { AdminCrm } from "./crm-page.client";
+export type { AdminCrmActions, AdminCrmTab } from "./crm-page.client";
+export { getCrmIntegrations, getCrmLogs } from "./queries";
 export { MAX_ATTEMPTS, RETRY_MINUTES } from "./constants";
 export { nextRetryAt, retryDelayMinutes, stateAfterFailure } from "./retry";
 export { deleteIntegrationSchema, saveIntegrationSchema, testIntegrationSchema } from "./schemas";
 export type { DeleteIntegrationInput, SaveIntegrationInput, TestIntegrationInput } from "./schemas";
 export type { CrmTestResult } from "./integration-service";
+export type { CrmLogView, CrmLogsPage } from "./logs-view";
 export type { CrmIntegrationView } from "./view";
