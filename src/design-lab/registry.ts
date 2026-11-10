@@ -101,7 +101,7 @@ export const LAB_BOARDS: LabBoard[] = [
     title: "Sponsors",
     uxBoard: "admin-sponsors",
     summary:
-      "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, and the Add and Edit sponsor form. It mirrors the admin Hero and sponsors screen.",
+      "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, the Add and Edit sponsor form, the list of sponsors with its order arrows, the hero preview with the banner in it, and the whole Hero page with both. It mirrors the admin Hero and sponsors screen.",
     entries: SPONSORS,
   },
   {
