@@ -9,7 +9,6 @@ import { FOUNDATIONS } from "./boards/foundations";
 import { NAVIGATION } from "./boards/navigation";
 import { SELLER } from "./boards/seller";
 import { SITE_CONTENT } from "./boards/site-content";
-import { SPONSOR_MANAGER } from "./boards/sponsor-manager";
 import { SPONSORS } from "./boards/sponsors";
 import type { LabBoard, LabBoardId } from "./types";
 
@@ -102,7 +101,7 @@ export const LAB_BOARDS: LabBoard[] = [
     title: "Sponsors",
     uxBoard: "admin-sponsors",
     summary:
-      "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, and the Add and Edit sponsor form. It mirrors the admin Hero and sponsors screen.",
+      "What the admin uses to manage the sponsored banners on the home page and in the results: the picture slot with every state a chosen file can end in, the Add and Edit sponsor form, the list of sponsors with its order arrows, the hero preview with the banner in it, and the whole Hero page with both. It mirrors the admin Hero and sponsors screen.",
     entries: SPONSORS,
   },
   {
@@ -112,14 +111,6 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin uses to build the forms shown on project pages and the contact page: the list of forms with its Active switches, the editor's Settings box, and the Fields editor with its live preview. It mirrors the admin Forms screen.",
     entries: FORMS,
-  },
-  {
-    id: "sponsor-manager",
-    title: "Sponsor list",
-    uxBoard: "admin-sponsors",
-    summary:
-      "What the admin uses to manage the sponsors of the Hero page: the list with its order arrows, the hero preview with the banner in it, and the whole Hero page with both. It mirrors the admin Hero and sponsors screen.",
-    entries: SPONSOR_MANAGER,
   },
 ];
 

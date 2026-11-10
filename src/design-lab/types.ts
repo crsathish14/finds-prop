@@ -17,8 +17,7 @@ export type LabBoardId =
   | "admin"
   | "site-content"
   | "sponsors"
-  | "forms"
-  | "sponsor-manager";
+  | "forms";
 
 export type LabEntry = {
   /** Anchor on the board page: lowercase words joined by hyphens. */
