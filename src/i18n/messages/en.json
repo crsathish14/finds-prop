@@ -2659,6 +2659,119 @@
           "saving": "Saving…"
         }
       }
+    },
+    "overview": {
+      "metaTitle": "Overview",
+      "title": "Overview",
+      "intro": "Activity across listings, people and leads.",
+      "updating": "Updating the numbers…",
+      "percent": "{value}%",
+      "noValue": "—",
+      "range": {
+        "label": "Date range",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "days7": "7 days",
+        "days30": "30 days",
+        "thisMonth": "This month",
+        "custom": "Custom",
+        "from": "From",
+        "to": "To"
+      },
+      "groups": {
+        "listings": "Listings",
+        "people": "People",
+        "engagement": "Leads and engagement"
+      },
+      "tiles": {
+        "total": "Total properties",
+        "active": "Active (approved)",
+        "waiting": "Awaiting approval",
+        "customers": "Customers",
+        "agents": "Agents",
+        "builders": "Builders",
+        "leads": "Total leads",
+        "today": "New leads today",
+        "enquiries": "Enquiries",
+        "shortlisted": "Shortlisted",
+        "conversion": "Conversion"
+      },
+      "notes": {
+        "review": "Review listings",
+        "agents": "Role only, no agent portal yet",
+        "conversion": "Definition to confirm"
+      },
+      "error": {
+        "title": "We couldn't load the overview",
+        "text": "Check your connection and try again.",
+        "kept": "Check your connection and try again. The numbers below are from the last successful load."
+      },
+      "charts": {
+        "views": {
+          "label": "Chart view",
+          "chart": "Chart",
+          "table": "Table"
+        },
+        "daily": {
+          "title": "Leads, enquiries and shortlists",
+          "perDay": "Per day, {from} to {to}",
+          "perDayOne": "Per day, {day}",
+          "label": "Leads, enquiries and shortlists per day",
+          "dateColumn": "Date",
+          "shortlists": "Shortlists",
+          "leads": "Leads",
+          "enquiries": "Enquiries",
+          "empty": {
+            "title": "No activity in this range",
+            "text": "Try a longer date range."
+          }
+        },
+        "sources": {
+          "title": "Leads by source",
+          "description": "Share of {count} leads",
+          "label": "Leads by source",
+          "projectPages": "Project pages",
+          "propertyEnquiries": "Property enquiries",
+          "otherForms": "Other forms",
+          "empty": {
+            "title": "No leads in this range",
+            "text": "Try a longer date range."
+          }
+        },
+        "projects": {
+          "title": "Enquiries by project",
+          "description": "{count, plural, one {Top # project} other {Top # projects}}",
+          "label": "Enquiries by project",
+          "empty": {
+            "title": "No enquiries in this range",
+            "text": "Try a longer date range."
+          }
+        },
+        "recent": {
+          "title": "Recent leads",
+          "all": "All leads",
+          "label": "Recent leads",
+          "empty": {
+            "title": "No leads yet",
+            "text": "New leads will show here."
+          },
+          "someone": "Someone",
+          "message": "Message",
+          "kinds": {
+            "enquiry": "Enquiry",
+            "siteVisit": "Site visit",
+            "brochure": "Brochure"
+          },
+          "meta": "{label} · {what}",
+          "when": {
+            "now": "just now",
+            "minutes": "{count} min ago",
+            "hours": "{count} hr ago",
+            "yesterday": "Yesterday",
+            "days": "{count} days ago"
+          }
+        }
+      }
     }
   },
   "builderPortal": {
