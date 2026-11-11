@@ -875,6 +875,9 @@ isOneToOne: false
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
+"run_retention":
+{ Args: { "p_batch"?: number,"p_max_batches"?: number }; Returns: Json
+                           },
 "save_crm_integration":
 { Args: { "p_integration"?: string,"p_secrets"?: Json,"p_values": Json }; Returns: string
                            },
