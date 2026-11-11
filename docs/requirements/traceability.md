@@ -92,7 +92,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 | Req       | Name                             | Modules                            | Stage          | UX                               | Tests                                                                                 |
 | --------- | -------------------------------- | ---------------------------------- | -------------- | -------------------------------- | ------------------------------------------------------------------------------------- |
-| FR-ADM-01 | Overview                         | `admin-overview`                   | S7-T06         | `admin-overview`                 | chart tests, IT-AUTHZ-admin                                                           |
+| FR-ADM-01 | Overview                         | `admin-overview`                   | S7-T06         | `admin-overview`                 | chart tests, UT-overview-*, DB-FN-admin_overview, IT-admin-overview, IT-AUTHZ-admin   |
 | FR-ADM-02 | Listings moderation              | `moderation`                       | **S6-T04**     | `admin-listings`                 | DB-FN-lifecycle, E06/E08                                                              |
 | FR-ADM-03 | Projects moderation              | `moderation`, `projects`           | S7-T04         | `admin-projects`                 | DB-TRG-projects-guard, E11/E12                                                        |
 | FR-ADM-04 | Project form                     | `projects`                         | S7-T02         | `admin-project-form`             | E11                                                                                   |
