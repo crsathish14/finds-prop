@@ -2,7 +2,7 @@
 
 **Status: complete, waiting for your review and explicit approval.** No production code has been written.
 
-The approved direction, **Concept 1 (Search Desk) in the Grove palette** with Fraunces and Figtree, applied to every route in the Phase 1 inventory: **33 routes → 38 designed screens → 180 states → 265 rendered images**, with a documented design system, navigation model, interaction rules, the two homepage advertising layouts with the no-sponsor fallback, and a list of open decisions.
+The approved direction, **Concept 1 (Search Desk) in the Grove palette** with IBM Plex Serif and IBM Plex Sans, applied to every route in the Phase 1 inventory: **33 routes → 38 designed screens → 180 states → 265 rendered images**, with a documented design system, navigation model, interaction rules, the two homepage advertising layouts with the no-sponsor fallback, and a list of open decisions.
 
 ## Start here
 
@@ -56,7 +56,7 @@ final-ux/
 
 ## Direction and boundaries
 
-- **Direction:** Concept 1, Palette A (Grove), Fraunces and Figtree, Concept 1's navigation approach. The colour values are the exploration's, unchanged. Additions (status colours, dark surface, chart colours, scales) are marked *New* in `tokens.css` and explained in `design-system.md`.
+- **Direction:** Concept 1, Palette A (Grove), IBM Plex Serif and IBM Plex Sans, Concept 1's navigation approach. The colour values are the exploration's, unchanged. Additions (status colours, dark surface, chart colours, scales) are marked *New* in `tokens.css` and explained in `design-system.md`.
 - **Source of truth:** Phase 1 documents for functionality and the 33 routes; `design-exploration-v2/concept-1/`, `recommended-preview/`, `palette-comparison` and `recommendation.md` for the visual direction. The brief also named `design-direction.md`; the exploration folder has none, and the only file of that name is the rejected Step 1 (indigo and saffron) one, which was deliberately **not** used.
 - **Not touched** (checked: no file outside `final-ux/` has changed since this phase began): the React + Vite project, `property-platform-analysis/`, `design-exploration-v2/`, the Step 1 files and their backup, and Supabase. Nothing here connects to Supabase or implements business logic.
 - **Reading existing code:** I read the existing app's constants (the 12 localities, property types, amenities, label thresholds, price format) to use the **real filter options**. I did not use its visual design.

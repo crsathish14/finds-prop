@@ -10,7 +10,7 @@ Per your brief, none of the advertising, regulatory, booking, analytics, backend
 
 | Decision | Source |
 |---|---|
-| Direction: Concept 1 (Search Desk), Grove palette, Fraunces and Figtree, Concept 1's navigation approach | Your brief |
+| Direction: Concept 1 (Search Desk), Grove palette, IBM Plex Serif and IBM Plex Sans, Concept 1's navigation approach | Your brief |
 | Two interchangeable homepage layouts (A and the split preview) sharing one header, search and visual language | Your brief |
 | Advertising = **finished banner images** supplied by advertisers; several ads supported; no assumption of automatic rotation | Your brief |
 | No-sponsor state = Concept 1 without a banner, no empty container, no gap | Your brief |

@@ -19,7 +19,7 @@ Two interchangeable homepage layouts, plus the no-sponsor fallback. All three sh
 | **Header** | Concept 1's ivory header (logo, Buy, Rent, Projects, ✦ AI Search, Contact, Post property pill, Sign in). The recommended preview used a dark-green header; both layouts here use Concept 1's, as specified. |
 | **Hero copy** | One CMS-driven set: headline, subtitle, optional eyebrow. “Find the place that fits your life in *Chennai*.” and “Shortlist, compare and enquire directly.” The layouts never change the words, which is what makes them interchangeable. |
 | **Search card** | One component: Buy / Rent / New projects, Locality, Property type, Bedrooms, Max budget, copper Search, “Describe it in words”, Popular and Quick-pick chips. Same labels, order and behaviour. |
-| **Palette, type, buttons** | Grove. Fraunces for the headline, Figtree for the interface. The copper Search button is the only copper fill in the hero. |
+| **Palette, type, buttons** | Grove. IBM Plex Serif for the headline, IBM Plex Sans for the interface. The copper Search button is the only copper fill in the hero. |
 | **Below the hero** | Explore by locality · Featured homes · New launches from developers · Browse by what matters · Newest on Find Prop · Why Find Prop · Post-property banner · footer. |
 
 The only things that differ: **how the search card is arranged** (one joined bar vs stacked) and **where the sponsored image sits**.
@@ -34,7 +34,7 @@ Concept 1 as approved: centred headline, centred search card, and the sponsored 
 
 | Element | Position and size |
 |---|---|
-| Headline | Fraunces 58 / 62, two lines, centred, y 88 to 212 |
+| Headline | IBM Plex Serif 58 / 62, two lines, centred, y 88 to 212 |
 | Search card | **970 × 210**, x 235 to 1205, y 274 to 484, 24 px radius, the only element with a shadow |
 | “Sponsored” row | 970 × 24, y 496 to 520 (label left, “About this ad” and pager right) |
 | **Ad slot (frame)** | **970 × 90**, y 525 to 615 |
@@ -65,7 +65,7 @@ The recommended preview's composition, in the Grove system: **search on the left
 | Element | Position and size |
 |---|---|
 | Eyebrow pill | Optional CMS text, above the headline |
-| Headline | Fraunces about 54 / 58, left aligned, two lines |
+| Headline | IBM Plex Serif about 54 / 58, left aligned, two lines |
 | Left column | 732 wide |
 | Search card | **732 × 266**, y 335 to 601: Buy / Rent / New projects tabs, then Locality with Search, then Type, Bedrooms, Budget, then the chips |
 | Trust row | Approved listings only · Enquire directly · Compare up to 3 homes |

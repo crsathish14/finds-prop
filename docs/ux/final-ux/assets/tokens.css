@@ -56,8 +56,8 @@
   --c-series-1: #1F7A55;  --c-series-2: #B7791F;  --c-series-3: #2F7FB0;  --c-series-4: #B4592A;  --c-series-other: #7A857E;
 
   /* ── Type ─────────────────────────────────────── */
-  --font-display: 'Fraunces', 'Source Serif 4', Georgia, serif;
-  --font-ui: 'Figtree', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'IBM Plex Serif', 'Noto Sans Tamil', Georgia, serif;
+  --font-ui: 'IBM Plex Sans', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --display-weight: 500;
   --display-tracking: -0.02em;
 

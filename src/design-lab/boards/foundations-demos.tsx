@@ -225,7 +225,7 @@ export function TypographyDemo() {
   return (
     <div className="flex flex-col gap-8">
       <Column className="max-w-none gap-4">
-        <Specimen label='Heading size="display" (Fraunces 30 / 46 / 58 by screen)'>
+        <Specimen label='Heading size="display" (IBM Plex Serif 30 / 46 / 58 by screen)'>
           <Heading as="h3" size="display">
             Find the place that fits your <Heading.Em>life</Heading.Em>
           </Heading>

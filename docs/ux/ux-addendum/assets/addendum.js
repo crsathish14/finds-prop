@@ -71,7 +71,7 @@
       my.forEach((y) => { major += `<line x1="-400" y1="${y}" x2="${W + 400}" y2="${y}"/>`; });
       const parks = `<rect x="${130 / zoom + 40}" y="60" width="${210 / zoom + 60}" height="${140 / zoom + 50}" rx="22" fill="var(--c-primary-tint)"/><rect x="640" y="430" width="${180 / zoom + 70}" height="${120 / zoom + 50}" rx="22" fill="var(--c-primary-tint)"/>`;
       const labels = svg.dataset.labels === 'false' ? '' : [['Velachery', 520, 330], ['Guindy', 230, 190], ['Adyar', 330, 560], ['Perungudi', 800, 540], ['Taramani', 720, 250]]
-        .map(([t, x, y]) => `<text x="${x}" y="${y}" font-family="Figtree, system-ui, sans-serif" font-size="${15}" font-weight="600" fill="var(--c-muted)" stroke="var(--c-bg)" stroke-width="4" paint-order="stroke" text-anchor="middle">${t}</text>`).join('');
+        .map(([t, x, y]) => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="${15}" font-weight="600" fill="var(--c-muted)" stroke="var(--c-bg)" stroke-width="4" paint-order="stroke" text-anchor="middle">${t}</text>`).join('');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
       svg.setAttribute('aria-hidden', 'true');
