@@ -1,6 +1,6 @@
 # ADR-125 · Authorization verification (S8-T04)
 
-- Status: Accepted (part 1: the database; the actions and handlers are added in parts 2 and 3)
+- Status: Accepted (part 1: the database, verified in CI; the actions and handlers are added in parts 2 and 3)
 - Date: 2026-11-11
 - Related: ADR-017 (column grants), ADR-028 and ADR-123 (the audit log), ADR-097 and ADR-121 (functions that run as the caller), plan 07 sections 4.2, 4.3 and 5, `DB-RLS-matrix`, `DB-PRIV`, BR-30 to BR-35
 - Plan for S8-T04 approved by the owner on 11 Nov 2026 ("approved"), without the second-factor ("aal2") variants (see "Out of scope").
@@ -23,7 +23,7 @@ Stage 8 asks for the authorization of the whole system to be checked end to end,
 
 - **`public.rls_auto_enable()` is open to visitors on the hosted project and is not in our migrations.** It is Supabase's own event-trigger function (it switches row-level security on for each new table, and the project's `ensure_rls` event trigger runs it). It returns `event_trigger`, so PostgreSQL refuses to run it as an ordinary function (it can only be fired by the event), and it pins its `search_path`. No action is needed, and it is left alone (it is a platform feature that protects new tables). The catalogue test leaves event-trigger functions out for this reason; the local and CI databases do not have it.
 - **The admin cannot change a listing, an enquiry, a photo or a person's name directly,** only through the moderation and close functions, and only the owner moves an enquiry on. This is the design (the matrix records it as "no"); it is written here so that nobody takes it for a gap.
-- **Results of the first CI run, and any hole it shows, are added here before this change is merged.** The matrix was written from the migrations and checked against the hosted database's privileges; the row and write expectations were not run until CI (no local database), so a mismatch is either a wrong expectation (fixed in the test) or a real finding (reported, and fixed in its own change).
+- **Results of the CI runs: no hole was found.** The matrix (339 checks) and the function catalogue (5 checks) pass, inside the whole suite of 41 files and 1,475 checks. The first runs showed three wrong expectations of mine, none a policy fault: the plan count was a bigint where pgTAP wants an int; the service role holds truncate on every table but the audit log (the platform default, the same on the hosted project; `anon` and `authenticated` hold none); and one project insert lacked the required locality, so it was refused for that reason and not the policy's (it and three "no" neighbours were fixed). Every row-visibility check and every other write case passed as first written.
 
 ## Out of scope
 
