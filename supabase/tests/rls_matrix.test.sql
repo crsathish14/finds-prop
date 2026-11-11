@@ -446,12 +446,12 @@ insert into exp_write (label, who, stmt, expected) values
   ('audit_log: the admin cannot delete an entry', 'ad', $q$delete from public.audit_log$q$, 'no'),
   ('crm_integration_secrets: the admin cannot read them to change them', 'ad', $q$update public.crm_integration_secrets set api_key = 'x'$q$, 'no');
 
-select plan(
+select plan((
   (select count(*) from exp_grants) * 3
   + 1
   + (select count(*) from exp_vis)
   + (select count(*) from exp_write)
-);
+)::int);
 
 -- Layer 1
 select is(
