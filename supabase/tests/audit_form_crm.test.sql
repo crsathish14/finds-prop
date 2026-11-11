@@ -15,11 +15,11 @@ select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-000000
 create function pg_temp.crm_entries(form uuid)
 returns table (n bigint, from_id text, to_id text)
 language sql
-as $
+as $$
   select row_number() over (order by id), diff ->> 'from', diff ->> 'to'
   from public.audit_log
   where action = 'form.crm_changed' and entity_id = form::text
-$;
+$$;
 
 -- A form made with no connection writes nothing.
 insert into public.forms (id, name, slug, kind)
