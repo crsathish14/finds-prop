@@ -57,7 +57,7 @@ Rules:
 | Client-side fetch (autocomplete, map viewport, live admin filters) | Route Handler (`GET`)                                           | Validate query with Zod; rate limit; JSON `ActionResult`-like envelope |
 | Auth hook, cron, health                                            | Route Handler                                                   | Signature/token checked before any work; no cookies                    |
 | Uploads                                                            | Action returns signed URL → browser uploads → `finalize` Action | `07` §7                                                                |
-| External calls (MSG91, Ola Maps, CRM webhooks)                     | Provider adapters in `server/`                                  | Timeouts, retries, redaction (`09` §6)                                 |
+| External calls (SMS, Ola Maps, CRM webhooks)                       | Provider adapters in `server/`                                  | Timeouts, retries, redaction (`09` §6)                                 |
 
 ### 4.1 API contracts
 

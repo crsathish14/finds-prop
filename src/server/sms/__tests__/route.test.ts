@@ -48,7 +48,7 @@ describe("UT-send-sms-route: the route handler", () => {
     expect(response.status).toBe(401);
   });
 
-  it("refuses a signed request in production when MSG91 is not configured, instead of pretending", async () => {
+  it("refuses a signed request in production when no SMS provider is configured, instead of pretending", async () => {
     environment.APP_ENV = "production";
     try {
       const { POST } = await import("@/app/api/auth/hooks/send-sms/route");
