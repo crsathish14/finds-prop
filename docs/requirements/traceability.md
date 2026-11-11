@@ -114,7 +114,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-SYS-03 | Event tracking        | `projects`          | S4-T09 (views, ADR-046); S5-T05 (the rest) | n/a                  | DB-FN-track_project_event             |
 | FR-SYS-04 | Form pipeline         | `forms`             | S5-T05                                     | `contact`, `project` | IT-forms                              |
 | FR-SYS-05 | Buckets with limits   | DB                  | S3-T05                                     | n/a                  | DB-STO-*                              |
-| FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT                              |
+| FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT, DB-TRG-audit-form-crm       |
 | FR-SYS-07 | Seed data             | scripts             | S3-T13                                     | n/a                  | CI db job                             |
 | FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries      |
 | FR-SYS-09 | Legal pages           | `app`               | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
