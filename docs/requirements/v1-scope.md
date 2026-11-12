@@ -45,7 +45,7 @@ The earlier one-shot AI natural-language search with its own lead form (replaced
 | Precondition                                                              | Owner          | Tracked as   |
 | ------------------------------------------------------------------------- | -------------- | ------------ |
 | Domain bought; email DNS verified                                         | You            | `DEC-03`     |
-| MSG91 DLT sender and OTP template approved                                | You            | `RISK-02`    |
+| SMS DLT sender and OTP template approved                                  | You            | `RISK-02`    |
 | UX addendum delivered and approved                                        | You / designer | `DEC-04`     |
 | Legal pages and consent texts final                                       | You / counsel  | `DEC-25`     |
 | Sponsor content legally reviewed **or** the site launches on the fallback | You            | `DEC-17`     |

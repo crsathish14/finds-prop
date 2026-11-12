@@ -18,7 +18,7 @@
 | App bug caused by a migration                | Feature-flag off if possible; ship a forward-fix migration; if data is being damaged, stop traffic (maintenance flag), restore per below |
 | Bad data change                              | Use reviewed rollback script; for destructive loss restore from backup/PITR into a new project and re-point (runbook), accepting RPO     |
 | Failed migration mid-deploy                  | Pipeline already stopped; app untouched; fix and re-run                                                                                  |
-| Third-party outage (MSG91/Resend/Ola)        | OTP: communicate, consider temporary alternate provider via adapter; places: degraded mode (manual locality text); CRM: queue continues  |
+| Third-party outage (SMS/Resend/Ola)          | OTP: communicate, consider temporary alternate provider via adapter; places: degraded mode (manual locality text); CRM: queue continues  |
 
 ### 8.3 Incident handling
 

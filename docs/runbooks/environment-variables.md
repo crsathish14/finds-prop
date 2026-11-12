@@ -42,10 +42,16 @@ Changing `RATE_LIMIT_HMAC_SECRET` later only resets the visitor hashes, which is
 | ------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SEND_SMS_HOOK_SECRET`                | The signing secret for the Send SMS hook | Supabase shows it once when you add the hook (Authentication, Hooks). Needs the stable app address: `https://<address>/api/auth/hooks/send-sms` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`      | The CAPTCHA site key (browser-safe)      | Cloudflare Turnstile. Its secret key goes in the Supabase dashboard's CAPTCHA setting, not in Vercel                                            |
-| `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` | Real SMS sending                         | MSG91, **after DLT approval (still pending, 2 Nov 2026)**. Needed only where `APP_ENV` is `staging` or `production`                             |
+| `PING4SMS_API_KEY`                    | Real SMS sending: the account key        | The Ping4SMS panel. Never pasted into chat; replace it if it ever appears in one. Needed only where `APP_ENV` is `staging` or `production`      |
+| `PING4SMS_SENDER_ID`                  | The six letter DLT sender                | Ping4SMS (their DLT entity for now; Find Prop's own once approved)                                                                              |
+| `PING4SMS_TEMPLATE_ID`                | The DLT template id                      | Ping4SMS                                                                                                                                        |
+| `PING4SMS_MESSAGE`                    | The DLT template text with `{#var#}`     | Exactly as registered, one `{#var#}` where the code goes. See `docs/runbooks/send-sms-hook.md`                                                  |
+| `PING4SMS_ROUTE`                      | The Ping4SMS route; `2` when empty       | Ask Ping4SMS to confirm the route for OTP traffic                                                                                               |
+| `SMS_PROVIDER`                        | `ping4sms` (when empty) or `msg91`       | Leave empty. `msg91` is a fallback only; the owner has no MSG91 account                                                                         |
+| `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` | MSG91 fallback only                      | Used only with `SMS_PROVIDER=msg91`                                                                                                             |
 | `MSG91_SENDER_ID`                     | Reserved; the OTP call does not use it   | MSG91                                                                                                                                           |
 
-While `APP_ENV` is `dev`, phone codes go through the fake sender and Supabase's test numbers, so MSG91 does not block building or testing the screens.
+While `APP_ENV` is `dev`, phone codes go through the fake sender and Supabase's test numbers, so the SMS provider does not block building or testing the screens.
 
 **Code lifetime (owner setting, each Supabase project).** The code screen says "Codes work for 5 minutes", so set the phone code expiry to **300 seconds** in the project's phone provider settings (the default is 3600). Supabase answers a wrong code and an expired one with the same error, so the screen calls a refused code "expired" only when five minutes have passed since it asked for one; with a longer expiry a code that is still valid could be called expired.
 

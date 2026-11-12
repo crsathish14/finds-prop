@@ -32,7 +32,7 @@ Settled only by a live test (`docs/runbooks/auth-spike.md`, script `scripts/spik
 
 ## Phone-code hook, built 1 Nov 2026 (S3-T09, first part)
 
-The Send-SMS hook route, the MSG91 adapter (3 second limit inside Supabase's 5 second budget), a fake sender and the signature check are built (`docs/runbooks/send-sms-hook.md`). The signature check is written with Node's crypto, so no package was added. The MSG91 request is not yet run against the live service and waits for DLT approval.
+The Send-SMS hook route, the MSG91 adapter (3 second limit inside Supabase's 5 second budget), a fake sender and the signature check are built (`docs/runbooks/send-sms-hook.md`). The signature check is written with Node's crypto, so no package was added. The MSG91 request is not yet run against the live service and waits for DLT approval. **Update 11 Nov 2026 (ADR-126):** the owner has no MSG91 account, so Ping4SMS is the provider and sends the codes; the MSG91 adapter stays as an unused fallback.
 
 ## Before User Created guard, built 2 Nov 2026 (BR-16, proposed)
 

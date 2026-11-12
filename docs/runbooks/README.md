@@ -8,8 +8,8 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | Restore from backup                                               | S9                        |
 | Secrets rotation                                                  | S3 (first secrets) and S9 |
 | Supabase configuration checklist (`supabase-config-checklist.md`) | S3 (written, 2 Nov 2026)  |
-| MSG91 DLT and template change                                     | S3 and S9                 |
-| Phone-code hook and MSG91 (`send-sms-hook.md`)                    | S3 (written)              |
+| SMS DLT and template change                                       | S3 and S9                 |
+| Phone-code hook and Ping4SMS (`send-sms-hook.md`)                 | S3 (written)              |
 | New machine and session handoff (`new-machine-and-handoff.md`)    | S3 (written, 1 Nov 2026)  |
 | Before User Created guard (`before-user-created-hook.md`)         | S3 (written, 2 Nov 2026)  |
 | Staff Google sign-in (`staff-google-sign-in.md`)                  | S3 (written, 2 Nov 2026)  |
