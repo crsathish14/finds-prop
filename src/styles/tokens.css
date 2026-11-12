@@ -123,9 +123,9 @@
 
   /* Type */
   /* The three --font-* family variables come from next/font (src/styles/fonts.ts) */
-  --font-display: var(--font-fraunces), "Source Serif 4", Georgia, serif;
+  --font-display: var(--font-plex-serif), var(--font-noto-sans-tamil), Georgia, serif;
   --font-ui:
-    var(--font-figtree), var(--font-noto-sans-tamil), system-ui, -apple-system, "Segoe UI",
+    var(--font-plex-sans), var(--font-noto-sans-tamil), system-ui, -apple-system, "Segoe UI",
     sans-serif;
   --display-weight: 500;
   --display-tracking: -0.02em;

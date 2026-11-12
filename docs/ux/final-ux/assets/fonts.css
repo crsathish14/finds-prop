@@ -1,4 +1,4 @@
 /* Find Prop final UX — typefaces (Google Fonts, free, OFL). Needs an internet connection to load;
    offline, the pages fall back to Georgia / system-ui and spacing shifts slightly.
-   Fraunces = display and headings. Figtree = interface text. Noto Sans Tamil is only fetched when Tamil text appears. */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Figtree:wght@400..800&family=Noto+Sans+Tamil:wght@400..700&display=swap');
+   IBM Plex Serif = display and headings. IBM Plex Sans = interface text. Noto Sans Tamil is only fetched when Tamil text appears. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@100..700&family=Noto+Sans+Tamil:wght@400..700&display=swap');

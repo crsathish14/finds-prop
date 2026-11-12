@@ -10,7 +10,7 @@ const theme = read("theme.css");
 const globals = read("globals.css");
 
 // Defined at runtime by next/font on <html> (src/styles/fonts.ts)
-const FONT_FILE_VARIABLES = ["--font-fraunces", "--font-figtree", "--font-noto-sans-tamil"];
+const FONT_FILE_VARIABLES = ["--font-plex-serif", "--font-plex-sans", "--font-noto-sans-tamil"];
 const defined = new Set([
   ...[...tokens.matchAll(/(--[\w-]+)\s*:/g)].map((match) => match[1]),
   ...FONT_FILE_VARIABLES,

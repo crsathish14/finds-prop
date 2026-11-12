@@ -76,7 +76,7 @@ Builders and admins keep all customer abilities (Phase 1: builders have all cust
 
 ## 4. Public header
 
-**Desktop and laptop (≥ 1024):** logo mark and Fraunces wordmark · Buy · Rent · Projects · ✦ AI Search · Contact · [Post property pill] · Sign in. Height 72 px. The AI Search link is copper text with the sparkle icon. Sticky, ivory at 94 % with a light blur; a hairline appears under it on inner pages (not on the homepage hero).
+**Desktop and laptop (≥ 1024):** logo mark and IBM Plex Serif wordmark · Buy · Rent · Projects · ✦ AI Search · Contact · [Post property pill] · Sign in. Height 72 px. The AI Search link is copper text with the sparkle icon. Sticky, ivory at 94 % with a light blur; a hairline appears under it on inner pages (not on the homepage hero).
 
 **Signed in:** Sign in is replaced by the **saved-homes heart** (with count) and an **avatar button** (initials, chevron). The pill stays.
 
@@ -109,7 +109,7 @@ Behaviour: opens on click or Enter; arrow keys move; Home and End jump; Escape o
 
 ## 6. Mobile navigation
 
-**Menu drawer** (from the menu button, slides in from the right, 90 % wide): large Fraunces links (Buy, Rent, Projects, AI Search, Contact) with chevrons; for signed-in people an “Your account” group and, by role, a “Workspaces” group; at the bottom the actions: **Post a property** (copper), then Sign in and Create account, or Sign out.
+**Menu drawer** (from the menu button, slides in from the right, 90 % wide): large IBM Plex Serif links (Buy, Rent, Projects, AI Search, Contact) with chevrons; for signed-in people an “Your account” group and, by role, a “Workspaces” group; at the bottom the actions: **Post a property** (copper), then Sign in and Create account, or Sign out.
 
 **Bottom bar** (five items, 66 px): Home · Search · **Post** (the only raised, filled-circle item) · Saved (count) · Me. The current item is forest, bold, with a copper marker on its top edge.
 
