@@ -34,10 +34,11 @@ This freezes what "version 1" means so Stages 1–9 can be planned and accepted 
 | PG and hostels (`FR-PG-01`)               | Written requirements and a UX design (ADD-13); post-launch by default                     |
 | Agent portal                              | Written requirements; the role stays in the database with no extra permissions (`DEC-08`) |
 | Notifications (email on enquiry/approval) | Post-launch; the mail adapter has hook points (`DEC-27`)                                  |
+| AI chat assistant (`FR-PUB-12`)           | Behind `FLAG_AI_SEARCH`, off by default; ADR-128; gates in `docs/ai-chat-phase-plan.md`   |
 
 ## 4. Out of scope (not planned)
 
-AI natural-language search and its lead form · notifications centre · account settings page · advertiser dashboards, booking, billing, campaign scheduling, ad rotation, impression/click analytics · dark mode · Tamil interface · print styles · offline mode · builder deletion in the UI · self-service data export/erasure UI · map-based property posting beyond the location pin · saved searches and price alerts.
+The earlier one-shot AI natural-language search with its own lead form (replaced by the gated AI chat in section 3, ADR-128) · notifications centre · account settings page · advertiser dashboards, booking, billing, campaign scheduling, ad rotation, impression/click analytics · dark mode · Tamil interface · print styles · offline mode · builder deletion in the UI · self-service data export/erasure UI · map-based property posting beyond the location pin · saved searches and price alerts.
 
 ## 5. Preconditions that gate launch (not coding)
 

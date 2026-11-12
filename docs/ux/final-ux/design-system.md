@@ -1,6 +1,6 @@
 # Design system
 
-The system is **Concept 1 (Search Desk) with the Grove palette**, Fraunces for display and Figtree for the interface. Brand values are carried over unchanged from `design-exploration-v2/assets/palettes.css`. Everything below is implemented in `assets/` and shown live on four boards:
+The system is **Concept 1 (Search Desk) with the Grove palette**, IBM Plex Serif for display and IBM Plex Sans for the interface. Brand values are carried over unchanged from `design-exploration-v2/assets/palettes.css`. Everything below is implemented in `assets/` and shown live on four boards:
 
 | Board | What it shows |
 |---|---|
@@ -16,7 +16,7 @@ The system is **Concept 1 (Search Desk) with the Grove palette**, Fraunces for d
 
 ## 1. What was kept, what was added
 
-**Kept from Concept 1, unchanged:** the ivory canvas, forest green, muted copper, Fraunces plus Figtree, the arch mark and arch decoration, the 24 px card radius, the pill-shaped “Post property” button, the segmented intent tabs, the copper Search button, and the italic-copper emphasis in headlines.
+**Kept from Concept 1, unchanged:** the ivory canvas, forest green, muted copper, IBM Plex Serif plus IBM Plex Sans, the arch mark and arch decoration, the 24 px card radius, the pill-shaped “Post property” button, the segmented intent tabs, the copper Search button, and the italic-copper emphasis in headlines.
 
 **Added because 33 routes need more than a homepage.** These are marked **New** in `tokens.css`:
 
@@ -91,23 +91,23 @@ Brand copper `#B4592A` as **small text** on ivory is 4.42 : 1 and is **not allow
 
 | Role | Face | Size / line height (mobile · tablet · laptop and up) | Use |
 |---|---|---|---|
-| Display | Fraunces 500, tracking −0.02 em | 30/34 · 46/50 · 58/62 | Hero headline only |
-| Heading 1 | Fraunces 500 | 28/33 · 36/42 · 40/46 | Page titles |
-| Heading 2 | Fraunces 500 | 23/29 · 28/34 · 30/36 | Section titles |
-| Heading 3 | Fraunces 500 | 19/25 · 21/27 · 22/28 | Card group and dialog titles |
-| Title | Figtree 700 | 17/22 | Card and panel titles |
-| Lead | Figtree 400 | 18/28 | Intro under a page title |
-| Body | Figtree 400 | 16/25 | Running text |
-| Small | Figtree 400 | 14/20 | Hints, table text |
-| Caption | Figtree 400 | 12.5/17 | Smallest sentence-case text |
-| Overline | Figtree 700, caps, +0.07 em | 11.5 | Labels above values |
-| Price | Figtree 700 20 · Fraunces 600 34 on detail pages | | Prices |
+| Display | IBM Plex Serif 500, tracking −0.02 em | 30/34 · 46/50 · 58/62 | Hero headline only |
+| Heading 1 | IBM Plex Serif 500 | 28/33 · 36/42 · 40/46 | Page titles |
+| Heading 2 | IBM Plex Serif 500 | 23/29 · 28/34 · 30/36 | Section titles |
+| Heading 3 | IBM Plex Serif 500 | 19/25 · 21/27 · 22/28 | Card group and dialog titles |
+| Title | IBM Plex Sans 700 | 17/22 | Card and panel titles |
+| Lead | IBM Plex Sans 400 | 18/28 | Intro under a page title |
+| Body | IBM Plex Sans 400 | 16/25 | Running text |
+| Small | IBM Plex Sans 400 | 14/20 | Hints, table text |
+| Caption | IBM Plex Sans 400 | 12.5/17 | Smallest sentence-case text |
+| Overline | IBM Plex Sans 700, caps, +0.07 em | 11.5 | Labels above values |
+| Price | IBM Plex Sans 700 20 · IBM Plex Serif 600 34 on detail pages | | Prices |
 
-- **Italic copper** (Fraunces 400 italic in `--c-accent`) emphasises one word in a headline. Display size only.
-- **Numerals** are lining. Tables and prices use tabular numerals so columns align. Dashboard figures are Figtree 700, not serif.
+- **Italic copper** (IBM Plex Serif 400 italic in `--c-accent`) emphasises one word in a headline. Display size only.
+- **Numerals** are lining. Tables and prices use tabular numerals so columns align. Dashboard figures are IBM Plex Sans 700, not serif.
 - **Minimum sizes:** 12.5 px for sentence-case text, **11 px** for uppercase micro-labels and for text inside an advertiser's image.
 - **Tamil** falls back to Noto Sans Tamil (loaded only when Tamil text appears). A Tamil reader should review it before launch.
-- **₹ glyph** is present in both Fraunces and Figtree.
+- **₹ glyph** is present in both IBM Plex Serif and IBM Plex Sans.
 
 ---
 
@@ -142,7 +142,7 @@ Layouts **reflow**; nothing relies on a fixed width below 1024 px. Pages were ch
 
 | Component | Spec |
 |---|---|
-| **Button** | 48 px high (54 large; 40 small on touch, 36 on desktop portals), 14 px radius, Figtree 700 16. Variants: accent (copper), primary (forest), secondary (outline), ghost, danger, danger outline. States: hover, focus, pressed, disabled, loading (spinner replaces the label, width held). |
+| **Button** | 48 px high (54 large; 40 small on touch, 36 on desktop portals), 14 px radius, IBM Plex Sans 700 16. Variants: accent (copper), primary (forest), secondary (outline), ghost, danger, danger outline. States: hover, focus, pressed, disabled, loading (spinner replaces the label, width held). |
 | **Pill button** | Only “Post property” in the header. |
 | **Icon button** | 44 px circle for close, menu, and arrows. |
 | **Link** | Forest, 1.5 px underline in a stone tint that darkens on hover; “link with arrow” moves 3 px right on hover. |
@@ -165,10 +165,10 @@ Layouts **reflow**; nothing relies on a fixed width below 1024 px. Pages were ch
 |---|---|
 | **Badge** | 26 px pill, 12.5 px 700. Status badges have a dot **and** a word. Listing labels: *For sale / For rent* (outlined), *Featured* (copper tint), *Prime* (ink), *Budget* (forest tint). |
 | **Property card** | 24 px radius, 4 : 3 image, badges top-left, save heart 44 px top-right, price, two-line title, locality, up to three specs, Compare toggle, property type. Hover lifts and zooms the image 4 %; keyboard focus rings the whole card. Optional details that are missing are omitted, never shown as blanks. |
-| **Project card** | 16 : 10 image, status and featured badges, developer name in copper caps, project name in Fraunces, price range, BHK tags. |
+| **Project card** | 16 : 10 image, status and featured badges, developer name in copper caps, project name in IBM Plex Serif, price range, BHK tags. |
 | **Locality tile** | Gradient tile with the arch icon; five tints cycle. |
 | **Developer card** | Monogram, name, project count, short text, two project thumbnails. |
-| **Stat tile** | Label, optional icon disc, value (Figtree 700 30), optional note. “Needs attention” tint for waiting-for-approval. |
+| **Stat tile** | Label, optional icon disc, value (IBM Plex Sans 700 30), optional note. “Needs attention” tint for waiting-for-approval. |
 | **Spec tile** | Icon disc, uppercase label, value. |
 | **Gallery** | 16 : 10 main image with arrows and counter, six thumbnails below; on phones a full-bleed 4 : 3 swipe with dots. |
 | **Compare bar** | Floating card with three slots, count, Clear all, Compare now (disabled below two). Sits above the bottom bar on phones. |

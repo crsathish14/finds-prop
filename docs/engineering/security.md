@@ -101,6 +101,7 @@ Anything else importing `admin.server.ts` fails lint and code review.
 | Consent                           | OTP screen, enquiry form, lead forms                                                        | Short consent text linking to privacy policy (`DEC-25`); India's DPDP Act, 2023 is likely relevant: obtain legal review                                                                                                                             |
 | Deletion and export               | Admin runbook (no self-service UI in v1)                                                    | Document the procedure; FK behaviours per `06` §14                                                                                                                                                                                                  |
 | Third-party processors            | Ping4SMS (phone), Resend (email), Ola Maps (typed queries), Vercel, Supabase, error tracker | List in the privacy policy; send the minimum (no listing data to Ola; no PII to the error tracker)                                                                                                                                                  |
+| AI chat processor                 | OpenAI (planned); Gemini possibly later; ADR-128                                            | Named in the privacy and cookie policies (legal review). Customers are told not to type personal details and the input check masks them. The provider's retention, training-use and data-location terms are read before it is chosen (gate G-H)     |
 
 ## Rate limits and abuse controls
 
@@ -123,9 +124,15 @@ Values marked **new** are proposals (`DEC-31`, `DEC-33`, `DEC-26`). BR values ar
 | Places autocomplete   | 60 / visitor / minute (protects provider quota)        | visitor hash          | **new**            |
 | Map search            | 60 / visitor / minute                                  | visitor hash          | **new**            |
 | Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour              | visitor hash, IP hash | **new** (S3-T10)   |
-| AI search             | reserved (10/min/IP, 100/day global, 50 leads/h)       |                       | BR-73/74, deferred |
+| AI chat, trial        | 2 messages over one year (anonymous)                   | cookie id             | ADR-128, planned   |
+| AI chat, IP backstop  | 40 anonymous messages / day (loose)                    | IP hash (/64)         | ADR-128, planned   |
+| AI chat, burst        | 10 / minute                                            | cookie id, user id    | ADR-128, planned   |
+| AI chat, signed in    | 40 messages / day                                      | user id               | ADR-128, planned   |
+| AI chat, global       | a daily budget the owner sets (value open)             | one constant key      | ADR-128, planned   |
 
 All use `rate_limit_hit()`; exceeded → `RATE_LIMITED` with `retryAfter` and the UX rate-limited states.
+
+The AI chat rows are the numbers accepted in ADR-128 (D9, D13) and are not in `limits.ts` yet. The trial counts by the anonymous cookie id, with the visitor hash as the fallback; the burst limit counts by cookie id or visitor hash when anonymous. The code, the two new identities (`global` and the anonymous cookie id) and the fail-closed rule come with phase plan task P1-T04 (class C2). The deployed forwarded-IP header check (SPK-03) is a launch precondition for the chat.
 
 ## Logging and redaction
 
@@ -224,6 +231,8 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "Bash(git switch *)",
       "Bash(git add *)",
       "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
       "WebFetch(domain:nextjs.org)",
       "WebFetch(domain:react.dev)",
       "WebFetch(domain:supabase.com)",
@@ -234,13 +243,7 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "WebFetch(domain:vitest.dev)",
       "WebFetch(domain:developer.mozilla.org)"
     ],
-    "ask": [
-      "Bash(npm install *)",
-      "Bash(npm uninstall *)",
-      "Bash(npm update *)",
-      "Bash(git push *)",
-      "Bash(gh pr create *)"
-    ],
+    "ask": ["Bash(npm install *)", "Bash(npm uninstall *)", "Bash(npm update *)"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
@@ -313,8 +316,10 @@ Reads the hook JSON from standard input (`tool_input.command`), normalises case 
 | **Deny**  | Reading env files or the environment: `cat`, `type`, `more`, `less`, `head`, `tail`, `Get-Content`, `grep`, `rg`, `sed`, `awk`, `cp`, `mv` or `Copy-Item` on `.env`, `.env.local`, `.env.*.local`, `.env.production*` (not `.env.example`); bare `env`, `printenv`, `set`, `Get-ChildItem Env:`; `echo` of a variable whose name contains `KEY`, `SECRET`, `TOKEN` or `PASSWORD` |
 | **Deny**  | Recursive delete outside `node_modules`, `.next`, `coverage`, `dist`, `.turbo`, `test-results`, `playwright-report` (`rm -rf`, `rmdir /s`, `del /s`, `Remove-Item -Recurse`); `git clean -fdx`                                                                                                                                                                                   |
 | **Deny**  | Running a download directly through a shell (for example `curl` or `iwr` output piped to `sh` or `iex`)                                                                                                                                                                                                                                                                          |
-| **Ask**   | `npm install`, `i`, `add`, `update`, `uninstall`, `npx` of a package not in the project's dev tools; `git push` of a feature branch; `gh pr create`; any `npm config` or `.npmrc` change                                                                                                                                                                                         |
+| **Ask**   | `npm install`, `i`, `add`, `update`, `uninstall`, `npx` of a package not in the project's dev tools; any `npm config` or `.npmrc` change                                                                                                                                                                                                                                         |
 | Otherwise | No opinion: the normal permission flow applies                                                                                                                                                                                                                                                                                                                                   |
+
+Owner decision, 12 Nov 2026: a feature-branch `git push` and `gh pr create` are allowed without a prompt (they are in `allow`, and the hook has no opinion on them). Force-push, deleting a remote branch, pushing to `main` or `develop`, and `gh pr merge` stay denied, so merging remains a human step on GitHub. The hook still asks before other writes to GitHub: `gh pr` or `gh issue` `edit`, `comment`, `review`, `ready`, `lock` and `transfer`, and `gh issue create`.
 
 ### 3.2 `guard-edit.mjs`
 

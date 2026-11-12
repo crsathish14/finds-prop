@@ -217,6 +217,27 @@ describe("IT-media: the listing photo pipeline against a real database and stora
     expect(intoTheirListing.error).not.toBeNull();
   });
 
+  it("will not record a photo on someone else's listing, even for a path in the caller's own folder (S8-T04)", async () => {
+    const before = await adminClient()
+      .from("listing_media")
+      .select("id", { count: "exact", head: true })
+      .eq("listing_id", otherListingId);
+    await expect(
+      acceptPhoto(photoCallerStore(owner.client), server, {
+        input: {
+          listingId: otherListingId,
+          path: `${owner.userId}/${otherListingId}/${randomUUID()}.jpg`,
+        },
+        userId: owner.userId,
+      }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    const after = await adminClient()
+      .from("listing_media")
+      .select("id", { count: "exact", head: true })
+      .eq("listing_id", otherListingId);
+    expect(after.count).toBe(before.count);
+  });
+
   it("stops at six photos: the seventh is refused and its file deleted", async () => {
     for (let count = (await photoRows()).length; count < 6; count += 1) {
       await accept(await upload(jpeg({ width: 800 + count, height: 600 })));

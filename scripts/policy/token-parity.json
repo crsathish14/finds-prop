@@ -44,11 +44,11 @@
     },
     {
       "name": "--font-display",
-      "reason": "ADR-005: Fraunces is loaded by next/font, so the family name is its generated variable."
+      "reason": "ADR-127: IBM Plex Serif is loaded by next/font, so the family name is its generated variable."
     },
     {
       "name": "--font-ui",
-      "reason": "ADR-005: Figtree and Noto Sans Tamil are loaded by next/font, so the names are generated variables."
+      "reason": "ADR-127: IBM Plex Sans and Noto Sans Tamil are loaded by next/font, so the names are generated variables."
     },
     {
       "name": "--z-skip-link",
