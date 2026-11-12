@@ -101,6 +101,7 @@ Anything else importing `admin.server.ts` fails lint and code review.
 | Consent                           | OTP screen, enquiry form, lead forms                                                     | Short consent text linking to privacy policy (`DEC-25`); India's DPDP Act, 2023 is likely relevant: obtain legal review                                                                                                                             |
 | Deletion and export               | Admin runbook (no self-service UI in v1)                                                 | Document the procedure; FK behaviours per `06` §14                                                                                                                                                                                                  |
 | Third-party processors            | MSG91 (phone), Resend (email), Ola Maps (typed queries), Vercel, Supabase, error tracker | List in the privacy policy; send the minimum (no listing data to Ola; no PII to the error tracker)                                                                                                                                                  |
+| AI chat processor                 | OpenAI (planned); Gemini possibly later; ADR-128                                         | Named in the privacy and cookie policies (legal review). Customers are told not to type personal details and the input check masks them. The provider's retention, training-use and data-location terms are read before it is chosen (gate G-H)     |
 
 ## Rate limits and abuse controls
 
@@ -123,9 +124,15 @@ Values marked **new** are proposals (`DEC-31`, `DEC-33`, `DEC-26`). BR values ar
 | Places autocomplete   | 60 / visitor / minute (protects provider quota)        | visitor hash          | **new**            |
 | Map search            | 60 / visitor / minute                                  | visitor hash          | **new**            |
 | Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour              | visitor hash, IP hash | **new** (S3-T10)   |
-| AI search             | reserved (10/min/IP, 100/day global, 50 leads/h)       |                       | BR-73/74, deferred |
+| AI chat, trial        | 2 messages over one year (anonymous)                   | cookie id             | ADR-128, planned   |
+| AI chat, IP backstop  | 40 anonymous messages / day (loose)                    | IP hash (/64)         | ADR-128, planned   |
+| AI chat, burst        | 10 / minute                                            | cookie id, user id    | ADR-128, planned   |
+| AI chat, signed in    | 40 messages / day                                      | user id               | ADR-128, planned   |
+| AI chat, global       | a daily budget the owner sets (value open)             | one constant key      | ADR-128, planned   |
 
 All use `rate_limit_hit()`; exceeded → `RATE_LIMITED` with `retryAfter` and the UX rate-limited states.
+
+The AI chat rows are the numbers accepted in ADR-128 (D9, D13) and are not in `limits.ts` yet. The trial counts by the anonymous cookie id, with the visitor hash as the fallback; the burst limit counts by cookie id or visitor hash when anonymous. The code, the two new identities (`global` and the anonymous cookie id) and the fail-closed rule come with phase plan task P1-T04 (class C2). The deployed forwarded-IP header check (SPK-03) is a launch precondition for the chat.
 
 ## Logging and redaction
 
