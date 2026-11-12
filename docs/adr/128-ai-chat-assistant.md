@@ -1,9 +1,9 @@
 # ADR-128 · AI chat assistant for customers (architecture proposal)
 
-- Status: Proposed
-- Date: 2026-11-10 (updated 2026-11-11: the first provider is OpenAI, Gemini may follow; see D1 and section 4.4)
+- Status: Accepted
+- Date: 2026-11-10 (updated 2026-11-11: the first provider is OpenAI, Gemini may follow; see D1 and section 4.4. Updated 2026-11-12: decisions D8 to D13 recorded, status Accepted)
 - Related: FR-PUB-12 (AI search, deferred), BR-73/74/95 (AI limits, never built), ADR-009 (three-layer authorization), ADR-013 (provider adapters), ADR-017 (public projections), ADR-018 (rate limiting), ADR-042/043/044/046 (search, property, compare, projects), ADR-051 (the enquiry), ADR-056 (project assigned form), ADR-057 (session ended), `docs/requirements/v1-scope.md` section 4 (AI is listed as out of scope)
-- Approval: the owner agreed the architecture on 2026-11-11. The decisions D8 to D13 in section 2 are still to be confirmed, and the status becomes Accepted when they are recorded (R-DOC-04). Execution is in `docs/ai-chat-phase-plan.md`. Earlier note: **required from the owner before any code.** This is a scope change (v1-scope section 4 and change control rule 2) and contains several class C2 items (section 12).
+- Approval: the owner agreed the architecture on 2026-11-11. On 2026-11-12 the owner accepted all recommendations for the decisions D8 to D13 (section 2), so the status is Accepted; from here the ADR is superseded, not edited (R-DOC-04). Execution is in `docs/ai-chat-phase-plan.md`. This is a scope change (v1-scope section 4 and change control rule 2) and contains several class C2 items (section 12).
 
 ## 1. Goal and scope
 
@@ -13,19 +13,27 @@ A chat assistant on the customer side of findsprop. A visitor or customer asks i
 
 **Out of scope (by owner decision):** builder, agent and admin flows; any analysis, comparison or quoting of other property portals (NoBroker, MagicBricks, 99acres, FindBHK and the like) or their listings; legal, tax or investment advice; live bank rates, guideline values or loan approvals; web browsing by the model.
 
-## 2. Decisions already made by the owner (10 Nov 2026)
+## 2. Decisions made by the owner (D1 to D7 on 10 to 11 Nov 2026, D8 to D13 on 12 Nov 2026)
 
-| #   | Question          | Decision                                                                                                                                                         |
-| --- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Provider          | **OpenAI first** (API key), **Gemini possibly later**, behind a provider-neutral adapter (section 4.4). Changed on 11 Nov 2026 from Claude on AWS Bedrock Mumbai |
-| D2  | Who can chat      | **Anonymous: 2 free messages, then sign in** (phone code, existing flow)                                                                                         |
-| D3  | Actions           | The assistant **files enquiries and site-visit requests for the customer** (see D-ACTION below)                                                                  |
-| D4  | Builder history   | **Platform data only**; say plainly when something is not known                                                                                                  |
-| D5  | Languages         | English, Tamil and Tanglish in, same language out                                                                                                                |
-| D6  | Placement         | **`/ai-search` page first**; "Ask about this home" entry points later                                                                                            |
-| D7  | General questions | General answers with a disclaimer; **no competitor-portal analysis**                                                                                             |
+| #   | Question           | Decision                                                                                                                                                         |
+| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Provider           | **OpenAI first** (API key), **Gemini possibly later**, behind a provider-neutral adapter (section 4.4). Changed on 11 Nov 2026 from Claude on AWS Bedrock Mumbai |
+| D2  | Who can chat       | **Anonymous: 2 free messages, then sign in** (phone code, existing flow)                                                                                         |
+| D3  | Actions            | The assistant **files enquiries and site-visit requests for the customer** (see D-ACTION below)                                                                  |
+| D4  | Builder history    | **Platform data only**; say plainly when something is not known                                                                                                  |
+| D5  | Languages          | English, Tamil and Tanglish in, same language out                                                                                                                |
+| D6  | Placement          | **`/ai-search` page first**; "Ask about this home" entry points later                                                                                            |
+| D7  | General questions  | General answers with a disclaimer; **no competitor-portal analysis**                                                                                             |
+| D8  | What is stored     | **Usage metadata only** (section 8, option A): no message text, phone, email or names                                                                            |
+| D9  | Limits and budget  | The numbers proposed in section 7 and section 4.5 (trial of 2, burst 10 a minute, 40 a day signed in, 5 rounds, 6 calls, 3 parallel reads, 3 s per tool)         |
+| D10 | EMI defaults       | The defaults proposed in section 5.2 (20% down payment, 20 years), always shown as "an example, not a bank offer"                                                |
+| D11 | Self-description   | The assistant calls itself "findsprop's AI assistant" only; the provider is named in the privacy policy, not in chat                                             |
+| D12 | Fixed replies      | Fixed English text plus an approved Tamil line, kept in `en.json`; no model-written refusals for the fixed messages                                              |
+| D13 | Anonymous counting | A random first-party cookie id counts the free trial, with the visitor hash as the fallback and the loose IP backstop (section 7.1)                              |
 
-**Still open (confirm on review):** D8 what is stored (section 8; my recommendation is usage metadata only, explained there); D9 the numbers in section 7 (limits and budget) and in section 4.5 (rounds, calls, parallel reads, tool timeout); D10 the EMI defaults (section 5.2); D11 how much the assistant says about itself (my recommendation: "findsprop's AI assistant" only, with the provider named in the privacy policy, not in chat); D13 the anonymous cookie id for counting the free trial (my recommendation: yes, with the IP backstop; the alternative is the visitor hash alone, which is weaker on shared mobile addresses); D12 the language of the fixed "I can't share how I am built" reply (my recommendation: fixed English text plus an approved Tamil line, since fixed text lives in `en.json`; the alternative is a model-written refusal in the customer's language, friendlier but less predictable).
+**Values still to be set (not decisions, set before the task that needs them, see the plan):** the example loan interest rate for the EMI tool (before P1-T05), the daily budget for the global limit (before P8-T03), and the Tamil wording for the fixed replies (before P4-T01). Also still to be approved: the chat UX screens, the new customer-visible wording, the provider's data terms, and the cookie-policy wording (legal review).
+
+**The recommendations accepted on 12 Nov 2026, for reference:** D8 what is stored (section 8; my recommendation is usage metadata only, explained there); D9 the numbers in section 7 (limits and budget) and in section 4.5 (rounds, calls, parallel reads, tool timeout); D10 the EMI defaults (section 5.2); D11 how much the assistant says about itself (my recommendation: "findsprop's AI assistant" only, with the provider named in the privacy policy, not in chat); D13 the anonymous cookie id for counting the free trial (my recommendation: yes, with the IP backstop; the alternative is the visitor hash alone, which is weaker on shared mobile addresses); D12 the language of the fixed "I can't share how I am built" reply (my recommendation: fixed English text plus an approved Tamil line, since fixed text lives in `en.json`; the alternative is a model-written refusal in the customer's language, friendlier but less predictable).
 
 ## 3. What the project already gives us (analysis)
 
