@@ -2,7 +2,7 @@
 
 The execution plan for [ADR-128](adr/128-ai-chat-assistant.md). Read the ADR first; this file says what to build, in what order, how to prove it, and what to paste into Claude for each task. It repeats none of the design.
 
-**Status:** the owner agreed the architecture on 11 Nov 2026. Nothing is built. The ADR becomes Accepted when the decisions D8 to D13 are recorded (they are gates below).
+**Status:** the owner agreed the architecture on 11 Nov 2026. Nothing is built. On 12 Nov 2026 the owner accepted all recommendations for D8 to D13 and the ADR is Accepted, so task AI-P0-T04 is done. What is still open is listed in the gates below: three values to set (the example loan rate, the daily budget, the Tamil wording), the UX approval, the new wording, the provider terms and the cookie-policy review.
 
 ## How to run the plan with Claude
 
