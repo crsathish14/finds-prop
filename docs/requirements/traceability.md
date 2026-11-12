@@ -26,7 +26,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-PUB-09  | Project detail                     | `projects`, `forms`              | S4-T09 (ADR-046; +S5-T05)    | `project`                     | E13, DB-FN-submit_project_lead, DB-FN-track_project_event |
 | FR-PUB-10  | Compare                            | `compare`                        | S4-T02, S5-T02               | `compare`                     | UT-compare, E04                                           |
 | FR-PUB-11  | Contact form                       | `forms`                          | S5-T05                       | `contact`                     | E13, IT-forms, UT-dynamic-form                            |
-| FR-PUB-12  | AI chat assistant (ADR-128)        | `ai-chat` (planned)              | **Gated** (P0 to P9)         | chat addendum (P0-T03; to do) | Planned, ADR-128 section 9                                |
+| FR-PUB-12  | AI chat assistant (ADR-128)        | `ai-chat` (planned)              | **Gated** (P0 to P9)         | ADD-14 to 16 (P0-T03 drafted) | Planned, ADR-128 section 9                                |
 | FR-PUB-13  | Not-found and error pages          | `app`, `components/ui`           | S1-T10, S2-T08               | `errors`                      | E20                                                       |
 | FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10 (ADR-047)             | n/a                           | SEO checks (`08` §7); unit and smoke tests                |
 | FR-PUB-15  | Header, footer, drawer, bottom bar | `components/layout`, `site`      | S2-T06, S4-T06               | `ds-navigation`               | E17, UT-components                                        |
@@ -134,7 +134,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | P-05    | `/projects/$slug`       | `/projects/[slug]`                      | `project`                                  | projects, forms                     | S4, S5   | E13              |
 | P-06    | `/compare`              | `/compare`                              | `compare`                                  | compare                             | S5       | E04              |
 | P-07    | `/contact`              | `/contact`                              | `contact`                                  | forms                               | S5       | E13              |
-| P-08    | `/ai-search`            | flagged stub                            | chat addendum (to come); old `ai-search`   | ai-chat (planned, ADR-128)          | P0 to P9 | —                |
+| P-08    | `/ai-search`            | flagged stub                            | ADD-14 to ADD-16: draft; old `ai-search`   | ai-chat (planned, ADR-128)          | P0 to P9 | —                |
 | P-09    | `/auth`                 | `/auth`                                 | `auth` (+ addendum)                        | auth                                | S3       | E02              |
 | P-10    | `/builder/login`        | `/builder/login`                        | `builder-login` (+ addendum)               | auth                                | S3       | E11              |
 | P-11    | `/reset-password`       | `/reset-password`                       | `reset-password`                           | auth                                | S3       | E11              |
@@ -178,7 +178,7 @@ All 33 Phase 1 routes are covered. New routes with no Phase 1 counterpart: `/adm
 | `projects`                                                                  | ListTemplate                             | ProjectCard, locality chips (proposed)                                           | S4       | approved                                                             | VR                     |
 | `project`                                                                   | DetailTemplate                           | UnitsTable, PriceTrendChart, LeadForm                                            | S4, S5   | approved                                                             | VR, E13                |
 | `compare`                                                                   | CompareTemplate (DetailTemplate variant) | CompareTable, Undo toast                                                         | S5       | approved                                                             | VR, E04                |
-| `ai-search`                                                                 | —                                        | —                                                                                | P0 to P9 | approved, not built; the chat needs a new addendum (ADR-128)         | —                      |
+| `ai-search`                                                                 | —                                        | —                                                                                | P0 to P9 | approved, not built; replaced by chat addendum, ADD-14 to 16         | —                      |
 | `contact`                                                                   | FormPage (PublicShell)                   | Dynamic form renderer, UploadZone                                                | S5       | approved                                                             | VR, E13                |
 | `auth`                                                                      | AuthShell                                | PhoneField, OtpInput, Turnstile                                                  | S3       | **addendum required**                                                | VR, E02                |
 | `builder-login`                                                             | AuthShell                                | Email/password, Google, second factor                                            | S3       | **addendum required**                                                | VR, E11                |
@@ -209,7 +209,7 @@ All 33 Phase 1 routes are covered. New routes with no Phase 1 counterpart: `/adm
 
 ## 4. Coverage checks
 
-**UX screens with no production build in v1:** `ai-search` (superseded by the gated AI chat, ADR-128, which needs its own UX addendum before any build). All others are built.
+**UX screens with no production build in v1:** `ai-search` (superseded by the gated AI chat, ADR-128, whose UX addendum ADD-14 to ADD-16 is drafted and awaits the owner's approval before any build). All others are built.
 
 **Requirements with no approved UX (need the addendum, `DEC-04`):** FR-AUTH-01/02/04/09, builder second-factor step of FR-AUTH-03, FR-GEO-01…05 (suggestion rows, map), FR-ACC-06 address step, FR-ADM-12 banner management, FR-SYS-09 legal pages, FR-PG-01.
 
