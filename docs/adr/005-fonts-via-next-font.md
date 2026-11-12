@@ -1,6 +1,6 @@
 # ADR-005 · Fonts via `next/font`
 
-- Status: Superseded by ADR-125 (11 Nov 2026): the fonts are now IBM Plex Serif and IBM Plex Sans. The reasons for `next/font` below still stand.
+- Status: Superseded by ADR-127 (11 Nov 2026): the fonts are now IBM Plex Serif and IBM Plex Sans. The reasons for `next/font` below still stand.
 - Date: 2026-10-29
 - Related: Refined; approval: No; stage S2
 

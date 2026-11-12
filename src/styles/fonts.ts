@@ -1,6 +1,6 @@
 import { IBM_Plex_Sans, IBM_Plex_Serif, Noto_Sans_Tamil } from "next/font/google";
 
-// ADR-125: fonts are self-hosted at build time, so no request goes to Google when a page loads.
+// ADR-127: fonts are self-hosted at build time, so no request goes to Google when a page loads.
 // Each font sets a CSS variable on <html>; tokens.css puts them first in --font-display and --font-ui.
 // IBM Plex Serif is a static family, so each weight is its own file. 400 is the copper italic emphasis,
 // 500 is the heading weight and 600 is the price on detail pages.

@@ -1,4 +1,4 @@
-# ADR-125 · Fonts: IBM Plex Serif and IBM Plex Sans
+# ADR-127 · Fonts: IBM Plex Serif and IBM Plex Sans
 
 - Status: Accepted (owner approved the plan on 11 Nov 2026)
 - Date: 2026-11-11
