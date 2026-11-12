@@ -129,7 +129,9 @@ function evaluateGit(tokens, branch) {
       return deny(
         "Do not push to main or develop; push a feature branch and open a pull request (R-GIT-01).",
       );
-    return ask("Pushing publishes work to the remote. Confirm.");
+    // A feature-branch push is allowed (owner decision, 12 Nov 2026): force, delete and main or
+    // develop were refused above, and merging stays a human step on GitHub.
+    return none;
   }
   if (["commit", "merge", "rebase", "cherry-pick", "revert", "am"].includes(sub) && onProtected) {
     return deny(
@@ -233,6 +235,8 @@ function evaluateGh(tokens) {
       );
     if (writes) return deny("gh api with a write method changes GitHub state and is not allowed.");
   }
+  // Opening a pull request is allowed (owner decision, 12 Nov 2026); merging is denied above.
+  if (area === "pr" && action === "create") return none;
   if (
     (area === "pr" || area === "issue") &&
     ["create", "edit", "comment", "review", "ready", "lock", "transfer"].includes(action)
