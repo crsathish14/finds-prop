@@ -1,4 +1,4 @@
-# ADR-127 · AI chat assistant for customers (architecture proposal)
+# ADR-128 · AI chat assistant for customers (architecture proposal)
 
 - Status: Proposed
 - Date: 2026-11-10 (updated 2026-11-11: the first provider is OpenAI, Gemini may follow; see D1 and section 4.4)

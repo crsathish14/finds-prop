@@ -1,6 +1,6 @@
 # AI chat assistant: phase plan
 
-The execution plan for [ADR-127](adr/127-ai-chat-assistant.md). Read the ADR first; this file says what to build, in what order, how to prove it, and what to paste into Claude for each task. It repeats none of the design.
+The execution plan for [ADR-128](adr/128-ai-chat-assistant.md). Read the ADR first; this file says what to build, in what order, how to prove it, and what to paste into Claude for each task. It repeats none of the design.
 
 **Status:** the owner agreed the architecture on 11 Nov 2026. Nothing is built. The ADR becomes Accepted when the decisions D8 to D13 are recorded (they are gates below).
 
@@ -20,11 +20,11 @@ Paste this, then the task's own line from below:
 
 ```text
 Read AGENTS.md, docs/status.md, the nested AGENTS.md for the folders you will touch,
-docs/adr/127-ai-chat-assistant.md (the sections the task names) and docs/ai-chat-phase-plan.md.
+docs/adr/128-ai-chat-assistant.md (the sections the task names) and docs/ai-chat-phase-plan.md.
 Do task <ID> only. Classify the change (C0, C1 or C2). If it is C2, write the plan and wait
 for my approval before editing. Branch from develop. Do not push, merge, open a PR, touch .env
 or add a package unless the task says so. Use whole-word names, text from en.json, and the
-existing patterns. The product name in all AI text is findsprop (lowercase), see ADR-127. Run npm run check and the task's commands, and report the real output.
+existing patterns. The product name in all AI text is findsprop (lowercase), see ADR-128. Run npm run check and the task's commands, and report the real output.
 When done, summarise what changed, what you verified and what you could not.
 ```
 
@@ -61,8 +61,8 @@ Parallel where noted (separate worktrees): P0-T02 with P0-T03; P1-T02 with P1-T0
 
 **P0-T01 · Scope change in the docs** · C1 (docs, owner-approved scope change)
 Move the AI chat from "out of scope" in `docs/requirements/v1-scope.md` to "gated, behind `FLAG_AI_SEARCH`"; revise FR-PUB-12 in `requirements.md`; add acceptance statements to `acceptance-criteria.md`; update `traceability.md`; add a row to `docs/status.md`; update the `security.md` rate-limit row and the processors table (provider name).
-Done when: `npm run harness:check` and `npm run check` pass; every changed doc points to ADR-127.
-Prompt: "Task AI-P0-T01. Update the requirement, scope, acceptance, traceability, status and security docs for the AI chat as ADR-127 says. Docs only."
+Done when: `npm run harness:check` and `npm run check` pass; every changed doc points to ADR-128.
+Prompt: "Task AI-P0-T01. Update the requirement, scope, acceptance, traceability, status and security docs for the AI chat as ADR-128 says. Docs only."
 
 **P0-T02 · Spike S-AI-00: compare OpenAI and Gemini** · C2 (external service, cost). **You run** the script with your own keys.
 A TypeScript script under `scripts/ai-spike/` that sends the same 30 to 40 fictional prompts (English, Tamil, Tanglish: search, compare, builder, EMI, refusals, injection, "I don't know") to both providers with the tool set stubbed, using plain `fetch` (no new package). It records latency, tokens, cost per turn, tool-call correctness, schema-subset acceptance (ADR 4.4 rule 1), parallel-call behaviour, and Tamil quality notes. Write the results to `docs/runbooks/ai-spike.md`. No real customer data, no keys in the repo.
