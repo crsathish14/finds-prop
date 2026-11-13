@@ -1,10 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import en from "../src/i18n/messages/en.json";
 
-// S8-T05 part 2: the content security policy is Report-Only today (DEC-37). Before part 3 enforces
-// it, this check visits the pages that can load without data and fails on any violation the browser
-// reports. A Report-Only policy still fires the page's `securitypolicyviolation` event, so the
-// pages behave exactly as they will when the policy is enforced.
+// S8-T05 parts 2 and 3: the content security policy is enforced in this production build (src/server/csp.ts,
+// ADR-129). This check visits the pages that can load without data and fails on any violation the
+// browser reports, so a change that would make the policy block something we ship fails here first.
 //
 // What this cannot see (ADR-129): the Turnstile frame (the site key is empty in CI, so its script and
 // iframe are never loaded) and pages that need rows from the database (a property or project page).

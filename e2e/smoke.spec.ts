@@ -41,7 +41,9 @@ test.describe("@smoke app boots", () => {
     expect(headers["x-robots-tag"]).toBe("noindex, nofollow");
     expect(headers["x-content-type-options"]).toBe("nosniff");
     expect(headers["x-frame-options"]).toBe("DENY");
-    expect(headers["content-security-policy-report-only"]).toContain("frame-ancestors 'none'");
+    // A production build enforces the policy (ADR-129 part 3); only `next dev` reports.
+    expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+    expect(headers["content-security-policy-report-only"]).toBeUndefined();
     expect(headers["x-powered-by"]).toBeUndefined();
   });
 

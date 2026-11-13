@@ -1,6 +1,6 @@
 # ADR-129 · Security review (S8-T05)
 
-- Status: Accepted for parts 1 (the checklist and the dependency audit) and 2 (the content security policy is checked). Part 3 (the policy is enforced) is added to this ADR by its own pull request.
+- Status: Accepted for parts 1 (the checklist and the dependency audit), 2 (the content security policy is checked) and 3 (the policy is enforced). Part 3 closes S8-T05.
 - Date: 2026-11-12
 - Related: ADR-010 (authentication, "Review findings to fix before launch"), ADR-033 and DEC-37 (the content security policy), ADR-125 (authorization), plan 07 sections 8 and 15, `docs/engineering/security.md`, OWASP ASVS 4.0.3
 - Plan for S8-T05 approved by the owner on 12 Nov 2026, including: the seven findings of ADR-010 are recorded here and left for S9 (the owner's decision of 3 Nov 2026 stands); `npm audit` run once locally; the CI audit gate is not changed.
@@ -89,12 +89,12 @@ How to read the result column:
 
 ### V14 Configuration
 
-| Control                                                                                    | How it is met and proved                                                                                                                                        | Result      |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `nosniff`, frame denial, referrer policy, permissions policy, `COOP` on every path (V14.4) | `next.config.ts`; the new `security-headers.test.ts` pins the five values; the smoke test checks two of them on a real response.                                | Pass        |
-| The framework is not announced and the source is not published (V14.3)                     | `poweredByHeader: false`, no browser source maps; both pinned in `security-headers.test.ts`.                                                                    | Pass        |
-| Content security policy (V14.4.3)                                                          | Report-Only today (DEC-37). Part 2 adds an end-to-end check that fails on any reported violation (see "The content security policy check"); part 3 enforces it. | In progress |
-| Transport security (V9.1, V14.4.5)                                                         | The app sends no `Strict-Transport-Security`. `docs/engineering/security.md` sets the value (one year); the production domain is not final.                     | **S9** (N3) |
+| Control                                                                                    | How it is met and proved                                                                                                                          | Result                                      |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `nosniff`, frame denial, referrer policy, permissions policy, `COOP` on every path (V14.4) | `next.config.ts`; the new `security-headers.test.ts` pins the five values; the smoke test checks two of them on a real response.                  | Pass                                        |
+| The framework is not announced and the source is not published (V14.3)                     | `poweredByHeader: false`, no browser source maps; both pinned in `security-headers.test.ts`.                                                      | Pass                                        |
+| Content security policy (V14.4.3)                                                          | Enforced in every production build (part 3); the end-to-end check of part 2 fails on any reported violation. See "Enforcing the policy (part 3)". | Pass; script keeps `unsafe-inline` (DEC-37) |
+| Transport security (V9.1, V14.4.5)                                                         | The app sends no `Strict-Transport-Security`. `docs/engineering/security.md` sets the value (one year); the production domain is not final.       | **S9** (N3)                                 |
 
 ## Dependency audit
 
@@ -135,14 +135,30 @@ What the first run found (13 Nov 2026), and what was done:
 
 What it cannot see, so part 3 must handle it by reasoning: the Turnstile script and frame (the site key is empty in CI, so they are never loaded; the policy allows `https://challenges.cloudflare.com` for both), pages that need rows from the database (a property or project page), and the Vercel preview toolbar.
 
+## Enforcing the policy (part 3)
+
+The header is now `Content-Security-Policy` (not Report-Only) in every **production build**: `next start` in CI, Vercel previews and production. `next dev` stays Report-Only and adds `'unsafe-eval'` (its overlay and hot reload need it), so a developer sees a violation in the console without a page breaking. The policy is built by one pure function, `src/server/csp.ts`, and pinned by `src/server/__tests__/csp.test.ts`; `proxy.ts` only chooses the settings.
+
+What changed against the Report-Only policy of DEC-37:
+
+- **Added `object-src 'none'`.** No plug-ins.
+- **The local Supabase stack is allowed only when `APP_ENV=local`** (connect and picture hosts `http://127.0.0.1:54321`). Before, every environment's policy named it. The CI end-to-end job runs with `APP_ENV=local`, so it exercises the same value a developer gets.
+- **Vercel's toolbar is allowed only when `APP_ENV` is not `production`** (`https://vercel.live` for script, style, frame, connect and font; its socket `wss://ws-us3.pusher.com`; `https://vercel.com` and `https://assets.vercel.com` for a picture and a font). Without it an enforced policy would break the toolbar on every preview. Production never names it.
+- **Nothing else loosened.** Script still allows `'unsafe-inline'` (DEC-37 option A: a nonce would make every page dynamic, and the plan keeps the pages cached). With it, the policy does not stop an injected inline script; it does stop a script, frame, picture or call to any host not listed, framing, a changed base address, a form sent elsewhere and plug-ins. Moving to nonces is a separate decision with a cost in caching.
+
+What was not tried, so the owner should look once on the first preview after merge: the Turnstile widget on the sign-in page (CI has no site key; the script and frame hosts are allowed as before), and the Vercel toolbar on a preview. If either is blocked, the browser console names the directive.
+
+**For whoever builds the map view (`FLAG_MAP_VIEW`):** the policy has no map tile host and no `worker-src`. MapLibre needs both (`docs/engineering/security.md` lists `worker-src 'self' blob:` and the tile host). Add them in `csp.ts` with their test in the same change; until then the map would be blocked.
+
+**An observation, not changed here:** the Design Lab shows each screen in an iframe, and `X-Frame-Options: DENY` (`next.config.ts`, every path) already refuses same-origin frames, so those frames are empty in the stored baselines. Enforcing the policy does not change that picture. It is a Lab matter only; no visitor page has a frame.
+
 ## Out of scope
 
-- **Enforcing the content security policy** is part 3 of this task.
 - **Error tracking and redaction** (DEC-21) is S8-T07.
 - **Production domain, HSTS, mail authentication, backups and the incident runbooks** are Stage 9.
 - **Penetration testing by a person** against a deployed copy is not part of this review.
 
 ## Consequences
 
-- One new unit test (`security-headers.test.ts`) and one end-to-end spec (`csp.spec.ts`); no behaviour, migration, package, environment, CI or gate change.
-- Rollback: delete the two test files and this ADR.
+- Tests: `security-headers.test.ts`, `csp.test.ts` and the end-to-end spec `csp.spec.ts`. Part 3 changes behaviour (the policy is enforced); no migration, package, environment variable, CI or gate change.
+- Rollback: part 3 is the header name in `proxy.ts` (send Report-Only again); parts 1 and 2 are tests and this ADR.

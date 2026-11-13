@@ -62,3 +62,6 @@ export function isDesignLabEnabled(settings: Pick<ServerEnv, "DESIGN_LAB" | "APP
 }
 
 export const designLabEnabled: boolean = isDesignLabEnabled(env);
+
+/** True in a production build (`next build` then `next start`, on Vercel or in CI); false under `next dev`. */
+export const productionBuild: boolean = process.env.NODE_ENV === "production";
