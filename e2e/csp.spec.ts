@@ -73,8 +73,10 @@ test.describe("@smoke content security policy", () => {
     // `eval` is not allowed by script-src, so the browser must report it (and, once the policy is
     // enforced, refuse it). It runs from a script tag because page.evaluate is exempt from the policy. If this test ever passes with an empty list, the collector is broken.
     await page.addScriptTag({ content: "try { (0, eval)('1 + 1'); } catch {}" });
-    const found = await violationsOn(page);
-    expect(found.map((violation) => violation.directive)).toContain("script-src");
+    // The browser queues the event, so it can arrive a moment after the script ran.
+    await expect
+      .poll(async () => (await violationsOn(page)).map((violation) => violation.directive))
+      .toContain("script-src");
   });
 
   for (const route of PAGES) {
