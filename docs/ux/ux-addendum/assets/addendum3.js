@@ -2,7 +2,7 @@
    It adds one shared tag so the phone bottom bar for the AI chat cannot drift between screens:
      <fp-chatbar active="ai"></fp-chatbar>            Home · Search · AI (centre) · Post · Me
      <fp-chatbar active="home" ai="off"></fp-chatbar>  chat off: the approved bar, unchanged (Home · Search · Post raised · Saved · Me)
-   The approved <fp-bottombar> in final-ux is not changed. Proposed, awaiting the owner (gate G-F). */
+   The approved <fp-bottombar> in final-ux is not changed. Approved by the owner with the screens (gate G-F, 13 Nov 2026). */
 (function () {
   const FP = window.FP;
   if (!FP || !FP.tags || !FP.icon) return;

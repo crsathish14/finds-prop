@@ -10,7 +10,7 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 **Update 3 Nov 2026:** the owner **approved ADD-01 to ADD-04** (the five customer sign-in screens: phone, code, email, email prompts, name). The approval covers layout, states and components. Text still flagged *To confirm*, *Wording to confirm* or *Duration to confirm* on those screens is not approved yet.
 
-**Batch 4 (Nov 2026): the AI chat assistant, ADD-14 to ADD-17.** Drafted for task AI-P0-T03 from ADR-128. **Proposed, not approved:** the owner approves the screens (gate G-F) and, separately, the new wording (gate G-G). Nothing is built from them. Unlike batches 1 to 3, this batch was drafted in this repository, so this copy is its source. Read `design-handoff-chat.md`.
+**Batch 4 (Nov 2026): the AI chat assistant, ADD-14 to ADD-17.** Drafted for task AI-P0-T03 from ADR-128. **Approved by the owner on 13 Nov 2026:** the screens (gate G-F) and the new wording (gate G-G). Still open: the Tamil lines of the fixed replies (placeholders until the owner supplies them, D12) and open question 12 in the handoff. Nothing is built from them yet. Unlike batches 1 to 3, this batch was drafted in this repository, so this copy is its source. Read `design-handoff-chat.md`.
 
 ## Start here
 
@@ -47,7 +47,7 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 **Totals:** 21 screens, 133 states, 200 rendered images (batch 1: 14 screens, 76 states, 119 renders; batches 2 and 3: 7 screens, 57 states, 81 renders).
 
-### Batch 4 (the AI chat assistant, proposed, not approved)
+### Batch 4 (the AI chat assistant, approved by the owner 13 Nov 2026)
 
 | ID | Screens | Files |
 |---|---|---|

@@ -14,14 +14,14 @@
 
 <main id="main">
   <div class="container">
-    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-15 · Proposed, not approved.</b> The AI chat's limit states and the sign-in gate after 2 free messages (ADR-128, section 10). Needs the owner's approval of the screens (gate G-F) and, separately, of the wording (gate G-G). The earlier messages are sample model output. States: ratelimit · ratelimit-day · unavailable · gate · returned · signin. The conversation is in <a class="link" href="ai-chat.html">ADD-14</a>; the confirm card is in <a class="link" href="ai-chat-confirm.html">ADD-16</a>.</div></div></div>
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-15 · Approved by the owner (13 Nov 2026).</b> The AI chat's limit states and the sign-in gate after 2 free messages (ADR-128, section 10). The owner approved the screens (gate G-F) and the wording (gate G-G). The earlier messages are sample model output. States: ratelimit · ratelimit-day · unavailable · gate · returned · signin. The conversation is in <a class="link" href="ai-chat.html">ADD-14</a>; the confirm card is in <a class="link" href="ai-chat-confirm.html">ADD-16</a>.</div></div></div>
 
     <!-- SIGN-IN: the approved ADD-01 card with one line saying why the person is here. ADD-01 itself is not changed. -->
     <div class="gate-wrap" data-show="signin">
       <section class="auth-card" aria-label="Sign in">
         <h1>Sign in or create your account</h1>
         <p class="lead-in">Enter your mobile number and we'll text you a 6-digit code. New to Find Prop? We'll set up your account.</p>
-        <div class="alert alert--info mb-4" role="status"><fp-icon n="lock"></fp-icon><div class="grow"><b>Sign in to keep chatting</b>We will take you straight back to your conversation. <span class="flag">Wording to confirm</span></div></div>
+        <div class="alert alert--info mb-4" role="status"><fp-icon n="lock"></fp-icon><div class="grow"><b>Sign in to keep chatting</b>We will take you straight back to your conversation.</div></div>
         <form class="form-stack" novalidate>
           <div class="field">
             <label class="label" for="ph">Mobile number</label>
@@ -51,19 +51,19 @@
         </div>
 
         <!-- Returned after sign-in -->
-        <div class="alert alert--success" role="status" data-show="returned"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>You're signed in</b>Your conversation is back. We kept what you typed. <span class="flag">Wording to confirm</span></div></div>
+        <div class="alert alert--success" role="status" data-show="returned"><fp-icon n="check-circle"></fp-icon><div class="grow"><b>You're signed in</b>Your conversation is back. We kept what you typed.</div></div>
 
         <!-- Rate limited: too many messages in a short time -->
-        <div class="alert alert--warning" role="alert" data-show="ratelimit"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many messages in a short time</b>Please try again in 45 seconds. You can keep browsing with filters meanwhile. <span class="flag">Wording to confirm</span></div><a class="btn btn--secondary btn--sm" href="search.html">Use filters</a></div>
+        <div class="alert alert--warning" role="alert" data-show="ratelimit"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many messages in a short time</b>Please try again in 45 seconds. You can keep browsing with filters meanwhile.</div><a class="btn btn--secondary btn--sm" href="search.html">Use filters</a></div>
         <!-- Rate limited: the day's allowance is used up -->
-        <div class="alert alert--warning" role="alert" data-show="ratelimit-day"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many messages for today</b>You've reached today's message limit. Please try again tomorrow, or keep browsing with filters. <span class="flag">Wording to confirm</span></div><a class="btn btn--secondary btn--sm" href="search.html">Use filters</a></div>
+        <div class="alert alert--warning" role="alert" data-show="ratelimit-day"><fp-icon n="clock"></fp-icon><div class="grow"><b>Too many messages for today</b>You've reached today's message limit. Please try again tomorrow, or keep browsing with filters.</div><a class="btn btn--secondary btn--sm" href="search.html">Use filters</a></div>
         <!-- Unavailable right now: the global daily budget is used up -->
-        <div class="alert alert--info" role="status" data-show="unavailable"><fp-icon n="info"></fp-icon><div class="grow"><b>The AI assistant is unavailable right now</b>It has reached its limit for today. Search by locality, type, bedrooms and budget instead. <span class="flag">Wording to confirm</span></div><a class="btn btn--secondary btn--sm" href="search.html">Search with filters</a></div>
+        <div class="alert alert--info" role="status" data-show="unavailable"><fp-icon n="info"></fp-icon><div class="grow"><b>The AI assistant is unavailable right now</b>It has reached its limit for today. Search by locality, type, bedrooms and budget instead.</div><a class="btn btn--secondary btn--sm" href="search.html">Search with filters</a></div>
 
         <!-- Sign-in gate: replaces the composer after the 2 free messages -->
         <section class="chat-gate" data-show="gate" aria-labelledby="gate-h">
           <span class="icon-disc info"><fp-icon n="lock"></fp-icon></span>
-          <div><h2 id="gate-h">Sign in to keep chatting</h2><p class="mt-2">You've used your 2 free messages. Sign in with your mobile number and we'll bring you back to this conversation. <span class="flag">Wording to confirm</span></p></div>
+          <div><h2 id="gate-h">Sign in to keep chatting</h2><p class="mt-2">You've used your 2 free messages. Sign in with your mobile number and we'll bring you back to this conversation.</p></div>
           <div class="draft-quote"><span class="overline">Your next message, not sent yet</span><span class="q">Same size in Adyar?</span></div>
           <div class="acts"><a class="btn btn--accent btn--lg" href="#signin"><fp-icon n="phone"></fp-icon>Sign in</a><span class="hint">We'll send a 6-digit code to your phone.</span></div>
         </section>
@@ -93,12 +93,12 @@
 
     <!-- Wording per state: new strings are proposals (gate G-G); reused ones are marked -->
     <div class="wording" aria-label="Wording notes for this state">
-      <p class="caption muted" data-show="ratelimit"><span class="flag">Wording to confirm</span> Adapted from the approved ai-search alert ("searches" became "messages", "AI search" removed). This is the burst limit (10 messages a minute, ADR section 7). The composer is disabled, the draft is kept ("We kept what you typed." is the approved line used after a session ends), and the message sends again once the wait is over. The 45 seconds counts down in the build.</p>
-      <p class="caption muted" data-show="ratelimit-day"><span class="flag">Wording to confirm</span> The signed-in daily allowance and the per-IP backstop use this same screen with a "try again tomorrow" line (open question for the owner). No third limit screen is drawn.</p>
-      <p class="caption muted" data-show="unavailable"><span class="flag">Wording to confirm</span> Adapted from the approved ai-search "unavailable" alert. Shown when the global daily budget is spent; the link goes to the normal search at /properties. The composer is disabled and has no draft.</p>
-      <p class="caption muted" data-show="gate"><span class="flag">Wording to confirm</span> Shown instead of the composer when a third message is sent without an account. "Sign in" is the only copper button on the screen. The transcript is kept in the browser tab (session storage) and the unsent message is kept as a draft. Free messages are not counted on screen; the person is told when the allowance is used up.</p>
-      <p class="caption muted" data-show="returned"><span class="flag">Wording to confirm</span> After the phone code the person returns to /ai-search with the earlier messages and the unsent third message restored. <b>Nothing is sent automatically</b>: they press Send. The free messages do not carry over; the signed-in allowance starts fresh (ADR section 7.1).</p>
-      <p class="caption muted" data-show="signin"><span class="flag">Wording to confirm</span> The blue line "Sign in to keep chatting / We will take you straight back to your conversation." is new. Everything else is the approved sign-in card, which keeps its own wording and its "Find Prop" name until the rename. The sign-in route is <b>/auth?redirect=/ai-search</b>.</p>
+      <p class="caption muted" data-show="ratelimit"><span class="badge badge--neutral">Approved wording</span> Adapted from the approved ai-search alert ("searches" became "messages", "AI search" removed). This is the burst limit (10 messages a minute, ADR section 7). The composer is disabled, the draft is kept ("We kept what you typed." is the approved line used after a session ends), and the message sends again once the wait is over. The 45 seconds counts down in the build.</p>
+      <p class="caption muted" data-show="ratelimit-day"><span class="badge badge--neutral">Approved wording</span> The signed-in daily allowance and the per-IP backstop use this same screen with a "try again tomorrow" line. No third limit screen is drawn.</p>
+      <p class="caption muted" data-show="unavailable"><span class="badge badge--neutral">Approved wording</span> Adapted from the approved ai-search "unavailable" alert. Shown when the global daily budget is spent; the link goes to the normal search at /properties. The composer is disabled and has no draft.</p>
+      <p class="caption muted" data-show="gate"><span class="badge badge--neutral">Approved wording</span> Shown instead of the composer when a third message is sent without an account. "Sign in" is the only copper button on the screen. The transcript is kept in the browser tab (session storage) and the unsent message is kept as a draft. Free messages are not counted on screen; the person is told when the allowance is used up.</p>
+      <p class="caption muted" data-show="returned"><span class="badge badge--neutral">Approved wording</span> After the phone code the person returns to /ai-search with the earlier messages and the unsent third message restored. <b>Nothing is sent automatically</b>: they press Send. The free messages do not carry over; the signed-in allowance starts fresh (ADR section 7.1).</p>
+      <p class="caption muted" data-show="signin"><span class="badge badge--neutral">Approved wording</span> The blue line "Sign in to keep chatting / We will take you straight back to your conversation." is new. Everything else is the approved sign-in card, which keeps its own wording and its "Find Prop" name until the rename. The sign-in route is <b>/auth?redirect=/ai-search</b>.</p>
       <p class="caption muted">Interface wording (alerts, the gate and buttons) is English only, like the rest of the app. Only the fixed replies inside the conversation carry a Tamil line (see <a class="link" href="ai-chat.html">ADD-14</a>). In all AI text the product is called findsprop (D11).</p>
     </div>
   </div>
