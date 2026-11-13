@@ -1,6 +1,6 @@
 # ADR-129 · Security review (S8-T05)
 
-- Status: Accepted for part 1 (the checklist and the dependency audit). Parts 2 and 3 (the content security policy is checked, then enforced) are added to this ADR by their own pull requests.
+- Status: Accepted for parts 1 (the checklist and the dependency audit) and 2 (the content security policy is checked). Part 3 (the policy is enforced) is added to this ADR by its own pull request.
 - Date: 2026-11-12
 - Related: ADR-010 (authentication, "Review findings to fix before launch"), ADR-033 and DEC-37 (the content security policy), ADR-125 (authorization), plan 07 sections 8 and 15, `docs/engineering/security.md`, OWASP ASVS 4.0.3
 - Plan for S8-T05 approved by the owner on 12 Nov 2026, including: the seven findings of ADR-010 are recorded here and left for S9 (the owner's decision of 3 Nov 2026 stands); `npm audit` run once locally; the CI audit gate is not changed.
@@ -89,12 +89,12 @@ How to read the result column:
 
 ### V14 Configuration
 
-| Control                                                                                    | How it is met and proved                                                                                                                    | Result      |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `nosniff`, frame denial, referrer policy, permissions policy, `COOP` on every path (V14.4) | `next.config.ts`; the new `security-headers.test.ts` pins the five values; the smoke test checks two of them on a real response.            | Pass        |
-| The framework is not announced and the source is not published (V14.3)                     | `poweredByHeader: false`, no browser source maps; both pinned in `security-headers.test.ts`.                                                | Pass        |
-| Content security policy (V14.4.3)                                                          | Report-Only today (DEC-37). Whether anything violates it is checked in part 2, and it is enforced in part 3.                                | In progress |
-| Transport security (V9.1, V14.4.5)                                                         | The app sends no `Strict-Transport-Security`. `docs/engineering/security.md` sets the value (one year); the production domain is not final. | **S9** (N3) |
+| Control                                                                                    | How it is met and proved                                                                                                                                        | Result      |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `nosniff`, frame denial, referrer policy, permissions policy, `COOP` on every path (V14.4) | `next.config.ts`; the new `security-headers.test.ts` pins the five values; the smoke test checks two of them on a real response.                                | Pass        |
+| The framework is not announced and the source is not published (V14.3)                     | `poweredByHeader: false`, no browser source maps; both pinned in `security-headers.test.ts`.                                                                    | Pass        |
+| Content security policy (V14.4.3)                                                          | Report-Only today (DEC-37). Part 2 adds an end-to-end check that fails on any reported violation (see "The content security policy check"); part 3 enforces it. | In progress |
+| Transport security (V9.1, V14.4.5)                                                         | The app sends no `Strict-Transport-Security`. `docs/engineering/security.md` sets the value (one year); the production domain is not final.                     | **S9** (N3) |
 
 ## Dependency audit
 
@@ -124,14 +124,20 @@ All stay as the owner decided on 3 Nov 2026 (fixed in the pre-launch review, S9)
 | 6   | Checklist gaps: no idempotency key on email sends; no audit of customer sign-in | The audit part is **closed by decision**: ADR-123 records that a customer's sign-in is not audited. The idempotency part is open.                                                                                                               |
 | 7   | A raw database error is logged                                                  | Open. The redaction list is tested (`redact.test.ts`); a row inside an error's `details` is not.                                                                                                                                                |
 
+## The content security policy check (part 2)
+
+`e2e/csp.spec.ts` (tagged `@smoke`, so it runs in the existing end-to-end step and needs no gate change) loads 22 pages in the production build and fails on any `securitypolicyviolation` the browser reports: the public pages, the sign-in pages, the not-found page, seven Design Lab boards (they show every component, image and chart) and the phone menu. A Report-Only policy fires the same event an enforced one would, so a clean run means enforcing blocks nothing on these pages. A first test proves the collector can fail by running `eval`, which `script-src` does not allow.
+
+What it cannot see, so part 3 must handle it by reasoning: the Turnstile script and frame (the site key is empty in CI, so they are never loaded; the policy allows `https://challenges.cloudflare.com` for both), pages that need rows from the database (a property or project page), and the Vercel preview toolbar.
+
 ## Out of scope
 
-- **The content security policy** is parts 2 and 3 of this task.
+- **Enforcing the content security policy** is part 3 of this task.
 - **Error tracking and redaction** (DEC-21) is S8-T07.
 - **Production domain, HSTS, mail authentication, backups and the incident runbooks** are Stage 9.
 - **Penetration testing by a person** against a deployed copy is not part of this review.
 
 ## Consequences
 
-- One new unit test (`security-headers.test.ts`); no behaviour, migration, package, environment, CI or gate change.
-- Rollback: delete the test file and this ADR.
+- One new unit test (`security-headers.test.ts`) and one end-to-end spec (`csp.spec.ts`); no behaviour, migration, package, environment, CI or gate change.
+- Rollback: delete the two test files and this ADR.
