@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI chat confirm card · findsprop UX addendum</title>
+<link rel="stylesheet" href="../../final-ux/assets/fp.css">
+<link rel="stylesheet" href="../assets/addendum.css">
+<link rel="stylesheet" href="../assets/addendum3.css">
+</head>
+<body data-default="enquiry" data-hdr="line" data-bottombar data-nav-chat>
+<fp-header role="user" active="ai" data-hide="signedout ended"></fp-header>
+<fp-header role="visitor" active="ai" data-show="signedout ended"></fp-header>
+
+<main id="main">
+  <div class="container">
+    <div class="add-banner"><div class="review-note"><fp-icon n="info"></fp-icon><div><b>UX addendum · ADD-16 · Proposed, not approved.</b> The confirm card the AI chat shows before an enquiry or a site-visit request is sent (ADR-128, decision D-ACTION). Needs the owner's approval of the screens (gate G-F) and, separately, of the wording (gate G-G). The server builds the card from the real record; <b>typing "yes" in the chat never sends anything</b>, only the Send button on the card does. States: enquiry · visit · sending · sent · failed · already · ratelimit · signedout · ended. The conversation is in <a class="link" href="ai-chat.html">ADD-14</a>.</div></div></div>
+
+    <div class="chat">
+      <div class="chat-bar"><span class="ai-mark"><fp-icon n="sparkle"></fp-icon></span><h1>findsprop's AI assistant</h1></div>
+
+      <div class="thread">
+        <!-- Enquiry about a home -->
+        <div class="msg-user" data-hide="visit"><div class="bubble">Please ask the owner of the 3 BHK in Velachery for ₹1.25 Cr if it's still available. I'd like to visit this Saturday.</div></div>
+        <!-- Site visit for a project -->
+        <div class="msg-user" data-show="visit"><div class="bubble">Book a site visit at Kadal Vista this Saturday.</div></div>
+
+        <div class="msg-ai"><div class="who"><span class="av"><fp-icon n="sparkle"></fp-icon></span>findsprop's AI assistant</div>
+          <div class="ai-text" data-hide="visit sent already"><p>I've written an enquiry for you to check. Nothing is sent until you press Send.</p></div>
+          <div class="ai-text" data-show="visit"><p>I've prepared a site visit request for Kadal Vista. Nothing is sent until you press Send.</p></div>
+
+          <!-- Problems, shown above the card -->
+          <div class="alert alert--danger" role="alert" data-show="failed"><fp-icon n="alert"></fp-icon><div class="grow"><b>We couldn't send your enquiry</b>Nothing was lost: your details are still here. Try again in a moment.</div></div>
+          <div class="alert alert--warning" role="alert" data-show="ratelimit"><fp-icon n="clock"></fp-icon><div class="grow"><b>Please wait a little</b>You can send a limited number of enquiries per day. Try again later.</div></div>
+          <div class="alert alert--info" role="status" data-show="already"><fp-icon n="info"></fp-icon><div class="grow"><b>You already contacted this owner</b>Your earlier enquiry is in My enquiries, with its reply status.</div><a class="btn btn--secondary btn--sm" href="dashboard.html#sent">View my enquiries</a></div>
+
+          <!-- ENQUIRY CARD: pending, sending, failed and rate limited -->
+          <section class="confirm" aria-labelledby="cf-h" data-show="enquiry sending failed ratelimit">
+            <div class="top"><h2 id="cf-h">Send this enquiry?</h2><span class="badge badge--neutral">Not sent yet</span></div>
+            <div class="ctx"><div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div><div><div class="t">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · ₹1.25 Cr</div></div></div>
+            <dl class="facts">
+              <div class="fact"><dt>Your name</dt><dd>Priya Raman</dd></div>
+              <div class="fact"><dt>Your phone</dt><dd><span class="num">+91 98400 12345</span><span class="badge badge--success"><fp-icon n="check-circle"></fp-icon>Verified</span></dd></div>
+              <div class="fact"><dt>Message</dt><dd><span class="msgbox">Hello, is this home still available? I would like to visit this Saturday.</span></dd></div>
+            </dl>
+            <p class="caption muted" style="margin:0">The owner will see your name, phone number and message so they can reply. We don't show your details to anyone else. <a class="link" href="legal-page.html#privacy">Privacy Policy</a></p>
+            <div class="send-row">
+              <button class="btn btn--accent btn--lg btn--block" type="button" data-show="enquiry failed"><fp-icon n="send"></fp-icon>Send enquiry</button>
+              <button class="btn btn--accent btn--lg btn--block is-loading" type="button" aria-busy="true" data-show="sending"><fp-icon n="send"></fp-icon>Sending enquiry</button>
+              <button class="btn btn--accent btn--lg btn--block" type="button" disabled data-show="ratelimit"><fp-icon n="send"></fp-icon>Send enquiry</button>
+              <span class="hint" data-hide="sending">Nothing is sent until you press Send.</span>
+            </div>
+          </section>
+
+          <!-- SITE VISIT CARD -->
+          <section class="confirm" aria-labelledby="cv-h" data-show="visit">
+            <div class="top"><h2 id="cv-h">Request this site visit?</h2><span class="badge badge--neutral">Not sent yet</span></div>
+            <div class="ctx"><div class="th"><fp-art kind="twin" v="1" alt=""></fp-art></div><div><div class="t">Kadal Vista</div><div class="m">Kadal Homes · OMR Navalur · ₹78 L – ₹1.42 Cr</div></div></div>
+            <dl class="facts">
+              <div class="fact"><dt>Your name</dt><dd>Priya Raman</dd></div>
+              <div class="fact"><dt>Your phone</dt><dd><span class="num">+91 98400 12345</span><span class="badge badge--success"><fp-icon n="check-circle"></fp-icon>Verified</span></dd></div>
+              <div class="fact"><dt>Visit date</dt><dd>Sat, 14 Nov 2026</dd></div>
+              <div class="fact"><dt>Message</dt><dd><span class="msgbox">I'd like to see the 3 BHK show flat.</span></dd></div>
+            </dl>
+            <p class="caption muted" style="margin:0">Your name, phone number and message go to Kadal Homes and findsprop so they can contact you. <a class="link" href="legal-page.html#privacy">Privacy Policy</a></p>
+            <div class="send-row"><button class="btn btn--accent btn--lg btn--block" type="button"><fp-icon n="calendar"></fp-icon>Request a site visit</button><span class="hint">Nothing is sent until you press Send.</span></div>
+          </section>
+
+          <!-- SENT -->
+          <section class="confirm is-done" data-show="sent" role="status" aria-labelledby="cs-h">
+            <div class="top"><span class="icon-disc success"><fp-icon n="check-circle"></fp-icon></span><span class="badge badge--success"><fp-icon n="check-circle"></fp-icon>Sent</span></div>
+            <div><h2 id="cs-h">Enquiry sent</h2><p class="mt-2 muted" style="font-size:15px;line-height:1.55">The owner can now see your details and message. The reply status will show in your dashboard.</p></div>
+            <div class="ctx"><div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div><div><div class="t">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · ₹1.25 Cr</div></div></div>
+            <div><a class="btn btn--secondary" href="dashboard.html#sent">View my enquiries</a></div>
+          </section>
+
+          <!-- ALREADY CONTACTED: the card is not offered again -->
+          <div class="ctx" data-show="already"><div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div><div><div class="t">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · ₹1.25 Cr</div></div></div>
+
+          <!-- SIGNED OUT: the card becomes a sign-in prompt and the message is kept -->
+          <section class="confirm" data-show="signedout" aria-labelledby="co-h">
+            <div class="top"><span class="icon-disc info"><fp-icon n="lock"></fp-icon></span><span class="badge badge--neutral">Not sent yet</span></div>
+            <div><h2 id="co-h">Sign in to send this enquiry</h2><p class="mt-2 muted" style="font-size:15px;line-height:1.55">Sign in to send an enquiry. We will bring you back to this chat afterwards. <span class="flag">Wording to confirm</span></p></div>
+            <div class="ctx"><div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div><div><div class="t">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · ₹1.25 Cr</div></div></div>
+            <div class="draft-quote"><span class="overline">Your message, kept</span><span class="q">Hello, is this home still available? I would like to visit this Saturday.</span></div>
+            <div class="send-row"><a class="btn btn--accent btn--lg btn--block" href="ai-chat-limits.html#signin"><fp-icon n="phone"></fp-icon>Sign in to send</a></div>
+          </section>
+
+          <!-- SESSION ENDED while the card was open -->
+          <section class="confirm" data-show="ended" aria-labelledby="ce-h">
+            <div class="top"><span class="icon-disc warning"><fp-icon n="clock"></fp-icon></span><span class="badge badge--neutral">Not sent yet</span></div>
+            <div><h2 id="ce-h">Your session has ended</h2><p class="mt-2 muted" style="font-size:15px;line-height:1.55">Sign in again to send this. What you typed will be kept.</p></div>
+            <div class="ctx"><div class="th"><fp-art kind="apartment" v="1" alt=""></fp-art></div><div><div class="t">3 BHK apartment with clubhouse and covered parking</div><div class="m">Velachery · ₹1.25 Cr</div></div></div>
+            <div class="draft-quote"><span class="overline">Your message, kept</span><span class="q">Hello, is this home still available? I would like to visit this Saturday.</span></div>
+            <div class="send-row"><a class="btn btn--accent btn--lg btn--block" href="ai-chat-limits.html#signin"><fp-icon n="phone"></fp-icon>Sign in again</a></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Composer. While a card waits for Send, the card's Send is the one copper button and the composer's Send is forest. -->
+      <div class="dock">
+        <div class="composer">
+          <div class="row-in">
+            <label class="sr-only" for="cf-q">Your message to findsprop's AI assistant</label>
+            <textarea id="cf-q" class="textarea" rows="1" maxlength="1000" placeholder="Ask about a home or project"></textarea>
+            <button class="btn btn--primary composer-send" type="button" aria-label="Send" disabled data-hide="sent already"><fp-icon n="send"></fp-icon><span class="lbl">Send</span></button>
+            <button class="btn btn--accent composer-send" type="button" aria-label="Send" disabled data-show="sent already"><fp-icon n="send"></fp-icon><span class="lbl">Send</span></button>
+          </div>
+          <div class="foot-line"><span class="hint">Your message is used to answer you. Don't include personal details here.</span><span class="count">0 / 1,000</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wording per state: new strings are proposals (gate G-G); reused ones are marked -->
+    <div class="wording" aria-label="Wording notes for this state">
+      <p class="caption muted" data-show="enquiry"><span class="flag">Wording to confirm</span> "Send this enquiry?", "Not sent yet", "Your name", "Your phone", "Verified", "Nothing is sent until you press Send." and the assistant's line above the card. <span class="badge badge--neutral">Reused</span> "Send enquiry" and the consent sentence (approved enquiry wording). Name and phone come from the signed-in account and cannot be changed on the card; to change the message the person replies in the chat. The home shown is the real record (title, locality, price) the server checked. The phone number is shown in full because it is the person's own and the card says what will be sent (open question).</p>
+      <p class="caption muted" data-show="visit"><span class="flag">Wording to confirm</span> "Request this site visit?", "Visit date" and the assistant's line. <span class="badge badge--neutral">Reused</span> "Request a site visit" (project page). The consent sentence is the approved project one, with "Find Prop" changed to findsprop because it appears inside the chat (D11). The visit date is within the next year, set by the server.</p>
+      <p class="caption muted" data-show="sending"><span class="badge badge--neutral">Reused</span> The button keeps its width and shows the approved loading style. The card cannot be sent twice.</p>
+      <p class="caption muted" data-show="sent"><span class="badge badge--neutral">Reused</span> "Enquiry sent", the line below it and "View my enquiries" are the approved enquiry wording. The card turns calm and has no copper button.</p>
+      <p class="caption muted" data-show="failed"><span class="badge badge--neutral">Reused</span> The approved "couldn't send" alert. Pressing Send again is the retry; nothing was stored.</p>
+      <p class="caption muted" data-show="already"><span class="badge badge--neutral">Reused</span> The approved "already contacted" alert (one enquiry per home in 24 hours). The card is not offered again.</p>
+      <p class="caption muted" data-show="ratelimit"><span class="badge badge--neutral">Reused</span> The approved "please wait a little" alert. Send is disabled until the limit lifts.</p>
+      <p class="caption muted" data-show="signedout"><span class="flag">Wording to confirm</span> Adapted from the approved enquiry sign-in text ("this home" became "this chat"). The message is kept and the card comes back after sign-in; the person then presses Send (no automatic send).</p>
+      <p class="caption muted" data-show="ended"><span class="badge badge--neutral">Reused</span> The approved "session ended" wording, which keeps what the person typed.</p>
+      <p class="caption muted">Only one copper button is ever visible: the card's. This card does not appear for a home the person listed; the server refuses it and the assistant says so in the chat. The assistant's other replies are sample model output.</p>
+    </div>
+  </div>
+</main>
+
+<fp-footer></fp-footer>
+<fp-chatbar active="ai"></fp-chatbar>
+<script src="../assets/manifest.js"></script>
+<script src="../../final-ux/assets/fp.js"></script>
+<script src="../assets/addendum.js"></script>
+<script src="../assets/addendum3.js"></script>
+</body>
+</html>

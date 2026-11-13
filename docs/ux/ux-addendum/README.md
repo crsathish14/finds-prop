@@ -10,6 +10,8 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 **Update 3 Nov 2026:** the owner **approved ADD-01 to ADD-04** (the five customer sign-in screens: phone, code, email, email prompts, name). The approval covers layout, states and components. Text still flagged *To confirm*, *Wording to confirm* or *Duration to confirm* on those screens is not approved yet.
 
+**Batch 4 (Nov 2026): the AI chat assistant, ADD-14 to ADD-17.** Drafted for task AI-P0-T03 from ADR-128. **Proposed, not approved:** the owner approves the screens (gate G-F) and, separately, the new wording (gate G-G). Nothing is built from them. Unlike batches 1 to 3, this batch was drafted in this repository, so this copy is its source. Read `design-handoff-chat.md`.
+
 ## Start here
 
 1. Open **[index.html](index.html)** in a desktop browser. It lists every screen with thumbnails and state chips.
@@ -45,6 +47,17 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 
 **Totals:** 21 screens, 133 states, 200 rendered images (batch 1: 14 screens, 76 states, 119 renders; batches 2 and 3: 7 screens, 57 states, 81 renders).
 
+### Batch 4 (the AI chat assistant, proposed, not approved)
+
+| ID | Screens | Files |
+|---|---|---|
+| ADD-14 | The conversation: empty with example prompts, typing, searching, streaming, answers with property and project cards, cap note, fixed fallback, disclaimer, personal details removed, fixed refusal, "how I am built" reply, error with retry (13 states) | `screens/ai-chat.html` |
+| ADD-15 | Limits and sign-in: too many messages, today's limit, unavailable right now, the sign-in gate after 2 free messages, back in the conversation, the sign-in card with a chat line (6 states) | `screens/ai-chat-limits.html` |
+| ADD-16 | Confirm card for an enquiry or site visit: enquiry, visit, sending, sent, failed, already, daily limit, signed out, session ended (9 states) | `screens/ai-chat-confirm.html` |
+| ADD-17 | Navigation with the AI chat on: AI Search highlighted in the header, a centre AI tab in the phone bottom bar with Post beside it, no saved-homes heart, all only while the chat is on; with the chat off the old design is used unchanged (1 board) | `screens/nav-chat.html`, `assets/addendum3.js` |
+
+**Batch 4 totals:** 4 screens, 29 states. ADD-17 changes the approved header and phone bottom bar, so it is a board of its own; the approved screens are not changed. Tamil lines for the fixed replies are placeholders until the owner supplies them. No renders are committed.
+
 ### Not built
 
 - **ADD-13** PG and hostels: gated until requirements exist.
@@ -63,12 +76,14 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 ```
 ux-addendum/
 ├── index.html               review gallery
-├── README.md, design-handoff-addendum.md
-├── screens/                 21 prototype pages
+├── README.md, design-handoff-addendum.md, design-handoff-chat.md
+├── screens/                 25 prototype pages
 ├── renders/                 200 images
 ├── assets/
 │   ├── addendum.css         batch 1 layout and component shapes (no new tokens)
 │   ├── addendum2.css        batches 2 and 3: suggestions, map, pin, sponsors, localities, legal, consent
+│   ├── addendum3.css        batch 4: the AI chat (messages, composer, status, notes, gate, confirm card) and the AI-on navigation
+│   ├── addendum3.js         batch 4: the chat phone bottom bar tag (fp-chatbar)
 │   ├── addendum.js          AI-off switch, link rewrite to final-ux, sample QR, illustrated map, suggestion panel
 │   └── manifest.js          every screen and state (drives the tools and the gallery)
 └── tools/                   render.mjs · check.mjs · cdp.mjs (no installs; Node 22+ and Chrome or Edge)
