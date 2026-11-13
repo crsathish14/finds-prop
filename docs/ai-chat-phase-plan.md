@@ -30,16 +30,16 @@ When done, summarise what changed, what you verified and what you could not.
 
 ## Decision gates (the owner, before the task that needs them)
 
-| Gate | Decision                                                                                                                 | Needed before  |
-| ---- | ------------------------------------------------------------------------------------------------------------------------ | -------------- |
-| G-A  | D8 what is stored (recommended: usage metadata only)                                                                     | P4-T05         |
-| G-B  | D9 numbers: trial of 2, IP and burst and daily limits, the daily budget, rounds 5, calls 6, parallel 3, tool timeout 3 s | P1-T04, P8-T03 |
-| G-C  | D10 EMI defaults (down payment, years, example rate)                                                                     | P1-T05         |
-| G-D  | D11 and D12 how the assistant describes itself, and the language of the fixed replies                                    | P4-T01         |
-| G-E  | D13 anonymous cookie id, and the cookie-policy wording (legal review)                                                    | P1-T04         |
-| G-F  | The UX addendum for the chat screens is approved                                                                         | P5-T01         |
-| G-G  | All new customer-visible wording approved (refusals, "Searching…", the cap note, the consent line on the confirm card)   | P4-T01, P6-T02 |
-| G-H  | The provider terms (retention, training use, data location) read by you and your legal reviewer; the provider is chosen  | P1-T01         |
+| Gate | Decision                                                                                                                                                                     | Needed before  |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| G-A  | D8 what is stored (recommended: usage metadata only)                                                                                                                         | P4-T05         |
+| G-B  | D9 numbers: trial of 2, IP and burst and daily limits, the daily budget, rounds 5, calls 6, parallel 3, tool timeout 3 s                                                     | P1-T04, P8-T03 |
+| G-C  | D10 EMI defaults (down payment, years, example rate)                                                                                                                         | P1-T05         |
+| G-D  | D11 and D12 how the assistant describes itself, and the language of the fixed replies                                                                                        | P4-T01         |
+| G-E  | D13 anonymous cookie id, and the cookie-policy wording (legal review)                                                                                                        | P1-T04         |
+| G-F  | The UX addendum for the chat screens is approved (approved by the owner 13 Nov 2026)                                                                                         | P5-T01         |
+| G-G  | All new customer-visible wording approved (refusals, "Searching…", the cap note, the consent line on the confirm card) (English approved 13 Nov 2026; Tamil lines open, D12) | P4-T01, P6-T02 |
+| G-H  | The provider terms (retention, training use, data location) read by you and your legal reviewer; the provider is chosen                                                      | P1-T01         |
 
 ## Phase map
 
@@ -71,7 +71,7 @@ Prompt: "Task AI-P0-T02. Write the spike script and the results runbook describe
 
 **P0-T03 · UX addendum for the chat** · C2 (new screens)
 Draft the chat screens in the style of `docs/ux/ux-addendum/` (HTML plus manifest entry), reusing the design system: empty state with example prompts, streaming, answer with property and project cards, status ("Searching…"), the two rate-limited states, error with retry, sign-in gate after 2 messages, the confirm card, the "I couldn't check everything" note, mobile layout. You approve (G-F).
-Done when: screens exist for every state in ADR section 10, and you have approved them.
+Done when: screens exist for every state in ADR section 10, and you have approved them. Done: the owner approved the addendum (G-F and G-G) on 13 Nov 2026; the Tamil lines of the fixed replies are still to be supplied (D12).
 Prompt: "Task AI-P0-T03. Draft the chat screens and states as a UX addendum in the existing addendum format. Use only existing tokens and components."
 
 **P0-T04 · Record decisions and accept the ADR** · C0
