@@ -67,16 +67,25 @@ const PAGES = [
 ];
 
 test.describe("@smoke content security policy", () => {
-  test("the check can fail: a blocked script source is reported", async ({ page }) => {
+  test("the check can fail: a picture from a host the policy does not list is reported", async ({
+    page,
+  }) => {
     await collectViolations(page);
     await page.goto("/");
-    // `eval` is not allowed by script-src, so the browser must report it (and, once the policy is
-    // enforced, refuse it). It runs from a script tag because page.evaluate is exempt from the policy. If this test ever passes with an empty list, the collector is broken.
-    await page.addScriptTag({ content: "try { (0, eval)('1 + 1'); } catch {}" });
-    // The browser queues the event, so it can arrive a moment after the script ran.
+    // img-src lists our own origin, data:, blob: and Supabase only. A load from anywhere else must
+    // be reported, and once the policy is enforced it is refused. The address cannot resolve, so
+    // nothing leaves the machine. (Script injected by Playwright is exempt from the policy, so a
+    // resource load is a more honest probe than eval.) If this test ever passes with an empty
+    // list, the collector is broken.
+    await page.evaluate(() => {
+      const probe = new Image();
+      probe.src = "http://csp-self-test.invalid/probe.png";
+      document.body.append(probe);
+    });
+    // The browser queues the event, so it can arrive a moment after the load was requested.
     await expect
       .poll(async () => (await violationsOn(page)).map((violation) => violation.directive))
-      .toContain("script-src");
+      .toContain("img-src");
   });
 
   for (const route of PAGES) {

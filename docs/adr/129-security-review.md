@@ -126,7 +126,7 @@ All stay as the owner decided on 3 Nov 2026 (fixed in the pre-launch review, S9)
 
 ## The content security policy check (part 2)
 
-`e2e/csp.spec.ts` (tagged `@smoke`, so it runs in the existing end-to-end step and needs no gate change) loads 22 pages in the production build and fails on any `securitypolicyviolation` the browser reports: the public pages, the sign-in pages, the not-found page, seven Design Lab boards (they show every component, image and chart) and the phone menu. A Report-Only policy fires the same event an enforced one would, so a clean run means enforcing blocks nothing on these pages. A first test proves the collector can fail by running `eval`, which `script-src` does not allow.
+`e2e/csp.spec.ts` (tagged `@smoke`, so it runs in the existing end-to-end step and needs no gate change) loads 22 pages in the production build and fails on any `securitypolicyviolation` the browser reports: the public pages, the sign-in pages, the not-found page, seven Design Lab boards (they show every component, image and chart) and the phone menu. A Report-Only policy fires the same event an enforced one would, so a clean run means enforcing blocks nothing on these pages. A first test proves the collector can fail by loading a picture from a host `img-src` does not allow.
 
 What the first run found (13 Nov 2026), and what was done:
 
