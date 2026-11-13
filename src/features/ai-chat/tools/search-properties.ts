@@ -175,6 +175,7 @@ function toHomeSummary(
 
 export const searchPropertiesTool: AiChatTool<SearchPropertiesInput, SearchPropertiesOutput> = {
   name: "search_properties",
+  kind: "read",
   description: [
     `Search the homes listed on ${ASSISTANT_BRAND_NAME}, for sale or to rent.`,
     "Give null for every filter the customer did not ask for.",

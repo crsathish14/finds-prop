@@ -49,6 +49,7 @@ export type ListLocalitiesOutput = z.infer<typeof listLocalitiesOutputSchema>;
 
 export const listLocalitiesTool: AiChatTool<ListLocalitiesInput, ListLocalitiesOutput> = {
   name: "list_localities",
+  kind: "read",
   description: [
     `List the localities that have homes or projects on ${ASSISTANT_BRAND_NAME}, with how many of each.`,
     "Give the customer's own spelling in `search` to find the listed spelling; an empty `localities` list means nothing close to it is listed.",

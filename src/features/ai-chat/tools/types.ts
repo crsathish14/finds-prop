@@ -40,9 +40,19 @@ export interface ToolRun<Output> {
   readonly references: readonly ToolReference[];
 }
 
+/**
+ * What a tool does to the world, which is what the agent loop's parallel rule turns on (ADR-128 section 4.5):
+ * - `read`: looks something up. Up to `MAX_PARALLEL_READ_CALLS` run together in one round.
+ * - `propose`: prepares something for the customer to confirm with a click (section 5.3). It writes nothing,
+ *   and it always runs alone in its round.
+ */
+export type ToolKind = "read" | "propose";
+
 export interface AiChatTool<Input, Output> {
   /** Lowercase letters, digits and underscores (`search_properties`): the name the model asks for. */
   readonly name: string;
+  /** Whether the loop may run it beside other calls (`read`) or only alone (`propose`). */
+  readonly kind: ToolKind;
   /** What the tool is for and how to read its result, written for the model. Never shown to a customer. */
   readonly description: string;
   /** What the tool takes. It must stay inside the portable subset (`toPortableJsonSchema`), and name no person. */
@@ -65,9 +75,34 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `unknown_tool`: no tool has that name.
  * - `invalid_input`: the input does not fit the tool's schema; `fields` names what to correct.
  * - `unavailable`: the read failed or its result did not fit. "That information isn't available right now."
+ *
+ * The last four are the agent loop's own refusals (ADR-128 section 4.5), given instead of running the call:
+ * - `timeout`: the tool did not answer within `TOOL_TIMEOUT_MS`.
+ * - `too_many_calls`: more read calls than may run together in one round.
+ * - `call_limit`: the calls for this customer message are used up.
+ * - `call_alone`: a propose tool was mixed with other calls; ask for it alone in the next round.
  */
-export const TOOL_ERROR_CODES = ["unknown_tool", "invalid_input", "unavailable"] as const;
+export const TOOL_ERROR_CODES = [
+  "unknown_tool",
+  "invalid_input",
+  "unavailable",
+  "timeout",
+  "too_many_calls",
+  "call_limit",
+  "call_alone",
+] as const;
 export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
+
+/**
+ * A line for the model beside the loop's own refusals, so it knows what to do next. It is addressed to the
+ * model, never shown to a customer, and holds no data. The older codes need none: their meaning is plain.
+ */
+export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
+  timeout: "That information isn't available right now. Do not retry it; answer without it.",
+  too_many_calls: "Too many calls this round. Ask again next round if it is still needed.",
+  call_limit: "No more calls are allowed for this message. Answer from what you already have.",
+  call_alone: "This tool must be called alone. Call it again next round with no other call.",
+};
 
 /**
  * What one tool call came to. `content` is the text sent back to the model as the tool result (JSON, so
