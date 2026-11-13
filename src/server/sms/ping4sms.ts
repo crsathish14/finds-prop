@@ -7,8 +7,9 @@ import type { SmsSender } from "./types";
  *
  * What the live service was seen to do (11 Nov 2026, demo account, HTTPS): HTTP 200 with a plain
  * text body that is only a number. A message id (nine digits was seen) means the gateway accepted
- * the message; a short number (101 for a wrong key) is an error code. There is no JSON. So the
- * body decides, and only a long number counts as success: anything else fails closed.
+ * the message; a short number is an error code (101 for a wrong key; 101 to 110 are in Ping4SMS's
+ * own list, below). There is no JSON. So the body decides, and only a long number counts as
+ * success: anything else fails closed.
  *
  * India requires the text to be the DLT-registered template with its variable filled in, so the
  * template (with one `{#var#}` where the code goes) is configuration, not code.
@@ -24,6 +25,24 @@ const VARIABLE = "{#var#}";
 /** A message id is long (nine digits seen); an error code is short (101 seen). */
 const MESSAGE_ID = /^\d{7,}$/;
 const ERROR_CODE = /^\d{1,6}$/;
+/**
+ * What Ping4SMS's own documentation says each error number means (101 was also seen live, for a wrong
+ * key). The words are ours and say nothing about the message, the number or the key, so they are safe
+ * to log and to show in the operator's log line. A number that is not in the list is reported as its
+ * code only.
+ */
+const PROVIDER_CODES: Readonly<Record<string, string>> = {
+  "101": "invalid account key",
+  "102": "invalid sender ID",
+  "103": "invalid number",
+  "104": "invalid route",
+  "105": "invalid message",
+  "106": "blocked as spam",
+  "107": "blocked on a promotional route",
+  "108": "low credits on the route",
+  "109": "the promotional route is closed at this hour",
+  "110": "invalid DLT template ID",
+};
 /** Our hook passes 91 and the ten digit mobile number. */
 const INDIAN_NUMBER = /^91([6-9]\d{9})$/;
 
@@ -44,7 +63,10 @@ export interface Ping4SmsOptions {
 /** Checked when the sender is made, so a wrong template fails at the first request, not silently. */
 export function assertTemplateHasOneVariable(message: string): void {
   if (message.split(VARIABLE).length !== 2) {
-    throw new ActionError("INTERNAL", "The SMS provider is not configured");
+    throw new ActionError(
+      "INTERNAL",
+      "The SMS provider is not configured (PING4SMS_MESSAGE needs exactly one {#var#})",
+    );
   }
 }
 
@@ -94,12 +116,15 @@ export function createPing4SmsSender(options: Ping4SmsOptions): SmsSender {
         throw new ActionError("UPSTREAM_FAILED", `The SMS provider answered HTTP ${status}`);
       }
       if (MESSAGE_ID.test(body)) return;
-      // The body is the provider's text, so only a short plain number is repeated, as a code.
+      // The body is the provider's text, so only a short plain number is repeated, as a code, with
+      // our own words for it when Ping4SMS documents it.
+      if (!ERROR_CODE.test(body)) {
+        throw new ActionError("UPSTREAM_FAILED", "The SMS provider refused the message");
+      }
+      const meaning = PROVIDER_CODES[body];
       throw new ActionError(
         "UPSTREAM_FAILED",
-        ERROR_CODE.test(body)
-          ? `The SMS provider refused the message (code ${body})`
-          : "The SMS provider refused the message",
+        `The SMS provider refused the message (code ${body}${meaning ? `: ${meaning}` : ""})`,
       );
     },
   };

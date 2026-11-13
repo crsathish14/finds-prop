@@ -77,6 +77,32 @@ describe("UT-sms: choosing the sender", () => {
     }
   });
 
+  it("names the missing settings and the environment, never a value", () => {
+    const saying = (config: Parameters<typeof chooseSmsSender>[0]) => {
+      try {
+        chooseSmsSender(config);
+      } catch (error) {
+        return error instanceof Error ? error.message : "";
+      }
+      return "";
+    };
+    expect(saying({ APP_ENV: "production" })).toBe(
+      "The SMS provider is not configured (missing: PING4SMS_API_KEY, PING4SMS_SENDER_ID, PING4SMS_TEMPLATE_ID, PING4SMS_MESSAGE; APP_ENV is production)",
+    );
+    const partial = saying({
+      APP_ENV: "staging",
+      PING4SMS_API_KEY: "fake-api-key-for-tests",
+      PING4SMS_MESSAGE: "Your test code is {#var#}.",
+    });
+    expect(partial).toBe(
+      "The SMS provider is not configured (missing: PING4SMS_SENDER_ID, PING4SMS_TEMPLATE_ID; APP_ENV is staging)",
+    );
+    expect(partial).not.toContain("fake-api-key-for-tests");
+    expect(saying({ APP_ENV: "production", SMS_PROVIDER: "msg91" })).toBe(
+      "The SMS provider is not configured (missing: MSG91_AUTH_KEY, MSG91_TEMPLATE_ID; APP_ENV is production)",
+    );
+  });
+
   it("refuses a half-configured MSG91 in production", () => {
     expect(() =>
       chooseSmsSender({
