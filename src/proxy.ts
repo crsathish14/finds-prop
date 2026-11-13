@@ -5,7 +5,8 @@ import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
 import { hasNoLanguage } from "@/lib/url/language-free";
 import { RETURN_PATH_HEADER } from "@/server/auth/return-path";
-import { env } from "@/server/env";
+import { contentSecurityPolicyHeader } from "@/server/csp";
+import { env, productionBuild } from "@/server/env";
 import { REQUEST_ID_PATTERN } from "@/server/request-id";
 
 /**
@@ -15,24 +16,11 @@ import { REQUEST_ID_PATTERN } from "@/server/request-id";
  *     refresh tokens are single-use (ADR-008). Identity is checked with getClaims();
  *  3. records the page address in x-return-path, so a layout can send a signed-out visitor to
  *     sign-in and back (the value is always set here, never taken from the caller);
- *  4. adds environment-dependent headers: noindex outside production, and a Report-Only CSP
- *     (enforced after spike S1-SPK-02).
+ *  4. adds environment-dependent headers: noindex outside production, and the content security
+ *     policy (src/server/csp.ts): enforced in a production build, report-only under `next dev`.
  * Static security headers live in next.config.ts. No authorization decisions are made here:
  * guards live in layouts and handlers (plan 07).
  */
-
-const CSP_REPORT_ONLY = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "img-src 'self' data: blob: https://*.supabase.co",
-  "font-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-  "frame-src https://challenges.cloudflare.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co http://127.0.0.1:54321 ws://127.0.0.1:54321",
-].join("; ");
 
 type CookieOptions = NonNullable<Parameters<NextResponse["cookies"]["set"]>[2]>;
 
@@ -75,7 +63,13 @@ export async function proxy(request: NextRequest) {
   for (const { name, value, options } of refreshed) response.cookies.set(name, value, options);
 
   response.headers.set("x-request-id", requestId);
-  response.headers.set("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY);
+  const csp = contentSecurityPolicyHeader({
+    productionBuild,
+    development: !productionBuild,
+    localSupabase: env.APP_ENV === "local",
+    previewToolbar: env.APP_ENV !== "production",
+  });
+  response.headers.set(csp.name, csp.value);
   if (env.APP_ENV !== "production") response.headers.set("X-Robots-Tag", "noindex, nofollow");
   return response;
 }
