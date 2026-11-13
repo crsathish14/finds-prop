@@ -239,6 +239,11 @@ describe("UT-ai-tools-registry: the list", () => {
     );
   });
 
+  it("gives every tool a kind, and the first three are read tools the loop may run in parallel", () => {
+    for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
+    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(["read", "read", "read"]);
+  });
+
   it("gives every tool its own name, in the form a provider accepts", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(new Set(names).size).toBe(names.length);
@@ -296,6 +301,7 @@ describe("UT-ai-tools-registry: no tool takes a person as input (ADR-128 section
     const [definition] = toolDefinitions([
       {
         name: "made_up_lookup",
+        kind: "read",
         description: "A made-up tool that exists only in this test.",
         input: takesPeople,
         output: z.object({}),

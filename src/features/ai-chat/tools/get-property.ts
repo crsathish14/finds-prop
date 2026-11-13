@@ -109,6 +109,7 @@ function toHomeDetail(
 
 export const getPropertyTool: AiChatTool<GetPropertyInput, GetPropertyOutput> = {
   name: "get_property",
+  kind: "read",
   description: [
     `Get the public details of one home listed on ${ASSISTANT_BRAND_NAME}, by the homeId a search result gave.`,
     "`status` is `found` with the home, or `not_found`: no home with that id was listed when it was read (it may be sold, rented, withdrawn, or the id may be wrong). `asOf` is when it was read: it may have changed since, so say `asOf` when availability matters.",

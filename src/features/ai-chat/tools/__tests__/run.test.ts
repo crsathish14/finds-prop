@@ -26,6 +26,7 @@ const ran = vi.fn();
 /** Repeats a word. What it returns can be swapped, to play a tool that misbehaves. */
 const echoTool: AiChatTool<z.infer<typeof echoInput>, z.infer<typeof echoOutput>> = {
   name: "echo_word",
+  kind: "read",
   description: "Repeats a word.",
   input: echoInput,
   output: echoOutput,
@@ -212,6 +213,19 @@ describe("UT-ai-tool-run: error results", () => {
       content: '{"error":"invalid_input","fields":["limit"]}',
     });
   });
+});
+
+describe("UT-ai-tool-run: the loop's own refusals", () => {
+  it.each(["timeout", "too_many_calls", "call_limit", "call_alone"] as const)(
+    "tells the model what to do next for %s, and holds no data",
+    (code) => {
+      const outcome = toolError(code);
+      expect(outcome).toMatchObject({ status: "error", code, fields: [] });
+      const content = JSON.parse(outcome.content) as { error: string; hint: string };
+      expect(content.error).toBe(code);
+      expect(content.hint.length).toBeGreaterThan(20);
+    },
+  );
 });
 
 describe("UT-ai-tool-run: what the provider is told", () => {

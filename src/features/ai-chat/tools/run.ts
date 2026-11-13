@@ -3,7 +3,13 @@ import { unstable_rethrow } from "next/navigation";
 import type { z } from "zod";
 import { createAiToolDefinition, type AiToolDefinition } from "@/server/ai";
 import { logger } from "@/server/logger";
-import type { AnyAiChatTool, ToolContext, ToolErrorCode, ToolOutcome } from "./types";
+import {
+  TOOL_ERROR_HINTS,
+  type AnyAiChatTool,
+  type ToolContext,
+  type ToolErrorCode,
+  type ToolOutcome,
+} from "./types";
 
 /**
  * The one way a tool is run (ADR-128 sections 4.4 rule 2, 4.5 and 5). The agent loop hands over what the
@@ -17,13 +23,21 @@ export function toolDefinitions(tools: readonly AnyAiChatTool[]): AiToolDefiniti
   return tools.map((tool) => createAiToolDefinition(tool));
 }
 
-/** An error result: a code and, for an input that did not fit, the fields to correct. Never a sentence. */
+/**
+ * An error result: a code and, for an input that did not fit, the fields to correct. The loop's own refusals
+ * carry a short hint for the model as well (`TOOL_ERROR_HINTS`). Never a database message.
+ */
 export function toolError(code: ToolErrorCode, fields: readonly string[] = []): ToolOutcome {
+  const hint = TOOL_ERROR_HINTS[code];
   return {
     status: "error",
     code,
     fields,
-    content: JSON.stringify(fields.length > 0 ? { error: code, fields } : { error: code }),
+    content: JSON.stringify({
+      error: code,
+      ...(fields.length > 0 ? { fields } : {}),
+      ...(hint === undefined ? {} : { hint }),
+    }),
   };
 }
 
