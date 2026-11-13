@@ -79,29 +79,29 @@ Anything else importing `admin.server.ts` fails lint and code review.
 
 ## Secrets and environment
 
-| Rule          | Detail                                                                                                                                                                                                                           |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storage       | Vercel encrypted env vars (Preview and Production scoped separately); GitHub Environments for CI; Supabase dashboard for SMTP/CAPTCHA/hook secrets; `.env.local` for development, never committed; `.env.example` has names only |
-| Browser-safe  | Only `NEXT_PUBLIC_*`: Supabase URL, publishable key, Turnstile site key, site URL, map style URL                                                                                                                                 |
-| Server-only   | Service role key, hook secret, MSG91 key, Ola key, HMAC salt, error-tracker token. Never logged, never returned, never sent to client components (lint on `process.env` and `server-only`)                                       |
-| Separation    | Preview/dev and prod keys are different projects' keys; production secrets are not readable by Preview deployments or PR workflows from forks                                                                                    |
-| Rotation      | Runbook: service role key, hook secret, HMAC salt (invalidates visitor hashes: acceptable), MSG91 key, CRM tokens; rotate on staff change or suspected leak                                                                      |
-| Scanning      | GitHub push protection + `gitleaks` in CI; CI fails on a finding                                                                                                                                                                 |
-| Existing DEMO | The DEMO `.env` was **not opened**. Any secrets in that project must be considered for rotation before it is archived (outside this plan's scope)                                                                                |
+| Rule          | Detail                                                                                                                                                                                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storage       | Vercel encrypted env vars (Preview and Production scoped separately); GitHub Environments for CI; Supabase dashboard for SMTP/CAPTCHA/hook secrets; `.env.local` for development, never committed; `.env.example` has names only                                                 |
+| Browser-safe  | Only `NEXT_PUBLIC_*`: Supabase URL, publishable key, Turnstile site key, site URL, map style URL                                                                                                                                                                                 |
+| Server-only   | Service role key, hook secret, SMS provider key (Ping4SMS; it travels in the request address, so that address is never logged), Ola key, HMAC salt, error-tracker token. Never logged, never returned, never sent to client components (lint on `process.env` and `server-only`) |
+| Separation    | Preview/dev and prod keys are different projects' keys; production secrets are not readable by Preview deployments or PR workflows from forks                                                                                                                                    |
+| Rotation      | Runbook: service role key, hook secret, HMAC salt (invalidates visitor hashes: acceptable), SMS provider key, CRM tokens; rotate on staff change or suspected leak                                                                                                               |
+| Scanning      | GitHub push protection + `gitleaks` in CI; CI fails on a finding                                                                                                                                                                                                                 |
+| Existing DEMO | The DEMO `.env` was **not opened**. Any secrets in that project must be considered for rotation before it is archived (outside this plan's scope)                                                                                                                                |
 
 ## Privacy and personal data
 
-| Data                              | Where                                                                                    | Handling                                                                                                                                                                                                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phone numbers                     | `auth.users`, `profiles`, `enquiries`                                                    | Collected for sign-in and enquiries; never displayed publicly; owner sees the enquirer's phone only on enquiries about their listing; logs redact                                                                                                   |
-| Email                             | `auth.users`, `profiles`, `enquiries`, `builders`                                        | Verification and invites; redacted in logs                                                                                                                                                                                                          |
-| Messages, names                   | `enquiries`, `form_submissions`, `project_leads`                                         | Shared only with the listing owner / builder / admin; included in retention policy (`DEC-28`)                                                                                                                                                       |
-| IP / user agent                   | Never stored raw                                                                         | Only as HMAC visitor hash (BR-75); hash input includes a server-only salt                                                                                                                                                                           |
-| Listing addresses and coordinates | `properties`                                                                             | Owner chooses what to publish. **Recommendation (`DEC-35`):** public projections round owner-listing coordinates to ≈100 m (3 decimals) and show locality-level address unless the owner opts to show the full address; projects remain exact (ARC) |
-| Consent                           | OTP screen, enquiry form, lead forms                                                     | Short consent text linking to privacy policy (`DEC-25`); India's DPDP Act, 2023 is likely relevant: obtain legal review                                                                                                                             |
-| Deletion and export               | Admin runbook (no self-service UI in v1)                                                 | Document the procedure; FK behaviours per `06` §14                                                                                                                                                                                                  |
-| Third-party processors            | MSG91 (phone), Resend (email), Ola Maps (typed queries), Vercel, Supabase, error tracker | List in the privacy policy; send the minimum (no listing data to Ola; no PII to the error tracker)                                                                                                                                                  |
-| AI chat processor                 | OpenAI (planned); Gemini possibly later; ADR-128                                         | Named in the privacy and cookie policies (legal review). Customers are told not to type personal details and the input check masks them. The provider's retention, training-use and data-location terms are read before it is chosen (gate G-H)     |
+| Data                              | Where                                                                                       | Handling                                                                                                                                                                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phone numbers                     | `auth.users`, `profiles`, `enquiries`                                                       | Collected for sign-in and enquiries; never displayed publicly; owner sees the enquirer's phone only on enquiries about their listing; logs redact                                                                                                   |
+| Email                             | `auth.users`, `profiles`, `enquiries`, `builders`                                           | Verification and invites; redacted in logs                                                                                                                                                                                                          |
+| Messages, names                   | `enquiries`, `form_submissions`, `project_leads`                                            | Shared only with the listing owner / builder / admin; included in retention policy (`DEC-28`)                                                                                                                                                       |
+| IP / user agent                   | Never stored raw                                                                            | Only as HMAC visitor hash (BR-75); hash input includes a server-only salt                                                                                                                                                                           |
+| Listing addresses and coordinates | `properties`                                                                                | Owner chooses what to publish. **Recommendation (`DEC-35`):** public projections round owner-listing coordinates to ≈100 m (3 decimals) and show locality-level address unless the owner opts to show the full address; projects remain exact (ARC) |
+| Consent                           | OTP screen, enquiry form, lead forms                                                        | Short consent text linking to privacy policy (`DEC-25`); India's DPDP Act, 2023 is likely relevant: obtain legal review                                                                                                                             |
+| Deletion and export               | Admin runbook (no self-service UI in v1)                                                    | Document the procedure; FK behaviours per `06` §14                                                                                                                                                                                                  |
+| Third-party processors            | Ping4SMS (phone), Resend (email), Ola Maps (typed queries), Vercel, Supabase, error tracker | List in the privacy policy; send the minimum (no listing data to Ola; no PII to the error tracker)                                                                                                                                                  |
+| AI chat processor                 | OpenAI (planned); Gemini possibly later; ADR-128                                            | Named in the privacy and cookie policies (legal review). Customers are told not to type personal details and the input check masks them. The provider's retention, training-use and data-location terms are read before it is chosen (gate G-H)     |
 
 ## Rate limits and abuse controls
 
@@ -231,6 +231,8 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "Bash(git switch *)",
       "Bash(git add *)",
       "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
       "WebFetch(domain:nextjs.org)",
       "WebFetch(domain:react.dev)",
       "WebFetch(domain:supabase.com)",
@@ -241,13 +243,7 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "WebFetch(domain:vitest.dev)",
       "WebFetch(domain:developer.mozilla.org)"
     ],
-    "ask": [
-      "Bash(npm install *)",
-      "Bash(npm uninstall *)",
-      "Bash(npm update *)",
-      "Bash(git push *)",
-      "Bash(gh pr create *)"
-    ],
+    "ask": ["Bash(npm install *)", "Bash(npm uninstall *)", "Bash(npm update *)"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
@@ -320,8 +316,10 @@ Reads the hook JSON from standard input (`tool_input.command`), normalises case 
 | **Deny**  | Reading env files or the environment: `cat`, `type`, `more`, `less`, `head`, `tail`, `Get-Content`, `grep`, `rg`, `sed`, `awk`, `cp`, `mv` or `Copy-Item` on `.env`, `.env.local`, `.env.*.local`, `.env.production*` (not `.env.example`); bare `env`, `printenv`, `set`, `Get-ChildItem Env:`; `echo` of a variable whose name contains `KEY`, `SECRET`, `TOKEN` or `PASSWORD` |
 | **Deny**  | Recursive delete outside `node_modules`, `.next`, `coverage`, `dist`, `.turbo`, `test-results`, `playwright-report` (`rm -rf`, `rmdir /s`, `del /s`, `Remove-Item -Recurse`); `git clean -fdx`                                                                                                                                                                                   |
 | **Deny**  | Running a download directly through a shell (for example `curl` or `iwr` output piped to `sh` or `iex`)                                                                                                                                                                                                                                                                          |
-| **Ask**   | `npm install`, `i`, `add`, `update`, `uninstall`, `npx` of a package not in the project's dev tools; `git push` of a feature branch; `gh pr create`; any `npm config` or `.npmrc` change                                                                                                                                                                                         |
+| **Ask**   | `npm install`, `i`, `add`, `update`, `uninstall`, `npx` of a package not in the project's dev tools; any `npm config` or `.npmrc` change                                                                                                                                                                                                                                         |
 | Otherwise | No opinion: the normal permission flow applies                                                                                                                                                                                                                                                                                                                                   |
+
+Owner decision, 12 Nov 2026: a feature-branch `git push` and `gh pr create` are allowed without a prompt (they are in `allow`, and the hook has no opinion on them). Force-push, deleting a remote branch, pushing to `main` or `develop`, and `gh pr merge` stay denied, so merging remains a human step on GitHub. The hook still asks before other writes to GitHub: `gh pr` or `gh issue` `edit`, `comment`, `review`, `ready`, `lock` and `transfer`, and `gh issue create`.
 
 ### 3.2 `guard-edit.mjs`
 
@@ -360,13 +358,13 @@ Both hooks are plain Node modules with a pure `decide(input)` function. Vitest t
 
 ## 5. Secrets handling
 
-| Secret class                                  | Lives in                                                           | Never in                                 |
-| --------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------- |
-| Dev project and local stack keys              | `.env.local` (untracked)                                           | The repository, screenshots              |
-| Dev project secrets                           | Vercel Preview scope; GitHub Environment `dev`; Supabase dashboard | A developer machine used with agents     |
-| Production secrets                            | Vercel Production scope; GitHub Environment `production`           | Any developer machine, any chat, any log |
-| Provider keys (MSG91, Ola, Resend, Turnstile) | Same as above, per environment                                     | Client bundle, logs, fixtures            |
-| Test OTPs and test phone numbers              | `supabase/config.toml` (local, fake by design)                     | Dev or production configuration          |
+| Secret class                                | Lives in                                                           | Never in                                 |
+| ------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------- |
+| Dev project and local stack keys            | `.env.local` (untracked)                                           | The repository, screenshots              |
+| Dev project secrets                         | Vercel Preview scope; GitHub Environment `dev`; Supabase dashboard | A developer machine used with agents     |
+| Production secrets                          | Vercel Production scope; GitHub Environment `production`           | Any developer machine, any chat, any log |
+| Provider keys (SMS, Ola, Resend, Turnstile) | Same as above, per environment                                     | Client bundle, logs, fixtures            |
+| Test OTPs and test phone numbers            | `supabase/config.toml` (local, fake by design)                     | Dev or production configuration          |
 
 Rules: only names go in `.env.example`; `NEXT_PUBLIC_` is for values safe in a browser and nothing else; the service role key and hook secrets never get that prefix (`G-09` scans the client bundle); if a secret appears in a transcript, log or commit, **treat it as leaked and rotate it** using the runbook (plan 09 §8.4) before doing anything else.
 

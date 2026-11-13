@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { classifyError } from "../actions/normalise-error";
+import { ActionError, classifyError } from "../actions/normalise-error";
 import type { Logger } from "../logger";
 import { verifyStandardWebhook } from "../webhooks/standard-webhooks";
 import type { SmsSender } from "./types";
@@ -76,7 +76,14 @@ export async function handleSendSmsHook(
   try {
     await deps.getSender().sendOtp({ phone: `91${mobile}`, code: parsed.data.sms.otp });
   } catch (error) {
-    deps.log.error("send-sms hook could not send the code", { errorCode: classifyError(error) });
+    // `detail` only for our own errors: the adapters' words never hold the phone, the code, the key
+    // or the text (tested), and they name the setting or the provider's code to look at. Anything
+    // else may hold anything, so only its class is logged. (Not called `message`: that key is
+    // redacted as a message body.)
+    deps.log.error("send-sms hook could not send the code", {
+      errorCode: classifyError(error),
+      ...(error instanceof ActionError ? { detail: error.message } : {}),
+    });
     return hookError(502, "The code could not be sent. Please try again.");
   }
   return Response.json({}, { status: 200, headers: { "Cache-Control": "no-store" } });

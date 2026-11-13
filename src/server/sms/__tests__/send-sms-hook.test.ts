@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
+import { ActionError } from "@/server/actions/normalise-error";
 import { createLogger } from "@/server/logger";
 import { createFakeSmsSender, type FakeSmsSender } from "@/server/sms/fake";
 import { handleSendSmsHook, type SendSmsHookDeps } from "@/server/sms/send-sms-hook";
@@ -144,6 +145,43 @@ describe("UT-send-sms-hook: failures and logs (R-BE-10)", () => {
     expect(text).not.toContain("123456");
     expect(text).not.toContain("MSG91");
     expect(lines.join("\n")).not.toContain("123456");
+  });
+
+  it("logs the provider's words for a failure of ours, as detail, without the number or the code", async () => {
+    const failing = createFakeSmsSender({
+      failWith: new ActionError(
+        "UPSTREAM_FAILED",
+        "The SMS provider refused the message (code 110: invalid DLT template ID)",
+      ),
+    });
+    const { deps, lines } = setup({}, failing);
+    const response = await handleSendSmsHook(signed(body()), deps);
+    expect(response.status).toBe(502);
+    const entry = JSON.parse(
+      lines.find((line) => line.includes("could not send the code")) ?? "{}",
+    );
+    expect(entry.errorCode).toBe("UPSTREAM_FAILED");
+    expect(entry.detail).toBe(
+      "The SMS provider refused the message (code 110: invalid DLT template ID)",
+    );
+    const log = lines.join("\n");
+    for (const value of ["919000000001", "9000000001", "123456"]) {
+      expect(log).not.toContain(value);
+    }
+  });
+
+  it("logs no detail for an error that is not ours, because it may hold anything", async () => {
+    const failing = createFakeSmsSender({
+      failWith: new Error("MSG91 said no to 919000000001 / 123456"),
+    });
+    const { deps, lines } = setup({}, failing);
+    await handleSendSmsHook(signed(body()), deps);
+    const entry = JSON.parse(
+      lines.find((line) => line.includes("could not send the code")) ?? "{}",
+    );
+    expect(entry.errorCode).toBe("INTERNAL");
+    expect(entry.detail).toBeUndefined();
+    expect(lines.join("\n")).not.toContain("MSG91 said no");
   });
 
   it("answers 502 when no sender can be built for this environment", async () => {
