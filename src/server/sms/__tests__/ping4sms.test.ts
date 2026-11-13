@@ -61,6 +61,36 @@ describe("UT-ping4sms: the adapter (R-BE-09)", () => {
     expect(refusal.message).toContain("code 101");
   });
 
+  it.each([
+    ["101", "invalid account key"],
+    ["102", "invalid sender ID"],
+    ["103", "invalid number"],
+    ["104", "invalid route"],
+    ["105", "invalid message"],
+    ["106", "blocked as spam"],
+    ["107", "blocked on a promotional route"],
+    ["108", "low credits on the route"],
+    ["109", "the promotional route is closed at this hour"],
+    ["110", "invalid DLT template ID"],
+  ])("says what Ping4SMS's code %s means, in our own words", async (code, meaning) => {
+    const fetchImpl = fetchAnswering(new Response(code, { status: 200 }));
+    const refusal = await failure(createPing4SmsSender({ ...options, fetchImpl }).sendOtp(message));
+    expect(refusal.code).toBe("UPSTREAM_FAILED");
+    expect(refusal.message).toBe(`The SMS provider refused the message (code ${code}: ${meaning})`);
+  });
+
+  it("repeats a short number that is not in the list as its code only", async () => {
+    const fetchImpl = fetchAnswering(new Response("999", { status: 200 }));
+    const refusal = await failure(createPing4SmsSender({ ...options, fetchImpl }).sendOtp(message));
+    expect(refusal.message).toBe("The SMS provider refused the message (code 999)");
+  });
+
+  it("does not repeat a text answer, even one that looks like a reason", async () => {
+    const fetchImpl = fetchAnswering(new Response("Invalid DLT Template ID", { status: 200 }));
+    const refusal = await failure(createPing4SmsSender({ ...options, fetchImpl }).sendOtp(message));
+    expect(refusal.message).toBe("The SMS provider refused the message");
+  });
+
   it("fails closed on anything that is not a message id", async () => {
     for (const body of ["", "Invalid user.", "<html>gateway</html>", '{"error":"x"}', "12345"]) {
       const fetchImpl = fetchAnswering(new Response(body, { status: 200 }));
@@ -90,7 +120,9 @@ describe("UT-ping4sms: the adapter (R-BE-09)", () => {
 
   it("needs a template with exactly one place for the code", () => {
     for (const bad of ["Your code", "Code {#var#} and {#var#}"]) {
-      expect(() => createPing4SmsSender({ ...options, message: bad })).toThrow(/not configured/);
+      expect(() => createPing4SmsSender({ ...options, message: bad })).toThrow(
+        "The SMS provider is not configured (PING4SMS_MESSAGE needs exactly one {#var#})",
+      );
     }
   });
 

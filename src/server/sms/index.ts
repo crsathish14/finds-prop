@@ -27,6 +27,7 @@ export interface SmsConfig {
  */
 export function chooseSmsSender(config: SmsConfig, fetchImpl?: typeof fetch): SmsSender {
   const withFetch = fetchImpl ? { fetchImpl } : {};
+  let missing: string[];
   if (config.SMS_PROVIDER === "msg91") {
     if (config.MSG91_AUTH_KEY && config.MSG91_TEMPLATE_ID) {
       return createMsg91Sender({
@@ -35,21 +36,37 @@ export function chooseSmsSender(config: SmsConfig, fetchImpl?: typeof fetch): Sm
         ...withFetch,
       });
     }
-  } else if (
-    config.PING4SMS_API_KEY &&
-    config.PING4SMS_SENDER_ID &&
-    config.PING4SMS_TEMPLATE_ID &&
-    config.PING4SMS_MESSAGE
-  ) {
-    return createPing4SmsSender({
-      apiKey: config.PING4SMS_API_KEY,
-      senderId: config.PING4SMS_SENDER_ID,
-      templateId: config.PING4SMS_TEMPLATE_ID,
-      route: config.PING4SMS_ROUTE ?? "2",
-      message: config.PING4SMS_MESSAGE,
-      ...withFetch,
-    });
+    missing = [
+      ...(config.MSG91_AUTH_KEY ? [] : ["MSG91_AUTH_KEY"]),
+      ...(config.MSG91_TEMPLATE_ID ? [] : ["MSG91_TEMPLATE_ID"]),
+    ];
+  } else {
+    if (
+      config.PING4SMS_API_KEY &&
+      config.PING4SMS_SENDER_ID &&
+      config.PING4SMS_TEMPLATE_ID &&
+      config.PING4SMS_MESSAGE
+    ) {
+      return createPing4SmsSender({
+        apiKey: config.PING4SMS_API_KEY,
+        senderId: config.PING4SMS_SENDER_ID,
+        templateId: config.PING4SMS_TEMPLATE_ID,
+        route: config.PING4SMS_ROUTE ?? "2",
+        message: config.PING4SMS_MESSAGE,
+        ...withFetch,
+      });
+    }
+    missing = [
+      ...(config.PING4SMS_API_KEY ? [] : ["PING4SMS_API_KEY"]),
+      ...(config.PING4SMS_SENDER_ID ? [] : ["PING4SMS_SENDER_ID"]),
+      ...(config.PING4SMS_TEMPLATE_ID ? [] : ["PING4SMS_TEMPLATE_ID"]),
+      ...(config.PING4SMS_MESSAGE ? [] : ["PING4SMS_MESSAGE"]),
+    ];
   }
   if (config.APP_ENV === "local" || config.APP_ENV === "dev") return createFakeSmsSender();
-  throw new ActionError("INTERNAL", "The SMS provider is not configured");
+  // Names only, never values: the operator's log line then says what to set.
+  throw new ActionError(
+    "INTERNAL",
+    `The SMS provider is not configured (missing: ${missing.join(", ")}; APP_ENV is ${config.APP_ENV})`,
+  );
 }
