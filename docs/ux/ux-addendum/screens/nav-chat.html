@@ -17,12 +17,12 @@
       <section>
         <span class="overline" style="color:var(--c-accent-text)">ADD-17 · Navigation</span>
         <h1 class="h1 mt-2">Navigation with the AI chat on</h1>
-        <p class="lead mt-2">AI Search stands out in the header, the phone bottom bar gets a centre AI tab with Post next to it, and the saved-homes heart is gone because Saved homes live under the account menu.</p>
+        <p class="lead mt-2">AI Search stands out in the header, the phone bottom bar gets a centre AI tab with Post next to it, and the saved-homes heart is gone because Saved homes live under the account menu. <b>With the chat off, the old design is used exactly as approved.</b></p>
         <ul class="diff mt-4">
-          <li class="removed"><fp-icon n="x-circle"></fp-icon><span><b>Removed:</b> the heart icon with its count in the header (signed in) · the Saved tab in the phone bottom bar · the raised Post (+) in the centre of the phone bar while the chat is on</span></li>
+          <li class="removed"><fp-icon n="x-circle"></fp-icon><span><b>Removed, only while the chat is on:</b> the heart icon with its count in the header (signed in) · the Saved tab in the phone bottom bar · the raised Post (+) in the centre of the phone bar</span></li>
           <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>Changed:</b> header "AI Search" is a copper-tint pill with a sparkle (a tint, not a copper button, so each page keeps its single copper action) · phone bar is Home, Search, <b>AI</b> (centre, highlighted), Post, Me</span></li>
           <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>Kept unchanged:</b> Buy · Rent · Projects · Contact · Post property · Sign in · account menu (it already lists Saved homes with its count) · mobile menu drawer, including "Your account" and "Saved homes" · footer</span></li>
-          <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>When the chat is off:</b> no AI pill and no AI tab (as ADD-10). The phone bar is Home, Search, <b>Post</b> (raised, as approved), Me. Saved stays removed. Same components, one flag.</span></li>
+          <li class="kept"><fp-icon n="check-circle"></fp-icon><span><b>When the chat is off:</b> the old design only. No AI pill and no AI tab, the heart is back in the signed-in header, and the phone bar is Home, Search, <b>Post</b> (raised), Saved, Me, exactly as approved and as in ADD-10. Same components, one flag.</span></li>
         </ul>
       </section>
 
@@ -40,7 +40,7 @@
 
       <section>
         <h2>Header · signed in, account menu open</h2>
-        <p class="cap">No heart. Saved homes (with its count) is the first row under Dashboard in the account menu, exactly as approved.</p>
+        <p class="cap">No heart (chat on). Saved homes (with its count) is the first row under Dashboard in the account menu, exactly as approved.</p>
         <div class="frame" style="min-height:560px"><fp-header role="user" active="ai" menu></fp-header></div>
       </section>
 
@@ -57,23 +57,16 @@
         </div>
       </section>
 
-      <section class="two-col">
-        <div>
-          <h2>Phone bottom bar · chat off</h2>
-          <p class="cap">Home · Search · Post (raised, as approved) · Me. The Saved tab is gone here too.</p>
-          <div class="frame"><fp-chatbar active="home" ai="off"></fp-chatbar></div>
-        </div>
-        <div>
-          <h2>Approved bar, for comparison</h2>
-          <p class="cap">Home · Search · Post · Saved · Me. Shown unchanged from the approved package; it is replaced only if this board is approved.</p>
-          <div class="frame"><fp-bottombar active="home"></fp-bottombar></div>
-        </div>
+      <section>
+        <h2>Phone bottom bar · chat off</h2>
+        <p class="cap">The old design only: Home · Search · Post (raised) · Saved · Me, exactly as approved. The header with the chat off is the one in <a class="link" href="nav-noai.html">ADD-10</a> (no AI link, heart when signed in). Nothing changes.</p>
+        <div class="frame" style="max-width:480px"><fp-chatbar active="home" ai="off"></fp-chatbar></div>
       </section>
 
       <section>
-        <h2>Open questions</h2>
+        <h2>What does not change</h2>
         <ul class="diff">
-          <li class="kept"><fp-icon n="info"></fp-icon><span>If approved, the approved screens and the ADD-10 boards need the same heart and Saved-tab removal. The header and bar are single shared components, so that happens in one place in the build.</span></li>
+          <li class="kept"><fp-icon n="info"></fp-icon><span>Because the old design stays whenever the chat is off, the approved screens and the ADD-10 boards need no change. This navigation applies only while the chat flag is on.</span></li>
         </ul>
       </section>
     </div>

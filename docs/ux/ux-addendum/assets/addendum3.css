@@ -99,14 +99,14 @@
 /* ── ADD-17 · Navigation with the AI chat on. Set <body data-nav-chat> to preview it; nothing in final-ux changes. ──
    1. Desktop header: "AI Search" becomes a copper-tint pill. It is a tint, not a copper fill, so the one-copper-button rule is not affected.
    2. The saved-homes heart leaves the header (Saved homes stay in the account menu).
-   3. Phone bottom bar: Home, Search, AI (centre, highlighted), Post, Me. With the chat off: Home, Search, Post (raised), Me. */
+   3. Phone bottom bar: Home, Search, AI (centre, highlighted), Post, Me.
+   With the chat OFF none of this applies: the approved header and bottom bar are used exactly as they are. */
 body[data-nav-chat] .hdr-icon { display: none; }
 body[data-nav-chat] .nav a.ai { gap: var(--s-2); padding: 10px var(--s-4); background: var(--c-accent-tint); border-radius: var(--r-pill); color: var(--c-accent-text); font-weight: 700; transition: background var(--dur-fast); }
 body[data-nav-chat] .nav a.ai:hover { background: var(--c-accent-tint-2); color: var(--c-accent-text); }
 body[data-nav-chat] .nav a.ai .i { font-size: 17px; }
 body[data-nav-chat] .nav a.ai[aria-current="page"] { box-shadow: inset 0 0 0 1.5px var(--c-accent-text); color: var(--c-accent-text); }
 body[data-nav-chat] .nav a.ai[aria-current="page"]::after { display: none; }
-.bottombar.is-four { grid-template-columns: repeat(4, 1fr); }
 .bottombar a.ai { color: var(--c-accent-text); font-weight: 700; }
 .bottombar a.ai .i { background: var(--c-accent-tint-2); color: var(--c-accent-text); border-radius: 50%; padding: 6px; width: 34px; height: 34px; margin: -4px 0 -4px; box-sizing: border-box; }
 .bottombar a.ai.on .i { box-shadow: inset 0 0 0 1.5px var(--c-accent-text); }

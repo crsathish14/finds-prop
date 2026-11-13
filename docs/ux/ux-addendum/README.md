@@ -54,7 +54,7 @@ Brief and priorities: `../property-platform-implementation-plan/stage-0/02-ux-ad
 | ADD-14 | The conversation: empty with example prompts, typing, searching, streaming, answers with property and project cards, cap note, fixed fallback, disclaimer, personal details removed, fixed refusal, "how I am built" reply, error with retry (13 states) | `screens/ai-chat.html` |
 | ADD-15 | Limits and sign-in: too many messages, today's limit, unavailable right now, the sign-in gate after 2 free messages, back in the conversation, the sign-in card with a chat line (6 states) | `screens/ai-chat-limits.html` |
 | ADD-16 | Confirm card for an enquiry or site visit: enquiry, visit, sending, sent, failed, already, daily limit, signed out, session ended (9 states) | `screens/ai-chat-confirm.html` |
-| ADD-17 | Navigation with the AI chat on: AI Search highlighted in the header, a centre AI tab in the phone bottom bar with Post beside it, no saved-homes heart; chat-off bar for comparison (1 board) | `screens/nav-chat.html`, `assets/addendum3.js` |
+| ADD-17 | Navigation with the AI chat on: AI Search highlighted in the header, a centre AI tab in the phone bottom bar with Post beside it, no saved-homes heart, all only while the chat is on; with the chat off the old design is used unchanged (1 board) | `screens/nav-chat.html`, `assets/addendum3.js` |
 
 **Batch 4 totals:** 4 screens, 29 states. ADD-17 changes the approved header and phone bottom bar, so it is a board of its own; the approved screens are not changed. Tamil lines for the fixed replies are placeholders until the owner supplies them. No renders are committed.
 
