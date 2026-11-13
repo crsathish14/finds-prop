@@ -1,12 +1,12 @@
 # Design handoff · UX addendum, batch 4: the AI chat assistant
 
-Companion to `design-handoff-addendum.md` (batches 1 to 3) and `../final-ux/design-handoff.md`. It lists what this batch decides, what it leaves open, the new components, the copy, and the accessibility notes engineering needs. **Everything here is Proposed. Nothing is approved.** The owner approves the screens (gate G-F) and, separately, the new wording (gate G-G). Nothing is built from these screens until then (AGENTS.md rule 13, R-DS-05, R-DS-06).
+Companion to `design-handoff-addendum.md` (batches 1 to 3) and `../final-ux/design-handoff.md`. It lists what this batch decides, what it leaves open, the new components, the copy, and the accessibility notes engineering needs. **Approved by the owner on 13 Nov 2026:** the owner approved the chat UX addendum, the screens (gate G-F) and the new wording (gate G-G). **Still open:** the Tamil lines of the fixed replies (placeholders, to be supplied by the owner, decision D12; they gate P4-T01) and open question 12 (should the heart and the Saved tab come back once the chat is on?). Nothing is built from these screens yet (P5-T01; AGENTS.md rule 13, R-DS-05, R-DS-06).
 
 **Scope:** ADD-14 to ADD-17, drafted for task AI-P0-T03 from `docs/adr/128-ai-chat-assistant.md` (section 10 and the decisions it cites). **4 screens, 29 states.** ADD-17 (navigation) was added at the owner's request after the first draft. Each state is drawn at 1440 and 390; the first state of each screen is also checked at 820, 1024 and 1280 (the same convention as batches 1 to 3).
 
 - **Where the source lives.** The earlier batches are a read-only copy of an external UX package. This batch was drafted in this repository, so this copy is its source (see `../README.md`). Files: `screens/ai-chat.html`, `screens/ai-chat-limits.html`, `screens/ai-chat-confirm.html`, `assets/addendum3.css`, this document, and the entries in `assets/manifest.js`.
 - **What it replaces.** The approved `final-ux/screens/ai-search.html` is a one-shot "describe a home" search with a lead form, not a conversation. It is left untouched; the chat supersedes it for route P-08 once approved. The lead form ("Didn't find it? Tell us what you need") is not in ADR section 10 and is not carried over (open question 9).
-- **Plan approval.** The plan and its 12 defaults were agreed with the owner before any file was drafted. That is not an approval of the screens.
+- **Plan approval.** The plan and its 12 defaults were agreed with the owner before any file was drafted. That was not an approval of the screens; the owner approved the addendum separately on 13 Nov 2026.
 
 ---
 
@@ -34,7 +34,7 @@ Companion to `design-handoff-addendum.md` (batches 1 to 3) and `../final-ux/desi
 
 ## 2. Decisions this batch makes (please confirm or change)
 
-These are the 12 defaults agreed in the plan. They are proposals until the screens are approved.
+These are the 12 defaults agreed in the plan. They stand as drawn now that the owner has approved the addendum (13 Nov 2026).
 
 | #   | Decision                                                                                                                                                                                                                       | Where                              |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
@@ -62,6 +62,8 @@ Decisions 13 to 17 come from the owner's later request (five phone tabs with Pos
 
 ## 3. Open questions for the owner
 
+**Status, 13 Nov 2026:** the owner approved the addendum as drawn, so design questions 1 to 11 are recorded as accepted as drawn. **Question 12 is still open**, and so is the Tamil wording (see the wording list below).
+
 **Design**
 
 1. **Missing components.** The design system has no message bubble, assistant message, composer, status line, note line, confirm card or in-chat sign-in gate. They are drafted from existing tokens (section 4). Approving the screens approves these shapes; each then needs a Design Lab entry in P5-T01.
@@ -77,10 +79,9 @@ Decisions 13 to 17 come from the owner's later request (five phone tabs with Pos
 11. **Strength of the phone AI tab.** The AI disc is a copper tint, so it is quieter than the raised forest Post disc the approved bar had. A stronger option is a forest disc (not copper, so the one-copper rule still holds). Say if you want it stronger.
 12. **Chat on versus off.** With the chat off the old design is used exactly (heart, Saved tab, raised Post), so the approved screens and the ADD-10 boards need no change. The new navigation applies only while the chat flag is on. Confirm that the heart and the Saved tab should stay hidden once the chat is on for good.
 
-**Wording (gate G-G).** Every new string carries a "Wording to confirm" tag on its screen; reused strings carry "Reused". The list is in section 5. Needs a decision:
+**Wording (gate G-G): approved by the owner on 13 Nov 2026.** The list is in section 5; the "Wording to confirm" tags were taken off the screens, and reused strings still carry "Reused". Not covered by that approval and still open:
 
-- The seven fixed replies and notes: cap note, fallback, disclaimer, masked notice, refusal for other property sites, scope reply, "how I am built" reply.
-- **Tamil lines for those seven** (decision D12): to be supplied by the owner. No Tamil is invented here.
+- **Tamil lines for the seven fixed replies and notes** (cap note, fallback, disclaimer, masked notice, refusal for other property sites, scope reply, "how I am built" reply; decision D12): to be supplied by the owner. No Tamil is invented here.
 - The EMI example rate: the screens show **9%** only as a placeholder for the rate the owner sets before the EMI tool is built.
 - The disclaimer ("This is general information, not legal or financial advice.") and the consent sentences are legal wording; they may need legal review (AGENTS.md "legal wording, consent text").
 
@@ -112,9 +113,9 @@ All use existing tokens; **no new colour, font, radius, shadow, spacing step or 
 
 ---
 
-## 5. Copy deck (proposed; English)
+## 5. Copy deck (English; approved 13 Nov 2026 except the Tamil lines)
 
-Status: **New** = a proposal for gate G-G. **Reused** = approved wording already in the app or the approved UX. **ADR** = text the ADR already writes out, still to be approved as `en.json` wording.
+Status: **New** = new wording, approved at gate G-G on 13 Nov 2026. **Reused** = approved wording already in the app or the approved UX. **ADR** = text the ADR already writes out, still to be approved as `en.json` wording.
 
 | Screen / state                | Text                                                                                                                                       | Status                                                           |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |

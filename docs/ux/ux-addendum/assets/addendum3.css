@@ -2,7 +2,7 @@
    Built only from final-ux tokens and components. No new colour, font, radius, shadow, spacing step or breakpoint.
    Breakpoints used: 640 (the card grid), 768 and 1024 (the approved ones).
    Load order: ../../final-ux/assets/fp.css, addendum.css, then this file.
-   Every shape below is PROPOSED and awaits the owner's approval of the screens (gate G-F). Nothing here is built. */
+   The owner approved these shapes with the screens (gate G-F, 13 Nov 2026). Nothing here is built yet (P5-T01). */
 
 /* ── The chat column: one reading column, the same 820 px the approved ai-search used ── */
 .chat { max-width: 820px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--s-6); padding: var(--s-4) 0 var(--s-6); }

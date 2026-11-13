@@ -118,9 +118,9 @@ Not yet built: the notification bell (Proposed), and the saved and enquiry count
 | ADD-11        | Admin: hero layout and sponsors                                     | /admin/hero                  | `docs/ux/ux-addendum/screens/admin-sponsors.html`      |
 | ADD-11        | Admin: homepage localities editor                                   | /admin/homepage              | `docs/ux/ux-addendum/screens/admin-localities.html`    |
 | ADD-09        | Map view for search results (optional)                              | /properties                  | `docs/ux/ux-addendum/screens/map-view.html`            |
-| ADD-14        | AI chat: the conversation (proposed, not approved)                  | /ai-search                   | `docs/ux/ux-addendum/screens/ai-chat.html`             |
-| ADD-15        | AI chat: limits and sign-in (proposed, not approved)                | /ai-search, /auth            | `docs/ux/ux-addendum/screens/ai-chat-limits.html`      |
-| ADD-16        | AI chat: confirm card (proposed, not approved)                      | /ai-search                   | `docs/ux/ux-addendum/screens/ai-chat-confirm.html`     |
-| ADD-17        | Navigation with the AI chat on (proposed, not approved)             | (none)                       | `docs/ux/ux-addendum/screens/nav-chat.html`            |
+| ADD-14        | AI chat: the conversation (approved 13 Nov 2026)                    | /ai-search                   | `docs/ux/ux-addendum/screens/ai-chat.html`             |
+| ADD-15        | AI chat: limits and sign-in (approved 13 Nov 2026)                  | /ai-search, /auth            | `docs/ux/ux-addendum/screens/ai-chat-limits.html`      |
+| ADD-16        | AI chat: confirm card (approved 13 Nov 2026)                        | /ai-search                   | `docs/ux/ux-addendum/screens/ai-chat-confirm.html`     |
+| ADD-17        | Navigation with the AI chat on (approved 13 Nov 2026)               | (none)                       | `docs/ux/ux-addendum/screens/nav-chat.html`            |
 
-ADD-14 to ADD-17 were drafted for AI-P0-T03 (ADR-128) and replace the one-shot `ai-search` screen for route P-08. They wait for the owner's approval of the screens (gate G-F) and, separately, of the new wording (gate G-G). Nothing is built from them until then; a missing state means stop and ask (R-FE-20). The draft is documented in `docs/ux/ux-addendum/design-handoff-chat.md`.
+ADD-14 to ADD-17 were drafted for AI-P0-T03 (ADR-128), replace the one-shot `ai-search` screen for route P-08, and were approved by the owner on 13 Nov 2026 (screens, gate G-F; wording, gate G-G). The Tamil lines of the fixed replies are still placeholders (D12). Nothing is built from them yet; a missing state means stop and ask (R-FE-20). The draft is documented in `docs/ux/ux-addendum/design-handoff-chat.md`.
