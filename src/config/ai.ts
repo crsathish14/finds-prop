@@ -28,3 +28,13 @@ export const MAX_INPUT_CHARACTERS = 1000;
 
 /** The most tokens the model may write in one round ("about 1,200" in ADR-128 section 7). */
 export const MAX_OUTPUT_TOKENS = 1200;
+
+/** The most items one tool result holds ("at most 10 items and compact fields", ADR-128 section 5). */
+export const MAX_TOOL_RESULT_ITEMS = 10;
+
+/**
+ * The longest piece of third-party text (a listing's description) a tool hands to the model, in characters.
+ * Longer text is cut and the result says so, which keeps a tool result compact (ADR-128 section 5.4, test 4).
+ * An engineering limit, not an owner decision: a listing's description may be 5,000 characters.
+ */
+export const MAX_UNTRUSTED_TEXT_CHARACTERS = 1500;

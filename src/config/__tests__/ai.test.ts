@@ -6,6 +6,8 @@ import {
   MAX_OUTPUT_TOKENS,
   MAX_PARALLEL_READ_CALLS,
   MAX_TOOL_CALLS_PER_MESSAGE,
+  MAX_TOOL_RESULT_ITEMS,
+  MAX_UNTRUSTED_TEXT_CHARACTERS,
   TOOL_TIMEOUT_MS,
 } from "../ai";
 
@@ -17,6 +19,11 @@ describe("UT-ai-config: the AI chat numbers (ADR-128 sections 4.5 and 7, decisio
     expect(TOOL_TIMEOUT_MS).toBe(3000);
     expect(MAX_INPUT_CHARACTERS).toBe(1000);
     expect(MAX_OUTPUT_TOKENS).toBe(1200);
+  });
+
+  it("keeps a tool result small: ten items, third-party text cut at 1,500 characters (section 5)", () => {
+    expect(MAX_TOOL_RESULT_ITEMS).toBe(10);
+    expect(MAX_UNTRUSTED_TEXT_CHARACTERS).toBe(1500);
   });
 
   it("calls the product findsprop, in lowercase (ADR-128 D11)", () => {

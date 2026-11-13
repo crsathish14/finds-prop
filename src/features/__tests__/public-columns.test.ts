@@ -5,6 +5,7 @@ import {
   topLevelKeys,
   wordsOf,
 } from "../../../tests/public-columns";
+import { LOCALITY_HOME_COLUMNS, LOCALITY_PROJECT_COLUMNS } from "../ai-chat/columns";
 import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "../home/columns";
 import { PHOTO_COLUMNS, PROPERTY_COLUMNS } from "../property/schemas";
 import {
@@ -24,6 +25,7 @@ const HOME_SELECTS = {
   PROPERTY_COLUMNS,
   PHOTO_COLUMNS,
   SITEMAP_HOME_COLUMNS,
+  LOCALITY_HOME_COLUMNS,
 } as const;
 
 const PROJECT_SELECTS = {
@@ -34,6 +36,7 @@ const PROJECT_SELECTS = {
   RANKING_COLUMNS,
   DEVELOPER_PROJECT_COLUMNS,
   SITEMAP_PROJECT_COLUMNS,
+  LOCALITY_PROJECT_COLUMNS,
 } as const;
 
 describe("IT-queries: the select strings of the public pages (S4-T13)", () => {

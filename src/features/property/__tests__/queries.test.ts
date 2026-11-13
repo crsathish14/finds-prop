@@ -88,6 +88,7 @@ describe("UT-property-queries: one home by its public id", () => {
     });
     expect(result).toMatchObject({
       status: "found",
+      readAt: "2026-11-05T06:00:00.000Z",
       property: {
         shortId: "k3x9a2bd",
         title: "3 BHK apartment",
@@ -111,7 +112,10 @@ describe("UT-property-queries: one home by its public id", () => {
 
   it("says missing, without reading photos, when no approved home has the id", async () => {
     arrange({ property: { data: null, error: null } });
-    expect(await getProperty("zzzzzzzz")).toEqual({ status: "missing" });
+    expect(await getProperty("zzzzzzzz")).toEqual({
+      status: "missing",
+      readAt: "2026-11-05T06:00:00.000Z",
+    });
     expect(from).not.toHaveBeenCalledWith("listing_media");
     expect(rpc).not.toHaveBeenCalled();
   });

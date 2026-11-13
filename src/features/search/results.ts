@@ -24,9 +24,11 @@ const totalSchema = z.object({
 /**
  * What the results page shows: the homes for the asked length and how many match in all, or a
  * failure. A failure carries no detail, since the page only offers "Try again" with the filters kept.
+ * `readAt` is when the database was read (an ISO date and time, taken inside the cached read, so it is
+ * the time of the last refill and not the time of the call); the AI assistant quotes it as "as of".
  */
 export type SearchResults =
-  { status: "ok"; homes: ListingRow[]; total: number } | { status: "failed" };
+  { status: "ok"; homes: ListingRow[]; total: number; readAt: string } | { status: "failed" };
 
 function ageInDays(publishedAt: string | null, now: number): number | null {
   if (publishedAt === null) return null;
@@ -58,6 +60,7 @@ async function readResults(
   }
   const rows = data ?? [];
   const now = Date.now();
+  const readAt = new Date(now).toISOString();
   const homes: ListingRow[] = [];
   let skipped = 0;
   for (const row of rows) {
@@ -74,7 +77,7 @@ async function readResults(
   const first = rows[0] === undefined ? undefined : totalSchema.safeParse(rows[0]);
   // No rows means no match. A first row with no readable total falls back to what we hold.
   const total = first?.success ? first.data.total_count : homes.length;
-  return { status: "ok", homes, total };
+  return { status: "ok", homes, total, readAt };
 }
 
 /** One page of results, or a failure with no detail (the page offers Try again with the filters kept). */

@@ -16,8 +16,14 @@ import type { PropertyData } from "./types";
 
 const MS_PER_DAY = 86_400_000;
 
-/** One home as a visitor may see it, or "missing": no approved home has this id. */
-export type PropertyResult = { status: "found"; property: PropertyData } | { status: "missing" };
+/**
+ * One home as a visitor may see it, or "missing": no approved home has this id. `readAt` is when the
+ * database was read (an ISO date and time, taken inside the cached read, so it is the time of the last
+ * refill and not the time of the call); the AI assistant quotes it as "as of".
+ */
+export type PropertyResult =
+  | { status: "found"; property: PropertyData; readAt: string }
+  | { status: "missing"; readAt: string };
 
 function ageInDays(publishedAt: string | null, now: number): number | null {
   if (publishedAt === null) return null;
@@ -46,6 +52,7 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
   cacheTag(LISTINGS_TAG, propertyTag(shortId));
   cacheLife("minutes");
   const client = createPublicSupabase();
+  const readAt = new Date().toISOString();
 
   const found = await client
     .from("properties")
@@ -56,7 +63,7 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
     logger.error("property could not be read", { errorCode: found.error.code });
     throw new Error("property could not be read");
   }
-  if (found.data === null) return { status: "missing" };
+  if (found.data === null) return { status: "missing", readAt };
   const parsed = propertyRowSchema.safeParse(found.data);
   if (!parsed.success) {
     logger.error("property row does not fit the expected shape", {});
@@ -96,6 +103,7 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
 
   return {
     status: "found",
+    readAt,
     property: {
       id: row.id,
       shortId: row.short_id,

@@ -105,7 +105,26 @@ describe("UT-search-results: reading one page of results", () => {
 
   it("gives no homes and a total of 0 when nothing matches", async () => {
     rpc.mockResolvedValue({ data: [], error: null });
-    expect(await getSearchResults(none)).toEqual({ status: "ok", homes: [], total: 0 });
+    expect(await getSearchResults(none)).toEqual({
+      status: "ok",
+      homes: [],
+      total: 0,
+      readAt: expect.any(String),
+    });
+  });
+
+  it("says when it read the database, as an ISO time (for the assistant's 'as of')", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-13T10:12:00.000Z"));
+    try {
+      rpc.mockResolvedValue({ data: [home()], error: null });
+      expect(await getSearchResults(none)).toMatchObject({
+        status: "ok",
+        readAt: "2026-11-13T10:12:00.000Z",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("skips a row that does not fit and says so without naming it", async () => {
