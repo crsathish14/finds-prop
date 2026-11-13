@@ -27,7 +27,16 @@ async function collectViolations(page: Page) {
 }
 
 async function violationsOn(page: Page): Promise<Violation[]> {
-  return page.evaluate(() => (window as unknown as { __csp: Violation[] }).__csp);
+  const all = await page.evaluate(() => (window as unknown as { __csp: Violation[] }).__csp);
+  // The Design Lab shows each screen in an iframe of its own preview route. That is a same-origin
+  // frame the policy does not list, and it is only there while DESIGN_LAB=1 outside production
+  // (ADR-020), where the policy stays Report-Only (ADR-129 part 3). No visitor page has a frame.
+  return all.filter(
+    (violation) =>
+      !(
+        violation.directive === "frame-src" && violation.blocked.includes("/design-system/preview/")
+      ),
+  );
 }
 
 const PAGES = [
@@ -62,14 +71,8 @@ test.describe("@smoke content security policy", () => {
     await collectViolations(page);
     await page.goto("/");
     // `eval` is not allowed by script-src, so the browser must report it (and, once the policy is
-    // enforced, refuse it). If this test ever passes with an empty list, the collector is broken.
-    await page.evaluate(() => {
-      try {
-        (0, eval)("1 + 1");
-      } catch {
-        // enforced policies throw; Report-Only runs it
-      }
-    });
+    // enforced, refuse it). It runs from a script tag because page.evaluate is exempt from the policy. If this test ever passes with an empty list, the collector is broken.
+    await page.addScriptTag({ content: "try { (0, eval)('1 + 1'); } catch {}" });
     const found = await violationsOn(page);
     expect(found.map((violation) => violation.directive)).toContain("script-src");
   });

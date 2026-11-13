@@ -128,6 +128,11 @@ All stay as the owner decided on 3 Nov 2026 (fixed in the pre-launch review, S9)
 
 `e2e/csp.spec.ts` (tagged `@smoke`, so it runs in the existing end-to-end step and needs no gate change) loads 22 pages in the production build and fails on any `securitypolicyviolation` the browser reports: the public pages, the sign-in pages, the not-found page, seven Design Lab boards (they show every component, image and chart) and the phone menu. A Report-Only policy fires the same event an enforced one would, so a clean run means enforcing blocks nothing on these pages. A first test proves the collector can fail by running `eval`, which `script-src` does not allow.
 
+What the first run found (13 Nov 2026), and what was done:
+
+- **Zod probes `new Function` in the browser** (the Design Lab domain board, and any page that builds a schema). The policy has no `unsafe-eval`, so the browser reported the probe on every such page. It is caught and harmless, but enforcing would put an error in the console of every visitor. Fixed with `src/instrumentation-client.ts`, which sets `jitless` for the browser bundle only; the browser uses the plain parsers. The policy is not loosened.
+- **The Design Lab's preview frames** are same-origin iframes the policy does not list. They exist only with `DESIGN_LAB=1` outside production (ADR-020), and part 3 enforces in production only, so the check ignores a `frame-src` report for `/design-system/preview/` and nothing else. No visitor page has a frame.
+
 What it cannot see, so part 3 must handle it by reasoning: the Turnstile script and frame (the site key is empty in CI, so they are never loaded; the policy allows `https://challenges.cloudflare.com` for both), pages that need rows from the database (a property or project page), and the Vercel preview toolbar.
 
 ## Out of scope
