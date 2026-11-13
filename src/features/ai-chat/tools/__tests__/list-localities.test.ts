@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
-import { injected, stringsIn, TOOL_CONTEXT } from "./fixtures";
+import { AS_OF_TEXT, injected, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-localities (ADR-128 sections 3 and 5.1): `list_localities` over the cached localities read.
 // The read is a stand-in here; the counts are made up.
@@ -28,7 +28,7 @@ const LISTED = [
 const counts = (localities = LISTED, complete = true) => ({
   localities,
   complete,
-  readAt: "2026-11-13T10:12:00.000Z",
+  readAt: READ_AT,
 });
 
 beforeEach(() => {
@@ -66,7 +66,7 @@ describe("UT-ai-tool-localities: the result", () => {
     expect(await list({ search: null })).toEqual({
       status: "ok",
       output: {
-        asOf: "13 Nov 2026, 3:42 pm",
+        asOf: AS_OF_TEXT,
         total: 4,
         countsComplete: true,
         localities: [

@@ -13,6 +13,10 @@ export const TOOL_CONTEXT: ToolContext = {
   locale: "en",
 };
 
+/** When the stand-in reads say they read the database, and how the tools write it (India time). */
+export const READ_AT = "2026-11-13T10:12:00.000Z";
+export const AS_OF_TEXT = "13 Nov 2026, 3:42 pm";
+
 /**
  * A sentence a lister could type to steer the assistant. Each test field gets its own, so a test can say
  * which field leaked.

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
-import { injected, listingRow, stringsIn, TOOL_CONTEXT } from "./fixtures";
+import { AS_OF_TEXT, injected, listingRow, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-search (ADR-128 section 5.1): `search_properties` over the results page's own cached read.
 // The read is a stand-in here; the homes are made up.
@@ -37,7 +37,12 @@ const NOTHING = {
 const search = (input: Record<string, unknown>) =>
   runTool([searchPropertiesTool], { name: "search_properties", input }, TOOL_CONTEXT);
 
-const found = (homes = [listingRow()], total = homes.length) => ({ status: "ok", homes, total });
+const found = (homes = [listingRow()], total = homes.length) => ({
+  status: "ok",
+  homes,
+  total,
+  readAt: READ_AT,
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -195,6 +200,7 @@ describe("UT-ai-tool-search: the result", () => {
     expect(outcome).toMatchObject({
       status: "ok",
       output: {
+        asOf: AS_OF_TEXT,
         total: 48,
         homes: [
           {
@@ -287,7 +293,7 @@ describe("UT-ai-tool-search: the result", () => {
       status: "ok",
       output: { total: 0, homes: [] },
       references: [],
-      content: '{"total":0,"homes":[]}',
+      content: `{"asOf":"${AS_OF_TEXT}","total":0,"homes":[]}`,
     });
   });
 

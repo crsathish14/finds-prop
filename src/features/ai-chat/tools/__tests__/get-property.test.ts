@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MAX_UNTRUSTED_TEXT_CHARACTERS } from "@/config/ai";
-import { injected, propertyData, stringsIn, TOOL_CONTEXT } from "./fixtures";
+import { AS_OF_TEXT, injected, propertyData, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-property (ADR-128 section 5.1): `get_property` over the property page's own cached read.
 // The read is a stand-in here; the home is made up.
@@ -26,6 +26,7 @@ const get = (input: unknown) =>
 const found = (overrides: Parameters<typeof propertyData>[0] = {}) => ({
   status: "found",
   property: propertyData(overrides),
+  readAt: READ_AT,
 });
 
 beforeEach(() => {
@@ -80,6 +81,7 @@ describe("UT-ai-tool-property: a home that is listed", () => {
       status: "ok",
       output: {
         status: "found",
+        asOf: AS_OF_TEXT,
         home: {
           homeId: "k3x9a2bd",
           listingType: "sale",
@@ -206,12 +208,12 @@ describe("UT-ai-tool-property: a home that is listed", () => {
 
 describe("UT-ai-tool-property: a home that is gone", () => {
   it("answers not_found for a home that is sold, rented, withdrawn or never listed", async () => {
-    getProperty.mockResolvedValue({ status: "missing" });
+    getProperty.mockResolvedValue({ status: "missing", readAt: READ_AT });
     expect(await get({ homeId: "m7p4q9wz" })).toEqual({
       status: "ok",
-      output: { status: "not_found" },
+      output: { status: "not_found", asOf: AS_OF_TEXT },
       references: [],
-      content: '{"status":"not_found"}',
+      content: `{"status":"not_found","asOf":"${AS_OF_TEXT}"}`,
     });
     expect(error).not.toHaveBeenCalled();
   });

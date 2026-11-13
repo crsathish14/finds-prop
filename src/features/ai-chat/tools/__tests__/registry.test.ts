@@ -2,7 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { ASSISTANT_BRAND_NAME, MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
 import type { ListingRow } from "@/features/search";
-import { injected, keysIn, listingRow, propertyData, stringsIn, TOOL_CONTEXT } from "./fixtures";
+import {
+  injected,
+  keysIn,
+  listingRow,
+  propertyData,
+  READ_AT,
+  stringsIn,
+  TOOL_CONTEXT,
+} from "./fixtures";
 
 // UT-ai-tools-registry (ADR-128 sections 4.1 principle 5, 4.4 rule 1, 5.4, 6.4.3 and 9). These tests walk
 // EVERY registered tool, so a tool added later is held to the same rules without anyone remembering to:
@@ -194,9 +202,10 @@ beforeEach(() => {
     }),
     ...PRIVATE,
   })) as ListingRow[];
-  getSearchResults.mockResolvedValue({ status: "ok", homes, total: 240 });
+  getSearchResults.mockResolvedValue({ status: "ok", homes, total: 240, readAt: READ_AT });
   getProperty.mockResolvedValue({
     status: "found",
+    readAt: READ_AT,
     property: {
       ...propertyData({
         title: injected("title"),
@@ -216,7 +225,7 @@ beforeEach(() => {
       ...PRIVATE,
     })),
     complete: true,
-    readAt: "2026-11-13T10:12:00.000Z",
+    readAt: READ_AT,
   });
 });
 

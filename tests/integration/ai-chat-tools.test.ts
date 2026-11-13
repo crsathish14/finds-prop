@@ -262,7 +262,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         locality: LOCALITY,
         listingType: "rent",
       });
-      expect(result).toEqual({ total: 0, homes: [] });
+      expect(result).toEqual({ asOf: expect.any(String), total: 0, homes: [] });
     });
   });
 
@@ -316,14 +316,14 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         const { result, references } = await call("get_property", {
           homeId: homes[kind].shortId,
         });
-        expect(result).toEqual({ status: "not_found" });
+        expect(result).toEqual({ status: "not_found", asOf: expect.any(String) });
         expect(references).toEqual([]);
       },
     );
 
     it("answers not_found for an id no home has", async () => {
       const { result } = await call("get_property", { homeId: madeUpShortId() });
-      expect(result).toEqual({ status: "not_found" });
+      expect(result).toEqual({ status: "not_found", asOf: expect.any(String) });
     });
   });
 

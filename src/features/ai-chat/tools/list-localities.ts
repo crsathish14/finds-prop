@@ -1,9 +1,9 @@
 import "server-only";
 import { z } from "zod";
 import { ASSISTANT_BRAND_NAME, MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
-import { formatDate, formatTime } from "@/lib/format";
 import { findLocalities } from "../localities";
 import { getLocalityCounts } from "../queries";
+import { asOfText } from "./as-of";
 import type { AiChatTool } from "./types";
 import { cleanThirdPartyLine } from "./untrusted";
 
@@ -69,7 +69,7 @@ export const listLocalitiesTool: AiChatTool<ListLocalitiesInput, ListLocalitiesO
     });
     return {
       output: {
-        asOf: `${formatDate(context.locale, counts.readAt, "medium")}, ${formatTime(context.locale, counts.readAt)}`,
+        asOf: asOfText(counts.readAt, context),
         total: counts.localities.length,
         countsComplete: counts.complete,
         localities,
