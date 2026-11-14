@@ -31,6 +31,7 @@ const getBuilderDirectory = vi.fn();
 const getBuilderProfile = vi.fn();
 const getProjects = vi.fn();
 const getProject = vi.fn();
+const getComparedHomes = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 vi.mock("@/features/search", async () => {
@@ -55,6 +56,10 @@ vi.mock("@/features/projects", async () => {
     PROJECT_STATUSES,
     PROJECT_LIST_LIMIT: 60,
   };
+});
+vi.mock("@/features/compare", async () => {
+  const { COMPARE_MAX, COMPARE_MIN } = await import("@/features/compare/store");
+  return { getComparedHomes, COMPARE_MAX, COMPARE_MIN };
 });
 vi.mock("../../queries", () => ({ getLocalityCounts, getBuilderDirectory, getBuilderProfile }));
 
@@ -206,6 +211,16 @@ const VALID_INPUTS: Record<string, unknown> = {
   search_projects: { locality: null, status: null, bhk: null, maxPrice: null, limit: null },
   get_project: { slug: "kadal-vista" },
   get_builder: { builderId: null, name: "Kadal Homes" },
+  compare_properties: { homeIds: ["k3x9a2bd", "m4y8b3ce", "n5z7c4dh"] },
+  calculate_emi: {
+    mode: "emi",
+    priceRupees: 12_500_000,
+    loanAmountRupees: null,
+    monthlyBudgetRupees: null,
+    downPaymentPercent: null,
+    annualRatePercent: null,
+    years: null,
+  },
 };
 
 /** What a read must never hand to the model, planted in every stand-in read to prove it does not get through. */
@@ -259,6 +274,21 @@ beforeEach(() => {
       }),
       ...PRIVATE,
     },
+  });
+  getComparedHomes.mockResolvedValue({
+    properties: ["k3x9a2bd", "m4y8b3ce", "n5z7c4dh"].map((shortId, index) => ({
+      ...propertyData({
+        shortId,
+        slug: `home-${index}`,
+        price: 12_500_000 + index * 1_000_000,
+        title: injected("title"),
+        amenities: [injected("amenity")],
+        locality: injected("locality"),
+        city: injected("city"),
+      }),
+      ...PRIVATE,
+    })),
+    readAt: READ_AT,
   });
   getLocalityCounts.mockResolvedValue({
     localities: Array.from({ length: 25 }, (_, index) => ({
@@ -338,7 +368,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the six read tools so far", () => {
+  it("holds the eight read tools so far", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -348,14 +378,16 @@ describe("UT-ai-tools-registry: the list", () => {
         "search_projects",
         "get_project",
         "get_builder",
+        "compare_properties",
+        "calculate_emi",
       ]),
     );
-    expect(names).toHaveLength(6);
+    expect(names).toHaveLength(8);
   });
 
-  it("gives every tool a kind, and these six are read tools the loop may run in parallel", () => {
+  it("gives every tool a kind, and these eight are read tools the loop may run in parallel", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
-    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(Array(6).fill("read"));
+    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(Array(8).fill("read"));
   });
 
   it("gives every tool its own name, in the form a provider accepts", () => {
@@ -544,6 +576,11 @@ describe("UT-ai-tools-registry: third-party text is wrapped as untrusted (ADR-12
         text.includes("Zzinject"),
       );
       // The stand-in reads put a typed sentence in every tool's data, so finding none means it was lost.
+      // The one tool with no read, `calculate_emi`, is pure maths over numbers the model gave: no lister text.
+      if (name === "calculate_emi") {
+        expect(typed, name).toEqual([]);
+        continue;
+      }
       expect(typed.length, name).toBeGreaterThan(0);
       for (const { path } of typed) {
         expect(path, `${name}: ${path.join(".")}`).toContain(UNTRUSTED_TEXT_KEY);
@@ -582,7 +619,7 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10]);
+    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3]);
   });
 
   it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {
@@ -629,6 +666,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       search_projects: ["project"],
       get_project: ["project"],
       get_builder: ["project"],
+      compare_properties: ["home"],
+      calculate_emi: [],
     });
   });
 });

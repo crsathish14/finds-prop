@@ -2925,6 +2925,7 @@
   "ai": {
     "searching": "Searching…",
     "capNote": "I couldn't check everything. Here is what I found.",
-    "fallback": "I couldn't finish that. Try a simpler question, or use the search filters."
+    "fallback": "I couldn't finish that. Try a simpler question, or use the search filters.",
+    "emiExampleNote": "This is an example, not a bank offer."
   }
 }

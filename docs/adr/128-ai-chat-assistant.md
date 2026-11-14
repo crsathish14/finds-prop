@@ -222,6 +222,8 @@ All tools return at most 10 items and compact fields. All inputs are Zod schemas
 
 `calculate_emi`, one tool with three modes: **emi** (price or loan amount, down payment, annual rate, years), **affordability** (monthly budget to maximum loan and price), **breakdown** (total interest, total paid, first-year split). Integer rupees, standard reducing-balance formula, rounding rule fixed and tested against known values. The rate is always an input; the defaults in `config/ai.ts` (proposal: 20% down, 20 years, a rate you choose) are shown as **"an example, not a bank offer"**. The assistant never claims a lender's current rate.
 
+_Built in AI-P3-T02:_ two modes, not three. `emi` returns the EMI, the total interest and the total payable together, because `src/lib/emi.ts` works them out in one calculation, so a separate `breakdown` mode would repeat it. The first-year split of interest and principal is not built (the maths does not give it; add it with the maths if the evals show a need).
+
 ### 5.3 Propose tools
 
 `propose_enquiry` (home short id, message) and `propose_site_visit` (project slug, date from today to a year ahead, message) validate the target is still visible (`approved`, builder active), reject a home the customer owns, and return a proposal id and the data for the confirm card. Nothing is stored. When the customer is not signed in, the card becomes a sign-in prompt that returns to the chat with the transcript kept (section 6.3).

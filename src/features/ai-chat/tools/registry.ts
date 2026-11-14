@@ -1,4 +1,6 @@
 import "server-only";
+import { calculateEmiTool } from "./calculate-emi";
+import { compareHomesTool } from "./compare-properties";
 import { getBuilderTool } from "./get-builder";
 import { getProjectTool } from "./get-project";
 import { getPropertyTool } from "./get-property";
@@ -13,8 +15,8 @@ import type { AnyAiChatTool } from "./types";
  * question, reads only what a visitor may see, takes no person as input, and returns small results; the
  * tests in `__tests__/registry.test.ts` walk this list and fail when one of those stops being true.
  *
- * These six are read tools. The compare and EMI tools and the two propose tools come with their own tasks
- * (P3-T02, P6-T01).
+ * These eight are read tools (`calculate_emi` reads nothing: it is pure maths, and may run beside other
+ * calls). The two propose tools come with their own task (P6-T01).
  */
 export const AI_CHAT_TOOLS: readonly AnyAiChatTool[] = [
   searchPropertiesTool,
@@ -23,4 +25,6 @@ export const AI_CHAT_TOOLS: readonly AnyAiChatTool[] = [
   searchProjectsTool,
   getProjectTool,
   getBuilderTool,
+  compareHomesTool,
+  calculateEmiTool,
 ];

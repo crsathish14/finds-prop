@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const getProperty = vi.fn();
 vi.mock("@/features/property", () => ({ getProperty }));
 
-const { getComparedProperties } = await import("../queries");
+const { getComparedHomes, getComparedProperties } = await import("../queries");
 
 const home = (shortId: string) => ({ shortId, title: `Home ${shortId}` });
 
@@ -33,5 +33,18 @@ describe("UT-compare-queries: the homes of a comparison", () => {
   it("fails, as the property page's read does, when a read fails", async () => {
     getProperty.mockRejectedValue(new Error("property could not be read"));
     await expect(getComparedProperties(["k3x9a2bd"])).rejects.toThrow("could not be read");
+  });
+});
+
+describe("UT-compare-queries: the time the homes were read", () => {
+  it("gives the oldest read time of all the homes, a home that is gone included", async () => {
+    getProperty.mockImplementation(async (id: string) =>
+      id === "m4y8b3ce"
+        ? { status: "missing", readAt: "2026-11-13T10:00:00.000Z" }
+        : { status: "found", property: home(id), readAt: "2026-11-13T10:12:00.000Z" },
+    );
+    const compared = await getComparedHomes(["k3x9a2bd", "m4y8b3ce"]);
+    expect(compared.readAt).toBe("2026-11-13T10:00:00.000Z");
+    expect(compared.properties.map((entry) => entry.shortId)).toEqual(["k3x9a2bd"]);
   });
 });
