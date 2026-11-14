@@ -312,6 +312,19 @@ describe("UT-ai-agent: a turn with a tool", () => {
     ]);
   });
 
+  it("hands over the text of every result that came back with data, as the model received it, and none of the errors", async () => {
+    const provider = createFakeAiProvider([
+      toolCallTurn([lookup("h1"), lookup("h2", "broken_read", "call-broken")]),
+      textTurn("Done."),
+    ]);
+    const { done } = await collect(provider);
+    const sent = provider.calls[1]?.messages.flatMap((message) =>
+      message.role === "tool" ? [message.content] : [],
+    );
+    expect(done.toolResults).toEqual([sent?.[0]]);
+    expect(JSON.parse(done.toolResults[0] ?? "{}")).toEqual({ name: "Home h1" });
+  });
+
   it("tracks no home from a call that failed or was refused", async () => {
     const provider = createFakeAiProvider([
       toolCallTurn([lookup("h1", "broken_read"), lookup("h2", "no_such_tool")]),

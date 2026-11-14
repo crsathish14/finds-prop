@@ -90,6 +90,12 @@ export type AgentEvent =
       readonly usage: AgentUsage;
       /** Every home a tool returned during this message, each once: the only ids a card or link may use. */
       readonly references: readonly ToolReference[];
+      /**
+       * The text of every tool result that came back with data this message, exactly as the model received it (JSON).
+       * The output check takes contacts and figures from these and from nothing else (P4-T02), so the endpoint
+       * passes them on as its `toolResults`. Error results carry no facts and are left out.
+       */
+      readonly toolResults: readonly string[];
     };
 
 export type AgentDone = Extract<AgentEvent, { type: "done" }>;

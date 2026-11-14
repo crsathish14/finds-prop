@@ -7,6 +7,9 @@ import { createAdminSupabase } from "../supabase/admin.server";
 import { ensureAnonymousId, readAnonymousId, type AnonymousIdCookieJar } from "./anonymous-id";
 import { enforceRateLimit, type RateLimitCaller, type RateLimitCounter } from "./enforce";
 import { AI_CHAT_RATE_LIMIT_SCOPES, type RateLimitScope } from "./limits";
+
+/** One of the five limits of the AI chat. */
+export type AiChatRateLimitScope = (typeof AI_CHAT_RATE_LIMIT_SCOPES)[number];
 import { clientIp, hashValue, networkAddress, visitorHash } from "./visitor-hash";
 
 /** The database counter, reached with the service role (public_rate_limits is closed to users). */
@@ -93,11 +96,14 @@ function anonymousIdFor(jar: AnonymousIdCookieJar): string | null {
  * Counts one chat message against every AI chat limit, in order (the endpoint calls this once per message,
  * ADR-128 section 7.1). Refused with RATE_LIMITED and the seconds to wait by the first limit that is used up;
  * refused with INTERNAL if the counter or the hash secret fails (fail closed). A signed-in caller is counted by
- * user id and never gets a cookie; an anonymous one gets the cookie id on their first message.
+ * user id and never gets a cookie; an anonymous one gets the cookie id on their first message. The refusal is a
+ * `RateLimitedError`, which names the scope that refused. `scopes` narrows the list (kept in the same order): a
+ * message the input check refused without a model call counts toward fewer limits (ADR-128 section 6.4.1).
  */
 export async function enforceAiChatRateLimits(parameters: {
   session: SessionView | null;
   requestId: string;
+  scopes?: readonly AiChatRateLimitScope[];
 }): Promise<void> {
   const incoming = await headers();
   const anonymousId = parameters.session === null ? anonymousIdFor(await cookies()) : null;
@@ -108,7 +114,8 @@ export async function enforceAiChatRateLimits(parameters: {
     anonymousId,
   });
   const counter = createRateLimitCounter(parameters.requestId);
+  const wanted = parameters.scopes ?? AI_CHAT_RATE_LIMIT_SCOPES;
   for (const scope of AI_CHAT_RATE_LIMIT_SCOPES) {
-    await enforceRateLimit({ counter, scope, caller });
+    if (wanted.includes(scope)) await enforceRateLimit({ counter, scope, caller });
   }
 }

@@ -2,10 +2,9 @@
  * The numbers and names of the AI chat assistant, in one file (ADR-128 sections 4.5 and 7, D9). None of
  * them is written in a prompt, a component or the agent loop: they all read from here.
  *
- * Left out on purpose, because the owner has not set a value yet (docs/ai-chat-phase-plan.md, gate G-B):
- * the time for the whole message (it must stay below the route's `maxDuration`, which the endpoint task
- * sets). Do not invent it here; add it with the task that needs it, once the owner has chosen. The daily
- * budget is a marked placeholder below (`owner to confirm`) so the global limit exists and fails safe.
+ * Three numbers here are marked placeholders (`owner to confirm`, docs/ai-chat-phase-plan.md, gate G-B) so the
+ * limit exists and fails safe until the owner sets the real value: the daily budget and, for the whole message,
+ * the route's `maxDuration`, the time limit and the hard stop (the two limits must stay below `maxDuration`).
  */
 
 /** What the assistant calls the product in every piece of its own text. Lowercase on purpose (ADR-128, D11). */
@@ -32,6 +31,38 @@ export const AI_PROVIDER_IDLE_TIMEOUT_MS = 20_000;
 
 /** The longest customer message the assistant accepts, in characters. */
 export const MAX_INPUT_CHARACTERS = 1000;
+
+/**
+ * What the endpoint accepts from the browser (ADR-128 section 6.1): the last user and assistant text turns, about
+ * 12 messages, capped by size. The client sends no tool call, no tool result and no system text; a message of any
+ * other shape is refused. The customer's own message is capped by `MAX_INPUT_CHARACTERS`.
+ */
+export const AI_MAX_HISTORY_MESSAGES = 12;
+
+/** The longest earlier assistant answer the endpoint accepts back, in characters (an answer is at most about 1,200 tokens). */
+export const AI_MAX_HISTORY_ANSWER_CHARACTERS = 5000;
+
+/** The largest request body the endpoint reads, in bytes: 12 messages at their caps, with room for Tamil (three bytes a letter). */
+export const AI_MAX_REQUEST_BYTES = 128 * 1024;
+
+/**
+ * PLACEHOLDER, owner to confirm (gate G-B): the route's `maxDuration`, in seconds. The route file must write the same
+ * number as a plain value (Next.js reads it from the file); a test fails if they differ. The two limits below stay under it.
+ */
+export const AI_ROUTE_MAX_DURATION_SECONDS = 60;
+
+/**
+ * PLACEHOLDER, owner to confirm (gate G-B): the time for the whole message, in milliseconds ("below `maxDuration`",
+ * ADR-128 section 4.5). When it passes, the model call in flight is cancelled and the loop answers from the tool
+ * results it has, or gives the fixed fallback. The answer-only round that follows still needs time to run.
+ */
+export const AI_MESSAGE_TIME_LIMIT_MS = 40_000;
+
+/**
+ * PLACEHOLDER, owner to confirm (gate G-B): the hard stop, in milliseconds: nothing runs after it, so the stream ends
+ * cleanly before the function is cut off. Between `AI_MESSAGE_TIME_LIMIT_MS` and the route's `maxDuration`.
+ */
+export const AI_MESSAGE_HARD_STOP_MS = 55_000;
 
 /** The most tokens the model may write in one round ("about 1,200" in ADR-128 section 7). */
 export const MAX_OUTPUT_TOKENS = 1200;

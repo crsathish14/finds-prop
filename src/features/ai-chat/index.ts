@@ -1,7 +1,7 @@
 /**
- * The AI chat assistant (ADR-128), behind `FLAG_AI_SEARCH`. So far it is the tools and the agent loop:
- * nothing here is wired to a page or a route, and customers see nothing. Server-only: every export reads through the
- * cached public reads.
+ * The AI chat assistant (ADR-128), behind `FLAG_AI_SEARCH`: the tools, the agent loop, the two guards, the system
+ * prompt and the streaming endpoint (`handleAiChat`, called by `src/app/api/ai/chat/route.ts`). No page uses it yet.
+ * Server-only: every export reads through the cached public reads.
  */
 export { ANSWER_ONLY_INSTRUCTION } from "./prompts/answer-only";
 export { buildSystemPrompt } from "./prompts/system-prompt";
@@ -44,3 +44,6 @@ export type {
   OutputSummary,
   OutputTag,
 } from "./guards/output";
+export { postAiChat } from "./endpoint/post";
+export type { ChatOutcome, ChatStreamEvent } from "./endpoint/events";
+export type { ChatDeps, ChatUsageRecord } from "./endpoint/types";

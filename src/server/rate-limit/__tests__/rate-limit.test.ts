@@ -196,6 +196,27 @@ describe("UT-rate-limit-ai: enforceAiChatRateLimits", () => {
     }
   });
 
+  it("UT-ai-wrapper-scopes: counts only the scopes asked for, in the usual order", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({
+      session: null,
+      requestId: "req-12345678",
+      scopes: ["ai_chat_trial", "ai_chat_burst"],
+    });
+    expect(counted().map((entry) => entry.limit_scope)).toEqual([
+      "ai_chat_burst_cookie",
+      "ai_chat_trial_cookie",
+    ]);
+  });
+
+  it("UT-ai-wrapper-refusal-names-scope: a refusal says which scope refused", async () => {
+    rpc.mockResolvedValue({ data: [{ allowed: false, retry_after: 30 }], error: null });
+    const { enforceAiChatRateLimits } = await load();
+    await expect(
+      enforceAiChatRateLimits({ session: null, requestId: "req-12345678" }),
+    ).rejects.toMatchObject({ code: "RATE_LIMITED", scope: "ai_chat_burst", retryAfter: 30 });
+  });
+
   it("UT-ai-wrapper-cookie-set: sets the cookie once, HttpOnly, SameSite Lax and Secure in production", async () => {
     const { enforceAiChatRateLimits } = await load();
     await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
