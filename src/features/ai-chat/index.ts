@@ -17,7 +17,7 @@ export type {
 export { runAgent } from "./agent";
 export { AI_CHAT_TOOLS } from "./tools/registry";
 export { runTool, toolDefinitions, toolError } from "./tools/run";
-export { TOOL_ERROR_CODES, TOOL_ERROR_HINTS } from "./tools/types";
+export { referenceKey, TOOL_ERROR_CODES, TOOL_ERROR_HINTS } from "./tools/types";
 export type {
   AiChatTool,
   AnyAiChatTool,

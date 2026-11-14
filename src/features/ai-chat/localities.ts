@@ -132,12 +132,24 @@ export function findLocalities(
   search: string | null,
   limit: number,
 ): LocalityCount[] {
+  return findByName(localities, search, limit);
+}
+
+/**
+ * The same match for anything with a name (a builder's name, for `get_builder`): the best match first, ties in
+ * the order given, at most `limit`. With no text, the first `limit` as given.
+ */
+export function findByName<Named extends { name: string }>(
+  items: readonly Named[],
+  search: string | null,
+  limit: number,
+): Named[] {
   const wanted = search === null ? "" : localityKey(search);
-  if (wanted === "") return localities.slice(0, limit);
-  const found: { locality: LocalityCount; rank: number; distance: number; order: number }[] = [];
-  localities.forEach((locality, order) => {
-    const match = matchRank(localityKey(locality.name), wanted);
-    if (match !== null) found.push({ locality, ...match, order });
+  if (wanted === "") return items.slice(0, limit);
+  const found: { item: Named; rank: number; distance: number; order: number }[] = [];
+  items.forEach((item, order) => {
+    const match = matchRank(localityKey(item.name), wanted);
+    if (match !== null) found.push({ item, ...match, order });
   });
   return found
     .sort(
@@ -145,5 +157,5 @@ export function findLocalities(
         first.rank - second.rank || first.distance - second.distance || first.order - second.order,
     )
     .slice(0, limit)
-    .map((entry) => entry.locality);
+    .map((entry) => entry.item);
 }

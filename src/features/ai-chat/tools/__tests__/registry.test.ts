@@ -6,6 +6,9 @@ import {
   injected,
   keysIn,
   listingRow,
+  projectData,
+  projectListItem,
+  projectUnit,
   propertyData,
   READ_AT,
   stringsIn,
@@ -24,6 +27,10 @@ import {
 const getSearchResults = vi.fn();
 const getProperty = vi.fn();
 const getLocalityCounts = vi.fn();
+const getBuilderDirectory = vi.fn();
+const getBuilderProfile = vi.fn();
+const getProjects = vi.fn();
+const getProject = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 vi.mock("@/features/search", async () => {
@@ -34,7 +41,22 @@ vi.mock("@/features/property", async () => {
   const { amenityList, perSqftRupees } = await import("@/features/property/view");
   return { getProperty, amenityList, perSqftRupees };
 });
-vi.mock("../../queries", () => ({ getLocalityCounts }));
+vi.mock("@/features/projects", async () => {
+  const { bhkSizes, priceBounds, TREND_MONTHS } = await import("@/features/projects/view");
+  const { isProjectSlug } = await import("@/features/projects/address");
+  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
+  return {
+    getProjects,
+    getProject,
+    bhkSizes,
+    priceBounds,
+    TREND_MONTHS,
+    isProjectSlug,
+    PROJECT_STATUSES,
+    PROJECT_LIST_LIMIT: 60,
+  };
+});
+vi.mock("../../queries", () => ({ getLocalityCounts, getBuilderDirectory, getBuilderProfile }));
 
 const { AI_CHAT_TOOLS, runTool, toolDefinitions, UNTRUSTED_TEXT_KEY } =
   await import("@/features/ai-chat");
@@ -125,6 +147,24 @@ function isPrivateKey(key: string): boolean {
   return wordsOf(key).some((word) => PRIVATE_RESULT_WORDS.has(word));
 }
 
+/**
+ * The one deliberate exception to "no phone in a tool result" (ADR-128 section 6.4.3, point 4): a project's
+ * public contact phone, which the project page shows and `get_project` returns under exactly this key, and
+ * only in the shape of a phone number (`public-contacts.ts`). It is named by tool and key, so it opens no
+ * other tool and no other field. A builder's website is not on the private list, so it needs no exception.
+ */
+const NAMED_EXCEPTIONS: readonly { tool: string; key: string }[] = [
+  { tool: "get_project", key: "contactPhone" },
+];
+
+/** Whether a key of this tool's result is private, after the named exceptions. */
+function isPrivateKeyOf(tool: string, key: string): boolean {
+  return (
+    isPrivateKey(key) &&
+    !NAMED_EXCEPTIONS.some((exception) => exception.tool === tool && exception.key === key)
+  );
+}
+
 /** Every property name anywhere in a JSON Schema, with where it is. */
 function propertyNamesIn(schema: unknown, location = "$"): { name: string; location: string }[] {
   if (Array.isArray(schema)) {
@@ -163,6 +203,9 @@ const VALID_INPUTS: Record<string, unknown> = {
   },
   get_property: { homeId: "k3x9a2bd" },
   list_localities: { search: null },
+  search_projects: { locality: null, status: null, bhk: null, maxPrice: null, limit: null },
+  get_project: { slug: "kadal-vista" },
+  get_builder: { builderId: null, name: "Kadal Homes" },
 };
 
 /** What a read must never hand to the model, planted in every stand-in read to prove it does not get through. */
@@ -227,21 +270,92 @@ beforeEach(() => {
     complete: true,
     readAt: READ_AT,
   });
+  // Twenty-five projects, a project with twelve BHK sizes of units, and a builder with fifteen live projects,
+  // each with third-party text in every field a developer can type, and private fields a read does not give.
+  getProjects.mockResolvedValue({
+    status: "ok",
+    projects: Array.from({ length: 25 }, (_, index) => ({
+      ...projectListItem({
+        slug: `project-${index}`,
+        name: injected("project"),
+        developerName: injected("developer"),
+        locality: injected("locality"),
+      }),
+      ...PRIVATE,
+    })),
+    readAt: READ_AT,
+  });
+  getProject.mockResolvedValue({
+    status: "found",
+    readAt: READ_AT,
+    project: {
+      ...projectData({
+        name: injected("project"),
+        description: injected("description"),
+        amenities: [injected("amenity")],
+        nearby: [injected("nearby")],
+        reraNumber: injected("rera"),
+        locality: injected("locality"),
+        developer: { id: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34", name: injected("developer") },
+        units: Array.from({ length: 12 }, (_, index) =>
+          projectUnit({ number: `U-${index}`, bhk: index + 1 }),
+        ),
+        unitCount: 12,
+        availableCount: 12,
+      }),
+      ...PRIVATE,
+    },
+  });
+  getBuilderDirectory.mockResolvedValue({
+    builders: [{ id: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34", name: "Kadal Homes", ...PRIVATE }],
+    readAt: READ_AT,
+  });
+  getBuilderProfile.mockResolvedValue({
+    status: "found",
+    readAt: READ_AT,
+    builder: {
+      id: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34",
+      name: injected("builder"),
+      website: "https://kadalhomes.example.test/",
+      description: injected("description"),
+      ...PRIVATE,
+    },
+    projects: Array.from({ length: 15 }, (_, index) => ({
+      slug: `kadal-${index}`,
+      name: injected("project"),
+      status: "under_construction",
+      locality: injected("locality"),
+      possessionDate: "2028-12-31",
+      reraApplicable: true,
+      reraNumber: injected("rera"),
+      ...PRIVATE,
+    })),
+    projectCount: 15,
+    firstProjectAt: "2026-03-14",
+  });
 });
 
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the three read tools of this task", () => {
+  it("holds the six read tools so far", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
-      expect.arrayContaining(["search_properties", "get_property", "list_localities"]),
+      expect.arrayContaining([
+        "search_properties",
+        "get_property",
+        "list_localities",
+        "search_projects",
+        "get_project",
+        "get_builder",
+      ]),
     );
+    expect(names).toHaveLength(6);
   });
 
-  it("gives every tool a kind, and the first three are read tools the loop may run in parallel", () => {
+  it("gives every tool a kind, and these six are read tools the loop may run in parallel", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
-    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(["read", "read", "read"]);
+    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(Array(6).fill("read"));
   });
 
   it("gives every tool its own name, in the form a provider accepts", () => {
@@ -359,7 +473,7 @@ describe("UT-ai-tools-registry: no result names an owner or anything private (AD
       const fields = propertyNamesIn(z.toJSONSchema(tool.output, { io: "output" }));
       expect(fields.length, tool.name).toBeGreaterThan(0);
       expect(
-        fields.filter(({ name }) => isPrivateKey(name)),
+        fields.filter(({ name }) => isPrivateKeyOf(tool.name, name)),
         `${tool.name} can return a private field`,
       ).toEqual([]);
     }
@@ -370,12 +484,38 @@ describe("UT-ai-tools-registry: no result names an owner or anything private (AD
       expect(outcome.status, name).toBe("ok");
       const output = outcome.status === "ok" ? outcome.output : null;
       expect(
-        keysIn(output).filter((key) => isPrivateKey(key)),
+        keysIn(output).filter((key) => isPrivateKeyOf(name, key)),
         name,
       ).toEqual([]);
       for (const value of Object.values(PRIVATE)) {
         expect(outcome.content, name).not.toContain(String(value));
       }
+    }
+  });
+
+  it("allows exactly one phone, the project contact phone of get_project, and no other private key", async () => {
+    expect(NAMED_EXCEPTIONS).toEqual([{ tool: "get_project", key: "contactPhone" }]);
+    const withPhone = [];
+    for (const tool of AI_CHAT_TOOLS) {
+      const keys = propertyNamesIn(z.toJSONSchema(tool.output, { io: "output" })).map(
+        ({ name }) => name,
+      );
+      for (const key of keys) if (isPrivateKey(key)) withPhone.push(`${tool.name}.${key}`);
+    }
+    expect(withPhone).toEqual(["get_project.contactPhone"]);
+    // The phone a read hands over under any other name still does not get through.
+    for (const { name, outcome } of await callEveryTool()) {
+      expect(outcome.content, name).not.toContain(PRIVATE.phone);
+    }
+    // The one phone is the project's own, in the shape of a phone number, and in no other tool's result.
+    for (const { name, outcome } of await callEveryTool()) {
+      const phones = stringsIn(outcome.status === "ok" ? outcome.output : null).filter(({ text }) =>
+        /^\+?[0-9]{6,15}$/.test(text),
+      );
+      expect(
+        phones.map(({ path }) => path.join(".")),
+        name,
+      ).toEqual(name === "get_project" ? ["project.contactPhone"] : []);
     }
   });
 
@@ -436,25 +576,59 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     return [];
   }
 
-  it("never holds more than ten items, though the reads gave fifteen homes and twenty-five localities", async () => {
+  it("never holds more than ten items, though the reads gave fifteen homes, twenty-five localities and projects, twelve unit sizes and fifteen builder projects", async () => {
     expect(MAX_TOOL_RESULT_ITEMS).toBe(10);
     const outcomes = await callEveryTool();
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    expect(lists.map((list) => list.length).sort()).toEqual([10, 10]);
+    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10]);
   });
 
-  it("returns the id of every home a result names, and of no other", async () => {
+  it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {
+    const outcome = await runTool(
+      AI_CHAT_TOOLS,
+      { name: "get_project", input: VALID_INPUTS.get_project },
+      TOOL_CONTEXT,
+    );
+    const months = (outcome.status === "ok" ? outcome.output : null) as {
+      project: { pricePerSqftByMonth: unknown[] };
+    } | null;
+    expect(months?.project.pricePerSqftByMonth.every((line) => typeof line === "string")).toBe(
+      true,
+    );
+    expect(months?.project.pricePerSqftByMonth.length).toBeLessThanOrEqual(12);
+  });
+
+  it("returns the id of every home and the slug of every project a result names, and of no other", async () => {
     for (const { name, outcome } of await callEveryTool()) {
       if (outcome.status !== "ok") throw new Error(`${name} did not run`);
       const named = stringsIn(outcome.output)
-        .filter(({ path }) => path.at(-1) === "homeId")
+        .filter(({ path }) => path.at(-1) === "homeId" || path.at(-1) === "slug")
         .map(({ text }) => text);
       expect(
-        outcome.references.map((reference) => reference.homeId),
+        outcome.references.map((reference) =>
+          reference.kind === "home" ? reference.homeId : reference.slug,
+        ),
         name,
       ).toEqual(named);
     }
+  });
+
+  it("builds a project reference for the tools that name projects, and a home reference for the rest", async () => {
+    const kinds = Object.fromEntries(
+      (await callEveryTool()).map(({ name, outcome }) => [
+        name,
+        [...new Set(outcome.status === "ok" ? outcome.references.map(({ kind }) => kind) : [])],
+      ]),
+    );
+    expect(kinds).toEqual({
+      search_properties: ["home"],
+      get_property: ["home"],
+      list_localities: [],
+      search_projects: ["project"],
+      get_project: ["project"],
+      get_builder: ["project"],
+    });
   });
 });

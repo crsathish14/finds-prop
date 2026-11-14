@@ -14,6 +14,7 @@ export {
   type ProjectList,
   type ProjectResult,
 } from "./queries";
+export { PROJECT_STATUSES } from "./schemas";
 export type {
   ProjectData,
   ProjectListItem,

@@ -1,6 +1,9 @@
 import "server-only";
+import { getBuilderTool } from "./get-builder";
+import { getProjectTool } from "./get-project";
 import { getPropertyTool } from "./get-property";
 import { listLocalitiesTool } from "./list-localities";
+import { searchProjectsTool } from "./search-projects";
 import { searchPropertiesTool } from "./search-properties";
 import type { AnyAiChatTool } from "./types";
 
@@ -10,11 +13,14 @@ import type { AnyAiChatTool } from "./types";
  * question, reads only what a visitor may see, takes no person as input, and returns small results; the
  * tests in `__tests__/registry.test.ts` walk this list and fail when one of those stops being true.
  *
- * These three are read tools. The other read tools, the EMI tool and the two propose tools come with their
- * own tasks (P3-T01, P3-T02, P6-T01).
+ * These six are read tools. The compare and EMI tools and the two propose tools come with their own tasks
+ * (P3-T02, P6-T01).
  */
 export const AI_CHAT_TOOLS: readonly AnyAiChatTool[] = [
   searchPropertiesTool,
   getPropertyTool,
   listLocalitiesTool,
+  searchProjectsTool,
+  getProjectTool,
+  getBuilderTool,
 ];

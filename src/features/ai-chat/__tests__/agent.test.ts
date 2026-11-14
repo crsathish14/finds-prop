@@ -113,8 +113,23 @@ const proposeTool: AiChatTool<z.infer<typeof lookupInput>, z.infer<typeof lookup
   },
 };
 
+const projectTool: AiChatTool<z.infer<typeof lookupInput>, z.infer<typeof lookupOutput>> = {
+  name: "lookup_project",
+  kind: "read",
+  description: "Looks up a made-up project by its slug, for the loop tests.",
+  input: lookupInput,
+  output: lookupOutput,
+  async run(input) {
+    return {
+      output: { name: `Project ${input.id}` },
+      references: [{ kind: "project", slug: input.id }],
+    };
+  },
+};
+
 const TOOLS: readonly AnyAiChatTool[] = [
   lookupTool,
+  projectTool,
   delayedTool,
   hangingTool,
   brokenTool,
@@ -277,6 +292,23 @@ describe("UT-ai-agent: a turn with a tool", () => {
       { kind: "home", homeId: "h1", slug: "slug-h1" },
       { kind: "home", homeId: "h2", slug: "slug-h2" },
       { kind: "home", homeId: "h3", slug: "slug-h3" },
+    ]);
+  });
+
+  it("tracks a project by its slug, apart from a home with the same text, across rounds", async () => {
+    const provider = createFakeAiProvider([
+      toolCallTurn([lookup("same"), lookup("same", "lookup_project", "call-project")]),
+      toolCallTurn([
+        lookup("kadal-vista", "lookup_project"),
+        lookup("same", "lookup_project", "call-again"),
+      ]),
+      textTurn("Done."),
+    ]);
+    const { done } = await collect(provider);
+    expect(done.references).toEqual([
+      { kind: "home", homeId: "same", slug: "slug-same" },
+      { kind: "project", slug: "same" },
+      { kind: "project", slug: "kadal-vista" },
     ]);
   });
 

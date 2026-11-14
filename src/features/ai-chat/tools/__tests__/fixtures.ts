@@ -1,5 +1,6 @@
 import { createTranslator } from "next-intl";
 import type { PropertyData } from "@/features/property";
+import type { ProjectData, ProjectListItem, ProjectUnit } from "@/features/projects";
 import type { ListingRow } from "@/features/search";
 import messages from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
@@ -75,6 +76,79 @@ export function propertyData(overrides: Partial<PropertyData> = {}): PropertyDat
     photos: [
       { path: "owner-1/listing-1/front.jpg", alt: "The front of the building" },
       { path: "owner-1/listing-1/hall.jpg", alt: null },
+    ],
+    ...overrides,
+  };
+}
+
+/** A project as the projects list gives it. */
+export function projectListItem(overrides: Partial<ProjectListItem> = {}): ProjectListItem {
+  return {
+    slug: "kadal-vista",
+    name: "Kadal Vista",
+    developerName: "Kadal Homes",
+    status: "under_construction",
+    priceMin: 7_800_000,
+    priceMax: 14_200_000,
+    bhkOptions: [3, 2, 2],
+    locality: "OMR Navalur",
+    coverPath: "kadal/1.webp",
+    featured: true,
+    ...overrides,
+  };
+}
+
+/** One unit of a project. */
+export function projectUnit(overrides: Partial<ProjectUnit> = {}): ProjectUnit {
+  return {
+    number: "A-1",
+    floor: 1,
+    bhk: 2,
+    areaSqft: 1050,
+    facing: "East",
+    price: 7_800_000,
+    status: "available",
+    floorPlanPath: null,
+    ...overrides,
+  };
+}
+
+/** A project as the project page's read gives it. */
+export function projectData(overrides: Partial<ProjectData> = {}): ProjectData {
+  return {
+    id: "00000000-0000-4000-8000-000000000001",
+    slug: "kadal-vista",
+    name: "Kadal Vista",
+    developer: { id: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34", name: "Kadal Homes" },
+    status: "under_construction",
+    priceMin: 7_800_000,
+    priceMax: 14_200_000,
+    bhkOptions: [3, 2, 2],
+    landAreaAcres: 4.2,
+    totalUnits: 320,
+    possessionDate: "2028-12-31",
+    contactPhone: "+914412345678",
+    locality: "OMR Navalur",
+    advantages: ["Near the beach road"],
+    nearby: ["Shopping mall", "School"],
+    reraApplicable: true,
+    reraNumber: "TN/SAMPLE/0000",
+    description: "A gated community by the sea.\n\nTwo clubhouses.",
+    specifications: "Structure: RCC",
+    amenities: ["Gym", "Pool", "gym"],
+    images: ["kadal/1.webp"],
+    floorPlans: [],
+    videos: [],
+    brochurePath: null,
+    seoTitle: null,
+    seoDescription: null,
+    featured: true,
+    units: [projectUnit()],
+    unitCount: 1,
+    availableCount: 1,
+    trend: [
+      { month: "2026-09-01", pricePerSqft: 8230 },
+      { month: "2026-10-01", pricePerSqft: 8350 },
     ],
     ...overrides,
   };
