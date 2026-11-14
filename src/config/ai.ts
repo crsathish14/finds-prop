@@ -2,10 +2,10 @@
  * The numbers and names of the AI chat assistant, in one file (ADR-128 sections 4.5 and 7, D9). None of
  * them is written in a prompt, a component or the agent loop: they all read from here.
  *
- * Left out on purpose, because the owner has not set a value yet (docs/ai-chat-phase-plan.md, gates G-B
- * and G-C): the daily budget for the global limit, the example loan interest rate, and the time for the
- * whole message (it must stay below the route's `maxDuration`, which the endpoint task sets). Do not invent
- * them here; add each with the task that needs it, once the owner has chosen.
+ * Left out on purpose, because the owner has not set a value yet (docs/ai-chat-phase-plan.md, gate G-B):
+ * the daily budget for the global limit, and the time for the whole message (it must stay below the
+ * route's `maxDuration`, which the endpoint task sets). Do not invent them here; add each with the task
+ * that needs it, once the owner has chosen.
  */
 
 /** What the assistant calls the product in every piece of its own text. Lowercase on purpose (ADR-128, D11). */
@@ -38,3 +38,21 @@ export const MAX_TOOL_RESULT_ITEMS = 10;
  * An engineering limit, not an owner decision: a listing's description may be 5,000 characters.
  */
 export const MAX_UNTRUSTED_TEXT_CHARACTERS = 1500;
+
+/**
+ * The EMI defaults of the `calculate_emi` tool (ADR-128 section 5.2, decision D10). They are only used when
+ * the customer gives no value of their own, and the assistant always shows them as "an example, not a bank
+ * offer". The maths that uses them is `src/lib/emi.ts`.
+ */
+
+/** Down payment as a percentage of the price. */
+export const EMI_DEFAULT_DOWN_PAYMENT_PERCENT = 20;
+
+/** Loan term in years. */
+export const EMI_DEFAULT_YEARS = 20;
+
+/**
+ * The example interest rate, in percent a year, set by the owner on 14 Nov 2026 (gate G-C). It is an
+ * example for the maths, never a lender's offer or current rate, and no text may present it as one.
+ */
+export const EMI_EXAMPLE_ANNUAL_RATE_PERCENT = 7.2;

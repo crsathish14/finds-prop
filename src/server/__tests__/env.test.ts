@@ -22,6 +22,7 @@ describe("UT-env: server environment", () => {
     expect(env.FLAG_AI_SEARCH).toBe(false);
     expect(env.FLAG_MAP_VIEW).toBe(false);
     expect(env.FLAG_PG_LISTINGS).toBe(false);
+    expect(env.FLAG_CUSTOMER_EMAIL).toBe(false);
     expect(env.DESIGN_LAB).toBe(false);
   });
 

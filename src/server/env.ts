@@ -37,6 +37,8 @@ const serverEnvSchema = z.object({
   FLAG_AI_SEARCH: flag,
   FLAG_MAP_VIEW: flag,
   FLAG_PG_LISTINGS: flag,
+  /** Customer email: the sign-in email step, the dashboard prompt and the post-property gate. Off until an email provider is set up. */
+  FLAG_CUSTOMER_EMAIL: flag,
   DESIGN_LAB: flag,
 });
 

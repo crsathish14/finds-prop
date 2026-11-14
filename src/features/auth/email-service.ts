@@ -9,6 +9,8 @@ export interface EmailLinkError {
 }
 
 export interface EmailLinkDeps {
+  /** FLAG_CUSTOMER_EMAIL. When off, no customer email is sent, however the action is reached. */
+  enabled: boolean;
   /** Supabase's updateUser with an email: attaches it to the signed-in account and sends the link. */
   updateEmail(email: string): Promise<{ error: EmailLinkError | null }>;
   /** Supabase's resend for an email change: sends the link again. */
@@ -81,6 +83,13 @@ function failureFor(error: EmailLinkError): ActionError {
   );
 }
 
+/** Customer email is switched off (FLAG_CUSTOMER_EMAIL=0): answer as if the feature does not exist, and send nothing. */
+function requireEnabled(deps: EmailLinkDeps): void {
+  if (!deps.enabled) {
+    throw new ActionError("NOT_FOUND", "Customer email is switched off (FLAG_CUSTOMER_EMAIL)");
+  }
+}
+
 /**
  * Attaches the email to the signed-in account and has Supabase send the single-use link. Nothing is
  * marked verified here: that happens only when the link is followed (FR-AUTH-02).
@@ -89,6 +98,7 @@ export async function addEmailAddress(
   deps: EmailLinkDeps,
   input: AddEmailInput,
 ): Promise<EmailLinkSent> {
+  requireEnabled(deps);
   const { error } = await deps.updateEmail(input.email);
   if (error) throw failureFor(error);
   return { email: input.email, resendAfter: RESEND_AFTER_SECONDS };
@@ -99,6 +109,7 @@ export async function resendEmailAddress(
   deps: EmailLinkDeps,
   input: AddEmailInput,
 ): Promise<EmailLinkSent> {
+  requireEnabled(deps);
   const { error } = await deps.resendEmail(input.email);
   if (error) throw failureFor(error);
   return { email: input.email, resendAfter: RESEND_AFTER_SECONDS };
