@@ -25,6 +25,9 @@ export type ChatCardControls = {
  * id the database returned, never from model text. While the cards load, and if they cannot be read, the answer's
  * text stands alone.
  */
+/** Cards already fetched in this tab, by their references, so an answer that finishes or is restored does not fetch them again. */
+const fetched = new Map<string, readonly ChatCardView[]>();
+
 export function AnswerCards({
   references,
   controls,
@@ -32,7 +35,9 @@ export function AnswerCards({
   references: readonly ChatReference[];
   controls: ChatCardControls;
 }) {
-  const [cards, setCards] = useState<readonly ChatCardView[]>([]);
+  const [cards, setCards] = useState<readonly ChatCardView[]>(
+    () => fetched.get(JSON.stringify(references.slice(0, AI_MAX_CARDS_PER_ANSWER))) ?? [],
+  );
   const wanted = JSON.stringify(references.slice(0, AI_MAX_CARDS_PER_ANSWER));
   const { Save, Compare } = controls;
 
@@ -40,9 +45,17 @@ export function AnswerCards({
     let current = true;
     const list = JSON.parse(wanted) as ChatReference[];
     if (list.length === 0) return;
-    void readChatCardsAction({ references: list }).then((result) => {
-      if (current && result.ok) setCards(result.data);
-    });
+    // Already read for this answer: the first render took them from the cache.
+    if (fetched.has(wanted)) return;
+    readChatCardsAction({ references: list })
+      .then((result) => {
+        if (!result.ok) return;
+        if (fetched.size >= 50) fetched.clear();
+        fetched.set(wanted, result.data);
+        if (current) setCards(result.data);
+      })
+      // A failed read leaves the answer's text on its own.
+      .catch(() => undefined);
     return () => {
       current = false;
     };

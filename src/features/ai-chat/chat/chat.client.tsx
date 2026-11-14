@@ -21,6 +21,7 @@ import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from
 import { AnswerCards, type ChatCardControls } from "./answer-cards.client";
 import {
   browserStorage,
+  EMPTY_CHAT,
   buildHistory,
   loadChat,
   MASKED_NOTICE_KEY,
@@ -159,7 +160,13 @@ export function ChatIsland({
   // Restore the conversation, the draft and the gate from this tab, once, after the first render (so the page and
   // its first hydration agree). A visitor who was shown the gate and is now signed in has come back from signing in.
   useEffect(() => {
-    const stored = loadChat(browserStorage());
+    const storage = browserStorage();
+    let stored = loadChat(storage);
+    // What was kept while signed in is not shown to whoever uses the tab after the visitor has signed out.
+    if (stored.account && !signedIn) {
+      stored = EMPTY_CHAT;
+      saveChat(storage, EMPTY_CHAT);
+    }
     /* eslint-disable react-hooks/set-state-in-effect -- the browser's storage can only be read after hydration */
     setEntries(stored.entries);
     setDraft(stored.draft);
@@ -179,8 +186,8 @@ export function ChatIsland({
 
   useEffect(() => {
     if (!ready) return;
-    saveChat(browserStorage(), { version: 1, entries, draft, gate });
-  }, [ready, entries, draft, gate]);
+    saveChat(browserStorage(), { version: 1, entries, draft, gate, account: signedIn });
+  }, [ready, entries, draft, gate, signedIn]);
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -193,9 +200,13 @@ export function ChatIsland({
   const waitSeconds = problem?.kind === "too_many_messages" ? problem.seconds : null;
   useEffect(() => {
     if (waitSeconds === null) return;
-    const timer = window.setTimeout(() => setProblem(null), waitSeconds * 1000);
+    const timer = window.setTimeout(() => {
+      setProblem(null);
+      // The box was switched off, so focus fell out of it; put it back when it works again.
+      focusComposer();
+    }, waitSeconds * 1000);
     return () => window.clearTimeout(timer);
-  }, [waitSeconds]);
+  }, [waitSeconds, focusComposer]);
 
   useEffect(() => {
     if (problem?.kind === "error") problemRef.current?.focus();
@@ -223,7 +234,8 @@ export function ChatIsland({
       }
       // The message was not answered, so it goes back to the box instead of staying in the conversation.
       setEntries((current) => current.filter((entry) => entry.id !== userId));
-      setDraft(text);
+      // Keep what the visitor typed while waiting; the refused message comes back only into an empty box.
+      setDraft((current) => (current.trim() === "" ? text : current));
       if (failure.state === "sign_in_required") {
         setGate(true);
         setGateFocus(true);
@@ -374,6 +386,7 @@ export function ChatIsland({
                   <li key={example}>
                     <Chip
                       type="button"
+                      disabled={composerOff}
                       className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
                       onClick={() => pickExample(example)}
                     >

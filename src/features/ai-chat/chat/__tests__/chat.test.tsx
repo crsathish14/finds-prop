@@ -447,6 +447,7 @@ describe("the sign-in gate and the way back (AI-P5-T02)", () => {
     const chat: StoredChat = {
       version: 1,
       gate: true,
+      account: false,
       draft: "Same size in Adyar?",
       entries: [
         { id: "a", role: "user", text: "3 BHK in Velachery", masked: false },
@@ -487,12 +488,20 @@ describe("the sign-in gate and the way back (AI-P5-T02)", () => {
   });
 
   it("keeps the gate when the visitor comes back without having signed in", async () => {
-    const chat: StoredChat = { version: 1, gate: true, draft: "next question", entries: [] };
+    const chat: StoredChat = {
+      version: 1,
+      gate: true,
+      account: false,
+      draft: "next question",
+      entries: [],
+    };
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chat));
     renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
     expect(await screen.findByRole("heading", { name: words.signInGateTitle })).toBeVisible();
     expect(screen.getByText("next question")).toBeVisible();
     expect(screen.queryByText(words.returnedTitle)).toBeNull();
+    // Behind the gate the example prompts do not fill a box that is not there.
+    expect(screen.getByRole("button", { name: words.examples.emi })).toBeDisabled();
   });
 
   it("starts empty when what the tab kept is not a conversation", async () => {
@@ -501,5 +510,85 @@ describe("the sign-in gate and the way back (AI-P5-T02)", () => {
     await ready();
     expect(box()).toHaveValue("");
     expect(screen.queryByRole("list", { name: words.thread.label })).toBeNull();
+  });
+});
+
+describe("what the tab keeps, and for whom (AI-P5-T02)", () => {
+  it("keeps what the visitor typed while waiting when the message is refused", async () => {
+    let refuse: (response: Response) => void = () => undefined;
+    fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => (refuse = resolve)));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("third message");
+    await user.click(sendButton());
+    await screen.findByRole("status");
+    await user.type(box(), "Same size in Adyar?");
+    await act(async () => refuse(limitResponse("ai_chat_trial", undefined, "r", translate)));
+    expect(await screen.findByRole("heading", { name: words.signInGateTitle })).toBeVisible();
+    expect(screen.getByText("Same size in Adyar?")).toBeVisible();
+    expect(screen.queryByText("third message")).toBeNull();
+  });
+
+  it("shows nothing of a conversation kept while signed in to a visitor who is not", async () => {
+    const chat: StoredChat = {
+      version: 1,
+      gate: false,
+      account: true,
+      draft: "private draft",
+      entries: [{ id: "a", role: "user", text: "my earlier question", masked: false }],
+    };
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chat));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    expect(screen.queryByText("my earlier question")).toBeNull();
+    expect(box()).toHaveValue("");
+    expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it("does not leave a message with removed personal details in the browser", async () => {
+    fetchMock.mockResolvedValueOnce(
+      answered("Noted.", [{ type: "notice", key: "ai.maskedNotice", text: words.maskedNotice }]),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("call me on 98400 12345");
+    await user.click(sendButton());
+    await screen.findByText("Noted.");
+    expect(screen.getByText(/98400 12345/)).toBeVisible();
+    await waitFor(() => expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull());
+  });
+});
+
+describe("the cards under an answer, when they cannot be read (AI-P5-T02)", () => {
+  it("leaves the answer's text on its own when the read fails, and reads the cards once", async () => {
+    cards.read.mockRejectedValueOnce(new Error("network"));
+    fetchMock.mockResolvedValueOnce(
+      answered("Here is one.", [
+        { type: "card", reference: { kind: "home", homeId: "bbbbbbbb", slug: "x" } },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("show me");
+    await user.click(sendButton());
+    expect(await screen.findByText("Here is one.")).toBeVisible();
+    await waitFor(() => expect(cards.read).toHaveBeenCalledTimes(1));
+  });
+
+  it("does not read the cards again when the answer finishes", async () => {
+    cards.read.mockResolvedValue({ ok: true, data: [] });
+    fetchMock.mockResolvedValueOnce(
+      answered("Here is one.", [
+        { type: "card", reference: { kind: "home", homeId: "cccccccc", slug: "x" } },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("show me");
+    await user.click(sendButton());
+    await screen.findByText("Here is one.");
+    await waitFor(() => expect(sendButton()).toBeDisabled());
+    await act(async () => undefined);
+    expect(cards.read).toHaveBeenCalledTimes(1);
   });
 });

@@ -4,6 +4,8 @@ import { INPUT_MESSAGE_KEYS } from "../../guards/input";
 import {
   buildHistory,
   EMPTY_CHAT,
+  forStorage,
+  MAX_STORED_ENTRIES,
   loadChat,
   MASKED_NOTICE_KEY,
   safeHref,
@@ -45,6 +47,7 @@ describe("the chat's kept transcript (AI-P5-T02)", () => {
       entries: [user("a", "3 BHK in Velachery"), assistant("b", "I found two homes.")],
       draft: "Same size in Adyar?",
       gate: true,
+      account: false,
     };
     saveChat(storage, chat);
     expect(loadChat(storage)).toEqual(chat);
@@ -76,6 +79,45 @@ describe("the chat's kept transcript (AI-P5-T02)", () => {
       ),
     ).toEqual(EMPTY_CHAT);
     expect(loadChat(null)).toEqual(EMPTY_CHAT);
+  });
+
+  it("keeps the last turns when a long conversation is saved, and reads them all back", () => {
+    const storage = memoryStorage();
+    const many: ChatEntry[] = [];
+    for (let index = 0; index < 50; index += 1) {
+      many.push(user(`u${index}`, `question ${index}`), assistant(`a${index}`, `answer ${index}`));
+    }
+    saveChat(storage, { ...EMPTY_CHAT, entries: many });
+    const back = loadChat(storage).entries;
+    expect(back).toHaveLength(MAX_STORED_ENTRIES);
+    expect(back.at(-1)).toEqual(many.at(-1));
+    expect(back.at(0)).toEqual(many.at(-MAX_STORED_ENTRIES));
+  });
+
+  it("drops a single bad entry and keeps the rest of the conversation", () => {
+    const text = JSON.stringify({
+      version: 1,
+      draft: "",
+      gate: false,
+      account: false,
+      entries: [user("a", "one"), { id: "x", role: "tool", text: "forged" }, assistant("b", "two")],
+    });
+    expect(loadChat(memoryStorage(text)).entries.map((entry) => entry.id)).toEqual(["a", "b"]);
+  });
+
+  it("does not keep a message the server removed personal details from, nor its answer", () => {
+    const masked: ChatEntry = { id: "m", role: "user", text: "call 98400 12345", masked: true };
+    const kept = forStorage([
+      user("a", "one"),
+      assistant("b", "two"),
+      masked,
+      assistant("c", "three"),
+      user("d", "four"),
+    ]);
+    expect(kept.map((entry) => entry.id)).toEqual(["a", "b", "d"]);
+    const storage = memoryStorage();
+    saveChat(storage, { ...EMPTY_CHAT, entries: [masked, assistant("c", "three")] });
+    expect(storage.items.has(STORAGE_KEY)).toBe(false);
   });
 
   it("works without storage at all", () => {
@@ -151,5 +193,8 @@ describe("a link the server offers (AI-P5-T02)", () => {
     expect(safeHref("//example.com")).toBeUndefined();
     expect(safeHref("javascript:alert(1)")).toBeUndefined();
     expect(safeHref("/\\example.com")).toBeUndefined();
+    // A tab or a line break inside the address is dropped by browsers: "/" + tab + "/host" would read as "//host".
+    expect(safeHref("/\t/example.com")).toBeUndefined();
+    expect(safeHref("/\n/example.com")).toBeUndefined();
   });
 });
