@@ -1,19 +1,14 @@
-import { z } from "zod";
+// Must stay first: the next import parses a schema while it loads (see zod-jitless.ts).
+import "@/lib/zod-jitless";
 import { publicEnv } from "@/lib/public-env";
 
 /**
- * Runs in the browser before the app starts (Next.js instrumentation-client).
+ * Runs in the browser before the app starts (Next.js instrumentation-client). Two things happen
+ * here: zod is told not to build functions from strings (so the content security policy sees no
+ * violation; see zod-jitless.ts), and browser error tracking (ADR-130) starts when an address is
+ * set.
  *
- * Zod 4 probes whether the page may build functions from strings (`new Function("")`) so it can
- * compile faster parsers. Our content security policy does not allow that (DEC-37), so the probe
- * is refused: harmless, but the browser reports it as a policy violation on every page that
- * builds a schema. `jitless` skips the probe and uses the plain parsers, which is all a browser
- * form needs. Server code is not affected: this file is part of the browser bundle only.
- */
-z.config({ jitless: true });
-
-/**
- * Browser error tracking (ADR-130). Switched on only when `NEXT_PUBLIC_SENTRY_BROWSER_DSN` is set.
+ * Browser error tracking: Switched on only when `NEXT_PUBLIC_SENTRY_BROWSER_DSN` is set.
  *
  * The plain browser SDK is used, not the Next.js package: the Next.js client entry pulls in
  * tracing, replay and feedback code that tree-shaking cannot remove (about 150 KB compressed in
