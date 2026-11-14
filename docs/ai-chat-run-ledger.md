@@ -4,32 +4,33 @@ State of each task in `docs/ai-chat-phase-plan.md`. The truth for "merged" is Gi
 
 States: `merged`, `running`, `todo`, `blocked` (a limit was hit; reason in the note), `waiting-owner` (needs the owner; reason in the note).
 
-| Order | Task   | State  | Pull request | Attempts | Note                                                                                |
-| ----- | ------ | ------ | ------------ | -------- | ----------------------------------------------------------------------------------- |
-| 1     | P0-T01 | merged | #187         | 1        |                                                                                     |
-| 2     | P0-T02 | merged | #191         | 1        | Script only. The real run and `docs/runbooks/ai-spike.md` results are the owner's   |
-| 3     | P0-T03 | merged | #195, #197   | 1        | Owner approved ADD-14 to ADD-17 (G-F, G-G)                                          |
-| 4     | P0-T04 | merged | #186         | 1        |                                                                                     |
-| 5     | P1-T02 | merged | #193         | 1        |                                                                                     |
-| 6     | P2-T01 | merged | #198         | 1        |                                                                                     |
-| 7     | P2-T02 | merged | #200         | 1        |                                                                                     |
-| 8     | P3-T01 | merged | #201         | 1        | Built before this run began                                                         |
-| 9     | P1-T01 | merged | #204         | 1        | Adds `openai` at one exact version after the `add-dependency` checks                |
-| 10    | P1-T05 | merged | #205         | 1        | Example rate 7.2% a year                                                            |
-| 11    | P1-T04 | todo   |              | 0        | Daily budget is a placeholder (`owner to confirm`)                                  |
-| 12    | P1-T03 | todo   |              | 0        | Real-key run: ask the owner                                                         |
-| 13    | P3-T02 | todo   |              | 0        |                                                                                     |
-| 14    | P4-T01 | todo   |              | 0        | Tamil wording is a placeholder                                                      |
-| 15    | P4-T02 | todo   |              | 0        |                                                                                     |
-| 16    | P4-T03 | todo   |              | 0        |                                                                                     |
-| 17    | P4-T04 | todo   |              | 0        | Security review required                                                            |
-| 18    | P4-T05 | todo   |              | 0        | Migration in its own PR; applied to dev by `db-deploy` after the merge              |
-| 19    | P5-T01 | todo   |              | 0        |                                                                                     |
-| 20    | P5-T02 | todo   |              | 0        |                                                                                     |
-| 21    | P6-T01 | todo   |              | 0        |                                                                                     |
-| 22    | P6-T02 | todo   |              | 0        | Security review required; consent line is approved wording only                     |
-| 23    | P7-T01 | todo   |              | 0        |                                                                                     |
-| 24    | P8-T01 | todo   |              | 0        | Build the set and script; real-model run: ask the owner                             |
-| 25    | P8-T02 | todo   |              | 0        | Security review required                                                            |
-| 26    | P8-T03 | todo   |              | 0        | Mostly owner-only: legal review, daily budget, deployed header check. Ask the owner |
-| 27    | P9-T01 | todo   |              | 0        | Runbook can be written; the rollout and flag are the owner's                        |
+| Order | Task    | State   | Pull request | Attempts | Note                                                                                                                                                                                  |
+| ----- | ------- | ------- | ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | P0-T01  | merged  | #187         | 1        |                                                                                                                                                                                       |
+| 2     | P0-T02  | merged  | #191         | 1        | Script only. The real run and `docs/runbooks/ai-spike.md` results are the owner's                                                                                                     |
+| 3     | P0-T03  | merged  | #195, #197   | 1        | Owner approved ADD-14 to ADD-17 (G-F, G-G)                                                                                                                                            |
+| 4     | P0-T04  | merged  | #186         | 1        |                                                                                                                                                                                       |
+| 5     | P1-T02  | merged  | #193         | 1        |                                                                                                                                                                                       |
+| 6     | P2-T01  | merged  | #198         | 1        |                                                                                                                                                                                       |
+| 7     | P2-T02  | merged  | #200         | 1        |                                                                                                                                                                                       |
+| 8     | P3-T01  | merged  | #201         | 1        | Built before this run began                                                                                                                                                           |
+| 9     | P1-T01  | merged  | #204         | 1        | Adds `openai` at one exact version after the `add-dependency` checks                                                                                                                  |
+| 10    | P1-T05  | merged  | #205         | 1        | Example rate 7.2% a year                                                                                                                                                              |
+| 11a   | P1-T04a | running |              | 1        | Migration only: one-year window for the trial (`rate_limit_hit` cap 366 days, retention keeps the two trial scopes 400 days). Owner: "Migration PR first". P1-T04 waits for its merge |
+| 11    | P1-T04  | todo    |              | 0        | Daily budget is a placeholder (`owner to confirm`)                                                                                                                                    |
+| 12    | P1-T03  | todo    |              | 0        | Real-key run: ask the owner                                                                                                                                                           |
+| 13    | P3-T02  | todo    |              | 0        |                                                                                                                                                                                       |
+| 14    | P4-T01  | todo    |              | 0        | Tamil wording is a placeholder                                                                                                                                                        |
+| 15    | P4-T02  | todo    |              | 0        |                                                                                                                                                                                       |
+| 16    | P4-T03  | todo    |              | 0        |                                                                                                                                                                                       |
+| 17    | P4-T04  | todo    |              | 0        | Security review required                                                                                                                                                              |
+| 18    | P4-T05  | todo    |              | 0        | Migration in its own PR; applied to dev by `db-deploy` after the merge                                                                                                                |
+| 19    | P5-T01  | todo    |              | 0        |                                                                                                                                                                                       |
+| 20    | P5-T02  | todo    |              | 0        |                                                                                                                                                                                       |
+| 21    | P6-T01  | todo    |              | 0        |                                                                                                                                                                                       |
+| 22    | P6-T02  | todo    |              | 0        | Security review required; consent line is approved wording only                                                                                                                       |
+| 23    | P7-T01  | todo    |              | 0        |                                                                                                                                                                                       |
+| 24    | P8-T01  | todo    |              | 0        | Build the set and script; real-model run: ask the owner                                                                                                                               |
+| 25    | P8-T02  | todo    |              | 0        | Security review required                                                                                                                                                              |
+| 26    | P8-T03  | todo    |              | 0        | Mostly owner-only: legal review, daily budget, deployed header check. Ask the owner                                                                                                   |
+| 27    | P9-T01  | todo    |              | 0        | Runbook can be written; the rollout and flag are the owner's                                                                                                                          |
