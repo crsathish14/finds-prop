@@ -3,9 +3,9 @@
  * them is written in a prompt, a component or the agent loop: they all read from here.
  *
  * Left out on purpose, because the owner has not set a value yet (docs/ai-chat-phase-plan.md, gate G-B):
- * the daily budget for the global limit, and the time for the whole message (it must stay below the
- * route's `maxDuration`, which the endpoint task sets). Do not invent them here; add each with the task
- * that needs it, once the owner has chosen.
+ * the time for the whole message (it must stay below the route's `maxDuration`, which the endpoint task
+ * sets). Do not invent it here; add it with the task that needs it, once the owner has chosen. The daily
+ * budget is a marked placeholder below (`owner to confirm`) so the global limit exists and fails safe.
  */
 
 /** What the assistant calls the product in every piece of its own text. Lowercase on purpose (ADR-128, D11). */
@@ -56,3 +56,41 @@ export const EMI_DEFAULT_YEARS = 20;
  * example for the maths, never a lender's offer or current rate, and no text may present it as one.
  */
 export const EMI_EXAMPLE_ANNUAL_RATE_PERCENT = 7.2;
+
+/**
+ * Rate limits of the chat (ADR-128 section 7, decision D9; the rules are in `src/server/rate-limit/limits.ts`).
+ * The counters live in the database; only the numbers are here.
+ */
+
+/** Anonymous visitors get this many free messages, then the sign-in gate (D2, D9). */
+export const AI_TRIAL_MESSAGES = 2;
+
+/**
+ * The free trial counts over one year, so the window is 366 days. The database accepts at most this (migration
+ * 20261114120000) and keeps the trial rows for 400 days. Do not raise it without a new migration.
+ */
+export const AI_TRIAL_WINDOW_SECONDS = 366 * 24 * 60 * 60;
+
+/** A loose per-address backstop for anonymous messages a day. Many mobile users share one carrier address. */
+export const AI_ANONYMOUS_IP_MESSAGES_PER_DAY = 40;
+
+/** At most this many messages a minute from one caller, signed in or not (BR-73, the UX note). */
+export const AI_BURST_MESSAGES_PER_MINUTE = 10;
+
+/** A signed-in customer's messages a day ("adjust after cost data", ADR-128 section 7). */
+export const AI_SIGNED_IN_MESSAGES_PER_DAY = 40;
+
+/**
+ * PLACEHOLDER, owner to confirm (gate G-B): the most messages the whole chat answers in a day, for every caller
+ * together. When it is used up, the chat shows "AI search is unavailable right now". The owner has not set a
+ * value; 1,000 is only a stand-in so the limit exists and fails safe. It is set for real in task AI-P8-T03.
+ */
+export const AI_GLOBAL_DAILY_MESSAGE_BUDGET = 1000;
+
+/**
+ * The anonymous cookie id (D13): a random first-party id that counts the free trial per browser. It is kept for
+ * a year, the length of the trial, and used for nothing else. PLACEHOLDER wording of the cookie policy: owner to
+ * confirm (gate G-E, legal review).
+ */
+export const AI_ANONYMOUS_COOKIE_NAME = "fp_ai_anon";
+export const AI_ANONYMOUS_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;

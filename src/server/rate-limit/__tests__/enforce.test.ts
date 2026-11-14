@@ -15,6 +15,9 @@ const caller: RateLimitCaller = {
   userId: "user-1",
   visitor: () => "visitor-hash",
   ip: () => "ip-hash",
+  network: () => "network-hash",
+  global: () => "global-hash",
+  cookie: () => "cookie-hash",
   hashKey: (key) => `hashed(${key})`,
 };
 
@@ -109,6 +112,15 @@ describe("UT-rate-limit: enforceRateLimit", () => {
       },
       ip: () => {
         throw new Error("the ip hash was computed");
+      },
+      network: () => {
+        throw new Error("the network hash was computed");
+      },
+      global: () => {
+        throw new Error("the global key was computed");
+      },
+      cookie: () => {
+        throw new Error("the cookie hash was computed");
       },
       hashKey: () => {
         throw new Error("a key hash was computed");

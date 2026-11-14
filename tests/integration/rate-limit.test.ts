@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import { ActionError } from "@/server/actions/normalise-error";
-import { enforceRateLimit } from "@/server/rate-limit/enforce";
+import { enforceRateLimit, type RateLimitCaller } from "@/server/rate-limit/enforce";
 import { createRateLimitCounter, enforceActionRateLimit } from "@/server/rate-limit/rate-limit";
 import type { SessionView } from "@/server/auth/session";
 import { adminClient, visitorClient } from "./support/clients";
@@ -99,6 +99,9 @@ describe("IT-rate-limit: the rules of a scope", () => {
       userId,
       visitor: () => "unused-visitor-hash",
       ip: () => "unused-ip-hash",
+      network: () => "unused-network-hash",
+      global: () => "unused-global-hash",
+      cookie: () => null,
       hashKey: () => "unused-key-hash",
     };
     for (let attempt = 1; attempt <= 10; attempt += 1) {
@@ -153,5 +156,109 @@ describe("IT-rate-limit: the action step (hashes from the request, secret from t
       }),
     );
     expect(error.code).toBe("RATE_LIMITED");
+  });
+});
+
+/** A caller of the AI chat with fresh identities, so a rerun on the same database never meets old counts. */
+function aiCaller(who: {
+  userId?: string | null;
+  cookie?: string | null;
+  network?: string;
+}): RateLimitCaller {
+  const visitor = `it-visitor-${randomUUID()}`;
+  const cookie = who.cookie === undefined ? `it-cookie-${randomUUID()}` : who.cookie;
+  const network = who.network ?? `it-network-${randomUUID()}`;
+  const globalKey = `it-global-${randomUUID()}`;
+  subjects.push(visitor, network, globalKey);
+  if (cookie) subjects.push(cookie);
+  if (who.userId) subjects.push(who.userId);
+  return {
+    userId: who.userId ?? null,
+    visitor: () => visitor,
+    ip: () => `it-ip-${network}`,
+    network: () => network,
+    global: () => globalKey,
+    cookie: () => cookie,
+    hashKey: (key) => key,
+  };
+}
+
+describe("IT-rate-limit-ai: the AI chat rules against a real database (ADR-128 section 7, D9, D13)", () => {
+  const counter = createRateLimitCounter(randomUUID());
+
+  it("IT-ai-trial: allows 2 messages over a year, then refuses with a retry time of more than a day", async () => {
+    const caller = aiCaller({});
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller });
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller });
+    const error = await refusal(enforceRateLimit({ counter, scope: "ai_chat_trial", caller }));
+    expect(error.code).toBe("RATE_LIMITED");
+    // A day-long window would answer at most 86,400: this proves the one-year window (migration 20261114120000).
+    expect(error.retryAfter).toBeGreaterThan(86400);
+    expect(error.retryAfter).toBeLessThanOrEqual(366 * 86400);
+  });
+
+  it("IT-ai-trial-fallback: a browser with no cookie is counted by its visitor hash", async () => {
+    const caller = aiCaller({ cookie: null });
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller });
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller });
+    const error = await refusal(enforceRateLimit({ counter, scope: "ai_chat_trial", caller }));
+    expect(error.code).toBe("RATE_LIMITED");
+  });
+
+  it("IT-ai-shared-ip: two browsers behind one address each get 2 messages; the address cap is 40 a day and loose", async () => {
+    const network = `it-shared-${randomUUID()}`;
+    const first = aiCaller({ network });
+    const second = aiCaller({ network });
+    for (const person of [first, second]) {
+      await enforceRateLimit({ counter, scope: "ai_chat_trial", caller: person });
+      await enforceRateLimit({ counter, scope: "ai_chat_trial", caller: person });
+    }
+    // 4 messages so far from this address; the cap refuses the 41st, not the 5th.
+    for (let message = 1; message <= 40; message += 1) {
+      await enforceRateLimit({ counter, scope: "ai_chat_trial_ip", caller: first });
+    }
+    const error = await refusal(
+      enforceRateLimit({ counter, scope: "ai_chat_trial_ip", caller: second }),
+    );
+    expect(error.code).toBe("RATE_LIMITED");
+  });
+
+  it("IT-ai-moving-to-a-user: after the trial is used up, signing in starts the signed-in allowance", async () => {
+    const cookie = `it-cookie-${randomUUID()}`;
+    const anonymous = aiCaller({ cookie });
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller: anonymous });
+    await enforceRateLimit({ counter, scope: "ai_chat_trial", caller: anonymous });
+    await refusal(enforceRateLimit({ counter, scope: "ai_chat_trial", caller: anonymous }));
+
+    const signedIn = aiCaller({ cookie, userId: randomUUID() });
+    for (const scope of ["ai_chat_trial", "ai_chat_burst", "ai_chat_user_day"] as const) {
+      await enforceRateLimit({ counter, scope, caller: signedIn });
+    }
+  });
+
+  it("IT-ai-burst: allows 10 messages a minute, then refuses the 11th", async () => {
+    const caller = aiCaller({ userId: randomUUID() });
+    for (let message = 1; message <= 10; message += 1) {
+      await enforceRateLimit({ counter, scope: "ai_chat_burst", caller });
+    }
+    const error = await refusal(enforceRateLimit({ counter, scope: "ai_chat_burst", caller }));
+    expect(error.code).toBe("RATE_LIMITED");
+    expect(error.retryAfter).toBeLessThanOrEqual(60);
+  });
+
+  it("IT-ai-user-day: allows 40 messages a day to a signed-in customer, then refuses the 41st", async () => {
+    const caller = aiCaller({ userId: randomUUID() });
+    for (let message = 1; message <= 40; message += 1) {
+      await enforceRateLimit({ counter, scope: "ai_chat_user_day", caller });
+    }
+    const error = await refusal(enforceRateLimit({ counter, scope: "ai_chat_user_day", caller }));
+    expect(error.code).toBe("RATE_LIMITED");
+  });
+
+  it("IT-ai-global-day: counts under one constant key and passes while the budget lasts", async () => {
+    const caller = aiCaller({});
+    await enforceRateLimit({ counter, scope: "ai_chat_global_day", caller });
+    const answer = await counter.hit("ai_chat_global_day_global", caller.global(), 86400, 1);
+    expect(answer.allowed).toBe(false);
   });
 });

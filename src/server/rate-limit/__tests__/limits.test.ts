@@ -10,6 +10,11 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
   it("holds exactly the agreed scopes", () => {
     expect([...RATE_LIMIT_SCOPES].sort()).toEqual(
       [
+        "ai_chat_burst",
+        "ai_chat_global_day",
+        "ai_chat_trial",
+        "ai_chat_trial_ip",
+        "ai_chat_user_day",
         "admin_decision",
         "admin_edit",
         "builder_edit",
@@ -68,6 +73,40 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ]);
   });
 
+  it("holds the AI chat numbers of ADR-128 section 7 (D9)", () => {
+    expect(RATE_LIMITS.ai_chat_trial).toEqual([
+      {
+        who: "cookie",
+        otherwise: ["visitor"],
+        windowSeconds: 366 * 86400,
+        max: 2,
+        only: "anonymous",
+      },
+    ]);
+    expect(RATE_LIMITS.ai_chat_trial_ip).toEqual([
+      { who: "network", windowSeconds: 86400, max: 40, only: "anonymous" },
+    ]);
+    expect(RATE_LIMITS.ai_chat_burst).toEqual([
+      { who: "user", otherwise: ["cookie", "visitor"], windowSeconds: 60, max: 10 },
+    ]);
+    expect(RATE_LIMITS.ai_chat_user_day).toEqual([
+      { who: "user", windowSeconds: 86400, max: 40, only: "signed_in" },
+    ]);
+    expect(RATE_LIMITS.ai_chat_global_day).toEqual([
+      { who: "global", windowSeconds: 86400, max: 1000 }, // 1000 is a placeholder: owner to confirm (G-B)
+    ]);
+  });
+
+  it("names the trial scopes the database keeps for a year, so a rename cannot make them be swept in 7 days", () => {
+    const [trial] = RATE_LIMITS.ai_chat_trial;
+    expect(databaseScope("ai_chat_trial", trial)).toBe("ai_chat_trial_cookie");
+    expect(databaseScope("ai_chat_trial", { ...trial, who: "visitor" })).toBe(
+      "ai_chat_trial_visitor",
+    );
+    // The migration accepts a window of at most 366 days.
+    expect(trial.windowSeconds).toBeLessThanOrEqual(31622400);
+  });
+
   it("gives every rule its own database scope, in the form the database accepts", () => {
     const seen = new Set<string>();
     for (const scope of RATE_LIMIT_SCOPES) {
@@ -78,7 +117,10 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         expect(seen.has(name)).toBe(false);
         seen.add(name);
         expect(rule.windowSeconds).toBeGreaterThanOrEqual(1);
-        expect(rule.windowSeconds).toBeLessThanOrEqual(86400);
+        // A day is the longest window, except the AI chat trial: 366 days, as migration 20261114120000 allows.
+        expect(rule.windowSeconds).toBeLessThanOrEqual(
+          scope === "ai_chat_trial" ? 31622400 : 86400,
+        );
         expect(rule.max).toBeGreaterThanOrEqual(1);
       }
     }

@@ -7,7 +7,27 @@ vi.mock("@/server/supabase/admin.server", () => ({
   createAdminSupabase: (requestId?: string) => createAdminSupabase(requestId) as unknown,
 }));
 const incomingHeaders = new Headers();
-vi.mock("next/headers", () => ({ headers: () => Promise.resolve(incomingHeaders) }));
+const cookieValues = new Map<string, string>();
+const cookieSettings: { options: unknown[]; failToSet: boolean } = {
+  options: [],
+  failToSet: false,
+};
+const cookieJar = {
+  get: (name: string) => {
+    const value = cookieValues.get(name);
+    return value === undefined ? undefined : { value };
+  },
+  set: (name: string, value: string, options: unknown) => {
+    if (cookieSettings.failToSet)
+      throw new Error("Cookies can only be modified in a Server Action or Route Handler");
+    cookieValues.set(name, value);
+    cookieSettings.options.push(options);
+  },
+};
+vi.mock("next/headers", () => ({
+  headers: () => Promise.resolve(incomingHeaders),
+  cookies: () => Promise.resolve(cookieJar),
+}));
 const environment: { RATE_LIMIT_HMAC_SECRET?: string; APP_ENV: string } = {
   RATE_LIMIT_HMAC_SECRET: "a-test-secret-that-is-at-least-32-characters-long",
   APP_ENV: "production",
@@ -138,5 +158,136 @@ describe("UT-rate-limit: enforceActionRateLimit", () => {
     await expect(
       enforceActionRateLimit({ scope: "enquiry", session: user, requestId: "req-12345678" }),
     ).rejects.toMatchObject({ code: "RATE_LIMITED", retryAfter: 90 });
+  });
+});
+
+describe("UT-rate-limit-ai: enforceAiChatRateLimits", () => {
+  beforeEach(() => {
+    rpc.mockReset().mockResolvedValue({ data: [{ allowed: true, retry_after: 0 }], error: null });
+    createAdminSupabase.mockReset().mockReturnValue({ rpc });
+    incomingHeaders.set("x-vercel-forwarded-for", "2001:db8:abcd:12::1");
+    incomingHeaders.set("user-agent", "Mozilla/5.0");
+    environment.RATE_LIMIT_HMAC_SECRET = "a-test-secret-that-is-at-least-32-characters-long";
+    environment.APP_ENV = "production";
+    cookieValues.clear();
+    cookieSettings.options = [];
+    cookieSettings.failToSet = false;
+  });
+
+  function counted() {
+    return rpc.mock.calls.map((call) => call[1] as { limit_scope: string; limit_subject: string });
+  }
+
+  it("UT-ai-wrapper-anonymous: counts burst, trial, address and global in that order, by a cookie hash and never the cookie itself", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    expect(counted().map((entry) => entry.limit_scope)).toEqual([
+      "ai_chat_burst_cookie",
+      "ai_chat_trial_cookie",
+      "ai_chat_trial_ip_network",
+      "ai_chat_global_day_global",
+    ]);
+    const cookie = cookieValues.get("fp_ai_anon");
+    expect(cookie).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    for (const entry of counted()) {
+      expect(entry.limit_subject).toMatch(/^[0-9a-f]{40}$/);
+      expect(JSON.stringify(entry)).not.toContain(cookie);
+      expect(JSON.stringify(entry)).not.toContain("2001");
+    }
+  });
+
+  it("UT-ai-wrapper-cookie-set: sets the cookie once, HttpOnly, SameSite Lax and Secure in production", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    expect(cookieSettings.options).toHaveLength(1);
+    expect(cookieSettings.options[0]).toMatchObject({
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+    });
+  });
+
+  it("UT-ai-wrapper-cookie-not-secure-locally: leaves Secure off when running locally over http", async () => {
+    environment.APP_ENV = "local";
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    expect(cookieSettings.options[0]).toMatchObject({ httpOnly: true, secure: false });
+  });
+
+  it("UT-ai-wrapper-same-browser: the same cookie is the same trial on the next message", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    const trial = counted().filter((entry) => entry.limit_scope === "ai_chat_trial_cookie");
+    expect(trial).toHaveLength(2);
+    expect(trial[0]?.limit_subject).toBe(trial[1]?.limit_subject);
+  });
+
+  it("UT-ai-wrapper-two-browsers-one-address: tells two browsers apart and groups them in the address cap", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    cookieValues.clear();
+    incomingHeaders.set("x-vercel-forwarded-for", "2001:db8:abcd:12:9:9:9:9");
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    const entries = counted();
+    const subjectsOf = (scope: string) =>
+      entries.filter((entry) => entry.limit_scope === scope).map((entry) => entry.limit_subject);
+    const trials = subjectsOf("ai_chat_trial_cookie");
+    expect(trials[0]).not.toBe(trials[1]);
+    const networks = subjectsOf("ai_chat_trial_ip_network");
+    expect(networks[0]).toBe(networks[1]);
+  });
+
+  it("UT-ai-wrapper-signed-in: counts by user id, sets no cookie and skips the anonymous limits", async () => {
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: user, requestId: "req-12345678" });
+    expect(counted().map((entry) => [entry.limit_scope, entry.limit_subject.length])).toEqual([
+      ["ai_chat_burst_user", "user-1".length],
+      ["ai_chat_user_day_user", "user-1".length],
+      ["ai_chat_global_day_global", 40],
+    ]);
+    expect(cookieValues.size).toBe(0);
+  });
+
+  it("UT-ai-wrapper-no-cookie-fallback: counts by the visitor hash when the cookie cannot be set, never by a throwaway id", async () => {
+    cookieSettings.failToSet = true;
+    const { enforceAiChatRateLimits } = await load();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    expect(counted().map((entry) => entry.limit_scope)).toEqual([
+      "ai_chat_burst_visitor",
+      "ai_chat_trial_visitor",
+      "ai_chat_trial_ip_network",
+      "ai_chat_global_day_global",
+    ]);
+    const first = counted()[1]?.limit_subject;
+    rpc.mockClear();
+    await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
+    expect(counted()[1]?.limit_subject).toBe(first);
+  });
+
+  it("UT-ai-wrapper-refused: raises RATE_LIMITED and stops counting at the first limit that is used up", async () => {
+    rpc.mockResolvedValue({ data: [{ allowed: false, retry_after: 45 }], error: null });
+    const { enforceAiChatRateLimits } = await load();
+    await expect(
+      enforceAiChatRateLimits({ session: null, requestId: "req-12345678" }),
+    ).rejects.toMatchObject({ code: "RATE_LIMITED", retryAfter: 45 });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("UT-ai-wrapper-fail-closed: refuses when the counter errors, and when the secret is missing", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const { enforceAiChatRateLimits } = await load();
+    await expect(
+      enforceAiChatRateLimits({ session: null, requestId: "req-12345678" }),
+    ).rejects.toMatchObject({ code: "INTERNAL" });
+
+    rpc.mockReset();
+    delete environment.RATE_LIMIT_HMAC_SECRET;
+    await expect(
+      enforceAiChatRateLimits({ session: null, requestId: "req-12345678" }),
+    ).rejects.toMatchObject({ code: "INTERNAL" });
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
