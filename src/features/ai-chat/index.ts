@@ -3,7 +3,10 @@
  * nothing here is wired to a page or a route, and customers see nothing. Server-only: every export reads through the
  * cached public reads.
  */
-export { ANSWER_ONLY_INSTRUCTION } from "./agent-instructions";
+export { ANSWER_ONLY_INSTRUCTION } from "./prompts/answer-only";
+export { buildSystemPrompt } from "./prompts/system-prompt";
+export type { SystemPromptOptions } from "./prompts/system-prompt";
+export { SYSTEM_PROMPT_CANARY, SYSTEM_PROMPT_VERSION } from "./prompts/version";
 export { AGENT_MESSAGE_KEYS } from "./agent-types";
 export type {
   AgentDone,
