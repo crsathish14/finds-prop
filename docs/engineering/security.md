@@ -60,6 +60,7 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 | `server/rate-limit`                                                    | Writes `public_rate_limits` (revoked from users)                            |
 | `server/idempotency`                                                   | Claims and stores `idempotency_keys` (closed to users)                      |
 | `server/audit`                                                         | Calls the service-only `audit_record()` for events a trigger cannot see     |
+| `server/audit` (`ai-usage.ts`, `writeAiUsage`)                         | Writes `ai_usage_events` (AI chat usage metadata, no text; closed to users) |
 | `/api/auth/hooks/send-sms`                                             | Needs no database; no service role                                          |
 | Seed script (local/dev only)                                           | Creates test users                                                          |
 

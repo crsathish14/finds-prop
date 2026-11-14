@@ -312,3 +312,33 @@ describe("UT-rate-limit-ai: enforceAiChatRateLimits", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 });
+
+describe("UT-ai-usage-visitor-hash: requestVisitorHash", () => {
+  beforeEach(() => {
+    environment.RATE_LIMIT_HMAC_SECRET = "a-test-secret-that-is-at-least-32-characters-long";
+    environment.APP_ENV = "production";
+  });
+
+  it("is the HMAC of the address and the browser, 40 hex characters, never the address", async () => {
+    const { requestVisitorHash } = await load();
+    const headers = new Headers({
+      "x-vercel-forwarded-for": "203.0.113.7",
+      "user-agent": "TestBrowser/1.0",
+    });
+    const hash = requestVisitorHash(headers);
+    expect(hash).toMatch(/^[0-9a-f]{40}$/);
+    expect(hash).not.toContain("203.0.113.7");
+    expect(requestVisitorHash(headers)).toBe(hash);
+    expect(
+      requestVisitorHash(
+        new Headers({ "x-vercel-forwarded-for": "203.0.113.8", "user-agent": "TestBrowser/1.0" }),
+      ),
+    ).not.toBe(hash);
+  });
+
+  it("is null when the secret is not set, so the row is written without it", async () => {
+    delete environment.RATE_LIMIT_HMAC_SECRET;
+    const { requestVisitorHash } = await load();
+    expect(requestVisitorHash(new Headers())).toBeNull();
+  });
+});

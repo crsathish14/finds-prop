@@ -21,6 +21,7 @@ import {
   readEvents,
   say,
   SIGNED_IN,
+  VISITOR_HASH,
   textOf,
   TOOL_CONTACT_PHONE,
 } from "./harness";
@@ -119,6 +120,54 @@ describe("UT-ai-endpoint: a normal message", () => {
     );
     expect(events.at(-1)).toEqual({ type: "done", outcome: "answered" });
     expect(harness.usage[0]).toMatchObject({ caller: "signed_in", userId: SIGNED_IN.userId });
+  });
+
+  it("records the visitor hash of an anonymous caller and never one for a signed-in caller", async () => {
+    const anonymous = createHarness({ script: [textTurn("Hello there, how can I help?")] });
+    await readEvents(await handleAiChat(chatRequest(say("hello there")), anonymous.deps));
+    expect(anonymous.usage[0]).toMatchObject({ caller: "anonymous", visitorHash: VISITOR_HASH });
+
+    const signedIn = createHarness({ script: [textTurn("Hello there, how can I help?")] });
+    signedIn.session = SIGNED_IN;
+    await readEvents(await handleAiChat(chatRequest(say("hello there")), signedIn.deps));
+    expect(signedIn.usage[0]).toMatchObject({ caller: "signed_in", visitorHash: null });
+  });
+
+  it("records no visitor hash, and still answers, when it cannot be worked out", async () => {
+    const harness = createHarness({
+      script: [textTurn("Hello there, how can I help?")],
+      visitorHash: () => {
+        throw new Error("no secret");
+      },
+    });
+    const response = await handleAiChat(chatRequest(say("hello there")), harness.deps);
+    expect((await readEvents(response)).at(-1)).toEqual({ type: "done", outcome: "answered" });
+    expect(harness.usage[0]).toMatchObject({ outcome: "answered", visitorHash: null });
+  });
+
+  it("hands the stream's work to keepAlive so a cancelled turn still gets its usage recorded", async () => {
+    const harness = createHarness({ script: [HANGING_TURN] });
+    const response = await handleAiChat(chatRequest(say("hello there")), harness.deps);
+    expect(harness.kept).toHaveLength(1);
+    const reader = response.body?.getReader();
+    await reader?.read(); // the start event
+    await reader?.cancel();
+    // What `after` waits for: when it settles, the usage row has been written.
+    await harness.kept[0];
+    expect(harness.usage).toHaveLength(1);
+    expect(harness.usage[0]?.outcome).toBe("aborted");
+  });
+
+  it("a keepAlive that throws never changes the answer", async () => {
+    const harness = createHarness({
+      script: [textTurn("Hello there, how can I help?")],
+      keepAlive: () => {
+        throw new Error("after is not available");
+      },
+    });
+    const response = await handleAiChat(chatRequest(say("hello there")), harness.deps);
+    expect((await readEvents(response)).at(-1)).toEqual({ type: "done", outcome: "answered" });
+    expect(harness.usage).toHaveLength(1);
   });
 
   it("a recording failure never changes the answer", async () => {

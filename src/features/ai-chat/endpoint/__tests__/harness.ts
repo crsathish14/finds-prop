@@ -48,6 +48,9 @@ const lookupHomeTool: AiChatTool<z.infer<typeof lookupInput>, z.infer<typeof loo
   },
 };
 
+/** The made-up visitor hash the stand-in gives every request. */
+export const VISITOR_HASH = "visitor-hash-0123456789";
+
 export const SIGNED_IN: SessionView = {
   userId: "user-1",
   roles: ["customer"],
@@ -91,6 +94,8 @@ export interface Harness {
   readonly deps: ChatDeps;
   readonly provider: FakeAiProvider;
   readonly usage: ChatUsageRecord[];
+  /** The work handed to `keepAlive`: the stream's loop, which includes writing the usage. */
+  readonly kept: Promise<unknown>[];
   readonly scopesAsked: (readonly string[] | undefined)[];
   readonly enforce: { calls: number };
   session: SessionView | null;
@@ -104,6 +109,8 @@ export interface HarnessOptions {
   timing?: { timeLimitMs: number; hardStopMs: number };
   createProvider?: () => AiProvider;
   recordUsage?: (record: ChatUsageRecord) => Promise<void>;
+  visitorHash?: ChatDeps["visitorHash"];
+  keepAlive?: ChatDeps["keepAlive"];
 }
 
 /** The endpoint's dependencies over the fake provider and the in-memory counter. */
@@ -111,6 +118,7 @@ export function createHarness(options: HarnessOptions = {}): Harness {
   const provider = createFakeAiProvider(options.script ?? []);
   const { counter } = createCounter(options.refuse);
   const usage: ChatUsageRecord[] = [];
+  const kept: Promise<unknown>[] = [];
   const scopesAsked: (readonly string[] | undefined)[] = [];
   const enforce = { calls: 0 };
   const state = {
@@ -136,12 +144,15 @@ export function createHarness(options: HarnessOptions = {}): Harness {
     tools: [lookupHomeTool],
     translate: TOOL_CONTEXT.translate,
     recordUsage: options.recordUsage ?? (async (record) => void usage.push(record)),
+    visitorHash: options.visitorHash ?? (() => VISITOR_HASH),
+    keepAlive: options.keepAlive ?? ((work) => void kept.push(work)),
     timing: options.timing ?? { timeLimitMs: 10_000, hardStopMs: 20_000 },
   };
   return {
     deps,
     provider,
     usage,
+    kept,
     scopesAsked,
     enforce,
     get session() {

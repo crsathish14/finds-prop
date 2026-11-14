@@ -13,6 +13,7 @@ Old personal data and old bookkeeping rows are deleted by a job that runs by its
 | Project leads (`project_leads`)                                | 24 months                                                                                                                     |
 | Rate limit windows (`public_rate_limits`)                      | 7 days; the AI chat trial scopes `ai_chat_trial_cookie` and `ai_chat_trial_visitor` 400 days (a 366-day window plus a margin) |
 | Repeat-request keys (`idempotency_keys`)                       | 24 hours                                                                                                                      |
+| AI chat usage rows (`ai_usage_events`)                         | 12 months (provisional)                                                                                                       |
 
 It leaves alone: the audit log (never deleted), a submission that has an uploaded file, and a submission still waiting on a CRM delivery. Those two are counted every night (see "Check it") so they are not forgotten. One-time codes sent by text message are Supabase Auth's own rows and are not touched here.
 

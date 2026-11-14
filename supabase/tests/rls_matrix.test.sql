@@ -165,11 +165,13 @@ insert into public.app_config (key, value) values ('matrix.probe', 'x');
 insert into public.internal_cron_tokens (name, token) values ('matrix_probe', repeat('x', 40));
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
+insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
 
 -- Layer 1: the privileges each role holds on each table (S select, I insert, U update, D delete, T truncate; select,
 -- insert and update count when held on any column, as the column grants are).
 create temp table exp_grants (t text primary key, anon text, authed text, service text);
 insert into exp_grants values
+  ('ai_usage_events', '', '', 'S,I,U,D,T'),
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
@@ -234,7 +236,8 @@ insert into probe values
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
   ('app_config', 'x1', 'key = ''matrix.probe'''), ('internal_cron_tokens', 'x1', 'name = ''matrix_probe'''),
-  ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe''');
+  ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
+  ('ai_usage_events', 'x1', 'request_id = ''matrix_probe''');
 
 create function pg_temp.sees(who text, tbl text) returns text
 language plpgsql
@@ -287,7 +290,8 @@ from (values
   ('app_config', array['', '', '', '', '', '', '']),
   ('internal_cron_tokens', array['', '', '', '', '', '', '']),
   ('idempotency_keys', array['', '', '', '', '', '', '']),
-  ('public_rate_limits', array['', '', '', '', '', '', ''])
+  ('public_rate_limits', array['', '', '', '', '', '', '']),
+  ('ai_usage_events', array['', '', '', '', '', '', ''])
 ) as x(t, by_who)
 cross join unnest(array['anon', 'ca', 'cb', 'ba', 'bb', 'bc', 'ad']) with ordinality as r(who, n);
 

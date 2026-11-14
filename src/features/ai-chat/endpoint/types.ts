@@ -12,13 +12,15 @@ import type { ChatOutcome } from "./events";
 /**
  * One row of usage for one customer message (ADR-128 section 8): facts about the call and never what was said.
  * It has no message text, no phone, no email, no name and no search words; the rule tags and counts are names and
- * numbers only. `userId` is for the table the next task adds (P4-T05) and is never logged here.
+ * numbers only. `userId` and `visitorHash` are for the table `ai_usage_events` (P4-T05) and are never logged.
  */
 export interface ChatUsageRecord {
   readonly requestId: string;
   readonly at: string;
   readonly caller: "anonymous" | "signed_in";
   readonly userId: string | null;
+  /** The HMAC visitor hash (never the address) of an anonymous caller, when it could be worked out; else null. */
+  readonly visitorHash: string | null;
   readonly promptVersion: string;
   readonly outcome: ChatOutcome;
   /** The limit that refused the message, when one did. */
@@ -61,6 +63,13 @@ export interface ChatDeps {
   readonly translate: Translate;
   /** The usage step. A failure here is logged and never changes what the customer gets. */
   recordUsage(record: ChatUsageRecord): Promise<void>;
+  /** The visitor hash of the request (HMAC, never the address), or null if it cannot be worked out. Must not throw. */
+  visitorHash?(headers: Headers): string | null;
+  /**
+   * Keeps the serverless function alive until `work` settles, so a message the customer cancelled still gets its usage
+   * recorded (`after` from `next/server` in the real deps). Absent in tests. Must not throw.
+   */
+  keepAlive?(work: Promise<unknown>): void;
   reportError?(error: unknown, context: ErrorContext): Promise<void>;
   /** The time limit for the whole message and the hard stop, in milliseconds (`src/config/ai.ts`). */
   readonly timing: { readonly timeLimitMs: number; readonly hardStopMs: number };
