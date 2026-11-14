@@ -68,7 +68,7 @@ describe("UT-action-deps: the real dependencies of defineAction", () => {
     expect(await deps.newRequestId()).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it("claims a key for the signed-in user by user id", async () => {
+  it("claims a key for the signed-in user by user id, under a scope the table accepts (lowercase and underscores)", async () => {
     const deps = await load();
     await deps.beginIdempotent({
       scope: "createListing",
@@ -76,7 +76,7 @@ describe("UT-action-deps: the real dependencies of defineAction", () => {
       session: user,
       requestId: "req-12345678",
     });
-    expect(rowsClaimed).toEqual([{ scope: "createListing", subject: "user-1", key: "key-1" }]);
+    expect(rowsClaimed).toEqual([{ scope: "create_listing", subject: "user-1", key: "key-1" }]);
   });
 
   it("claims a key for an anonymous caller by visitor hash, never by address", async () => {

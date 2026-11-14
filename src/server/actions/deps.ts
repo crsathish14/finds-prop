@@ -6,6 +6,7 @@ import { getSessionView } from "../auth/get-session-view";
 import type { SessionView } from "../auth/session";
 import { env } from "../env";
 import { createIdempotencyTable } from "../idempotency/idempotency-table";
+import { idempotencyScope } from "../idempotency/scope";
 import {
   beginIdempotent,
   completeIdempotent,
@@ -30,7 +31,11 @@ async function claimSubject(session: SessionView | null): Promise<string> {
 }
 
 async function rowFor(request: IdempotencyRequest): Promise<IdempotencyRow> {
-  return { scope: request.scope, subject: await claimSubject(request.session), key: request.key };
+  return {
+    scope: idempotencyScope(request.scope),
+    subject: await claimSubject(request.session),
+    key: request.key,
+  };
 }
 
 /** The real dependencies of defineAction (S3-T07 and S3-T12). */
