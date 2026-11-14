@@ -2945,6 +2945,21 @@
     "errorTitle": "We couldn't answer that",
     "errorBody": "Something went wrong on our side. Your message is saved, so you can try again.",
     "assistantName": "findsprop's AI assistant",
+    "pageTitle": "Ask findsprop's AI assistant",
+    "pageDescription": "Ask about homes, projects and builders listed on findsprop, or work out an EMI.",
+    "heading": "Ask findsprop's AI assistant",
+    "intro": "Ask about homes, projects and builders listed on findsprop, or work out an EMI. Write in English, Tamil or Tanglish.",
+    "examples": {
+      "label": "Try one of these",
+      "help": "Tap one to fill the box. Nothing is sent until you press Send.",
+      "search": "3 BHK flat in Velachery under 1.5 crore",
+      "builder": "Tell me about Kadal Homes",
+      "emi": "EMI for an 80 lakh loan over 20 years",
+      "tamil": "வேளச்சேரியில் 3 BHK வீடு",
+      "tanglish": "Adyar la 2 BHK rent ku venum"
+    },
+    "returnedTitle": "You're signed in",
+    "returnedBody": "Your conversation is back. We kept what you typed.",
     "thread": {
       "label": "Conversation with findsprop's AI assistant",
       "youSaid": "You said:",
@@ -2955,7 +2970,9 @@
       "placeholder": "Ask about a home or project",
       "send": "Send",
       "note": "Your message is used to answer you. Don't include personal details here.",
-      "counter": "{count, number} / {max, number}"
+      "counter": "{count, number} / {max, number}",
+      "off": "The assistant can't take messages right now.",
+      "offWithDraft": "We kept what you typed. The assistant can't take messages right now."
     },
     "gate": {
       "draftLabel": "Your next message, not sent yet",

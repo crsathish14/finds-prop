@@ -29,6 +29,9 @@ export const TOOL_TIMEOUT_MS = 3000;
  */
 export const AI_PROVIDER_IDLE_TIMEOUT_MS = 20_000;
 
+/** The most home and project cards the page draws under one answer (UX addendum decision 5). */
+export const AI_MAX_CARDS_PER_ANSWER = 3;
+
 /** The longest customer message the assistant accepts, in characters. */
 export const MAX_INPUT_CHARACTERS = 1000;
 

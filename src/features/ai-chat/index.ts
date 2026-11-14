@@ -1,7 +1,8 @@
 /**
  * The AI chat assistant (ADR-128), behind `FLAG_AI_SEARCH`: the tools, the agent loop, the two guards, the system
- * prompt and the streaming endpoint (`handleAiChat`, called by `src/app/api/ai/chat/route.ts`). No page uses it yet.
- * Server-only: every export reads through the cached public reads.
+ * prompt and the streaming endpoint (`postAiChat`, called by `src/app/api/ai/chat/route.ts`), and the page
+ * `/ai-search` (the chat screen and its island). Every export is server-only except the island in `chat/`; the
+ * server ones read through the cached public reads.
  */
 export { ANSWER_ONLY_INSTRUCTION } from "./prompts/answer-only";
 export { buildSystemPrompt } from "./prompts/system-prompt";
@@ -47,3 +48,4 @@ export type {
 export { postAiChat } from "./endpoint/post";
 export type { ChatOutcome, ChatStreamEvent } from "./endpoint/events";
 export type { ChatDeps, ChatUsageRecord } from "./endpoint/types";
+export { AiChatScreen, AiChatScreenSkeleton } from "./chat-screen";
