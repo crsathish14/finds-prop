@@ -14,6 +14,14 @@ const auth = vi.hoisted(() => ({
   summary: { fullName: "Priya Raman" } as { fullName: string | null },
 }));
 const warnings = vi.hoisted(() => ({ calls: [] as unknown[][] }));
+const flag = vi.hoisted(() => ({ customerEmail: true }));
+vi.mock("@/server/env", () => ({
+  env: {
+    get FLAG_CUSTOMER_EMAIL() {
+      return flag.customerEmail;
+    },
+  },
+}));
 
 vi.mock("server-only", () => ({}));
 vi.mock("react", async (importOriginal) => ({
@@ -52,9 +60,17 @@ beforeEach(() => {
   auth.session = { userId: "user-1" };
   auth.summary = { fullName: "Priya Raman" };
   warnings.calls = [];
+  flag.customerEmail = true;
 });
 
 describe("getEmailState: reads the account's email as the visitor (S5-T04)", () => {
+  it("is unknown, and asks Auth nothing, while customer email is switched off", async () => {
+    flag.customerEmail = false;
+    auth.thrown = new Error("must not be called");
+    expect(await getEmailState()).toEqual({ kind: "unknown" });
+    expect(warnings.calls).toHaveLength(0);
+  });
+
   it("is none for an account with no address", async () => {
     expect(await getEmailState()).toEqual({ kind: "none" });
   });

@@ -1,6 +1,7 @@
 import { publicEnv } from "@/lib/public-env";
 import { safeRedirectPath } from "@/lib/url/safe-redirect";
 import { getSessionView } from "@/server/auth/get-session-view";
+import { env } from "@/server/env";
 import { decidePageAccess } from "@/server/auth/page-access";
 import type { QueryValues } from "@/server/auth/staff-sign-in";
 import { PhoneSignInScreen } from "./phone-sign-in-screen";
@@ -32,6 +33,7 @@ export async function PhoneSignInFromQuery({
       expiredGate={first(gate) === "expired"}
       redirectTo={safeRedirectPath(first(redirect), "/dashboard")}
       alreadySignedIn={alreadySignedIn}
+      emailStep={env.FLAG_CUSTOMER_EMAIL}
     />
   );
 }

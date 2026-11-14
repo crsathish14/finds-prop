@@ -59,6 +59,8 @@ While `APP_ENV` is `dev`, phone codes go through the fake sender and Supabase's 
 
 ## Email verification (owner settings, each Supabase project)
 
+**Switched off for this version.** `FLAG_CUSTOMER_EMAIL` is off by default (`0`), and while it is off customers are never asked for an email: sign-in ends after the code (and the optional name), the dashboard shows no email card or reminder, and posting a property needs only the verified phone (the database already checks only that: `submit_listing` uses `has_verified_phone()`). The server also refuses the add-email and resend-link actions with `NOT_FOUND`, so no customer email can be sent by calling them directly. Nothing was removed: when an email provider exists, do the steps below and set `FLAG_CUSTOMER_EMAIL=1` (in Vercel for the environment, and in `.env.local` locally) and the email step, the dashboard prompt and the post-property gate come back. Builders and admins are not affected: they sign in with Google, and a builder's address is added in Supabase by hand.
+
 Customers verify an email with a single-use link that Supabase sends and `/auth/confirm` finishes (S3-T09, ADD-03). None of this is an environment variable; all of it is set in the Supabase dashboard (Authentication, then Emails), and the email step cannot be tried live until it is done. The first live test (3 Nov 2026) taught the order below.
 
 1. **Custom SMTP comes first, because it unlocks the templates.** With Supabase's built-in sender the Templates tab says "Set up custom SMTP to edit templates" and the email keeps the default link, which does not go to `/auth/confirm`. The built-in sender also reaches only the organisation's own team members, at 2 emails an hour. Set up custom SMTP (Resend, per the accounts checklist): on the SMTP Settings tab, host `smtp.resend.com`, port `465`, username `resend`, password an API key with sending access (never pasted into chat or a file, and rotated at once if it ever appears in a screenshot).
@@ -73,13 +75,14 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 
 ## Later and optional
 
-| Variable                                              | When                                                             |
-| ----------------------------------------------------- | ---------------------------------------------------------------- |
-| `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                          |
-| `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                      |
-| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                     | If error tracking is switched on                                 |
-| `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation |
-| `DESIGN_LAB`                                          | `1` only for review on local or dev; ignored in production       |
+| Variable                                              | When                                                                   |
+| ----------------------------------------------------- | ---------------------------------------------------------------------- |
+| `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                                |
+| `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                            |
+| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                     | If error tracking is switched on                                       |
+| `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation       |
+| `FLAG_CUSTOMER_EMAIL`                                 | Leave `0` until an email provider is set up (see "Email verification") |
+| `DESIGN_LAB`                                          | `1` only for review on local or dev; ignored in production             |
 
 ## AI chat (optional while `FLAG_AI_SEARCH` is off)
 

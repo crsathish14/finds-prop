@@ -1,6 +1,7 @@
 "use server";
 
 import { defineAction } from "@/server/actions/define-action";
+import { env } from "@/server/env";
 import { createServerSupabase } from "@/server/supabase/server";
 import { ActionError } from "@/server/actions/normalise-error";
 import { publicEnv } from "@/lib/public-env";
@@ -85,6 +86,7 @@ export const saveProfileName = defineAction({
 async function emailLinkClient() {
   const supabase = await createServerSupabase();
   return {
+    enabled: env.FLAG_CUSTOMER_EMAIL,
     updateEmail: (email: string) =>
       supabase.auth.updateUser(
         { email },
