@@ -13,6 +13,8 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_MAP_STYLE_URL: z.url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  NEXT_PUBLIC_SENTRY_ENVIRONMENT: z.string().min(1).optional(),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -42,4 +44,6 @@ export const publicEnv: PublicEnv = parsePublicEnv({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
   NEXT_PUBLIC_MAP_STYLE_URL: process.env.NEXT_PUBLIC_MAP_STYLE_URL,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
 });
