@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { ActionError } from "@/server/actions/normalise-error";
 import { createLogger } from "@/server/logger";
+import type { ErrorContext } from "@/server/observability";
 import { createFakeSmsSender, type FakeSmsSender } from "@/server/sms/fake";
 import { handleSendSmsHook, type SendSmsHookDeps } from "@/server/sms/send-sms-hook";
 
@@ -202,5 +203,54 @@ describe("UT-send-sms-hook: failures and logs (R-BE-10)", () => {
     for (const value of ["919000000001", "14155550123", "123456", "654321"]) {
       expect(log).not.toContain(value);
     }
+  });
+});
+
+describe("UT-send-sms-hook: error tracker (ADR-130)", () => {
+  function tracked(overrides: Partial<SendSmsHookDeps> = {}, sender?: FakeSmsSender) {
+    const reports: { error: unknown; context: ErrorContext }[] = [];
+    const rig = setup(
+      {
+        reportError: (error, context) => {
+          reports.push({ error, context });
+          return Promise.resolve();
+        },
+        ...overrides,
+      },
+      sender,
+    );
+    return { ...rig, reports };
+  }
+
+  it("reports a provider failure under the hook's route", async () => {
+    const sender = createFakeSmsSender();
+    const failure = new ActionError("INTERNAL", "provider said 500");
+    sender.sendOtp = () => Promise.reject(failure);
+    const { deps, reports } = tracked({}, sender);
+    const response = await handleSendSmsHook(signed(body()), deps);
+    expect(response.status).toBe(502);
+    expect(reports).toEqual([
+      {
+        error: failure,
+        context: { source: "handler", route: "send-sms-hook", errorCode: "INTERNAL" },
+      },
+    ]);
+  });
+
+  it("reports a missing secret, which makes every sign-in code fail", async () => {
+    const { deps, reports } = tracked({ secret: undefined });
+    const response = await handleSendSmsHook(signed(body()), deps);
+    expect(response.status).toBe(401);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.context).toMatchObject({ source: "handler", route: "send-sms-hook" });
+  });
+
+  it("does not report a caller that fails the signature, or a number outside India", async () => {
+    const { deps, reports } = tracked();
+    expect((await handleSendSmsHook(signed(body(), { tamper: true }), deps)).status).toBe(401);
+    expect((await handleSendSmsHook(signed(body({ phone: "14155550123" })), deps)).status).toBe(
+      400,
+    );
+    expect(reports).toEqual([]);
   });
 });

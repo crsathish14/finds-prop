@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ActionError, classifyError } from "../actions/normalise-error";
 import type { Logger } from "../logger";
+import type { ErrorContext } from "../observability";
 import { verifyStandardWebhook } from "../webhooks/standard-webhooks";
 import type { SmsSender } from "./types";
 
@@ -25,7 +26,12 @@ export interface SendSmsHookDeps {
   getSender(): SmsSender;
   nowSeconds: number;
   log: Logger;
+  /** Sends an unexpected error to the error tracker (ADR-130). Optional: tests have none. */
+  reportError?(error: unknown, context: ErrorContext): Promise<void>;
 }
+
+/** What the error tracker is told about this hook; alert rules match on the route (plan 09 section 6.2). */
+const HOOK_CONTEXT = { source: "handler", route: "send-sms-hook" } as const;
 
 const refuse = () => new Response(null, { status: 401 });
 
@@ -41,6 +47,7 @@ export async function handleSendSmsHook(
 
   if (!deps.secret) {
     deps.log.error("send-sms hook secret is not configured");
+    await deps.reportError?.(new Error("send-sms hook secret is not configured"), HOOK_CONTEXT);
     return refuse();
   }
   const verdict = verifyStandardWebhook({
@@ -84,6 +91,7 @@ export async function handleSendSmsHook(
       errorCode: classifyError(error),
       ...(error instanceof ActionError ? { detail: error.message } : {}),
     });
+    await deps.reportError?.(error, { ...HOOK_CONTEXT, errorCode: classifyError(error) });
     return hookError(502, "The code could not be sent. Please try again.");
   }
   return Response.json({}, { status: 200, headers: { "Cache-Control": "no-store" } });

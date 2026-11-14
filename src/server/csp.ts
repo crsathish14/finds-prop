@@ -14,6 +14,8 @@ export type CspSettings = {
   localSupabase: boolean;
   /** Vercel's preview toolbar (any environment that is not production). */
   previewToolbar: boolean;
+  /** The error tracker's address for browser reports (ADR-130); nothing is allowed when there is none. */
+  errorTrackingOrigin?: string | undefined;
 };
 
 const TURNSTILE = "https://challenges.cloudflare.com";
@@ -26,8 +28,25 @@ const HOSTED_SUPABASE_WS = "wss://*.supabase.co";
 const TOOLBAR = "https://vercel.live";
 const TOOLBAR_SOCKET = "wss://ws-us3.pusher.com";
 
+/**
+ * The origin browser error reports are sent to, taken from the tracker's address (DSN), for example
+ * `https://o1.ingest.de.sentry.io`. Only an https address on Sentry's own domain is accepted, so a
+ * mistyped or hostile setting can never open the policy to another host.
+ */
+export function errorTrackingOriginOf(dsn: string | undefined): string | undefined {
+  if (!dsn) return undefined;
+  try {
+    const { protocol, hostname } = new URL(dsn);
+    return protocol === "https:" && /^[a-z0-9.-]+\.sentry\.io$/.test(hostname)
+      ? `https://${hostname}`
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function buildContentSecurityPolicy(settings: CspSettings): string {
-  const { development, localSupabase, previewToolbar } = settings;
+  const { development, localSupabase, previewToolbar, errorTrackingOrigin } = settings;
   const toolbar = (...extra: string[]) => (previewToolbar ? [TOOLBAR, ...extra] : []);
   const local = (...hosts: string[]) => (localSupabase ? hosts : []);
 
@@ -60,6 +79,7 @@ export function buildContentSecurityPolicy(settings: CspSettings): string {
       HOSTED_SUPABASE,
       HOSTED_SUPABASE_WS,
       ...local(LOCAL_SUPABASE_HTTP, LOCAL_SUPABASE_WS),
+      ...(errorTrackingOrigin ? [errorTrackingOrigin] : []),
       ...toolbar(...(previewToolbar ? [TOOLBAR_SOCKET] : [])),
     ],
   };

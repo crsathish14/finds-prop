@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
 import { hasNoLanguage } from "@/lib/url/language-free";
 import { RETURN_PATH_HEADER } from "@/server/auth/return-path";
-import { contentSecurityPolicyHeader } from "@/server/csp";
+import { contentSecurityPolicyHeader, errorTrackingOriginOf } from "@/server/csp";
 import { env, productionBuild } from "@/server/env";
 import { REQUEST_ID_PATTERN } from "@/server/request-id";
 
@@ -68,6 +68,7 @@ export async function proxy(request: NextRequest) {
     development: !productionBuild,
     localSupabase: env.APP_ENV === "local",
     previewToolbar: env.APP_ENV !== "production",
+    errorTrackingOrigin: errorTrackingOriginOf(publicEnv.NEXT_PUBLIC_SENTRY_BROWSER_DSN),
   });
   response.headers.set(csp.name, csp.value);
   if (env.APP_ENV !== "production") response.headers.set("X-Robots-Tag", "noindex, nofollow");

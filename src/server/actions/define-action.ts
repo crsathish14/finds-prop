@@ -3,6 +3,7 @@ import type { ActionResult } from "@/types/action";
 import { assertAdmin, assertBuilder, assertUser, assertVerifiedPhone } from "../auth/guards";
 import type { SessionView } from "../auth/session";
 import { createLogger, type Logger } from "../logger";
+import type { ErrorContext } from "../observability";
 import type { RateLimitScope } from "../rate-limit/limits";
 import { actionDeps } from "./deps";
 import { toFieldErrors } from "./field-errors";
@@ -69,6 +70,8 @@ export interface ActionDeps {
   invalidate(tags: readonly string[]): void;
   audit(event: ActionAuditEvent): Promise<void>;
   log: Logger;
+  /** Sends an unexpected error to the error tracker (ADR-130). Optional: tests and local work have none. */
+  reportError?(error: unknown, context: ErrorContext): Promise<void>;
 }
 
 export interface ActionConfig<S extends z.ZodType, R> {
@@ -106,6 +109,14 @@ export const failClosedDeps: ActionDeps = {
   log: createLogger(),
 };
 
+/** The most powerful role the session holds, or "anonymous". A label for reports, never an id. */
+function roleOf(session: SessionView | null): string {
+  if (!session) return "anonymous";
+  if (session.roles.includes("super_admin")) return "super_admin";
+  if (session.roles.includes("builder")) return "builder";
+  return "customer";
+}
+
 function authorise(auth: ActionAuth, session: SessionView | null): void {
   if (auth === "none") return;
   if (auth === "user") assertUser(session);
@@ -136,12 +147,29 @@ export function createDefineAction(deps: ActionDeps) {
       const log = deps.log.child({ requestId, route: config.name });
       const started = Date.now();
 
+      // Known once authentication has run; the error tracker is told who was acting (role only).
+      let actor: SessionView | null = null;
+      const report = async (error: unknown, errorCode: string): Promise<void> => {
+        try {
+          await deps.reportError?.(error, {
+            source: "action",
+            requestId,
+            route: config.name,
+            errorCode,
+            role: roleOf(actor),
+          });
+        } catch {
+          // Reporting must never change what the caller gets.
+        }
+      };
+
       /** After the write: log a failure and carry on, because the data is already saved. */
       const afterWrite = async (what: string, step: () => void | Promise<void>) => {
         try {
           await step();
         } catch (error) {
           log.error(`${what} failed after the write`, { error });
+          await report(error, "AFTER_WRITE");
         }
       };
 
@@ -158,6 +186,7 @@ export function createDefineAction(deps: ActionDeps) {
 
         // 2 authenticate
         const session = config.auth === "none" ? null : await deps.getSession();
+        actor = session;
         // 3 authorise
         authorise(config.auth, session);
         // 4 rate limit
@@ -223,6 +252,8 @@ export function createDefineAction(deps: ActionDeps) {
           durationMs: Date.now() - started,
           error,
         });
+        // Only the unexpected is reported: a refusal, a missing record or bad input is not a bug.
+        if (failure.code === "INTERNAL") await report(error, failure.code);
         return failure;
       }
     };

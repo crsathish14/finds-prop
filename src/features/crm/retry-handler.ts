@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { logger } from "@/server/logger";
+import { reportError } from "@/server/observability";
 import { readRequestId } from "@/server/request-id";
 import { DELIVERY_BATCH } from "./constants";
 import { runDeliveries, syncRetryJob, type DeliveryStore } from "./delivery";
@@ -53,6 +54,7 @@ export async function handleCrmRetry(
     );
   } catch (error) {
     log.error("crm retry failed", { error });
+    await reportError(error, { source: "handler", requestId, route: "crm-retry" });
     return Response.json({ error: "failed" }, { status: 500, headers: noStore });
   }
 }

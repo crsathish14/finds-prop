@@ -1,5 +1,6 @@
 import "server-only";
 import { logger } from "@/server/logger";
+import { reportError } from "@/server/observability";
 import { readRequestId } from "@/server/request-id";
 import { createSweepStore } from "./service";
 import { sweepOrphanPhotos } from "./sweep";
@@ -28,6 +29,7 @@ export async function handleSweepMedia(request: Request): Promise<Response> {
     return Response.json({ removed: result.removed }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     log.error("sweep failed", { error });
+    await reportError(error, { source: "handler", requestId, route: "sweep-media" });
     return Response.json(
       { error: "failed" },
       { status: 500, headers: { "Cache-Control": "no-store" } },

@@ -1,5 +1,6 @@
 import { env } from "@/server/env";
 import { createLogger } from "@/server/logger";
+import { reportError } from "@/server/observability";
 import { readRequestId } from "@/server/request-id";
 import { chooseSmsSender } from "@/server/sms";
 import { handleSendSmsHook } from "@/server/sms/send-sms-hook";
@@ -16,5 +17,6 @@ export async function POST(request: Request) {
     getSender: () => chooseSmsSender(env),
     nowSeconds: Math.floor(Date.now() / 1000),
     log: createLogger().child({ requestId, route: "send-sms-hook" }),
+    reportError: (error, context) => reportError(error, { ...context, requestId }),
   });
 }

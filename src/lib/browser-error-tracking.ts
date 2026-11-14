@@ -1,4 +1,5 @@
 import {
+  captureException,
   dedupeIntegration,
   eventFiltersIntegration,
   functionToStringIntegration,
@@ -29,4 +30,9 @@ export function startBrowserErrorTracking(dsn: string, environment: string): voi
       httpContextIntegration(),
     ],
   });
+}
+
+/** An error caught by a Next.js error boundary (React does not pass these to the global handlers). */
+export function reportBrowserError(error: Error): void {
+  captureException(error, { tags: { source: "boundary" } });
 }
