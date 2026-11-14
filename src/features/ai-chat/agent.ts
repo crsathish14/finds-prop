@@ -3,7 +3,7 @@ import { MAX_MODEL_ROUNDS, MAX_OUTPUT_TOKENS, MAX_TOOL_CALLS_PER_MESSAGE } from 
 import type { AiCall, AiToolCall } from "@/server/ai";
 import { logger } from "@/server/logger";
 import { runRoundCalls } from "./agent-calls";
-import { ANSWER_ONLY_INSTRUCTION } from "./agent-instructions";
+import { ANSWER_ONLY_INSTRUCTION } from "./prompts/answer-only";
 import { streamRound, type UsageTotals } from "./agent-round";
 import {
   AGENT_MESSAGE_KEYS,

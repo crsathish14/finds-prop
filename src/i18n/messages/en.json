@@ -2931,6 +2931,7 @@
     "refuseCompetitor": "I can only help with homes, projects and builders listed on findsprop, so I can't look at other property sites. I can search findsprop for something similar. Shall I try?",
     "refuseScope": "I can help with homes, projects and builders listed on findsprop, and with EMI sums. I can't help with that. Want to look at some homes?",
     "refuseInternals": "I'm findsprop's AI assistant. I look up homes, projects and builders listed on findsprop and can calculate EMIs. I can't share how the site or I am built. Want to look at some homes?",
+    "selfDescription": "I look up findsprop's listings.",
     "refuseFlooding": "Please write your question in a few words, and don't send the same message again.",
     "disclaimer": "This is general information, not legal or financial advice."
   }

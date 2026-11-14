@@ -39,7 +39,7 @@ const logged = vi.hoisted(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() 
 vi.mock("@/server/logger", () => ({ logger: logged }));
 
 const { runAgent } = await import("../agent");
-const { ANSWER_ONLY_INSTRUCTION } = await import("../agent-instructions");
+const { ANSWER_ONLY_INSTRUCTION } = await import("../prompts/answer-only");
 
 // ---------------------------------------------------------------- stand-in tools
 
