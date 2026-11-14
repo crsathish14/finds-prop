@@ -268,3 +268,102 @@ export const AI_MASK_PLACEHOLDERS = {
   pan: "[id number removed]",
   card: "[card number removed]",
 } as const;
+
+/**
+ * The output check (ADR-128 section 6.4.2, `src/features/ai-chat/guards/output.ts`). Same rules as the input lists:
+ * every term is lower case (the check lowercases the text first), the lists are easy to get around and are one layer
+ * among several (the model has no write tool, no web tool and cannot make a link), and a phrase that real answers
+ * use is left out on purpose (a builder called Gemini, "developed by", "database" alone).
+ */
+
+/**
+ * The answer is held back until a sentence ends and each sentence is checked before it is sent. A very long sentence
+ * is cut at the last space before this many characters, so the customer never waits for a whole paragraph.
+ */
+export const AI_SEGMENT_MAX_CHARACTERS = 300;
+
+/** A run of this many words copied word for word from the system prompt counts as a prompt leak. */
+export const AI_PROMPT_COPY_RUN_WORDS = 8;
+
+/**
+ * Endings that make a bare word.word a web address ("kadalhomes.com") in an answer. A decimal number ("1.5") or an
+ * abbreviation ("e.g.") never has one of these after the dot. An address with `http`, `https` or `www` is found
+ * without this list.
+ */
+export const AI_LINK_TLDS: readonly string[] = [
+  "com",
+  "in",
+  "co",
+  "net",
+  "org",
+  "io",
+  "app",
+  "dev",
+  "info",
+  "biz",
+  "me",
+  "ly",
+  "ai",
+  "tv",
+  "xyz",
+  "online",
+  "site",
+  "store",
+  "link",
+  "page",
+  "test",
+  "example",
+];
+
+/**
+ * What the assistant must never say about how it or the site is built: a tool name, the stack, the provider, a
+ * secret, the prompt. A match replaces the answer with the fixed self-description (`ai.refuseInternals`) and is
+ * tagged `internals_leak`. English, Tamil and Tanglish (the technical words are Latin letters in Tanglish).
+ */
+export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
+  // The tools by name.
+  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit)\b/u,
+  // The stack and the provider.
+  /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|tailwind|typescript|langchain|openai|anthropic|chat ?gpt|gpt-?[0-9][a-z0-9.-]*)\b/u,
+  /\b(large language model|language model|llm)\b/u,
+  // What the assistant says about itself: "I am Gemini", "I run on Claude". A builder called Gemini stays allowed.
+  /\b(i am|i'm|i’m|i was|i run on|i'm running on|i use|i'm using|my model is|i am powered by|i'm powered by|i am built on|i'm built on|i am based on|i'm based on)\s+(the |a |an )?(gemini|claude|llama|bard|copilot|deepseek|mistral|gpt)\b/u,
+  // The prompt and the rules it holds.
+  /\b(system|developer|hidden|initial|original) (prompt|instructions|message)\b/u,
+  /\b(my|these|the) (instructions|rules|prompt) (say|says|state|states|tell|tells|are|were)\b[^.!?\n]{0,30}\b(i|me|must|should|never)\b/u,
+  // Secrets, code and data structure.
+  /\b(api[ _-]?keys?|secret keys?|service[ _-]?role|env file|access tokens?|bearer tokens?)\b/u,
+  /\benvironment variables?\b/u,
+  /\b(source\s*code|codebase|code base|the repository|github repo|database (table|schema|columns?)|(table|column) (named|called))\b/u,
+  /\b(my|our|the assistant's|findsprop'?s) (backend|back end|architecture|tech stack|infrastructure|server code)\b/u,
+  // How a tool was used: "I used the search tool".
+  /\b(i|i've|i have|we) (used|called|ran|invoked|triggered)\b[^.!?\n]{0,30}\b(tool|function|api|endpoint)\b/u,
+  // Tamil script: the stack and the prompt written as the Tamil letters sound.
+  /(ஓபன்\s*ஏ\.?\s*ஐ|சூபாபேஸ்|சுபாபேஸ்|வெர்செல்|போஸ்ட்கிரெஸ்|டைப்ஸ்கிரிப்ட்|சிஸ்டம்\s*(ப்ராம்ப்ட்|பிராம்ப்ட்)|சோர்ஸ்\s*(கோட்|கோடு))/u,
+];
+
+/**
+ * Advice and guarantee words: legal or financial advice, a promised return, "legally safe". The text stays and the
+ * fixed disclaimer line is added after the answer (tag `advice_phrase`). English, Tanglish and Tamil; the Tanglish
+ * and Tamil lists are a first set for the owner to extend.
+ */
+export const AI_ADVICE_PHRASE_PATTERNS: readonly RegExp[] = [
+  /\b(guaranteed?|assured)\b[^.!?\n]{0,25}\b(returns?|profits?|appreciation|gains?|income|resale|growth)\b/u,
+  /\b(returns?|profits?|appreciation|gains?)\b[^.!?\n]{0,15}\b(are|is|will be)\s+(guaranteed|assured)\b/u,
+  /\b(risk[- ]free|zero[- ]risk|no[- ]risk|sure[- ]shot|surefire)\b/u,
+  /\b(definitely|certainly|surely|guaranteed to|sure to|bound to|certain to)\b[^.!?\n]{0,20}\b(appreciate|go up|rise|double|increase in value|gain value)\b/u,
+  /\b(legally|100%|completely|totally|absolutely) (safe|clear|valid|secure|sound)\b/u,
+  /\bno (legal|title|legal or title) (issues?|problems?|disputes?|risks?)\b/u,
+  /\byou (should|must|need to|ought to|have to) (definitely |surely |certainly )?(buy|invest in|invest|purchase|book|go for)\b/u,
+  /\b(i|we) (recommend|advise|suggest) (that )?(you )?(to )?(buy|buying|invest|investing|purchase|purchasing)\b/u,
+  /\b(best|safest|perfect|ideal) (investment|time to buy|time to invest)\b/u,
+  /\b(can'?t|cannot|won'?t|can’t|won’t) (go wrong|lose|fail)\b/u,
+  // Tanglish.
+  /\b(kandippa|kandipa|nichayama)\b[^.!?\n]{0,25}\b(price|vilai|laabam|labam|profit|return|appreciate)\w*/u,
+  /\b(neenga|nee)\s+(kandippa\s+|nichayama\s+)?(vaanganum|vaanga venum|vaangunga|vangunga|invest pannunga|invest panna venum)\b/u,
+  // Tamil script.
+  /(உறுதியான|நிச்சயமான|உத்தரவாதமான)\s*(லாபம்|வருமானம்|வருவாய்)/u,
+  /நிச்சயம்[^.!?\n]{0,20}(விலை\s*(உயரும்|ஏறும்)|லாபம்)/u,
+  /(சட்டப்படி|சட்டரீதியாக)\s*(பாதுகாப்பான|பாதுகாப்பு|சரியான)/u,
+  /(நீங்கள்|நீங்க)\s*(கண்டிப்பாக\s*|நிச்சயமாக\s*)?(வாங்க\s*வேண்டும்|வாங்குங்கள்|முதலீடு\s*செய்யுங்கள்)/u,
+];

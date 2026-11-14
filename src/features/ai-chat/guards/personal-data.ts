@@ -62,3 +62,29 @@ export function maskPersonalData(cleanedText: string): MaskedText {
   }
   return { text, kinds };
 }
+
+/** An email address or phone number found in text, as it was written. */
+export interface FoundContact {
+  readonly kind: "email" | "phone";
+  readonly value: string;
+}
+
+/**
+ * The emails and phone numbers in a text, for the output check (the assistant's answer may only repeat a number
+ * that a tool result gave). It runs the same rules in the same order as `maskPersonalData`, so a card number is not
+ * mistaken for a phone, but reports what it found and leaves the text alone. A card, Aadhaar-like or PAN match is
+ * consumed and not reported. Returns the values only so the caller can compare them and must not store or log them.
+ */
+export function findContacts(cleanedText: string): readonly FoundContact[] {
+  const found: FoundContact[] = [];
+  let text = cleanedText;
+  for (const rule of MASK_RULES) {
+    text = text.replace(rule.pattern, (match) => {
+      if (rule.kind === "email" || rule.kind === "phone") {
+        found.push({ kind: rule.kind, value: match });
+      }
+      return " ";
+    });
+  }
+  return found;
+}
