@@ -46,6 +46,17 @@ const CASES = [
   ["vitest.config.mts", "ask"],
   [`${ROOT}\\.github\\workflows\\ci.yml`, "ask"],
 
+  // a task session's worktree sits under .claude/worktrees: judge the path inside it
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\docs\\runbooks\\environment-variables.md`, "none"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\src\\features\\ai-chat\\agent.ts`, "none"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\.claude\\settings.json`, "ask"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\.claude\\hooks\\guard-bash.mjs`, "ask"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\.github\\workflows\\ci.yml`, "ask"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\package.json`, "ask"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\.env.local`, "deny"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\package-lock.json`, "deny"],
+  [`${ROOT}\\.claude\\worktrees\\ai-p1-t01-x\\src\\server\\env.ts`, "none"],
+
   // ordinary files pass
   ["src/features/search/queries.ts", "none"],
   ["src/components/ui/button.tsx", "none"],

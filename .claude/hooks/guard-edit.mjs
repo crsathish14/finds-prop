@@ -67,7 +67,11 @@ export function toRelative(filePath, root) {
  *   existsOnBase returns true/false, or null when the base branch cannot be consulted.
  */
 export function decide(filePath, context = {}) {
-  const rel = toRelative(filePath, context.root);
+  // A task session works in a worktree under `.claude/worktrees/<name>/`, while the hook's root
+  // is the main checkout. Judge the file by its path inside that worktree, so ordinary files
+  // there are not mistaken for `.claude/` harness files. A real harness file is still protected:
+  // `.claude/worktrees/x/.claude/settings.json` becomes `.claude/settings.json`.
+  const rel = toRelative(filePath, context.root).replace(/^\.claude\/worktrees\/[^/]+\//, "");
   if (!rel) return none;
   if (SECRET_FILE.test(rel))
     return deny(
