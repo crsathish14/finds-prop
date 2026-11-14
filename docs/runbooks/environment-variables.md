@@ -76,9 +76,20 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 | Variable                                              | When                                                             |
 | ----------------------------------------------------- | ---------------------------------------------------------------- |
 | `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                          |
+| `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                      |
 | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                     | If error tracking is switched on                                 |
 | `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation |
 | `DESIGN_LAB`                                          | `1` only for review on local or dev; ignored in production       |
+
+## AI chat (optional while `FLAG_AI_SEARCH` is off)
+
+All three are server-only (read in `src/server/env.ts`, never `NEXT_PUBLIC_`), optional, and unused until the OpenAI adapter is built (AI-P1-T03). Leave them unset until then.
+
+| Variable         | What it is                                                                             | Where the value comes from                                                                                     |
+| ---------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `AI_PROVIDER`    | `fake`, `openai` or `gemini`. `fake` is the scripted provider for tests and local work | You choose. `openai` is the first real provider (ADR-128)                                                      |
+| `AI_MODEL`       | The model id the provider is called with. No model name is written in code             | You choose, after the provider spike (`docs/runbooks/ai-spike.md`)                                             |
+| `OPENAI_API_KEY` | The OpenAI API key, used only with `AI_PROVIDER=openai`                                | The OpenAI dashboard, a project key. Never pasted into chat or committed; replace it if it ever appears in one |
 
 ## Not variables, but needed on the deployed address
 
