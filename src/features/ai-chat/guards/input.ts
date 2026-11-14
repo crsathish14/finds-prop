@@ -26,7 +26,6 @@
  * every language gets the English line until the owner gives them: owner to confirm.
  */
 import {
-  AI_COMPETITOR_PORTAL_TERMS,
   AI_FLOOD_MAX_CHARACTER_RUN,
   AI_FLOOD_MAX_DISTINCT_WORD_SHARE,
   AI_FLOOD_MIN_WORDS,
@@ -36,6 +35,7 @@ import {
   AI_INTERNALS_PROBE_PATTERNS,
   ASSISTANT_BRAND_NAME,
 } from "@/config/ai";
+import { namesCompetitorPortal } from "./competitors";
 import { maskPersonalData } from "./personal-data";
 
 /** The fixed lines this check points at, as `en.json` keys. The endpoint turns a key into text with `translate`. */
@@ -146,21 +146,6 @@ function wordsOf(matchable: string): string[] {
   return matchable.split(WORD_SEPARATORS).filter((word) => word.length > 0);
 }
 
-function escapeForRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-/** One pattern for the whole competitor list. A Latin term must stand alone; a Tamil term may take an ending. */
-const COMPETITOR_PATTERN = new RegExp(
-  AI_COMPETITOR_PORTAL_TERMS.map((term) => {
-    const body = escapeForRegExp(term).replace(/ /g, "\\s*");
-    return /[a-z0-9.]$/.test(term)
-      ? `(?<![\\p{L}\\p{N}])${body}(?![\\p{L}\\p{N}])`
-      : `(?<![\\p{L}\\p{N}])${body}`;
-  }).join("|"),
-  "u",
-);
-
 const CHARACTER_RUN = new RegExp(`(.)\\1{${AI_FLOOD_MAX_CHARACTER_RUN},}`, "su");
 
 function matchesAny(patterns: readonly RegExp[], matchable: string): boolean {
@@ -222,7 +207,7 @@ function evaluate(message: string, earlierCustomerMessages: readonly string[]): 
   if (matchesAny(AI_INTERNALS_PROBE_PATTERNS, matchable)) {
     return refuse(INPUT_MESSAGE_KEYS.internals, [...tags, "internals_probe"]);
   }
-  if (COMPETITOR_PATTERN.test(matchable)) {
+  if (namesCompetitorPortal(matchable)) {
     return refuse(INPUT_MESSAGE_KEYS.competitor, [...tags, "competitor"]);
   }
 
