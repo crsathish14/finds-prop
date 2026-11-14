@@ -6,7 +6,7 @@ The execution plan for [ADR-128](adr/128-ai-chat-assistant.md). Read the ADR fir
 
 ## How to run the plan with Claude
 
-- **One task = one session = one branch = one pull request** (workflow.md: one concern per PR, one task per session). Branch from `develop` as `feat/ai-p<phase>-t<task>-<name>`. Never commit to `develop` or `main`. From 14 Nov 2026 the run is automatic (`docs/runbooks/ai-chat-autorun.md`): the task session pushes its branch and opens the PR; the orchestrator merges it once `all-checks-passed` is green.
+- **One task = one session = one branch = one pull request** (workflow.md: one concern per PR, one task per session). Branch from `develop` as `feat/ai-p<phase>-t<task>-<name>`. Never commit to `develop` or `main`. From 14 Nov 2026 the run is automatic (`docs/runbooks/ai-chat-autorun.md`): the task session pushes its branch, opens the PR, watches it (Auto-fix on, plus a background subagent running `gh pr checks <n> --watch`), fixes any failure, merges it itself once `all-checks-passed` is green (a review session first on C2 and security tasks), and then starts the next task. The owner is not asked at any of these steps (section "The task chain" of the runbook).
 - **C2 tasks** (marked below) start with a written plan. **Owner decision, 14 Nov 2026: every unbuilt task here is pre-approved.** The session writes the plan in the draft PR and carries on without waiting. A step outside this plan, or a change to a gate file, still stops the task.
 - **Migrations** go in their own commit and their own PR, with `/new-migration`. **New packages** go alone in their own PR, with `/add-dependency`. Use `/new-slice` for a feature slice.
 - **Review:** after a C2 task, start a fresh session and run `/review-change` on the branch. Run `/security-review` on the phases marked below.
@@ -24,7 +24,10 @@ Read AGENTS.md, docs/status.md, the nested AGENTS.md for the folders you will to
 docs/adr/128-ai-chat-assistant.md (the sections the task names) and docs/ai-chat-phase-plan.md.
 Do task <ID> only. Classify the change (C0, C1 or C2). If it is C2, write the plan in the draft
 PR (the owner pre-approved it, so do not wait). Branch from develop. Push the branch and open
-the PR; do not merge it (the orchestrator does), touch .env or add a package unless the task
+the PR. Then follow "The task chain" in docs/runbooks/ai-chat-autorun.md without asking the owner:
+bind the PR and turn Auto-fix on, watch it with a background subagent, fix failures, merge it
+yourself when all-checks-passed is green (the command alone: gh pr merge <number> --merge), and
+start the next task from the ledger. Never touch .env files or add a package unless the task
 says so. Use whole-word names, text from en.json, and the existing patterns. The product name in all AI text is findsprop (lowercase), see ADR-128. Run npm run check and the task's commands, and report the real output.
 When done, summarise what changed, what you verified and what you could not.
 ```
