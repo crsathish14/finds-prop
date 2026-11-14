@@ -8,6 +8,8 @@ type PhoneSignInScreenProps = {
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested. */
   alreadySignedIn: boolean;
+  /** Whether the email step follows the name step. The server turns it off with FLAG_CUSTOMER_EMAIL=0. */
+  emailStep?: boolean;
 };
 
 /**
@@ -22,6 +24,7 @@ export function PhoneSignInScreen({
   expiredGate = false,
   redirectTo,
   alreadySignedIn,
+  emailStep = true,
 }: PhoneSignInScreenProps) {
   return (
     <main id="main" className="mx-auto w-full max-w-mid flex-1 px-gutter py-10 md:py-14">
@@ -32,6 +35,7 @@ export function PhoneSignInScreen({
         expiredGate={expiredGate}
         redirectTo={redirectTo}
         alreadySignedIn={alreadySignedIn}
+        emailStep={emailStep}
       />
     </main>
   );

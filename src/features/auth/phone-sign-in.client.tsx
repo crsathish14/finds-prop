@@ -41,6 +41,8 @@ type PhoneSignInProps = {
   redirectTo: string;
   /** Whether the visitor was already signed in when the page was requested (the server only reports it). */
   alreadySignedIn: boolean;
+  /** Whether the email step follows the name step. When off, the visitor goes straight on after the name. */
+  emailStep?: boolean;
 };
 
 function minutesToWait(retryAfter: number | undefined): number {
@@ -60,6 +62,7 @@ export function PhoneSignIn({
   expiredGate = false,
   redirectTo,
   alreadySignedIn,
+  emailStep = true,
 }: PhoneSignInProps) {
   const translate = useTranslations("auth.phone");
   const translateValidation = useTranslations("validation");
@@ -274,7 +277,10 @@ export function PhoneSignIn({
   if (naming) {
     return (
       <div className="mx-auto w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card md:p-8">
-        <NameStep reason="signup" onDone={() => setEmailing(true)} />
+        <NameStep
+          reason="signup"
+          onDone={() => (emailStep ? setEmailing(true) : goTo(redirectTo))}
+        />
       </div>
     );
   }

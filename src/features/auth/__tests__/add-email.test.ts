@@ -22,9 +22,10 @@ const SESSION: SessionView = {
 };
 const EMAIL = "priya.raman@example.com";
 
-function fakeEmail(error: EmailLinkError | null = null) {
+function fakeEmail(error: EmailLinkError | null = null, enabled = true) {
   const sent: { how: "update" | "resend"; email: string }[] = [];
   const deps: EmailLinkDeps = {
+    enabled,
     updateEmail: (email) => {
       sent.push({ how: "update", email });
       return Promise.resolve({ error });
@@ -91,6 +92,17 @@ describe("UT-add-email: the service (S3-T09, FR-AUTH-02)", () => {
       email: EMAIL,
     });
     expect(sent).toEqual([{ how: "resend", email: EMAIL }]);
+  });
+
+  it("sends nothing and answers NOT_FOUND while customer email is switched off (FLAG_CUSTOMER_EMAIL=0)", async () => {
+    const { deps, sent } = fakeEmail(null, false);
+    await expect(addEmailAddress(deps, { email: EMAIL })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    await expect(resendEmailAddress(deps, { email: EMAIL })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(sent).toEqual([]);
   });
 
   it.each<[string, EmailLinkError, object]>([

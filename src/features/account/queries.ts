@@ -3,6 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { cache } from "react";
 import { getAccountSummary } from "@/features/auth";
 import { getSessionView } from "@/server/auth/get-session-view";
+import { env } from "@/server/env";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import { emailStateFrom, type EmailState } from "./email-state";
@@ -31,8 +32,13 @@ export async function getDashboardPerson(): Promise<DashboardPerson | null> {
  * the token. The page gate has already decided who may see the dashboard; this only reads facts about
  * the visitor's own account. A read that fails is logged without the address and gives "unknown", so
  * the dashboard shows no prompt rather than a wrong one. Computed once per request.
+ *
+ * With FLAG_CUSTOMER_EMAIL off, customers are not asked for an email at all: the answer is "unknown" without
+ * asking Auth, so the dashboard shows no prompt and the post-property page opens the wizard (a verified
+ * phone is enough to post).
  */
 export const getEmailState = cache(async (): Promise<EmailState> => {
+  if (!env.FLAG_CUSTOMER_EMAIL) return { kind: "unknown" };
   try {
     const supabase = await createServerSupabase();
     const { data, error } = await supabase.auth.getUser();

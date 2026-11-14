@@ -57,7 +57,12 @@ function answer(result: ActionResult<{ resendAfter: number }>) {
   send.mockResolvedValueOnce(result);
 }
 
-function renderScreen(gate = false, alreadySignedIn = false, expiredGate = false) {
+function renderScreen(
+  gate = false,
+  alreadySignedIn = false,
+  expiredGate = false,
+  emailStep = true,
+) {
   return renderWithMessages(
     <PhoneSignInScreen
       siteKey="site-key"
@@ -65,6 +70,7 @@ function renderScreen(gate = false, alreadySignedIn = false, expiredGate = false
       expiredGate={expiredGate}
       redirectTo="/dashboard"
       alreadySignedIn={alreadySignedIn}
+      emailStep={emailStep}
     />,
   );
 }
@@ -346,6 +352,45 @@ describe("phone sign-in: a new account's next steps", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: en.auth.email.title }),
     ).toBeInTheDocument();
+  });
+
+  it("with customer email switched off, goes on from the name straight to where the visitor was headed", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    vi.mocked(saveProfileName).mockResolvedValueOnce({ ok: true, data: { name: "Priya Raman" } });
+    renderScreen(false, false, false, false);
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    await userEvent.type(
+      await screen.findByLabelText(new RegExp(en.auth.name.label)),
+      "Priya Raman",
+    );
+    await userEvent.click(screen.getByRole("button", { name: en.auth.name.save }));
+    await waitFor(() => expect(vi.mocked(goTo)).toHaveBeenCalledWith("/dashboard"));
+    expect(
+      screen.queryByRole("heading", { level: 1, name: en.auth.email.title }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("with customer email switched off, skipping the name also goes straight on", async () => {
+    answer({ ok: true, data: { resendAfter: 60 } });
+    vi.mocked(verifyPhoneCode).mockResolvedValueOnce({
+      ok: true,
+      data: { signedIn: true, needsName: true },
+    });
+    renderScreen(false, false, false, false);
+    await userEvent.type(field(), "9876543210");
+    await userEvent.click(sendButton());
+    await userEvent.type(await screen.findByLabelText(codeWords.label), "482916");
+    await userEvent.click(await screen.findByRole("button", { name: en.auth.name.skip }));
+    await waitFor(() => expect(vi.mocked(goTo)).toHaveBeenCalledWith("/dashboard"));
+    expect(
+      screen.queryByRole("heading", { level: 1, name: en.auth.email.title }),
+    ).not.toBeInTheDocument();
   });
 });
 
