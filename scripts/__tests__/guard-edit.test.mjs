@@ -20,7 +20,14 @@ const CASES = [
   // protected paths ask
   ["AGENTS.md", "ask"],
   ["src/features/search/AGENTS.md", "ask"],
-  ["docs/engineering/security.md", "ask"],
+  ["docs/engineering/security.md", "none"], // AI chat tasks may change it (owner, 14 Nov 2026)
+  ["docs/engineering/backend.md", "none"],
+  ["docs/engineering/frontend.md", "none"],
+  ["docs/engineering/workflow.md", "ask"],
+  ["docs/engineering/quality-gates.md", "ask"],
+  ["scripts/ai-eval/run.mjs", "none"],
+  ["scripts/ai-spike/run.mjs", "none"],
+  ["scripts/ai-hack.mjs", "ask"],
   [".github/workflows/ci.yml", "ask"],
   [".claude/settings.json", "ask"],
   [".claude/hooks/guard-bash.mjs", "ask"],
@@ -34,7 +41,7 @@ const CASES = [
   ["supabase/config.toml", "ask"],
   ["next.config.ts", "ask"],
   ["src/proxy.ts", "ask"],
-  ["src/server/env.ts", "ask"],
+  ["src/server/env.ts", "none"], // the environment schema: AI-P1-T01 adds the provider variables
   ["src/server/supabase/admin.server.ts", "ask"],
   ["vitest.config.mts", "ask"],
   [`${ROOT}\\.github\\workflows\\ci.yml`, "ask"],

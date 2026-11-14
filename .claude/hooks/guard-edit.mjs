@@ -33,6 +33,18 @@ const PROTECTED = [
   /^(vitest|playwright)(\.integration)?\.config\.m?ts$/,
 ];
 
+/**
+ * Owner decision, 14 Nov 2026: the AI chat tasks (docs/ai-chat-phase-plan.md) change these
+ * otherwise protected files without a prompt: the environment schema (P1-T01), the rule pages for
+ * security, backend and frontend, and their own `scripts/ai-*` folders. Gate files (CI, hooks,
+ * lint, test and TypeScript config, AGENTS.md, package.json) stay protected.
+ */
+const AI_CHAT_ALLOWED = [
+  /^src\/server\/env\.ts$/,
+  /^docs\/engineering\/(security|backend|frontend)\.md$/,
+  /^scripts\/ai-[\w-]+\//,
+];
+
 const deny = (reason) => ({ decision: "deny", reason });
 const ask = (reason) => ({ decision: "ask", reason });
 const none = { decision: "none", reason: "" };
@@ -76,6 +88,7 @@ export function decide(filePath, context = {}) {
       );
     return none;
   }
+  if (AI_CHAT_ALLOWED.some((re) => re.test(rel))) return none;
   if (PROTECTED.some((re) => re.test(rel)))
     return ask(
       `${rel} is a protected path (gates, harness or security-critical code). This is a class C2 change and needs a "Gate-change:" line in the PR.`,

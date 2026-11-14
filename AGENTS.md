@@ -86,6 +86,8 @@ Each is enforced by a check unless marked Review. The ID points to the full rule
 | C1    | feature inside existing patterns, component from approved UX, bug fix | Five-line plan in the draft PR, implement, test, self-review                      |
 | C2    | anything under "Stop and ask"                                         | Written plan, **wait for approval**, implement, `npm run verify`, `review-change` |
 
+**Standing approval (owner, 14 Nov 2026):** the unbuilt tasks of `docs/ai-chat-phase-plan.md` are pre-approved, including C2 ones. Write the plan in the draft PR and carry on; do not wait. Run limits and the stop rules: `docs/runbooks/ai-chat-autorun.md`. Anything outside the plan still stops.
+
 ## Stop and ask first (class C2)
 
 New dependency, service, tool, MCP server or skill · schema, RLS, grants, storage policy or migration · auth, session, role, service-role or secret handling · CI, gates, lint, hooks, `AGENTS.md`, `.claude`, `.github/CODEOWNERS` · deviation from the approved UX, or a missing state · an unclear requirement or business rule · deleting or skipping a test · anything that touches dev, staging or production systems · legal wording, consent text, personal-data handling · settings that cost money (SMS, email, map quotas) · scope beyond the request.

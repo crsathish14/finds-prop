@@ -24,6 +24,21 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git merge *)",
+      "Bash(git worktree *)",
+      "Bash(git rev-parse *)",
+      "Bash(npm ci)",
+      "Bash(npm run build)",
+      "Bash(npm install --save-exact openai@*)",
+      "Bash(npm install openai@*)",
       "WebFetch(domain:nextjs.org)",
       "WebFetch(domain:react.dev)",
       "WebFetch(domain:supabase.com)",
@@ -34,7 +49,7 @@
       "WebFetch(domain:vitest.dev)",
       "WebFetch(domain:developer.mozilla.org)"
     ],
-    "ask": ["Bash(npm install *)", "Bash(npm uninstall *)", "Bash(npm update *)"],
+    "ask": ["Bash(npm uninstall *)", "Bash(npm update *)"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
@@ -52,7 +67,6 @@
       "Bash(vercel*)",
       "Bash(npx vercel*)",
       "Bash(npm publish*)",
-      "Bash(gh pr merge*)",
       "Bash(gh release*)"
     ]
   },

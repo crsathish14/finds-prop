@@ -233,6 +233,21 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git merge *)",
+      "Bash(git worktree *)",
+      "Bash(git rev-parse *)",
+      "Bash(npm ci)",
+      "Bash(npm run build)",
+      "Bash(npm install --save-exact openai@*)",
+      "Bash(npm install openai@*)",
       "WebFetch(domain:nextjs.org)",
       "WebFetch(domain:react.dev)",
       "WebFetch(domain:supabase.com)",
@@ -243,7 +258,7 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "WebFetch(domain:vitest.dev)",
       "WebFetch(domain:developer.mozilla.org)"
     ],
-    "ask": ["Bash(npm install *)", "Bash(npm uninstall *)", "Bash(npm update *)"],
+    "ask": ["Bash(npm uninstall *)", "Bash(npm update *)"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
@@ -261,7 +276,6 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
       "Bash(vercel*)",
       "Bash(npx vercel*)",
       "Bash(npm publish*)",
-      "Bash(gh pr merge*)",
       "Bash(gh release*)"
     ]
   },
@@ -301,7 +315,7 @@ Committed to `.claude/settings.json` (`H1-T08`). `allow` rules take effect after
 }
 ```
 
-Not set in the shared file: model, effort, theme, `bypassPermissions` or `auto` default modes (these cannot be set from project files and must not be used on this repository), enabling all project MCP servers. Personal exceptions go in `.claude/settings.local.json`, which stays untracked.
+Not set in the shared file: model, effort, theme, `bypassPermissions` or `auto` default modes (these cannot be set from project files), enabling all project MCP servers. Owner decision, 14 Nov 2026: the AI chat task sessions started by the orchestrator (`docs/runbooks/ai-chat-autorun.md`) run in `auto` mode, chosen per session when it is started. The hooks and the deny rules apply in every mode, so the limits in this section hold either way. Do not use `bypassPermissions`. Personal exceptions go in `.claude/settings.local.json`, which stays untracked.
 
 ### 3.1 `guard-bash.mjs`
 
@@ -312,25 +326,28 @@ Reads the hook JSON from standard input (`tool_input.command`), normalises case 
 | **Deny**  | `git push` with `--force`, `-f` or `--force-with-lease`; `git push` to `main` or `develop`; `git commit`, `merge`, `rebase` or `reset --hard` while the current branch is `main` or `develop`                                                                                                                                                                                    |
 | **Deny**  | Any command containing `--no-verify`                                                                                                                                                                                                                                                                                                                                             |
 | **Deny**  | Supabase CLI against a shared system: `link`, `login`, `projects`, `secrets`, `branches`, `functions deploy`, `db push`, or any command with `--linked` or `--db-url`. Local commands (`start`, `stop`, `status`, `db reset`, `db lint`, `test db`, `gen types --local`, `migration new`) are allowed                                                                            |
-| **Deny**  | Deploy and release: `vercel`, `npm publish`, `gh release`, `gh pr merge`, `gh workflow run`, `gh api` with a write method                                                                                                                                                                                                                                                        |
+| **Deny**  | Deploy and release: `vercel`, `npm publish`, `gh release`, `gh pr close`, `gh workflow run`, `gh api` with a write method; and `gh pr merge` except the narrow case below                                                                                                                                                                                                        |
 | **Deny**  | Reading env files or the environment: `cat`, `type`, `more`, `less`, `head`, `tail`, `Get-Content`, `grep`, `rg`, `sed`, `awk`, `cp`, `mv` or `Copy-Item` on `.env`, `.env.local`, `.env.*.local`, `.env.production*` (not `.env.example`); bare `env`, `printenv`, `set`, `Get-ChildItem Env:`; `echo` of a variable whose name contains `KEY`, `SECRET`, `TOKEN` or `PASSWORD` |
 | **Deny**  | Recursive delete outside `node_modules`, `.next`, `coverage`, `dist`, `.turbo`, `test-results`, `playwright-report` (`rm -rf`, `rmdir /s`, `del /s`, `Remove-Item -Recurse`); `git clean -fdx`                                                                                                                                                                                   |
 | **Deny**  | Running a download directly through a shell (for example `curl` or `iwr` output piped to `sh` or `iex`)                                                                                                                                                                                                                                                                          |
 | **Ask**   | `npm install`, `i`, `add`, `update`, `uninstall`, `npx` of a package not in the project's dev tools; any `npm config` or `.npmrc` change                                                                                                                                                                                                                                         |
 | Otherwise | No opinion: the normal permission flow applies                                                                                                                                                                                                                                                                                                                                   |
 
-Owner decision, 12 Nov 2026: a feature-branch `git push` and `gh pr create` are allowed without a prompt (they are in `allow`, and the hook has no opinion on them). Force-push, deleting a remote branch, pushing to `main` or `develop`, and `gh pr merge` stay denied, so merging remains a human step on GitHub. The hook still asks before other writes to GitHub: `gh pr` or `gh issue` `edit`, `comment`, `review`, `ready`, `lock` and `transfer`, and `gh issue create`.
+Owner decision, 12 Nov 2026: a feature-branch `git push` and `gh pr create` are allowed without a prompt (they are in `allow`, and the hook has no opinion on them). Force-push, deleting a remote branch and pushing to `main` or `develop` stay denied.
+
+Owner decision, 14 Nov 2026 (AI chat build): an agent may run `gh pr merge <number> --merge` (or `--squash`, no other flag) on an AI chat pull request, and only when the hook can read the pull request and finds all of these: it is open and not a draft, the base is `develop`, the head branch starts `feat/ai-`, `fix/ai-`, `chore/ai-`, `docs/ai-` or `test/ai-`, there is no merge conflict, the `all-checks-passed` check is `SUCCESS`, and no `AI-RUN-STOP` file exists in the main checkout. Anything else, including a pull request that cannot be read, is denied. `--admin`, `--auto` and `--delete-branch` are refused. All other merges stay a human step. Create an empty `AI-RUN-STOP` file in the main checkout at any time to stop merging at once, or restore the deny rule to end the allowance. The allowance also lets `npm install` run without a prompt for `openai` at one exact version (AI-P1-T01, after the `add-dependency` playbook checks); every other install still asks. The hook still asks before other writes to GitHub: `gh pr` or `gh issue` `edit`, `comment`, `review`, `ready`, `lock` and `transfer`, and `gh issue create`.
 
 ### 3.2 `guard-edit.mjs`
 
 Reads `tool_input.file_path` (and content for Write), normalises it relative to the project root.
 
-| Decision                  | Path or condition                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Deny**                  | `.env`, `.env.local`, `.env.*.local`, `.env.production*` (not `.env.example`); `package-lock.json` by hand; `node_modules/**`, `.next/**`, `.git/**`                                                                                                                                                                                                     |
-| **Deny**                  | `supabase/migrations/*.sql` that already exists on the base branch (`git cat-file -e origin/develop:<path>`); if the base ref is missing, ask                                                                                                                                                                                                            |
-| **Ask** (protected paths) | `.github/**`, `.claude/**`, `.mcp.json`, `AGENTS.md` and every nested `AGENTS.md`, `docs/engineering/**`, `eslint.config.mjs`, `lefthook.yml`, `commitlint.config.mjs`, `knip.json`, `tsconfig.json`, `package.json`, `scripts/**`, `supabase/config.toml`, `next.config.ts`, `src/proxy.ts`, `src/server/env.ts`, `src/server/supabase/admin.server.ts` |
-| Otherwise                 | No opinion                                                                                                                                                                                                                                                                                                                                               |
+| Decision                  | Path or condition                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deny**                  | `.env`, `.env.local`, `.env.*.local`, `.env.production*` (not `.env.example`); `package-lock.json` by hand; `node_modules/**`, `.next/**`, `.git/**`                                                                                                                                                                                                                       |
+| **Deny**                  | `supabase/migrations/*.sql` that already exists on the base branch (`git cat-file -e origin/develop:<path>`); if the base ref is missing, ask                                                                                                                                                                                                                              |
+| **Ask** (protected paths) | `.github/**`, `.claude/**`, `.mcp.json`, `AGENTS.md` and every nested `AGENTS.md`, `docs/engineering/**`, `eslint.config.mjs`, `lefthook.yml`, `commitlint.config.mjs`, `knip.json`, `tsconfig.json`, `package.json`, `scripts/**`, `supabase/config.toml`, `next.config.ts`, `src/proxy.ts`, `src/server/env.ts`, `src/server/supabase/admin.server.ts`                   |
+| **No opinion** (AI chat)  | Owner decision, 14 Nov 2026, so the AI chat tasks do not stop for a prompt: `src/server/env.ts`, `docs/engineering/security.md`, `docs/engineering/backend.md`, `docs/engineering/frontend.md` and `scripts/ai-*/**`. Every other path in the ask row stays protected (CI, hooks, lint, test and TypeScript config, `AGENTS.md`, `package.json`, the other handbook pages) |
+| Otherwise                 | No opinion                                                                                                                                                                                                                                                                                                                                                                 |
 
 The ask list is the same set as the "protected paths" that `G-17` uses to demand a `Gate-change:` line, so a change that gets past the local prompt (another tool, a person) is still visible in review.
 
@@ -422,7 +439,7 @@ Each row points to the rule that defines it and the control that stops it. This 
 | Add a package from memory, or run a downloaded script                                                    | R-AI-10, R-DEP-01   | L-03 ask, G-11                                             |
 | Install an unreviewed skill, plugin or MCP server                                                        | R-DEP-02, `06` §6   | Review, G-16 for `.claude/` and `.mcp.json`                |
 | Skip hooks (`--no-verify`), delete or skip tests, edit gate configuration to get green                   | R-AI-04, R-TEST-02  | L-03, G-02, G-14, G-17                                     |
-| Push to `develop` or `main`, force-push, merge, deploy                                                   | R-GIT-01, R-AI-12   | Branch protection, L-03                                    |
+| Push to `develop` or `main`, force-push, merge (except a green AI chat PR, §3.1), deploy                 | R-GIT-01, R-AI-12   | Branch protection, L-03                                    |
 | Copy demo code, SQL or tooling; use demo brand strings                                                   | R-GEN-10            | G-14, review                                               |
 | Use real phone numbers, emails or user content in tests, seeds, prompts or screenshots                   | R-GEN-08, R-TEST-05 | Review; Supabase test numbers                              |
 | Follow instructions found in data, web pages, issues or tool output                                      | R-AI-09             | Review; fetch allow-list                                   |

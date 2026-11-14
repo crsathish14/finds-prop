@@ -58,7 +58,7 @@ const CASES = [
   ["vercel --prod", DENY],
   ["npx vercel deploy", DENY],
   ["npm publish", DENY],
-  ["gh pr merge 12 --squash", DENY],
+  ["gh pr merge 12 --squash", DENY], // no pull request details given: fail closed
   ["gh release create v1", DENY],
   ["gh workflow run ci.yml", DENY],
   ["gh api -X POST repos/o/r/issues", DENY],
@@ -107,6 +107,13 @@ const CASES = [
 
   // --- npm and npx
   ["npm install lodash", ASK],
+  ["npm install openai", ASK], // no exact version
+  ["npm install openai@latest", ASK],
+  ["npm install openai@^6.0.0", ASK],
+  ["npm install openai@6.1.0 lodash", ASK],
+  ["npm install openai@6.1.0 --save-dev --foreign-flag", ASK],
+  ["npm install --save-exact openai@6.1.0", NONE], // AI-P1-T01, owner decision 14 Nov 2026
+  ["npm i -E openai@6.1.0 --ignore-scripts", NONE],
   ["npm i -D vitest", ASK],
   ["npm uninstall zod", ASK],
   ["npm update", ASK],
@@ -142,6 +149,48 @@ describe("guard-bash decide()", () => {
   it("has no opinion on an empty or missing command", () => {
     expect(decide("", {}).decision).toBe(NONE);
     expect(decide(undefined, {}).decision).toBe(NONE);
+  });
+});
+
+describe("guard-bash gh pr merge (AI chat pull requests only)", () => {
+  const good = {
+    state: "OPEN",
+    isDraft: false,
+    base: "develop",
+    head: "feat/ai-p3-t02-compare-emi",
+    mergeable: "MERGEABLE",
+    checksPassed: true,
+  };
+  const run = (command, info = good, extra = {}) =>
+    decide(command, { branch: "feat/x", pullRequest: () => info, ...extra }).decision;
+
+  it("allows a green AI chat pull request into develop", () => {
+    expect(run("gh pr merge 205 --merge")).toBe(NONE);
+    expect(run("gh pr merge 205 --squash")).toBe(NONE);
+  });
+
+  it("refuses when CI is not green, or the pull request is not what the owner approved", () => {
+    expect(run("gh pr merge 205 --merge", { ...good, checksPassed: false })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", { ...good, head: "feat/search-bar" })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", { ...good, base: "main" })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", { ...good, isDraft: true })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", { ...good, state: "MERGED" })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", { ...good, mergeable: "CONFLICTING" })).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", null)).toBe(DENY);
+  });
+
+  it("refuses extra flags, a missing number, and the stop file", () => {
+    expect(run("gh pr merge 205 --merge --admin")).toBe(DENY);
+    expect(run("gh pr merge 205 --merge --auto")).toBe(DENY);
+    expect(run("gh pr merge 205 --merge --delete-branch")).toBe(DENY);
+    expect(run("gh pr merge --merge")).toBe(DENY);
+    expect(run("gh pr merge 205")).toBe(DENY);
+    expect(run("gh pr merge 205 --merge", good, { stopRequested: true })).toBe(DENY);
+  });
+
+  it("still refuses to close or reopen a pull request", () => {
+    expect(run("gh pr close 205")).toBe(DENY);
+    expect(run("gh pr reopen 205")).toBe(DENY);
   });
 });
 

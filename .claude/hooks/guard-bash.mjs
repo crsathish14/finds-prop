@@ -3,6 +3,7 @@
 // agent why. A JSON "ask" decision escalates to the human. Anything else: no opinion.
 // The pure decide() function is unit tested (scripts/__tests__/guard-bash.test.mjs).
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -203,14 +204,55 @@ function evaluateSupabase(tokens) {
   return none;
 }
 
-function evaluateGh(tokens) {
+/**
+ * Owner decision, 14 Nov 2026: the AI chat pull requests may be merged by the agent once CI is
+ * green. Everything else about merging stays refused. The allowance is narrow on purpose: one
+ * numbered pull request, one strategy flag, base `develop`, an AI chat branch, open and not a
+ * draft, no merge conflict, the `all-checks-passed` check green, and no stop file. If the pull
+ * request cannot be read the answer is deny.
+ */
+const MERGE_HEAD = /^(feat|fix|chore|docs|test)\/ai-/;
+
+function evaluateMerge(rest, context) {
+  const flags = rest.filter((token) => token.startsWith("-"));
+  const numbers = rest.filter((token) => !token.startsWith("-"));
+  const strategies = flags.filter((flag) => flag === "--merge" || flag === "--squash");
+  if (
+    flags.length !== strategies.length ||
+    strategies.length !== 1 ||
+    numbers.length !== 1 ||
+    !/^\d+$/.test(numbers[0])
+  ) {
+    return deny(
+      "Merge with exactly: gh pr merge <number> --merge (or --squash). No other flags, no --admin, no --auto (R-AI-12).",
+    );
+  }
+  if (context.stopRequested)
+    return deny("The AI-RUN-STOP file exists, so the owner has stopped the automatic run.");
+  const info = context.pullRequest ? context.pullRequest(numbers[0]) : null;
+  if (!info) return deny("Could not read the pull request, so it is not merged (fail closed).");
+  if (info.state !== "OPEN" || info.isDraft)
+    return deny("Only an open pull request that is not a draft can be merged.");
+  if (info.base !== "develop") return deny("Only pull requests into develop can be merged.");
+  if (!MERGE_HEAD.test(info.head ?? ""))
+    return deny(
+      "Only AI chat branches (feat/ai-…, fix/ai-…, chore/ai-…, docs/ai-…, test/ai-…) may be merged by an agent (R-AI-12).",
+    );
+  if (info.mergeable === "CONFLICTING") return deny("The pull request has a merge conflict.");
+  if (!info.checksPassed)
+    return deny("The all-checks-passed check is not green yet. Wait for CI; never merge red.");
+  return none;
+}
+
+function evaluateGh(tokens, context = {}) {
   const args = tokens.slice(1);
   const area = args[0] ?? "";
   const action = args[1] ?? "";
   if (area === "release")
     return deny("Releases are made by the release workflow, not by an agent.");
-  if (area === "pr" && ["merge", "close", "reopen"].includes(action))
-    return deny("Merging and closing pull requests is a human decision (R-AI-12).");
+  if (area === "pr" && action === "merge") return evaluateMerge(args.slice(2), context);
+  if (area === "pr" && ["close", "reopen"].includes(action))
+    return deny("Closing and reopening pull requests is a human decision (R-AI-12).");
   if (area === "workflow" && action === "run")
     return deny("Run workflows through git events, not by hand.");
   if (area === "repo" && ["delete", "edit", "archive", "rename", "create"].includes(action))
@@ -276,9 +318,25 @@ function evaluateRemoval(name, tokens) {
   return none;
 }
 
+/** Owner decision, 14 Nov 2026: the AI chat plan task P1-T01 adds `openai`, at one exact version. */
+const OPENAI_OPERAND = /^openai@\d+\.\d+\.\d+$/;
+const OPENAI_FLAGS = new Set(["--save-exact", "-E", "--ignore-scripts", "--save"]);
+
+function isOpenAiInstall(sub, args) {
+  if (!["install", "i", "add"].includes(sub)) return false;
+  const flags = args.filter((token) => token.startsWith("-"));
+  const operands = args.filter((token) => !token.startsWith("-")).slice(1);
+  return (
+    operands.length === 1 &&
+    OPENAI_OPERAND.test(operands[0]) &&
+    flags.every((flag) => OPENAI_FLAGS.has(flag))
+  );
+}
+
 function evaluateNpm(tokens) {
   const args = tokens.slice(1);
   const sub = args.find((token) => !token.startsWith("-")) ?? "";
+  if (isOpenAiInstall(sub, args)) return none;
   if (
     sub === "publish" ||
     sub === "unpublish" ||
@@ -319,7 +377,8 @@ function evaluateNpm(tokens) {
 
 /**
  * @param {string} command  the Bash command line
- * @param {{ branch?: string|null }} context
+ * @param {{ branch?: string|null, stopRequested?: boolean, pullRequest?: (number: string) => object|null }} context
+ *   `pullRequest` returns { state, isDraft, base, head, mergeable, checksPassed } or null.
  * @returns {{ decision: "deny"|"ask"|"none", reason: string }}
  */
 export function decide(command, context = {}) {
@@ -353,7 +412,7 @@ export function decide(command, context = {}) {
 
     if (name === "git") push(evaluateGit(inner, context.branch));
     else if (name === "supabase") push(evaluateSupabase(inner));
-    else if (name === "gh") push(evaluateGh(inner));
+    else if (name === "gh") push(evaluateGh(inner, context));
     else if (name === "vercel") push(deny("Deployments run in CI, not from an agent session."));
     else if (name === "npm") push(evaluateNpm(inner));
     else if (["rm", "rmdir", "rd", "del", "erase", "remove-item", "ri"].includes(name))
@@ -396,6 +455,48 @@ function currentBranch(cwd) {
   }
 }
 
+function readPullRequest(cwd, number) {
+  try {
+    const raw = execFileSync(
+      "gh",
+      [
+        "pr",
+        "view",
+        number,
+        "--json",
+        "baseRefName,headRefName,state,isDraft,mergeable,statusCheckRollup",
+      ],
+      { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 30000 },
+    );
+    const data = JSON.parse(raw);
+    const gate = (data.statusCheckRollup ?? []).find((check) => check.name === "all-checks-passed");
+    return {
+      state: data.state,
+      isDraft: data.isDraft,
+      base: data.baseRefName,
+      head: data.headRefName,
+      mergeable: data.mergeable,
+      checksPassed: gate?.conclusion === "SUCCESS",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** The stop file lives in the main checkout, so every worktree sees the same one. */
+function stopFileExists(cwd) {
+  try {
+    const common = execFileSync(
+      "git",
+      ["rev-parse", "--path-format=absolute", "--git-common-dir"],
+      { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    return existsSync(path.join(path.dirname(common), "AI-RUN-STOP"));
+  } catch {
+    return true; // cannot tell, so treat it as stopped
+  }
+}
+
 function main() {
   let raw = "";
   process.stdin.setEncoding("utf8");
@@ -410,7 +511,12 @@ function main() {
     }
     const command = input?.tool_input?.command;
     const cwd = input?.cwd ?? process.cwd();
-    const { decision, reason } = decide(command, { branch: currentBranch(cwd) });
+    const isMerge = /\bgh\s+pr\s+merge\b/.test(String(command));
+    const { decision, reason } = decide(command, {
+      branch: currentBranch(cwd),
+      stopRequested: isMerge ? stopFileExists(cwd) : false,
+      pullRequest: (number) => readPullRequest(cwd, number),
+    });
     if (decision === "deny") {
       process.stderr.write(`Blocked by guard-bash: ${reason}\n`);
       process.exit(2);
