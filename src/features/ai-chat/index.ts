@@ -29,3 +29,5 @@ export type {
   ToolRun,
 } from "./tools/types";
 export { UNTRUSTED_TEXT_KEY } from "./tools/untrusted";
+export { checkInput, INJECTION_REMINDER_INSTRUCTION, INPUT_MESSAGE_KEYS } from "./guards/input";
+export type { InputCheckResult, InputMessageKey, InputTag } from "./guards/input";
