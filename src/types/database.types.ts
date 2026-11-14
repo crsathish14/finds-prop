@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "app_config": {
+            "ai_usage_events": {
+                  Row: {
+                    "agent_limit": string | null,"cached_input_tokens": number,"caller": string,"created_at": string,"duration_ms": number,"fallback_reason": string | null,"id": string,"input_tags": (string)[],"input_tokens": number,"limited_by": string | null,"model": string | null,"number_ungrounded": number,"occurred_at": string,"outcome": string,"output_counts": NonNullable<Json>,"output_tags": (string)[],"output_tokens": number,"prompt_version": string,"provider": string | null,"request_id": string,"retried": boolean,"rounds": number,"tool_calls_per_round": (number)[],"tools_ran": (string)[],"user_id": string | null,"visitor_hash": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller": string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at": string,"outcome": string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version": string,"provider"?: string | null,"request_id": string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Update: {
+                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller"?: string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at"?: string,"outcome"?: string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version"?: string,"provider"?: string | null,"request_id"?: string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"app_config": {
                   Row: {
                     "description": string | null,"key": string,"updated_at": string,"value": string
                   }

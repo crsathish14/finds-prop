@@ -1,4 +1,4 @@
--- F11 retention (S7-T12 part 2, DEC-28, ADR-124). Tests: DB-FN-run_retention, DB-PRIV-retention, DB-AUDIT-retention.
+-- F11 retention (S7-T12 part 2, DEC-28, ADR-124; AI chat usage rows added by AI-P4-T05). Tests: DB-FN-run_retention, DB-PRIV-retention, DB-AUDIT-retention.
 -- Old rows are made with a created_at well past each window and new ones well inside it, so the fixtures are the only
 -- rows near a window's edge whatever else the database holds; a limited run, a second limited run and a full run show
 -- the batches, and a rerun finds nothing.
@@ -57,6 +57,11 @@ insert into public.public_rate_limits (scope, subject_hash, window_start, hits) 
   ('it_retention', 'aaaaaaaaaaaaaaaa', now() - interval '8 days', 3),
   ('it_retention', 'aaaaaaaaaaaaaaaa', now() - interval '30 days', 1),
   ('it_retention', 'aaaaaaaaaaaaaaaa', now() - interval '6 days', 2);
+-- AI chat usage rows (12 months): two old, one new.
+insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values
+  ('it-retention-1', now() - interval '13 months', 'anonymous', 'it', 'answered'),
+  ('it-retention-2', now() - interval '18 months', 'anonymous', 'it', 'refused'),
+  ('it-retention-3', now() - interval '11 months', 'anonymous', 'it', 'answered');
 insert into public.idempotency_keys (scope, subject, key, created_at) values
   ('it_retention', 'x', gen_random_uuid(), now() - interval '25 hours'),
   ('it_retention', 'x', gen_random_uuid(), now() - interval '3 days'),
@@ -72,7 +77,7 @@ insert into mark select count(*) from public.audit_log where action = 'retention
 select is(
   public.run_retention(2, 1),
   '{"form_submissions": 2, "crm_api_logs": 2, "project_events": 2, "enquiries": 2, "project_leads": 2,
-    "public_rate_limits": 2, "idempotency_keys": 2,
+    "public_rate_limits": 2, "idempotency_keys": 2, "ai_usage_events": 2,
     "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a limited run deletes at most one batch of each table, and counts what it leaves alone'
 );
@@ -84,13 +89,13 @@ select is(
 select is(
   public.run_retention(1, 2) - 'skipped',
   '{"form_submissions": 0, "crm_api_logs": 1, "project_events": 0, "enquiries": 0, "project_leads": 0,
-    "public_rate_limits": 0, "idempotency_keys": 0}'::jsonb,
+    "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0}'::jsonb,
   'the next run takes the rest, over as many small batches as it needs'
 );
 select is(
   public.run_retention(),
   '{"form_submissions": 0, "crm_api_logs": 0, "project_events": 0, "enquiries": 0, "project_leads": 0,
-    "public_rate_limits": 0, "idempotency_keys": 0,
+    "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0,
     "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a run with nothing left to delete deletes nothing, and still counts what it leaves alone'
 );
@@ -104,8 +109,9 @@ select results_eq(
       (select count(*) from public.enquiries where property_id = '00000000-0000-4000-9000-000000000001')::int,
       (select count(*) from public.project_leads where project_id = '00000000-0000-4000-c000-000000000001')::int,
       (select count(*) from public.public_rate_limits where scope = 'it_retention')::int,
-      (select count(*) from public.idempotency_keys where scope = 'it_retention')::int$$,
-  $$values (3, 1, 1, 1, 1, 1, 1)$$,
+      (select count(*) from public.idempotency_keys where scope = 'it_retention')::int,
+      (select count(*) from public.ai_usage_events where prompt_version = 'it')::int$$,
+  $$values (3, 1, 1, 1, 1, 1, 1, 1)$$,
   'only the new rows are left (and the submission with a file and the one still waiting stay)'
 );
 select is(
@@ -129,7 +135,7 @@ select is(
   (select array_agg(key order by key) from jsonb_object_keys(
     (select diff from public.audit_log where action = 'retention.ran' order by id desc limit 1)
   ) as key),
-  array['crm_api_logs', 'enquiries', 'form_submissions', 'idempotency_keys', 'project_events', 'project_leads',
+  array['ai_usage_events', 'crm_api_logs', 'enquiries', 'form_submissions', 'idempotency_keys', 'project_events', 'project_leads',
         'public_rate_limits', 'skipped'],
   'an entry holds the counts of each table and of what was left alone'
 );
