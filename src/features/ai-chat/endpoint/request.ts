@@ -22,7 +22,8 @@ const customerMessage = z.strictObject({
 
 const assistantMessage = z.strictObject({
   role: z.literal("assistant"),
-  text: z.string().min(1).max(AI_MAX_HISTORY_ANSWER_CHARACTERS),
+  // May be empty: a turn that was only cards or a fixed line is stored by the page as an empty answer.
+  text: z.string().max(AI_MAX_HISTORY_ANSWER_CHARACTERS),
 });
 
 export const chatRequestSchema = z

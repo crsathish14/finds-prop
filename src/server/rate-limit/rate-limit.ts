@@ -8,9 +8,10 @@ import { ensureAnonymousId, readAnonymousId, type AnonymousIdCookieJar } from ".
 import { enforceRateLimit, type RateLimitCaller, type RateLimitCounter } from "./enforce";
 import { AI_CHAT_RATE_LIMIT_SCOPES, type RateLimitScope } from "./limits";
 
+import { clientIp, hashValue, networkAddress, visitorHash } from "./visitor-hash";
+
 /** One of the five limits of the AI chat. */
 export type AiChatRateLimitScope = (typeof AI_CHAT_RATE_LIMIT_SCOPES)[number];
-import { clientIp, hashValue, networkAddress, visitorHash } from "./visitor-hash";
 
 /** The database counter, reached with the service role (public_rate_limits is closed to users). */
 export function createRateLimitCounter(requestId: string): RateLimitCounter {

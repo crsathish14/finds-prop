@@ -36,17 +36,11 @@ import type { ChatDeps, ChatUsageRecord } from "./types";
 const ROUTE = "ai-chat";
 
 /**
- * The limits a message that the input check refused still counts toward. It made no model call, so it never spends
- * the platform's daily budget; flooding counts toward the short limit only and not the free trial (ADR-128 6.4.1);
- * the other refusals are real messages from a real customer and use the trial like any other.
+ * The limits a message that the input check refused counts toward: the short limit only (ADR-128 section 7.1, "input
+ * pre-check refusals count toward the burst limit only"). It made no model call, so it spends neither the free trial
+ * nor the daily budget, and a refusal (or a check that failed on our side) never costs a customer a free message.
  */
-function limitsForRefusal(
-  latest: Extract<InputCheckResult, { action: "refuse" }>,
-): readonly AiChatRateLimitScope[] {
-  return latest.countsTowardTrial
-    ? AI_CHAT_RATE_LIMIT_SCOPES.filter((scope) => scope !== "ai_chat_global_day")
-    : ["ai_chat_burst"];
-}
+const REFUSAL_LIMITS: readonly AiChatRateLimitScope[] = ["ai_chat_burst"];
 
 export async function handleAiChat(request: Request, deps: ChatDeps): Promise<Response> {
   const requestId = readRequestId(request.headers) ?? crypto.randomUUID();
@@ -121,7 +115,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       }
     };
     if (latest.action === "refuse") {
-      const limited = await spend(limitsForRefusal(latest));
+      const limited = await spend(REFUSAL_LIMITS);
       if (limited !== null) return limited;
       return streamResponse(requestId, deps, () =>
         refusalEvents(deps, requestId, latest.messageKey, usage, inputTags),
@@ -144,6 +138,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
         deps,
         requestId,
         request,
+        started,
         provider,
         system,
         conversation,
@@ -154,7 +149,11 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     );
   } catch (error) {
     logger.error("ai chat failed", { error });
-    await deps.reportError?.(error, { source: "handler", requestId, route: ROUTE });
+    try {
+      await deps.reportError?.(error, { source: "handler", requestId, route: ROUTE });
+    } catch {
+      // Reporting an error must never become a second error.
+    }
     await usage("error");
     return serverErrorResponse(requestId, deps.translate);
   }
@@ -183,25 +182,32 @@ async function* refusalEvents(
   usage: UsageWriter,
   inputTags: ChatUsageRecord["inputTags"],
 ): AsyncGenerator<ChatStreamEvent> {
-  yield { type: "start", requestId };
-  if (messageKey === INPUT_MESSAGE_KEYS.failedClosed) {
-    yield {
-      type: "replace",
-      key: messageKey,
-      text: deps.translate(messageKey),
-      href: FALLBACK_HREF,
-    };
-  } else {
-    yield { type: "text", text: deps.translate(messageKey) };
+  let outcome: ChatOutcome = "error";
+  try {
+    yield { type: "start", requestId };
+    if (messageKey === INPUT_MESSAGE_KEYS.failedClosed) {
+      yield {
+        type: "replace",
+        key: messageKey,
+        text: deps.translate(messageKey),
+        href: FALLBACK_HREF,
+      };
+    } else {
+      yield { type: "text", text: deps.translate(messageKey) };
+    }
+    outcome = "refused";
+    yield { type: "done", outcome };
+  } finally {
+    await usage(outcome, { inputTags });
   }
-  yield { type: "done", outcome: "refused" };
-  await usage("refused", { inputTags });
 }
 
 interface AnswerInput {
   readonly deps: ChatDeps;
   readonly requestId: string;
   readonly request: Request;
+  /** When the request arrived: the time limit and the hard stop count from here, not from when the stream is built. */
+  readonly started: number;
   readonly provider: AiProvider;
   readonly system: string;
   readonly conversation: Parameters<typeof runTurn>[0]["messages"];
@@ -213,13 +219,14 @@ interface AnswerInput {
 async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent> {
   const { deps, latest } = input;
   const { timing } = deps;
+  const remaining = (limitMs: number) => Math.max(1, limitMs - (Date.now() - input.started));
   const customerLeft = () => input.request.signal.aborted || input.stop.signal.aborted;
   const signal = AbortSignal.any([
     input.stop.signal,
     input.request.signal,
-    AbortSignal.timeout(timing.hardStopMs),
+    AbortSignal.timeout(remaining(timing.hardStopMs)),
   ]);
-  const timeLimit = AbortSignal.timeout(timing.timeLimitMs);
+  const timeLimit = AbortSignal.timeout(remaining(timing.timeLimitMs));
 
   let summary: TurnSummary | null = null;
   let outcome: ChatOutcome = "error";

@@ -110,6 +110,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
   }
 
   let output: OutputSummary | null = null;
+  let blocked = false;
   try {
     const guard = createOutputGuard({
       toolResults: agent.toolResults,
@@ -118,7 +119,6 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       canary: SYSTEM_PROMPT_CANARY,
       promptText: input.system,
     });
-    let blocked = false;
     const checked: OutputEvent[] = [];
     for (const delta of deltas) {
       checked.push(...guard.push(delta));
@@ -136,7 +136,8 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     if (blocked) return { outcome: "blocked", agent, output };
   } catch {
     logger.error("ai output check threw");
-    yield fallbackReplace(translate);
+    // Nothing but done may follow a replace, so a second one is not sent.
+    if (!blocked) yield fallbackReplace(translate);
     return { outcome: "blocked", agent, output };
   }
 
