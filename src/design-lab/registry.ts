@@ -1,3 +1,4 @@
+import { AI_CHAT } from "./boards/ai-chat";
 import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
 import { COMPONENTS } from "./boards/components";
@@ -129,6 +130,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the admin's Overview page is drawn with: the line chart with its crosshair and tooltip, the Chart / Table card, the part-to-whole bar, the horizontal bars, the recent leads, and the whole page with its error and reloading states. It mirrors the admin Overview screen.",
     entries: CHARTS,
+  },
+  {
+    id: "ai-chat",
+    title: "AI chat",
+    uxBoard: "ai-chat",
+    summary:
+      "What the AI chat assistant is drawn with (P5-T01): the thread with the visitor's bubble, the answer with cards and notes, the Searching… line and the streaming caret, the composer, the notices for an error and the two limits, the sign-in gate and the confirm card for an enquiry or a site visit, in each state. It mirrors the AI chat screens of the UX addendum.",
+    entries: AI_CHAT,
   },
 ];
 
