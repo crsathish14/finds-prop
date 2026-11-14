@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const tag = vi.fn();
 const life = vi.fn();
@@ -122,9 +122,14 @@ function arrange({ project, units, available, trend }: Parts = {}) {
   return made;
 }
 
+const NOW = new Date("2026-11-13T10:12:00.000Z");
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.useFakeTimers();
+  vi.setSystemTime(NOW);
 });
+afterEach(() => vi.useRealTimers());
 
 describe("UT-project-queries: the list of projects", () => {
   it("reads the public columns as a visitor, featured first and then newest, with a limit", async () => {
@@ -143,6 +148,7 @@ describe("UT-project-queries: the list of projects", () => {
     expect(life).toHaveBeenCalledWith("minutes");
     expect(result).toEqual({
       status: "ok",
+      readAt: NOW.toISOString(),
       projects: [
         {
           slug: "kadal-vista",
@@ -162,7 +168,7 @@ describe("UT-project-queries: the list of projects", () => {
 
   it("gives an empty list, not a failure, when there are no projects", async () => {
     from.mockReturnValue(builder({ data: [], error: null }).query);
-    expect(await getProjects()).toEqual({ status: "ok", projects: [] });
+    expect(await getProjects()).toEqual({ status: "ok", projects: [], readAt: NOW.toISOString() });
   });
 
   it("has no cover for a project with no pictures", async () => {
@@ -242,6 +248,8 @@ describe("UT-project-queries: one project by its slug", () => {
     // The rows are put in the order of the table, and the trend oldest month first.
     expect(result.project.units.map((unit) => unit.number)).toEqual(["A-2", "A-10"]);
     expect(result.project.trend.map((point) => point.month)).toEqual(["2026-09-01", "2026-10-01"]);
+    // The time is taken inside the cached read, so it is the time of the last refill (AI-P3-T01).
+    expect(result.readAt).toBe(NOW.toISOString());
   });
 
   it("never asks for the moderation columns, the form link or the exact location", async () => {
@@ -263,7 +271,10 @@ describe("UT-project-queries: one project by its slug", () => {
 
   it("is missing when no approved, published project has this slug", async () => {
     arrange({ project: { data: null, error: null } });
-    expect(await getProject("nobody-here")).toEqual({ status: "missing" });
+    expect(await getProject("nobody-here")).toEqual({
+      status: "missing",
+      readAt: NOW.toISOString(),
+    });
   });
 
   it("falls back to the rows it holds when the database gives no counts", async () => {

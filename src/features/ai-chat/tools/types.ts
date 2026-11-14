@@ -25,14 +25,26 @@ export interface ToolContext {
 /**
  * A record a tool result names. The loop keeps these for one customer message, so a card or a link is only
  * ever built by code for an id a tool returned in that message (ADR-128 section 4.1, principle 3). The model
- * is shown the id only; the slug is here for the address, which code builds (`/properties/{slug}-{shortId}`).
+ * is shown the id only; the slug is here for the address, which code builds (`/properties/{slug}-{shortId}`
+ * for a home, `/projects/{slug}` for a project, whose slug is its only id).
  */
-export type ToolReference = {
-  readonly kind: "home";
-  /** The public id of the home (`short_id`), the same value the tool result shows as `homeId`. */
-  readonly homeId: string;
-  readonly slug: string;
-};
+export type ToolReference =
+  | {
+      readonly kind: "home";
+      /** The public id of the home (`short_id`), the same value the tool result shows as `homeId`. */
+      readonly homeId: string;
+      readonly slug: string;
+    }
+  | {
+      readonly kind: "project";
+      /** The project's slug, the same value the tool result shows as `slug`. */
+      readonly slug: string;
+    };
+
+/** What names a reference once in a set: its kind and its id (a home's public id, a project's slug). */
+export function referenceKey(reference: ToolReference): string {
+  return reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
+}
 
 /** What `run` gives back: the result for the model, and the records that result names. */
 export interface ToolRun<Output> {
