@@ -2926,6 +2926,11 @@
     "searching": "Searching…",
     "capNote": "I couldn't check everything. Here is what I found.",
     "fallback": "I couldn't finish that. Try a simpler question, or use the search filters.",
-    "emiExampleNote": "This is an example, not a bank offer."
+    "emiExampleNote": "This is an example, not a bank offer.",
+    "maskedNotice": "I removed personal details from your message.",
+    "refuseCompetitor": "I can only help with homes, projects and builders listed on findsprop, so I can't look at other property sites. I can search findsprop for something similar. Shall I try?",
+    "refuseScope": "I can help with homes, projects and builders listed on findsprop, and with EMI sums. I can't help with that. Want to look at some homes?",
+    "refuseInternals": "I'm findsprop's AI assistant. I look up homes, projects and builders listed on findsprop and can calculate EMIs. I can't share how the site or I am built. Want to look at some homes?",
+    "refuseFlooding": "Please write your question in a few words, and don't send the same message again."
   }
 }

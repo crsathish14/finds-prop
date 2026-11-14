@@ -101,3 +101,170 @@ export const AI_GLOBAL_DAILY_MESSAGE_BUDGET = 1000;
  */
 export const AI_ANONYMOUS_COOKIE_NAME = "fp_ai_anon";
 export const AI_ANONYMOUS_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
+
+/**
+ * The input pre-check (ADR-128 section 6.4.1, `src/features/ai-chat/guards/input.ts`). The word lists are here, in
+ * one file, so that a rule is changed in one place. Every term is written in lower case, because the check lowercases
+ * the message before it looks. The check saves cost, removes noise and protects privacy; it is not the security
+ * boundary (the model has no write tool, no web tool and cannot make a link), and word lists are easy to get around
+ * with spelling tricks. A false positive shows a refusal that says what to do next, and the tag counts in the usage
+ * row show a rule that is too strict. A phrase that real customers use (a builder called Gemini, "no broker" flats,
+ * "square yards", "I am a developer looking for land") is left out of the lists on purpose.
+ */
+
+/**
+ * Other property portals: their names, common spellings and domains. A term made of Latin letters and digits matches
+ * only as a whole word ("olx" does not match "solxyz"); a Tamil-script term also matches with an ending attached,
+ * because Tamil joins its endings to the word, so it is written as a stem without its last pulli ("மேஜிக்பிரிக்ஸ" matches
+ * both "மேஜிக்பிரிக்ஸ்" and "மேஜிக்பிரிக்ஸில்").
+ */
+export const AI_COMPETITOR_PORTAL_TERMS: readonly string[] = [
+  "99acres",
+  "99 acres",
+  "99 acre",
+  "99acres.com",
+  "magicbricks",
+  "magic bricks",
+  "magicbricks.com",
+  "housing.com",
+  "nobroker",
+  "nobroker.in",
+  "commonfloor",
+  "common floor",
+  "commonfloor.com",
+  "makaan.com",
+  "proptiger",
+  "prop tiger",
+  "proptiger.com",
+  "squareyards",
+  "squareyards.com",
+  "olx",
+  "olx.in",
+  "quikr",
+  "quikr.com",
+  "sulekha",
+  "sulekha.com",
+  "nestaway",
+  "propertywala",
+  "property wala",
+  "realestateindia",
+  "indiaproperty",
+  "homeonline",
+  "நோபுரோக்கர",
+  "மேஜிக் பிரிக்ஸ",
+  "மேஜிக்பிரிக்ஸ",
+  "99 ஏக்கர்ஸ",
+  "99ஏக்கர்ஸ",
+  "ஹவுசிங்.காம்",
+  "ஒலெக்ஸ",
+  "குயிக்கர்",
+];
+
+/**
+ * Obvious attempts to change the rules (a plain attack): the message is refused with the scope reply and tagged
+ * `injection_suspected`. English, Tamil and Tanglish. Tamil puts the object before the verb, so a Tamil rule reads
+ * "rules ... forget"; Tanglish usually keeps the English noun and adds a Tamil verb.
+ */
+export const AI_INSTRUCTION_ATTACK_PATTERNS: readonly RegExp[] = [
+  /\b(ignore|disregard|forget|override|overrule)\b[^.!?\n]{0,25}\b(instructions?|rules?|prompts?|guidelines?|guardrails?|restrictions?)\b/u,
+  /\b(developer|dev|god|jailbreak|unrestricted|dan|sudo) mode\b/u,
+  /\bjail\s*break(ing|en)?\b/u,
+  /\bdo anything now\b/u,
+  /\b(remove|disable|bypass|break|lift) (all |any |your |the )?(restrictions|guardrails|safeguards|safety)\b/u,
+  /\byou (have|are under) no (rules|restrictions|limits)\b/u,
+  /\b(instructions?|rules?|prompt|restrictions?)\b[^.!?\n]{0,25}\b(ignore|ignor|marandhu|maranthu|vitturu)\w*/u,
+  /\b(ignore|ignor|marandhu|maranthu|vitturu)\w*\s+(pannu|pannunga|pannidu|panni|seiyu|seyyu|vidu|viduga)\b[^.!?\n]{0,25}\b(instructions?|rules?|prompt)/u,
+  /\b(ellam|ella|ellathaiyum|ellaathaiyum)\s+(marandhu|maranthu|ignore|vitturu)\w*/u,
+  /(விதி|கட்டளை|அறிவுறுத்தல்|நிபந்தனை|ப்ராம்ப்ட்|பிராம்ப்ட்)\S*(\s+\S+){0,2}\s+(புறக்கணி|மறந்து|மறந்திடு|மீறு|நீக்கு)/u,
+  /(டெவலப்பர்|டெவெலப்பர்|ஜெயில்பிரேக்|ஜெயில் பிரேக்)\s*(மோட்|பயன்முறை)/u,
+];
+
+/**
+ * Doubtful: a phrase that is often an attack but can be innocent ("act as a friendly agent"). The message goes on,
+ * tagged `injection_doubtful`, and a reminder line is added to this turn's instructions.
+ */
+export const AI_INSTRUCTION_DOUBTFUL_PATTERNS: readonly RegExp[] = [
+  /\b(pretend|imagine|roleplay|role-play|role play)\b[^.!?\n]{0,30}\b(you|you're|you are|to be)\b/u,
+  /\b(you are now|you're now|from now on you|from now on,? you|act as|behave as|new instructions?|new rules?|updated instructions?)\b/u,
+  /(^|\n)\s*(system|assistant|developer)\s*:/u,
+  /\[(system|inst|\/inst)\]|<\|?(system|im_start|im_end)\|?>/u,
+  /இனி\s*(நீ|நீங்கள்)/u,
+];
+
+/**
+ * Questions about how findsprop or the assistant is built, and claims of being the developer or an admin. The reply
+ * is the fixed self-description, with no model call. English, Tamil and Tanglish. A word such as "database",
+ * "model" or "code" alone is not enough, because customers use them about homes ("show me the pincode", "which
+ * model flat"); the rule needs the word beside a question about the assistant or the site.
+ */
+export const AI_INTERNALS_PROBE_PATTERNS: readonly RegExp[] = [
+  // The prompt, the instructions and what the assistant was told.
+  /\b(system|initial|hidden|secret|original|master) (prompt|message|instructions?)\b/u,
+  /\b(your|ur|the assistant's) (prompt|instructions|configuration|config)\b/u,
+  /\b(reveal|show|print|display|leak|dump|share|tell|give|send|paste|repeat|recite|output|read out|list)\b[^.!?\n]{0,25}\b(prompt|your instructions|the instructions you|rules you (were|have been) given|what you were told)\b/u,
+  /\b(repeat|print|show|say|write|recite|copy|output)\b[^.!?\n]{0,25}\b(everything|all|the text|the words|the message|the conversation)\b[^.!?\n]{0,15}\b(above|before|so far|earlier|prior)\b/u,
+  /\bwhat (were|was|are) you (told|given|instructed|programmed|trained)\b/u,
+  // The code, the repository, the stack and the data behind the site.
+  /\b(source\s*code|your code|ur code|the codebase|code base|your repo|your repository|github repo|repository link)\b/u,
+  /\b(show|share|give|send|reveal|leak|paste|dump|print)\b[^.!?\n]{0,15}\b(your (config|configuration|schema|secrets?|credentials?|api keys?|environment variables?|logs?)|the (secrets?|credentials?|api keys?|environment variables?))\b/u,
+  /\b(api[ _-]?keys?|secret keys?|service[ _-]?role|env file|access tokens?|bearer tokens?)\b/u,
+  /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|nextjs|tailwind|typescript|langchain|openai|anthropic)\b/u,
+  /\b(are you|r u|do you use|you use|you using|powered by|based on|built on|built with|made by|running on|your model is)\s+(the |a )?(chat ?gpt|gpt-?[0-9][a-z0-9.-]*|openai|gemini|claude|llama|bard|copilot|deepseek|mistral)\b/u,
+  /\b(what|which) (llm|ai model|language model|ai provider|tech stack|backend|hosting) (are you|do you|does findsprop|does this (site|app|website)|is (this|findsprop|your)|you (use|run))\b/u,
+  /\b(what|which) (ai |llm |language )?model (are you|do you use|does findsprop use|you use|you run|is your)\b/u,
+  /\b(what|which) (database|db|framework|programming language|language) (do you|does findsprop|does this (site|app|website)|is findsprop|are you|you use)\b/u,
+  /\bhow (are you|were you|is findsprop|is this site|is this website|is this app|was this site|was this website|was findsprop) (built|made|coded|created|developed|programmed|designed|trained)\b/u,
+  /\b(who|which company|which team) (built|made|created|developed|programmed|trained) (you|this assistant|this chatbot|this bot|this site|this website|findsprop)\b/u,
+  /\b(what|which) (tools|functions|apis|endpoints|plugins) (do you|are you|can you|you)\b[^.!?\n]{0,15}\b(have|use|call|access|using|available|allowed)\b/u,
+  /\b(list|show|name|tell me|give me)\b[^.!?\n]{0,15}\b(your|all your) (tools|functions|apis|endpoints|plugins|tables|columns|database tables)\b/u,
+  /\b(search_properties|get_property|list_localities|search_projects|get_project|get_builder|compare_properties|calculate_emi)\b/u,
+  /\b(findsprop'?s?|your) (backend|back end|architecture|tech stack|infrastructure|admin panel|server code)\b/u,
+  // A claim of authority. Chat messages carry none, and the answer says so by not changing.
+  /\bi\s*(am|'m|’m)\s+(the|your)\s+(developer|dev)\b(?!\s+(of|for)\b)/u,
+  /\bi\s*(am|'m|’m)\s+(the |your )?(admin|administrator|sysadmin|maintainer|findsprop (staff|team|employee|developer|admin))\b/u,
+  /\bi\s*(am|'m|’m)\s+(a|an)\s+(findsprop|site|system)\s+(developer|admin|administrator|engineer)\b/u,
+  /\bi (work|am working) (for|at) findsprop\b/u,
+  /\b(as|being)\s+(the |an? |your )?(developer|admin|administrator|maintainer)\b[^.!?\n]{0,30}\b(show|give|tell|reveal|need|require|debug|print)\b/u,
+  /\b(debug|maintenance|admin|diagnostic|root|superuser) mode\b/u,
+  // Tanglish: English nouns with Tamil verbs.
+  /\b(system prompt|source code|prompt|config|configuration|api key)\b[^.!?\n]{0,25}\b(kaatu|kattu|kaattu|kaami|kami|kaamichu|kaamingu|kaatunga|kaattunga|sollu|solluga|sollunga|anuppu|anuppunga|tharu|thaa|thaanga|kudu|kudunga|venum|ethu|enna)\b/u,
+  /\b(unga|un|ungaloda|unnoda)\s+(code|prompt|system prompt|source code|instructions|config|model|database|tech stack)\b/u,
+  /\b(nee|neenga)\s+(ethu|entha|enna|yaaru)\s+(model|ai|llm|chatgpt|company)\b/u,
+  /\b(yaaru|yaar)\b[^.!?\n]{0,15}\b(unna|ungala|unnai)\b[^.!?\n]{0,20}\b(create|build|panna|pannanga|senjanga|senjaanga|uruvaakki|uruvakkina)\w*/u,
+  /\bnaan\s+(oru\s+|un\s+|unga\s+)?(developer|admin|administrator|creator|programmer)\s+(da|di|pa|nu|dhaan|thaan|than)\b/u,
+  /\b(ellathaiyum|ellaathaiyum|ellam|ella)\b[^.!?\n]{0,15}\b(repeat|sollu|kaattu|kaatu|print)\b/u,
+  // Tamil script.
+  /(சிஸ்டம்|சிஸ்டெம்)\s*(ப்ராம்ப்ட்|பிராம்ப்ட்|ப்ரோம்ப்ட்|இன்ஸ்ட்ரக்ஷன்)/u,
+  /(சோர்ஸ்|மூல)\s*(கோட்|கோடு|குறியீடு)/u,
+  /(உன்|உங்கள்|உங்க|உன்னோட|உங்களோட)\s*(கோட்|கோடு|குறியீட்டை|குறியீடு|கட்டளைகள்|கட்டளைகளை|அறிவுறுத்தல்|டேட்டாபேஸ்|தரவுத்தளம்)/u,
+  /(ஏபிஐ|API)\s*(கீ|சாவி|விசை)/u,
+  /(டேட்டாபேஸ்|தரவுத்தளம்|சர்வர்|பின்தளம்)\s*(எது|காட்டு|காண்பி|சொல்லு|சொல்)/u,
+  /(நீ|நீங்கள்|நீங்க)\s*(எந்த|என்ன)\s*(மாடல்|ஏஐ|ஏ\.ஐ|நிறுவனம்|தொழில்நுட்பம்)/u,
+  /(உன்னை|உங்களை)\s*(யார்|எவர்)\s*(உருவாக்கி|உருவாக்கின|கட்டினார்|கட்டின)/u,
+  /(நான்|நா)\s*(ஒரு\s+)?(டெவலப்பர்|டெவெலப்பர்|அட்மின்|நிர்வாகி)\s*(தான்|டா|டி)/u,
+  /(எல்லாவற்றையும்|எல்லாத்தையும்|மேலே\s*உள்ள)\s*[^.!?\n]{0,15}(திரும்ப|மீண்டும்)\s*(சொல்|சொல்லு|எழுது)/u,
+];
+
+/** Flooding: more than this many of the same character in a row is noise, not a question ("aaaaaaaa…"). */
+export const AI_FLOOD_MAX_CHARACTER_RUN = 20;
+
+/** Flooding: a message of at least this many words that uses only a few different words is noise. */
+export const AI_FLOOD_MIN_WORDS = 12;
+
+/** Flooding: for that many words, no more than this share may be different ones (0.25 = one in four). */
+export const AI_FLOOD_MAX_DISTINCT_WORD_SHARE = 0.25;
+
+/**
+ * Flooding: the same message sent again. A customer may well send a message a second time (a retry after an error),
+ * so only the third in a row counts: this many earlier customer messages must be exactly the same.
+ */
+export const AI_FLOOD_REPEATED_MESSAGES = 2;
+
+/** What each kind of personal data is replaced with, so the model sees that something was there and not what. */
+export const AI_MASK_PLACEHOLDERS = {
+  email: "[email removed]",
+  phone: "[phone number removed]",
+  aadhaar: "[id number removed]",
+  pan: "[id number removed]",
+  card: "[card number removed]",
+} as const;
