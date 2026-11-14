@@ -15,7 +15,7 @@ States: `merged`, `running`, `todo`, `blocked` (a limit was hit; reason in the n
 | 7     | P2-T02 | merged | #200         | 1        |                                                                                     |
 | 8     | P3-T01 | merged | #201         | 1        | Built before this run began                                                         |
 | 9     | P1-T01 | merged | #204         | 1        | Adds `openai` at one exact version after the `add-dependency` checks                |
-| 10    | P1-T05 | todo   |              | 0        | Example rate 7.2% a year                                                            |
+| 10    | P1-T05 | merged | #205         | 1        | Example rate 7.2% a year                                                            |
 | 11    | P1-T04 | todo   |              | 0        | Daily budget is a placeholder (`owner to confirm`)                                  |
 | 12    | P1-T03 | todo   |              | 0        | Real-key run: ask the owner                                                         |
 | 13    | P3-T02 | todo   |              | 0        |                                                                                     |
