@@ -15,7 +15,7 @@ import {
   type AgentOutcome,
 } from "./agent-types";
 import { toolDefinitions } from "./tools/run";
-import type { ToolReference } from "./tools/types";
+import { referenceKey, type ToolReference } from "./tools/types";
 
 /**
  * The agent loop (ADR-128 section 4.5), written by us, no framework. One customer message goes in; a small
@@ -145,7 +145,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         if (outcome.status !== "ok") continue;
         usefulResults = true;
         for (const reference of outcome.references)
-          references.set(`${reference.kind}:${reference.homeId}`, reference);
+          references.set(referenceKey(reference), reference);
       }
       continue;
     }

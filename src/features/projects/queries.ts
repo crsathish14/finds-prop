@@ -26,12 +26,19 @@ export const PROJECT_LIST_LIMIT = 60;
 
 /**
  * What the projects page shows: the projects, or a failure. A failure carries no detail, since the
- * page only offers "Try again".
+ * page only offers "Try again". `readAt` is when the database was read (an ISO date and time, taken inside
+ * the cached read, so it is the time of the last refill and not the time of the call); the AI assistant
+ * quotes it as "as of", and the page ignores it.
  */
-export type ProjectList = { status: "ok"; projects: ProjectListItem[] } | { status: "failed" };
+export type ProjectList =
+  { status: "ok"; projects: ProjectListItem[]; readAt: string } | { status: "failed" };
 
-/** One project as a visitor may see it, or "missing": no approved, published project has this slug. */
-export type ProjectResult = { status: "found"; project: ProjectData } | { status: "missing" };
+/**
+ * One project as a visitor may see it, or "missing": no approved, published project has this slug.
+ * `readAt` is as for the list above.
+ */
+export type ProjectResult =
+  { status: "found"; project: ProjectData; readAt: string } | { status: "missing"; readAt: string };
 
 function toListItem(row: ProjectListRow): ProjectListItem {
   return {
@@ -55,10 +62,11 @@ function toListItem(row: ProjectListRow): ProjectListItem {
  * logged by its code only and throws, so it is never cached: "Try again" asks the database again.
  * Cached for minutes under the projects tag.
  */
-async function readProjects(): Promise<ProjectListItem[]> {
+async function readProjects(): Promise<{ projects: ProjectListItem[]; readAt: string }> {
   "use cache";
   cacheTag(PROJECTS_TAG);
   cacheLife("minutes");
+  const readAt = new Date().toISOString();
   const { data, error } = await createPublicSupabase()
     .from("projects")
     .select(PROJECT_LIST_COLUMNS)
@@ -79,13 +87,13 @@ async function readProjects(): Promise<ProjectListItem[]> {
   if (skipped > 0) {
     logger.warn("projects skipped, they do not match the expected shape", { skipped });
   }
-  return projects;
+  return { projects, readAt };
 }
 
 /** The public projects, or a failure with no detail (the page offers Try again). */
 export async function getProjects(): Promise<ProjectList> {
   try {
-    return { status: "ok", projects: await readProjects() };
+    return { status: "ok", ...(await readProjects()) };
   } catch (error) {
     // The prerender signal and redirects are Next.js control flow, not failures of the read.
     unstable_rethrow(error);
@@ -106,6 +114,7 @@ export async function getProject(slug: string): Promise<ProjectResult> {
   cacheTag(PROJECTS_TAG, projectTag(slug));
   cacheLife("minutes");
   const client = createPublicSupabase();
+  const readAt = new Date().toISOString();
 
   const found = await client
     .from("projects")
@@ -116,7 +125,7 @@ export async function getProject(slug: string): Promise<ProjectResult> {
     logger.error("project could not be read", { errorCode: found.error.code });
     throw new Error("project could not be read");
   }
-  if (found.data === null) return { status: "missing" };
+  if (found.data === null) return { status: "missing", readAt };
   const parsed = projectRowSchema.safeParse(found.data);
   if (!parsed.success) {
     logger.error("project row does not fit the expected shape", {});
@@ -220,5 +229,6 @@ export async function getProject(slug: string): Promise<ProjectResult> {
       availableCount: available.count ?? 0,
       trend: trendSeries(points),
     },
+    readAt,
   };
 }

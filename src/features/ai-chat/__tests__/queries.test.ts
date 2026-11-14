@@ -35,7 +35,10 @@ vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The two features are stood in for by their tag names, as the sitemap's test does; a test below checks
 // that these are the central tags.
 vi.mock("@/features/search", () => ({ LISTINGS_TAG: "home-listings" }));
-vi.mock("@/features/projects", () => ({ PROJECTS_TAG: "projects" }));
+vi.mock("@/features/projects", () => ({
+  PROJECTS_TAG: "projects",
+  PROJECT_STATUSES: ["new_launch", "under_construction", "ready_to_move"],
+}));
 
 const { getLocalityCounts } = await import("../queries");
 

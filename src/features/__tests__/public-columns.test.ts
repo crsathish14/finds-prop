@@ -5,7 +5,14 @@ import {
   topLevelKeys,
   wordsOf,
 } from "../../../tests/public-columns";
-import { LOCALITY_HOME_COLUMNS, LOCALITY_PROJECT_COLUMNS } from "../ai-chat/columns";
+import {
+  BUILDER_COLUMNS,
+  BUILDER_DIRECTORY_COLUMNS,
+  BUILDER_FIRST_PROJECT_COLUMNS,
+  BUILDER_PROJECT_COLUMNS,
+  LOCALITY_HOME_COLUMNS,
+  LOCALITY_PROJECT_COLUMNS,
+} from "../ai-chat/columns";
 import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "../home/columns";
 import { PHOTO_COLUMNS, PROPERTY_COLUMNS } from "../property/schemas";
 import {
@@ -37,7 +44,11 @@ const PROJECT_SELECTS = {
   DEVELOPER_PROJECT_COLUMNS,
   SITEMAP_PROJECT_COLUMNS,
   LOCALITY_PROJECT_COLUMNS,
+  BUILDER_PROJECT_COLUMNS,
+  BUILDER_FIRST_PROJECT_COLUMNS,
 } as const;
+
+const BUILDER_SELECTS = { BUILDER_DIRECTORY_COLUMNS, BUILDER_COLUMNS } as const;
 
 describe("IT-queries: the select strings of the public pages (S4-T13)", () => {
   it.each(Object.entries(HOME_SELECTS))("%s names no private column of a home", (_name, select) => {
@@ -47,6 +58,13 @@ describe("IT-queries: the select strings of the public pages (S4-T13)", () => {
   it.each(Object.entries(PROJECT_SELECTS))("%s names no private column", (_name, select) => {
     expect(forbiddenIn(select)).toEqual([]);
   });
+
+  it.each(Object.entries(BUILDER_SELECTS))(
+    "%s names no private column of a builder",
+    (_name, select) => {
+      expect(forbiddenIn(select)).toEqual([]);
+    },
+  );
 
   it("a home is selected without its owner, private address, exact point or review state", () => {
     for (const word of ["owner_id", "address", "location", "rejection_reason", "status"]) {
