@@ -48,6 +48,7 @@ function readInventory(): { table: Record<string, Level>; declared: number; unre
 }
 
 const EXPECTED: Record<string, Level> = {
+  "ai-chat/readChatCardsAction": "none",
   "auth/sendPhoneCode": "none",
   "auth/verifyPhoneCode": "none",
   "auth/saveProfileName": "user",
@@ -118,6 +119,8 @@ const EXPECTED: Record<string, Level> = {
 
 /** Why each action that needs no sign-in is open. A new open action needs a reason written here. */
 const OPEN_BY_DESIGN: Record<string, string> = {
+  "ai-chat/readChatCardsAction":
+    "a read of at most three public cards for an answer's references; the public pages' own cached reads",
   "auth/sendPhoneCode": "the visitor is not signed in yet; rate limited by phone and address",
   "auth/verifyPhoneCode": "this is the step that signs the visitor in; rate limited",
   "auth/signOut": "ends the caller's own session and does nothing when there is none",
@@ -136,17 +139,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 31 super_admin, 9 builder, 18 verified-phone, 7 none, 1 user", () => {
+  it("holds the counts by level: 31 super_admin, 9 builder, 18 verified-phone, 8 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
       super_admin: 31,
       builder: 9,
       "verified-phone": 18,
-      none: 7,
+      none: 8,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(66);
+    expect(Object.keys(table)).toHaveLength(67);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {

@@ -62,6 +62,11 @@ vi.mock("@/features/compare", async () => {
   return { getComparedHomes, COMPARE_MAX, COMPARE_MIN };
 });
 vi.mock("../../queries", () => ({ getLocalityCounts, getBuilderDirectory, getBuilderProfile }));
+// The index also exports the chat page's screen; this test is about the tools, so the screen is a stand-in.
+vi.mock("../../chat-screen", () => ({
+  AiChatScreen: () => null,
+  AiChatScreenSkeleton: () => null,
+}));
 
 const { AI_CHAT_TOOLS, runTool, toolDefinitions, UNTRUSTED_TEXT_KEY } =
   await import("@/features/ai-chat");
