@@ -8,6 +8,7 @@ import {
   type SessionView,
 } from "@/server/actions/define-action";
 import { ActionError, classifyError, toFailure } from "@/server/actions/normalise-error";
+import type { ErrorContext } from "@/server/observability";
 
 const user: SessionView = {
   userId: "u1",
@@ -544,5 +545,133 @@ describe("UT-define-action: the full pipeline (S3-T12)", () => {
       handler: () => Promise.reject(new Error("boom")),
     });
     expect(await action(validInput)).toMatchObject({ requestId: "req-async-1" });
+  });
+});
+
+describe("UT-define-action: error tracker (ADR-130)", () => {
+  function tracked(session: SessionView | null = user) {
+    const reports: { error: unknown; context: ErrorContext }[] = [];
+    const rig = harness(
+      {
+        reportError: (error, context) => {
+          reports.push({ error, context });
+          return Promise.resolve();
+        },
+      },
+      session,
+    );
+    return { ...rig, reports };
+  }
+
+  it("reports an unexpected error with the action, the request id and the role, never the input", async () => {
+    const { defineAction, reports } = tracked(builder);
+    const boom = new Error("db down");
+    const action = defineAction({
+      name: "updateProject",
+      input,
+      auth: "user",
+      handler: () => Promise.reject(boom),
+    });
+    expect(await action(validInput)).toMatchObject({ ok: false, code: "INTERNAL" });
+    expect(reports).toEqual([
+      {
+        error: boom,
+        context: {
+          source: "action",
+          requestId: "req-1",
+          route: "updateProject",
+          errorCode: "INTERNAL",
+          role: "builder",
+        },
+      },
+    ]);
+    expect(JSON.stringify(reports[0]?.context)).not.toContain(validInput.id);
+  });
+
+  it.each([
+    ["bad input", { id: "nope" }, "user" as const, user],
+    ["no session", validInput, "user" as const, null],
+    ["a missing record", validInput, "user" as const, user],
+  ])("does not report %s, which is not a bug", async (label, raw, auth, session) => {
+    const { defineAction, reports } = tracked(session);
+    const action = defineAction({
+      name: "x",
+      input,
+      auth,
+      handler: () =>
+        label === "a missing record"
+          ? Promise.reject(new ActionError("NOT_FOUND", "no such record"))
+          : Promise.resolve(1),
+    });
+    const result = await action(raw);
+    expect(result.ok).toBe(false);
+    expect(reports).toEqual([]);
+  });
+
+  it("reports a failure after the write, and the caller still gets the success", async () => {
+    const reports: { error: unknown; context: ErrorContext }[] = [];
+    const { defineAction } = harness(
+      {
+        audit: () => Promise.reject(new Error("audit table down")),
+        reportError: (error, context) => {
+          reports.push({ error, context });
+          return Promise.resolve();
+        },
+      },
+      admin,
+    );
+    const action = defineAction({
+      name: "approveListing",
+      input,
+      auth: "user",
+      audit: { action: "listing.approved" },
+      handler: () => Promise.resolve("saved"),
+    });
+    expect(await action(validInput)).toEqual({ ok: true, data: "saved" });
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.context).toMatchObject({
+      source: "action",
+      route: "approveListing",
+      errorCode: "AFTER_WRITE",
+      role: "super_admin",
+    });
+  });
+
+  it("reports nothing when every step works", async () => {
+    const { defineAction, reports } = tracked(admin);
+    const action = defineAction({
+      name: "approveListing",
+      input,
+      auth: "user",
+      audit: { action: "listing.approved" },
+      handler: () => Promise.resolve("saved"),
+    });
+    expect(await action(validInput)).toEqual({ ok: true, data: "saved" });
+    expect(reports).toEqual([]);
+  });
+
+  it("labels a visitor with no session as anonymous", async () => {
+    const { defineAction, reports } = tracked(null);
+    const action = defineAction({
+      name: "submitEnquiry",
+      input,
+      auth: "none",
+      handler: () => Promise.reject(new Error("boom")),
+    });
+    await action(validInput);
+    expect(reports[0]?.context.role).toBe("anonymous");
+  });
+
+  it("still returns the safe failure when the tracker itself throws", async () => {
+    const { defineAction } = harness({
+      reportError: () => Promise.reject(new Error("tracker down")),
+    });
+    const action = defineAction({
+      name: "x",
+      input,
+      auth: "user",
+      handler: () => Promise.reject(new Error("boom")),
+    });
+    await expect(action(validInput)).resolves.toMatchObject({ ok: false, code: "INTERNAL" });
   });
 });

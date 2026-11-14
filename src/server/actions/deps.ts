@@ -14,6 +14,7 @@ import {
   type IdempotencyRow,
 } from "../idempotency/state";
 import { createLogger } from "../logger";
+import { reportError } from "../observability";
 import { enforceActionRateLimit } from "../rate-limit/rate-limit";
 import { clientIp, visitorHash } from "../rate-limit/visitor-hash";
 import { readRequestId } from "../request-id";
@@ -60,4 +61,5 @@ export const actionDeps: ActionDeps = {
   },
   audit: writeAudit,
   log: createLogger(),
+  reportError,
 };

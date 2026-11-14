@@ -1,6 +1,6 @@
 # ADR-130 · Error tracking with Sentry (S8-T07, DEC-21)
 
-- Status: Accepted for part 1 (the foundation). Parts 2 (call sites, content security policy) and 3 (releases, source maps, alerts) follow in later pull requests.
+- Status: Accepted for parts 1 (the foundation) and 2 (call sites and the content security policy). Part 3 (releases, source maps, alerts) follows in a later pull request.
 - Date: 2026-11-14
 - Related: ADR-023 (observability, tool left open until S8), DEC-21, R-BE-10 (log redaction), ADR-033 and DEC-37 (content security policy), plan 09 sections 6.1 and 6.2
 - Plan for S8-T07 approved by the owner on 14 Nov 2026 with the recommended defaults: Sentry on the free plan, the EU region, browser errors as well as server errors, one Sentry project for all environments told apart by an environment label, alerts to the owner's email.
@@ -37,3 +37,20 @@
 
 - Which Sentry region is used is chosen when the owner creates the account (EU recommended; Sentry has no India region). The reports carry no personal data by design, so the choice is low risk; the cross-border question belongs to the S9 legal review.
 - Alert rules (new issue, error-rate spike, any error from the Send SMS hook, the CRM retry job or photo finalising) are set in Sentry's screens; part 3 lists them in a runbook.
+
+## Part 2: what reports, and what does not
+
+An error is reported only when it is a bug we would want to hear about. Known outcomes (bad input, signed out, not allowed, not found, a conflict) are the product working and are never sent.
+
+| Where                                         | Reported when                                                                                                                                                                     | Tags (besides `source`)                                                                                                                                                           |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Every action (`defineAction`)                 | The error is unexpected (code `INTERNAL`), or the audit entry, the cache invalidation or the stored idempotent result fails after the data was saved (`error_code` `AFTER_WRITE`) | `route` is the action name (this covers photo finalising, `finalizePhoto`), `request_id`, `error_code`, `role` (`anonymous`, `customer`, `builder` or `super_admin`; never an id) |
+| Send SMS hook                                 | The SMS provider call fails, or the hook secret is missing. A caller that fails the signature check and a number outside India are not reported                                   | `route` `send-sms-hook`, `request_id`, `error_code`                                                                                                                               |
+| CRM retry job                                 | The job cannot run (the claim fails, the store is unreachable). A single delivery to the partner that fails is expected and is tracked in `form_submissions.crm_status`, not here | `route` `crm-retry`, `request_id`                                                                                                                                                 |
+| Media sweep job                               | The sweep fails                                                                                                                                                                   | `route` `sweep-media`, `request_id`                                                                                                                                               |
+| Pages and route handlers                      | Next.js catches the error itself (`onRequestError`, added in part 1)                                                                                                              | `route`, `digest`                                                                                                                                                                 |
+| Error pages (`error.tsx`, `global-error.tsx`) | The error was thrown in the browser (no `digest`). An error from the server already has a report with its `digest`, so it is not sent twice                                       | `source` `boundary`                                                                                                                                                               |
+
+- **Reporting never changes the result.** `defineAction` wraps the report so that a tracker that throws cannot turn a normal answer into a failure, and the report itself swallows its errors.
+- **The same reference everywhere.** The `request_id` tag is the id in the logs and the audit log; the `digest` tag is the reference shown on the error page. Search either one in Sentry.
+- **Content security policy.** `connect-src` gains one entry, the origin of the browser address (for example `https://o1.ingest.de.sentry.io`), taken from `NEXT_PUBLIC_SENTRY_BROWSER_DSN`. Only an https host ending in `.sentry.io` is accepted; anything else adds nothing. With no address the policy is unchanged. It is the only third-party host added for scripts or calls.

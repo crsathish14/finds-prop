@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { ErrorScreen } from "@/components/layout/error-screen";
 import { Button } from "@/components/ui/button";
 import { useRequestBottomBar } from "@/lib/bottom-bar-request";
+import { useReportBoundaryError } from "@/lib/use-report-boundary-error";
 
 // Shown when a page fails while it renders. Details stay on the server: the digest is a reference
 // support can use to find the matching log line, never the error message itself.
@@ -15,6 +16,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useReportBoundaryError(error);
   const translate = useTranslations();
   // Inside a page group this sits between its header and footer, where the UX shows the bottom bar.
   useRequestBottomBar();

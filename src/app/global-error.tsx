@@ -7,6 +7,7 @@ import en from "@/i18n/messages/en.json";
 import { cn } from "@/lib/cn";
 import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.css";
+import { useReportBoundaryError } from "@/lib/use-report-boundary-error";
 
 // Last-resort boundary: it replaces the root layout, so it renders its own html and body. The
 // language provider is not available here, so it reads the English file directly.
@@ -17,6 +18,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useReportBoundaryError(error);
   return (
     <html lang="en" className={cn(fontVariables, "h-full antialiased")}>
       <body className="flex min-h-full flex-col">

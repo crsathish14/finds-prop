@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildContentSecurityPolicy, contentSecurityPolicyHeader } from "../csp";
+import {
+  buildContentSecurityPolicy,
+  contentSecurityPolicyHeader,
+  errorTrackingOriginOf,
+} from "../csp";
 
 /**
  * S8-T05 part 3 (ADR-129, DEC-37): the policy of every environment is pinned here, so loosening it
@@ -78,6 +82,23 @@ describe("UT-csp: what each environment adds", () => {
     expect(preview).not.toContain("unsafe-eval");
   });
 
+  it("lets the browser send error reports to the tracker's address and nowhere else", () => {
+    const withTracker = buildContentSecurityPolicy({
+      ...PRODUCTION,
+      errorTrackingOrigin: "https://o1.ingest.de.sentry.io",
+    });
+    expect(directive(withTracker, "connect-src")).toEqual([
+      "'self'",
+      "https://*.supabase.co",
+      "wss://*.supabase.co",
+      "https://o1.ingest.de.sentry.io",
+    ]);
+    for (const name of ["script-src", "img-src", "frame-src", "default-src"]) {
+      expect(directive(withTracker, name)).not.toContain("https://o1.ingest.de.sentry.io");
+    }
+    expect(buildContentSecurityPolicy(PRODUCTION)).not.toContain("sentry");
+  });
+
   it("allows eval under next dev only", () => {
     const dev = buildContentSecurityPolicy({ ...PRODUCTION, development: true });
     expect(directive(dev, "script-src")).toContain("'unsafe-eval'");
@@ -94,5 +115,25 @@ describe("UT-csp: the header", () => {
       contentSecurityPolicyHeader({ ...PRODUCTION, development: true, productionBuild: false })
         .name,
     ).toBe("Content-Security-Policy-Report-Only");
+  });
+});
+
+describe("UT-csp: the error tracker's origin", () => {
+  it("is the host of an https address on Sentry's own domain", () => {
+    expect(errorTrackingOriginOf("https://key@o1.ingest.de.sentry.io/2")).toBe(
+      "https://o1.ingest.de.sentry.io",
+    );
+    expect(errorTrackingOriginOf("https://key@o1.ingest.sentry.io/2")).toBe(
+      "https://o1.ingest.sentry.io",
+    );
+  });
+
+  it("is nothing for a missing, malformed, plain-http or foreign address", () => {
+    expect(errorTrackingOriginOf(undefined)).toBeUndefined();
+    expect(errorTrackingOriginOf("not a url")).toBeUndefined();
+    expect(errorTrackingOriginOf("http://key@o1.ingest.sentry.io/2")).toBeUndefined();
+    expect(errorTrackingOriginOf("https://key@evil.example.com/2")).toBeUndefined();
+    expect(errorTrackingOriginOf("https://key@sentry.io.evil.example.com/2")).toBeUndefined();
+    expect(errorTrackingOriginOf("https://key@notsentry.io/2")).toBeUndefined();
   });
 });
