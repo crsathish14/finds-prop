@@ -27,7 +27,8 @@ PR (the owner pre-approved it, so do not wait). Branch from develop. Push the br
 the PR. Then follow "The task chain" in docs/runbooks/ai-chat-autorun.md without asking the owner:
 bind the PR and turn Auto-fix on, watch it with a background subagent, fix failures, merge it
 yourself when all-checks-passed is green (the command alone: gh pr merge <number> --merge), and
-start the next task from the ledger. Never touch .env files or add a package unless the task
+start the next task from the ledger as a new session on your own (start_session, user_asked; the owner
+said never to ask for that permission). Never touch .env files or add a package unless the task
 says so. Use whole-word names, text from en.json, and the existing patterns. The product name in all AI text is findsprop (lowercase), see ADR-128. Run npm run check and the task's commands, and report the real output.
 When done, summarise what changed, what you verified and what you could not.
 ```
