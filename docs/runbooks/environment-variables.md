@@ -100,7 +100,7 @@ The browser addresses are read when the site is built, so a change needs a new d
 
 ## AI chat (optional while `FLAG_AI_SEARCH` is off)
 
-All three are server-only (read in `src/server/env.ts`, never `NEXT_PUBLIC_`), optional, and unused until the OpenAI adapter is built (AI-P1-T03). Leave them unset until then.
+All three are server-only (read in `src/server/env.ts`, never `NEXT_PUBLIC_`) and optional. `chooseAiProvider("openai")` in `src/server/ai/` reads `OPENAI_API_KEY` and `AI_MODEL`, and refuses (naming the variable, never a value) if either is missing. Leave them unset until the chat is switched on.
 
 | Variable         | What it is                                                                             | Where the value comes from                                                                                     |
 | ---------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |

@@ -9,8 +9,8 @@
  */
 import type { ErrorCode } from "@/types/action";
 
-/** The providers that can be chosen by name. Only the fake is wired for now; OpenAI is added with its adapter. */
-export const AI_PROVIDER_NAMES = ["fake"] as const;
+/** The providers that can be chosen by name. The fake and OpenAI are wired; Gemini would be one more adapter (ADR-128 section 4.4). */
+export const AI_PROVIDER_NAMES = ["fake", "openai"] as const;
 export type AiProviderName = (typeof AI_PROVIDER_NAMES)[number];
 
 // ---------------------------------------------------------------- tools

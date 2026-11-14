@@ -136,6 +136,21 @@ For **each** provider, answer these questions from its own text:
 5. Hand the numbers to P1-T01 (package and variables), P1-T03 (adapter and conformance suite) and P8-T03 (budget). If you change the cap, the limits or the prompt wording, that is a new ADR-128 decision, not an edit.
 6. Keep `scripts/ai-spike/` until P1-T03's conformance suite replaces it, then decide whether to delete it (the auth spike script says the same about itself).
 
+## 8a. Conformance run (real key, you run it)
+
+The OpenAI adapter (`src/server/ai/openai.ts`, AI-P1-T03) passes the conformance suite against mocked HTTP in every CI run. The same suite's real-key half is `src/server/ai/__tests__/openai.live.test.ts`. It calls the real API (a few cents), runs only when `OPENAI_API_KEY` and `AI_MODEL` are both set in the command's environment, and registers nothing otherwise. Agents never run it.
+
+PowerShell, in the `findsprop` folder (type the values yourself; do not paste a key into chat or a file):
+
+```powershell
+$env:OPENAI_API_KEY = Read-Host "OpenAI key"
+$env:AI_MODEL = "<the model id from the spike>"
+npx vitest run src/server/ai/__tests__/openai.live.test.ts
+Remove-Item Env:OPENAI_API_KEY, Env:AI_MODEL
+```
+
+It checks what a real model can be made to show: one tool call, a tool result and a tool error going back by id, a long answer cut by the token cap, a timeout, and a rejected key. The "parallel calls are off" test records how many calls the model made for a three-place question; that is the evidence for switching parallel calls on later (set `parallel_tool_calls` in `buildOpenAiRequest` after a pass). A model cannot be told to refuse, cut its own stream or write invalid JSON, so those cases run against mocked HTTP only. Send the result (pass or the failing test names) to the next task; if a case fails, the adapter is not accepted yet.
+
 ## 9. Results (fill in after the run)
 
 **Run details**
