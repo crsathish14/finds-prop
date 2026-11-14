@@ -30,6 +30,7 @@ const serverEnvSchema = z.object({
   RATE_LIMIT_HMAC_SECRET: z.string().min(32).optional(),
   SENTRY_DSN: z.url().optional(),
   SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+  VERCEL_GIT_COMMIT_SHA: z.string().min(1).optional(),
   AI_PROVIDER: z.enum(["fake", "openai", "gemini"]).optional(),
   AI_MODEL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createLogger } from "@/server/logger";
-import { REDACTED, maskEmail, maskPhone, redactText, redactValue } from "@/server/logger/redact";
+import { REDACTED, maskEmail, maskPhone, redactText, redactValue } from "@/lib/redact";
 
 describe("UT-redact: values", () => {
   it("redacts values under secret-looking keys", () => {

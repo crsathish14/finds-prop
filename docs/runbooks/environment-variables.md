@@ -79,10 +79,24 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 | ----------------------------------------------------- | ---------------------------------------------------------------------- |
 | `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                                |
 | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                            |
-| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                     | If error tracking is switched on                                       |
+| Error tracking variables                              | When error tracking is switched on (see below)                         |
 | `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation       |
 | `FLAG_CUSTOMER_EMAIL`                                 | Leave `0` until an email provider is set up (see "Email verification") |
 | `DESIGN_LAB`                                          | `1` only for review on local or dev; ignored in production             |
+
+## Error tracking (optional; ADR-130)
+
+Everything is off until the addresses are set, and every variable is optional. The Sentry project belongs to the owner's own account (EU region, free plan). One project serves every environment; the environment label tells them apart.
+
+| Variable                         | What it is                                                               | Where the value comes from                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `SENTRY_DSN`                     | The project address the server sends reports to                          | Sentry, Project Settings, Client Keys (DSN). Not secret, but keep it out of chat anyway                     |
+| `NEXT_PUBLIC_SENTRY_BROWSER_DSN` | The same address, for the browser (it is visible in the page by design)  | The same value as `SENTRY_DSN`                                                                              |
+| `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | The environment label on browser reports: `dev`, `staging`, `production` | You choose; use the same word as `APP_ENV` so server and browser reports filter together                    |
+| `SENTRY_AUTH_TOKEN`              | Uploads source maps at build time (part 3)                               | Sentry, Settings, Auth Tokens. A secret: only in Vercel's build settings, never in chat, a file or the page |
+| `VERCEL_GIT_COMMIT_SHA`          | The release name on server reports                                       | Set by Vercel on every deployment; do not set it yourself                                                   |
+
+The browser addresses are read when the site is built, so a change needs a new deployment. Until part 2 adds the Sentry address to the content security policy, do not set `NEXT_PUBLIC_SENTRY_BROWSER_DSN` on a deployed site: the browser would block the reports.
 
 ## AI chat (optional while `FLAG_AI_SEARCH` is off)
 

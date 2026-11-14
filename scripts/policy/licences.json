@@ -20,14 +20,16 @@
     "LGPL-3.0-or-later",
     "LGPL-3.0-only",
     "LGPL-2.1-or-later",
-    "LGPL-2.1-only"
+    "LGPL-2.1-only",
+    "FSL-1.1-Apache-2.0"
   ],
   "weakCopyleftAllowedPackages": [
     "axe-core",
     "@axe-core/*",
     "lightningcss*",
     "@img/sharp-*",
-    "@img/sharp-libvips-*"
+    "@img/sharp-libvips-*",
+    "sentry"
   ],
   "installScriptAllowedPackages": [
     "fsevents",
