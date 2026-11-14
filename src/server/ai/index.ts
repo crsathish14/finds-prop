@@ -1,6 +1,8 @@
 import "server-only";
 import { ActionError } from "../actions/normalise-error";
+import { env } from "../env";
 import { createFakeAiProvider, type FakeTurn } from "./fake";
+import { createOpenAiProvider, type OpenAiProviderOptions } from "./openai";
 import { AI_PROVIDER_NAMES, type AiProvider } from "./types";
 
 /**
@@ -29,6 +31,7 @@ export {
   type FakeToolCall,
   type FakeTurn,
 } from "./fake";
+export { buildOpenAiRequest, createOpenAiProvider, type OpenAiProviderOptions } from "./openai";
 export {
   createAiToolDefinition,
   findPortableSchemaViolations,
@@ -54,16 +57,30 @@ export type {
 export interface AiProviderOptions {
   /** The scripted rounds, for the fake. Ignored by a real provider. */
   script?: readonly FakeTurn[];
+  /**
+   * Settings for the OpenAI adapter. Each one defaults to `src/server/env.ts` (`OPENAI_API_KEY`, `AI_MODEL`);
+   * tests pass `fetch` to mock the HTTP so no network or real key is used.
+   */
+  openai?: Partial<OpenAiProviderOptions>;
 }
 
 /**
- * The provider for a name. Only the fake is wired for now: the OpenAI adapter comes with its package and
- * its environment variables (P1-T01, P1-T03), and each later provider is one more branch here. The name is
- * given by the caller because no `AI_PROVIDER` variable exists yet; when it does, the caller reads it from
- * `src/server/env.ts`. An unknown or not-yet-wired name refuses (fail closed) and never falls back to the fake.
+ * The provider for a name: `fake` or `openai`. The name is given by the caller, who reads `AI_PROVIDER` from
+ * `src/server/env.ts`. An unknown or not-yet-wired name, or OpenAI without its key or model, refuses (fail
+ * closed) and never falls back to the fake. The message names the missing variable, never a value.
  */
 export function chooseAiProvider(name: string, options: AiProviderOptions = {}): AiProvider {
   if (name === "fake") return createFakeAiProvider(options.script);
+  if (name === "openai") {
+    const apiKey = options.openai?.apiKey ?? env.OPENAI_API_KEY;
+    const model = options.openai?.model ?? env.AI_MODEL;
+    if (apiKey === undefined || apiKey === "") {
+      throw new ActionError("INTERNAL", "OPENAI_API_KEY is not set");
+    }
+    if (model === undefined || model === "")
+      throw new ActionError("INTERNAL", "AI_MODEL is not set");
+    return createOpenAiProvider({ ...options.openai, apiKey, model });
+  }
   const known = (AI_PROVIDER_NAMES as readonly string[]).includes(name);
   throw new ActionError(
     "INTERNAL",

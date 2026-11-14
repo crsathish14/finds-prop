@@ -293,14 +293,13 @@ describe("UT-ai-fake: the scriptable fake provider (ADR-128 4.4, the conformance
     });
 
     it("refuses a provider that is not wired yet, and never falls back to the fake", () => {
-      expect(() => chooseAiProvider("openai")).toThrow(ActionError);
       expect(() => chooseAiProvider("gemini")).toThrow(ActionError);
       expect(() => chooseAiProvider("")).toThrow(ActionError);
     });
 
     it("fails with INTERNAL, whose message is for logs and never for the customer", () => {
       try {
-        chooseAiProvider("openai");
+        chooseAiProvider("gemini");
         expect.unreachable();
       } catch (error) {
         expect(error).toBeInstanceOf(ActionError);

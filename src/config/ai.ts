@@ -23,6 +23,13 @@ export const MAX_PARALLEL_READ_CALLS = 3;
 /** How long one tool may take, in milliseconds, so a slow read cannot hold the whole turn. */
 export const TOOL_TIMEOUT_MS = 3000;
 
+/**
+ * How long a provider call may stay silent, in milliseconds: no response yet, or no new event in the stream.
+ * Every event restarts the clock, so a long answer that keeps streaming is never cut, and a call that goes
+ * quiet is. An engineering limit; the time for the whole message is the endpoint's deadline, set separately.
+ */
+export const AI_PROVIDER_IDLE_TIMEOUT_MS = 20_000;
+
 /** The longest customer message the assistant accepts, in characters. */
 export const MAX_INPUT_CHARACTERS = 1000;
 
