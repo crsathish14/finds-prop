@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   ASSISTANT_BRAND_NAME,
+  EMI_DEFAULT_DOWN_PAYMENT_PERCENT,
+  EMI_DEFAULT_YEARS,
+  EMI_EXAMPLE_ANNUAL_RATE_PERCENT,
   MAX_INPUT_CHARACTERS,
   MAX_MODEL_ROUNDS,
   MAX_OUTPUT_TOKENS,
@@ -35,5 +38,11 @@ describe("UT-ai-config: the AI chat numbers (ADR-128 sections 4.5 and 7, decisio
     expect(roundsThatMayUseTools * MAX_PARALLEL_READ_CALLS).toBeGreaterThanOrEqual(
       MAX_TOOL_CALLS_PER_MESSAGE,
     );
+  });
+
+  it("has the EMI defaults of ADR-128 section 5.2: 20% down, 20 years, the owner's example rate of 7.2% (14 Nov 2026)", () => {
+    expect(EMI_DEFAULT_DOWN_PAYMENT_PERCENT).toBe(20);
+    expect(EMI_DEFAULT_YEARS).toBe(20);
+    expect(EMI_EXAMPLE_ANNUAL_RATE_PERCENT).toBe(7.2);
   });
 });
