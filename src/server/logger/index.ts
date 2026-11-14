@@ -1,7 +1,21 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { env } from "../env";
 import { redactValue } from "@/lib/redact";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
+
+/** Fields that belong to everything logged while one request is being handled, wherever the line is written. */
+const requestFields = new AsyncLocalStorage<Readonly<Record<string, unknown>>>();
+
+/**
+ * Runs `work` so that every line logged inside it, by any logger and any module it calls, carries `fields`
+ * (the request id, the route). A streaming handler uses it because the agent loop, the tools and the guards
+ * log through the shared logger, and R-BE-10 wants the request id on every line. A field written in the
+ * line itself, or by a `child` logger, wins over one set here.
+ */
+export function withLogContext<Result>(fields: LogFields, work: () => Result): Result {
+  return requestFields.run({ ...requestFields.getStore(), ...fields }, work);
+}
 
 const LEVEL_ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
 
@@ -50,6 +64,7 @@ export function createLogger(base: LogFields = {}, options: LoggerOptions = {}):
       level,
       msg: message,
       time: now().toISOString(),
+      ...requestFields.getStore(),
       ...base,
       ...fields,
     });

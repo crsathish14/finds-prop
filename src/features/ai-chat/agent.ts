@@ -31,6 +31,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
   const messages = [...input.messages];
   const usage: UsageTotals = { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 };
   const references = new Map<string, ToolReference>();
+  const toolResults: string[] = [];
   const toolCallsPerRound: number[] = [];
   const toolsRan = new Set<string>();
   let rounds = 0;
@@ -60,6 +61,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
     toolsRan: [...toolsRan],
     usage,
     references: [...references.values()],
+    toolResults: [...toolResults],
   });
 
   while (true) {
@@ -144,6 +146,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         messages.push({ role: "tool", callId, content: outcome.content });
         if (outcome.status !== "ok") continue;
         usefulResults = true;
+        toolResults.push(outcome.content);
         for (const reference of outcome.references)
           references.set(referenceKey(reference), reference);
       }

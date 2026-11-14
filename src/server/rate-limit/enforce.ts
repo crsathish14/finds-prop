@@ -7,6 +7,20 @@ import {
   type RateLimitWho,
 } from "./limits";
 
+/**
+ * A refusal by one scope of the closed list. It is an ordinary `RATE_LIMITED` ActionError that also says which scope
+ * refused, so a caller that shows different screens for different limits (the AI chat) need not read the message.
+ */
+export class RateLimitedError extends ActionError {
+  readonly scope: RateLimitScope;
+
+  constructor(scope: RateLimitScope, retryAfter: number) {
+    super("RATE_LIMITED", `Rate limit reached for ${scope}`, { retryAfter });
+    this.name = "RateLimitedError";
+    this.scope = scope;
+  }
+}
+
 /** One call to the database counter: the answer for one attempt. */
 export interface RateLimitCounter {
   hit(
@@ -109,9 +123,7 @@ export async function enforceRateLimit(parameters: {
       rule.max,
     );
     if (!answer.allowed) {
-      throw new ActionError("RATE_LIMITED", `Rate limit reached for ${parameters.scope}`, {
-        retryAfter: answer.retryAfter,
-      });
+      throw new RateLimitedError(parameters.scope, answer.retryAfter);
     }
   }
 }

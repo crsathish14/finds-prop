@@ -2933,6 +2933,16 @@
     "refuseInternals": "I'm findsprop's AI assistant. I look up homes, projects and builders listed on findsprop and can calculate EMIs. I can't share how the site or I am built. Want to look at some homes?",
     "selfDescription": "I look up findsprop's listings.",
     "refuseFlooding": "Please write your question in a few words, and don't send the same message again.",
-    "disclaimer": "This is general information, not legal or financial advice."
+    "disclaimer": "This is general information, not legal or financial advice.",
+    "tooManyMessagesTitle": "Too many messages in a short time",
+    "tooManyMessagesBody": "Please try again in {seconds, plural, one {# second} other {# seconds}}. You can keep browsing with filters meanwhile.",
+    "dailyLimitTitle": "Too many messages for today",
+    "dailyLimitBody": "You've reached today's message limit. Please try again tomorrow, or keep browsing with filters.",
+    "unavailableTitle": "The AI assistant is unavailable right now",
+    "unavailableBody": "It has reached its limit for today. Search by locality, type, bedrooms and budget instead.",
+    "signInGateTitle": "Sign in to keep chatting",
+    "signInGateBody": "You've used your {count} free messages. Sign in with your mobile number and we'll bring you back to this conversation.",
+    "errorTitle": "We couldn't answer that",
+    "errorBody": "Something went wrong on our side. Your message is saved, so you can try again."
   }
 }
