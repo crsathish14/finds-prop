@@ -1,5 +1,5 @@
 import { env } from "../env";
-import { redactValue } from "./redact";
+import { redactValue } from "@/lib/redact";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
