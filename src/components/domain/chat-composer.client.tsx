@@ -9,8 +9,10 @@
  *   to confirm); Enter never confirms a card.
  * Props: value, onChange (called with the new text), onSend (called when Send is pressed or Enter
  *   is pressed with text in the box), maxLength (the longest message; the page passes
- *   MAX_INPUT_CHARACTERS), disabled (the assistant is working, a limit is reached or the gate is
- *   shown: the box and Send are off and the typed text is kept), sendTone ("accent" copper default |
+ *   MAX_INPUT_CHARACTERS), busy (the assistant is working: Send is off and Enter sends nothing,
+ *   but the box stays enabled so focus stays in it and the visitor can keep typing), disabled (a limit is
+ *   reached or the gate is shown: the box and Send are off and the typed text is kept), disabledReason
+ *   (already-translated text shown beside the note, tied to the box with aria-describedby, saying why it is off), sendTone ("accent" copper default |
  *   "primary" forest, used while a confirm card waits so the card's Send is the one copper button),
  *   docked (wraps the box in the sticky dock), id (the textarea's id, so the page can move focus to it
  *   after a prompt is chosen or the visitor returns from signing in), className.
@@ -19,7 +21,7 @@
  *   from 768 px. The box grows with the text up to 10 rem.
  * Accessibility: the textarea has a visually hidden label; Send has an aria-label; the note is tied
  *   to the textarea with aria-describedby; the counter is not announced on every key. Send is off
- *   when the box is empty or only spaces. A key press that is part of typing with an input method
+ *   when the box is empty or busy or only spaces. A key press that is part of typing with an input method
  *   (composing) never sends.
  * States: empty (Send off), typing (Send on), disabled with the draft kept, near the limit (the
  *   counter turns to the danger colour at the limit).
@@ -42,6 +44,8 @@ type ChatComposerProps = {
   onSend: () => void;
   maxLength: number;
   disabled?: boolean;
+  busy?: boolean;
+  disabledReason?: string;
   sendTone?: "accent" | "primary";
   docked?: boolean;
   id?: string;
@@ -54,6 +58,8 @@ function ChatComposer({
   onSend,
   maxLength,
   disabled = false,
+  busy = false,
+  disabledReason,
   sendTone = "accent",
   docked = false,
   id,
@@ -63,7 +69,8 @@ function ChatComposer({
   const generatedId = useId();
   const fieldId = id ?? generatedId;
   const noteId = useId();
-  const canSend = !disabled && value.trim().length > 0;
+  const reasonId = useId();
+  const canSend = !disabled && !busy && value.trim().length > 0;
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
@@ -92,7 +99,7 @@ function ChatComposer({
           maxLength={maxLength}
           disabled={disabled}
           placeholder={translate("placeholder")}
-          aria-describedby={noteId}
+          aria-describedby={disabledReason ? `${noteId} ${reasonId}` : noteId}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           className="max-h-40 min-h-13 flex-1 resize-none rounded-lg"
@@ -110,9 +117,14 @@ function ChatComposer({
         </Button>
       </div>
       <div className="flex items-start justify-between gap-3 px-1">
-        <p id={noteId} className="flex-1 text-caption text-muted">
-          {translate("note")}
-        </p>
+        <div className="flex-1 text-caption text-muted">
+          <p id={noteId}>{translate("note")}</p>
+          {disabledReason ? (
+            <p id={reasonId} className="mt-1 font-semibold text-ink">
+              {disabledReason}
+            </p>
+          ) : null}
+        </div>
         <p
           className={cn(
             "text-caption whitespace-nowrap text-muted tabular-nums",

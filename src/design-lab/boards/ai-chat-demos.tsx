@@ -126,12 +126,16 @@ function ComposerSpecimen({
   label,
   startValue = "",
   disabled = false,
+  busy = false,
+  disabledReason,
   sendTone,
   maxLength = 1000,
 }: {
   label: string;
   startValue?: string;
   disabled?: boolean;
+  busy?: boolean;
+  disabledReason?: string;
   sendTone?: "accent" | "primary";
   maxLength?: number;
 }) {
@@ -145,6 +149,8 @@ function ComposerSpecimen({
         onSend={() => setValue("")}
         maxLength={maxLength}
         disabled={disabled}
+        busy={busy}
+        {...(disabledReason ? { disabledReason } : {})}
         {...(sendTone ? { sendTone } : {})}
       />
     </Specimen>
@@ -161,7 +167,13 @@ export function ChatComposerDemo() {
         startValue="Is there a 2 BHK flat in Adyar for rent under 30,000?"
       />
       <ComposerSpecimen
-        label="Off while the assistant works or a limit is reached: the draft is kept"
+        label="Busy: the assistant is answering. Send is off, the box stays enabled so focus stays in it"
+        startValue="And which of these has parking?"
+        busy
+      />
+      <ComposerSpecimen
+        label="Off because a limit is reached: the draft is kept and the reason is in words"
+        disabledReason="You have reached today's message limit."
         startValue="We kept what you typed."
         disabled
       />
@@ -240,6 +252,7 @@ const ENQUIRY = {
   phone: "+91 98400 12345",
   message: "Hello, is this home still available? I would like to visit this Saturday.",
   privacyHref: "#privacy",
+  signInHref: "#sign-in",
   onSend: NOTHING,
   className: "w-full",
 } as const;
@@ -273,10 +286,10 @@ export function ChatConfirmCardDemo() {
         label="Signed out: the message is kept and the card asks to sign in"
         className={WIDE}
       >
-        <ChatConfirmCard {...ENQUIRY} state="signed_out" signInHref="#sign-in" />
+        <ChatConfirmCard {...ENQUIRY} state="signed_out" />
       </Specimen>
       <Specimen label="Session ended while the card was open" className={WIDE}>
-        <ChatConfirmCard {...ENQUIRY} state="ended" signInHref="#sign-in" />
+        <ChatConfirmCard {...ENQUIRY} state="ended" />
       </Specimen>
       <Specimen label="Site visit request for a project" className={WIDE}>
         <ChatConfirmCard

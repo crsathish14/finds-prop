@@ -12,10 +12,11 @@
  *   already formatted; thumbnail is an optional picture node), name and phone (the visitor's own,
  *   from the account; the phone is shown in full), message (the text that will be sent), privacyHref
  *   (the consent line's Privacy Policy link), onSend, focusHeading (move focus to the heading when
- *   the card appears), className. For "enquiry": state ("pending" default | "sending" | "sent" |
+ *   the card appears and when it turns into the sent or sign-in card, never when it only starts or stops sending; the
+ *   "already" notice has no heading, so the page moves focus to it itself), className. For "enquiry": state ("pending" default | "sending" | "sent" |
  *   "already" | "signed_out" | "ended"), problem ("failed" draws the "couldn't send" alert, values
  *   kept; "limited" draws the "please wait" alert and switches Send off), enquiriesHref ("View my
- *   enquiries"), signInHref ("Sign in to send" and "Sign in again"). For "visit": state ("pending" |
+ *   enquiries"), signInHref (required: "Sign in to send" and "Sign in again" lead there). For "visit": state ("pending" |
  *   "sending"), visitDate (already formatted) and builderName (named in the consent sentence).
  * Responsive: full width of the reading column; the facts stack on a phone and sit in two columns
  *   from 768 px; Send is as wide as the card.
@@ -60,7 +61,7 @@ type ChatConfirmEnquiry = ChatConfirmCommon & {
   state?: "pending" | "sending" | "sent" | "already" | "signed_out" | "ended";
   problem?: "failed" | "limited";
   enquiriesHref?: string;
-  signInHref?: string;
+  signInHref: string;
 };
 
 type ChatConfirmVisit = ChatConfirmCommon & {
@@ -124,8 +125,16 @@ function ChatConfirmCard(props: ChatConfirmCardProps) {
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const state = props.state ?? "pending";
+  const previousState = useRef<string | null>(null);
   useEffect(() => {
-    if (focusHeading) headingRef.current?.focus();
+    // Focus goes to the heading when the card appears, and when it turns into another card with its own
+    // heading (sent, sign in). Not on pending to sending and back: focus stays on Send, which is announced as busy.
+    const previous = previousState.current;
+    previousState.current = state;
+    if (!focusHeading) return;
+    if (previous === null || state === "sent" || state === "signed_out" || state === "ended") {
+      headingRef.current?.focus();
+    }
   }, [focusHeading, state]);
 
   const heading = (text: string) => (
@@ -216,13 +225,11 @@ function ChatConfirmCard(props: ChatConfirmCardProps) {
         </div>
         <TargetChip target={target} />
         <ChatDraftQuote label={translate("draftLabel")}>{message}</ChatDraftQuote>
-        {props.signInHref ? (
-          <Button asChild variant="accent" size="lg" className="w-full">
-            <Link href={props.signInHref}>
-              {ended ? sessionEnded("action") : translate("signInToSend")}
-            </Link>
-          </Button>
-        ) : null}
+        <Button asChild variant="accent" size="lg" className="w-full">
+          <Link href={props.signInHref}>
+            {ended ? sessionEnded("action") : translate("signInToSend")}
+          </Link>
+        </Button>
       </section>
     );
   }

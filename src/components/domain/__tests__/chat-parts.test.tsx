@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { NextIntlClientProvider } from "next-intl";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { Alert } from "../../patterns/alert";
@@ -32,8 +34,9 @@ describe("the chat thread, the bubble and the assistant's message (AI-P5-T01)", 
     const thread = screen.getByRole("list", { name: words.thread.label });
     const [bubble, answer] = within(thread).getAllByRole("listitem");
     expect(bubble).toHaveTextContent(`${words.thread.youSaid} 3 BHK in Velachery`);
-    expect(answer).toHaveTextContent(words.assistantName);
     expect(answer).toHaveTextContent(words.thread.assistantSaid);
+    // The visible name is hidden from screen readers, so the name is not read twice.
+    expect(screen.getByText(words.assistantName)).toHaveAttribute("aria-hidden", "true");
   });
 
   it("shows the visitor's text as text, never as markup", () => {
@@ -169,6 +172,42 @@ describe("ChatComposer", () => {
     expect(screen.getByRole("button", { name: words.composer.send })).toBeDisabled();
   });
 
+  it("while busy, Send is off and Enter sends nothing, but the box stays enabled and keeps focus", async () => {
+    const onSend = vi.fn();
+    renderWithMessages(
+      <ChatComposer
+        value="next question"
+        onChange={vi.fn()}
+        onSend={onSend}
+        maxLength={1000}
+        busy
+      />,
+    );
+    const box = screen.getByRole("textbox");
+    expect(box).toBeEnabled();
+    expect(screen.getByRole("button", { name: words.composer.send })).toBeDisabled();
+    box.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onSend).not.toHaveBeenCalled();
+    expect(box).toHaveFocus();
+  });
+
+  it("says why it is off, in words tied to the box", () => {
+    renderWithMessages(
+      <ChatComposer
+        value=""
+        onChange={vi.fn()}
+        onSend={vi.fn()}
+        maxLength={1000}
+        disabled
+        disabledReason="Limit reached for today."
+      />,
+    );
+    expect(screen.getByRole("textbox")).toHaveAccessibleDescription(
+      new RegExp(words.composer.note.slice(0, 20) + ".*Limit reached for today\.", "s"),
+    );
+  });
+
   it("stops the message at the limit", () => {
     renderWithMessages(
       <ChatComposer value="x" onChange={vi.fn()} onSend={vi.fn()} maxLength={40} />,
@@ -258,6 +297,7 @@ const ENQUIRY = {
   phone: "+91 98400 12345",
   message: "Is this still available?",
   privacyHref: "/privacy",
+  signInHref: "/auth",
 } as const;
 
 describe("ChatConfirmCard", () => {
@@ -364,6 +404,26 @@ describe("ChatConfirmCard", () => {
   it("takes focus to its heading when asked", () => {
     renderWithMessages(<ChatConfirmCard {...ENQUIRY} focusHeading />);
     expect(screen.getByRole("heading", { name: words.confirm.enquiryTitle })).toHaveFocus();
+  });
+
+  it("keeps focus on Send when the card goes to sending and back, and moves it to the new card when sent", () => {
+    const { rerender } = renderWithMessages(<ChatConfirmCard {...ENQUIRY} focusHeading />);
+    expect(screen.getByRole("heading", { name: words.confirm.enquiryTitle })).toHaveFocus();
+    const send = screen.getByRole("button", { name: enquiryWords.form.send });
+    send.focus();
+    const again = (state: "sending" | "pending" | "sent") => (
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <TooltipProvider>
+          <ChatConfirmCard {...ENQUIRY} focusHeading state={state} enquiriesHref="/e" />
+        </TooltipProvider>
+      </NextIntlClientProvider>
+    );
+    rerender(again("sending"));
+    expect(screen.getByRole("button", { name: enquiryWords.form.send })).toHaveFocus();
+    rerender(again("pending"));
+    expect(screen.getByRole("button", { name: enquiryWords.form.send })).toHaveFocus();
+    rerender(again("sent"));
+    expect(screen.getByRole("heading", { name: enquiryWords.sent.title })).toHaveFocus();
   });
 
   it("has at most one copper button in any state", () => {

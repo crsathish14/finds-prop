@@ -63,7 +63,7 @@ function ChatAssistantMessage({
         >
           <Icon icon={Sparkles} size="sm" />
         </span>
-        <span>{translate("assistantName")}</span>
+        <span aria-hidden="true">{translate("assistantName")}</span>
         <VisuallyHidden>{translate("thread.assistantSaid")}</VisuallyHidden>
       </div>
       {status}
