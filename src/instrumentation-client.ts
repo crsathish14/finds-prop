@@ -1,7 +1,5 @@
-import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { publicEnv } from "@/lib/public-env";
-import { errorTrackingOptions } from "@/lib/error-tracking-options";
 
 /**
  * Runs in the browser before the app starts (Next.js instrumentation-client).
@@ -15,23 +13,20 @@ import { errorTrackingOptions } from "@/lib/error-tracking-options";
 z.config({ jitless: true });
 
 /**
- * Browser error tracking (ADR-130). Switched on only when `NEXT_PUBLIC_SENTRY_DSN` is set. Only
- * the pieces that catch and describe an error are added: no tracing, no session replay, no
+ * Browser error tracking (ADR-130). Switched on only when `NEXT_PUBLIC_SENTRY_BROWSER_DSN` is set.
+ *
+ * The plain browser SDK is used, not the Next.js package: the Next.js client entry pulls in
+ * tracing, replay and feedback code that tree-shaking cannot remove (about 150 KB compressed in
+ * the first build). It is also loaded with a dynamic import, so a deployment without
+ * an address downloads none of it, and one with an address fetches it after the page has started.
+ * An error thrown in the first moments of a page load is therefore not seen; that is accepted.
+ * Only the pieces that catch and describe an error are added: no tracing, no session replay, no
  * feedback widget and no breadcrumbs (clicks, requests and console lines can carry personal data).
  */
-if (publicEnv.NEXT_PUBLIC_SENTRY_DSN) {
-  Sentry.init({
-    dsn: publicEnv.NEXT_PUBLIC_SENTRY_DSN,
-    environment: publicEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? "unset",
-    ...errorTrackingOptions,
-    defaultIntegrations: false,
-    integrations: [
-      Sentry.eventFiltersIntegration(),
-      Sentry.functionToStringIntegration(),
-      Sentry.linkedErrorsIntegration(),
-      Sentry.dedupeIntegration(),
-      Sentry.globalHandlersIntegration(),
-      Sentry.httpContextIntegration(),
-    ],
-  });
+if (publicEnv.NEXT_PUBLIC_SENTRY_BROWSER_DSN) {
+  const dsn = publicEnv.NEXT_PUBLIC_SENTRY_BROWSER_DSN;
+  const environment = publicEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? "unset";
+  void import("@/lib/browser-error-tracking").then((tracking) =>
+    tracking.startBrowserErrorTracking(dsn, environment),
+  );
 }

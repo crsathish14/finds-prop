@@ -88,12 +88,12 @@ Everything is off until the addresses are set, and every variable is optional. T
 | Variable                         | What it is                                                               | Where the value comes from                                                                                  |
 | -------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | `SENTRY_DSN`                     | The project address the server sends reports to                          | Sentry, Project Settings, Client Keys (DSN). Not secret, but keep it out of chat anyway                     |
-| `NEXT_PUBLIC_SENTRY_DSN`         | The same address, for the browser (it is visible in the page by design)  | The same value as `SENTRY_DSN`                                                                              |
+| `NEXT_PUBLIC_SENTRY_BROWSER_DSN` | The same address, for the browser (it is visible in the page by design)  | The same value as `SENTRY_DSN`                                                                              |
 | `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | The environment label on browser reports: `dev`, `staging`, `production` | You choose; use the same word as `APP_ENV` so server and browser reports filter together                    |
 | `SENTRY_AUTH_TOKEN`              | Uploads source maps at build time (part 3)                               | Sentry, Settings, Auth Tokens. A secret: only in Vercel's build settings, never in chat, a file or the page |
 | `VERCEL_GIT_COMMIT_SHA`          | The release name on server reports                                       | Set by Vercel on every deployment; do not set it yourself                                                   |
 
-The browser addresses are read when the site is built, so a change needs a new deployment. Until part 2 adds the Sentry address to the content security policy, do not set `NEXT_PUBLIC_SENTRY_DSN` on a deployed site: the browser would block the reports.
+The browser addresses are read when the site is built, so a change needs a new deployment. Until part 2 adds the Sentry address to the content security policy, do not set `NEXT_PUBLIC_SENTRY_BROWSER_DSN` on a deployed site: the browser would block the reports.
 
 ## AI chat (optional while `FLAG_AI_SEARCH` is off)
 

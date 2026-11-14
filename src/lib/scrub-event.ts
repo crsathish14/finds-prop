@@ -1,4 +1,4 @@
-import type { ErrorEvent, Stacktrace } from "@sentry/nextjs";
+import type { ErrorEvent, Stacktrace } from "@sentry/browser";
 import { redactText, redactValue } from "@/lib/redact";
 
 /**

@@ -1,4 +1,4 @@
-import type { ErrorEvent } from "@sentry/nextjs";
+import type { ErrorEvent } from "@sentry/browser";
 import { describe, expect, it } from "vitest";
 import { REDACTED } from "@/lib/redact";
 import { scrubEvent } from "@/lib/scrub-event";
