@@ -50,12 +50,15 @@ export async function handleAiChat(request: Request, deps: ChatDeps): Promise<Re
 async function handle(request: Request, deps: ChatDeps, requestId: string): Promise<Response> {
   const started = Date.now();
   let session: SessionView | null = null;
+  const visitor = visitorHashOf(deps, request);
   const usage = (outcome: ChatOutcome, extra: Partial<ChatUsageRecord> = {}) =>
     saveUsage(deps, {
       requestId,
       at: new Date(started).toISOString(),
       caller: session === null ? "anonymous" : "signed_in",
       userId: session?.userId ?? null,
+      // The two are never mixed (ADR-128 section 7.1): a signed-in caller has a user id and no visitor hash.
+      visitorHash: session === null ? visitor : null,
       promptVersion: SYSTEM_PROMPT_VERSION,
       outcome,
       limitedBy: null,
@@ -161,12 +164,31 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
 
 // ---------------------------------------------------------------- usage
 
+/** The visitor hash for the usage row; any failure gives null, because it must never change the answer. */
+function visitorHashOf(deps: ChatDeps, request: Request): string | null {
+  try {
+    return deps.visitorHash?.(request.headers) ?? null;
+  } catch (error) {
+    logger.error("ai chat visitor hash failed", { error });
+    return null;
+  }
+}
+
 async function saveUsage(deps: ChatDeps, record: ChatUsageRecord): Promise<void> {
   try {
     await deps.recordUsage(record);
   } catch (error) {
     // The usage step never changes what the customer gets.
     logger.error("ai chat usage could not be recorded", { error });
+  }
+}
+
+/** Hands the finishing work to the platform so it survives a cancelled response; never throws. */
+function keepAlive(deps: ChatDeps, work: Promise<unknown>): void {
+  try {
+    deps.keepAlive?.(work);
+  } catch (error) {
+    logger.error("ai chat could not keep the function alive", { error });
   }
 }
 
@@ -307,7 +329,7 @@ function streamResponse(
       const send = (event: ChatStreamEvent) => {
         if (!cancelled) controller.enqueue(encodeChatEvent(event));
       };
-      void (async () => {
+      const work = (async () => {
         try {
           for await (const event of events(stop)) send(event);
         } catch (error) {
@@ -323,6 +345,10 @@ function streamResponse(
           if (!cancelled) controller.close();
         }
       })();
+      // A customer who leaves ends the response, but the loop still has to finish and its usage be written (the
+      // tokens were spent): on serverless the function is only kept alive for work that was handed to `after`.
+      work.catch((error: unknown) => logger.error("ai chat stream ended badly", { error }));
+      keepAlive(deps, work);
     },
     cancel() {
       cancelled = true;

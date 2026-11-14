@@ -120,3 +120,18 @@ export async function enforceAiChatRateLimits(parameters: {
     if (wanted.includes(scope)) await enforceRateLimit({ counter, scope, caller });
   }
 }
+
+/**
+ * The visitor hash of a request, for the usage row of the AI chat (ADR-128 section 8): the same HMAC of the address and
+ * the browser that counts an anonymous caller, never the address. `null` when the secret is not set (the row is then
+ * written without it), so a missing secret never costs a customer their answer.
+ */
+export function requestVisitorHash(incoming: Pick<Headers, "get">): string | null {
+  const secret = env.RATE_LIMIT_HMAC_SECRET;
+  if (!secret) return null;
+  return visitorHash(
+    secret,
+    clientIp(incoming, env.APP_ENV !== "local"),
+    incoming.get("user-agent") ?? "",
+  );
+}

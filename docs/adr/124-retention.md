@@ -19,6 +19,7 @@
   | `project_leads`      | 24 months | not in DEC-28; they hold the same personal data as enquiries, so the same window (owner approved) |
   | `public_rate_limits` | 7 days    | DEC-28: rate-limit rows                                                                           |
   | `idempotency_keys`   | 24 hours  | the table's own 24 hour sweep                                                                     |
+  | `ai_usage_events`    | 12 months | AI chat usage, no text (ADR-128, AI-P4-T05)                                                       |
 
 - **Left alone, on purpose.**
   - **The audit log** is never pruned: it is append-only and holds no personal data (ADR-028, ADR-123). A rule for it needs its own decision.
