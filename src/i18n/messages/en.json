@@ -2943,6 +2943,47 @@
     "signInGateTitle": "Sign in to keep chatting",
     "signInGateBody": "You've used your {count} free messages. Sign in with your mobile number and we'll bring you back to this conversation.",
     "errorTitle": "We couldn't answer that",
-    "errorBody": "Something went wrong on our side. Your message is saved, so you can try again."
+    "errorBody": "Something went wrong on our side. Your message is saved, so you can try again.",
+    "assistantName": "findsprop's AI assistant",
+    "thread": {
+      "label": "Conversation with findsprop's AI assistant",
+      "youSaid": "You said:",
+      "assistantSaid": "findsprop's AI assistant said:"
+    },
+    "composer": {
+      "label": "Your message to findsprop's AI assistant",
+      "placeholder": "Ask about a home or project",
+      "send": "Send",
+      "note": "Your message is used to answer you. Don't include personal details here.",
+      "counter": "{count, number} / {max, number}"
+    },
+    "gate": {
+      "draftLabel": "Your next message, not sent yet",
+      "signIn": "Sign in",
+      "hint": "We'll send a 6-digit code to your phone."
+    },
+    "notice": {
+      "retry": "Try again",
+      "useFilters": "Use filters",
+      "searchWithFilters": "Search with filters"
+    },
+    "confirm": {
+      "enquiryTitle": "Send this enquiry?",
+      "visitTitle": "Request this site visit?",
+      "notSent": "Not sent yet",
+      "sentBadge": "Sent",
+      "yourName": "Your name",
+      "yourPhone": "Your phone",
+      "verified": "Verified",
+      "message": "Message",
+      "visitDate": "Visit date",
+      "requestVisit": "Request a site visit",
+      "visitConsent": "Your name, phone number and message go to {builder} and findsprop so they can contact you.",
+      "hint": "Nothing is sent until you press Send.",
+      "signedOutTitle": "Sign in to send this enquiry",
+      "signedOutBody": "Sign in to send an enquiry. We will bring you back to this chat afterwards.",
+      "draftLabel": "Your message, kept",
+      "signInToSend": "Sign in to send"
+    }
   }
 }

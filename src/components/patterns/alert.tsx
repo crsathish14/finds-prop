@@ -3,10 +3,11 @@
  * Purpose: inline feedback near what it is about (use a toast only for brief confirmations, and
  *   never as the only copy of an error). Owner: design system.
  * Props: tone ("info" default | "success" | "warning" | "danger" | "neutral"), title (optional,
- *   already-translated), children (the message), action (an optional Link or Button), className.
+ *   already-translated), children (the message), action (an optional Link or Button), urgent (read
+ *   at once even when the tone is not danger, as the chat's "too many messages" notice is), className.
  * Responsive: full width of its container; the action wraps under the text on narrow screens.
- * Accessibility: danger renders role="alert" (read at once); the other tones render role="status"
- *   (read politely). Each tone has its own icon, so colour is not the only signal.
+ * Accessibility: danger, or any tone with urgent, renders role="alert" (read at once); the other
+ *   tones render role="status" (read politely). Each tone has its own icon, so colour is not the only signal.
  * States: five tones. Dependencies: Icon, cva, cn.
  * Tests: display.test.tsx; Design Lab "Feedback" (S2-T07).
  * UX reference: ds-feedback, alerts (c-core.css .alert).
@@ -50,14 +51,16 @@ type AlertProps = {
   title?: string;
   children?: ReactNode;
   action?: ReactNode;
+  urgent?: boolean;
   className?: string;
 };
 
-function Alert({ tone = "info", title, children, action, className }: AlertProps) {
+function Alert({ tone = "info", title, children, action, urgent, className }: AlertProps) {
+  const readAtOnce = urgent ?? tone === "danger";
   return (
     <div
       data-slot="alert"
-      role={tone === "danger" ? "alert" : "status"}
+      role={readAtOnce ? "alert" : "status"}
       className={cn(alertStyles({ tone }), className)}
     >
       <Icon icon={TONE_ICONS[tone]} className="mt-px" />
