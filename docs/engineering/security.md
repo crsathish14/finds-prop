@@ -349,6 +349,8 @@ Reads `tool_input.file_path` (and content for Write), normalises it relative to 
 | **No opinion** (AI chat)  | Owner decision, 14 Nov 2026, so the AI chat tasks do not stop for a prompt: `src/server/env.ts`, `docs/engineering/security.md`, `docs/engineering/backend.md`, `docs/engineering/frontend.md` and `scripts/ai-*/**`. Every other path in the ask row stays protected (CI, hooks, lint, test and TypeScript config, `AGENTS.md`, `package.json`, the other handbook pages) |
 | Otherwise                 | No opinion                                                                                                                                                                                                                                                                                                                                                                 |
 
+A task session works in a worktree under `.claude/worktrees/<name>/`; the hook drops that prefix before it matches, so a file inside a worktree is judged by its path in the repository (the worktree's own `.claude/settings.json` is still protected). Without this every edit in a worktree would ask, because the path begins `.claude/`.
+
 The ask list is the same set as the "protected paths" that `G-17` uses to demand a `Gate-change:` line, so a change that gets past the local prompt (another tool, a person) is still visible in review.
 
 ### 3.2a `check-naming.mjs` (PostToolUse, feedback only)
