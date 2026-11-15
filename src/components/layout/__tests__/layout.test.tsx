@@ -81,11 +81,31 @@ describe("SiteHeader", () => {
     expect(within(nav).getByRole("link", { name: "Rent" })).not.toHaveAttribute("aria-current");
   });
 
-  it("gives the AI Search link the copper accent and its icon", () => {
+  it("draws the AI Search link as a copper-tint pill with its icon, not a copper fill (ADD-17)", () => {
     render(<Example />);
     const link = screen.getByRole("link", { name: "AI Search" });
-    expect(link).toHaveClass("text-cta-text");
+    expect(link).toHaveClass("text-cta-text", "bg-cta-tint", "rounded-pill");
+    expect(link).not.toHaveClass("bg-cta");
     expect(link.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("shows the AI Search pill as the current page with a border instead of the underline", () => {
+    render(
+      <SiteHeader
+        logo={<Logo name="Find Prop" />}
+        navLabel="Main"
+        nav={[
+          { label: "Buy", href: "/buy" },
+          { label: "AI Search", href: "/ai-search", accent: true, current: true },
+        ]}
+      />,
+    );
+    const link = screen.getByRole("link", { name: "AI Search" });
+    expect(link).toHaveAttribute("aria-current", "page");
+    expect(link).toHaveClass(
+      "aria-[current=page]:border-cta-text",
+      "aria-[current=page]:after:hidden",
+    );
   });
 
   it("names the home link and puts the actions and the menu button in the header", () => {
@@ -264,6 +284,32 @@ describe("BottomBar", () => {
     render(<BottomBar navLabel="Primary" items={items} />);
     expect(screen.getByRole("link", { name: /Saved/ })).toHaveTextContent("3");
     expect(screen.getByRole("link", { name: "Post" }).firstElementChild).toHaveClass("bg-primary");
+  });
+
+  it("draws the AI item as a copper-tint disc named AI Search, with a border on its page (ADD-17)", () => {
+    const chatItems = [
+      { label: "Home", href: "/", icon: <Icon icon={Home} /> },
+      { label: "Search", href: "/search", icon: <Icon icon={Search} /> },
+      {
+        label: "AI",
+        href: "/ai-search",
+        icon: <Icon icon={Phone} />,
+        accent: true,
+        ariaLabel: "AI Search",
+        current: true,
+      },
+      { label: "Post", href: "/post-property", icon: <Icon icon={Phone} /> },
+      { label: "Me", href: "/me", icon: <Icon icon={User} /> },
+    ];
+    render(<BottomBar navLabel="Primary" items={chatItems} />);
+    const link = screen.getByRole("link", { name: "AI Search" });
+    expect(link).toHaveAttribute("aria-current", "page");
+    expect(link.firstElementChild).toHaveClass("bg-cta-tint-2", "rounded-pill", "border-2");
+    expect(link.firstElementChild).not.toHaveClass("bg-cta");
+    // Post is a normal tab beside it, not raised.
+    expect(screen.getByRole("link", { name: "Post" }).firstElementChild).not.toHaveClass(
+      "bg-primary",
+    );
   });
 
   it("is hidden from 768 px", () => {

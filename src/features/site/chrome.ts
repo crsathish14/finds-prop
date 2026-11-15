@@ -51,11 +51,20 @@ export type FooterModel = {
   copyright: string;
 };
 
-export type BottomBarKey = "home" | "search" | "post" | "saved" | "me";
+export type BottomBarKey = "home" | "search" | "ai" | "post" | "saved" | "me";
 
 export type BottomBarModel = {
   navLabel: string;
-  items: { key: BottomBarKey; label: string; href: string; raised?: boolean }[];
+  items: {
+    key: BottomBarKey;
+    label: string;
+    href: string;
+    raised?: boolean;
+    /** The copper-tint disc of the AI tab (ADD-17). */
+    accent?: boolean;
+    /** The spoken name when it differs from the short label ("AI" is read as "AI Search"). */
+    ariaLabel?: string;
+  }[];
 };
 
 export type AccountEntryKey =
@@ -202,22 +211,50 @@ export function buildFooter(
   };
 }
 
-export function buildBottomBar(translate: Translate): BottomBarModel {
-  return {
-    navLabel: translate("site.bottomBar.navLabel"),
-    items: [
-      { key: "home", label: translate("site.bottomBar.home"), href: "/" },
-      { key: "search", label: translate("site.bottomBar.search"), href: "/properties" },
-      {
-        key: "post",
-        label: translate("site.bottomBar.post"),
-        href: "/post-property",
-        raised: true,
-      },
-      { key: "saved", label: translate("site.bottomBar.saved"), href: "/dashboard?tab=saved" },
-      { key: "me", label: translate("site.bottomBar.me"), href: "/dashboard" },
-    ],
-  };
+/**
+ * The phone bottom bar. With the AI chat off it is the approved bar: Home, Search, Post (raised),
+ * Saved, Me. With the chat on (ADD-17) it is Home, Search, AI, Post, Me: the AI tab is the centre,
+ * Post is a normal tab beside it and Saved leaves the bar (saved homes stay in the account menu).
+ */
+export function buildBottomBar(translate: Translate, flags: FeatureFlags): BottomBarModel {
+  const home = { key: "home", label: translate("site.bottomBar.home"), href: "/" } as const;
+  const search = {
+    key: "search",
+    label: translate("site.bottomBar.search"),
+    href: "/properties",
+  } as const;
+  const me = { key: "me", label: translate("site.bottomBar.me"), href: "/dashboard" } as const;
+  const post = {
+    key: "post",
+    label: translate("site.bottomBar.post"),
+    href: "/post-property",
+  } as const;
+  const items: BottomBarModel["items"] = flags.aiSearch
+    ? [
+        home,
+        search,
+        {
+          key: "ai",
+          label: translate("site.bottomBar.ai"),
+          href: AI_SEARCH_PATH,
+          accent: true,
+          ariaLabel: translate("site.nav.aiSearch"),
+        },
+        post,
+        me,
+      ]
+    : [
+        home,
+        search,
+        { ...post, raised: true },
+        {
+          key: "saved",
+          label: translate("site.bottomBar.saved"),
+          href: "/dashboard?tab=saved",
+        },
+        me,
+      ];
+  return { navLabel: translate("site.bottomBar.navLabel"), items };
 }
 
 /** The pages that show the bottom bar (navigation doc, section 6). Everything else hides it. */
@@ -258,6 +295,7 @@ export function bottomBarCurrentKey(pathname: string): BottomBarKey | undefined 
   const path = pathOf(pathname);
   if (path === "/") return "home";
   if (path === "/properties") return "search";
+  if (path === AI_SEARCH_PATH) return "ai";
   if (path === "/dashboard") return "me";
   return undefined;
 }

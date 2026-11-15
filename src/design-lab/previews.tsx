@@ -28,10 +28,12 @@ import { BasicsStep, FailedAlert, ReviewStep, SampleWizard } from "./boards/sell
 import type { PreviewName } from "./preview-names";
 import {
   ACCOUNT_GROUPS,
+  BOTTOM_BAR_CHAT_ITEMS,
   BOTTOM_BAR_ITEMS,
   FOOTER_COLUMNS,
   FOOTER_CONTACTS,
   MAIN_NAV,
+  MAIN_NAV_ON_AI_PAGE,
   PORTAL_FOOTER,
   PORTAL_GROUPS,
 } from "./sample-data";
@@ -145,6 +147,51 @@ function HeaderSignedIn() {
       <main id="main">
         <PageBody />
       </main>
+    </>
+  );
+}
+
+/** The header with the AI chat on and the AI page open (ADD-17): no saved-homes heart, AI Search ringed. */
+function HeaderAiCurrent() {
+  return (
+    <>
+      <SiteHeader
+        logo={HOME_LINK}
+        navLabel="Main"
+        nav={MAIN_NAV_ON_AI_PAGE}
+        bordered
+        actions={
+          <>
+            <Button asChild variant="secondary" size="sm" pill className="hidden md:inline-flex">
+              <Link href="#post">Post property</Link>
+            </Button>
+            <AvatarMenu
+              triggerLabel="Account menu"
+              name="Priya Raman"
+              email="priya@example.com"
+              initials="PR"
+              roleLabel="Owner"
+              groups={ACCOUNT_GROUPS}
+            />
+          </>
+        }
+        menu={<Drawer />}
+      />
+      <main id="main">
+        <PageBody />
+      </main>
+    </>
+  );
+}
+
+/** The phone bar with the AI chat on and the AI page open (ADD-17). */
+function BottomBarChatPage() {
+  return (
+    <>
+      <main id="main" className="pb-bottombar md:pb-0">
+        <PageBody />
+      </main>
+      <BottomBar navLabel="Primary" items={BOTTOM_BAR_CHAT_ITEMS} />
     </>
   );
 }
@@ -270,7 +317,9 @@ function HeroPage({ ads, layout }: { ads: SponsorAd[]; layout: HeroLayout }) {
 export const PREVIEWS: Record<PreviewName, () => ReactNode> = {
   "header-signed-out": HeaderSignedOut,
   "header-signed-in": HeaderSignedIn,
+  "header-ai-current": HeaderAiCurrent,
   "bottom-bar": BottomBarPage,
+  "bottom-bar-chat": BottomBarChatPage,
   footer: FooterPage,
   "portal-admin": PortalPage,
   "hero-a-one-ad": () => <HeroPage ads={[SAMPLE_AD_A]} layout="search_desk" />,

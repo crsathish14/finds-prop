@@ -2,7 +2,9 @@
 export const PREVIEW_NAMES = [
   "header-signed-out",
   "header-signed-in",
+  "header-ai-current",
   "bottom-bar",
+  "bottom-bar-chat",
   "footer",
   "portal-admin",
   "hero-a-one-ad",

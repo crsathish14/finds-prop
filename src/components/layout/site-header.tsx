@@ -10,7 +10,7 @@
  * Responsive: 56, 64 and 72 px tall by breakpoint (the --header-h token). Below 1024 px the nav
  *   moves into the drawer and the menu button shows.
  * Accessibility: a banner landmark with a labelled nav; the current page has aria-current="page"
- *   and a copper underline. It stays at the top while the page scrolls (sticky).
+ *   and a copper underline (an accent link, "AI Search", is a copper-tint pill with a border instead). It stays at the top while the page scrolls (sticky).
  * States: default, bordered; each link has hover, focus and current.
  * Dependencies: Container, Link, cn. Tests: layout.test.tsx; Design Lab "Navigation" (S2-T07).
  * UX reference: ds-navigation, public header (c-nav.css .hdr, .nav).
@@ -62,7 +62,10 @@ function SiteHeader({
                   className={cn(
                     "relative inline-flex items-center gap-2 py-3 text-body font-medium whitespace-nowrap",
                     "aria-[current=page]:font-bold aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-0 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:rounded-pill aria-[current=page]:after:bg-cta aria-[current=page]:after:content-['']",
-                    item.accent && "font-semibold text-cta-text hover:text-cta-hover",
+                    // "AI Search" (ADD-17): a copper-tint pill, a tint and not a fill so the page keeps its one
+                    // copper button. The current page is a thin border instead of the underline.
+                    item.accent &&
+                      "rounded-pill border-2 border-transparent bg-cta-tint px-4 py-2 font-bold text-cta-text hover:bg-cta-tint-2 hover:text-cta-text aria-[current=page]:text-cta-text aria-[current=page]:border-cta-text aria-[current=page]:after:hidden",
                   )}
                 >
                   {item.icon}

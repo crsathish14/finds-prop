@@ -24,6 +24,7 @@ import {
   type NavLink,
 } from "./chrome";
 import { AccountDrawer } from "./account-drawer.client";
+import { getFeatureFlags } from "./flags";
 import { SignInLink } from "./sign-in-link.client";
 import { getTranslate } from "./translator";
 
@@ -53,7 +54,11 @@ async function readSession(): Promise<SessionView | null> {
   }
 }
 
-/** The right side of the header: Sign in for a visitor, the saved link and account menu otherwise. */
+/**
+ * The right side of the header: Sign in for a visitor, the saved link and account menu otherwise.
+ * While the AI chat is on the saved-homes heart is left out (ADD-17); Saved homes stay in the
+ * account menu and the drawer.
+ */
 export async function HeaderAccountActions() {
   const translate = await getTranslate();
   const session = await readSession();
@@ -64,14 +69,16 @@ export async function HeaderAccountActions() {
   const name = summary.fullName?.trim() || translate("site.header.yourAccount");
   return (
     <>
-      <Link
-        href="/dashboard?tab=saved"
-        variant="nav"
-        aria-label={translate("site.account.savedHomes")}
-        className="hidden size-(--size-icon-btn) place-items-center rounded-pill text-primary no-underline hover:bg-canvas-sunken md:inline-grid"
-      >
-        <Icon icon={Heart} />
-      </Link>
+      {getFeatureFlags().aiSearch ? null : (
+        <Link
+          href="/dashboard?tab=saved"
+          variant="nav"
+          aria-label={translate("site.account.savedHomes")}
+          className="hidden size-(--size-icon-btn) place-items-center rounded-pill text-primary no-underline hover:bg-canvas-sunken md:inline-grid"
+        >
+          <Icon icon={Heart} />
+        </Link>
+      )}
       <AccountMenu
         triggerLabel={translate("site.header.accountMenu")}
         name={name}
