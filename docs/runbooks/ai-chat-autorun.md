@@ -9,7 +9,9 @@ How the rest of `docs/ai-chat-phase-plan.md` is built without stopping for permi
 
 ## Order
 
-Strictly one task at a time, because only one migration PR may be open at once and two writers must not touch the same files. The order is the one in the ledger (a one-way list, so it cannot cycle). A task starts only when every task it needs is `merged` in the ledger and on GitHub.
+The order is the one in the ledger (a one-way list, so it cannot cycle). A task starts only when every task it needs is `merged` in the ledger and on GitHub.
+
+**Parallel tasks (owner decision, 15 Nov 2026).** Up to **3 tasks may run at once** when they are independent, instead of strictly one at a time. Two tasks are independent only when all of these hold: neither needs the other (the plan's "Needs" lines), they touch different files (a task that adds new files beside a task that edits the chat island, the endpoint or the tools is independent; two tasks that edit the same files are not), and at most one of them carries a migration (only one migration PR may be open at once). The orchestrator decides this when it starts a task and writes the files each task will not touch into the brief of every parallel task. Each parallel task has its own worktree, branch, PR and session, and follows the whole task chain below on its own. Merging stays one PR at a time, only after `all-checks-passed`; when two PRs both edit `docs/status.md` or the ledger, the later one fetches, rebases and keeps both sides. A task that needs something a running task is still changing (for example cases written against code another task is rewriting) writes that part last, from `develop` after the other task merges. Review and security tasks (P8-T02 and the three security reviews) never run beside other tasks, and a task that touches dev, staging or production never runs in parallel.
 
 ## The task chain (every task session follows this)
 
@@ -23,7 +25,7 @@ Strictly one task at a time, because only one migration PR may be open at once a
 ## Starting a task (the orchestrator, or the previous task's session)
 
 1. No file named `AI-RUN-STOP` in the main checkout. If it exists, stop and say so.
-2. The ledger row is `todo`, its attempts are under the limits below, and `develop` has no open AI chat PR.
+2. The ledger row is `todo`, its attempts are under the limits below, fewer than 3 tasks are running, and every running or open AI chat task is independent of it (see "Order"); with no parallel task running, `develop` has no open AI chat PR.
 3. Start a session with `use_worktree: true` from `develop`, permission mode `auto`, using the start prompt in the phase plan plus the task's own line. Mark the row `running`.
 
 **Starting the session is the agent's own job, never a question for the owner** (owner decision, 14 Nov 2026, for every Claude account that works on this repository): the owner has said "do not ask this permission next time, always start the new session on your own". Call `start_session` with `initiation: "user_asked"` straight away, with a complete brief (the task, the files, what done looks like, the chain steps) and `context: "fresh"`. Do not write "want me to start it?", do not end a turn with a start button as the question, and do not wait for a reply. The one exception is outside the owner's control: the app may refuse a start made from a turn that an automated event or another session's message began, and then offers a card instead. In that case leave the card (`own_initiative`), say in the report that the app turned the start into a card, and carry on with whatever else is left; the owner's standing instruction does not override the app, and nothing here asks you to start a session by another route (no shell-launched `claude`, no workaround). A later turn that the owner or the app's wake-up begins starts it for real.
@@ -40,6 +42,7 @@ The session that merged reports the PR number and the real check results. To con
 | CI-fix rounds per pull request         | 2                                                                                                   |
 | Review-fix rounds per pull request     | 1                                                                                                   |
 | Sessions started in one run            | 25 (restart needs the owner)                                                                        |
+| Tasks running at once                  | 3, and only independent ones (section "Order")                                                      |
 | A task already `merged` on GitHub      | Never started again; the ledger is checked against GitHub first                                     |
 | A blocked task                         | Skipped. Tasks that do not depend on it go on; if none is independent, the run stops and reports    |
 | A denied action (hook or permission)   | Never retried in another form. The task is `blocked` and the reason goes in the ledger              |
