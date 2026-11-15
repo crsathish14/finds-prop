@@ -6,9 +6,11 @@ import { RateLimitedError } from "@/server/rate-limit/enforce";
 import { AI_CHAT_RATE_LIMIT_SCOPES } from "@/server/rate-limit/limits";
 import type { AiChatRateLimitScope } from "@/server/rate-limit/rate-limit";
 import { readRequestId } from "@/server/request-id";
+import type { ConfirmCard } from "../confirm/confirm-card";
 import { INPUT_MESSAGE_KEYS, type InputCheckResult } from "../guards/input";
 import { buildSystemPrompt } from "../prompts/system-prompt";
 import { SYSTEM_PROMPT_VERSION } from "../prompts/version";
+import type { ProposalOffer } from "../tools/proposal-offer";
 import { encodeChatEvent, type ChatOutcome, type ChatStreamEvent } from "./events";
 import { prepareConversation } from "./history";
 import { parseChatRequest } from "./parse";
@@ -148,6 +150,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
         latest,
         usage,
         stop,
+        session,
       }),
     );
   } catch (error) {
@@ -236,6 +239,22 @@ interface AnswerInput {
   readonly latest: Exclude<InputCheckResult, { action: "refuse" }>;
   readonly usage: UsageWriter;
   readonly stop: AbortController;
+  /** The caller of this request, from the verified token (null for a visitor): who a confirm card is built for. */
+  readonly session: SessionView | null;
+}
+
+/** The confirm card for an offer; a failure gives no card (the answer stands alone) and never an error. */
+async function safeConfirmCard(
+  deps: ChatDeps,
+  offer: ProposalOffer,
+  session: SessionView | null,
+): Promise<ConfirmCard | null> {
+  try {
+    return (await deps.confirmCard?.(offer, session)) ?? null;
+  } catch (error) {
+    logger.error("ai chat confirm card failed", { error });
+    return null;
+  }
 }
 
 async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent> {
@@ -270,6 +289,11 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       customerMessage: latest.text,
       signal,
       timeLimit,
+      ...(deps.confirmCard === undefined
+        ? {}
+        : {
+            confirmCard: (offer: ProposalOffer) => safeConfirmCard(deps, offer, input.session),
+          }),
     });
     while (true) {
       const next = await turn.next();

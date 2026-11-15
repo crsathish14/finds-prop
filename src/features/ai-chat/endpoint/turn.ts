@@ -11,6 +11,8 @@ import {
   type OutputSummary,
 } from "../guards/output";
 import { SYSTEM_PROMPT_CANARY } from "../prompts/version";
+import type { ConfirmCard } from "../confirm/confirm-card";
+import type { ProposalOffer } from "../tools/proposal-offer";
 import type { AnyAiChatTool } from "../tools/types";
 import type { ChatOutcome, ChatStreamEvent } from "./events";
 
@@ -42,6 +44,11 @@ export interface TurnInput {
   readonly signal: AbortSignal;
   /** The time limit for the whole message. */
   readonly timeLimit: AbortSignal;
+  /**
+   * Builds the confirm card for what a propose tool offered (AI-P6-T02). Absent means no card is ever sent. It must
+   * not throw; a null answer means no card.
+   */
+  readonly confirmCard?: (offer: ProposalOffer) => Promise<ConfirmCard | null>;
 }
 
 /** What the usage step needs after the turn. `agent` is null only if the loop ended without its `done` event. */
@@ -139,6 +146,14 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     // Nothing but done may follow a replace, so a second one is not sent.
     if (!blocked) yield fallbackReplace(translate);
     return { outcome: "blocked", agent, output };
+  }
+
+  // The confirm card of a propose tool, after the checked answer: the last offer of this message, and only when
+  // the answer was let through (a replaced answer sends nothing but `done`).
+  const offer = agent.offers.at(-1);
+  if (offer !== undefined && input.confirmCard !== undefined) {
+    const card = await input.confirmCard(offer);
+    if (card !== null) yield { type: "confirm", card };
   }
 
   if (agent.noticeKey !== null && agent.outcome === "limit") {

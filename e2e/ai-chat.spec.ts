@@ -14,6 +14,12 @@ import en from "../src/i18n/messages/en.json";
 // src/features/ai-chat/endpoint. A real sign-in needs a phone code, so "sign in" is the visit to the sign-in page
 // and the way back to /ai-search, which is what the browser does when the code is accepted.
 // Text comes from en.json, so rewording a message never breaks a test (ADR-035).
+//
+// AI-P6-T02, the confirm card: the card arrives as a `confirm` event of the stubbed stream, and the Send button's
+// Server Action (`confirmChatProposal`) is stubbed too: the browser's POST to the page carries a `Next-Action` header
+// and gets a `text/x-component` answer whose first row points at the second (`0:{"a":"$@1"}`, `1:{...result}`),
+// which is how Next.js answers an action. The real action (the proposal check, the account's name and phone, the two
+// existing actions) is tested in src/features/ai-chat/confirm/__tests__ with the real defineAction.
 const words = en.ai;
 const flagOn = ["1", "true"].includes(process.env.FLAG_AI_SEARCH ?? "");
 
@@ -58,6 +64,46 @@ async function stubEndpoint(page: Page, replies: ({ stream: string } | { gate: t
         body: reply.stream,
       });
     }
+  });
+  return sent;
+}
+
+const MESSAGE = "Is this home still available? I would like to visit this Saturday.";
+
+const confirmStream = lines([
+  { type: "start", requestId: "e2e" },
+  { type: "status", text: words.searching },
+  { type: "text", text: "I have prepared an enquiry. Check it and press Send." },
+  {
+    type: "confirm",
+    card: {
+      state: "ready",
+      kind: "enquiry",
+      proposal: "body.signature",
+      target: { title: "3 BHK apartment", meta: "Velachery · ₹1.25 Cr" },
+      name: "Priya Raman",
+      phone: "+91 98400 12345",
+      message: MESSAGE,
+    },
+  },
+  { type: "done", outcome: "answered" },
+]);
+
+/** Answers the Send button's Server Action with this result, and keeps what the browser sent. */
+async function stubConfirmAction(page: Page, result: object) {
+  const sent: string[] = [];
+  await page.route("**/ai-search", async (route) => {
+    const request = route.request();
+    if (request.method() !== "POST" || request.headers()["next-action"] === undefined) {
+      await route.fallback();
+      return;
+    }
+    sent.push(request.postData() ?? "");
+    await route.fulfill({
+      status: 200,
+      contentType: "text/x-component",
+      body: `0:{"a":"$@1"}\n1:${JSON.stringify(result)}\n`,
+    });
   });
   return sent;
 }
@@ -134,6 +180,71 @@ if (flagOn) {
       await alert.getByRole("button", { name: words.notice.retry }).click();
       await expect(page.getByText("Here you are.")).toBeVisible();
       expect(sent[1]).toEqual([{ role: "user", text: "hello" }]);
+    });
+
+    test("the confirm card sends only when its own button is pressed, and then says so", async ({
+      page,
+    }) => {
+      const sent = await stubEndpoint(page, [
+        { stream: confirmStream },
+        { stream: answer("Please press the Send button on the card.") },
+      ]);
+      const actions = await stubConfirmAction(page, { ok: true, data: { received: true } });
+      await page.goto("/ai-search");
+      const box = page.getByRole("textbox", { name: words.composer.label });
+      await box.fill("Please ask the owner of the 3 BHK in Velachery if it is available");
+      await box.press("Enter");
+
+      // The card shows the real target, the account's name and phone, and the message: nothing is sent yet.
+      const card = page.getByRole("region", { name: words.confirm.enquiryTitle });
+      await expect(card).toBeVisible();
+      await expect(card.getByText("3 BHK apartment")).toBeVisible();
+      await expect(card.getByText("Priya Raman")).toBeVisible();
+      await expect(card.getByText("+91 98400 12345")).toBeVisible();
+      await expect(card.getByText(MESSAGE)).toBeVisible();
+      await expectNoSeriousAccessibilityViolations(page);
+      expect(actions).toHaveLength(0);
+
+      // Typing "yes" is only another message to the assistant.
+      await box.fill("yes");
+      await box.press("Enter");
+      await expect(page.getByText("Please press the Send button on the card.")).toBeVisible();
+      expect(sent).toHaveLength(2);
+      expect(actions).toHaveLength(0);
+
+      // The button sends the signed proposal and a fresh key, once.
+      await card.getByRole("button", { name: en.domain.enquiry.form.send }).click();
+      await expect(page.getByRole("heading", { name: en.domain.enquiry.sent.title })).toBeVisible();
+      expect(actions).toHaveLength(1);
+      expect(actions[0]).toContain("body.signature");
+      expect(actions[0]).toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
+    });
+
+    test("when the session has ended, the card says so, and the message comes back after signing in", async ({
+      page,
+    }) => {
+      await stubEndpoint(page, [{ stream: confirmStream }]);
+      const actions = await stubConfirmAction(page, { ok: false, code: "UNAUTHENTICATED" });
+      await page.goto("/ai-search");
+      const box = page.getByRole("textbox", { name: words.composer.label });
+      await box.fill("Please ask the owner of the 3 BHK in Velachery if it is available");
+      await box.press("Enter");
+      const card = page.getByRole("region", { name: words.confirm.enquiryTitle });
+      await card.getByRole("button", { name: en.domain.enquiry.form.send }).click();
+
+      // Nothing was sent; the card is the sign-in prompt for an ended session, with the message kept.
+      await expect(page.getByRole("heading", { name: en.domain.sessionEnded.title })).toBeFocused();
+      await expect(page.getByText(MESSAGE)).toBeVisible();
+      const signIn = page.getByRole("link", { name: en.domain.sessionEnded.action });
+      await expect(signIn).toHaveAttribute("href", "/auth?gate=expired&redirect=%2Fai-search");
+      expect(actions).toHaveLength(1);
+
+      // Sign in (the phone code is checked by hand), then the way back: the message is in the box, unsent.
+      await signIn.click();
+      await expect(page).toHaveURL(/\/auth\?gate=expired/);
+      await page.goto("/ai-search");
+      await expect(page.getByRole("textbox", { name: words.composer.label })).toHaveValue(MESSAGE);
+      expect(actions).toHaveLength(1);
     });
   });
 } else {

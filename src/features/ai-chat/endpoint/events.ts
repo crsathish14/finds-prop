@@ -1,16 +1,19 @@
+import type { ConfirmCard } from "../confirm/confirm-card";
 import type { ToolReference } from "../tools/types";
 
 /**
  * What the endpoint streams (ADR-128 section 4, "stream: text deltas, cards, ..."). The body is newline-delimited
  * JSON (`application/x-ndjson`): one event per line, each a complete JSON object, in this order:
  *
- *   start, then any of status / notice / text / card, then exactly one done.
+ *   start, then any of status / notice / text / card / confirm, then exactly one done.
  *
  * `replace` swaps the whole message for a fixed line (a blocked answer, or a turn that could not finish); nothing
  * but `done` follows it. Every sentence is fixed wording from `en.json` that the server has already turned into
  * text, so the browser needs no key of its own. Text and cards are checked by the output guard before they get here.
  * A card is only a reference (a home's public id and slug, or a project's slug): the page draws the card and builds
- * the link itself, and the model never writes one.
+ * the link itself, and the model never writes one. A `confirm` event is the confirm card of a propose tool (AI-P6-T02):
+ * the server built it from the signed proposal and the customer's account, after the answer has passed the output
+ * check, and never when the answer was replaced.
  */
 export type ChatStreamEvent =
   | { readonly type: "start"; readonly requestId: string }
@@ -19,6 +22,8 @@ export type ChatStreamEvent =
   /** A checked, plain-text piece of the answer (or a fixed refusal). */
   | { readonly type: "text"; readonly text: string }
   | { readonly type: "card"; readonly reference: ToolReference }
+  /** The confirm card for an enquiry or a site visit: `ready` to send, or the sign-in prompt. */
+  | { readonly type: "confirm"; readonly card: ConfirmCard }
   /** A fixed note beside the answer: "I removed personal details", the cap note, the disclaimer. */
   | { readonly type: "notice"; readonly key: string; readonly text: string }
   /** Swap the message for this line. `href` is a link built by code (the fixed fallback offers the search page). */

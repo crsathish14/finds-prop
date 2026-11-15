@@ -277,7 +277,9 @@ describe("UT-ai-tool-propose-visit: a visitor who is not signed in", () => {
         status: "sign_in_required",
         asOf: AS_OF_TEXT,
         target: { slug: "kadal-vista" },
-        untrustedText: { name: "Kadal Vista" },
+        // The day and the message are kept for the card that asks the visitor to sign in.
+        visitDate: "2026-12-05",
+        untrustedText: { name: "Kadal Vista", message: expect.any(String) },
       },
       references: [{ kind: "project", slug: "kadal-vista" }],
       content: expect.any(String),

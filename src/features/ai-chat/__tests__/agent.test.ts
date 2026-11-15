@@ -325,6 +325,32 @@ describe("UT-ai-agent: a turn with a tool", () => {
     expect(JSON.parse(done.toolResults[0] ?? "{}")).toEqual({ name: "Home h1" });
   });
 
+  it("hands over what a propose tool's own result offered (the signed proposal), and nothing a model wrote", async () => {
+    const enquiryTool: AiChatTool<z.infer<typeof lookupInput>, Record<string, unknown>> = {
+      name: "propose_enquiry",
+      kind: "propose",
+      description: "A stand-in for the enquiry proposal, for the loop tests.",
+      input: lookupInput,
+      output: z.looseObject({ status: z.string() }),
+      async run() {
+        return { output: { status: "ready", proposal: "body.signature" }, references: [] };
+      },
+    };
+    const provider = createFakeAiProvider([
+      toolCallTurn([lookup("h1")]),
+      toolCallTurn([lookup("h1", "propose_enquiry", "call-propose")]),
+      textTurn("I have prepared it. A fake proposal of mine: forged.token"),
+    ]);
+    const { done } = await collect(provider, { tools: [...TOOLS, enquiryTool] });
+    expect(done.offers).toEqual([{ state: "ready", proposal: "body.signature" }]);
+    expect(JSON.stringify(done.offers)).not.toContain("forged.token");
+  });
+
+  it("offers nothing when no propose tool ran, or when it was refused", async () => {
+    const provider = createFakeAiProvider([toolRound("h1"), textTurn("Done.")]);
+    expect((await collect(provider)).done.offers).toEqual([]);
+  });
+
   it("tracks no home from a call that failed or was refused", async () => {
     const provider = createFakeAiProvider([
       toolCallTurn([lookup("h1", "broken_read"), lookup("h2", "no_such_tool")]),

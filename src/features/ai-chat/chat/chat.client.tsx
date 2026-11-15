@@ -18,6 +18,9 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from "@/config/ai";
+import { saveDraft } from "@/lib/form-draft";
+import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
+import type { ConfirmCard } from "../confirm/confirm-card";
 import { AnswerCards, type ChatCardControls } from "./answer-cards.client";
 import {
   browserStorage,
@@ -33,6 +36,7 @@ import {
   type ChatReference,
 } from "./chat-model";
 import { readChatEvents, readChatFailure } from "./chat-stream";
+import { ChatConfirm } from "./confirm-card.client";
 
 /** Where the sign-in gate leads: the phone sign-in, asked to come back to this page (ADR-128 section 10). */
 const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
@@ -42,9 +46,15 @@ const FILTERS_HREF = "/properties";
 
 const COMPOSER_ID = "ai-chat-message";
 
+/** The name the unsent message of a confirm card is kept under while the customer signs in (the way forms keep theirs). */
+const CONFIRM_DRAFT_NAME = "ai-chat-confirm";
+
 /** What the assistant has written so far for the message in flight. */
 type LiveAnswer = {
+  /** The id the answer will keep once it is whole, so the screen keeps the same card in place when it ends. */
+  id: string;
   text: string;
+  confirm: ConfirmCard | undefined;
   notes: ChatNote[];
   references: ChatReference[];
   replaced: boolean;
@@ -58,8 +68,9 @@ type Problem =
   | { kind: "daily_limit" }
   | { kind: "unavailable" };
 
-const NO_ANSWER: LiveAnswer = {
+const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   text: "",
+  confirm: undefined,
   notes: [],
   references: [],
   replaced: false,
@@ -92,10 +103,11 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
 
 /** The text, the cards and the notes of one answer, as the parts of a `ChatAssistantMessage`. */
 function answerParts(
-  entry: Pick<AssistantEntry, "text" | "notes" | "references" | "replaced" | "href">,
+  entry: Pick<AssistantEntry, "text" | "notes" | "references" | "replaced" | "href" | "confirm">,
   filtersLabel: string,
   streaming: boolean,
   controls: ChatCardControls,
+  keepMessage: (message: string) => void,
 ) {
   const href = safeHref(entry.href);
   return {
@@ -111,11 +123,20 @@ function answerParts(
         </>
       ),
     cards:
-      entry.references.length > 0 ? (
-        <AnswerCards
-          references={entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER)}
-          controls={controls}
-        />
+      entry.references.length > 0 || entry.confirm !== undefined ? (
+        <>
+          {entry.references.length > 0 ? (
+            <AnswerCards
+              references={entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER)}
+              controls={controls}
+            />
+          ) : null}
+          {entry.confirm ? (
+            <div className="@xl:col-span-2">
+              <ChatConfirm card={entry.confirm} focusHeading onKeepMessage={keepMessage} />
+            </div>
+          ) : null}
+        </>
       ) : undefined,
     notes:
       entry.notes.length > 0
@@ -139,6 +160,7 @@ export function ChatIsland({
   controls: ChatCardControls;
 }) {
   const translate = useTranslations("ai");
+  const restoredWords = useTranslations("domain.sessionEnded");
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [gate, setGate] = useState(false);
@@ -184,6 +206,20 @@ export function ChatIsland({
     if (ready && returned) focusComposer();
   }, [ready, returned, focusComposer]);
 
+  // The message of a confirm card the customer left to sign in again comes back into an empty box, as the forms
+  // bring back what was typed; nothing is sent until they press Send themself.
+  const keptMessage = useRestoredDraft(CONFIRM_DRAFT_NAME);
+  useRestoredNotice(CONFIRM_DRAFT_NAME, keptMessage, restoredWords("restored"));
+  useEffect(() => {
+    const message = keptMessage?.["message"];
+    if (!ready || typeof message !== "string") return;
+    /* eslint-disable react-hooks/set-state-in-effect -- the kept message can only be read in the browser, after hydration */
+    setDraft((current) =>
+      current.trim() === "" ? message.slice(0, MAX_INPUT_CHARACTERS) : current,
+    );
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [ready, keptMessage]);
+
   useEffect(() => {
     if (!ready) return;
     saveChat(browserStorage(), { version: 1, entries, draft, gate, account: signedIn });
@@ -222,7 +258,7 @@ export function ChatIsland({
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    const answer: LiveAnswer = { ...NO_ANSWER, notes: [], references: [] };
+    const answer: LiveAnswer = { ...NO_ANSWER, id: newId(), notes: [], references: [] };
     setLive({ ...answer });
     setProblem(null);
 
@@ -266,6 +302,8 @@ export function ChatIsland({
           if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
             answer.references.push(event.reference);
           }
+        } else if (event.type === "confirm") {
+          answer.confirm = event.card;
         } else if (event.type === "notice") {
           if (event.key === MASKED_NOTICE_KEY) {
             setEntries((current) =>
@@ -280,6 +318,7 @@ export function ChatIsland({
           answer.text = event.text;
           answer.notes = [];
           answer.references = [];
+          answer.confirm = undefined;
           answer.replaced = true;
           answer.href = event.href;
         } else if (event.type === "done") {
@@ -292,11 +331,12 @@ export function ChatIsland({
       setEntries((current) => [
         ...current,
         {
-          id: newId(),
+          id: answer.id,
           role: "assistant",
           text: answer.text,
           notes: answer.notes,
           references: answer.references,
+          ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
           replaced: answer.replaced,
           ...(answer.href === undefined ? {} : { href: answer.href }),
         },
@@ -319,6 +359,13 @@ export function ChatIsland({
     // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
     focusComposer();
     void run(text, before, userId);
+  }
+
+  /** The customer is leaving to sign in with a card open: keep its message for the way back (never sent by itself). */
+  function keepMessage(message: string) {
+    saveDraft(CONFIRM_DRAFT_NAME, window.location.pathname, { message });
+    // The chat's own copy of the transcript is written now, because the page is about to be left.
+    saveChat(browserStorage(), { version: 1, entries, draft, gate, account: signedIn });
   }
 
   function retry() {
@@ -408,36 +455,45 @@ export function ChatIsland({
 
       {hasMessages ? (
         <ChatThread>
-          {entries.map((entry) =>
-            entry.role === "user" ? (
-              <ChatUserBubble
-                key={entry.id}
-                notice={
-                  entry.masked ? (
-                    <ChatNoteLine align="user" live>
-                      {translate("maskedNotice")}
-                    </ChatNoteLine>
-                  ) : undefined
-                }
-              >
-                {entry.text}
-              </ChatUserBubble>
-            ) : (
-              <SavedAnswer
-                key={entry.id}
-                entry={entry}
-                filtersLabel={translate("notice.useFilters")}
-                controls={controls}
-              />
+          {[
+            ...entries.map((entry) =>
+              entry.role === "user" ? (
+                <ChatUserBubble
+                  key={entry.id}
+                  notice={
+                    entry.masked ? (
+                      <ChatNoteLine align="user" live>
+                        {translate("maskedNotice")}
+                      </ChatNoteLine>
+                    ) : undefined
+                  }
+                >
+                  {entry.text}
+                </ChatUserBubble>
+              ) : (
+                <Answer
+                  key={entry.id}
+                  answer={entry}
+                  filtersLabel={translate("notice.useFilters")}
+                  controls={controls}
+                  keepMessage={keepMessage}
+                />
+              ),
             ),
-          )}
-          {live ? (
-            <LiveAnswerItem
-              live={live}
-              filtersLabel={translate("notice.useFilters")}
-              controls={controls}
-            />
-          ) : null}
+            // The answer in flight has the key it will keep, so its cards (a confirm card among them) stay in place.
+            ...(live
+              ? [
+                  <Answer
+                    key={live.id}
+                    answer={live}
+                    streaming
+                    filtersLabel={translate("notice.useFilters")}
+                    controls={controls}
+                    keepMessage={keepMessage}
+                  />,
+                ]
+              : []),
+          ]}
         </ChatThread>
       ) : null}
 
@@ -482,40 +538,25 @@ export function ChatIsland({
   );
 }
 
-function SavedAnswer({
-  entry,
+/** One answer of the assistant, finished or still streaming: the same element either way, so nothing in it restarts when it ends. */
+function Answer({
+  answer,
+  streaming = false,
   filtersLabel,
   controls,
+  keepMessage,
 }: {
-  entry: AssistantEntry;
+  answer: AssistantEntry | LiveAnswer;
+  streaming?: boolean;
   filtersLabel: string;
   controls: ChatCardControls;
+  keepMessage: (message: string) => void;
 }) {
-  const parts = answerParts(entry, filtersLabel, false, controls);
+  const parts = answerParts(answer, filtersLabel, streaming, controls, keepMessage);
+  const searching = streaming && answer.text === "" && answer.references.length === 0;
   return (
     <ChatAssistantMessage
-      {...(parts.cards ? { cards: parts.cards } : {})}
-      {...(parts.notes ? { notes: parts.notes } : {})}
-    >
-      {parts.text}
-    </ChatAssistantMessage>
-  );
-}
-
-function LiveAnswerItem({
-  live,
-  filtersLabel,
-  controls,
-}: {
-  live: LiveAnswer;
-  filtersLabel: string;
-  controls: ChatCardControls;
-}) {
-  const parts = answerParts(live, filtersLabel, true, controls);
-  const searching = live.text === "" && live.references.length === 0;
-  return (
-    <ChatAssistantMessage
-      streaming
+      {...(streaming ? { streaming: true } : {})}
       {...(searching ? { status: <ChatStatusLine /> } : {})}
       {...(parts.cards ? { cards: parts.cards } : {})}
       {...(parts.notes ? { notes: parts.notes } : {})}

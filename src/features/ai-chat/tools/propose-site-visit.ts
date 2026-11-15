@@ -63,7 +63,10 @@ export const proposeSiteVisitOutputSchema = z.discriminatedUnion("status", [
     status: z.literal("sign_in_required"),
     asOf: z.string().min(1),
     target: targetSchema,
-    untrustedText: z.object({ name: z.string() }),
+    /** The visit day, `YYYY-MM-DD`, kept for the sign-in card. */
+    visitDate: z.string().min(1),
+    /** The project's name and the message the customer will be asked to send once signed in (the card quotes it). */
+    untrustedText: z.object({ name: z.string(), message: z.string().min(1) }),
   }),
 ]);
 export type ProposeSiteVisitOutput = z.infer<typeof proposeSiteVisitOutputSchema>;
@@ -98,7 +101,13 @@ export const proposeSiteVisitTool: AiChatTool<ProposeSiteVisitInput, ProposeSite
     const session = await getSessionView();
     if (session === null) {
       return {
-        output: { status: "sign_in_required", asOf, target, untrustedText: { name } },
+        output: {
+          status: "sign_in_required",
+          asOf,
+          target,
+          visitDate,
+          untrustedText: { name, message },
+        },
         references,
       };
     }

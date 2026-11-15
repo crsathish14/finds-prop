@@ -12,6 +12,7 @@ import { env } from "@/server/env";
 import { logger } from "@/server/logger";
 import { reportError } from "@/server/observability";
 import { enforceAiChatRateLimits, requestVisitorHash } from "@/server/rate-limit/rate-limit";
+import { buildConfirmCard, realConfirmCardDeps } from "../confirm/build-card";
 import { AI_CHAT_TOOLS } from "../tools/registry";
 import type { ChatDeps, ChatUsageRecord } from "./types";
 
@@ -45,6 +46,8 @@ export function createChatDeps(): ChatDeps {
     createProvider: () => chooseAiProvider(env.AI_PROVIDER ?? ""),
     tools: AI_CHAT_TOOLS,
     translate,
+    confirmCard: (offer, session) =>
+      buildConfirmCard(offer, session, realConfirmCardDeps(translate)),
     recordUsage: writeUsage,
     visitorHash: requestVisitorHash,
     keepAlive,

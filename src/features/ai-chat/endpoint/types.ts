@@ -6,6 +6,8 @@ import type { AiChatRateLimitScope } from "@/server/rate-limit/rate-limit";
 import type { AgentFallbackReason, AgentLimit } from "../agent-types";
 import type { InputTag } from "../guards/input";
 import type { OutputTag } from "../guards/output";
+import type { ConfirmCard } from "../confirm/confirm-card";
+import type { ProposalOffer } from "../tools/proposal-offer";
 import type { AnyAiChatTool } from "../tools/types";
 import type { ChatOutcome } from "./events";
 
@@ -61,6 +63,11 @@ export interface ChatDeps {
   createProvider(): AiProvider;
   readonly tools: readonly AnyAiChatTool[];
   readonly translate: Translate;
+  /**
+   * Builds the confirm card for a propose tool's offer, for the caller of this request (AI-P6-T02). Absent in tests
+   * that have no cards. Must not throw; null means no card.
+   */
+  confirmCard?(offer: ProposalOffer, session: SessionView | null): Promise<ConfirmCard | null>;
   /** The usage step. A failure here is logged and never changes what the customer gets. */
   recordUsage(record: ChatUsageRecord): Promise<void>;
   /** The visitor hash of the request (HMAC, never the address), or null if it cannot be worked out. Must not throw. */

@@ -332,6 +332,7 @@ describe("ChatConfirmCard", () => {
         builderName="Kadal Homes"
         message="I'd like to see the show flat."
         privacyHref="/privacy"
+        signInHref="/auth"
       />,
     );
     expect(screen.getByRole("region", { name: words.confirm.visitTitle })).toBeVisible();

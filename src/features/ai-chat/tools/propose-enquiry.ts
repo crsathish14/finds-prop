@@ -60,7 +60,8 @@ export const proposeEnquiryOutputSchema = z.discriminatedUnion("status", [
     status: z.literal("sign_in_required"),
     asOf: z.string().min(1),
     target: targetSchema,
-    untrustedText: z.object({ title: z.string() }),
+    /** The title and the message the customer will be asked to send once signed in (the card quotes it). */
+    untrustedText: z.object({ title: z.string(), message: z.string().min(1) }),
   }),
 ]);
 export type ProposeEnquiryOutput = z.infer<typeof proposeEnquiryOutputSchema>;
@@ -91,7 +92,12 @@ export const proposeEnquiryTool: AiChatTool<ProposeEnquiryInput, ProposeEnquiryO
     const session = await getSessionView();
     if (session === null) {
       return {
-        output: { status: "sign_in_required", asOf, target, untrustedText: { title } },
+        output: {
+          status: "sign_in_required",
+          asOf,
+          target,
+          untrustedText: { title, message },
+        },
         references,
       };
     }

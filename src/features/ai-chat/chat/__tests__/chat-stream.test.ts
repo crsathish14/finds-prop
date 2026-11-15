@@ -24,6 +24,52 @@ async function collect(body: ReadableStream<Uint8Array>): Promise<ChatEvent[]> {
 const translate = ((key: string, values?: Record<string, unknown>) =>
   `${key}${values ? JSON.stringify(values) : ""}`) as never;
 
+describe("reading the confirm card of the stream (AI-P6-T02)", () => {
+  const target = { title: "3 BHK apartment", meta: "Velachery" };
+
+  it("reads the ready card and the sign-in card", async () => {
+    const sent: ChatStreamEvent[] = [
+      {
+        type: "confirm",
+        card: {
+          state: "ready",
+          kind: "enquiry",
+          proposal: "body.signature",
+          target,
+          name: "Priya Raman",
+          phone: "+91 98400 12345",
+          message: "Is it available?",
+        },
+      },
+      {
+        type: "confirm",
+        card: {
+          state: "signed_out",
+          kind: "visit",
+          target,
+          message: "Hello",
+          visitDate: "5 Dec 2026",
+        },
+      },
+    ];
+    const bytes = sent.flatMap((event) => [...encodeChatEvent(event)]);
+    expect(await collect(streamOf(new Uint8Array(bytes)))).toEqual(sent);
+  });
+
+  it("ignores a card that is not of the closed set, so a bad line never reaches the screen", async () => {
+    const lines = [
+      { type: "confirm", card: { state: "ready", kind: "enquiry", target, message: "x" } },
+      { type: "confirm", card: { state: "other", kind: "enquiry", target, message: "x" } },
+      { type: "confirm", card: { state: "signed_out", kind: "transfer", target, message: "x" } },
+      { type: "confirm", card: { state: "signed_out", kind: "enquiry", target, message: "" } },
+      { type: "confirm" },
+      { type: "done", outcome: "answered" },
+    ];
+    const body = lines.map((line) => JSON.stringify(line)).join("\n") + "\n";
+    expect(await collect(streamOf(body))).toEqual([{ type: "done", outcome: "answered" }]);
+  });
+});
+
 describe("reading the chat stream (AI-P5-T02)", () => {
   it("reads the events the endpoint writes, in order", async () => {
     const sent: ChatStreamEvent[] = [
