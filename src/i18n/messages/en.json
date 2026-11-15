@@ -3000,7 +3000,11 @@
       "signedOutTitle": "Sign in to send this enquiry",
       "signedOutBody": "Sign in to send an enquiry. We will bring you back to this chat afterwards.",
       "draftLabel": "Your message, kept",
-      "signInToSend": "Sign in to send"
+      "signInToSend": "Sign in to send",
+      "visitSignedOutTitle": "Sign in to request this site visit",
+      "visitSignedOutBody": "Sign in to request a site visit. We will bring you back to this chat afterwards.",
+      "expiredTitle": "This request is no longer valid",
+      "expiredBody": "Ask the assistant to prepare it again, then press Send."
     }
   }
 }

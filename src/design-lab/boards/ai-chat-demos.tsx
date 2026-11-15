@@ -299,6 +299,7 @@ export function ChatConfirmCardDemo() {
           phone="+91 98400 12345"
           visitDate="Sat, 14 Nov 2026"
           builderName="Kadal Homes"
+          signInHref="#sign-in"
           message="I'd like to see the 3 BHK show flat."
           privacyHref="#privacy"
           onSend={NOTHING}

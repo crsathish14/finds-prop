@@ -4,6 +4,7 @@
  * a key into text with `translate`. Nothing in an event is message text except the answer's own deltas.
  */
 import type { AiMessage, AiProvider } from "@/server/ai";
+import type { ProposalOffer } from "./tools/proposal-offer";
 import type { AnyAiChatTool, ToolContext, ToolReference } from "./tools/types";
 
 /** The customer-visible wording the loop points at, as `en.json` keys (approved 13 Nov 2026, gate G-G). */
@@ -96,6 +97,11 @@ export type AgentEvent =
        * passes them on as its `toolResults`. Error results carry no facts and are left out.
        */
       readonly toolResults: readonly string[];
+      /**
+       * What the propose tools asked the confirm card to be (AI-P6-T02), from their own checked results and in the order
+       * they ran. Never taken from the model's words; the endpoint builds the card from the last one.
+       */
+      readonly offers: readonly ProposalOffer[];
     };
 
 export type AgentDone = Extract<AgentEvent, { type: "done" }>;

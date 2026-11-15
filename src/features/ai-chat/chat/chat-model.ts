@@ -5,12 +5,14 @@ import {
   AI_MAX_HISTORY_MESSAGES,
   MAX_INPUT_CHARACTERS,
 } from "@/config/ai";
+import { confirmCardSchema } from "../confirm/confirm-card";
 
 /**
  * What the chat island keeps: the conversation, the unsent draft and whether the sign-in gate was shown. The
  * conversation lives in `sessionStorage` (ADR-128 section 10, the ADR-057 idea) so it survives the trip to sign in.
  * It holds the visitor's words and the assistant's checked answer, plus the references of the cards. Never a tool
- * result, a token or an id of the visitor. Anything read back from storage is checked again, because the browser
+ * result, a token or an id of the visitor: a confirm card (which holds a signed proposal and the customer's own name
+ * and phone) lives in memory only and is left out of what is kept (`forStorage`). Anything read back from storage is checked again, because the browser
  * can hold anything: a value that does not fit is dropped and the chat starts empty.
  */
 
@@ -37,6 +39,8 @@ const assistantEntrySchema = z.object({
   text: z.string().max(AI_MAX_HISTORY_ANSWER_CHARACTERS),
   notes: z.array(noteSchema).max(4),
   references: z.array(referenceSchema).max(AI_MAX_CARDS_PER_ANSWER),
+  /** The confirm card of a propose tool, in memory only (never kept in the tab: it holds a signed proposal). */
+  confirm: confirmCardSchema.optional(),
   /** A fixed line replaced the answer; `href` is where the search page is when the line offers it. */
   replaced: z.boolean(),
   href: z.string().max(200).optional(),
@@ -86,6 +90,19 @@ export const EMPTY_CHAT: StoredChat = {
   account: false,
 };
 
+/** The answer as the tab keeps it: the same words, cards and notes, and no confirm card. */
+function withoutConfirmCard(entry: AssistantEntry): AssistantEntry {
+  return {
+    id: entry.id,
+    role: "assistant",
+    text: entry.text,
+    notes: entry.notes,
+    references: entry.references,
+    replaced: entry.replaced,
+    ...(entry.href === undefined ? {} : { href: entry.href }),
+  };
+}
+
 /**
  * What the tab keeps: the last turns, without a message the server had to remove personal details from (and the
  * answer to it), so a phone number or an email typed by mistake is not left in the browser.
@@ -98,7 +115,8 @@ export function forStorage(entries: readonly ChatEntry[]): ChatEntry[] {
       skipping = entry.masked;
       if (!skipping) kept.push(entry);
     } else if (!skipping) {
-      kept.push(entry);
+      // The confirm card stays behind: it holds a signed proposal and the customer's own phone.
+      kept.push(withoutConfirmCard(entry));
     }
   }
   return kept.slice(-MAX_STORED_ENTRIES);

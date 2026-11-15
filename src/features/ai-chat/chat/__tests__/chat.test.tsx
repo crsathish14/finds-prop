@@ -8,8 +8,11 @@ import { encodeChatEvent, type ChatStreamEvent } from "../../endpoint/events";
 import { limitResponse, serverErrorResponse } from "../../endpoint/responses";
 import { STORAGE_KEY, type StoredChat } from "../chat-model";
 
-const cards = vi.hoisted(() => ({ read: vi.fn() }));
-vi.mock("../../actions", () => ({ readChatCardsAction: cards.read }));
+const cards = vi.hoisted(() => ({ read: vi.fn(), confirm: vi.fn() }));
+vi.mock("../../actions", () => ({
+  readChatCardsAction: cards.read,
+  confirmChatProposal: cards.confirm,
+}));
 
 const { ChatIsland } = await import("../chat.client");
 
@@ -74,6 +77,7 @@ beforeEach(() => {
   fetchMock.mockReset();
   cards.read.mockReset();
   cards.read.mockResolvedValue({ ok: true, data: [] });
+  cards.confirm.mockReset();
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -590,5 +594,124 @@ describe("the cards under an answer, when they cannot be read (AI-P5-T02)", () =
     await waitFor(() => expect(sendButton()).toBeDisabled());
     await act(async () => undefined);
     expect(cards.read).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the confirm card in the conversation (AI-P6-T02)", () => {
+  const MESSAGE = "Is this home still available? I would like to visit this Saturday.";
+  const target = { title: "3 BHK apartment", meta: "Velachery · ₹1.25 Cr" };
+  const readyCard: ChatStreamEvent = {
+    type: "confirm",
+    card: {
+      state: "ready",
+      kind: "enquiry",
+      proposal: "body.signature",
+      target,
+      name: "Priya Raman",
+      phone: "+91 98400 12345",
+      message: MESSAGE,
+    },
+  };
+  const signedOut: ChatStreamEvent = {
+    type: "confirm",
+    card: { state: "signed_out", kind: "enquiry", target, message: MESSAGE },
+  };
+  const cardWords = messages.ai.confirm;
+
+  it("draws the card under the answer, and a typed 'yes' is only a message to the assistant: nothing is sent", async () => {
+    fetchMock
+      .mockResolvedValueOnce(answered("I have prepared an enquiry. Press Send.", [readyCard]))
+      .mockResolvedValueOnce(answered("Please press the Send button on the card."));
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await ready();
+    const user = await type("please ask the owner");
+    await user.click(sendButton());
+    expect(await screen.findByRole("region", { name: cardWords.enquiryTitle })).toBeVisible();
+    expect(screen.getByText("Priya Raman")).toBeVisible();
+
+    await user.type(box(), "yes");
+    await user.keyboard("{Enter}");
+    await screen.findByText("Please press the Send button on the card.");
+    expect(sentMessages(1)).toEqual([
+      { role: "user", text: "please ask the owner" },
+      { role: "assistant", text: "I have prepared an enquiry. Press Send." },
+      { role: "user", text: "yes" },
+    ]);
+    expect(cards.confirm).not.toHaveBeenCalled();
+  });
+
+  it("sends only when the card's own button is pressed, with the proposal and a fresh key, and keeps the card in place when the answer ends", async () => {
+    cards.confirm.mockResolvedValue({ ok: true, data: { received: true } });
+    fetchMock.mockResolvedValueOnce(
+      answered("I have prepared an enquiry. Press Send.", [readyCard]),
+    );
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await ready();
+    const user = await type("please ask the owner");
+    await user.click(sendButton());
+    const press = await screen.findByRole("button", {
+      name: new RegExp(messages.domain.enquiry.form.send),
+    });
+    await user.click(press);
+    expect(cards.confirm).toHaveBeenCalledExactlyOnceWith({
+      proposal: "body.signature",
+      idempotencyKey: expect.any(String),
+    });
+    expect(
+      await screen.findByRole("heading", { name: messages.domain.enquiry.sent.title }),
+    ).toBeVisible();
+  });
+
+  it("keeps the signed proposal and the customer's own details out of the tab's storage", async () => {
+    fetchMock.mockResolvedValueOnce(
+      answered("I have prepared an enquiry. Press Send.", [readyCard]),
+    );
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await ready();
+    const user = await type("please ask the owner");
+    await user.click(sendButton());
+    await screen.findByRole("region", { name: cardWords.enquiryTitle });
+    await waitFor(() => expect(stored()?.entries).toHaveLength(2));
+    const raw = window.sessionStorage.getItem(STORAGE_KEY) ?? "";
+    expect(raw).not.toContain("body.signature");
+    expect(raw).not.toContain("98400 12345");
+    expect(raw).not.toContain("Priya Raman");
+    expect(raw).toContain("I have prepared an enquiry. Press Send.");
+  });
+
+  it("brings the message back into the box after the visitor signs in from the card, and sends nothing by itself", async () => {
+    fetchMock.mockResolvedValueOnce(answered("Please sign in to send this.", [signedOut]));
+    const first = renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("please ask the owner");
+    await user.click(sendButton());
+    const signIn = await screen.findByRole("link", { name: cardWords.signInToSend });
+    expect(signIn).toHaveAttribute("href", "/auth?redirect=%2Fai-search");
+    await user.click(signIn);
+    first.unmount();
+
+    // The way back: signed in, the same page, the same tab.
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await screen.findByText("Please sign in to send this.");
+    await waitFor(() => expect(box()).toHaveValue(MESSAGE));
+    expect(screen.getByText("Please sign in to send this.")).toBeVisible();
+    expect(screen.queryByRole("region", { name: cardWords.enquiryTitle })).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(cards.confirm).not.toHaveBeenCalled();
+  });
+
+  it("does not overwrite what the visitor was typing when the kept message comes back", async () => {
+    fetchMock.mockResolvedValueOnce(answered("Please sign in to send this.", [signedOut]));
+    const first = renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("please ask the owner");
+    await user.click(sendButton());
+    await user.type(box(), "my next question");
+    await user.click(await screen.findByRole("link", { name: cardWords.signInToSend }));
+    first.unmount();
+
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await screen.findByText("Please sign in to send this.");
+    await waitFor(() => expect(box()).toHaveValue("my next question"));
   });
 });

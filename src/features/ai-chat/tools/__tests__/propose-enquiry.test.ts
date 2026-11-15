@@ -256,7 +256,8 @@ describe("UT-ai-tool-propose-enquiry: a visitor who is not signed in", () => {
         status: "sign_in_required",
         asOf: AS_OF_TEXT,
         target: { homeId: "k3x9a2bd" },
-        untrustedText: { title: "3 BHK apartment with clubhouse" },
+        // The message is kept for the card that asks the visitor to sign in (it quotes what was drafted).
+        untrustedText: { title: "3 BHK apartment with clubhouse", message: MESSAGE },
       },
       references: [{ kind: "home", homeId: "k3x9a2bd", slug: "3-bhk-apartment-velachery" }],
       content: expect.any(String),

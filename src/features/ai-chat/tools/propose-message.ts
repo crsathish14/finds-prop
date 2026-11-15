@@ -7,6 +7,11 @@ import { cleanThirdPartyText } from "./untrusted";
  * The message of a proposal, shared by both propose tools: what the customer will send, written by the model
  * from what the customer asked for. The tool cleans it and checks its length, because a card must never show
  * (or send) text the form would refuse; it never turns the model's words into more than they are.
+ *
+ * The length is counted in characters (code points), which is how the two actions' own schemas (Zod 4) and the
+ * database count it, so a message the tool allows is a message the send accepts (checked in AI-P6-T02: 600 emoji go
+ * through, 1,001 do not). A text box counts UTF-16 units, but that is only a typing limit and a card's message is
+ * never typed into one.
  */
 
 export const proposalMessageSchema = z

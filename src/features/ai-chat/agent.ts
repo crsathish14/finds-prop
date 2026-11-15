@@ -14,6 +14,7 @@ import {
   type AgentLimit,
   type AgentOutcome,
 } from "./agent-types";
+import { offerFromOutput, type ProposalOffer } from "./tools/proposal-offer";
 import { toolDefinitions } from "./tools/run";
 import { referenceKey, type ToolReference } from "./tools/types";
 
@@ -32,6 +33,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
   const usage: UsageTotals = { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 };
   const references = new Map<string, ToolReference>();
   const toolResults: string[] = [];
+  const offers: ProposalOffer[] = [];
   const toolCallsPerRound: number[] = [];
   const toolsRan = new Set<string>();
   let rounds = 0;
@@ -62,6 +64,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
     usage,
     references: [...references.values()],
     toolResults: [...toolResults],
+    offers: [...offers],
   });
 
   while (true) {
@@ -147,6 +150,9 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         if (outcome.status !== "ok") continue;
         usefulResults = true;
         toolResults.push(outcome.content);
+        const toolName = round.calls.find((asked) => asked.id === callId)?.name;
+        const offer = toolName === undefined ? null : offerFromOutput(toolName, outcome.output);
+        if (offer !== null) offers.push(offer);
         for (const reference of outcome.references)
           references.set(referenceKey(reference), reference);
       }

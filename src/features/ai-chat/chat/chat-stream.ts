@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { confirmCardSchema } from "../confirm/confirm-card";
 
 /**
  * Reads what `POST /api/ai/chat` answers (`endpoint/events.ts` and `endpoint/responses.ts` are the other side). The
@@ -16,6 +17,7 @@ const eventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("status"), text: z.string() }),
   z.object({ type: z.literal("text"), text: z.string() }),
   z.object({ type: z.literal("card"), reference: referenceSchema }),
+  z.object({ type: z.literal("confirm"), card: confirmCardSchema }),
   z.object({ type: z.literal("notice"), key: z.string(), text: z.string() }),
   z.object({
     type: z.literal("replace"),
