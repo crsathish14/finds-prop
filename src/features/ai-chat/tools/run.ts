@@ -5,6 +5,7 @@ import { createAiToolDefinition, type AiToolDefinition } from "@/server/ai";
 import { logger } from "@/server/logger";
 import {
   TOOL_ERROR_HINTS,
+  ToolRefusal,
   type AnyAiChatTool,
   type ToolContext,
   type ToolErrorCode,
@@ -80,6 +81,8 @@ export async function runTool(
       content: JSON.stringify(output.data),
     };
   } catch (error) {
+    // A refusal is the tool's answer, not a failure: nothing is logged and nothing but the code is given back.
+    if (error instanceof ToolRefusal) return toolError(error.code, error.fields);
     // The prerender signal and redirects are Next.js control flow, not failures of the tool.
     unstable_rethrow(error);
     logger.error("ai tool could not run", { tool: tool.name });

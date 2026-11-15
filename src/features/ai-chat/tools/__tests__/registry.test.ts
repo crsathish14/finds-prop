@@ -32,8 +32,19 @@ const getBuilderProfile = vi.fn();
 const getProjects = vi.fn();
 const getProject = vi.fn();
 const getComparedHomes = vi.fn();
+const getSessionView = vi.fn();
+const ownsHome = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
+// The propose tools sign with the secret the rate limiter holds, and read who is asking from the session.
+vi.mock(import("@/server/env"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    env: { ...actual.env, RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
+  };
+});
+vi.mock("@/server/auth/get-session-view", () => ({ getSessionView }));
 vi.mock("@/features/search", async () => {
   const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
   return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
@@ -46,6 +57,7 @@ vi.mock("@/features/projects", async () => {
   const { bhkSizes, priceBounds, TREND_MONTHS } = await import("@/features/projects/view");
   const { isProjectSlug } = await import("@/features/projects/address");
   const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
+  const { visitDateProblem } = await import("@/features/projects/lead-view");
   return {
     getProjects,
     getProject,
@@ -53,6 +65,7 @@ vi.mock("@/features/projects", async () => {
     priceBounds,
     TREND_MONTHS,
     isProjectSlug,
+    visitDateProblem,
     PROJECT_STATUSES,
     PROJECT_LIST_LIMIT: 60,
   };
@@ -61,7 +74,12 @@ vi.mock("@/features/compare", async () => {
   const { COMPARE_MAX, COMPARE_MIN } = await import("@/features/compare/store");
   return { getComparedHomes, COMPARE_MAX, COMPARE_MIN };
 });
-vi.mock("../../queries", () => ({ getLocalityCounts, getBuilderDirectory, getBuilderProfile }));
+vi.mock("../../queries", () => ({
+  getLocalityCounts,
+  getBuilderDirectory,
+  getBuilderProfile,
+  ownsHome,
+}));
 // The index also exports the chat page's screen; this test is about the tools, so the screen is a stand-in.
 vi.mock("../../chat-screen", () => ({
   AiChatScreen: () => null,
@@ -194,6 +212,10 @@ function propertyNamesIn(schema: unknown, location = "$"): { name: string; locat
 
 // ---------------------------------------------------------------- one valid call for every tool
 
+/** A visit day inside the window whatever day the tests run: a month from today, India time. */
+const { addDays, indiaToday } = await import("@/features/projects/lead-view");
+const VISIT_DAY = addDays(indiaToday(new Date()), 30);
+
 /**
  * An input each tool accepts. A tool added to the registry must be added here too (a test below fails
  * otherwise), which is what puts it through every result check in this file.
@@ -226,6 +248,12 @@ const VALID_INPUTS: Record<string, unknown> = {
     annualRatePercent: null,
     years: null,
   },
+  propose_enquiry: { homeId: "k3x9a2bd", message: "Is this home still available?" },
+  propose_site_visit: {
+    slug: "kadal-vista",
+    visitDate: VISIT_DAY,
+    message: "I would like to see the show flat.",
+  },
 };
 
 /** What a read must never hand to the model, planted in every stand-in read to prove it does not get through. */
@@ -254,6 +282,14 @@ const callEveryTool = () =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // A signed-in customer who owns none of the homes, for the propose tools.
+  getSessionView.mockResolvedValue({
+    userId: "11111111-1111-4111-8111-111111111111",
+    roles: ["customer"],
+    phoneVerified: true,
+    builderId: null,
+  });
+  ownsHome.mockResolvedValue(false);
   // Fifteen homes and twenty-five localities, more than a result may hold, each carrying private fields a
   // read does not give today and third-party text in every field a lister can type.
   const homes = Array.from("abcdefghjkmnpqr", (letter) => ({
@@ -373,7 +409,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the eight read tools so far", () => {
+  it("holds the eight read tools and the two propose tools", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -385,14 +421,20 @@ describe("UT-ai-tools-registry: the list", () => {
         "get_builder",
         "compare_properties",
         "calculate_emi",
+        "propose_enquiry",
+        "propose_site_visit",
       ]),
     );
-    expect(names).toHaveLength(8);
+    expect(names).toHaveLength(10);
   });
 
-  it("gives every tool a kind, and these eight are read tools the loop may run in parallel", () => {
+  it("gives every tool a kind: eight read tools the loop may run in parallel, and two propose tools that run alone", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
-    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual(Array(8).fill("read"));
+    expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual([
+      ...Array<string>(8).fill("read"),
+      "propose",
+      "propose",
+    ]);
   });
 
   it("gives every tool its own name, in the form a provider accepts", () => {
@@ -673,6 +715,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       get_builder: ["project"],
       compare_properties: ["home"],
       calculate_emi: [],
+      propose_enquiry: ["home"],
+      propose_site_visit: ["project"],
     });
   });
 });

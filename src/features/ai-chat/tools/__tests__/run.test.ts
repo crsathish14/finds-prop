@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import type { AiChatTool, AnyAiChatTool } from "../types";
+import { ToolRefusal, type AiChatTool, type AnyAiChatTool } from "../types";
 import { TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-run (ADR-128 sections 4.4 rule 2, 4.5 and 5): running a tool always ends in a result, never an
@@ -200,6 +200,57 @@ describe("UT-ai-tool-run: a tool that fails", () => {
       ),
     ).rejects.toThrow("NEXT_REDIRECT");
     expect(error).not.toHaveBeenCalled();
+  });
+});
+
+describe("UT-ai-tool-run: a tool that refuses on purpose", () => {
+  it.each(["not_available", "own_home", "date_out_of_range"] as const)(
+    "answers a refusal with the code %s and a line for the model, and logs nothing",
+    async (code) => {
+      const refusing = withRun(async () => {
+        throw new ToolRefusal(code);
+      });
+      const outcome = await runTool(
+        [refusing],
+        { name: "echo_word", input: { word: "veedu", times: null } },
+        TOOL_CONTEXT,
+      );
+      expect(outcome).toMatchObject({ status: "error", code, fields: [] });
+      const content = JSON.parse(outcome.content) as { error: string; hint: string };
+      expect(content.error).toBe(code);
+      expect(content.hint.length).toBeGreaterThan(20);
+      expect(error).not.toHaveBeenCalled();
+    },
+  );
+
+  it("names the fields to correct when the refusal is about the input", async () => {
+    const refusing = withRun(async () => {
+      throw new ToolRefusal("invalid_input", ["message"]);
+    });
+    expect(
+      await runTool(
+        [refusing],
+        { name: "echo_word", input: { word: "veedu", times: null } },
+        TOOL_CONTEXT,
+      ),
+    ).toEqual({
+      status: "error",
+      code: "invalid_input",
+      fields: ["message"],
+      content: '{"error":"invalid_input","fields":["message"]}',
+    });
+  });
+
+  it("gives the model nothing but the code: not the refusal's own message", async () => {
+    const refusing = withRun(async () => {
+      throw new ToolRefusal("own_home");
+    });
+    const outcome = await runTool(
+      [refusing],
+      { name: "echo_word", input: { word: "veedu", times: null } },
+      TOOL_CONTEXT,
+    );
+    expect(outcome.content).not.toContain("refused the call");
   });
 });
 

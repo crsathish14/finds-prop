@@ -81,6 +81,19 @@ export const MAX_TOOL_RESULT_ITEMS = 10;
 export const MAX_UNTRUSTED_TEXT_CHARACTERS = 1500;
 
 /**
+ * The propose tools (ADR-128 section 5.3, `tools/propose-*.ts`). A proposal the server signs stays good for this
+ * long, in seconds: enough to read the confirm card and press Send, short enough that an old card cannot be
+ * replayed. An engineering limit, not an owner decision.
+ */
+export const PROPOSAL_LIFETIME_SECONDS = 30 * 60;
+
+/**
+ * The longest message a proposal holds, in characters: the length the enquiry form and the project lead form
+ * accept (1,000, and the tables hold the same), so a proposal the card sends is never refused for its length.
+ */
+export const PROPOSAL_MESSAGE_MAX_CHARACTERS = 1000;
+
+/**
  * The EMI defaults of the `calculate_emi` tool (ADR-128 section 5.2, decision D10). They are only used when
  * the customer gives no value of their own, and the assistant always shows them as "an example, not a bank
  * offer". The maths that uses them is `src/lib/emi.ts`.

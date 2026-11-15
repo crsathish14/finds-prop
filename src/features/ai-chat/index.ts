@@ -20,6 +20,8 @@ export type {
 } from "./agent-types";
 export { runAgent } from "./agent";
 export { AI_CHAT_TOOLS } from "./tools/registry";
+export { verifyProposal } from "./tools/proposal";
+export type { Proposal, ProposalCheck, ProposalRefusal } from "./tools/proposal";
 export { runTool, toolDefinitions, toolError } from "./tools/run";
 export { referenceKey, TOOL_ERROR_CODES, TOOL_ERROR_HINTS } from "./tools/types";
 export type {
