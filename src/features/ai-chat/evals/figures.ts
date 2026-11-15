@@ -76,7 +76,7 @@ export function claimedFigures(answer: string): string[] {
 }
 
 const ANY_NUMBER =
-  /(?<![\d.,])(\d[\d,]*(?:\.\d+)?)(?:\s*(crores?|cr|lakhs?|lacs?|லட்சம்|லட்ச|கோடி)(?![a-z]))?/giu;
+  /(?<![\p{L}\d.,])(\d[\d,]*(?:\.\d+)?)(?:\s*(crores?|cr|lakhs?|lacs?|லட்சம்|லட்ச|கோடி)(?![a-z]))?/giu;
 
 function addNumbersOfText(text: string, into: Set<string>): void {
   const plain = asciiDigits(text);

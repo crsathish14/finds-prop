@@ -158,6 +158,8 @@ const expectSchema = z
         outcome: z.enum(OUTCOMES).optional(),
         inputTags: z.array(z.enum(INPUT_TAGS)).optional(),
         outputTags: z.array(z.enum(OUTPUT_TAGS)).optional(),
+        /** Fixed notices (en.json keys) the scripted misbehaviour must have caused, such as the advice disclaimer. */
+        notices: z.array(z.string().min(1)).optional(),
         /** `some`: the shadow number check must have counted a figure; `none`: it must have counted nothing. */
         shadowUngrounded: z.enum(["some", "none"]).optional(),
       })

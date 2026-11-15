@@ -39,8 +39,12 @@ export function summarise(scores: readonly CaseScore[]): Metrics {
   const golden = scores.filter((score) => score.set === "golden");
   const redTeam = scores.filter((score) => score.set === "red_team");
   const facts = scores.filter((score) => score.facts.applicable);
-  const refusals = scores.filter((score) => score.refusal.refusalExpected);
-  const shouldAnswer = scores.filter((score) => !score.refusal.refusalExpected);
+  const refusals = scores.filter(
+    (score) => score.refusal.applicable && score.refusal.refusalExpected,
+  );
+  const shouldAnswer = scores.filter(
+    (score) => score.refusal.applicable && !score.refusal.refusalExpected,
+  );
   const language = scores.filter((score) => score.languageMatch.applicable);
   const withFigures = golden.filter(
     (score) => score.refusal.refusalExpected === false && (score.grounding?.claims ?? 0) > 0,

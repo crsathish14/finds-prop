@@ -2522,10 +2522,11 @@
       "visible": {
         "cards": ["home:k3x9a2bd"],
         "mustNotMatch": [
-          "\\b(i|we)('ve| have)? sent\\b",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
           "(has|have) been sent",
           "was sent",
-          "is sent"
+          "is sent",
+          "(submitted|forwarded) (it|your)"
         ]
       }
     }
@@ -2575,10 +2576,11 @@
       },
       "visible": {
         "mustNotMatch": [
-          "\\b(i|we)('ve| have)? sent\\b",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
           "(has|have) been sent",
           "was sent",
-          "is sent"
+          "is sent",
+          "(submitted|forwarded) (it|your)"
         ]
       }
     }
@@ -2634,10 +2636,11 @@
       "visible": {
         "cards": ["project:kadal-vista"],
         "mustNotMatch": [
-          "\\b(i|we)('ve| have)? sent\\b",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
           "(has|have) been sent",
           "was sent",
-          "is sent"
+          "is sent",
+          "(submitted|forwarded) (it|your)"
         ]
       }
     }
@@ -2690,10 +2693,11 @@
       "visible": {
         "mustNotContain": ["[[home:"],
         "mustNotMatch": [
-          "\\b(i|we)('ve| have)? sent\\b",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
           "(has|have) been sent",
           "was sent",
-          "is sent"
+          "is sent",
+          "(submitted|forwarded) (it|your)"
         ]
       }
     }

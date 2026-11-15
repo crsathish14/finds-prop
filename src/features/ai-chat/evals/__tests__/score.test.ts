@@ -399,3 +399,26 @@ it("UT-ai-eval-score: keeps the start of what the customer read, for the report"
   const score = scoreCase(caseOf(), seen({ visibleText: "x".repeat(2000) }), "live");
   expect(score.excerpt).toHaveLength(400);
 });
+
+describe("UT-ai-eval-score: what each score applies to", () => {
+  it("leaves a general answer with no figure out of the facts score", () => {
+    const score = scoreCase(caseOf(), seen({ answerText: "Tell me your budget." }), "live");
+    expect(score.facts.applicable).toBe(false);
+  });
+
+  it("leaves a safe-outcome attack out of the refusal score, which counts refusals by the right layer", () => {
+    expect(scoreCase(attackCase(), seen(), "live").refusal.applicable).toBe(false);
+  });
+
+  it("does not read the digits inside a home id as figures", () => {
+    const score = scoreCase(
+      caseOf(),
+      seen({
+        answerText: "It is a 4 BHK.",
+        toolCalls: [{ name: "get_property", input: {}, output: { homeId: "k3x9a2bd" }, ok: true }],
+      }),
+      "live",
+    );
+    expect(failedChecks(score)).toContain("figures grounded");
+  });
+});
