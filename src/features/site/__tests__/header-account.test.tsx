@@ -7,6 +7,7 @@ import messages from "@/i18n/messages/en.json";
 import type { SessionView } from "@/server/auth/session";
 
 const state = vi.hoisted(() => ({
+  aiSearch: false,
   session: null as SessionView | null,
   sessionFailure: null as Error | null,
   summary: { fullName: "Priya Raman", email: "priya@example.com" } as {
@@ -20,6 +21,9 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("../flags", () => ({
+  getFeatureFlags: () => ({ aiSearch: state.aiSearch, mapView: false, pgListings: false }),
+}));
 vi.mock("@/server/auth/get-session-view", () => ({
   getSessionView: async () => {
     if (state.sessionFailure) throw state.sessionFailure;
@@ -84,6 +88,7 @@ async function renderDrawer() {
 }
 
 beforeEach(() => {
+  state.aiSearch = false;
   state.session = null;
   state.sessionFailure = null;
   state.summary = { fullName: "Priya Raman", email: "priya@example.com" };
@@ -120,6 +125,14 @@ describe("HeaderAccountActions: the right side of the header", () => {
       },
     });
     expect(state.menu[0]).not.toHaveProperty("roleLabel");
+  });
+
+  it("leaves out the saved-homes heart while the AI chat is on, and keeps the account menu (ADD-17)", async () => {
+    state.session = customer;
+    state.aiSearch = true;
+    await renderActions();
+    expect(screen.queryByRole("link", { name: "Saved homes" })).not.toBeInTheDocument();
+    expect(screen.getByTestId("account-menu")).toBeInTheDocument();
   });
 
   it("sends an administrator to the admin sign-in page on Sign out, with the admin role shown", async () => {

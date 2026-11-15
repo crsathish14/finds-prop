@@ -88,6 +88,8 @@ The layout components of the `ds-navigation` board are mounted by the route grou
 | `(quiet)`   | administrator sign-in (ADD-06)                                                     | yes                                          | no     | no                                                                                  |
 | `(portal)`  | admin and builder portals                                                          | the portal shell (S7), not the public header | no     | no                                                                                  |
 
+**With the AI chat on (ADD-17, `nav-chat`)** the header's "AI Search" is a copper-tint pill (an outline on its own page), the saved-homes heart is not drawn (Saved homes stay in the account menu and the drawer), and the phone bar is Home, Search, AI, Post, Me (AI is a copper-tint disc named "AI Search"; Post is a normal tab; Saved is gone). With the chat off the approved header and bar are used unchanged. One flag, `FLAG_AI_SEARCH`, decides (`buildBottomBar`, `HeaderAccountActions`). Design Lab: `/design-system/navigation`, previews `header-ai-current` and `bottom-bar-chat`.
+
 Pages that call `notFound()` or fail while they render show the header and footer around the message (a `not-found.tsx` and `error.tsx` in each group), and the phone bottom bar, which error pages ask for because they keep the address of the page that failed. A URL that matches no route at all shows the plain not-found screen (`global-not-found`), which has no layout in this Next.js version.
 
 Not yet built: the notification bell (Proposed), and the saved and enquiry counts (Stage 5).

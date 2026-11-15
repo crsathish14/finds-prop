@@ -182,6 +182,24 @@ describe("BottomBarNav: the phone bottom bar", () => {
     expect(renderToString(<BottomBarNav navLabel="Primary" items={items} />)).toBe("");
   });
 
+  it("is built with Home, Search, AI, Post and Me while the AI chat is on, and marks AI on its page", async () => {
+    state.aiSearch = true;
+    state.pathname = "/ai-search";
+    render(await PublicBottomBar());
+    const bar = screen.getByRole("navigation", { name: "Primary" });
+    expect(within(bar).getAllByRole("link")).toHaveLength(5);
+    expect(
+      within(bar)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Home", "Search", "AI", "Post", "Me"]);
+    expect(within(bar).queryByRole("link", { name: "Saved" })).not.toBeInTheDocument();
+    const ai = within(bar).getByRole("link", { name: "AI Search" });
+    expect(ai).toHaveAttribute("href", "/ai-search");
+    expect(ai).toHaveAttribute("aria-current", "page");
+    expect(within(bar).getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
+  });
+
   it("is built with the five labelled items and no saved count", async () => {
     render(await PublicBottomBar());
     const bar = screen.getByRole("navigation", { name: "Primary" });

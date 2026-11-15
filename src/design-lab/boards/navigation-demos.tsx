@@ -39,16 +39,30 @@ export function HeaderDemo() {
         <DeviceFrame preview="header-signed-in" size="tablet" />
       </Row>
       <DeviceFrame preview="header-signed-in" size="desktop" />
+      <Text tone="muted">
+        With the AI chat on and the AI page open (ADD-17): AI Search is a copper-tint pill with a
+        outline, and the saved-homes heart is not drawn; Saved homes stay in the account menu.
+      </Text>
+      <DeviceFrame preview="header-ai-current" size="desktop" />
     </div>
   );
 }
 
 export function BottomBarDemo() {
   return (
-    <Row>
-      <DeviceFrame preview="bottom-bar" size="phone" />
-      <DeviceFrame preview="bottom-bar" size="tablet" />
-    </Row>
+    <div className="flex flex-col gap-8">
+      <Row>
+        <DeviceFrame preview="bottom-bar" size="phone" />
+        <DeviceFrame preview="bottom-bar" size="tablet" />
+      </Row>
+      <Text tone="muted">
+        With the AI chat on (ADD-17): Home, Search, AI, Post and Me. AI is a copper-tint disc, shown
+        here on its own page with an outline; Post is a normal tab and Saved is gone.
+      </Text>
+      <Row>
+        <DeviceFrame preview="bottom-bar-chat" size="phone" />
+      </Row>
+    </div>
   );
 }
 

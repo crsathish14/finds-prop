@@ -8,7 +8,15 @@ import { useClientPathname } from "@/lib/client-pathname";
 
 type BottomBarNavProps = {
   navLabel: string;
-  items: { key: BottomBarKey; label: string; href: string; icon: ReactNode; raised?: boolean }[];
+  items: {
+    key: BottomBarKey;
+    label: string;
+    href: string;
+    icon: ReactNode;
+    raised?: boolean;
+    accent?: boolean;
+    ariaLabel?: string;
+  }[];
 };
 
 /**

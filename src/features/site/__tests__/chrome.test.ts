@@ -241,10 +241,24 @@ describe("UT-site-chrome: the contact lines on their own (the contact page's Rea
 });
 
 describe("UT-site-chrome: bottom bar", () => {
-  it("has the five items in order, with Post raised", () => {
-    const bar = buildBottomBar(translate);
+  it("has the five items in order, with Post raised, while the AI chat is off", () => {
+    const bar = buildBottomBar(translate, flagsOff);
     expect(bar.items.map((item) => item.label)).toEqual(["Home", "Search", "Post", "Saved", "Me"]);
     expect(bar.items.filter((item) => item.raised).map((item) => item.key)).toEqual(["post"]);
+    expect(bar.items.some((item) => item.key === "ai" || item.accent)).toBe(false);
+  });
+
+  it("has Home, Search, AI, Post and Me with the AI chat on: Post is not raised and Saved is gone (ADD-17)", () => {
+    const bar = buildBottomBar(translate, flagsOn);
+    expect(bar.items.map((item) => item.label)).toEqual(["Home", "Search", "AI", "Post", "Me"]);
+    expect(bar.items.some((item) => item.raised)).toBe(false);
+    expect(bar.items.some((item) => item.key === "saved")).toBe(false);
+    expect(bar.items[2]).toMatchObject({
+      key: "ai",
+      href: "/ai-search",
+      accent: true,
+      ariaLabel: "AI Search",
+    });
   });
 
   it("shows only on the pages the navigation doc lists", () => {
@@ -277,6 +291,7 @@ describe("UT-site-chrome: bottom bar", () => {
     expect(bottomBarCurrentKey("/")).toBe("home");
     expect(bottomBarCurrentKey("/properties")).toBe("search");
     expect(bottomBarCurrentKey("/dashboard")).toBe("me");
+    expect(bottomBarCurrentKey("/ai-search")).toBe("ai");
     expect(bottomBarCurrentKey("/contact")).toBeUndefined();
   });
 });

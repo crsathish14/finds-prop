@@ -74,6 +74,28 @@ export const BOTTOM_BAR_ITEMS: BottomBarItem[] = [
   { label: "Me", href: "#me", icon: <Icon icon={CircleUser} /> },
 ];
 
+/** The bar while the AI chat is on (ADD-17): AI in the centre, Post a normal tab, no Saved. */
+export const BOTTOM_BAR_CHAT_ITEMS: BottomBarItem[] = [
+  { label: "Home", href: "#home", icon: <Icon icon={House} /> },
+  { label: "Search", href: "#search", icon: <Icon icon={Search} /> },
+  {
+    label: "AI",
+    href: "#ai-search",
+    icon: <Icon icon={Sparkles} />,
+    accent: true,
+    ariaLabel: "AI Search",
+    current: true,
+  },
+  { label: "Post", href: "#post", icon: <Icon icon={Plus} /> },
+  { label: "Me", href: "#me", icon: <Icon icon={CircleUser} /> },
+];
+
+/** The header's links with the AI page as the current page (ADD-17). */
+export const MAIN_NAV_ON_AI_PAGE: NavItem[] = MAIN_NAV.map((item) => ({
+  ...item,
+  current: item.href === "#ai-search",
+}));
+
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     heading: "Explore",

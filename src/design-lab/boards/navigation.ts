@@ -15,7 +15,8 @@ export const NAVIGATION: LabEntry[] = [
   {
     id: "site-header",
     name: "Site header, avatar menu and mobile drawer",
-    description: "The public header at phone, tablet and desktop width, signed out and signed in.",
+    description:
+      "The public header at phone, tablet and desktop width, signed out and signed in, and with the AI chat on and the AI page open.",
     sources: ["layout/site-header.tsx", "layout/avatar-menu.tsx", "layout/mobile-drawer.tsx"],
     Demo: HeaderDemo,
   },
@@ -23,7 +24,7 @@ export const NAVIGATION: LabEntry[] = [
     id: "bottom-bar",
     name: "Bottom bar",
     description:
-      "Five items with one raised Post action; phones only, so the 820 px frame shows nothing.",
+      "Five items with one raised Post action, and the AI-chat-on bar (Home, Search, AI, Post, Me); phones only, so the 820 px frame shows nothing.",
     sources: ["layout/bottom-bar.tsx"],
     Demo: BottomBarDemo,
   },
