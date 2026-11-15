@@ -1,0 +1,82 @@
+/**
+ * Runs a list of cases and scores them (AI-P8-T01): the one loop that the offline test and the owner's real-model
+ * run share, so the two differ only in the provider they hand over. Cases run one after another, because they share
+ * the stand-in world's settings and because a real model's rate limit is the owner's to respect.
+ */
+import { createFakeAiProvider, type AiProvider } from "@/server/ai";
+import type { AnyAiChatTool } from "../tools/types";
+import type { EvalCase } from "./case-schema";
+import { runCase } from "./run-case";
+import { compileScript } from "./script";
+import { scoreCase, type CaseScore, type Mode } from "./score";
+
+/** The fake model of a case: it plays the case's script, round by round. */
+export function scriptedProvider(evalCase: EvalCase, tools: readonly AnyAiChatTool[]): AiProvider {
+  return createFakeAiProvider(compileScript(evalCase.script, tools));
+}
+
+export interface RunAllOptions {
+  readonly mode: Mode;
+  readonly tools: readonly AnyAiChatTool[];
+  readonly providerFor: (evalCase: EvalCase) => AiProvider;
+  /** Called after each case, so a long real-model run can show where it is. */
+  readonly onScore?: (score: CaseScore, position: number, total: number) => void;
+}
+
+export async function runAll(
+  cases: readonly EvalCase[],
+  options: RunAllOptions,
+): Promise<CaseScore[]> {
+  const scores: CaseScore[] = [];
+  for (const evalCase of cases) {
+    const observed = await runCase(evalCase, {
+      provider: options.providerFor(evalCase),
+      tools: options.tools,
+    });
+    const score = scoreCase(evalCase, observed, options.mode);
+    scores.push(score);
+    options.onScore?.(score, scores.length, cases.length);
+  }
+  return scores;
+}
+
+export interface Selection {
+  /** `golden` or `red_team`: only that set. */
+  readonly set?: string | undefined;
+  /** Case ids separated by commas: only those. */
+  readonly only?: string | undefined;
+  /** The first N cases that are left, after the other two. */
+  readonly limit?: string | undefined;
+}
+
+/**
+ * Narrows a run to a few cases, for a cheap first look at the real model (the owner's `AI_EVAL_SET`, `AI_EVAL_ONLY`
+ * and `AI_EVAL_LIMIT`). A mistake in the words (an unknown set, an id that does not exist, a limit that is not a
+ * number) stops the run before any money is spent, instead of quietly running something else.
+ */
+export function selectCases(all: readonly EvalCase[], selection: Selection): EvalCase[] {
+  let chosen = [...all];
+  const set = selection.set?.trim() ?? "";
+  if (set !== "") {
+    if (set !== "golden" && set !== "red_team")
+      throw new Error(`AI_EVAL_SET must be golden or red_team, not "${set}"`);
+    chosen = chosen.filter((evalCase) => evalCase.set === set);
+  }
+  const only = selection.only?.trim() ?? "";
+  if (only !== "") {
+    const ids = only.split(",").map((id) => id.trim());
+    const unknown = ids.filter((id) => !all.some((evalCase) => evalCase.id === id));
+    if (unknown.length > 0)
+      throw new Error(`AI_EVAL_ONLY names unknown cases: ${unknown.join(", ")}`);
+    chosen = chosen.filter((evalCase) => ids.includes(evalCase.id));
+  }
+  const limit = selection.limit?.trim() ?? "";
+  if (limit !== "") {
+    const count = Number(limit);
+    if (!Number.isInteger(count) || count < 1)
+      throw new Error(`AI_EVAL_LIMIT must be a whole number from 1, not "${limit}"`);
+    chosen = chosen.slice(0, count);
+  }
+  if (chosen.length === 0) throw new Error("The selection leaves no case to run");
+  return chosen;
+}
