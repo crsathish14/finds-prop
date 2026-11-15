@@ -6,6 +6,7 @@ import { LISTINGS_TAG } from "@/features/search";
 import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
+import { createServerSupabase } from "@/server/supabase/server";
 import {
   BUILDER_COLUMNS,
   BUILDER_DIRECTORY_COLUMNS,
@@ -271,4 +272,24 @@ export async function getBuilderProfile(builderId: string): Promise<BuilderProfi
     firstProjectAt: firstRows.data[0]?.created_at.slice(0, 10) ?? null,
     readAt,
   };
+}
+
+/**
+ * Whether the signed-in caller owns this home (P6-T01, the propose tools). It is a read as the caller, not a cached
+ * one: `my_properties()` answers with the caller's own listings from their session, so the person is decided by the
+ * database and nothing but the home's public id goes in. A caller who is not signed in owns nothing. A failed read
+ * throws: "could not check" must never look like "does not own it". The error is logged by its code only.
+ */
+export async function ownsHome(shortId: string): Promise<boolean> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .rpc("my_properties")
+    .select("id")
+    .eq("short_id", shortId)
+    .limit(1);
+  if (error) {
+    logger.error("the caller's own homes could not be read", { errorCode: error.code });
+    throw new Error("the caller's own homes could not be read");
+  }
+  return data.length > 0;
 }

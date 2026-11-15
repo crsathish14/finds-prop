@@ -14,6 +14,7 @@ export {
   type ProjectList,
   type ProjectResult,
 } from "./queries";
+export { visitDateProblem } from "./lead-view";
 export { PROJECT_STATUSES } from "./schemas";
 export type {
   ProjectData,
