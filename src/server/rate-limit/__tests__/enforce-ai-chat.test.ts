@@ -55,14 +55,14 @@ describe("UT-rate-limit-ai: each rule of the AI chat (ADR-128 section 7, D9, D13
     expect(hit).toHaveBeenCalledWith("ai_chat_trial_ip_network", "network-hash", 86400, 40);
   });
 
-  it("UT-ai-burst-anonymous: 10 a minute, by the cookie id, else the visitor hash", async () => {
+  it("UT-ai-burst-anonymous: 10 a minute, by the visitor hash whether or not a cookie is sent", async () => {
     const withCookie = counterThatAllows();
     await enforceRateLimit({
       counter: withCookie.counter,
       scope: "ai_chat_burst",
       caller: anonymous,
     });
-    expect(withCookie.hit).toHaveBeenCalledWith("ai_chat_burst_cookie", "cookie-hash", 60, 10);
+    expect(withCookie.hit).toHaveBeenCalledWith("ai_chat_burst_visitor", "visitor-hash", 60, 10);
     const without = counterThatAllows();
     await enforceRateLimit({
       counter: without.counter,
@@ -131,7 +131,7 @@ describe("UT-rate-limit-ai: who is counted when", () => {
     expect(before.hit.mock.calls.map((call) => call[0])).toEqual([
       "ai_chat_trial_cookie",
       "ai_chat_trial_ip_network",
-      "ai_chat_burst_cookie",
+      "ai_chat_burst_visitor",
     ]);
 
     // The same browser, now signed in, still sends the same cookie. Nothing is counted by it any more.

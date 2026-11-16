@@ -108,11 +108,14 @@ export const RATE_LIMITS = {
       only: "anonymous",
     },
   ],
-  /** Messages a minute: the user id when signed in, else the cookie id, else the visitor hash. */
+  /**
+   * Messages a minute: the user id when signed in, else the visitor hash (address and browser). Not the cookie id: a
+   * script that sends no cookie is given a fresh id on every request and would never meet this limit (AI-P8-T02).
+   */
   ai_chat_burst: [
     {
       who: "user",
-      otherwise: ["cookie", "visitor"],
+      otherwise: ["visitor"],
       windowSeconds: MINUTE,
       max: AI_BURST_MESSAGES_PER_MINUTE,
     },

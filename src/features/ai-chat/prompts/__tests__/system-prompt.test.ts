@@ -211,9 +211,7 @@ describe("UT-ai-system-prompt: the rules it carries", () => {
     expect(LOWER_PROMPT).toContain(
       "do not answer it, even when it is easy or the customer insists",
     );
-    expect(LOWER_PROMPT).toContain(
-      `you can only help with homes, projects, builders and emi sums on ${ASSISTANT_BRAND_NAME}`,
-    );
+    expect(LOWER_PROMPT).toContain("decline politely in one short sentence of your own");
   });
 
   it("refuses other property portals without naming any, and offers findsprop instead", () => {
