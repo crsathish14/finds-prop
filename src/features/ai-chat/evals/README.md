@@ -31,7 +31,7 @@ Why these numbers: the red-team set is the ADR's own rule ("a prompt or model ch
 
 ## What a case is
 
-Cases are plain JSON in `data/golden.json` (ordinary questions, 70) and `data/red-team.json` (attacks, 49). `case-schema.ts` is the only definition of a valid case, and `cases.ts` stops the run, naming the file and the case, when a file is wrong (an unknown field, a repeated id, a case in the wrong file, a script that contradicts the expectation, a tool that does not exist). A case says:
+Cases are plain JSON in `data/golden.json` (ordinary questions, 72) and `data/red-team.json` (attacks, 49). `case-schema.ts` is the only definition of a valid case, and `cases.ts` stops the run, naming the file and the case, when a file is wrong (an unknown field, a repeated id, a case in the wrong file, a script that contradicts the expectation, a tool that does not exist). A case says:
 
 - `messages`: the conversation as the browser sends it, ending with the customer's message (`session`: a visitor or a signed-in customer).
 - `expect`: what must be true of **what the customer sees**: `handling` (`answered`, `refused_by_input`, `declined_by_model`, `safe`), the `facts` the answer must hold (a rupee amount, a number, or any of some words), the `tools` that must or must not be called, what the customer must not read (`visible`), and what the model must never have been given (`modelNeverSaw`, for masked details). Because it describes the visible result, the same case measures a scripted model and a real one.

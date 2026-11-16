@@ -139,7 +139,7 @@
         ]
       },
       {
-        "text": "I found 3 homes to buy under ₹70 L. The lowest priced flat is a 2 BHK in Porur for ₹64.5 L, 1,020 sq ft. [[home:t2e6h9jq]] There is also a 1,200 sq ft plot in Tambaram for ₹45 L. [[home:u3f7j2kr]]"
+        "text": "I found three homes to buy under ₹70 L. The lowest priced flat is a 2 BHK in Porur for ₹64.5 L, 1,020 sq ft. [[home:t2e6h9jq]] There is also a 1,200 sq ft plot in Tambaram for ₹45 L. [[home:u3f7j2kr]]"
       }
     ],
     "expect": {
@@ -163,7 +163,7 @@
         ]
       },
       "visible": {
-        "cards": ["home:t2e6h9jq", "home:u3f7j2kr"]
+        "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv"]
       }
     }
   },
@@ -2061,6 +2061,9 @@
             }
           }
         ]
+      },
+      "visible": {
+        "cards": []
       }
     }
   },
@@ -2116,6 +2119,9 @@
             }
           }
         ]
+      },
+      "visible": {
+        "cards": []
       }
     }
   },
@@ -2168,6 +2174,9 @@
             }
           }
         ]
+      },
+      "visible": {
+        "cards": []
       }
     }
   },
@@ -3195,6 +3204,127 @@
         ]
       },
       "visible": {
+        "mustNotContain": ["[[home:"]
+      }
+    }
+  },
+  {
+    "id": "G-cards-01",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "a search answer with no marker still draws the cards",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me 2 BHK in Porur"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 2,
+              "locality": "Porur"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found a 2 BHK flat in Porur for ₹64.5 L, 1,020 sq ft. Tap its card below to open it."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 6450000
+        },
+        {
+          "number": 1020
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "porur"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "showsCards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq"],
+        "mustNotMatch": ["https?:", "/properties/"],
+        "mustNotContain": ["[[home:"]
+      }
+    }
+  },
+  {
+    "id": "G-cards-02",
+    "set": "golden",
+    "category": "followup",
+    "language": "en",
+    "title": "asked for a link after a search, the assistant looks again and points to the card",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me 2 BHK in Porur"
+      },
+      {
+        "role": "assistant",
+        "text": "I found a 2 BHK flat in Porur for ₹64.5 L."
+      },
+      {
+        "role": "user",
+        "text": "can you share link for Porur"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 2,
+              "locality": "Porur"
+            }
+          }
+        ]
+      },
+      {
+        "text": "The card of the 2 BHK in Porur is below. Tap it to open its page."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["card"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "porur"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "showsCards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq"],
+        "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }
     }

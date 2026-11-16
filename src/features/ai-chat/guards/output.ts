@@ -17,6 +17,9 @@
  * 5. Card and id validation: a reference to a home or project (`[[home:ID]]`, `[[project:SLUG]]`, or a `/properties/…`
  *    or `/projects/…` path) must name a record a tool returned this turn. A known one becomes a `card` event and is
  *    taken out of the text; an unknown one is dropped, the text stays, and it is counted (`unknown_reference`).
+ *    Cards are also automatic: at the end of an answer, every home or project a tool returned this turn that no marker
+ *    named gets a card too, in the order the tools returned them (`automaticCards`; the caller turns it off for an
+ *    answer that must not show cards). At most `AI_MAX_CARDS_PER_ANSWER` cards in all, markers first, none twice.
  * 6. Advice and guarantee phrases: the text stays and the fixed disclaimer line follows the answer (`advice_phrase`).
  * 7. Number grounding: SHADOW MODE. Figures that no tool result or customer message holds are counted and logged;
  *    nothing is changed or blocked until the offline evals show an acceptable false-positive rate.
@@ -32,6 +35,7 @@ import {
   AI_INTERNALS_LEAK_PATTERNS,
   AI_PROMPT_COPY_RUN_WORDS,
   AI_SEGMENT_MAX_CHARACTERS,
+  AI_MAX_CARDS_PER_ANSWER,
   AI_SEND_CLAIM_PATTERNS,
 } from "@/config/ai";
 import { logger } from "@/server/logger";
@@ -115,6 +119,12 @@ export interface OutputSummary {
   /** Shadow rules: counted and logged, never changing the answer. */
   readonly shadow: { readonly numberUngrounded: number };
 }
+
+/** What the guard is given: the evidence of the turn, and whether the turn's records get a card without a marker. */
+export type OutputGuardInput = OutputEvidenceInput & {
+  /** Draw a card for every record a tool returned this turn that the text did not name. Default: false. */
+  readonly automaticCards?: boolean;
+};
 
 export interface OutputGuard {
   /** Gives the guard the next piece of the model's answer; returns the events that may be sent now (maybe none). */
@@ -330,7 +340,7 @@ function forcedCut(buffer: string): number {
  * Starts the output check for one customer message. Give it the evidence of the turn (see `OutputEvidenceInput`),
  * push the model's text deltas in, and send the events it returns. After `finish()` (or a `replace`) it is done.
  */
-export function createOutputGuard(input: OutputEvidenceInput): OutputGuard {
+export function createOutputGuard(input: OutputGuardInput): OutputGuard {
   const counts: Partial<Record<OutputTag, number>> = {};
   const tags: OutputTag[] = [];
   let numberUngrounded = 0;
@@ -363,6 +373,15 @@ export function createOutputGuard(input: OutputEvidenceInput): OutputGuard {
     return [{ type: "replace", messageKey, rule }];
   };
 
+  /** A card event for the reference, unless one was already sent for it or the cap is reached. */
+  const sendCard = (reference: ToolReference): OutputEvent[] => {
+    const key =
+      reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
+    if (sentCards.has(key) || sentCards.size >= AI_MAX_CARDS_PER_ANSWER) return [];
+    sentCards.add(key);
+    return [{ type: "card", reference }];
+  };
+
   const release = (segment: string): OutputEvent[] => {
     if (evidence === null) return stop("check_failed", OUTPUT_MESSAGE_KEYS.fallback);
     let verdict: SegmentVerdict;
@@ -379,13 +398,7 @@ export function createOutputGuard(input: OutputEvidenceInput): OutputGuard {
 
     const events: OutputEvent[] = [];
     if (verdict.text !== "") events.push({ type: "text", text: verdict.text });
-    for (const reference of verdict.cards) {
-      const key =
-        reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
-      if (sentCards.has(key)) continue;
-      sentCards.add(key);
-      events.push({ type: "card", reference });
-    }
+    for (const reference of verdict.cards) events.push(...sendCard(reference));
     return events;
   };
 
@@ -418,6 +431,11 @@ export function createOutputGuard(input: OutputEvidenceInput): OutputGuard {
       finished = true;
       const events = drain(true);
       const blockedNow = events.some((event) => event.type === "replace");
+      if (!blockedNow && input.automaticCards === true) {
+        // After the markers' cards, in the order the tools returned the records. They come from the turn's own
+        // references, so nothing the model wrote can add one.
+        for (const reference of input.references) events.push(...sendCard(reference));
+      }
       if (!blockedNow && disclaimerDue) {
         events.push({ type: "notice", messageKey: OUTPUT_MESSAGE_KEYS.disclaimer });
       }
@@ -441,7 +459,7 @@ export function createOutputGuard(input: OutputEvidenceInput): OutputGuard {
 /** The whole answer at once, for tests and for text that is not streamed. Same rules, same events. */
 export function checkOutput(
   answer: string,
-  input: OutputEvidenceInput,
+  input: OutputGuardInput,
 ): { events: readonly OutputEvent[]; summary: OutputSummary } {
   const guard = createOutputGuard(input);
   const events = [...guard.push(answer), ...guard.finish()];

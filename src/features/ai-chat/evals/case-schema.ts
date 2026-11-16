@@ -135,6 +135,8 @@ const expectSchema = z
         notices: z.array(z.string().min(1)).default([]),
         /** The homes and projects the cards may show. When given, no other card may appear. */
         cards: z.array(z.string().min(1)).optional(),
+        /** Cards that must appear (`home:<id>`, `project:<slug>`), with or without a marker in the answer. */
+        showsCards: z.array(z.string().min(1)).optional(),
       })
       .strict()
       .default({ mustContain: [], mustNotContain: [], mustNotMatch: [], notices: [] }),

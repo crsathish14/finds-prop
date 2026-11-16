@@ -4,6 +4,7 @@ import {
   AI_INTERNALS_LEAK_PATTERNS,
   AI_SEGMENT_MAX_CHARACTERS,
 } from "@/config/ai";
+import { AI_MAX_CARDS_PER_ANSWER } from "@/config/ai";
 import en from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
 import { createTranslator } from "next-intl";
@@ -363,6 +364,77 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
       const { events, summary } = expectPassed("[[project:k3x9a2bd]] and [[home:kadal-vista]]");
       expect(events.some((event) => event.type === "card")).toBe(false);
       expect(summary.counts.unknown_reference).toBe(2);
+    });
+  });
+
+  describe("automatic cards", () => {
+    const cardsOf = (events: readonly OutputEvent[]) =>
+      events.flatMap((event) => (event.type === "card" ? [event.reference] : []));
+    const second = { kind: "home", homeId: "m4y8b3ce", slug: "second-home" } as const;
+    const third = { kind: "home", homeId: "n5z7c4dh", slug: "third-home" } as const;
+    const fourth = { kind: "home", homeId: "p6a2d5ek", slug: "fourth-home" } as const;
+
+    it("draws a card for every record the tools returned, with no marker, after the text", () => {
+      const result = checkOutput("I found two homes for you.", {
+        ...evidence(),
+        references: [HOME_REFERENCE, PROJECT_REFERENCE],
+        automaticCards: true,
+      });
+      expect(result.summary.outcome).toBe("passed");
+      expect(cardsOf(result.events)).toEqual([HOME_REFERENCE, PROJECT_REFERENCE]);
+      expect(result.events.at(-1)?.type).toBe("card");
+    });
+
+    it("draws no card unless asked to", () => {
+      const result = checkOutput("I found two homes for you.", evidence());
+      expect(cardsOf(result.events)).toEqual([]);
+    });
+
+    it("sends a record once, and the records a marker named come first", () => {
+      const result = checkOutput("The project is near. [[project:kadal-vista]] Done.", {
+        ...evidence(),
+        references: [HOME_REFERENCE, PROJECT_REFERENCE],
+        automaticCards: true,
+      });
+      expect(cardsOf(result.events)).toEqual([PROJECT_REFERENCE, HOME_REFERENCE]);
+    });
+
+    it("stops at the cap, markers first and then the tool order", () => {
+      const result = checkOutput("Here they are. [[home:p6a2d5ek]]", {
+        ...evidence(),
+        references: [HOME_REFERENCE, second, third, fourth],
+        automaticCards: true,
+      });
+      expect(cardsOf(result.events)).toEqual([fourth, HOME_REFERENCE, second]);
+      expect(cardsOf(result.events)).toHaveLength(AI_MAX_CARDS_PER_ANSWER);
+    });
+
+    it("still drops a forged or foreign reference, and adds nothing the tools did not return", () => {
+      const result = checkOutput("Try [[home:zzzzzzzz]] and /properties/fake-home-zzzzzzzz.", {
+        ...evidence(),
+        references: [HOME_REFERENCE],
+        automaticCards: true,
+      });
+      expect(cardsOf(result.events)).toEqual([HOME_REFERENCE]);
+      expect(result.summary.counts.unknown_reference).toBe(2);
+    });
+
+    it("sends no card with a blocked answer", () => {
+      const result = checkOutput(`Sure. The marker is ${FAKE_PROMPT_CANARY}.`, {
+        ...evidence(),
+        automaticCards: true,
+      });
+      expect(result.summary.outcome).toBe("blocked");
+      expect(cardsOf(result.events)).toEqual([]);
+    });
+
+    it("sends no card when the tools returned no record", () => {
+      const result = checkOutput("I found nothing in that area.", {
+        ...evidence(),
+        references: [],
+        automaticCards: true,
+      });
+      expect(cardsOf(result.events)).toEqual([]);
     });
   });
 

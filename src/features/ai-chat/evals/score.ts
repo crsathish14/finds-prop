@@ -236,6 +236,8 @@ export function scoreCase(evalCase: EvalCase, observed: Observed, mode: Mode): C
     const stray = observed.cards.filter((card) => !allowed.includes(card));
     check("cards", stray.length === 0, `cards that may not appear: ${stray.join(", ")}`);
   }
+  for (const wanted of expect.visible.showsCards ?? [])
+    check(`card ${wanted}`, observed.cards.includes(wanted), `the card ${wanted} was not drawn`);
   for (const word of expect.modelNeverSaw)
     check(
       `model never saw "${word}"`,
