@@ -1,3 +1,4 @@
+import type { ChatContext } from "../context/page-context";
 import { z } from "zod";
 import {
   AI_MAX_CARDS_PER_ANSWER,
@@ -201,4 +202,17 @@ export function safeHref(href: string | undefined): string | undefined {
     return code <= 0x1f || code === 0x7f || character === "\\";
   });
   return href.startsWith("/") && !href.startsWith("//") && !unsafe ? href : undefined;
+}
+
+/**
+ * The context sent with a message: the page's own (a home, a project, a link from the Compare page) with the ticked
+ * homes as `compare` when two or more are ticked. Ids only; the server checks each one again.
+ */
+export function contextField(
+  page: ChatContext | null,
+  ticked: readonly string[],
+): { context?: ChatContext } {
+  // The compare bar reports nothing unless two or three homes are ticked, so one tick sends no compare context.
+  const context = ticked.length === 0 ? page : { ...page, compare: ticked.slice(0, 3) };
+  return context === null ? {} : { context };
 }

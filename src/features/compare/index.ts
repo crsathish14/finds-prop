@@ -1,3 +1,4 @@
+export { CompareChatBar } from "./compare-chat-bar.client";
 export { CompareBar } from "./compare-bar.client";
 export { CompareButton, CompareCardToggle } from "./compare-controls.client";
 export { toCompareColumn } from "./columns";

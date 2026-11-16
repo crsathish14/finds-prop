@@ -150,6 +150,20 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       if (checked.some((event) => event.type === "replace")) break;
     }
     if (!checked.some((event) => event.type === "replace")) checked.push(...guard.finish());
+    // A model text that is only card markers (or only what the check removed) leaves no words: the customer would
+    // see a card with a name and nothing said. That is an empty answer, so it gets the fixed reply instead.
+    const hasWords = checked.some((event) => event.type === "text" && event.text.trim() !== "");
+    if (
+      !blocked &&
+      !hasWords &&
+      agent.offers.length === 0 &&
+      !checked.some((event) => event.type === "replace")
+    ) {
+      logger.warn("ai answer had no words after the check");
+      yield fallbackReplace(translate);
+      output = guard.summary();
+      return { outcome: "fallback", agent, output };
+    }
     for (const event of checked) {
       yield toStreamEvent(event, translate);
       if (event.type === "replace") {

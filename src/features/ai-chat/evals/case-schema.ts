@@ -194,6 +194,8 @@ export const evalCaseSchema = z
     session: z.enum(["visitor", "customer"]).default("visitor"),
     /** Tools whose reads fail in this case. */
     failingTools: z.array(z.string().min(1)).default([]),
+    /** The homes ticked for Compare in the customer's browser: ids only, sent as the request's page context. */
+    compare: z.array(z.string().min(1)).max(3).default([]),
     /** Homes the signed-in customer owns. */
     ownedHomes: z.array(z.string().min(1)).default([]),
     /**

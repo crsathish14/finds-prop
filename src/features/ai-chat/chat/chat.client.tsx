@@ -27,6 +27,7 @@ import {
   browserStorage,
   EMPTY_CHAT,
   buildHistory,
+  contextField,
   loadChat,
   MASKED_NOTICE_KEY,
   safeHref,
@@ -173,6 +174,11 @@ export function ChatIsland({
   const [returned, setReturned] = useState(false);
   const [live, setLive] = useState<LiveAnswer | null>(null);
   const [problem, setProblem] = useState<Problem | null>(null);
+  // The homes ticked for Compare in this browser (ids only, none while fewer than two), reported by the compare bar.
+  const tickedRef = useRef<readonly string[]>([]);
+  const reportTicked = useCallback((ids: readonly string[]) => {
+    tickedRef.current = ids;
+  }, []);
   const abort = useRef<AbortController | null>(null);
   const problemRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -293,7 +299,7 @@ export function ChatIsland({
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             messages: buildHistory(before, text),
-            ...(context === null ? {} : { context }),
+            ...contextField(context, tickedRef.current),
           }),
           signal: controller.signal,
         });
@@ -532,17 +538,20 @@ export function ChatIsland({
           focusHeading={gateFocus}
         />
       ) : (
-        <ChatComposer
-          id={fieldId}
-          docked
-          value={draft}
-          onChange={setDraft}
-          onSend={send}
-          maxLength={MAX_INPUT_CHARACTERS}
-          busy={busy}
-          disabled={composerOff || !ready}
-          {...(offReason ? { disabledReason: offReason } : {})}
-        />
+        <>
+          {controls.CompareBar ? <controls.CompareBar onIds={reportTicked} /> : null}
+          <ChatComposer
+            id={fieldId}
+            docked
+            value={draft}
+            onChange={setDraft}
+            onSend={send}
+            maxLength={MAX_INPUT_CHARACTERS}
+            busy={busy}
+            disabled={composerOff || !ready}
+            {...(offReason ? { disabledReason: offReason } : {})}
+          />
+        </>
       )}
     </div>
   );

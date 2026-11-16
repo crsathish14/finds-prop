@@ -715,3 +715,31 @@ describe("the confirm card in the conversation (AI-P6-T02)", () => {
     await waitFor(() => expect(box()).toHaveValue("my next question"));
   });
 });
+
+describe("the ticked homes travel with the message (AI chat compare)", () => {
+  const Bar = ({ onIds }: { onIds: (ids: readonly string[]) => void }) => (
+    <button type="button" onClick={() => onIds(["k3x9a2bd", "m4y8b3ce"])}>
+      tick two
+    </button>
+  );
+
+  it("sends the ids as compare context, and none when nothing is ticked", async () => {
+    fetchMock.mockImplementation(async () => answered("Done."));
+    const user = userEvent.setup();
+    renderWithMessages(<ChatIsland signedIn controls={{ ...controls, CompareBar: Bar }} />);
+    await ready();
+    await user.type(box(), "any news");
+    await user.click(sendButton());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty("context");
+
+    await user.click(screen.getByRole("button", { name: "tick two" }));
+    await waitFor(() => expect(box()).toBeEnabled());
+    await user.type(box(), "compare the selected ones");
+    await user.click(sendButton());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)).context).toEqual({
+      compare: ["k3x9a2bd", "m4y8b3ce"],
+    });
+  });
+});

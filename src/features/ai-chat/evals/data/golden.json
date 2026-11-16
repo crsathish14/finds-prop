@@ -3328,5 +3328,87 @@
         "mustNotContain": ["[[home:"]
       }
     }
+  },
+  {
+    "id": "G-compare-selected-01",
+    "set": "golden",
+    "category": "compare",
+    "language": "en",
+    "title": "compare the ticked homes by their ids",
+    "messages": [
+      {
+        "role": "user",
+        "text": "can you compare the selected ones?"
+      }
+    ],
+    "compare": ["k3x9a2bd", "n5z7c4dh"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "compare_properties",
+            "input": {
+              "homeIds": ["k3x9a2bd", "n5z7c4dh"]
+            }
+          }
+        ]
+      },
+      {
+        "text": "The 3 BHK apartment in Velachery at ₹1.25 Cr is cheaper than the villa in Adyar at ₹2.4 Cr, a gap of ₹1.15 Cr. [[home:k3x9a2bd]] [[home:n5z7c4dh]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        },
+        {
+          "rupees": 24000000
+        },
+        {
+          "rupees": 11500000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "compare_properties"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-compare-selected-02",
+    "set": "golden",
+    "category": "compare",
+    "language": "en",
+    "title": "one ticked home: ask for a second, no comparison",
+    "messages": [
+      {
+        "role": "user",
+        "text": "can you compare the selected one?"
+      }
+    ],
+    "compare": ["k3x9a2bd"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Please tick the Compare box on one more home, and then I can compare them for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["one more", "second"]
+        }
+      ],
+      "tools": {
+        "mustNotCall": ["compare_properties"]
+      }
+    }
   }
 ]

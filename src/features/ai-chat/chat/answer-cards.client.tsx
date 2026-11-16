@@ -16,6 +16,8 @@ import type { ChatReference } from "./chat-model";
 export type ChatCardControls = {
   Save: ComponentType<{ shortId: string }>;
   Compare: ComponentType<{ shortId: string; title: string; cover: string | null }>;
+  /** The compare bar of the chat: reports the ticked homes' ids and links to the comparison. Absent in tests that need neither. */
+  CompareBar?: ComponentType<{ onIds: (ids: readonly string[]) => void }>;
 };
 
 /**
