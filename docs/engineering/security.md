@@ -108,28 +108,28 @@ Anything else importing `admin.server.ts` fails lint and code review.
 
 Values marked **new** are proposals (`DEC-31`, `DEC-33`, `DEC-26`). BR values are verified existing rules.
 
-| Scope                 | Limit                                                                    | Identity                                   | Source             |
-| --------------------- | ------------------------------------------------------------------------ | ------------------------------------------ | ------------------ |
-| Form submission       | 5 / visitor / form / hour                                                | visitor hash                               | BR-61, BR-70       |
-| Project event         | 30 / visitor / minute; one `view` per project per hour                   | visitor hash                               | BR-71              |
-| Project lead          | 5 / visitor / hour                                                       | visitor hash                               | BR-72              |
-| OTP request           | 5 / phone / hour, 20 / IP / day, resend ≥ 60 s                           | phone hash, IP hash                        | **new**            |
-| OTP verify attempts   | 10 / phone / hour                                                        | phone hash                                 | **new**            |
-| Enquiry               | 10 / user / day; 1 open per user+property / 24 h                         | user id                                    | **new** (`DEC-26`) |
-| Listing create/submit | 10 / user / day; max 5 `draft`+`pending`                                 | user id                                    | **new**            |
-| Upload URL issuance   | 30 / user / hour                                                         | user id                                    | **new**            |
-| Admin decision        | 120 / admin / hour (listing review, builder changes)                     | user id                                    | **new** (S6-T04)   |
-| Admin edit            | 600 / admin / hour (units, a lead's state)                               | user id                                    | **new** (S7-T07)   |
-| Builder edit          | 300 / builder / hour (units, a lead's state, profile)                    | user id                                    | **new** (S7-T03)   |
-| Project save          | 60 / user / hour (the project form, admin or builder)                    | user id                                    | **new** (S7-T02)   |
-| Places autocomplete   | 60 / visitor / minute (protects provider quota)                          | visitor hash                               | **new**            |
-| Map search            | 60 / visitor / minute                                                    | visitor hash                               | **new**            |
-| Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour                                | visitor hash, IP hash                      | **new** (S3-T10)   |
-| AI chat, trial        | 2 messages over 366 days (anonymous)                                     | cookie id, else visitor hash               | ADR-128 (D9, D13)  |
-| AI chat, IP backstop  | 40 anonymous messages / day (loose)                                      | address hash (IPv6 cut to its /64)         | ADR-128 (D9)       |
-| AI chat, burst        | 10 / minute                                                              | user id, else cookie id, else visitor hash | ADR-128 (D9)       |
-| AI chat, signed in    | 40 messages / day                                                        | user id                                    | ADR-128 (D9)       |
-| AI chat, global       | a daily budget the owner sets (1,000 is a placeholder, owner to confirm) | one constant key                           | ADR-128 (D9)       |
+| Scope                 | Limit                                                                                                                                                       | Identity                                   | Source             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------ |
+| Form submission       | 5 / visitor / form / hour                                                                                                                                   | visitor hash                               | BR-61, BR-70       |
+| Project event         | 30 / visitor / minute; one `view` per project per hour                                                                                                      | visitor hash                               | BR-71              |
+| Project lead          | 5 / visitor / hour                                                                                                                                          | visitor hash                               | BR-72              |
+| OTP request           | 5 / phone / hour, 20 / IP / day, resend ≥ 60 s                                                                                                              | phone hash, IP hash                        | **new**            |
+| OTP verify attempts   | 10 / phone / hour                                                                                                                                           | phone hash                                 | **new**            |
+| Enquiry               | 10 / user / day; 1 open per user+property / 24 h                                                                                                            | user id                                    | **new** (`DEC-26`) |
+| Listing create/submit | 10 / user / day; max 5 `draft`+`pending`                                                                                                                    | user id                                    | **new**            |
+| Upload URL issuance   | 30 / user / hour                                                                                                                                            | user id                                    | **new**            |
+| Admin decision        | 120 / admin / hour (listing review, builder changes)                                                                                                        | user id                                    | **new** (S6-T04)   |
+| Admin edit            | 600 / admin / hour (units, a lead's state)                                                                                                                  | user id                                    | **new** (S7-T07)   |
+| Builder edit          | 300 / builder / hour (units, a lead's state, profile)                                                                                                       | user id                                    | **new** (S7-T03)   |
+| Project save          | 60 / user / hour (the project form, admin or builder)                                                                                                       | user id                                    | **new** (S7-T02)   |
+| Places autocomplete   | 60 / visitor / minute (protects provider quota)                                                                                                             | visitor hash                               | **new**            |
+| Map search            | 60 / visitor / minute                                                                                                                                       | visitor hash                               | **new**            |
+| Staff Google sign-in  | 10 / visitor / 10 minutes, 30 / IP / hour                                                                                                                   | visitor hash, IP hash                      | **new** (S3-T10)   |
+| AI chat, trial        | 2 messages over 366 days (anonymous)                                                                                                                        | cookie id, else visitor hash               | ADR-128 (D9, D13)  |
+| AI chat, IP backstop  | 40 anonymous messages / day (loose)                                                                                                                         | address hash (IPv6 cut to its /64)         | ADR-128 (D9)       |
+| AI chat, burst        | 10 / minute                                                                                                                                                 | user id, else cookie id, else visitor hash | ADR-128 (D9)       |
+| AI chat, signed in    | 40 messages / day                                                                                                                                           | user id                                    | ADR-128 (D9)       |
+| AI chat, global       | 390 messages a day, about $1 on `gpt-6-luna` (derived by AI-P8-T03 for the owner's $1 a day target, owner to confirm; `docs/runbooks/ai-chat.md` section 5) | one constant key                           | ADR-128 (D9)       |
 
 All use `rate_limit_hit()`; exceeded → `RATE_LIMITED` with `retryAfter` and the UX rate-limited states.
 
@@ -141,7 +141,7 @@ The AI chat rows are the numbers accepted in ADR-128 (D9, D13). They live in `sr
 - **The trial window is 366 days.** `rate_limit_hit` accepts at most that (migration `20261114120000`), and the nightly retention keeps the rows of the database scopes `ai_chat_trial_cookie` and `ai_chat_trial_visitor` for 400 days (every other scope 7 days). Renaming the trial scope would silently shorten the trial to 7 days; a unit test guards the two names.
 - **Fail closed.** If the counter or the hash secret fails, the message is refused (`INTERNAL`), never let through. No new service-role module: the counter is still `server/rate-limit`, already in the allow-list above.
 - **The endpoint `POST /api/ai/chat` (AI-P4-T04).** Steps in fixed order: flag (404 when off), parse (own origin, `application/json`, at most 128 KB, only `{ role, text }` messages: no tool call, tool result or system text is accepted from the client), optional session (verified token only), input pre-check, limits, agent loop, output check, stream, usage. A message the input check refused made no model call, so it counts toward the short limit only (ADR-128 7.1): it never uses up a free message or the daily budget. A refusal by a limit gives a JSON answer naming the screen (`sign_in_required` 401, `too_many_messages` / `daily_limit` / `unavailable` 429). Message text is never logged; every log line carries the request id. The time for one message (`AI_MESSAGE_TIME_LIMIT_MS`, hard stop, route `maxDuration`) is a placeholder, owner to confirm (gate G-B). It is a Route Handler under decision D-STREAM and writes no data, so it needs no row in the service-role list.
-- **Daily budget.** `AI_GLOBAL_DAILY_MESSAGE_BUDGET` is a placeholder (1,000, owner to confirm, gate G-B); the owner sets it for real in task AI-P8-T03.
+- **Daily budget.** `AI_GLOBAL_DAILY_MESSAGE_BUDGET` is 390 messages, derived in AI-P8-T03 from the measured cost so that the owner's $1 a day holds (derivation in `docs/runbooks/ai-chat.md` section 5). It counts messages, not money.
 
 The deployed forwarded-IP header check (SPK-03) is a launch precondition for the chat.
 

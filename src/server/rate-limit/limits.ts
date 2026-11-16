@@ -124,7 +124,7 @@ export const RATE_LIMITS = {
   ai_chat_user_day: [
     { who: "user", windowSeconds: DAY, max: AI_SIGNED_IN_MESSAGES_PER_DAY, only: "signed_in" },
   ],
-  /** Every caller together: the daily budget (a placeholder until the owner sets it, gate G-B). */
+  /** Every caller together: the daily budget (390, set in AI-P8-T03; the owner confirms). */
   ai_chat_global_day: [{ who: "global", windowSeconds: DAY, max: AI_GLOBAL_DAILY_MESSAGE_BUDGET }],
 } as const satisfies Record<string, readonly RateLimitRule[]>;
 

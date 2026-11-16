@@ -2,9 +2,9 @@
  * The numbers and names of the AI chat assistant, in one file (ADR-128 sections 4.5 and 7, D9). None of
  * them is written in a prompt, a component or the agent loop: they all read from here.
  *
- * Three numbers here are marked placeholders (`owner to confirm`, docs/ai-chat-phase-plan.md, gate G-B) so the
- * limit exists and fails safe until the owner sets the real value: the daily budget and, for the whole message,
- * the route's `maxDuration`, the time limit and the hard stop (the two limits must stay below `maxDuration`).
+ * Three numbers here are still marked placeholders (`owner to confirm`, docs/ai-chat-phase-plan.md, gate G-B): for
+ * the whole message, the route's `maxDuration`, the time limit and the hard stop (the two limits must stay below
+ * `maxDuration`). The daily budget is set (task AI-P8-T03, from measured cost).
  */
 
 /** What the assistant calls the product in every piece of its own text. Lowercase on purpose (ADR-128, D11). */
@@ -135,11 +135,14 @@ export const AI_BURST_MESSAGES_PER_MINUTE = 10;
 export const AI_SIGNED_IN_MESSAGES_PER_DAY = 40;
 
 /**
- * PLACEHOLDER, owner to confirm (gate G-B): the most messages the whole chat answers in a day, for every caller
- * together. When it is used up, the chat shows "AI search is unavailable right now". The owner has not set a
- * value; 1,000 is only a stand-in so the limit exists and fails safe. It is set for real in task AI-P8-T03.
+ * The most messages the whole chat answers in a day, for every caller together. When it is used up, the chat shows
+ * "AI search is unavailable right now". Set on 16 Nov 2026 (AI-P8-T03) from the owner's target of $1 a day for the
+ * whole app and a measured cost on `gpt-6-luna`: the most expensive of 20 dev messages cost $0.00253 (all input
+ * priced at the uncached rate), and 1 / 0.00253 = 395, so 390 messages cannot pass $1 even if every one costs as
+ * much as the worst one measured. At the 90th percentile ($0.00243) the same $1 would allow 410. The numbers and
+ * the sample are in docs/runbooks/ai-chat.md section 5; measure again after a change of model, prompt or tools.
  */
-export const AI_GLOBAL_DAILY_MESSAGE_BUDGET = 1000;
+export const AI_GLOBAL_DAILY_MESSAGE_BUDGET = 390;
 
 /**
  * The anonymous cookie id (D13): a random first-party id that counts the free trial per browser. It is kept for

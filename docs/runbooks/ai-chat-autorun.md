@@ -59,7 +59,7 @@ The orchestrator asks, and carries on with independent tasks while it waits:
 
 ## Placeholders
 
-The daily budget and the Tamil wording are not set. A task uses a clearly marked placeholder (`owner to confirm`) in `src/config/ai.ts` or `en.json` and lists it in the PR. The example loan rate is 7.2% a year (14 Nov 2026).
+The daily budget is set (390 messages, AI-P8-T03, 16 Nov 2026). The Tamil wording is not set. A task uses a clearly marked placeholder (`owner to confirm`) in `src/config/ai.ts` or `en.json` and lists it in the PR. The example loan rate is 7.2% a year (14 Nov 2026).
 
 ## Ending the allowance
 
