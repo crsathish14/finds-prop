@@ -79,7 +79,13 @@ export function chooseAiProvider(name: string, options: AiProviderOptions = {}):
     }
     if (model === undefined || model === "")
       throw new ActionError("INTERNAL", "AI_MODEL is not set");
-    return createOpenAiProvider({ ...options.openai, apiKey, model });
+    const reasoningEffort = options.openai?.reasoningEffort ?? env.AI_REASONING_EFFORT;
+    return createOpenAiProvider({
+      ...options.openai,
+      apiKey,
+      model,
+      ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
+    });
   }
   const known = (AI_PROVIDER_NAMES as readonly string[]).includes(name);
   throw new ActionError(

@@ -88,6 +88,38 @@ describe("UT-ai-openai: the request the adapter sends", () => {
     }
   });
 
+  it("sends no reasoning field when no level is set", async () => {
+    const { mock, provider } = providerFor([streamReply(textRound("ok"))]);
+    await collect(provider);
+    expect(mock.requests[0]?.body).not.toHaveProperty("reasoning");
+  });
+
+  it.each(["none", "minimal", "low", "medium", "high", "xhigh", "max"] as const)(
+    "sends reasoning level %s in the request body",
+    async (effort) => {
+      const mock = createMockOpenAi([streamReply(textRound("ok"))]);
+      const provider = createOpenAiProvider({
+        apiKey: TEST_API_KEY,
+        model: TEST_MODEL,
+        fetch: mock.fetch,
+        reasoningEffort: effort,
+      });
+      await collect(provider);
+      expect(mock.requests[0]?.body).toMatchObject({ reasoning: { effort } });
+    },
+  );
+
+  it("ends as a provider failure, never a throw, when the model refuses the level", async () => {
+    const mock = createMockOpenAi([errorReply(400, "unsupported_value")]);
+    const provider = createOpenAiProvider({
+      apiKey: TEST_API_KEY,
+      model: TEST_MODEL,
+      fetch: mock.fetch,
+      reasoningEffort: "minimal",
+    });
+    expect(failureKind(await collect(provider))).toBe("rejected");
+  });
+
   it("goes to the Responses endpoint with the key in the authorization header only", async () => {
     const { mock, provider } = providerFor([streamReply(textRound("ok"))]);
     await collect(provider);

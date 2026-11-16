@@ -79,6 +79,7 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 | ----------------------------------------------------- | ---------------------------------------------------------------------- |
 | `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                                |
 | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                            |
+| `AI_REASONING_EFFORT`                                 | Optional; blank keeps the model default (see below)                    |
 | Error tracking variables                              | When error tracking is switched on (see below)                         |
 | `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation       |
 | `FLAG_CUSTOMER_EMAIL`                                 | Leave `0` until an email provider is set up (see "Email verification") |
@@ -100,13 +101,14 @@ The browser addresses are read when the site is built, so a change needs a new d
 
 ## AI chat (optional while `FLAG_AI_SEARCH` is off)
 
-All three are server-only (read in `src/server/env.ts`, never `NEXT_PUBLIC_`) and optional. `chooseAiProvider("openai")` in `src/server/ai/` reads `OPENAI_API_KEY` and `AI_MODEL`, and refuses (naming the variable, never a value) if either is missing. Leave them unset until the chat is switched on.
+The first three are server-only (read in `src/server/env.ts`, never `NEXT_PUBLIC_`) and optional. `chooseAiProvider("openai")` in `src/server/ai/` reads `OPENAI_API_KEY` and `AI_MODEL`, and refuses (naming the variable, never a value) if either is missing. Leave them unset until the chat is switched on.
 
-| Variable         | What it is                                                                             | Where the value comes from                                                                                     |
-| ---------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `AI_PROVIDER`    | `fake`, `openai` or `gemini`. `fake` is the scripted provider for tests and local work | You choose. `openai` is the first real provider (ADR-128)                                                      |
-| `AI_MODEL`       | The model id the provider is called with. No model name is written in code             | You choose, after the provider spike (`docs/runbooks/ai-spike.md`)                                             |
-| `OPENAI_API_KEY` | The OpenAI API key, used only with `AI_PROVIDER=openai`                                | The OpenAI dashboard, a project key. Never pasted into chat or committed; replace it if it ever appears in one |
+| Variable              | What it is                                                                                                                                                                                                                                   | Where the value comes from                                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AI_PROVIDER`         | `fake`, `openai` or `gemini`. `fake` is the scripted provider for tests and local work                                                                                                                                                       | You choose. `openai` is the first real provider (ADR-128)                                                                                                                               |
+| `AI_MODEL`            | The model id the provider is called with. No model name is written in code                                                                                                                                                                   | You choose, after the provider spike (`docs/runbooks/ai-spike.md`)                                                                                                                      |
+| `OPENAI_API_KEY`      | The OpenAI API key, used only with `AI_PROVIDER=openai`                                                                                                                                                                                      | The OpenAI dashboard, a project key. Never pasted into chat or committed; replace it if it ever appears in one                                                                          |
+| `AI_REASONING_EFFORT` | **Optional.** `none`, `minimal`, `low`, `medium`, `high`, `xhigh` or `max`; sent as `reasoning.effort` to OpenAI only. Blank or unset sends no reasoning field at all (the model's own default). Any other value fails the environment check | You choose. To compare speed: set it in Vercel dev, redeploy, compare `duration_ms` before and after (`ai-chat.md` section 4). Usage rows do not record it: note the time of the change |
 
 ## Not variables, but needed on the deployed address
 
