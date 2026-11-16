@@ -12,6 +12,7 @@ import {
   saveChat,
   STORAGE_KEY,
   type ChatEntry,
+  contextField,
 } from "../chat-model";
 
 function memoryStorage(initial?: string) {
@@ -196,5 +197,21 @@ describe("a link the server offers (AI-P5-T02)", () => {
     // A tab or a line break inside the address is dropped by browsers: "/" + tab + "/host" would read as "//host".
     expect(safeHref("/\t/example.com")).toBeUndefined();
     expect(safeHref("/\n/example.com")).toBeUndefined();
+  });
+});
+
+describe("UT-ai-chat-context-field: the context sent with a message", () => {
+  it("sends the page's context unchanged when no home is ticked", () => {
+    expect(contextField(null, [])).toEqual({});
+    expect(contextField({ home: "k3x9a2bd" }, [])).toEqual({ context: { home: "k3x9a2bd" } });
+  });
+
+  it("adds the ticked ids as compare, ids only and at most three", () => {
+    expect(contextField(null, ["k3x9a2bd", "m4y8b3ce"])).toEqual({
+      context: { compare: ["k3x9a2bd", "m4y8b3ce"] },
+    });
+    expect(contextField({ home: "p6a2d5ej" }, ["a", "b", "c", "d"])).toEqual({
+      context: { home: "p6a2d5ej", compare: ["a", "b", "c"] },
+    });
   });
 });

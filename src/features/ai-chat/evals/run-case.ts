@@ -15,7 +15,7 @@ import type { ChatDeps, ChatUsageRecord } from "../endpoint/types";
 import { TOOL_CONTEXT } from "../tools/__tests__/fixtures";
 import type { AnyAiChatTool } from "../tools/types";
 import type { EvalCase } from "./case-schema";
-import { CUSTOMER_SESSION, resetWorld } from "./world";
+import { CUSTOMER_SESSION, resetWorld, WORLD_IDS } from "./world";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -113,6 +113,12 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     tools: instrumented,
     translate: TOOL_CONTEXT.translate,
     recordUsage: async (record) => void usageRows.push(record),
+    // The ticked homes are checked against the made-up world, as the real reads check them against what is listed.
+    contextReads: {
+      homeIsOpen: async (id) => WORLD_IDS.homes.includes(id),
+      projectIsOpen: async (slug) => WORLD_IDS.projects.includes(slug),
+      openHomeIds: async (ids) => ids.filter((id) => WORLD_IDS.homes.includes(id)),
+    },
     timing: options.timing ?? {
       timeLimitMs: AI_MESSAGE_TIME_LIMIT_MS,
       hardStopMs: AI_MESSAGE_HARD_STOP_MS,
@@ -123,7 +129,10 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     new Request(`${ORIGIN}/api/ai/chat`, {
       method: "POST",
       headers: { "content-type": "application/json", origin: ORIGIN, host: "localhost:3000" },
-      body: JSON.stringify({ messages: evalCase.messages }),
+      body: JSON.stringify({
+        messages: evalCase.messages,
+        ...(evalCase.compare.length === 0 ? {} : { context: { compare: evalCase.compare } }),
+      }),
     }),
     deps,
   );

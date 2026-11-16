@@ -207,3 +207,14 @@ This answers the "Ask about this home" part of open question 9 and is the UX app
 - **Labels (new keys in `en.json`):** `ai.askHome` "Ask about this home", `ai.askProject` "Ask about this project", `ai.askCompare` "Ask about these homes". The compare label was not given by the owner and is the agent's wording, to confirm. Tamil wording is the owner's, later; the repo's usual fallback for a missing key applies.
 - **What it does:** it is a link to `/ai-search?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`. Only ids travel, in the link and in the request body. The server checks every id against what is listed now (a real, open home or project; at most three compare ids); anything else opens the chat with no context and no error. The assistant then answers about that item with its existing read tools. No new screen or state: the chat looks the same.
 - **Absent when `FLAG_AI_SEARCH` is off**, on every page. Works for signed-out visitors, like the chat.
+
+---
+
+## 10. Owner decision of 16 November 2026: compare inside the chat
+
+The UX approval for the new control, given by the owner on 16 November 2026 after testing on dev.
+
+- **Open the comparison from the chat:** when two or three homes are ticked (the Compare checkbox of the answer cards, the same list the rest of the site uses), the existing compare bar is shown on `/ai-search` in the flow, directly above the composer. It is the approved bar unchanged (pictures, "N of 3 selected", Clear all, "Compare now" linking to `/compare?ids=...`). With one home or none it is absent. It is absent when `FLAG_AI_SEARCH` is off, because the page itself is then not found.
+- **State the design does not show, built the smallest way (owner to confirm):** the bar is drawn in the flow (`placement="inline"`, the placement the Design Lab already has) above the composer, not fixed above the phone's bottom bar, because on this page the composer is docked there and a fixed bar would cover it. No new component, no new text.
+- **The ticked homes reach the assistant:** each message carries the public ids of the ticked homes (ids only, at most three, none while fewer than two are ticked). The server checks them like the Compare page's link (a real, open home; anything else is dropped without an error) and puts them in the existing page-context section, so "compare the selected ones" uses the compare lookup. With one home ticked the assistant replies in one plain sentence asking for a second.
+- **An answer with no words** (for example only a card marker) is replaced by the fixed reply instead of showing a card with a name and nothing said.

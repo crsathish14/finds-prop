@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { CompareCardToggle } from "@/features/compare";
+import { CompareCardToggle, CompareChatBar } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
 import { getSessionView } from "@/server/auth/get-session-view";
 import { realContextReads } from "./context/reads";
@@ -30,7 +30,7 @@ export async function AiChatScreen({ searchParams }: AiChatScreenProps) {
     <ChatIsland
       signedIn={session !== null}
       context={context}
-      controls={{ Save: SaveHomeButton, Compare: CompareCardToggle }}
+      controls={{ Save: SaveHomeButton, Compare: CompareCardToggle, CompareBar: CompareChatBar }}
     />
   );
 }
