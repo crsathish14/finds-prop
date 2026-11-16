@@ -93,7 +93,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
       { who: "user", windowSeconds: 86400, max: 40, only: "signed_in" },
     ]);
     expect(RATE_LIMITS.ai_chat_global_day).toEqual([
-      { who: "global", windowSeconds: 86400, max: 1000 }, // 1000 is a placeholder: owner to confirm (G-B)
+      { who: "global", windowSeconds: 86400, max: 390 }, // 390: $1 a day at the dearest measured message (AI-P8-T03)
     ]);
   });
 

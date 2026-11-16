@@ -106,7 +106,7 @@ describe("UT-rate-limit-ai: each rule of the AI chat (ADR-128 section 7, D9, D13
       "ai_chat_global_day_global",
       "global-hash",
       86400,
-      1000,
+      390,
     ]);
     expect(second.hit.mock.calls[0]).toEqual(first.hit.mock.calls[0]);
   });
