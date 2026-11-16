@@ -6,6 +6,7 @@ import type { AiChatRateLimitScope } from "@/server/rate-limit/rate-limit";
 import type { AgentFallbackReason, AgentLimit } from "../agent-types";
 import type { InputTag } from "../guards/input";
 import type { OutputTag } from "../guards/output";
+import type { ContextReads } from "../context/resolve";
 import type { ConfirmCard } from "../confirm/confirm-card";
 import type { ProposalOffer } from "../tools/proposal-offer";
 import type { AnyAiChatTool } from "../tools/types";
@@ -68,6 +69,11 @@ export interface ChatDeps {
    * that have no cards. Must not throw; null means no card.
    */
   confirmCard?(offer: ProposalOffer, session: SessionView | null): Promise<ConfirmCard | null>;
+  /**
+   * The reads that check the page context's ids against what is listed now (AI-P7-T01). Absent means the request's
+   * context is ignored. A read that throws gives no context, never an error.
+   */
+  readonly contextReads?: ContextReads;
   /** The usage step. A failure here is logged and never changes what the customer gets. */
   recordUsage(record: ChatUsageRecord): Promise<void>;
   /** The visitor hash of the request (HMAC, never the address), or null if it cannot be worked out. Must not throw. */

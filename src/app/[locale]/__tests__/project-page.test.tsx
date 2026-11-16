@@ -10,6 +10,7 @@ const state = vi.hoisted(() => ({
 }));
 
 class Signal extends Error {}
+vi.mock("@/features/ai-chat", () => ({ AskAboutButton: () => null }));
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Signal("NOT_FOUND");

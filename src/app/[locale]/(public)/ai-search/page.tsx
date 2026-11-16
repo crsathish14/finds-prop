@@ -5,6 +5,8 @@ import { AiChatScreen, AiChatScreenSkeleton } from "@/features/ai-chat";
 import { NO_INDEX } from "@/features/seo";
 import { getFeatureFlags, getTranslate } from "@/features/site";
 
+type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
 export async function generateMetadata(): Promise<Metadata> {
   const translate = await getTranslate();
   return {
@@ -19,12 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
  * does not exist, and nothing in the navigation points to it (R-FE-17). The page only composes; the conversation,
  * the stream and the sign-in gate are in the feature's island.
  */
-export default function AiSearchPage() {
+export default function AiSearchPage({ searchParams }: PageProps) {
   if (!getFeatureFlags().aiSearch) notFound();
   return (
     <main id="main" className="flex flex-1 flex-col">
       <Suspense fallback={<AiChatScreenSkeleton />}>
-        <AiChatScreen />
+        <AiChatScreen searchParams={searchParams} />
       </Suspense>
     </main>
   );

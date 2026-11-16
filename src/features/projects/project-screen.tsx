@@ -86,6 +86,8 @@ type ProjectScreenProps = {
   brochureSource?: string | null | undefined;
   /** The enquiry card in the column beside the details (the page puts it behind its own Suspense). */
   enquiry?: ReactNode;
+  /** Buttons under the title (the page gives them, so this feature needs no other). */
+  actions?: ReactNode;
   /** The bar and sheet of a phone. */
   mobileEnquiry?: ReactNode;
   /** Design Lab only: several screens on one board need a lower heading level. */
@@ -105,6 +107,7 @@ export function ProjectScreen({
   floorPlanSources,
   brochureSource,
   enquiry,
+  actions,
   mobileEnquiry,
   titleAs = "h1",
 }: ProjectScreenProps) {
@@ -252,6 +255,7 @@ export function ProjectScreen({
                 </Badge>
               )}
             </div>
+            {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
           </header>
 
           {gallery}

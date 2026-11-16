@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { EnquiryCardSkeleton } from "@/components/domain/enquiry-card";
+import { AskAboutButton } from "@/features/ai-chat";
 import { PROJECT_BUCKET, publicStorageUrl } from "@/features/home";
 import {
   canonicalProjectPath,
@@ -91,6 +92,7 @@ export default async function ProjectPage({ params }: PageProps) {
       />
       <ProjectScreen
         project={project}
+        actions={<AskAboutButton subject={{ kind: "project", slug: project.slug }} />}
         imageSources={imageSources}
         floorPlanSources={project.floorPlans.map(source)}
         brochureSource={project.brochurePath === null ? null : source(project.brochurePath)}

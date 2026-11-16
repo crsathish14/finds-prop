@@ -81,6 +81,7 @@ vi.mock("../../queries", () => ({
   ownsHome,
 }));
 // The index also exports the chat page's screen; this test is about the tools, so the screen is a stand-in.
+vi.mock("../../ask-about-button", () => ({ AskAboutButton: () => null }));
 vi.mock("../../chat-screen", () => ({
   AiChatScreen: () => null,
   AiChatScreenSkeleton: () => null,

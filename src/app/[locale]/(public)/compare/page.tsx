@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { AskAboutButton } from "@/features/ai-chat";
 import {
   CompareScreen,
   compareHref,
@@ -49,7 +50,10 @@ export default async function ComparePage({ searchParams }: PageProps) {
 
   return (
     <main id="main" className="flex-1">
-      <CompareScreen columns={columns} />
+      <CompareScreen
+        columns={columns}
+        actions={<AskAboutButton subject={{ kind: "compare", shortIds: present }} />}
+      />
     </main>
   );
 }

@@ -99,6 +99,39 @@ export const CARDS_SECTION = [
   "- Never write a web address, a page path or a link to a home or project. The card carries the link.",
 ].join("\n");
 
+/**
+ * The page the customer opened the chat from (AI-P7-T01). Ids only, already checked by the server: the text of a
+ * listing is never put here, so a listing cannot give the assistant an instruction through this section.
+ */
+export function contextSection(context: {
+  readonly home?: string | undefined;
+  readonly project?: string | undefined;
+  readonly compare?: readonly string[] | undefined;
+}): string | null {
+  const lines: string[] = [];
+  if (context.home !== undefined) {
+    lines.push(
+      `- The customer opened this chat from the page of the home with homeId ${context.home}. When they say "this home" or "it", they mean that home: look it up with get_property and answer from the result.`,
+    );
+  }
+  if (context.project !== undefined) {
+    lines.push(
+      `- The customer opened this chat from the page of the project with slug ${context.project}. When they say "this project" or "it", they mean that project: look it up with get_project and answer from the result.`,
+    );
+  }
+  if (context.compare !== undefined && context.compare.length > 0) {
+    lines.push(
+      `- The customer opened this chat from their comparison of the homes with these homeIds: ${context.compare.join(", ")}. When they say "these homes" or "the comparison", they mean those homes: use compare_properties with those ids.`,
+    );
+  }
+  if (lines.length === 0) return null;
+  return [
+    "Where the customer came from (only the ids are given; every fact still comes from a lookup):",
+    ...lines,
+    "- If the customer asks about something else, answer that instead. Never say these ids aloud.",
+  ].join("\n");
+}
+
 /** The confidentiality rule, with the one fixed phrase. `selfDescription` is the `en.json` text of `ai.selfDescription`. */
 export function confidentialitySection(selfDescription: string): string {
   return [
