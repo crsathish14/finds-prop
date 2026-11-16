@@ -15,8 +15,16 @@ vi.mock("@/features/home", () => ({
   LISTING_BUCKET: "listing-photos",
   publicStorageUrl: (base: string, bucket: string, path: string) => `${base}/${bucket}/${path}`,
 }));
+// A Server Action cannot use the page's translator: it reads the locale through next/root-params, which throws there.
 vi.mock("@/features/site", () => ({
-  getTranslate: async () => Object.assign((key: string) => key, { has: () => true }),
+  getTranslate: async () => {
+    throw new Error("import('next/root-params').locale() was used inside a Server Action");
+  },
+}));
+vi.mock("next/root-params", () => ({
+  locale: async () => {
+    throw new Error("locale() was used inside a Server Action");
+  },
 }));
 
 const { readChatCards } = await import("../chat-cards");
@@ -45,6 +53,16 @@ describe("the cards under an answer (AI-P5-T02)", () => {
     // The link comes from the id and slug the database returned, never from the reference.
     expect(home?.kind === "home" && home.card.href).toBe("/properties/two-bhk-k3x9a2bd");
     expect(home?.kind === "home" && home.shortId).toBe("k3x9a2bd");
+  });
+
+  it("builds a card without anything that needs a route context (it runs in a Server Action)", async () => {
+    reads.property.mockResolvedValue({
+      status: "found",
+      property: propertyData({ shortId: "k3x9a2bd", slug: "two-bhk", title: "Two bedroom flat" }),
+      readAt: "2026-11-14T00:00:00.000Z",
+    });
+    const cards = await readChatCards([{ kind: "home", homeId: "k3x9a2bd", slug: "x" }]);
+    expect(cards).toHaveLength(1);
   });
 
   it("leaves out a home or a project that is not there any more", async () => {

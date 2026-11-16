@@ -1,5 +1,6 @@
 "use server";
 
+import { logger } from "@/server/logger";
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import { confirmProposalConfig, readChatCardsConfig } from "./action-config";
@@ -9,7 +10,18 @@ import { realSendDeps, sendConfirmedProposal } from "./confirm/send";
 /** The card facts for the home and project references of one answer (a read; nothing is written). */
 export const readChatCardsAction = defineAction({
   ...readChatCardsConfig,
-  handler: async ({ input }) => readChatCards(input.references),
+  handler: async ({ input }) => {
+    try {
+      return await readChatCards(input.references);
+    } catch (error) {
+      // The browser shows the answer without cards, so the failure is only visible here. Counts and a name, never text.
+      logger.warn("ai chat card read failed", {
+        references: input.references.length,
+        error: error instanceof Error ? error.name : "unknown",
+      });
+      throw error;
+    }
+  },
 });
 
 /**

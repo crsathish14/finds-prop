@@ -1,10 +1,12 @@
 import "server-only";
+import { createTranslator } from "next-intl";
 import type { ProjectCardData } from "@/components/domain/project-card";
 import type { PropertyCardData } from "@/components/domain/property-card";
 import { getProject, toProjectCard } from "@/features/projects";
 import { getProperty } from "@/features/property";
 import { toSavedCard } from "@/features/saved";
-import { getTranslate } from "@/features/site";
+import messages from "@/i18n/messages/en.json";
+import type { Translate } from "@/lib/format";
 import { publicEnv } from "@/lib/public-env";
 import type { ChatCardReference } from "./schemas";
 
@@ -19,6 +21,14 @@ export type ChatCardView =
   | { readonly kind: "project"; readonly key: string; readonly card: ProjectCardData };
 
 /**
+ * The words on a card come from the English catalogue directly, as the chat endpoint does for its fixed replies. This
+ * runs inside a Server Action, where `getTranslate()` cannot be used: it reads the locale through next/root-params,
+ * which only works in the context of a route (every card read failed on dev for that reason, 16 Nov 2026). Nothing
+ * from the browser chooses the language, so there is no input to validate.
+ */
+const translate = createTranslator({ locale: "en", messages }) as unknown as Translate;
+
+/**
  * The cards for the references an answer named, in the same order. A card is built from the public pages' own
  * cached reads (as a visitor, approved and visible items only), so a card cannot show more than its page does. A
  * home or project that is not there any more is left out, never an error. A read that fails throws, and the chat
@@ -28,7 +38,6 @@ export type ChatCardView =
 export async function readChatCards(
   references: readonly ChatCardReference[],
 ): Promise<ChatCardView[]> {
-  const translate = await getTranslate();
   const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL;
   const cards = await Promise.all(
     references.map(async (reference): Promise<ChatCardView | null> => {
