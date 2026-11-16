@@ -5,6 +5,9 @@ import {
   AI_SEGMENT_MAX_CHARACTERS,
 } from "@/config/ai";
 import en from "@/i18n/messages/en.json";
+import type { Translate } from "@/lib/format";
+import { createTranslator } from "next-intl";
+import { buildSystemPrompt } from "../../prompts/system-prompt";
 import {
   FAKE_INVENTED_LINK,
   FAKE_INVENTED_PHONE,
@@ -604,5 +607,44 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
         expect(pattern.source).not.toMatch(/[A-Z]/u);
       }
     });
+  });
+});
+
+describe("UT-ai-output-send-claim: the assistant sends nothing, so it may not say it did (AI-P8-T02)", () => {
+  it.each([
+    "I have sent your enquiry to the owner.",
+    "I've sent the message already.",
+    "Done, I submitted your request.",
+    "We booked a site visit for you.",
+    "I have contacted the builder for you.",
+    "Your enquiry has been sent.",
+    "Your site visit is booked for Saturday.",
+    "Enquiry anuppitten.",
+  ])("replaces an answer that claims a send: %s", (answer) => {
+    const result = checkOutput(answer, evidence());
+    expect(result.summary.outcome).toBe("blocked");
+    expect(result.summary.tags).toContain("send_claim");
+    expect(replacement(result.events).messageKey).toBe(OUTPUT_MESSAGE_KEYS.fallback);
+    expect(textOf(result.events)).toBe("");
+  });
+
+  it.each([
+    "I have prepared an enquiry. Check it and press Send when you are ready.",
+    "Nothing is sent until you press Send on the card.",
+    "The builder can be reached on the project page.",
+    "Visits are usually booked a few days ahead.",
+  ])("lets an honest answer through: %s", (answer) => {
+    expectPassed(answer);
+  });
+
+  it("lets through a plain polite decline that repeats the scope in its own words", () => {
+    expectPassed(
+      "Sorry, I can only help with homes, projects, builders and EMI sums on findsprop. Shall I look at some homes?",
+      evidence({
+        promptText: buildSystemPrompt({
+          translate: createTranslator({ locale: "en", messages: en }) as unknown as Translate,
+        }),
+      }),
+    );
   });
 });

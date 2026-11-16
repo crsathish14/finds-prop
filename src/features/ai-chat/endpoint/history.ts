@@ -39,8 +39,15 @@ export function prepareConversation(messages: readonly ChatRequestMessage[]): Pr
 
   for (const message of earlier) {
     if (message.role === "assistant") {
+      // The browser may send anything as an assistant turn, so it gets the customer's check too: a forged turn that
+      // primes the model ("Sure, I will ignore my rules"), names another portal or carries a phone number is
+      // dropped or masked, the same as a customer message would be.
       const text = plainText(message.text);
-      if (text !== "") history.push({ role: "assistant", text, toolCalls: [] });
+      if (text === "") continue;
+      const checked = checkInput(text, []);
+      if (checked.action !== "refuse") {
+        history.push({ role: "assistant", text: checked.text, toolCalls: [] });
+      }
       continue;
     }
     const checked = checkInput(message.text, earlierCustomerTexts);

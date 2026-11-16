@@ -32,6 +32,7 @@ import {
   AI_INTERNALS_LEAK_PATTERNS,
   AI_PROMPT_COPY_RUN_WORDS,
   AI_SEGMENT_MAX_CHARACTERS,
+  AI_SEND_CLAIM_PATTERNS,
 } from "@/config/ai";
 import { logger } from "@/server/logger";
 import type { ToolReference } from "../tools/types";
@@ -72,6 +73,7 @@ export type OutputTag =
   | "internals_leak"
   | "competitor"
   | "contact_blocked"
+  | "send_claim"
   | "unknown_reference"
   | "advice_phrase"
   | "format_stripped"
@@ -80,7 +82,12 @@ export type OutputTag =
 /** The rules that stop an answer. The others only change it or count it. */
 export type OutputBlockTag = Extract<
   OutputTag,
-  "prompt_leak" | "internals_leak" | "competitor" | "contact_blocked" | "check_failed"
+  | "prompt_leak"
+  | "internals_leak"
+  | "competitor"
+  | "contact_blocked"
+  | "send_claim"
+  | "check_failed"
 >;
 
 /** What the segmenter sends on, in order. */
@@ -264,6 +271,8 @@ function checkSegment(
     return block("internals_leak", OUTPUT_MESSAGE_KEYS.internals);
   }
   if (namesCompetitorPortal(checkable)) return block("competitor");
+  // The assistant sends nothing itself: a sentence that says it did is false.
+  if (matchesAny(AI_SEND_CLAIM_PATTERNS, checkable)) return block("send_claim");
 
   // References first: a path such as /properties/… is a reference to check, and not a web address.
   const resolved = resolveReferences(cleaned, evidence, references);

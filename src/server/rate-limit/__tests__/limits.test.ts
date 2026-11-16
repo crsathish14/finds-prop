@@ -87,7 +87,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
       { who: "network", windowSeconds: 86400, max: 40, only: "anonymous" },
     ]);
     expect(RATE_LIMITS.ai_chat_burst).toEqual([
-      { who: "user", otherwise: ["cookie", "visitor"], windowSeconds: 60, max: 10 },
+      { who: "user", otherwise: ["visitor"], windowSeconds: 60, max: 10 },
     ]);
     expect(RATE_LIMITS.ai_chat_user_day).toEqual([
       { who: "user", windowSeconds: 86400, max: 40, only: "signed_in" },

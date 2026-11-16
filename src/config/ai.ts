@@ -390,6 +390,20 @@ export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
 ];
 
 /**
+ * A claim that something was sent: "I have sent your enquiry", "your visit is booked". The assistant sends nothing
+ * itself (the customer presses Send on the confirm card), so any such sentence is false and the answer is replaced
+ * by the fixed fallback (tag `send_claim`). English and Tanglish; the Tamil list is for the owner to extend.
+ */
+export const AI_SEND_CLAIM_PATTERNS: readonly RegExp[] = [
+  /\b(i|we)(?:'ve| have|'ll have)?\s+(?:already\s+|just\s+)?(sent|submitted|booked|forwarded|emailed|messaged|notified|scheduled|passed on)\b/u,
+  /\b(i|we)(?:'ve| have)?\s+(?:already\s+|just\s+)?(contacted|informed|told|reached out to)\s+(the|your)\s+(owner|builder|developer|seller|agent|team)\b/u,
+  /\b(your|the)\s+(enquiry|inquiry|message|request|site visit|visit)\s+(has|have)\s+been\s+(sent|submitted|booked|forwarded|scheduled|confirmed|passed on)\b/u,
+  /\b(your|the)\s+(site visit|visit)\s+(is|was)\s+(booked|confirmed|scheduled)\b/u,
+  // Tanglish.
+  /\b(anuppi|anupiten|anuppitten|book pannitten|book panniten)\b/u,
+];
+
+/**
  * Advice and guarantee words: legal or financial advice, a promised return, "legally safe". The text stays and the
  * fixed disclaimer line is added after the answer (tag `advice_phrase`). English, Tanglish and Tamil; the Tanglish
  * and Tamil lists are a first set for the owner to extend.

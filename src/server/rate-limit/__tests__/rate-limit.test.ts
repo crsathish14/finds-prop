@@ -182,7 +182,7 @@ describe("UT-rate-limit-ai: enforceAiChatRateLimits", () => {
     const { enforceAiChatRateLimits } = await load();
     await enforceAiChatRateLimits({ session: null, requestId: "req-12345678" });
     expect(counted().map((entry) => entry.limit_scope)).toEqual([
-      "ai_chat_burst_cookie",
+      "ai_chat_burst_visitor",
       "ai_chat_trial_cookie",
       "ai_chat_trial_ip_network",
       "ai_chat_global_day_global",
@@ -204,7 +204,7 @@ describe("UT-rate-limit-ai: enforceAiChatRateLimits", () => {
       scopes: ["ai_chat_trial", "ai_chat_burst"],
     });
     expect(counted().map((entry) => entry.limit_scope)).toEqual([
-      "ai_chat_burst_cookie",
+      "ai_chat_burst_visitor",
       "ai_chat_trial_cookie",
     ]);
   });
