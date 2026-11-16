@@ -1,8 +1,10 @@
 "use server";
 
 import { defineAction } from "@/server/actions/define-action";
+import { getSessionView } from "@/server/auth/get-session-view";
 import { readSavedHomesConfig, saveHomeConfig, unsaveHomeConfig } from "./action-config";
 import { savedShortIds } from "./queries";
+import { readSavedForSession } from "./read-saved";
 import { savedStore } from "./store";
 import { saveHome, unsaveHome } from "./service";
 
@@ -25,8 +27,6 @@ export const unsaveHomeAction = defineAction({
  */
 export const readSavedHomes = defineAction({
   ...readSavedHomesConfig,
-  handler: async ({ session }) =>
-    session
-      ? { signedIn: true as const, shortIds: await savedShortIds() }
-      : { signedIn: false as const, shortIds: [] as string[] },
+  // The action is open to everyone, so defineAction passes no session; read it here.
+  handler: async () => readSavedForSession(await getSessionView(), savedShortIds),
 });
