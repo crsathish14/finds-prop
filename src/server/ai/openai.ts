@@ -51,6 +51,9 @@ const REFUSED_CODES: ReadonlySet<string> = new Set([
   "invalid_prompt",
 ]);
 
+export type OpenAiReasoningEffort =
+  "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
+
 export interface OpenAiProviderOptions {
   readonly apiKey: string;
   /** The model id from configuration (`AI_MODEL`). */
@@ -59,6 +62,11 @@ export interface OpenAiProviderOptions {
   readonly fetch?: typeof fetch;
   /** Only for tests and the data-residency host. Defaults to OpenAI's own address. */
   readonly baseURL?: string;
+  /**
+   * The reasoning level (`AI_REASONING_EFFORT`). Left out, no `reasoning` field is sent and the model's own
+   * default applies. A level the model refuses ends the round as the usual provider failure.
+   */
+  readonly reasoningEffort?: OpenAiReasoningEffort;
   /** Overrides `AI_PROVIDER_IDLE_TIMEOUT_MS`. */
   readonly idleTimeoutMs?: number;
 }
@@ -103,7 +111,11 @@ function inputForOpenAi(messages: readonly AiMessage[]): ResponseInputItem[] {
   return items;
 }
 
-export function buildOpenAiRequest(call: AiCall, model: string): ResponseCreateParamsStreaming {
+export function buildOpenAiRequest(
+  call: AiCall,
+  model: string,
+  reasoningEffort?: OpenAiReasoningEffort,
+): ResponseCreateParamsStreaming {
   const request: ResponseCreateParamsStreaming = {
     model,
     instructions: call.system,
@@ -114,6 +126,7 @@ export function buildOpenAiRequest(call: AiCall, model: string): ResponseCreateP
       MINIMUM_OUTPUT_TOKENS,
       Math.min(call.maxOutputTokens, MAX_OUTPUT_TOKENS),
     ),
+    ...(reasoningEffort === undefined ? {} : { reasoning: { effort: reasoningEffort } }),
   };
   // An answer-only round has no tools; the API is then sent neither a tool list nor a tool setting.
   if (call.tools.length === 0) return request;
@@ -314,9 +327,12 @@ export function createOpenAiProvider(options: OpenAiProviderOptions): AiProvider
 
       try {
         restartIdleTimer();
-        const events = await client.responses.create(buildOpenAiRequest(call, options.model), {
-          signal: controller.signal,
-        });
+        const events = await client.responses.create(
+          buildOpenAiRequest(call, options.model, options.reasoningEffort),
+          {
+            signal: controller.signal,
+          },
+        );
         for await (const event of events) {
           restartIdleTimer();
           state.started = true;

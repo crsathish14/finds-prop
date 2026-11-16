@@ -15,6 +15,19 @@ describe("UT-env: the Design Lab switch (ADR-020)", () => {
   });
 });
 
+describe("UT-env: AI_REASONING_EFFORT", () => {
+  it("is optional and blank counts as unset", () => {
+    expect(parseServerEnv({}).AI_REASONING_EFFORT).toBeUndefined();
+    expect(parseServerEnv({ AI_REASONING_EFFORT: "" }).AI_REASONING_EFFORT).toBeUndefined();
+  });
+  it.each(["none", "minimal", "low", "medium", "high", "xhigh", "max"])("accepts %s", (level) => {
+    expect(parseServerEnv({ AI_REASONING_EFFORT: level }).AI_REASONING_EFFORT).toBe(level);
+  });
+  it("fails the check for any other value, naming the variable", () => {
+    expect(() => parseServerEnv({ AI_REASONING_EFFORT: "fast" })).toThrow(/AI_REASONING_EFFORT/);
+  });
+});
+
 describe("UT-env: server environment", () => {
   it("applies safe defaults: local environment, every flag off", () => {
     const env = parseServerEnv({});

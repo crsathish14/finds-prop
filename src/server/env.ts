@@ -34,6 +34,10 @@ const serverEnvSchema = z.object({
   AI_PROVIDER: z.enum(["fake", "openai", "gemini"]).optional(),
   AI_MODEL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
+  /** Optional. The OpenAI reasoning level; unset sends no reasoning field (the model's own default). */
+  AI_REASONING_EFFORT: z
+    .enum(["none", "minimal", "low", "medium", "high", "xhigh", "max"])
+    .optional(),
   FLAG_AI_SEARCH: flag,
   FLAG_MAP_VIEW: flag,
   FLAG_PG_LISTINGS: flag,
