@@ -12,7 +12,7 @@ The execution plan for [ADR-128](adr/128-ai-chat-assistant.md). Read the ADR fir
 - **Review:** after a C2 task, start a fresh session and run `/review-change` on the branch. Run `/security-review` on the phases marked below.
 - **Parallel work** only in separate worktrees, never two writers on the same files. Only one migration PR open at a time.
 - **Secrets:** Claude never reads `.env*` or keys. Tasks that need a real provider key are run by you locally (marked **You run**). When a step needs a real-key run, the orchestrator asks you at that point (owner, 14 Nov 2026) and carries on with the tasks that do not depend on it.
-- **Values set on 14 Nov 2026:** the example loan rate is 7.2% a year (G-C). The daily budget and the Tamil wording are not set: use a placeholder marked `owner to confirm` in `src/config/ai.ts` and in `en.json`, and list it in the PR.
+- **Values set on 14 Nov 2026:** the example loan rate is 7.2% a year (G-C). The daily budget was set to 390 on 16 Nov 2026 (AI-P8-T03). The Tamil wording is not set: use a placeholder marked `owner to confirm` in `src/config/ai.ts` and in `en.json`, and list it in the PR.
 - **Evidence:** every PR pastes the real result of `npm run check` and the commands the task lists, and says what could not run. After each merge, the PR updates `docs/status.md` and the traceability row (R-DOC-02).
 
 ### The prompt to start every task
