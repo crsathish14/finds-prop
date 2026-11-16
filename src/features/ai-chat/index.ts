@@ -50,4 +50,7 @@ export type {
 export { postAiChat } from "./endpoint/post";
 export type { ChatOutcome, ChatStreamEvent } from "./endpoint/events";
 export type { ChatDeps, ChatUsageRecord } from "./endpoint/types";
+export { AskAboutButton } from "./ask-about-button";
+export { chatContextHref } from "./context/page-context";
+export type { ChatContext, ContextSubject } from "./context/page-context";
 export { AiChatScreen, AiChatScreenSkeleton } from "./chat-screen";

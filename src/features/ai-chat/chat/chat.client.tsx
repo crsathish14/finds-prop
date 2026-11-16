@@ -20,6 +20,7 @@ import { Text } from "@/components/ui/text";
 import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from "@/config/ai";
 import { saveDraft } from "@/lib/form-draft";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
+import type { ChatContext } from "../context/page-context";
 import type { ConfirmCard } from "../confirm/confirm-card";
 import { AnswerCards, type ChatCardControls } from "./answer-cards.client";
 import {
@@ -155,8 +156,11 @@ function answerParts(
 export function ChatIsland({
   signedIn,
   controls,
+  context = null,
 }: {
   signedIn: boolean;
+  /** The page the chat was opened from, as the server checked it: public ids only. Sent with each message. */
+  context?: ChatContext | null;
   controls: ChatCardControls;
 }) {
   const translate = useTranslations("ai");
@@ -254,99 +258,105 @@ export function ChatIsland({
     problem?.kind === "daily_limit" ||
     problem?.kind === "unavailable";
 
-  const run = useCallback(async (text: string, before: readonly ChatEntry[], userId: string) => {
-    abort.current?.abort();
-    const controller = new AbortController();
-    abort.current = controller;
-    const answer: LiveAnswer = { ...NO_ANSWER, id: newId(), notes: [], references: [] };
-    setLive({ ...answer });
-    setProblem(null);
+  const run = useCallback(
+    async (text: string, before: readonly ChatEntry[], userId: string) => {
+      abort.current?.abort();
+      const controller = new AbortController();
+      abort.current = controller;
+      const answer: LiveAnswer = { ...NO_ANSWER, id: newId(), notes: [], references: [] };
+      setLive({ ...answer });
+      setProblem(null);
 
-    function refused(failure: Awaited<ReturnType<typeof readChatFailure>>) {
-      setLive(null);
-      if (failure.state === "error") {
-        setProblem({ kind: "error", text, userId });
-        return;
-      }
-      // The message was not answered, so it goes back to the box instead of staying in the conversation.
-      setEntries((current) => current.filter((entry) => entry.id !== userId));
-      // Keep what the visitor typed while waiting; the refused message comes back only into an empty box.
-      setDraft((current) => (current.trim() === "" ? text : current));
-      if (failure.state === "sign_in_required") {
-        setGate(true);
-        setGateFocus(true);
-      } else if (failure.state === "too_many_messages") {
-        setProblem({ kind: "too_many_messages", seconds: failure.seconds });
-      } else {
-        setProblem({ kind: failure.state });
-      }
-    }
-
-    try {
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: buildHistory(before, text) }),
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        refused(await readChatFailure(response));
-        return;
-      }
-      if (response.body === null) throw new Error("The answer has no body");
-      let finished = false;
-      for await (const event of readChatEvents(response.body)) {
-        if (event.type === "text") {
-          answer.text += event.text;
-        } else if (event.type === "card") {
-          if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
-            answer.references.push(event.reference);
-          }
-        } else if (event.type === "confirm") {
-          answer.confirm = event.card;
-        } else if (event.type === "notice") {
-          if (event.key === MASKED_NOTICE_KEY) {
-            setEntries((current) =>
-              current.map((entry) =>
-                entry.id === userId && entry.role === "user" ? { ...entry, masked: true } : entry,
-              ),
-            );
-          } else {
-            answer.notes.push({ key: event.key, text: event.text });
-          }
-        } else if (event.type === "replace") {
-          answer.text = event.text;
-          answer.notes = [];
-          answer.references = [];
-          answer.confirm = undefined;
-          answer.replaced = true;
-          answer.href = event.href;
-        } else if (event.type === "done") {
-          finished = true;
+      function refused(failure: Awaited<ReturnType<typeof readChatFailure>>) {
+        setLive(null);
+        if (failure.state === "error") {
+          setProblem({ kind: "error", text, userId });
+          return;
         }
-        setLive({ ...answer });
+        // The message was not answered, so it goes back to the box instead of staying in the conversation.
+        setEntries((current) => current.filter((entry) => entry.id !== userId));
+        // Keep what the visitor typed while waiting; the refused message comes back only into an empty box.
+        setDraft((current) => (current.trim() === "" ? text : current));
+        if (failure.state === "sign_in_required") {
+          setGate(true);
+          setGateFocus(true);
+        } else if (failure.state === "too_many_messages") {
+          setProblem({ kind: "too_many_messages", seconds: failure.seconds });
+        } else {
+          setProblem({ kind: failure.state });
+        }
       }
-      // An answer that stopped before `done` is not shown as if it were whole.
-      if (!finished) throw new Error("The answer ended early");
-      setEntries((current) => [
-        ...current,
-        {
-          id: answer.id,
-          role: "assistant",
-          text: answer.text,
-          notes: answer.notes,
-          references: answer.references,
-          ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
-          replaced: answer.replaced,
-          ...(answer.href === undefined ? {} : { href: answer.href }),
-        },
-      ]);
-      setLive(null);
-    } catch {
-      if (controller.signal.aborted) return;
-      refused({ state: "error" });
-    }
-  }, []);
+
+      try {
+        const response = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            messages: buildHistory(before, text),
+            ...(context === null ? {} : { context }),
+          }),
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          refused(await readChatFailure(response));
+          return;
+        }
+        if (response.body === null) throw new Error("The answer has no body");
+        let finished = false;
+        for await (const event of readChatEvents(response.body)) {
+          if (event.type === "text") {
+            answer.text += event.text;
+          } else if (event.type === "card") {
+            if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
+              answer.references.push(event.reference);
+            }
+          } else if (event.type === "confirm") {
+            answer.confirm = event.card;
+          } else if (event.type === "notice") {
+            if (event.key === MASKED_NOTICE_KEY) {
+              setEntries((current) =>
+                current.map((entry) =>
+                  entry.id === userId && entry.role === "user" ? { ...entry, masked: true } : entry,
+                ),
+              );
+            } else {
+              answer.notes.push({ key: event.key, text: event.text });
+            }
+          } else if (event.type === "replace") {
+            answer.text = event.text;
+            answer.notes = [];
+            answer.references = [];
+            answer.confirm = undefined;
+            answer.replaced = true;
+            answer.href = event.href;
+          } else if (event.type === "done") {
+            finished = true;
+          }
+          setLive({ ...answer });
+        }
+        // An answer that stopped before `done` is not shown as if it were whole.
+        if (!finished) throw new Error("The answer ended early");
+        setEntries((current) => [
+          ...current,
+          {
+            id: answer.id,
+            role: "assistant",
+            text: answer.text,
+            notes: answer.notes,
+            references: answer.references,
+            ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
+            replaced: answer.replaced,
+            ...(answer.href === undefined ? {} : { href: answer.href }),
+          },
+        ]);
+        setLive(null);
+      } catch {
+        if (controller.signal.aborted) return;
+        refused({ state: "error" });
+      }
+    },
+    [context],
+  );
 
   function send() {
     const text = draft.trim();

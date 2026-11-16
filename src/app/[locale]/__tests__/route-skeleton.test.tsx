@@ -115,8 +115,9 @@ describe("UT-route-skeleton: behaviour of the special routes", () => {
 
   it("hides /ai-search while the flag is off and shows it when on", async () => {
     const page = (await import("../(public)/ai-search/page")).default;
-    expect(() => page()).toThrow("NOT_FOUND");
+    const searchParams = Promise.resolve({});
+    expect(() => page({ searchParams })).toThrow("NOT_FOUND");
     flags.aiSearch = true;
-    expect(page()).toBeTruthy();
+    expect(page({ searchParams })).toBeTruthy();
   });
 });

@@ -11,6 +11,7 @@ import {
   CARDS_SECTION,
   COMPETITOR_SECTION,
   confidentialitySection,
+  contextSection,
   EMI_SECTION,
   FACTS_SECTION,
   LANGUAGE_SECTION,
@@ -29,6 +30,8 @@ export interface SystemPromptOptions {
    * to this turn's prompt, after the rules.
    */
   readonly addInjectionReminder?: boolean;
+  /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
+  readonly pageContext?: Parameters<typeof contextSection>[0];
 }
 
 /** The whole system prompt for one customer message. */
@@ -48,6 +51,8 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,
   ];
+  const where = options.pageContext === undefined ? null : contextSection(options.pageContext);
+  if (where !== null) sections.splice(sections.length - 2, 0, where);
   if (options.addInjectionReminder === true) sections.push(INJECTION_REMINDER_INSTRUCTION);
   return sections.join("\n\n");
 }

@@ -196,3 +196,14 @@ Keyboard: every control is reachable and operable with Tab, Shift+Tab, Enter and
 ## 8. Not covered
 
 The Design Lab entries, components and production code (P5-T01). The Tamil wording of the fixed replies (the owner supplies it, D12). The example loan rate. The application-wide rename from "Find Prop" to "findsprop". The items in decision 12 and open question 9. "Ask about this home" buttons on property and project pages (ADR section 10: later). The mobile menu drawer is not changed by ADD-17. The approved screens `final-ux/screens/ai-search.html` and ADD-01 to ADD-12 are not changed.
+
+---
+
+## 9. Owner decision of 16 November 2026: the "Ask about" buttons (AI-P7-T01)
+
+This answers the "Ask about this home" part of open question 9 and is the UX approval for the new buttons.
+
+- **Where:** a secondary (outline, not copper) button near the title of the property page (beside Save and Compare) and of the project page (under the locality and RERA tags). The comparison page has the same button under its heading line once two or more homes are shown. No new component: the shared `Button` (secondary, small) as a link, with the sparkle icon the AI navigation already uses.
+- **Labels (new keys in `en.json`):** `ai.askHome` "Ask about this home", `ai.askProject` "Ask about this project", `ai.askCompare` "Ask about these homes". The compare label was not given by the owner and is the agent's wording, to confirm. Tamil wording is the owner's, later; the repo's usual fallback for a missing key applies.
+- **What it does:** it is a link to `/ai-search?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`. Only ids travel, in the link and in the request body. The server checks every id against what is listed now (a real, open home or project; at most three compare ids); anything else opens the chat with no context and no error. The assistant then answers about that item with its existing read tools. No new screen or state: the chat looks the same.
+- **Absent when `FLAG_AI_SEARCH` is off**, on every page. Works for signed-out visitors, like the chat.

@@ -11,8 +11,8 @@ import {
  * with exactly those two fields, so a tool call, a tool result, a system message or any extra field is refused
  * instead of being passed on to the model. The server alone makes tool calls and tool results.
  *
- * Zod only, no framework imports (the feature schema rule). Keys the top-level object does not know, such as a
- * later `context`, are dropped.
+ * Zod only, no framework imports (the feature schema rule). Keys the top-level object does not know are dropped.
+ * `context` (AI-P7-T01) is the one extra key: public ids of the page the chat was opened from, never listing data.
  */
 
 const customerMessage = z.strictObject({
@@ -28,6 +28,9 @@ const assistantMessage = z.strictObject({
 
 export const chatRequestSchema = z
   .object({
+    // The page the chat was opened from: ids only, and not checked here. The handler checks every id against what is
+    // listed now and drops what does not fit (`context/resolve.ts`); a wrong shape is no context, never a refusal.
+    context: z.unknown().optional(),
     messages: z
       .array(z.discriminatedUnion("role", [customerMessage, assistantMessage]))
       .min(1)

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("@/features/ai-chat", () => ({ AskAboutButton: () => null }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
 vi.mock("@/lib/public-env", () => ({

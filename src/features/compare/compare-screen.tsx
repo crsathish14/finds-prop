@@ -32,6 +32,8 @@ const LABEL_WORDS = {
 type CompareScreenProps = {
   /** The homes found, in the order of the address; at most three. */
   columns: readonly CompareColumn[];
+  /** Buttons under the line below the heading (the page gives them, so this feature needs no other). */
+  actions?: React.ReactNode;
   /** Design Lab only: nothing navigates or is forgotten. */
   preview?: boolean;
   /** Design Lab only: a lower heading level, so several screens share a board. */
@@ -49,7 +51,12 @@ const ROW_HEAD =
  * the homes has, with Yes or Not listed. On a phone the table scrolls sideways, the label column
  * stays, and a soft fade at the right edge says there is more. Fewer than two homes is the empty state. It fetches nothing: the page gives it the columns.
  */
-export function CompareScreen({ columns, preview = false, titleAs = "h1" }: CompareScreenProps) {
+export function CompareScreen({
+  columns,
+  actions,
+  preview = false,
+  titleAs = "h1",
+}: CompareScreenProps) {
   const translate = useTranslations();
   const words = translate as unknown as Translate;
   const locale = useLocale();
@@ -113,6 +120,7 @@ export function CompareScreen({ columns, preview = false, titleAs = "h1" }: Comp
           />
         </Heading>
         <p className="text-body text-muted">{translate("compare.subtitle")}</p>
+        {ready && actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
       </header>
 
       {ready ? (

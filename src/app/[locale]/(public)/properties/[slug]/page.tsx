@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { EnquiryCardSkeleton } from "@/components/domain/enquiry-card";
+import { AskAboutButton } from "@/features/ai-chat";
 import { CompareButton } from "@/features/compare";
 import { SaveHomeAction } from "@/features/saved";
 import { LISTING_BUCKET, publicStorageUrl } from "@/features/home";
@@ -96,6 +97,7 @@ export default async function PropertyPage({ params }: PageProps) {
         actions={
           <>
             <SaveHomeAction shortId={property.shortId} />
+            <AskAboutButton subject={{ kind: "home", shortId: property.shortId }} />
             <CompareButton
               shortId={property.shortId}
               title={property.title}

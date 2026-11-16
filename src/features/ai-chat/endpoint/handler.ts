@@ -7,6 +7,8 @@ import { AI_CHAT_RATE_LIMIT_SCOPES } from "@/server/rate-limit/limits";
 import type { AiChatRateLimitScope } from "@/server/rate-limit/rate-limit";
 import { readRequestId } from "@/server/request-id";
 import type { ConfirmCard } from "../confirm/confirm-card";
+import type { ChatContext } from "../context/page-context";
+import { resolveContext } from "../context/resolve";
 import { INPUT_MESSAGE_KEYS, type InputCheckResult } from "../guards/input";
 import { buildSystemPrompt } from "../prompts/system-prompt";
 import { SYSTEM_PROMPT_VERSION } from "../prompts/version";
@@ -133,9 +135,11 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     if (limited !== null) return limited;
 
     // 6 to 9: the agent loop, the output check, the stream, usage
+    const pageContext = await readPageContext(deps, parsed.request.context);
     const system = buildSystemPrompt({
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
+      ...(pageContext === null ? {} : { pageContext }),
     });
     const conversation = [...history, { role: "user" as const, text: latest.text }];
     return streamResponse(requestId, deps, (stop) =>
@@ -162,6 +166,19 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     }
     await usage("error");
     return serverErrorResponse(requestId, deps.translate);
+  }
+}
+
+// ---------------------------------------------------------------- page context
+
+/** The checked page context of the request (AI-P7-T01), or null; a failing read is logged and means no context. */
+async function readPageContext(deps: ChatDeps, raw: unknown): Promise<ChatContext | null> {
+  if (deps.contextReads === undefined || raw === undefined) return null;
+  try {
+    return await resolveContext(raw, deps.contextReads);
+  } catch (error) {
+    logger.error("ai chat page context could not be read", { error });
+    return null;
   }
 }
 

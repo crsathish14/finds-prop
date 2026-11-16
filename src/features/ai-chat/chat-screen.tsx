@@ -2,7 +2,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
 import { getSessionView } from "@/server/auth/get-session-view";
+import { realContextReads } from "./context/reads";
+import { readContextParams } from "./context/page-context";
+import { resolveContext } from "./context/resolve";
 import { ChatIsland } from "./chat/chat.client";
+
+export type AiChatScreenProps = {
+  /** The address's search parameters (`?home=`, `?project=`, `?compare=`), read under the page's Suspense. */
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 /**
  * The body of `/ai-search`: who is signed in, and the chat island. Signed in or not is read here on the server (from
@@ -11,11 +19,17 @@ import { ChatIsland } from "./chat/chat.client";
  * It also hands the island the heart and Compare controls of the answer cards, because the island may not import the
  * features that own them (their indexes hold server code).
  */
-export async function AiChatScreen() {
-  const session = await getSessionView();
+export async function AiChatScreen({ searchParams }: AiChatScreenProps) {
+  const [session, params] = await Promise.all([getSessionView(), searchParams]);
+  // The page the chat was opened from (AI-P7-T01): checked here against what is listed now, so a bad or stale link
+  // simply opens the chat with no context. A read that fails does the same. Only ids go on to the island.
+  const context = await resolveContext(readContextParams(params), realContextReads).catch(
+    () => null,
+  );
   return (
     <ChatIsland
       signedIn={session !== null}
+      context={context}
       controls={{ Save: SaveHomeButton, Compare: CompareCardToggle }}
     />
   );
