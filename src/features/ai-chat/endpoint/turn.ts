@@ -86,6 +86,23 @@ function toStreamEvent(event: OutputEvent, translate: Translate): ChatStreamEven
   }
 }
 
+/** The EMI lookup: an answer that used it is about money, not about a listing, so it gets no automatic card. */
+const EMI_TOOL_NAME = "calculate_emi";
+
+/**
+ * Whether the records the tools returned this turn get a card without a marker. Not when the turn ended with a
+ * proposal (the customer sees the confirm card, not a listing card), not when the EMI lookup ran (an EMI answer), and
+ * not when no tool returned a record (a refusal, an off-topic decline or an empty search made no lookup, so there is
+ * nothing to show). The marker still works in every one of those cases.
+ */
+export function showsAutomaticCards(agent: AgentDone): boolean {
+  return (
+    agent.references.length > 0 &&
+    agent.offers.length === 0 &&
+    !agent.toolsRan.includes(EMI_TOOL_NAME)
+  );
+}
+
 export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent, TurnSummary> {
   const { translate } = input;
   const deltas: string[] = [];
@@ -125,6 +142,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       customerMessage: input.customerMessage,
       canary: SYSTEM_PROMPT_CANARY,
       promptText: input.system,
+      automaticCards: showsAutomaticCards(agent),
     });
     const checked: OutputEvent[] = [];
     for (const delta of deltas) {
