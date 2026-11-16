@@ -301,6 +301,16 @@ describe("UT-ai-system-prompt: the card reference syntax the output check reads"
     expect(text).not.toContain("[[");
   });
 
+  it("lets the plain pointer to a card through the prompt-copy check", () => {
+    for (const answer of [
+      "Its card is below and can be tapped to open it.",
+      "The card of this home is below and can be tapped to open it.",
+      "Keep it short, the cards carry the details.",
+    ]) {
+      expect(checkOutput(answer, input).summary.outcome).toBe("passed");
+    }
+  });
+
   it("drops a marker for a record no lookup returned, the way the prompt warns", () => {
     expect(LOWER_PROMPT).toContain("never invent, shorten or change one");
     const result = checkOutput("This one is nice. [[home:zzzzzzzz]]", input);

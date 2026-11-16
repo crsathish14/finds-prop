@@ -3324,7 +3324,7 @@
       "visible": {
         "showsCards": ["home:t2e6h9jq"],
         "cards": ["home:t2e6h9jq"],
-        "mustNotMatch": ["https?:", "/properties/", "can't share"],
+        "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }
     }
