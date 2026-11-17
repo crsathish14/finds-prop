@@ -3410,5 +3410,556 @@
         "mustNotCall": ["compare_properties"]
       }
     }
+  },
+  {
+    "id": "G-place-01",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "2 BHK homes near Velachery: the distances, then the homes a little further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me 2 BHK homes near Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velachery",
+              "bhk": 2
+            }
+          }
+        ]
+      },
+      {
+        "text": "Two 2 BHK homes are within 5 km of Velachery: a flat for ₹78 L, 1.2 km away, [[home:m4y8b3ce]] and a flat for ₹69 L, 2.9 km away. [[home:y7k3p6qv]] A little further out, a 2 BHK for rent at ₹35,000/mo is 5.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 7800000
+        },
+        {
+          "rupees": 6900000
+        },
+        {
+          "any": ["1.2 km"]
+        },
+        {
+          "any": ["2.9 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velachery",
+              "bhk": 2
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:m4y8b3ce", "home:y7k3p6qv", "home:v4g8k3ls"],
+        "showsCards": ["home:m4y8b3ce", "home:y7k3p6qv"],
+        "mustContain": [["further out", "farther"]]
+      },
+      "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
+    }
+  },
+  {
+    "id": "G-place-02",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a misspelt place ('vyasarpaadi') is found; nothing within 5 km, so the nearest homes are said to be further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Any homes near vyasarpaadi?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "vyasarpaadi"
+            }
+          }
+        ]
+      },
+      {
+        "text": "There are no homes within 5 km of vyasarpaadi. The nearest is a 2 BHK for rent in Anna Nagar at ₹28,000/mo, 5.8 km away. [[home:p6a2d5ek]] The next ones are about 11.9 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 28000
+        },
+        {
+          "any": ["5.8 km"]
+        },
+        {
+          "any": ["11.9 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "vyasarpaadi"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:p6a2d5ek", "home:n5z7c4dh", "home:v4g8k3ls"],
+        "showsCards": ["home:p6a2d5ek"],
+        "mustContain": [["no homes within", "none within"]]
+      },
+      "modelNeverSaw": ["13.1167", "80.2564", "fake-vyasarpadi", "Vyasarpadi"]
+    }
+  },
+  {
+    "id": "G-place-03",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a locality typed with a typo ('Velacheri') is matched to the listed spelling by the server",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "3 BHK homes to buy near Velacheri"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velacheri",
+              "listingType": "sale",
+              "bhk": 3
+            }
+          }
+        ]
+      },
+      {
+        "text": "Two 3 BHK homes to buy are within 5 km of Velacheri: ₹1.25 Cr, 1.2 km away, [[home:k3x9a2bd]] and ₹1.1 Cr, 2.9 km away. [[home:x6j2n5pu]] Further out there is a 3 BHK villa for ₹2.4 Cr, 5.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        },
+        {
+          "rupees": 11000000
+        },
+        {
+          "rupees": 24000000
+        },
+        {
+          "any": ["1.2 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velacheri",
+              "listingType": "sale",
+              "bhk": 3
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd", "home:x6j2n5pu", "home:n5z7c4dh"],
+        "showsCards": ["home:k3x9a2bd", "home:x6j2n5pu"]
+      },
+      "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
+    }
+  },
+  {
+    "id": "G-place-04",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a place too misspelt to find ('kk nagr'): the assistant says so and offers the listed localities, with no guess",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "homes near kk nagr"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "kk nagr"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find a place called kk nagr in Tamil Nadu. Could you check the spelling, or name a locality that is listed, such as Velachery or Adyar?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "kk nagr"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["could not find", "couldn't find", "cannot find"]],
+        "mustNotContain": ["KK Nagar"]
+      },
+      "modelNeverSaw": ["13.0415", "80.1996", "fake-kk-nagar"]
+    }
+  },
+  {
+    "id": "G-place-05",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a name that fits more than one area ('Anna Nagar'): one short question, and no area of the provider's named",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me homes near Anna Nagar"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Anna Nagar"
+            }
+          }
+        ]
+      },
+      {
+        "text": "More than one place could be meant by Anna Nagar. Could you give me a more specific name, such as the area with a landmark, or the pincode?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "anna nagar"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["more specific"]],
+        "mustNotContain": ["Anna Nagar East", "Anna Nagar West"]
+      },
+      "modelNeverSaw": [
+        "Anna Nagar East",
+        "Anna Nagar West",
+        "13.0905",
+        "Chennai, Tamil Nadu, India"
+      ]
+    }
+  },
+  {
+    "id": "G-place-06",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "an unknown place: the assistant says it is not found and invents no home or place",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Are there any flats near Xyzzyland?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Xyzzyland"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find a place called Xyzzyland in Tamil Nadu. If you name a locality that is listed, I can look there instead."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "xyzzyland"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["could not find", "couldn't find", "cannot find"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-07",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a place outside Tamil Nadu: not found, and no search is made around a far-away point",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Find me a house near Bandra Mumbai"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Bandra Mumbai"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find that place in Tamil Nadu, and findsprop lists homes in Tamil Nadu only. I can look by a locality that is listed if you like."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "bandra mumbai"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["Tamil Nadu"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-08",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "the place lookup is down: the assistant says it cannot look the place up and offers the localities",
+    "placeSearch": true,
+    "placesDown": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "homes near Velachery please"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I cannot look that place up right now. I can search by a locality that is listed instead, such as Velachery, if you would like."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velachery"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["cannot look", "can't look", "unable to look"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-09",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a distance the customer gave (3 km) is passed on, and homes beyond it are said to be further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Rental homes within 3 km of Adyar"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Adyar",
+              "radiusKm": 3,
+              "listingType": "rent"
+            }
+          }
+        ]
+      },
+      {
+        "text": "One rental is within 3 km of Adyar: a 2 BHK for ₹35,000/mo, 1 km away. [[home:v4g8k3ls]] Further out, a rental for ₹40,000/mo is 3.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 35000
+        },
+        {
+          "rupees": 40000
+        },
+        {
+          "any": ["3.4 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "adyar",
+              "radiusKm": 3,
+              "listingType": "rent"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:v4g8k3ls", "home:w5h9m4nt", "home:p6a2d5ek"],
+        "showsCards": ["home:v4g8k3ls"],
+        "mustContain": [["further out", "farther"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-10",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a locality with no 'near' still searches by locality, with no place and no lookup",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Homes in Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found three homes in Velachery. The 3 BHK apartment is ₹1.25 Cr. [[home:k3x9a2bd]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "velachery",
+              "place": null
+            }
+          }
+        ]
+      },
+      "visible": {
+        "showsCards": ["home:k3x9a2bd"]
+      }
+    }
   }
 ]

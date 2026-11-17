@@ -14,7 +14,8 @@ import { reportError } from "@/server/observability";
 import { enforceAiChatRateLimits, requestVisitorHash } from "@/server/rate-limit/rate-limit";
 import { realContextReads } from "../context/reads";
 import { buildConfirmCard, realConfirmCardDeps } from "../confirm/build-card";
-import { AI_CHAT_TOOLS } from "../tools/registry";
+import { createRealPlaceLookup } from "../real-place-lookup";
+import { createAiChatTools } from "../tools/registry";
 import type { ChatDeps, ChatUsageRecord } from "./types";
 
 /**
@@ -38,14 +39,20 @@ function keepAlive(work: Promise<unknown>): void {
 /** The words of the fixed replies, from the English catalogue: the assistant's wording is not chosen per page or locale. */
 const translate = createTranslator({ locale: "en", messages }) as unknown as Translate;
 
-/** The real dependencies of the endpoint. */
+/**
+ * The real dependencies of the endpoint. With `FLAG_AI_PLACE_SEARCH` on (and the chat itself on) the search tool takes a
+ * place and the system prompt carries the rules for places (ADR-142); with it off nothing about a place reaches the
+ * model, and the tool is the one that always existed. Made for one request, so the place lookup's memory is one message long.
+ */
 export function createChatDeps(): ChatDeps {
+  const placeSearch = env.FLAG_AI_SEARCH && env.FLAG_AI_PLACE_SEARCH;
   return {
     isEnabled: () => getFeatureFlags().aiSearch,
     getSession: getSessionView,
     enforceLimits: enforceAiChatRateLimits,
     createProvider: () => chooseAiProvider(env.AI_PROVIDER ?? ""),
-    tools: AI_CHAT_TOOLS,
+    tools: createAiChatTools(placeSearch ? createRealPlaceLookup() : undefined),
+    ...(placeSearch ? { placeSearch } : {}),
     translate,
     confirmCard: (offer, session) =>
       buildConfirmCard(offer, session, realConfirmCardDeps(translate)),

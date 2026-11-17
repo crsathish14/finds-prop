@@ -21,8 +21,20 @@ import {
 
 /** `@/features/search`: the read, and the defaults the tool takes from the real feature. */
 export async function searchModule() {
-  const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
-  return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
+  const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
+    await import("@/features/search/schemas");
+  const { NEARBY_RADIUS_KM, nearbyHomesToShow, nearbySearchParams, wantsNearby } =
+    await import("@/features/search/nearby");
+  return {
+    getSearchResults,
+    DEFAULT_RADIUS_KM,
+    DEFAULT_SORT,
+    DEFAULT_VIEW,
+    NEARBY_RADIUS_KM,
+    nearbyHomesToShow,
+    nearbySearchParams,
+    wantsNearby,
+  };
 }
 
 /** `@/features/property`: the read, and the page's own rules. */

@@ -18,7 +18,12 @@ export function scriptedProvider(evalCase: EvalCase, tools: readonly AnyAiChatTo
 export interface RunAllOptions {
   readonly mode: Mode;
   readonly tools: readonly AnyAiChatTool[];
-  readonly providerFor: (evalCase: EvalCase) => AiProvider;
+  /**
+   * The tools of a case that turns AI place search on (ADR-142): the same list with the place-aware search tool. The
+   * provider is asked for a case's model with the tools that case runs with.
+   */
+  readonly placeTools?: readonly AnyAiChatTool[];
+  readonly providerFor: (evalCase: EvalCase, tools: readonly AnyAiChatTool[]) => AiProvider;
   /** Called after each case, so a long real-model run can show where it is. */
   readonly onScore?: (score: CaseScore, position: number, total: number) => void;
 }
@@ -29,9 +34,14 @@ export async function runAll(
 ): Promise<CaseScore[]> {
   const scores: CaseScore[] = [];
   for (const evalCase of cases) {
+    const placeSearch = evalCase.placeSearch;
+    if (placeSearch && options.placeTools === undefined)
+      throw new Error(`${evalCase.id} needs the place-aware tools and none were given`);
+    const tools = placeSearch ? (options.placeTools ?? options.tools) : options.tools;
     const observed = await runCase(evalCase, {
-      provider: options.providerFor(evalCase),
-      tools: options.tools,
+      provider: options.providerFor(evalCase, tools),
+      tools,
+      placeSearch,
     });
     const score = scoreCase(evalCase, observed, options.mode);
     scores.push(score);

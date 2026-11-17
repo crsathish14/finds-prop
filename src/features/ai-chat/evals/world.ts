@@ -11,7 +11,15 @@ import type { PropertyData } from "@/features/property";
 import type { ProjectData, ProjectListItem } from "@/features/projects";
 import type { ListingRow } from "@/features/search";
 import type { SessionView } from "@/server/auth/session";
+import {
+  createFakePlaceProvider,
+  FAKE_PLACES,
+  PlaceLookupError,
+  type PlaceProvider,
+} from "@/server/places";
 import { countLocalities, localityKey } from "../localities";
+import { createPlaceLookup } from "../place-lookup";
+import type { PlaceLookup } from "../tools/place-lookup";
 import {
   listingRow,
   projectData,
@@ -32,6 +40,8 @@ export interface WorldSettings {
   readonly failingTools: readonly string[];
   /** Homes the signed-in customer owns (the propose tools refuse an enquiry about one). */
   readonly ownedHomeIds: readonly string[];
+  /** True when the place lookup cannot answer (the provider is down, out of quota or switched off). */
+  readonly placesDown: boolean;
 }
 
 export const CUSTOMER_SESSION: SessionView = {
@@ -41,7 +51,12 @@ export const CUSTOMER_SESSION: SessionView = {
   builderId: null,
 };
 
-const DEFAULT_SETTINGS: WorldSettings = { session: null, failingTools: [], ownedHomeIds: [] };
+const DEFAULT_SETTINGS: WorldSettings = {
+  session: null,
+  failingTools: [],
+  ownedHomeIds: [],
+  placesDown: false,
+};
 
 let settings: WorldSettings = DEFAULT_SETTINGS;
 
@@ -498,6 +513,9 @@ function readFailure(): never {
 }
 
 type SearchParameters = {
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
   listingType?: string;
   propertyType?: string;
   bhk?: number;
@@ -509,7 +527,35 @@ type SearchParameters = {
   sort?: string;
 };
 
+/**
+ * Where each locality's homes are, approximately: the centre an owner's address would put them at (ADR-142). The place
+ * search measures from here, so a home's distance is the same for every home of a locality, and a made-up centre is
+ * never exactly where the place provider puts the same name.
+ */
+const LOCALITY_CENTRES: Record<string, readonly [number, number]> = {
+  Velachery: [12.9852, 80.2301],
+  Adyar: [13.01, 80.26],
+  "Anna Nagar": [13.0878, 80.2123],
+  Porur: [13.0359, 80.1572],
+  Tambaram: [12.9291, 80.1141],
+  "OMR Navalur": [12.847, 80.227],
+  Perungudi: [12.9622, 80.2412],
+  Madipakkam: [12.965, 80.1988],
+};
+
+/** The great-circle distance between two points, in kilometres (haversine). */
+function kilometresBetween(from: readonly [number, number], to: readonly [number, number]): number {
+  const radians = (degrees: number) => (degrees * Math.PI) / 180;
+  const latitudeChange = radians(to[0] - from[0]);
+  const longitudeChange = radians(to[1] - from[1]);
+  const half =
+    Math.sin(latitudeChange / 2) ** 2 +
+    Math.cos(radians(from[0])) * Math.cos(radians(to[0])) * Math.sin(longitudeChange / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(half));
+}
+
 const SORTS: Record<string, (first: ListingRow, second: ListingRow) => number> = {
+  distance: (first, second) => (first.distance_km ?? 0) - (second.distance_km ?? 0),
   newest: (first, second) => (first.ageDays ?? 0) - (second.ageDays ?? 0),
   price_asc: (first, second) => first.price - second.price,
   price_desc: (first, second) => second.price - first.price,
@@ -520,7 +566,16 @@ export async function getSearchResults(params: SearchParameters) {
   if (failing("search_properties")) return { status: "failed" as const };
   const locality = params.locality === undefined ? null : localityKey(params.locality);
   const keyword = params.keyword === undefined ? null : localityKey(params.keyword);
-  const homes = HOMES.map(toListingRow).filter((home) => {
+  const around: readonly [number, number] | null =
+    params.lat !== undefined && params.lng !== undefined ? [params.lat, params.lng] : null;
+  const homes = HOMES.map((spec) => {
+    const row = toListingRow(spec);
+    const centre = LOCALITY_CENTRES[spec.locality];
+    return around === null || centre === undefined
+      ? row
+      : { ...row, distance_km: kilometresBetween(around, centre) };
+  }).filter((home) => {
+    if (around !== null && (home.distance_km ?? Infinity) > (params.radiusKm ?? 5)) return false;
     if (params.listingType !== undefined && home.listing_type !== params.listingType) return false;
     if (params.propertyType !== undefined && home.property_type !== params.propertyType)
       return false;
@@ -626,3 +681,65 @@ export const WORLD_IDS = {
   projects: PROJECTS.map((project) => project.slug),
   builders: BUILDERS.map((builder) => builder.name),
 } as const;
+
+// ---------------------------------------------------------------- the place lookup (ADR-142)
+
+/**
+ * The places the stand-in provider knows beyond the fixed Chennai list: Adyar, and two more areas that share a name
+ * with a listed locality, so "Anna Nagar" has more than one answer and none is exactly what was typed.
+ */
+const EXTRA_PLACES = [
+  {
+    id: "fake-adyar",
+    label: "Adyar",
+    detail: "Chennai, Tamil Nadu, India",
+    kind: "area" as const,
+    lat: 13.0012,
+    lng: 80.2565,
+  },
+  {
+    id: "fake-anna-nagar-east",
+    label: "Anna Nagar East",
+    detail: "Chennai, Tamil Nadu, India",
+    kind: "area" as const,
+    lat: 13.0905,
+    lng: 80.2215,
+  },
+  {
+    id: "fake-anna-nagar-west",
+    label: "Anna Nagar West",
+    detail: "Chennai, Tamil Nadu, India",
+    kind: "area" as const,
+    lat: 13.0902,
+    lng: 80.1965,
+  },
+];
+
+/**
+ * What the real provider is seen to do with a heavy misspelling it can still read (checked on a dev key, 17 Nov): it
+ * finds the place. Everything else it cannot read finds nothing in Tamil Nadu ("kk nagr" finds Agra, which the
+ * region filter drops), which the fixed list gives for any word it does not hold.
+ */
+const READABLE_MISSPELLINGS: Record<string, string> = { vyasarpaadi: "Vyasarpadi" };
+
+function worldPlaceProvider(): PlaceProvider {
+  const fixed = createFakePlaceProvider({ places: [...FAKE_PLACES, ...EXTRA_PLACES] });
+  return {
+    autocomplete(text) {
+      if (settings.placesDown)
+        return Promise.reject(new PlaceLookupError("quota", "the stand-in provider is down"));
+      const key = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+      return fixed.autocomplete(READABLE_MISSPELLINGS[key] ?? text);
+    },
+  };
+}
+
+/**
+ * The place lookup of the evals: the real lookup (`createPlaceLookup`, so the real resolving rules) over the stand-in
+ * provider and the made-up world's own localities. It makes no network call and counts nothing.
+ */
+export const worldPlaceLookup: PlaceLookup = (text) =>
+  createPlaceLookup({
+    provider: async () => worldPlaceProvider(),
+    localities: async () => (await getLocalityCounts()).localities,
+  })(text);

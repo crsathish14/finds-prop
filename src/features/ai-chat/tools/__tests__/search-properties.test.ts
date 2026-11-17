@@ -11,8 +11,20 @@ const error = vi.fn();
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The search feature is stood in for by its read (a stand-in) and its real defaults.
 vi.mock("@/features/search", async () => {
-  const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
-  return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
+  const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
+    await import("@/features/search/schemas");
+  const { NEARBY_RADIUS_KM, nearbyHomesToShow, nearbySearchParams, wantsNearby } =
+    await import("@/features/search/nearby");
+  return {
+    getSearchResults,
+    DEFAULT_RADIUS_KM,
+    DEFAULT_SORT,
+    DEFAULT_VIEW,
+    NEARBY_RADIUS_KM,
+    nearbyHomesToShow,
+    nearbySearchParams,
+    wantsNearby,
+  };
 });
 
 const { toPortableJsonSchema } = await import("@/server/ai");

@@ -46,8 +46,20 @@ vi.mock(import("@/server/env"), async (importOriginal) => {
 });
 vi.mock("@/server/auth/get-session-view", () => ({ getSessionView }));
 vi.mock("@/features/search", async () => {
-  const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
-  return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
+  const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
+    await import("@/features/search/schemas");
+  const { NEARBY_RADIUS_KM, nearbyHomesToShow, nearbySearchParams, wantsNearby } =
+    await import("@/features/search/nearby");
+  return {
+    getSearchResults,
+    DEFAULT_RADIUS_KM,
+    DEFAULT_SORT,
+    DEFAULT_VIEW,
+    NEARBY_RADIUS_KM,
+    nearbyHomesToShow,
+    nearbySearchParams,
+    wantsNearby,
+  };
 });
 vi.mock("@/features/property", async () => {
   const { amenityList, perSqftRupees } = await import("@/features/property/view");
@@ -89,6 +101,8 @@ vi.mock("../../chat-screen", () => ({
 
 const { AI_CHAT_TOOLS, runTool, toolDefinitions, UNTRUSTED_TEXT_KEY } =
   await import("@/features/ai-chat");
+const { createAiChatTools } = await import("../registry");
+const { searchPropertiesTool } = await import("../search-properties");
 const { findPortableSchemaViolations, PortableSchemaError } = await import("@/server/ai");
 
 // ---------------------------------------------------------------- the checkers
@@ -427,6 +441,25 @@ describe("UT-ai-tools-registry: the list", () => {
       ]),
     );
     expect(names).toHaveLength(10);
+  });
+
+  it("serves the search tool that has always existed while place search is off, and the place-aware one only with a lookup (ADR-142)", () => {
+    const names = AI_CHAT_TOOLS.map((tool) => tool.name);
+    expect(AI_CHAT_TOOLS.find((tool) => tool.name === "search_properties")).toBe(
+      searchPropertiesTool,
+    );
+    const lookup = vi.fn();
+    const withPlaces = createAiChatTools(lookup);
+    expect(withPlaces.map((tool) => tool.name)).toEqual(names);
+    const [search] = withPlaces;
+    expect(search).not.toBe(searchPropertiesTool);
+    const shape = (search?.input as { shape?: Record<string, unknown> }).shape ?? {};
+    expect(Object.keys(shape)).toEqual(expect.arrayContaining(["place", "radiusKm"]));
+    const oldShape =
+      (searchPropertiesTool.input as { shape?: Record<string, unknown> }).shape ?? {};
+    expect(Object.keys(oldShape)).not.toContain("place");
+    // The same ten tools, every other one untouched.
+    expect(withPlaces.slice(1)).toEqual(AI_CHAT_TOOLS.slice(1));
   });
 
   it("gives every tool a kind: eight read tools the loop may run in parallel, and two propose tools that run alone", () => {
