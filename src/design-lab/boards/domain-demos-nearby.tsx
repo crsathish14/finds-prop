@@ -117,23 +117,35 @@ export function NearbyDemo() {
         </Specimen>
       </div>
       <Specimen label="Cards with their distance (the last one is approximate: the owner gave only the locality)">
-        <ResultsGrid view="grid">
-          {near.map((property) => (
-            <PropertyCard key={property.href + (property.distanceText ?? "")} property={property} />
-          ))}
-        </ResultsGrid>
+        <div className="w-full max-w-5xl">
+          <ResultsGrid view="grid">
+            {near.map((property) => (
+              <PropertyCard
+                key={property.href + (property.distanceText ?? "")}
+                property={property}
+              />
+            ))}
+          </ResultsGrid>
+        </div>
       </Specimen>
       <Specimen label="Also near: homes from the wider circle under the first results">
-        <NearbySection place="Velachery" radiusKm={15} count={further.length}>
-          {further.map((property) => (
-            <PropertyCard key={property.href + (property.distanceText ?? "")} property={property} />
-          ))}
-        </NearbySection>
+        <div className="w-full max-w-5xl">
+          <NearbySection place="Velachery" radiusKm={15} count={further.length}>
+            {further.map((property) => (
+              <PropertyCard
+                key={property.href + (property.distanceText ?? "")}
+                property={property}
+              />
+            ))}
+          </NearbySection>
+        </div>
       </Specimen>
       <Specimen label="Also near, list layout, one home">
-        <NearbySection place="Velachery" radiusKm={10} count={1} view="list">
-          <PropertyCard property={withDistance(SALE_BUDGET, translate, "6.7")} layout="list" />
-        </NearbySection>
+        <div className="w-full max-w-5xl">
+          <NearbySection place="Velachery" radiusKm={10} count={1} view="list">
+            <PropertyCard property={withDistance(SALE_BUDGET, translate, "6.7")} layout="list" />
+          </NearbySection>
+        </div>
       </Specimen>
     </div>
   );
