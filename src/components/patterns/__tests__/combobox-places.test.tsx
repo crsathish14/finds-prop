@@ -153,3 +153,23 @@ describe("Combobox: place suggestions (ADR-131, UX addendum ADD-07)", () => {
     expect(screen.getByRole("listbox")).toBeInTheDocument();
   });
 });
+
+describe("Combobox: expanded only once the panel exists", () => {
+  it("says expanded once the panel is in the page, and not before it opens", async () => {
+    render(<Example />);
+    const input = screen.getByRole("combobox");
+    expect(input).toHaveAttribute("aria-expanded", "false");
+    await userEvent.type(input, "vel");
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(input).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("goes back to not expanded when the panel closes", async () => {
+    render(<Example />);
+    const input = screen.getByRole("combobox");
+    await userEvent.type(input, "vel");
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(input).toHaveAttribute("aria-expanded", "false");
+  });
+});
