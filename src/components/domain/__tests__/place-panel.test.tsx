@@ -9,8 +9,8 @@ import { usePlacePanel, type PlacePanelState } from "../place-panel";
 
 const words = en.domain.places;
 
-/** The notes are inside the list; the same words are also read out by the polite live region. */
-const inList = () => within(screen.getByRole("listbox"));
+/** The notes are in the panel, beside the list; the same words are also read out by the polite live region. */
+const inList = () => within(screen.getByRole("dialog"));
 
 function Host({ state, query }: { state: PlacePanelState; query: string }) {
   const panel = usePlacePanel(state, query);

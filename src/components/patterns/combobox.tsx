@@ -148,6 +148,24 @@ function Notice({ notice }: { notice: ComboboxNotice }) {
   );
 }
 
+/** The notes of a panel, together; with `divided` a line under them separates them from the row that follows. */
+function NoticeBlock({
+  notices,
+  divided = false,
+}: {
+  notices: readonly ComboboxNotice[];
+  divided?: boolean;
+}) {
+  if (notices.length === 0) return null;
+  return (
+    <div className={cn(divided && "mb-1 border-b border-line")}>
+      {notices.map((notice) => (
+        <Notice key={notice.title} notice={notice} />
+      ))}
+    </div>
+  );
+}
+
 function LoadingRows() {
   return (
     <div aria-hidden="true">
@@ -303,25 +321,24 @@ function Combobox({
           }}
           onEscapeKeyDown={() => setOpen(false)}
         >
+          {/* The notes, the loading rows and the empty text are not options, so they sit beside the list, not in it (a listbox may hold options only). */}
+          {showIdle ? <NoticeBlock notices={idleNotices} /> : null}
+          {showList && !loading ? (
+            <NoticeBlock notices={notices} divided={fallbackOption !== undefined} />
+          ) : null}
+          {showList && loading ? (
+            loadingRows ? (
+              <LoadingRows />
+            ) : (
+              <p className="px-3 py-3 text-small text-muted">{labels.loading}</p>
+            )
+          ) : null}
+          {showList && !loading && options.length === 0 && notices.length === 0 ? (
+            <Command.Empty className="px-3 py-3 text-small text-muted">
+              {labels.noResults}
+            </Command.Empty>
+          ) : null}
           <Command.List>
-            {showIdle
-              ? idleNotices.map((notice) => <Notice key={notice.title} notice={notice} />)
-              : null}
-            {showList && !loading
-              ? notices.map((notice) => <Notice key={notice.title} notice={notice} />)
-              : null}
-            {showList && loading ? (
-              loadingRows ? (
-                <LoadingRows />
-              ) : (
-                <p className="px-3 py-3 text-small text-muted">{labels.loading}</p>
-              )
-            ) : null}
-            {showList && !loading && options.length === 0 && notices.length === 0 ? (
-              <Command.Empty className="px-3 py-3 text-small text-muted">
-                {labels.noResults}
-              </Command.Empty>
-            ) : null}
             {showList
               ? options.map((option) => (
                   <Command.Item
@@ -349,26 +366,21 @@ function Combobox({
                 ))
               : null}
             {showList && !loading && fallbackOption ? (
-              <>
-                {options.length > 0 || notices.length > 0 ? (
-                  <div aria-hidden="true" className="mx-3 my-1 h-px bg-line" />
-                ) : null}
-                <Command.Item
-                  key={fallbackOption.value}
-                  value={fallbackOption.value}
-                  onSelect={() => pickFallback(fallbackOption)}
-                  className={cn(
-                    ITEM_BASE,
-                    "data-[selected=true]:bg-primary-tint data-[selected=true]:outline-2 data-[selected=true]:outline-primary",
-                  )}
-                >
-                  <PlaceRow
-                    option={{ ...fallbackOption, icon: fallbackOption.icon ?? Search }}
-                    query={query}
-                    marked={false}
-                  />
-                </Command.Item>
-              </>
+              <Command.Item
+                key={fallbackOption.value}
+                value={fallbackOption.value}
+                onSelect={() => pickFallback(fallbackOption)}
+                className={cn(
+                  ITEM_BASE,
+                  "data-[selected=true]:bg-primary-tint data-[selected=true]:outline-2 data-[selected=true]:outline-primary",
+                )}
+              >
+                <PlaceRow
+                  option={{ ...fallbackOption, icon: fallbackOption.icon ?? Search }}
+                  query={query}
+                  marked={false}
+                />
+              </Command.Item>
             ) : null}
           </Command.List>
           {footer ? (
