@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { ActionError } from "../../actions/normalise-error";
+import type { PlacesUsageRecord } from "../../audit/places-usage";
 import { createLogger } from "../../logger";
 import { RateLimitedError } from "../../rate-limit/enforce";
 import { createOffPlaceProvider } from "../fake";
@@ -25,6 +26,8 @@ function setup(overrides: Partial<PlaceAutocompleteDeps> = {}) {
   const lines: string[] = [];
   const reportError = vi.fn(async () => undefined);
   const enforceLimits = vi.fn(async () => undefined);
+  const recorded: PlacesUsageRecord[] = [];
+  const recordUsage = vi.fn((record: PlacesUsageRecord) => void recorded.push(record));
   const fake = createFakePlaceProvider();
   const deps: PlaceAutocompleteDeps = {
     requestId: REQUEST_ID,
@@ -35,9 +38,10 @@ function setup(overrides: Partial<PlaceAutocompleteDeps> = {}) {
       { level: "debug", write: (line) => lines.push(line) },
     ),
     reportError,
+    recordUsage,
     ...overrides,
   };
-  return { deps, lines, reportError, enforceLimits, fake };
+  return { deps, lines, reportError, enforceLimits, fake, recorded, recordUsage };
 }
 
 async function call(query: string | null, deps: PlaceAutocompleteDeps, raw?: string) {
@@ -321,5 +325,170 @@ describe("UT-places-autocomplete: nothing private leaves, nothing is cached", ()
     const { text } = await call(TYPED, deps);
     expect(text).not.toContain(TYPED);
     expect(text).not.toContain(KEY);
+  });
+});
+
+describe("UT-places-usage: one call that reaches the provider is counted once (ADR-133 update, ADR-134)", () => {
+  it("counts a lookup that found places as ok, for the search box when no source is given", async () => {
+    const { deps, recorded } = setup();
+    const { response } = await call("kk nagar", deps);
+    expect(response.status).toBe(200);
+    expect(recorded).toEqual([{ api: "autocomplete", caller: "search_box", outcome: "ok" }]);
+  });
+
+  it("counts a lookup that found nothing as empty", async () => {
+    const { deps, recorded } = setup();
+    const { body } = await call("zzzzzz nowhere", deps);
+    expect(body).toEqual({ ok: true, data: [] });
+    expect(recorded).toEqual([{ api: "autocomplete", caller: "search_box", outcome: "empty" }]);
+  });
+
+  it.each<["timeout" | "quota" | "error"]>([["timeout"], ["quota"], ["error"]])(
+    "counts a provider failure of class %s with that outcome",
+    async (failure) => {
+      const { deps, recorded } = setup({ getProvider: () => providerThatFails(failure) });
+      await call("kk nagar", deps);
+      expect(recorded).toEqual([{ api: "autocomplete", caller: "search_box", outcome: failure }]);
+    },
+  );
+
+  it.each(["search_box", "listing_form", "admin_picker"] as const)(
+    "labels the count with the source %s",
+    async (source) => {
+      const { deps, recorded } = setup();
+      await call(null, deps, `/api/places/autocomplete?q=velachery&source=${source}`);
+      expect(recorded).toEqual([{ api: "autocomplete", caller: source, outcome: "ok" }]);
+    },
+  );
+
+  it.each([
+    ["an unknown source", "?q=velachery&source=hacker"],
+    ["ai_chat, which this route never serves", "?q=velachery&source=ai_chat"],
+    ["an empty source", "?q=velachery&source="],
+    ["a source given twice", "?q=velachery&source=search_box&source=listing_form"],
+    ["a source in the wrong case", "?q=velachery&source=Search_Box"],
+  ])("refuses %s with 400 VALIDATION and counts nothing", async (_name, query) => {
+    const { deps, recorded, enforceLimits, fake } = setup();
+    const { response, body } = await call(null, deps, `/api/places/autocomplete${query}`);
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ ok: false, code: "VALIDATION", requestId: REQUEST_ID });
+    expect(enforceLimits).not.toHaveBeenCalled();
+    expect(fake.asked).toEqual([]);
+    expect(recorded).toEqual([]);
+  });
+
+  it("does not count a bad q, whatever the source", async () => {
+    const { deps, recorded } = setup();
+    await call(null, deps, "/api/places/autocomplete?q=ab&source=listing_form");
+    expect(recorded).toEqual([]);
+  });
+
+  it("does not count a call our own limit refused", async () => {
+    const { deps, recorded, recordUsage } = setup({
+      enforceLimits: async () => {
+        throw new RateLimitedError("places", 41.2);
+      },
+    });
+    expect((await call("kk nagar", deps)).response.status).toBe(429);
+    expect(recordUsage).not.toHaveBeenCalled();
+    expect(recorded).toEqual([]);
+  });
+
+  it("does not count a call when the counter fails, or the settings read blows up", async () => {
+    const cases: Array<Partial<PlaceAutocompleteDeps>> = [
+      { enforceLimits: async () => Promise.reject(new ActionError("INTERNAL", "counter down")) },
+      { getProvider: () => Promise.reject(new Error("settings down")) },
+    ];
+    for (const overrides of cases) {
+      const { deps, recordUsage } = setup(overrides);
+      expect((await call("kk nagar", deps)).response.status).toBe(500);
+      expect(recordUsage).not.toHaveBeenCalled();
+    }
+  });
+
+  it("does not count the kill switch or a missing key (failure off): nothing reached the provider", async () => {
+    for (const getProvider of [
+      () => providerThatFails("off"),
+      () => createOffPlaceProvider("Place search is switched off"),
+    ]) {
+      const { deps, recordUsage } = setup({ getProvider });
+      expect((await call("kk nagar", deps)).response.status).toBe(503);
+      expect(recordUsage).not.toHaveBeenCalled();
+    }
+  });
+
+  it("counts exactly one call for one lookup", async () => {
+    const { deps, recordUsage } = setup();
+    await call("kk nagar", deps);
+    expect(recordUsage).toHaveBeenCalledTimes(1);
+  });
+
+  it("hands the count over as work to run later: the answer is returned while the write is still waiting", async () => {
+    const waiting: Array<() => void> = [];
+    const written: PlacesUsageRecord[] = [];
+    const { deps } = setup({
+      // The same shape as the route: the write is scheduled, and it runs only when the framework runs it later.
+      recordUsage: (record) => void waiting.push(() => void written.push(record)),
+    });
+    const { response, body } = await call("kk nagar", deps);
+    expect(response.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(written).toEqual([]);
+    expect(waiting).toHaveLength(1);
+    for (const run of waiting) run();
+    expect(written).toEqual([{ api: "autocomplete", caller: "search_box", outcome: "ok" }]);
+  });
+
+  it("never changes the answer when scheduling the count throws, and says so in one line without the typed text", async () => {
+    const throwing = () => {
+      throw new Error(`after() outside a request for ${TYPED} ${KEY}`);
+    };
+    const success = setup({ recordUsage: throwing });
+    const answered = await call("kk nagar", success.deps);
+    expect(answered.response.status).toBe(200);
+    expect(answered.body.ok).toBe(true);
+    expect(success.lines).toHaveLength(1);
+
+    const failed = setup({
+      recordUsage: throwing,
+      getProvider: () => providerThatFails("timeout"),
+    });
+    const refused = await call(TYPED, failed.deps);
+    expect(refused.response.status).toBe(502);
+    expect(refused.body).toEqual({
+      ok: false,
+      code: "UPSTREAM_FAILED",
+      reason: "unavailable",
+      requestId: REQUEST_ID,
+    });
+
+    for (const { lines } of [success, failed]) {
+      const written = lines.join("\n");
+      expect(written).not.toContain(TYPED);
+      expect(written).not.toContain(KEY);
+    }
+  });
+
+  it("runs the same with no counter at all (a deployment that does not reach the provider)", async () => {
+    const { deps } = setup();
+    delete deps.recordUsage;
+    expect((await call("kk nagar", deps)).response.status).toBe(200);
+  });
+
+  it("hands the counter only the three closed values, never the typed text or a place name", async () => {
+    const { deps, recorded } = setup();
+    await call(
+      null,
+      deps,
+      `/api/places/autocomplete?q=${encodeURIComponent(TYPED)}&source=admin_picker`,
+    );
+    await call("kk nagar", deps);
+    expect(recorded).toHaveLength(2);
+    for (const record of recorded) {
+      expect(Object.keys(record).sort()).toEqual(["api", "caller", "outcome"]);
+      const serialised = JSON.stringify(record);
+      expect(serialised).not.toContain("Zanzibar");
+      for (const place of FAKE_PLACES) expect(serialised).not.toContain(place.label);
+    }
   });
 });
