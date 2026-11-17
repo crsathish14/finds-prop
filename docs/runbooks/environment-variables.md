@@ -77,13 +77,23 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 
 | Variable                                              | When                                                                   |
 | ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| `OLA_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_STYLE_URL`       | When place search and the map are built                                |
+| `OLA_MAPS_API_KEY`, `PLACES_DISABLED`                 | Place search (ADR-131); see "Place search" below                       |
+| `NEXT_PUBLIC_MAP_STYLE_URL`                           | When the map view is built                                             |
 | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                            |
 | `AI_REASONING_EFFORT`                                 | Optional; blank keeps the model default (see below)                    |
 | Error tracking variables                              | When error tracking is switched on (see below)                         |
 | `FLAG_AI_SEARCH`, `FLAG_MAP_VIEW`, `FLAG_PG_LISTINGS` | Leave unset (off). They hide those features and their navigation       |
 | `FLAG_CUSTOMER_EMAIL`                                 | Leave `0` until an email provider is set up (see "Email verification") |
 | `DESIGN_LAB`                                          | `1` only for review on local or dev; ignored in production             |
+
+## Place search (ADR-131)
+
+Place search turns a typed place such as "KK Nagar" into a position. It uses Ola Maps Places Autocomplete, called from the server only; the key is never sent to a browser.
+
+- `OLA_MAPS_API_KEY`: the **API key** of an Ola Maps credential (Krutrim Cloud, Ola Maps, Maps Credentials; open the credential and copy the API key, not the client secret). Use **one key for dev and a separate one for production**, set in Vercel for each environment. Without it, local and dev show a fixed list of Chennai places so a developer sees suggestions; staging and production show no suggestions and the search box falls back to typed text. The page keeps working either way.
+- `PLACES_DISABLED`: `1` turns every lookup off at once (the kill switch); leave it `0` (or unset) normally. Use it if a bot is burning the quota; set it in Vercel and redeploy.
+- Ola gives the first 100,000 calls per API per month free and then charges per call from prepaid credits (checked 16 Nov 2026; the balance is read in Ola's own console). If the balance runs out the lookups answer "refused" and the search box falls back to typed text.
+- A wrong key answers `401 Unauthorized`. Check that the key is the API key, that the credential is active, and that no website or address restriction blocks the server.
 
 ## Error tracking (optional; ADR-130)
 

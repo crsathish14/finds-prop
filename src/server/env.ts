@@ -27,6 +27,8 @@ const serverEnvSchema = z.object({
   MSG91_TEMPLATE_ID: z.string().min(1).optional(),
   MSG91_SENDER_ID: z.string().min(1).optional(),
   OLA_MAPS_API_KEY: z.string().min(1).optional(),
+  /** The manual kill switch for place search (ADR-131): 1 and every lookup says "off" without calling the provider. */
+  PLACES_DISABLED: flag,
   RATE_LIMIT_HMAC_SECRET: z.string().min(32).optional(),
   SENTRY_DSN: z.url().optional(),
   SENTRY_AUTH_TOKEN: z.string().min(1).optional(),

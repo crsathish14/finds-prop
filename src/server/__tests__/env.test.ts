@@ -28,6 +28,22 @@ describe("UT-env: AI_REASONING_EFFORT", () => {
   });
 });
 
+describe("UT-env: PLACES_DISABLED, the place search kill switch (ADR-131)", () => {
+  it("is off by default", () => {
+    expect(parseServerEnv({}).PLACES_DISABLED).toBe(false);
+  });
+  it.each([
+    ["1", true],
+    ["true", true],
+    ["0", false],
+  ])("reads %s as %s", (value, expected) => {
+    expect(parseServerEnv({ PLACES_DISABLED: value }).PLACES_DISABLED).toBe(expected);
+  });
+  it("fails the check for any other value, naming the variable", () => {
+    expect(() => parseServerEnv({ PLACES_DISABLED: "yes" })).toThrow(/PLACES_DISABLED/);
+  });
+});
+
 describe("UT-env: server environment", () => {
   it("applies safe defaults: local environment, every flag off", () => {
     const env = parseServerEnv({});
