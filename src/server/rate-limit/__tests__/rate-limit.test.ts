@@ -149,7 +149,8 @@ describe("UT-rate-limit: enforceActionRateLimit", () => {
     const first = (rpc.mock.calls[0]?.[1] as { limit_subject: string }).limit_subject;
     incomingHeaders.set("x-vercel-forwarded-for", "198.51.100.99");
     await enforceActionRateLimit({ scope: "places", session: null, requestId: "req-12345678" });
-    expect((rpc.mock.calls[1]?.[1] as { limit_subject: string }).limit_subject).toBe(first);
+    // Two rules per call (visitor, then address): the second call's visitor count is the third RPC.
+    expect((rpc.mock.calls[2]?.[1] as { limit_subject: string }).limit_subject).toBe(first);
   });
 
   it("raises RATE_LIMITED with the retry time when the counter says no", async () => {

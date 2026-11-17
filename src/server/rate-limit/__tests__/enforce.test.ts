@@ -63,6 +63,23 @@ describe("UT-rate-limit: enforceRateLimit", () => {
     for (const call of hit.mock.calls) expect(String(call[1])).not.toBe("+919000000001");
   });
 
+  it("counts a place suggestion per visitor and per address burst, each under its own database scope (ADR-133)", async () => {
+    const { counter, hit } = counterThatAllows();
+    await enforceRateLimit({ counter, scope: "places", caller: { ...caller, userId: null } });
+    expect(hit).toHaveBeenNthCalledWith(1, "places_visitor", "visitor-hash", 60, 60);
+    expect(hit).toHaveBeenNthCalledWith(2, "places_network", "network-hash", 10, 30);
+  });
+
+  it("refuses a place suggestion when only the address burst is used up", async () => {
+    const hit = vi
+      .fn()
+      .mockResolvedValueOnce({ allowed: true, retryAfter: 0 })
+      .mockResolvedValueOnce({ allowed: false, retryAfter: 7 });
+    const refusal = await failure(enforceRateLimit({ counter: { hit }, scope: "places", caller }));
+    expect(refusal.code).toBe("RATE_LIMITED");
+    expect(refusal.retryAfter).toBe(7);
+  });
+
   it("refuses with RATE_LIMITED and the seconds to wait", async () => {
     const { counter } = counterThatAllows(false, 1500);
     const refusal = await failure(enforceRateLimit({ counter, scope: "places", caller }));

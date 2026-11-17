@@ -159,6 +159,68 @@ describe("IT-rate-limit: the action step (hashes from the request, secret from t
   });
 });
 
+describe("IT-rate-limit-places: place suggestions against a real database (ADR-133)", () => {
+  const counter = createRateLimitCounter(randomUUID());
+
+  /** An anonymous caller with fresh identities, so a rerun on the same database never meets old counts. */
+  function anonymous(network: string): RateLimitCaller {
+    const visitor = `it-visitor-${randomUUID()}`;
+    subjects.push(visitor, network);
+    return {
+      userId: null,
+      visitor: () => visitor,
+      ip: () => `it-ip-${network}`,
+      network: () => network,
+      global: () => "it-places-global",
+      cookie: () => null,
+      hashKey: (key) => key,
+    };
+  }
+
+  it("IT-places-burst: one address that changes its browser every call is stopped after 30 in 10 seconds, with a retry time", async () => {
+    const network = `it-network-${randomUUID()}`;
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      await enforceRateLimit({ counter, scope: "places", caller: anonymous(network) });
+    }
+    const error = await refusal(
+      enforceRateLimit({ counter, scope: "places", caller: anonymous(network) }),
+    );
+    expect(error.code).toBe("RATE_LIMITED");
+    expect(error.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(error.retryAfter).toBeLessThanOrEqual(10);
+  });
+
+  it("IT-places-burst-isolated: a visitor on another address is never counted with it", async () => {
+    const busy = `it-network-${randomUUID()}`;
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      await enforceRateLimit({ counter, scope: "places", caller: anonymous(busy) });
+    }
+    await refusal(enforceRateLimit({ counter, scope: "places", caller: anonymous(busy) }));
+    await enforceRateLimit({
+      counter,
+      scope: "places",
+      caller: anonymous(`it-network-${randomUUID()}`),
+    });
+  });
+
+  it("IT-places-visitor: one browser is stopped after 60 in a minute, with its own database scope", async () => {
+    const caller = anonymous(`it-network-${randomUUID()}`);
+    // A fresh address per call keeps the burst rule out of the way, so only the visitor rule is exercised.
+    const sameVisitor = (): RateLimitCaller => {
+      const network = `it-network-${randomUUID()}`;
+      subjects.push(network);
+      return { ...caller, network: () => network };
+    };
+    for (let attempt = 1; attempt <= 60; attempt += 1) {
+      await enforceRateLimit({ counter, scope: "places", caller: sameVisitor() });
+    }
+    const error = await refusal(
+      enforceRateLimit({ counter, scope: "places", caller: sameVisitor() }),
+    );
+    expect(error.code).toBe("RATE_LIMITED");
+  });
+});
+
 /** A caller of the AI chat with fresh identities, so a rerun on the same database never meets old counts. */
 function aiCaller(who: {
   userId?: string | null;

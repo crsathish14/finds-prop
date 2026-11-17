@@ -81,8 +81,18 @@ export const RATE_LIMITS = {
   builder_edit: [{ who: "user", windowSeconds: HOUR, max: 300 }],
   /** 60 project saves per user per hour: the admin's and a builder's project form (S7-T02). */
   project_save: [{ who: "user", windowSeconds: HOUR, max: 60 }],
-  /** 60 place searches per visitor per minute (protects the provider quota). */
-  places: [{ who: "visitor", windowSeconds: MINUTE, max: 60 }],
+  /**
+   * Place suggestions (ADR-133): 60 per visitor per minute (protects the provider quota), and a burst limit of 30 per
+   * 10 seconds for one address (an IPv6 address is cut to its /64 prefix, so rotating inside the block does not help).
+   * One browser is held by the first rule, so the second only meets a client that changes its browser identity on
+   * every call to get round the first: it cannot burn the provider quota, and a visitor on another address is never
+   * counted with it. A typing person makes about one call a second at most, so a shared address (a campus, a mobile
+   * carrier) stays well under 30 in 10 seconds.
+   */
+  places: [
+    { who: "visitor", windowSeconds: MINUTE, max: 60 },
+    { who: "network", windowSeconds: 10, max: 30 },
+  ],
   /** 60 map searches per visitor per minute. */
   map_search: [{ who: "visitor", windowSeconds: MINUTE, max: 60 }],
   /**
