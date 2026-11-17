@@ -1089,7 +1089,9 @@
       "unsave": "Remove from saved homes",
       "compare": "Compare",
       "compared": "Added to compare",
-      "compareLimit": "You can compare up to 3 homes"
+      "compareLimit": "You can compare up to 3 homes",
+      "distanceAway": "{distance} km away",
+      "distanceApprox": "About {distance} km away"
     },
     "projectCard": {
       "featured": "Featured",
@@ -1103,6 +1105,39 @@
     },
     "developerCard": {
       "projects": "{count, plural, one {# project} other {# projects}}"
+    },
+    "places": {
+      "region": "Suggestions cover Tamil Nadu only for now.",
+      "clear": "Clear place",
+      "loading": "Looking for places",
+      "noResults": "No places found",
+      "resultCount": "{count, plural, one {# suggestion available} other {# suggestions available}}",
+      "idle": {
+        "title": "Type at least {count} characters",
+        "bodyEmpty": "Start with an area, a street or a landmark, for example “Velachery”.",
+        "bodyTyping": "Keep typing and suggestions will appear."
+      },
+      "empty": {
+        "title": "No places found for “{query}”",
+        "body": "Check the spelling or try a nearby area."
+      },
+      "unavailable": {
+        "title": "Suggestions aren't available right now",
+        "body": "Type the area and press Search. We'll match it by name."
+      },
+      "limited": {
+        "title": "Too many searches in a moment",
+        "body": "Wait a few seconds and keep typing."
+      },
+      "keyword": {
+        "title": "Search for “{query}” as a keyword",
+        "body": "Matches listings by name, street or locality text"
+      },
+      "attribution": {
+        "poweredBy": "Powered by Ola Maps",
+        "licence": "© OpenStreetMap contributors · ODbL",
+        "opensInNewTab": "(opens in a new tab)"
+      }
     },
     "searchCard": {
       "label": "Property search",
@@ -1162,7 +1197,13 @@
       "button": "Filters",
       "buttonApplied": "Filters, {count} applied",
       "show": "Show homes",
-      "showCount": "{count, plural, one {Show # home} other {Show # homes}}"
+      "showCount": "{count, plural, one {Show # home} other {Show # homes}}",
+      "regionOnly": "Tamil Nadu only for now.",
+      "radius": {
+        "label": "Search within",
+        "choice": "{count} km",
+        "within": "Within {count} km"
+      }
     },
     "results": {
       "view": {
@@ -1298,6 +1339,60 @@
         "unreadable": "This photo cannot be read here. Use a JPEG, PNG or WebP photo.",
         "uploadFailed": "We couldn't upload this photo. Remove it and try again.",
         "removeFailed": "We couldn't remove this photo. Try again."
+      }
+    },
+    "nearby": {
+      "title": "Also near {place}",
+      "note": "{count, plural, one {# more home} other {# more homes}} within {radiusKm} km, nearest first."
+    },
+    "locationField": {
+      "title": "Where is the property?",
+      "hint": "Start typing and choose from the list. Tamil Nadu only for now.",
+      "areaTitle": "Which area is it in?",
+      "areaHint": "We will show your home by area. Choose the nearest one.",
+      "providerNote": "Suggestions come from Ola Maps. What you type is sent to them to find matching places.",
+      "privacy": "Privacy Policy",
+      "chooseArea": "I can't find it. Choose the area instead",
+      "searchInstead": "Search for the address instead",
+      "unavailableBody": "Choose the area your property is in instead.",
+      "foundTitle": "Location found",
+      "approximateTitle": "Approximate location",
+      "approximateNote": "We use the middle of the area, so your home will show as approximate.",
+      "visitorsSee": "Visitors see the area, not the exact spot: your home is shown within about 100 metres. Your phone number is never shown.",
+      "change": "Change",
+      "required": "Add a location to continue."
+    },
+    "locationPrompt": {
+      "title": "Add your location to appear in nearby searches",
+      "body": "{count, plural, one {# of your listings has no location.} other {# of your listings have no location.}} Homes without one are left out of searches by place.",
+      "action": "Add location"
+    },
+    "placesUsage": {
+      "title": "Place search: calls to Ola Maps",
+      "description": "Our own count of place suggestions asked for, per day, for the last 30 days.",
+      "series": "Calls",
+      "dateColumn": "Day",
+      "today": "Calls today",
+      "month": "Calls this month",
+      "problems": "Problems in 30 days",
+      "problemsSome": "Timed out, refused or failed. Place search fell back to typed text.",
+      "problemsNone": "None: every call was answered.",
+      "callers": {
+        "title": "Where the calls came from",
+        "description": "The search box, the post form and the admin pickers."
+      },
+      "outcomes": {
+        "title": "How the calls ended",
+        "description": "Ola's own bill is the one that counts; this is our count.",
+        "ok": "Answered",
+        "empty": "No place found",
+        "timeout": "Timed out",
+        "quota": "Refused",
+        "error": "Failed"
+      },
+      "empty": {
+        "title": "No place searches yet",
+        "text": "Calls to Ola Maps appear here once visitors start using place search."
       }
     }
   },
