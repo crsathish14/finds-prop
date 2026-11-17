@@ -24,9 +24,18 @@ vi.mock("@/features/media", () => ({
   removePhoto: vi.fn(),
   requestPhotoUpload: vi.fn(),
 }));
+vi.mock("@/features/search", () => ({ ListingLocationField: () => null }));
 vi.mock("@/features/site", () => ({
   getTranslate: async () => (key: string, values?: Record<string, string | number>) =>
     values ? `${key}:${Object.values(values).join(",")}` : key,
+  getSiteSettings: async () => ({
+    homepage: {
+      localities: [
+        { label: "Velachery", lat: 12.9791, lng: 80.2184, radiusKm: 5 },
+        { label: "Adyar", lat: 13.0012, lng: 80.2565, radiusKm: 4 },
+      ],
+    },
+  }),
 }));
 vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321" },
@@ -36,6 +45,7 @@ vi.mock("../actions", () => ({
   deleteListingDraft: vi.fn(),
   saveListingChanges: vi.fn(),
   saveListingDraft: vi.fn(),
+  setListingLocation: vi.fn(),
   submitListing: vi.fn(),
 }));
 vi.mock("../queries", () => ({
@@ -64,9 +74,15 @@ vi.mock("../wizard.client", () => ({
     photos?: { id: string; name: string; previewUrl: string }[];
     values?: { title: string };
     edit?: { state: string; reason: string | null };
+    areas?: unknown[];
+    locationHeld?: boolean;
+    locationField?: unknown;
   }) => (
     <div
       data-testid="wizard"
+      data-areas={JSON.stringify(props.areas ?? [])}
+      data-held={String(props.locationHeld ?? false)}
+      data-field={props.locationField ? "given" : ""}
       data-edit={props.edit ? `${props.edit.state}|${props.edit.reason ?? ""}` : ""}
       data-listing={props.listingId ?? ""}
       data-done={props.doneHref}
@@ -99,6 +115,7 @@ const draft = {
   description: null,
   updatedAt: "2026-11-07T10:00:00Z",
   photos: [{ id: "p1", path: "u/l/a b.jpg", position: 0 }],
+  hasLocation: false,
 };
 
 beforeEach(() => {
@@ -195,5 +212,27 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
         previewUrl: "http://127.0.0.1:54321/storage/v1/object/public/listing-photos/u/l/a%20b.jpg",
       },
     ]);
+  });
+
+  it("gives the wizard the connected location field and the site's curated localities, with no coordinates but theirs", async () => {
+    render(await PostPropertyScreen({}));
+    const wizard = screen.getByTestId("wizard");
+    expect(wizard).toHaveAttribute("data-field", "given");
+    // Only the name and the middle of each area: the radius is not part of choosing an area.
+    expect(JSON.parse(wizard.getAttribute("data-areas") ?? "[]")).toEqual([
+      { label: "Velachery", lat: 12.9791, lng: 80.2184 },
+      { label: "Adyar", lat: 13.0012, lng: 80.2565 },
+    ]);
+    // A new listing holds no place yet.
+    expect(wizard).toHaveAttribute("data-held", "false");
+  });
+
+  it("tells the wizard whether the opened listing already holds a place, and only that", async () => {
+    const without = render(await PostPropertyScreen({ draft }));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-held", "false");
+    without.unmount();
+    render(await PostPropertyScreen({ draft: { ...draft, hasLocation: true } }));
+    const wizard = screen.getByTestId("wizard");
+    expect(wizard).toHaveAttribute("data-held", "true");
   });
 });

@@ -38,7 +38,7 @@ export function WizardShellDemo() {
         </Stage>
       </Specimen>
       <Specimen
-        label="Step 1 with two fields to fix: the step is marked, Continue stays"
+        label="Step 1 with three fields to fix (the place, the street, the pincode): the step is marked, Continue stays"
         className="w-full"
       >
         <Stage tone="canvas" className="w-full p-0">

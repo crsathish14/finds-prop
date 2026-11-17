@@ -5,6 +5,7 @@ import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import type { WizardValues } from "../wizard-state";
+import { LocationFieldStub } from "./location-stub";
 
 // The full suite runs many test files at once, so every wait is patient (they pass in about two seconds alone).
 configure({ asyncUtilTimeout: 8000 });
@@ -42,6 +43,11 @@ const VALUES: WizardValues = {
   amenities: [],
   title: "Flat in Adyar near the beach",
   description: "",
+  locationLat: "",
+  locationLng: "",
+  locationKind: "",
+  locationLabel: "",
+  locationDetail: "",
 };
 
 const PHOTO = [{ id: "p1", name: "Photo 1", previewUrl: "http://example.test/a.jpg" }];
@@ -54,6 +60,9 @@ function actions(overrides: Partial<Actions> = {}) {
       ok({ listingId: LISTING, shortId: "abcd2345", status: "approved", wentBackToReview: false }),
     ),
     submit: vi.fn(async () => ok({ listingId: LISTING, shortId: "abcd2345" })),
+    setLocation: vi.fn(async () =>
+      ok({ listingId: LISTING, shortId: "abcd2345", status: "approved", wentBackToReview: false }),
+    ),
     photos: { requestUpload: vi.fn(), finalize: vi.fn(), remove: vi.fn() },
     ...overrides,
   } as unknown as Actions;
@@ -73,6 +82,8 @@ function open(
       uploader={UploaderStub as never}
       doneHref="/dashboard?tab=listings"
       edit={edit}
+      locationField={LocationFieldStub}
+      locationHeld
       {...props}
     />,
   );

@@ -303,3 +303,58 @@ describe("usePlaceSuggestions with another source (ADR-140)", () => {
     );
   });
 });
+
+describe("usePlaceSuggestions for the listing form (ADR-141)", () => {
+  const street = { ...suggestion("s", "Velachery Main Road"), kind: "street" };
+
+  it("names the listing form in the route's source", async () => {
+    fetchMock.mockResolvedValue(json({ ok: true, data: [suggestion("a", "Velachery")] }));
+    const view = renderHook(({ typed }) => usePlaceSuggestions(typed, "listing_form"), {
+      initialProps: { typed: "velachery" },
+    });
+    act(() => view.result.current.search("velachery"));
+    await waitFor(() => expect(view.result.current.state).toBe("ready"));
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "/api/places/autocomplete?q=velachery&source=listing_form",
+    );
+  });
+
+  it("keeps only the kinds it is asked for, and a pick still gives the kind", async () => {
+    fetchMock.mockResolvedValue(json({ ok: true, data: [street, suggestion("a", "Velachery")] }));
+    const kinds = ["area"] as const;
+    const view = renderHook(({ typed }) => usePlaceSuggestions(typed, "listing_form", kinds), {
+      initialProps: { typed: "vel" },
+    });
+    act(() => view.result.current.search("vel"));
+    await waitFor(() => expect(view.result.current.state).toBe("ready"));
+    expect(view.result.current.options.map((option) => option.label)).toEqual(["Velachery"]);
+    let picked: ReturnType<typeof view.result.current.pick> = null;
+    act(() => {
+      picked = view.result.current.pick({ value: "a", label: "Velachery" });
+    });
+    expect(picked).toMatchObject({ id: "a", kind: "area", lat: 13.0012, lng: 80.2565 });
+  });
+
+  it("says empty when no suggestion of the kind is left", async () => {
+    fetchMock.mockResolvedValue(json({ ok: true, data: [street] }));
+    const kinds = ["area"] as const;
+    const view = renderHook(({ typed }) => usePlaceSuggestions(typed, "listing_form", kinds), {
+      initialProps: { typed: "vel" },
+    });
+    act(() => view.result.current.search("vel"));
+    await waitFor(() => expect(view.result.current.state).toBe("empty"));
+    expect(view.result.current.options).toEqual([]);
+  });
+
+  it("takes a suggestion with no kind (an older answer) and leaves one with an unknown kind out", async () => {
+    const { kind: removed, ...withoutKind } = suggestion("n", "Nameless");
+    void removed;
+    fetchMock.mockResolvedValue(
+      json({ ok: true, data: [withoutKind, { ...suggestion("x", "Strange"), kind: "planet" }] }),
+    );
+    const view = setup("nam");
+    act(() => view.result.current.search("nam"));
+    await waitFor(() => expect(view.result.current.state).toBe("ready"));
+    expect(view.result.current.options.map((option) => option.label)).toEqual(["Nameless"]);
+  });
+});

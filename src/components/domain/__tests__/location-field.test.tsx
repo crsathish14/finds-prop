@@ -84,6 +84,17 @@ describe("LocationField (ADR-131)", () => {
     ).toHaveAccessibleDescription(words.required);
   });
 
+  it("shows other words for the error when it is given them, and still names the group by it", () => {
+    renderWithMessages(
+      <LocationField mode="search" showError errorText="That place is outside Tamil Nadu." />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("That place is outside Tamil Nadu.");
+    expect(screen.queryByText(words.required)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: /Where is the property\?/ }),
+    ).toHaveAccessibleDescription("That place is outside Tamil Nadu.");
+  });
+
   it("shows no error by default", () => {
     renderWithMessages(<LocationField mode="search" />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();

@@ -26,8 +26,8 @@ const SUGGESTIONS: ComboboxOption[] = [
   },
 ];
 
-/** The place search box as the form holds it. */
-function AddressBox({
+/** The place search box as the form holds it. Also drawn by the wizard's address step (seller-parts.tsx). */
+export function AddressBox({
   text,
   state = "ready",
   open = false,

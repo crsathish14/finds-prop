@@ -2,14 +2,15 @@
 
 /**
  * Sample steps of the post-property wizard, shared by the Seller board and its two whole-page previews.
- * They use the real parts (WizardShell, WizardFooter, ChoiceCards, AmenityChips, ReviewList, NextSteps) with
- * made-up words and no server. Nothing outside src/design-lab uses this file.
+ * They use the real parts (WizardShell, WizardFooter, ChoiceCards, AmenityChips, ReviewList, NextSteps,
+ * LocationField) with made-up words and no server. Nothing outside src/design-lab uses this file.
  */
 import { useState, type ReactNode } from "react";
 import { AmenityChips } from "@/components/domain/amenity-chips";
 import { ChoiceCards } from "@/components/domain/choice-cards";
 import { NextSteps } from "@/components/domain/next-steps";
 import { ReviewList } from "@/components/domain/review-list";
+import { LocationField } from "@/components/domain/location-field";
 import { WizardFooter } from "@/components/domain/wizard-footer";
 import { WizardShell } from "@/components/domain/wizard-shell";
 import { Alert } from "@/components/patterns/alert";
@@ -18,6 +19,7 @@ import type { Step } from "@/components/patterns/stepper";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { AddressBox } from "./seller-location-demos";
 
 const NOTHING = () => undefined;
 
@@ -104,6 +106,18 @@ export function BasicsStep({ withErrors = false }: { withErrors?: boolean }) {
           <option value="commercial">Commercial</option>
         </NativeSelect>
       </FormField>
+      {withErrors ? (
+        <LocationField mode="search" showError box={<AddressBox text="" />} />
+      ) : (
+        <LocationField
+          mode="found"
+          found={{
+            label: "Velachery Main Road",
+            detail: "Velachery, Chennai, Tamil Nadu 600042",
+            approximate: false,
+          }}
+        />
+      )}
       <FormField
         label="Address"
         required
