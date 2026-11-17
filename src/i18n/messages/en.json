@@ -1089,7 +1089,9 @@
       "unsave": "Remove from saved homes",
       "compare": "Compare",
       "compared": "Added to compare",
-      "compareLimit": "You can compare up to 3 homes"
+      "compareLimit": "You can compare up to 3 homes",
+      "distanceAway": "{distance} km away",
+      "distanceApprox": "About {distance} km away"
     },
     "projectCard": {
       "featured": "Featured",
@@ -1195,7 +1197,13 @@
       "button": "Filters",
       "buttonApplied": "Filters, {count} applied",
       "show": "Show homes",
-      "showCount": "{count, plural, one {Show # home} other {Show # homes}}"
+      "showCount": "{count, plural, one {Show # home} other {Show # homes}}",
+      "regionOnly": "Tamil Nadu only for now.",
+      "radius": {
+        "label": "Search within",
+        "choice": "{count} km",
+        "within": "Within {count} km"
+      }
     },
     "results": {
       "view": {
@@ -1332,6 +1340,10 @@
         "uploadFailed": "We couldn't upload this photo. Remove it and try again.",
         "removeFailed": "We couldn't remove this photo. Try again."
       }
+    },
+    "nearby": {
+      "title": "Also near {place}",
+      "note": "{count, plural, one {# more home} other {# more homes}} within {radiusKm} km, nearest first."
     }
   },
   "admin": {

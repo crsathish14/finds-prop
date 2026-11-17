@@ -15,7 +15,10 @@
  *   localities, allLocalitiesLabel, resultCount (the number in "Show N homes"; leave it out while
  *   unknown and the button says "Show homes"), onDraftChange (so the page can count the matches of
  *   what is being chosen), className (the page hides the "Filters" button on a wide screen).
- *   FilterFields: values, onChange, localities, allLocalitiesLabel, showSort.
+ *   FilterFields: values, onChange, localities, allLocalitiesLabel, showSort, placeField (the place
+ *   search box, a Combobox with usePlacePanel, which takes the place of the Locality list and adds
+ *   "Tamil Nadu only for now"), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
+ *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset). ADR-131.
  *   FilterRail also takes onClearAll (what Clear all does instead of clearing the four fields).
  *   All three take budgetNeedsLooking (default off): the results page turns it on, so the budget
  *   field is left out while Looking to is All and goes back to Any when All is chosen, because a sale
@@ -67,7 +70,11 @@ import {
   parseSort,
   type BedroomChoice,
   type FilterValues,
+  type RadiusChoice,
 } from "@/config/search-options";
+
+/** The distance used when none was chosen: the same 5 km the search itself uses. */
+const DEFAULT_RADIUS_KM = 5;
 
 type FilterFieldsProps = {
   values: FilterValues;
@@ -76,6 +83,10 @@ type FilterFieldsProps = {
   allLocalitiesLabel: string;
   showSort?: boolean;
   budgetNeedsLooking?: boolean;
+  /** The place search box (a Combobox with usePlacePanel) that takes the place of the Locality list. */
+  placeField?: ReactNode;
+  /** The distances to offer around a chosen place; leave it out and no distance field is drawn. */
+  radiusChoices?: readonly RadiusChoice[];
 };
 
 /** One field: its label above, its control below. */
@@ -94,6 +105,8 @@ function FilterFields({
   allLocalitiesLabel,
   showSort = false,
   budgetNeedsLooking = false,
+  placeField,
+  radiusChoices,
 }: FilterFieldsProps) {
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
@@ -137,22 +150,48 @@ function FilterFields({
 
       <Field>
         <Label htmlFor={id("locality")}>{translate("domain.searchCard.locality.label")}</Label>
-        <NativeSelect
-          id={id("locality")}
-          className={SELECT_HEIGHT}
-          value={values.locality ?? ""}
-          onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-            set({ locality: event.target.value === "" ? null : event.target.value })
-          }
-        >
-          <option value="">{allLocalitiesLabel}</option>
-          {localityList.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </NativeSelect>
+        {placeField ?? (
+          <NativeSelect
+            id={id("locality")}
+            className={SELECT_HEIGHT}
+            value={values.locality ?? ""}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+              set({ locality: event.target.value === "" ? null : event.target.value })
+            }
+          >
+            <option value="">{allLocalitiesLabel}</option>
+            {localityList.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </NativeSelect>
+        )}
+        {placeField ? (
+          <p className="text-caption text-muted">{translate("domain.filters.regionOnly")}</p>
+        ) : null}
       </Field>
+
+      {radiusChoices && radiusChoices.length > 0 ? (
+        <Field>
+          <span id={id("radius")} className={GROUP_LABEL}>
+            {translate("domain.filters.radius.label")}
+          </span>
+          <div role="group" aria-labelledby={id("radius")} className="grid grid-cols-4 gap-2">
+            {radiusChoices.map((choice) => (
+              <Chip
+                key={choice}
+                aria-pressed={(values.radiusKm ?? DEFAULT_RADIUS_KM) === choice}
+                aria-label={translate("domain.filters.radius.within", { count: choice })}
+                onClick={() => set({ radiusKm: choice })}
+                className="w-full justify-center px-0 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-on-primary"
+              >
+                {translate("domain.filters.radius.choice", { count: choice })}
+              </Chip>
+            ))}
+          </div>
+        </Field>
+      ) : null}
 
       <Field>
         <Label htmlFor={id("type")}>{translate("domain.searchCard.propertyType.label")}</Label>
@@ -247,6 +286,10 @@ type FilterRailProps = {
   localities: readonly string[];
   allLocalitiesLabel: string;
   budgetNeedsLooking?: boolean;
+  /** The place search box in place of the Locality list (ADR-131). */
+  placeField?: ReactNode;
+  /** The distances to offer around a chosen place (ADR-131). */
+  radiusChoices?: readonly RadiusChoice[];
   /** What Clear all does when the page has more to clear than the four fields (the label, the keyword). */
   onClearAll?: (() => void) | undefined;
   className?: string | undefined;
@@ -259,6 +302,8 @@ function FilterRail({
   localities,
   allLocalitiesLabel,
   budgetNeedsLooking,
+  placeField,
+  radiusChoices,
   onClearAll,
   className,
 }: FilterRailProps) {
@@ -288,6 +333,8 @@ function FilterRail({
         localities={localities}
         allLocalitiesLabel={allLocalitiesLabel}
         {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
+        {...(placeField === undefined ? {} : { placeField })}
+        {...(radiusChoices === undefined ? {} : { radiusChoices })}
       />
     </aside>
   );
@@ -301,6 +348,10 @@ type FilterSheetProps = {
   resultCount?: number | null | undefined;
   onDraftChange?: ((values: FilterValues) => void) | undefined;
   budgetNeedsLooking?: boolean;
+  /** The place search box in place of the Locality list (ADR-131). */
+  placeField?: ReactNode;
+  /** The distances to offer around a chosen place (ADR-131). */
+  radiusChoices?: readonly RadiusChoice[];
   className?: string | undefined;
 };
 
@@ -313,6 +364,8 @@ function FilterSheet({
   resultCount,
   onDraftChange,
   budgetNeedsLooking,
+  placeField,
+  radiusChoices,
   className,
 }: FilterSheetProps) {
   const translate = useTranslations();
@@ -395,6 +448,8 @@ function FilterSheet({
           localities={localities}
           allLocalitiesLabel={allLocalitiesLabel}
           {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
+          {...(placeField === undefined ? {} : { placeField })}
+          {...(radiusChoices === undefined ? {} : { radiusChoices })}
         />
       </SheetContent>
     </Sheet>

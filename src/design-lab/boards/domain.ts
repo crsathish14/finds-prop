@@ -13,6 +13,7 @@ import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-d
 import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
 import { PhotoUploaderDemo } from "./photo-uploader-demos";
 import { PropertyPageDemo } from "./domain-demos-property";
+import { NearbyDemo } from "./domain-demos-nearby";
 import { PlaceSuggestionsDemo } from "./domain-demos-place-suggestions";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
@@ -83,6 +84,14 @@ export const DOMAIN: LabEntry[] = [
       "The panel under the search box's locality field (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps), and the Ola Maps credit with the OpenStreetMap licence at the bottom. Drawn open, wide and stacked.",
     sources: ["domain/place-panel.tsx"],
     Demo: PlaceSuggestionsDemo,
+  },
+  {
+    id: "nearby-homes",
+    name: "Nearby homes",
+    description:
+      "What a place search adds (ADR-131): the Search within choice (2, 5, 10, 15 km) in the filter rail, the place search box in the rail, the distance on each card (exact and approximate), and the Also near section with homes from the wider circle in grid and list layout. Drawn from existing parts for approval.",
+    sources: ["domain/nearby-section.tsx"],
+    Demo: NearbyDemo,
   },
   {
     id: "filter-rail",

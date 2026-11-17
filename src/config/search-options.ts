@@ -78,6 +78,10 @@ export function parseSort(text: string): SortOption {
   return SORT_OPTIONS.find((option) => option === text) ?? "newest";
 }
 
+/** The distances a visitor can choose around a place, in kilometres (OLA_MAPS_PLAN.md D5). */
+export const RADIUS_CHOICES_KM = [2, 5, 10, 15] as const;
+export type RadiusChoice = (typeof RADIUS_CHOICES_KM)[number];
+
 /** What the filter rail and the filter sheet hold. Null means Any (or All of the city). */
 export type FilterValues = {
   intent: FilterIntent;
@@ -87,6 +91,8 @@ export type FilterValues = {
   maxBudget: number | null;
   /** Shown in the filter sheet only; the results bar holds it on a wide screen (S4-T04). */
   sort: SortOption;
+  /** How far around a chosen place to look; used only when the page shows the radius choices. */
+  radiusKm?: RadiusChoice | null | undefined;
 };
 
 /**

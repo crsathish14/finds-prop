@@ -29,7 +29,7 @@
  * States: idle, typing, loading, results, no results, unavailable, too many searches, picked, invalid,
  *   disabled.
  * Dependencies: cmdk, Popover, Input, IconButton, Icon, Skeleton. Tests: combobox.test.tsx;
- *   Design Lab "Fields" (S2-T07) and "Domain, Place suggestions" (ADR-131).
+ *   Design Lab "Fields" (S2-T07) and "Place suggestions" (ADR-131).
  * UX reference: ds-components, search card locality field; interaction-specifications section 1;
  *   UX addendum ADD-07 (place-suggest).
  */

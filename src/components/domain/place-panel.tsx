@@ -17,7 +17,7 @@
  *   text announced politely by the combobox.
  * States: ready, loading, empty, unavailable, limited; idle and typing are the notes shown before three
  *   letters.
- * Dependencies: Combobox types, Icon, Link, next-intl. Tests: place-panel.test.tsx; Design Lab "Domain,
+ * Dependencies: Combobox types, Icon, Link, next-intl. Tests: place-panel.test.tsx; Design Lab "Place suggestions"
  *   Place suggestions" (ADR-131).
  * UX reference: UX addendum ADD-07 (place-suggest): idle, typing, loading, results, noresults, degraded,
  *   ratelimited.
