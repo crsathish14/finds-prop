@@ -29,7 +29,8 @@ select is(
 select is(
   pg_temp.who_runs('authenticated'),
   'admin_builder_overview, admin_builders, admin_crm_integrations, admin_forms, admin_listing_counts, '
-  || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_project_overview, admin_projects, '
+  || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
+  || 'admin_projects, '
   || 'admin_properties, assert_open_listing_room, builder_insights, close_listing, current_builder_id, has_role, '
   || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listing_is_editable, listing_is_public, '
   || 'listing_label, moderate_listing, moderate_project, my_builder, my_projects, my_properties, owns_property, '
@@ -58,7 +59,7 @@ select is(
        'run_retention', 'audit_record', 'audit_write', 'rate_limit_hit', 'record_form_submission',
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
-       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep'
+       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call'
      )
      and not has_function_privilege('service_role', proc.oid, 'execute')),
   '',
@@ -74,7 +75,7 @@ select is(
        'run_retention', 'audit_record', 'audit_write', 'rate_limit_hit', 'record_form_submission',
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
-       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep'
+       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call'
      )
      and (has_function_privilege('anon', proc.oid, 'execute')
           or has_function_privilege('authenticated', proc.oid, 'execute'))),
