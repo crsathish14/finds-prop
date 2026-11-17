@@ -84,6 +84,8 @@ describe("IT-listing-edit: saving changes to a listing against a real database (
         state: "Tamil Nadu",
         pincode: "600020",
         address: BASE.address,
+        // A listing needs a location to be (re)submitted (ADR-138).
+        location: "SRID=4326;POINT(80.27074 13.08274)",
       })
       .select("id, short_id")
       .single();
