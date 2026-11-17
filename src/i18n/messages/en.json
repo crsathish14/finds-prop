@@ -1106,6 +1106,13 @@
     "developerCard": {
       "projects": "{count, plural, one {# project} other {# projects}}"
     },
+    "placePicker": {
+      "label": "Find a place",
+      "placeholder": "Search for a place",
+      "hint": "Choose a place to fill the latitude and longitude below. You can still change them by hand.",
+      "picked": "Filled in from “{place}”. You can still change the numbers below.",
+      "unavailableBody": "Type the latitude and longitude below instead."
+    },
     "places": {
       "region": "Suggestions cover Tamil Nadu only for now.",
       "clear": "Clear place",

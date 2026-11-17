@@ -8,6 +8,7 @@ import {
   type PriceTrendRow,
   type PriceTrendsWords,
 } from "@/components/domain/price-trends-editor";
+import type { PlacePickerComponent } from "@/components/domain/place-picker";
 import {
   ProjectFields,
   type ProjectFieldName,
@@ -72,6 +73,8 @@ export type ProjectFormProps = {
   storage?: MediaStorage;
   /** The address of the storage service, for the small pictures; defaults to the project's own. */
   mediaBaseUrl?: string;
+  /** The place search box of the Location section; the page gives it, because it is another feature (ADR-140). */
+  placePicker?: PlacePickerComponent;
 };
 
 type Errors = Partial<Record<ProjectErrorField, string>>;
@@ -129,6 +132,7 @@ export function ProjectForm({
   editBase,
   storage: givenStorage,
   mediaBaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+  placePicker,
 }: ProjectFormProps) {
   const translate = useTranslations("admin.projectForm");
   const everything = useTranslations() as unknown as Translator;
@@ -670,6 +674,7 @@ export function ProjectForm({
           ]}
           slugLocked={slugLocked}
           disabled={saving}
+          {...(placePicker ? { placePicker } : {})}
           words={fieldWords()}
           media={
             <ProjectMedia

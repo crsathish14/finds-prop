@@ -8,7 +8,8 @@
  *   errors and passes the words, already translated. A hidden section is not drawn at all on the public page.
  * Props: values ({ showFeatured, showProjectTypes, showDiscovery, showWhyUs, showCta, localities }), errors (the
  *   message of each locality box with a problem, by row id), onChange (the new values), localitiesMax, radii,
- *   defaultRadius (passed on to the localities list), disabled (while saving), words (the headings, the five
+ *   defaultRadius (passed on to the localities list), disabled (while saving), placePicker (the place search box of
+ *   each locality row, passed on to the list: ADR-140), words (the headings, the five
  *   switches' names and lines, and the localities list's words), className.
  * Responsive: two cards stacked one above the other; each switch row keeps its text on the left and the switch on the
  *   right on every width.
@@ -21,6 +22,7 @@
  *   is left out: the title is part of the page's own wording and changing it is a separate change (ADR-099).
  */
 import { useId } from "react";
+import type { PlacePickerComponent } from "@/components/domain/place-picker";
 import {
   SiteLocalitiesEditor,
   type SiteLocalitiesWords,
@@ -59,6 +61,8 @@ type SiteHomepageFieldsProps = {
   radii: readonly number[];
   defaultRadius: number;
   disabled?: boolean;
+  /** The place search box of each locality row (ADR-140); left out, the rows have the typed boxes alone. */
+  placePicker?: PlacePickerComponent;
   words: SiteHomepageFieldsWords;
   className?: string;
 };
@@ -116,6 +120,7 @@ function SiteHomepageFields({
   radii,
   defaultRadius,
   disabled = false,
+  placePicker,
   words,
   className,
 }: SiteHomepageFieldsProps) {
@@ -146,6 +151,7 @@ function SiteHomepageFields({
         defaultRadius={defaultRadius}
         {...(errors.localities ? { errors: errors.localities } : {})}
         disabled={disabled}
+        {...(placePicker ? { placePicker } : {})}
         words={words.localities}
       />
     </div>

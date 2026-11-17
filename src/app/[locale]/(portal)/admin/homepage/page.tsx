@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 import { getHomepagePage, HomepageForm, saveHomepage } from "@/features/site-content";
 
@@ -15,5 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function HomepagePage() {
   const { initial } = await getHomepagePage();
-  return <HomepageForm key={JSON.stringify(initial)} initial={initial} save={saveHomepage} />;
+  return (
+    <HomepageForm
+      key={JSON.stringify(initial)}
+      initial={initial}
+      save={saveHomepage}
+      placePicker={AdminPlacePicker}
+    />
+  );
 }

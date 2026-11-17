@@ -8,6 +8,7 @@ import {
   projectIdSchema,
   updateProject,
 } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -43,6 +44,7 @@ export default async function EditProjectPage({ params }: PageProps) {
       save={updateProject}
       backHref="/admin/projects"
       editBase="/admin/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

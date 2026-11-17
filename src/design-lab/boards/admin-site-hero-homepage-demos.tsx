@@ -24,6 +24,7 @@ import {
 } from "@/components/domain/site-localities-editor";
 import { Alert } from "@/components/patterns/alert";
 import { Specimen } from "../frame";
+import { LabPlacePicker } from "./admin-place-picker-demos";
 import { SaveBar, tabs } from "./admin-site-content-demos";
 
 /**
@@ -279,6 +280,7 @@ function HomepagePage({
         radii={RADII}
         defaultRadius={3}
         disabled={saving}
+        placePicker={LabPlacePicker}
         words={HOMEPAGE_WORDS}
       />
     </SiteContentLayout>
@@ -323,6 +325,7 @@ function LocalitiesState({
         defaultRadius={3}
         {...(errors ? { errors } : {})}
         {...(disabled ? { disabled } : {})}
+        placePicker={LabPlacePicker}
         words={LOCALITIES_WORDS}
       />
     </div>

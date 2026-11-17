@@ -6,6 +6,7 @@ import {
   projectIdSchema,
   updateMyProject,
 } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -35,6 +36,7 @@ export default async function EditBuilderProjectPage({ params }: PageProps) {
       save={updateMyProject}
       backHref="/builder/projects"
       editBase="/builder/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { SiteContentLayout } from "@/components/domain/site-content-layout";
+import type { PlacePickerComponent } from "@/components/domain/place-picker";
 import {
   SiteHomepageFields,
   type SiteHomepageFieldsWords,
@@ -34,6 +35,8 @@ export type HomepageFormProps = {
   initial: HomepageFormValues;
   /** The save action. */
   save: SaveContent;
+  /** The place search box of each locality row; the page gives it, because it is another feature (ADR-140). */
+  placePicker?: PlacePickerComponent;
 };
 
 const NO_PROBLEMS: Problems = {};
@@ -53,7 +56,7 @@ const startOf = (initial: HomepageFormValues): SiteHomepageValues => ({
  * picture of the home page. It works like the Header page. The server reads the typed numbers and checks that each
  * place lies inside the launch area; a place outside it comes back as a problem on that row's latitude.
  */
-export function HomepageForm({ initial, save }: HomepageFormProps) {
+export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) {
   const translate = useTranslations("admin.siteContent");
   const frame = useSiteContentFrame("homepage");
   const flow = useSaveFlow(save, {
@@ -186,6 +189,7 @@ export function HomepageForm({ initial, save }: HomepageFormProps) {
           radii={LOCALITY_RADII_KM}
           defaultRadius={DEFAULT_LOCALITY_RADIUS_KM}
           disabled={flow.saving}
+          {...(placePicker ? { placePicker } : {})}
           words={words}
         />
       </SiteContentLayout>

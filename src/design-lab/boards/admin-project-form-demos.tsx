@@ -19,6 +19,7 @@ import { Alert } from "@/components/patterns/alert";
 import { TagListField, type TagListWords } from "@/components/patterns/tag-list-field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Specimen } from "../frame";
+import { LabPlacePicker } from "./admin-place-picker-demos";
 
 /**
  * The project form's parts in their states (S7-T02, part B1): the section list, the sections (Basics, Location, RERA,
@@ -291,6 +292,7 @@ function LiveForm({
           amenitySuggestions={SUGGESTIONS}
           slugLocked={slugLocked}
           disabled={saving}
+          placePicker={LabPlacePicker}
           words={WORDS}
         />
       </ProjectFormLayout>
