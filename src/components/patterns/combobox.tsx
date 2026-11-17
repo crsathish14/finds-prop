@@ -21,7 +21,8 @@
  *   onSelect and leaves the text as it is); loadingRows (while loading, three grey rows instead of the
  *   loading line); defaultOpen (the panel starts open: for the Design Lab and tests only).
  * Responsive: the list is as wide as the box; at least 52 px per row for touch.
- * Accessibility: the input has role combobox with aria-expanded, aria-controls and
+ * Accessibility: the input has role combobox with aria-expanded (true only once the panel is in the page),
+ *   aria-controls and
  *   aria-activedescendant (cmdk); the list is a listbox of options. Arrow keys move, Enter picks,
  *   Escape closes the list (a second Escape leaves the text alone). Focus never leaves the input.
  *   The result count (or the first note) is announced politely. The clear button has its own name.
@@ -35,7 +36,7 @@
  */
 import { Command } from "cmdk";
 import { ArrowRight, MapPin, Search, X, type LucideIcon } from "lucide-react";
-import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +209,12 @@ function Combobox({
   defaultOpen = false,
 }: ComboboxProps) {
   const [open, setOpen] = useState(defaultOpen);
+  // The panel lives in a portal that mounts a moment after the box, so the list can be missing for a short while
+  // when the panel starts open (the Design Lab) or the page is slow. The box says it is expanded, and so points at
+  // its list, only once the list is in the page: an accessibility check that runs in that gap must not find an
+  // expanded combobox with nothing to control.
+  const [panelMounted, setPanelMounted] = useState(false);
+  const trackPanel = useCallback((node: HTMLElement | null) => setPanelMounted(node !== null), []);
   const anchorRef = useRef<HTMLDivElement>(null);
   const requestSuggestions = useEffectEvent((text: string) => onQueryChange(text));
   const typed = useRef(false);
@@ -278,7 +285,7 @@ function Combobox({
                 cmdk-input={undefined}
                 id={id}
                 aria-label={ariaLabel}
-                aria-expanded={showPanel}
+                aria-expanded={showPanel && panelMounted}
                 placeholder={placeholder}
                 invalid={invalid}
                 disabled={disabled}
@@ -312,6 +319,7 @@ function Combobox({
           </div>
         </PopoverAnchor>
         <PopoverContent
+          ref={trackPanel}
           align="start"
           sideOffset={8}
           // A place panel needs room for a name and an address: at least 30 rem (480 px, as the UX draws it)
