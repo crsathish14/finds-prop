@@ -55,7 +55,19 @@ export async function getMyDraft(listingId: string): Promise<DraftView | null> {
     logger.error("listing draft photos could not be read", { errorCode: photos.error.code });
     throw photos.error;
   }
-  return toDraftView(data, photos.data);
+  // Whether a place is stored, asked of the database as a filter: only the listing's id comes back, never the
+  // point, which is the owner's private location (DEC-35, ADR-141).
+  const located = await supabase
+    .rpc("my_properties")
+    .select("id")
+    .eq("id", listingId)
+    .not("location", "is", null)
+    .maybeSingle();
+  if (located.error) {
+    logger.error("listing location could not be checked", { errorCode: located.error.code });
+    throw located.error;
+  }
+  return toDraftView(data, photos.data, located.data !== null);
 }
 
 /** The owner's drafts, the most recently changed first, for "Your drafts" on the post-property page. */

@@ -93,6 +93,12 @@ export function mapListingError(failure: DatabaseFailure): ActionError {
       ),
     });
   }
+  if (message === "listing.location_required") {
+    // Only a draft sent for review with no place can hit this (ADR-138); the wizard asks for the place on step 1.
+    return new ActionError("VALIDATION", "The listing has no location", {
+      fieldErrors: { location: [{ key: "validation.required" }] },
+    });
+  }
   if (message === "listing.wrong_outcome" || message === "listing.bad_outcome") {
     // Marking a sale listing rented, or a rent listing sold: the screen only offers the right one.
     return new ActionError("VALIDATION", "The outcome does not fit the listing", {

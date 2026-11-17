@@ -323,7 +323,8 @@
     "fieldsRequired": "Add at least one field.",
     "projectRequired": "Choose the project this form is for.",
     "rangeOrder": "The largest value must be the same as or more than the smallest.",
-    "crmUrlNotAllowed": "Must be https and a public address."
+    "crmUrlNotAllowed": "Must be https and a public address.",
+    "locationOutOfRegion": "That place is outside Tamil Nadu. Choose a place in Tamil Nadu."
   },
   "format": {
     "rupees": "₹{value}",
@@ -902,6 +903,11 @@
       "state": "State",
       "stateHint": "Tamil Nadu only for now.",
       "pincode": "Pincode"
+    },
+    "location": {
+      "savedLabel": "Your saved location",
+      "areaLabel": "Area",
+      "areaOption": "Choose the area"
     },
     "details": {
       "heading": "Tell us about the home",

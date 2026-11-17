@@ -37,6 +37,11 @@ export interface DraftView {
   description: string | null;
   updatedAt: string;
   photos: DraftPhoto[];
+  /**
+   * Whether a place is already stored for this listing. Only that: the point is the owner's private location
+   * (DEC-35) and never leaves the server, so the wizard knows "held", not where (ADR-141).
+   */
+  hasLocation: boolean;
 }
 
 /** One line of "Your drafts". */
@@ -91,8 +96,15 @@ const summaryRowSchema = z.object({
   updated_at: z.string(),
 });
 
-/** Pure: one draft row and its photo rows into the wizard's view, or null when the row is not shaped as a listing. */
-export function toDraftView(row: unknown, photoRows: readonly unknown[]): DraftView | null {
+/**
+ * Pure: one draft row and its photo rows into the wizard's view, or null when the row is not shaped as a listing.
+ * `hasLocation` comes from a separate read that only asks whether a place is stored (never what it is).
+ */
+export function toDraftView(
+  row: unknown,
+  photoRows: readonly unknown[],
+  hasLocation = false,
+): DraftView | null {
   const parsed = draftRowSchema.safeParse(row);
   if (!parsed.success) return null;
   const draft = parsed.data;
@@ -126,6 +138,7 @@ export function toDraftView(row: unknown, photoRows: readonly unknown[]): DraftV
     description: draft.description,
     updatedAt: draft.updated_at,
     photos,
+    hasLocation,
   };
 }
 
