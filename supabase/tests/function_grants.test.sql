@@ -35,7 +35,7 @@ select is(
   || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listing_is_editable, listing_is_public, '
   || 'listing_label, moderate_listing, moderate_project, my_builder, my_projects, my_properties, owns_property, '
   || 'project_is_live, project_is_mine, public_project_form, save_crm_integration, save_project_price_trends, '
-  || 'search_properties, storage_listing_path_ok, storage_project_path_ok, submit_listing',
+  || 'search_properties, set_listing_location, storage_listing_path_ok, storage_project_path_ok, submit_listing',
   'signed-in people can run the visitors'' list and the helpers and portal functions that check the caller themselves'
 );
 
