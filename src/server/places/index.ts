@@ -2,6 +2,7 @@ import { createFakePlaceProvider, createOffPlaceProvider } from "./fake";
 import { createOlaPlaceProvider } from "./ola";
 import type { PlaceBounds, PlaceProvider } from "./types";
 
+export { handlePlaceAutocomplete, type PlaceAutocompleteDeps } from "./autocomplete-handler";
 export { createFakePlaceProvider, FAKE_PLACES, type FakePlaceProvider } from "./fake";
 export {
   normalisePlaceText,
