@@ -23,6 +23,7 @@ import {
   ResponsiveTableDemo,
 } from "./admin-managers-demos";
 import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-demos";
+import { PlacesUsageDemo } from "./admin-places-usage-demos";
 
 /**
  * What the admin uses to review the listings owners post (S6-T04) and to invite and manage builders (S7-T05).
@@ -216,5 +217,13 @@ export const ADMIN: LabEntry[] = [
       "The admin's box for the monthly price per sq.ft behind the chart on the project page: a month box, a price box and a remove button on each row, Add month and the count (up to 120 months), at the width of the form's side column. Shown empty, with four months, with problems, full and while saving.",
     sources: ["domain/price-trends-editor.tsx"],
     Demo: PriceTrendsEditorDemo,
+  },
+  {
+    id: "places-usage",
+    name: "Place search usage",
+    description:
+      "The admin dashboard card for place search (ADR-131): calls to Ola Maps today and this month, problems in 30 days, a line per day with its Chart / Table switch, where the calls came from and how they ended. With calls, with problems and with no calls yet. Calls only: no cost or balance.",
+    sources: ["domain/places-usage-card.tsx"],
+    Demo: PlacesUsageDemo,
   },
 ];

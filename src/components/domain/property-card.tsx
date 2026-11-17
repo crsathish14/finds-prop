@@ -4,7 +4,8 @@
  *   no state and fetches nothing: the page passes the home's facts, and the heart and Compare
  *   controls as slots (SaveButton and CompareToggle from property-card-controls.client.tsx).
  * Props: property (href, title, locality, city, rupees, listingType, bedrooms, bathrooms, areaSqft,
- *   label "featured" | "prime" | "budget", listedAgo, typeLabel, summary, cover { src, alt }), layout ("grid"
+ *   label "featured" | "prime" | "budget", listedAgo, typeLabel, distanceText ("2.4 km away", after the
+ *   place, only when a place was searched), summary, cover { src, alt }), layout ("grid"
  *   default | "list"), compared (draws the chosen ring), save and compare (the control slots),
  *   sizes (next/image `sizes` for this card's column), priority (first cards on the page), className.
  *   listedAgo, typeLabel ("Apartment", shown at the right of the foot) and summary are already-
@@ -48,6 +49,8 @@ type PropertyCardData = {
   listedAgo?: string | undefined;
   /** The kind of property, "Apartment", already translated by the page. */
   typeLabel?: string | undefined;
+  /** "2.4 km away", already translated by the page; only when a place was searched. */
+  distanceText?: string | undefined;
   /** One or two sentences shown in the list layout only, already translated by the page. */
   summary?: string | undefined;
   cover?: { src: string; alt: string } | null | undefined;
@@ -161,6 +164,9 @@ function PropertyCard({
                   city: property.city,
                 })}
               </span>
+              {property.distanceText ? (
+                <span className="shrink-0 font-semibold text-ink">{property.distanceText}</span>
+              ) : null}
             </p>
             {bedrooms || bathrooms || areaSqft ? (
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption font-semibold text-ink">

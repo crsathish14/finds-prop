@@ -10,6 +10,7 @@ import {
   WizardShellDemo,
 } from "./seller-demos";
 import { ListingEditDemo } from "./seller-edit-demos";
+import { LocationFieldDemo } from "./seller-location-demos";
 
 /**
  * What an owner uses to post a property (S6-T02). The wizard's screens are made of these parts; the board
@@ -92,5 +93,13 @@ export const SELLER: LabEntry[] = [
       "'Your drafts' above a new listing: each draft's title, place and when it was saved, with Continue and Delete. Two drafts, an untitled one, a very long title and a draft being deleted.",
     sources: ["domain/drafts-list.tsx"],
     Demo: DraftsListDemo,
+  },
+  {
+    id: "location-field",
+    name: "Location field",
+    description:
+      "Where the property is, in the post form, with no map (ADR-131): the address box with place suggestions, the line about Ola Maps and the Privacy Policy, the area chooser, the Location found card (exact and approximate) with Change, suggestions unavailable, the error when Continue is pressed with no location, and the note on My listings for listings that have none.",
+    sources: ["domain/location-field.tsx", "domain/location-prompt.tsx"],
+    Demo: LocationFieldDemo,
   },
 ];
