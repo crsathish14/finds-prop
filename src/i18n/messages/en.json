@@ -1380,7 +1380,11 @@
       "problemsNone": "None: every call was answered.",
       "callers": {
         "title": "Where the calls came from",
-        "description": "The search box, the post form and the admin pickers."
+        "description": "The search box, the post form and the admin pickers.",
+        "searchBox": "Search box",
+        "listingForm": "Post form",
+        "adminPicker": "Admin pickers",
+        "aiChat": "AI chat"
       },
       "outcomes": {
         "title": "How the calls ended",
@@ -2802,6 +2806,11 @@
         "title": "We couldn't load the overview",
         "text": "Check your connection and try again.",
         "kept": "Check your connection and try again. The numbers below are from the last successful load."
+      },
+      "places": {
+        "error": {
+          "title": "We couldn't load the place search usage"
+        }
       },
       "charts": {
         "views": {

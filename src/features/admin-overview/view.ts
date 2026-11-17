@@ -134,3 +134,47 @@ export function toOverview(value: unknown, now: Date): Overview {
     active: raw.daily.some((entry) => entry.leads + entry.enquiries + entry.shortlists > 0),
   };
 }
+
+/** The four parts of the site that call Ola Maps (the database's own list, ADR-134). */
+export type PlacesCaller = "search_box" | "listing_form" | "admin_picker" | "ai_chat";
+
+/** Calls to Ola Maps over the last 30 days, as `admin_places_usage` counts them (PR 6b of the Ola Maps plan, ADR-134). */
+export interface PlacesUsageNumbers {
+  /** One entry for each day, oldest first; a quiet day is a zero. */
+  days: { day: string; calls: number }[];
+  today: number;
+  month: number;
+  callers: Record<PlacesCaller, number>;
+  outcomes: { ok: number; empty: number; timeout: number; quota: number; error: number };
+}
+
+const placesUsageSchema = z.object({
+  total: count,
+  today: count,
+  month: count,
+  days: z.array(z.object({ day, calls: count })),
+  callers: z.object({
+    search_box: count,
+    listing_form: count,
+    admin_picker: count,
+    ai_chat: count,
+  }),
+  outcomes: z.object({ ok: count, empty: count, timeout: count, quota: count, error: count }),
+});
+
+/**
+ * The object `admin_places_usage` returns as the card's numbers. It answers zeros (never an error) before any call has
+ * been made, so "no calls yet" is nothing at all in the last 30 days and nothing today or this month: that is `null`,
+ * and the card shows its empty state. An object that is not in the expected shape throws, never a half-drawn card.
+ */
+export function toPlacesUsage(value: unknown): PlacesUsageNumbers | null {
+  const raw = placesUsageSchema.parse(value);
+  if (raw.total === 0 && raw.today === 0 && raw.month === 0) return null;
+  return {
+    days: raw.days,
+    today: raw.today,
+    month: raw.month,
+    callers: raw.callers,
+    outcomes: raw.outcomes,
+  };
+}
