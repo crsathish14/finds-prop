@@ -75,7 +75,9 @@ function LocationField({
     >
       <div className="flex flex-col gap-1">
         <span id={titleId} className="text-small font-semibold text-ink">
-          {translate(searching ? "domain.locationField.title" : "domain.locationField.areaTitle")}
+          {translate(
+            mode === "area" ? "domain.locationField.areaTitle" : "domain.locationField.title",
+          )}
           <span aria-hidden="true" className="text-danger">
             {" "}
             *
@@ -133,11 +135,11 @@ function LocationField({
           ) : null}
           <div>
             {searching ? (
-              <Button variant="ghost" size="sm" onClick={onChooseArea}>
+              <Button variant="ghost" size="sm" className="-ml-4" onClick={onChooseArea}>
                 {translate("domain.locationField.chooseArea")}
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={onSearchAddress}>
+              <Button variant="ghost" size="sm" className="-ml-4" onClick={onSearchAddress}>
                 {translate("domain.locationField.searchInstead")}
               </Button>
             )}

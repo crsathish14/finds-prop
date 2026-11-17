@@ -109,7 +109,7 @@ function PlacesUsageCard({ usage, locale = "en", className }: PlacesUsageCardPro
           label={translate("domain.placesUsage.problems")}
           value={number(problems)}
           icon={<Icon icon={TriangleAlert} />}
-          iconTone="warning"
+          iconTone={problems > 0 ? "warning" : "primary"}
           note={translate(
             problems > 0 ? "domain.placesUsage.problemsSome" : "domain.placesUsage.problemsNone",
           )}

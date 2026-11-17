@@ -225,6 +225,8 @@ function Combobox({
   // Before the reader has typed enough, the panel opens only when there is a note to give.
   const showIdle = open && !enough && idleNotices.length > 0;
   const showPanel = showList || showIdle;
+  // A place panel is recognised by its credit line or its notes; a plain list has neither.
+  const placePanel = footer !== undefined || idleNotices.length > 0;
   const announcement = loading
     ? labels.loading
     : showList && options.length > 0
@@ -312,7 +314,16 @@ function Combobox({
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="w-(--radix-popover-trigger-width) p-2"
+          // A place panel needs room for a name and an address: at least 30 rem (480 px, as the UX draws it)
+          // even when its field is narrow, and never wider than the screen. Other lists keep the width of their box.
+          className={cn(
+            "p-2",
+            placePanel
+              ? "w-120 max-w-(--radix-popover-content-available-width) min-w-(--radix-popover-trigger-width)"
+              : "w-(--radix-popover-trigger-width)",
+          )}
+          // The Design Lab draws a panel open without a scrolled viewport, so it must not flip above its field.
+          avoidCollisions={!defaultOpen}
           onOpenAutoFocus={(event) => event.preventDefault()}
           onCloseAutoFocus={(event) => event.preventDefault()}
           onInteractOutside={(event) => {

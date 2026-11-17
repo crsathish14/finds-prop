@@ -1387,7 +1387,7 @@
         "ok": "Answered",
         "empty": "No place found",
         "timeout": "Timed out",
-        "quota": "Refused (limit or balance)",
+        "quota": "Refused",
         "error": "Failed"
       },
       "empty": {
