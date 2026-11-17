@@ -119,7 +119,7 @@ Not yet built: the notification bell (Proposed), and the saved and enquiry count
 | ADD-12        | Consent text and cookie notice                                      | (none)                       | `docs/ux/ux-addendum/screens/consent-snippets.html`    |
 | ADD-08        | Post a property: address and pin (the pin is left out, ADR-132)     | /post-property               | `docs/ux/ux-addendum/screens/post-address.html`        |
 | ADD-11        | Admin: hero layout and sponsors                                     | /admin/hero                  | `docs/ux/ux-addendum/screens/admin-sponsors.html`      |
-| ADD-11        | Admin: homepage localities editor                                   | /admin/homepage              | `docs/ux/ux-addendum/screens/admin-localities.html`    |
+| ADD-11        | Admin: homepage localities editor (Place box: ADR-140)              | /admin/homepage              | `docs/ux/ux-addendum/screens/admin-localities.html`    |
 | ADD-09        | Map view for search results (optional)                              | /properties                  | `docs/ux/ux-addendum/screens/map-view.html`            |
 | ADD-14        | AI chat: the conversation (approved 13 Nov 2026)                    | /ai-search                   | `docs/ux/ux-addendum/screens/ai-chat.html`             |
 | ADD-15        | AI chat: limits and sign-in (approved 13 Nov 2026)                  | /ai-search, /auth            | `docs/ux/ux-addendum/screens/ai-chat-limits.html`      |

@@ -24,6 +24,7 @@ import {
 } from "./admin-managers-demos";
 import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-demos";
 import { PlacesUsageDemo } from "./admin-places-usage-demos";
+import { PlacePickerDemo } from "./admin-place-picker-demos";
 
 /**
  * What the admin uses to review the listings owners post (S6-T04) and to invite and manage builders (S7-T05).
@@ -169,7 +170,7 @@ export const ADMIN: LabEntry[] = [
     id: "project-form",
     name: "Project form",
     description:
-      "The sectioned form where the admin and a builder describe a project: Basics (name, builder for the admin, types, status, price range, BHK options, land area, units, possession, phone), Location (locality, address, latitude and longitude, advantages and nearby places as lists), RERA (a switch that turns the number box on and off), Details (description, specifications, amenities with suggestions) and SEO (page title, slug, meta description), in cards with the section list beside them, the Enquiry form box for the admin only and the save bar. Shown filled for the admin, empty with errors, for a builder (the approval warning, no Builder box, the page address of an approved project locked) and while saving. The media section and the price trends are in the entries below.",
+      "The sectioned form where the admin and a builder describe a project: Basics (name, builder for the admin, types, status, price range, BHK options, land area, units, possession, phone), Location (locality, address, a place search box that fills the latitude and longitude, which can still be typed, advantages and nearby places as lists), RERA (a switch that turns the number box on and off), Details (description, specifications, amenities with suggestions) and SEO (page title, slug, meta description), in cards with the section list beside them, the Enquiry form box for the admin only and the save bar. Shown filled for the admin, empty with errors, for a builder (the approval warning, no Builder box, the page address of an approved project locked) and while saving. The media section and the price trends are in the entries below.",
     sources: [
       "domain/project-fields.tsx",
       "domain/project-form-layout.tsx",
@@ -225,5 +226,13 @@ export const ADMIN: LabEntry[] = [
       "The admin dashboard card for place search (ADR-131): calls to Ola Maps today and this month, problems in 30 days, a line per day with its Chart / Table switch, where the calls came from and how they ended. With calls, with problems and with no calls yet. Calls only: no cost or balance.",
     sources: ["domain/places-usage-card.tsx"],
     Demo: PlacesUsageDemo,
+  },
+  {
+    id: "place-picker",
+    name: "Place picker",
+    description:
+      "The place search box of the admin and builder forms (ADR-140): search for an area and choose it, and the latitude and longitude boxes fill (they stay editable, and are what is saved). The same three characters, 300 ms pause, rows and Ola Maps credit as the search box. Shown empty, typing, with results open, picked (a line says the boxes were filled), unavailable (the panel says to type the numbers instead), inside a row of the homepage localities (the approved screen) and inside the project form's Location section (new, for approval).",
+    sources: ["domain/place-picker.tsx"],
+    Demo: PlacePickerDemo,
   },
 ];

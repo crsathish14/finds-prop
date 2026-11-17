@@ -18,8 +18,10 @@ import type { PlaceAutocompleteSuggestion } from "@/types/places";
 export const PLACE_MIN_CHARACTERS = 3;
 
 const ENDPOINT = "/api/places/autocomplete";
+
 /** Names the box in the usage count (ADR-134); the route ignores a value it does not know. */
-const SOURCE = "search_box";
+export type PlaceSource = "search_box" | "admin_picker";
+const DEFAULT_SOURCE: PlaceSource = "search_box";
 
 /** What a picked suggestion gives the search: its name and its point. */
 export type PlaceChoice = Pick<
@@ -93,7 +95,10 @@ function countCharacters(text: string): number {
  * text arrives, and the old suggestions are not shown meanwhile, so a pick can never be a suggestion for
  * text that is no longer in the box. A text equal to the picked name asks nothing (it was answered).
  */
-export function usePlaceSuggestions(text: string): {
+export function usePlaceSuggestions(
+  text: string,
+  source: PlaceSource = DEFAULT_SOURCE,
+): {
   options: ComboboxOption[];
   state: PlacePanelState;
   search: (query: string) => void;
@@ -112,35 +117,38 @@ export function usePlaceSuggestions(text: string): {
     [],
   );
 
-  const search = useCallback((query: string) => {
-    const typed = query.trim();
-    // A newer question always cancels the older one, even when it asks nothing itself.
-    request.current?.abort();
-    request.current = null;
-    if (countCharacters(typed) < PLACE_MIN_CHARACTERS) return;
-    if (pickedNow.current?.label === typed) return;
+  const search = useCallback(
+    (query: string) => {
+      const typed = query.trim();
+      // A newer question always cancels the older one, even when it asks nothing itself.
+      request.current?.abort();
+      request.current = null;
+      if (countCharacters(typed) < PLACE_MIN_CHARACTERS) return;
+      if (pickedNow.current?.label === typed) return;
 
-    const controller = new AbortController();
-    request.current = controller;
-    setAnswer({ query: typed, status: "loading", suggestions: [] });
-    void (async () => {
-      let settled: Pick<Answer, "status" | "suggestions">;
-      try {
-        const response = await fetch(
-          `${ENDPOINT}?${new URLSearchParams({ ["q"]: typed, source: SOURCE })}`,
-          {
-            signal: controller.signal,
-            headers: { accept: "application/json" },
-          },
-        );
-        settled = await readAnswer(response);
-      } catch {
-        settled = UNAVAILABLE;
-      }
-      if (controller.signal.aborted) return;
-      setAnswer({ query: typed, ...settled });
-    })();
-  }, []);
+      const controller = new AbortController();
+      request.current = controller;
+      setAnswer({ query: typed, status: "loading", suggestions: [] });
+      void (async () => {
+        let settled: Pick<Answer, "status" | "suggestions">;
+        try {
+          const response = await fetch(
+            `${ENDPOINT}?${new URLSearchParams({ ["q"]: typed, source })}`,
+            {
+              signal: controller.signal,
+              headers: { accept: "application/json" },
+            },
+          );
+          settled = await readAnswer(response);
+        } catch {
+          settled = UNAVAILABLE;
+        }
+        if (controller.signal.aborted) return;
+        setAnswer({ query: typed, ...settled });
+      })();
+    },
+    [source],
+  );
 
   const pick = useCallback(
     (option: ComboboxOption): PlaceChoice | null => {

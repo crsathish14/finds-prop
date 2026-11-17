@@ -81,7 +81,7 @@ export const SITE_CONTENT: LabEntry[] = [
     id: "site-localities-editor",
     name: "Localities editor",
     description:
-      "The list of localities the home page features: for each a label, a latitude and a longitude (typed until the place search is built), a radius of 2 to 6 km, the grip and the arrows to change the order, and Remove; Add locality (off at the limit of 8, with a notice) and a note when the list is empty. On a phone every box is on its own line; from 768 px the latitude, longitude and radius share a line. Shown with five localities, empty, with problems on three rows, at the limit, with a very long name and a distance that is not offered, and off while saving.",
+      "The list of localities the home page features: for each a label, a place search box that fills the latitude and the longitude (which can still be typed), a radius of 2 to 6 km, the grip and the arrows to change the order, and Remove; Add locality (off at the limit of 8, with a notice) and a note when the list is empty. On a phone every box is on its own line; from 768 px the latitude, longitude and radius share a line. Shown with five localities, empty, with problems on three rows, at the limit, with a very long name and a distance that is not offered, and off while saving.",
     sources: ["domain/site-localities-editor.tsx", "patterns/sortable-list.tsx"],
     Demo: SiteLocalitiesDemo,
   },

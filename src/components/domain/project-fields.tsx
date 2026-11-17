@@ -8,7 +8,9 @@
  *   options ({ builders?, projectTypes, propertyTypes, statuses }, each { value, label }[]; give builders only for the
  *   admin: that is what shows the Builder box), amenitySuggestions (phrases offered under Amenities), slugLocked
  *   (a builder cannot change the page address of an approved project), media (what goes in the Media section;
- *   leave it out and the section is not shown), disabled (while saving), words (the headings, labels, hints and
+ *   leave it out and the section is not shown), placePicker (the place search box of the Location section, a component
+ *   the page gives: choosing a place writes the latitude and longitude boxes, which stay editable; left out, the boxes
+ *   are typed alone: ADR-140), disabled (while saving), words (the headings, labels, hints and
  *   the tag list's words), className.
  * Responsive: one column on phones, two from 768 px; the sections are cards stacked one above the other.
  * Accessibility: every box has a visible label tied to it; hints and errors are read with the box; an error also shows
@@ -20,6 +22,7 @@
  * UX reference: admin-project-form screen (Basics, Location, RERA, Details, Media, SEO), builder-project-form screen.
  */
 import type { ReactNode } from "react";
+import { formatCoordinate, type PlacePickerComponent } from "@/components/domain/place-picker";
 import { FormField } from "@/components/patterns/form-field";
 import { FormSection } from "@/components/patterns/form-section";
 import { TagListField, type TagListWords } from "@/components/patterns/tag-list-field";
@@ -127,6 +130,7 @@ type ProjectFieldsProps = {
   amenitySuggestions?: readonly string[];
   slugLocked?: boolean;
   media?: ReactNode;
+  placePicker?: PlacePickerComponent;
   disabled?: boolean;
   words: ProjectFieldsWords;
   className?: string;
@@ -156,6 +160,7 @@ function ProjectFields({
   amenitySuggestions = [],
   slugLocked = false,
   media,
+  placePicker: PlacePicker,
   disabled = false,
   words,
   className,
@@ -285,6 +290,18 @@ function ProjectFields({
           <FormField label={words.address} {...optional} {...problem("address")}>
             <Input {...text("address")} maxLength={LIMITS.address} autoComplete="off" />
           </FormField>
+          {PlacePicker ? (
+            <div className="md:col-span-2">
+              <PlacePicker
+                id="project-place"
+                disabled={disabled}
+                onPick={(pick) => {
+                  onChange("latitude", formatCoordinate(pick.lat));
+                  onChange("longitude", formatCoordinate(pick.lng));
+                }}
+              />
+            </div>
+          ) : null}
           <FormField label={words.latitude} {...optional} {...problem("latitude")}>
             <Input {...text("latitude")} inputMode="decimal" autoComplete="off" />
           </FormField>

@@ -5,6 +5,7 @@ import {
   getFormOptions,
   ProjectForm,
 } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 // The portal layout already says the page is never indexed.
@@ -30,6 +31,7 @@ export default async function NewProjectPage() {
       save={createProject}
       backHref="/admin/projects"
       editBase="/admin/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

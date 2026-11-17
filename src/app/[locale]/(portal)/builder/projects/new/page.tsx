@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createMyProject, ProjectForm } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 // The portal layout already says the page is never indexed.
@@ -21,6 +22,7 @@ export default function NewBuilderProjectPage() {
       save={createMyProject}
       backHref="/builder/projects"
       editBase="/builder/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

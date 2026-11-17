@@ -287,3 +287,19 @@ describe("usePlaceSuggestions (ADR-136)", () => {
     expect(signal.aborted).toBe(true);
   });
 });
+
+describe("usePlaceSuggestions with another source (ADR-140)", () => {
+  it("names the admin picker in the route's source, and still asks nothing under three characters", async () => {
+    fetchMock.mockResolvedValue(json({ ok: true, data: [suggestion("a", "Adyar")] }));
+    const view = renderHook(({ typed }) => usePlaceSuggestions(typed, "admin_picker"), {
+      initialProps: { typed: "adyar" },
+    });
+    act(() => view.result.current.search("ad"));
+    expect(fetchMock).not.toHaveBeenCalled();
+    act(() => view.result.current.search("adyar"));
+    await waitFor(() => expect(view.result.current.state).toBe("ready"));
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "/api/places/autocomplete?q=adyar&source=admin_picker",
+    );
+  });
+});

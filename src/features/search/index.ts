@@ -43,6 +43,7 @@ export {
   wantsNearby,
 } from "./nearby";
 export { HomeSearch } from "./home-search.client";
+export { AdminPlacePicker } from "./admin-place-picker.client";
 export { LISTINGS_TAG, listingRowSchema, type ListingRow } from "./listing-row";
 export { getSearchResults, type SearchResults } from "./results";
 export { ResultsScreen } from "./results-screen";
