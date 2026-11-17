@@ -1,9 +1,10 @@
--- F11 retention (S7-T12 part 2, DEC-28, ADR-124; AI chat usage rows added by AI-P4-T05). Tests: DB-FN-run_retention, DB-PRIV-retention, DB-AUDIT-retention.
+-- F11 retention (S7-T12 part 2, DEC-28, ADR-124; AI chat usage rows added by AI-P4-T05, place search usage counts by
+-- place search PR 3a, ADR-134). Tests: DB-FN-run_retention, DB-PRIV-retention, DB-AUDIT-retention.
 -- Old rows are made with a created_at well past each window and new ones well inside it, so the fixtures are the only
 -- rows near a window's edge whatever else the database holds; a limited run, a second limited run and a full run show
 -- the batches, and a rerun finds nothing.
 begin;
-select plan(18);
+select plan(19);
 
 -- b1 is a builder with two projects' worth of leads (one project), a1 owns a listing the enquiries are about.
 insert into auth.users (id, email, email_confirmed_at)
@@ -62,6 +63,11 @@ insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_vers
   ('it-retention-1', now() - interval '13 months', 'anonymous', 'it', 'answered'),
   ('it-retention-2', now() - interval '18 months', 'anonymous', 'it', 'refused'),
   ('it-retention-3', now() - interval '11 months', 'anonymous', 'it', 'answered');
+-- Place search usage counts (24 months, by India calendar day): two old days, one new.
+insert into public.places_usage_daily (day, api, caller, outcome, calls) values
+  ((current_date - interval '25 months')::date, 'it_retention', 'search_box', 'ok', 4),
+  ((current_date - interval '30 months')::date, 'it_retention', 'ai_chat', 'error', 1),
+  ((current_date - interval '23 months')::date, 'it_retention', 'search_box', 'ok', 2);
 insert into public.idempotency_keys (scope, subject, key, created_at) values
   ('it_retention', 'x', gen_random_uuid(), now() - interval '25 hours'),
   ('it_retention', 'x', gen_random_uuid(), now() - interval '3 days'),
@@ -78,6 +84,7 @@ select is(
   public.run_retention(2, 1),
   '{"form_submissions": 2, "crm_api_logs": 2, "project_events": 2, "enquiries": 2, "project_leads": 2,
     "public_rate_limits": 2, "idempotency_keys": 2, "ai_usage_events": 2,
+    "places_usage_daily": 2,
     "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a limited run deletes at most one batch of each table, and counts what it leaves alone'
 );
@@ -89,14 +96,15 @@ select is(
 select is(
   public.run_retention(1, 2) - 'skipped',
   '{"form_submissions": 0, "crm_api_logs": 1, "project_events": 0, "enquiries": 0, "project_leads": 0,
-    "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0}'::jsonb,
+    "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0,
+    "places_usage_daily": 0}'::jsonb,
   'the next run takes the rest, over as many small batches as it needs'
 );
 select is(
   public.run_retention(),
   '{"form_submissions": 0, "crm_api_logs": 0, "project_events": 0, "enquiries": 0, "project_leads": 0,
     "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0,
-    "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
+    "places_usage_daily": 0, "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a run with nothing left to delete deletes nothing, and still counts what it leaves alone'
 );
 
@@ -110,14 +118,22 @@ select results_eq(
       (select count(*) from public.project_leads where project_id = '00000000-0000-4000-c000-000000000001')::int,
       (select count(*) from public.public_rate_limits where scope = 'it_retention')::int,
       (select count(*) from public.idempotency_keys where scope = 'it_retention')::int,
-      (select count(*) from public.ai_usage_events where prompt_version = 'it')::int$$,
-  $$values (3, 1, 1, 1, 1, 1, 1, 1)$$,
+      (select count(*) from public.ai_usage_events where prompt_version = 'it')::int,
+      (select count(*) from public.places_usage_daily where api = 'it_retention')::int$$,
+  $$values (3, 1, 1, 1, 1, 1, 1, 1, 1)$$,
   'only the new rows are left (and the submission with a file and the one still waiting stay)'
 );
 select is(
   (select count(*) from public.form_submissions
    where id in ('00000000-0000-4000-d000-000000000004', '00000000-0000-4000-d000-000000000005'))::int,
   2, 'a submission with an uploaded file, and one waiting on a CRM delivery, are not deleted however old'
+);
+
+-- The 24 month window of the place search counts: a day inside the window stays.
+select results_eq(
+  $$select day = (current_date - interval '23 months')::date, calls from public.places_usage_daily where api = 'it_retention'$$,
+  $$values (true, 2)$$,
+  'a place search count older than 24 months is deleted and a newer one is kept with its number'
 );
 
 -- The log of the runs, and that the log itself is not pruned
@@ -135,8 +151,8 @@ select is(
   (select array_agg(key order by key) from jsonb_object_keys(
     (select diff from public.audit_log where action = 'retention.ran' order by id desc limit 1)
   ) as key),
-  array['ai_usage_events', 'crm_api_logs', 'enquiries', 'form_submissions', 'idempotency_keys', 'project_events', 'project_leads',
-        'public_rate_limits', 'skipped'],
+  array['ai_usage_events', 'crm_api_logs', 'enquiries', 'form_submissions', 'idempotency_keys', 'places_usage_daily',
+        'project_events', 'project_leads', 'public_rate_limits', 'skipped'],
   'an entry holds the counts of each table and of what was left alone'
 );
 select ok(

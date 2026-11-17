@@ -166,6 +166,7 @@ insert into public.internal_cron_tokens (name, token) values ('matrix_probe', re
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
 insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
+insert into public.places_usage_daily (day, api, caller, outcome, calls) values (current_date, 'matrix_probe', 'search_box', 'ok', 1);
 
 -- Layer 1: the privileges each role holds on each table (S select, I insert, U update, D delete, T truncate; select,
 -- insert and update count when held on any column, as the column grants are).
@@ -184,6 +185,7 @@ insert into exp_grants values
   ('idempotency_keys', '', '', 'S,I,U,D,T'),
   ('internal_cron_tokens', '', '', 'S,I,U,D,T'),
   ('listing_media', 'S', 'S,U,D', 'S,I,U,D,T'),
+  ('places_usage_daily', '', '', 'S,I,U,D,T'),
   ('profiles', '', 'S,U', 'S,I,U,D,T'),
   ('project_events', '', 'S', 'S,I,U,D,T'),
   ('project_leads', '', 'S,U', 'S,I,U,D,T'),
@@ -237,7 +239,8 @@ insert into probe values
   ('audit_log', 'x1', 'action = ''builder.created'''),
   ('app_config', 'x1', 'key = ''matrix.probe'''), ('internal_cron_tokens', 'x1', 'name = ''matrix_probe'''),
   ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
-  ('ai_usage_events', 'x1', 'request_id = ''matrix_probe''');
+  ('ai_usage_events', 'x1', 'request_id = ''matrix_probe'''),
+  ('places_usage_daily', 'x1', 'api = ''matrix_probe''');
 
 create function pg_temp.sees(who text, tbl text) returns text
 language plpgsql
@@ -291,7 +294,8 @@ from (values
   ('internal_cron_tokens', array['', '', '', '', '', '', '']),
   ('idempotency_keys', array['', '', '', '', '', '', '']),
   ('public_rate_limits', array['', '', '', '', '', '', '']),
-  ('ai_usage_events', array['', '', '', '', '', '', ''])
+  ('ai_usage_events', array['', '', '', '', '', '', '']),
+  ('places_usage_daily', array['', '', '', '', '', '', ''])
 ) as x(t, by_who)
 cross join unnest(array['anon', 'ca', 'cb', 'ba', 'bb', 'bc', 'ad']) with ordinality as r(who, n);
 
