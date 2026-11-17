@@ -1104,6 +1104,39 @@
     "developerCard": {
       "projects": "{count, plural, one {# project} other {# projects}}"
     },
+    "places": {
+      "region": "Suggestions cover Tamil Nadu only for now.",
+      "clear": "Clear place",
+      "loading": "Looking for places",
+      "noResults": "No places found",
+      "resultCount": "{count, plural, one {# suggestion available} other {# suggestions available}}",
+      "idle": {
+        "title": "Type at least {count} characters",
+        "bodyEmpty": "Start with an area, a street or a landmark, for example “Velachery”.",
+        "bodyTyping": "Keep typing and suggestions will appear."
+      },
+      "empty": {
+        "title": "No places found for “{query}”",
+        "body": "Check the spelling or try a nearby area."
+      },
+      "unavailable": {
+        "title": "Suggestions aren't available right now",
+        "body": "Type the area and press Search. We'll match it by name."
+      },
+      "limited": {
+        "title": "Too many searches in a moment",
+        "body": "Wait a few seconds and keep typing."
+      },
+      "keyword": {
+        "title": "Search for “{query}” as a keyword",
+        "body": "Matches listings by name, street or locality text"
+      },
+      "attribution": {
+        "poweredBy": "Powered by Ola Maps",
+        "licence": "© OpenStreetMap contributors · ODbL",
+        "opensInNewTab": "(opens in a new tab)"
+      }
+    },
     "searchCard": {
       "label": "Property search",
       "intentLabel": "Looking to",

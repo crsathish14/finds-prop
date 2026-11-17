@@ -11,6 +11,8 @@
  *   card | "stacked" two rows at every width), defaultValues (what to start with), projectsHref (the
  *   "New projects" link-tab), aiSearchHref (the "Describe it in words" link; leave it out while AI
  *   search is off and the link is not drawn), localityOptions, onLocalityQueryChange,
+ *   localityPanel (the place panel of ADR-131: notes, the provider's credit and the keyword row, from
+ *   usePlacePanel; choosing the keyword row searches the typed text),
  *   localityLoading, localityMinChars and localityDebounceMs (the suggestion list, passed to
  *   Combobox; 1 letter and 300 ms by default; a page whose list is local sets 0 ms, so a suggestion
  *   can never be out of date when Enter is pressed), popular (up to four { label, href } localities, links; none leaves the group out),
@@ -46,7 +48,11 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { Combobox, type ComboboxOption } from "@/components/patterns/combobox";
+import {
+  Combobox,
+  type ComboboxOption,
+  type ComboboxPanelProps,
+} from "@/components/patterns/combobox";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -91,10 +97,15 @@ type SearchCardProps = {
   localityLoading?: boolean;
   localityMinChars?: number;
   localityDebounceMs?: number;
+  /** The place panel's notes, credit and keyword row (usePlacePanel); left out, the list is the plain one. */
+  localityPanel?: Partial<ComboboxPanelProps>;
   popular?: readonly SearchLink[];
   quickPickHrefs?: { bedrooms?: string | undefined; budget?: string | undefined } | undefined;
   className?: string;
 };
+
+/** The value of the combobox's keyword row (usePlacePanel makes it): choosing it searches the typed text. */
+const KEYWORD_ROW = "keyword";
 
 const EMPTY: SearchValues = {
   intent: "buy",
@@ -203,6 +214,7 @@ function SearchCard({
   localityLoading = false,
   localityMinChars = 1,
   localityDebounceMs,
+  localityPanel,
   popular = [],
   quickPickHrefs,
   className,
@@ -326,7 +338,12 @@ function SearchCard({
               value={values.locality}
               onValueChange={(text) => setValues((current) => ({ ...current, locality: text }))}
               onQueryChange={onLocalityQueryChange}
-              onSelect={() => {
+              onSelect={(option) => {
+                if (option.value === KEYWORD_ROW) {
+                  // The keyword row keeps the typed text and searches it.
+                  submit();
+                  return;
+                }
                 justPicked.current = true;
                 queueMicrotask(() => {
                   justPicked.current = false;
@@ -336,13 +353,16 @@ function SearchCard({
               loading={localityLoading}
               minChars={localityMinChars}
               {...(localityDebounceMs === undefined ? {} : { debounceMs: localityDebounceMs })}
-              labels={{
-                clear: translate("domain.searchCard.locality.clear"),
-                loading: translate("domain.searchCard.locality.loading"),
-                noResults: translate("domain.searchCard.locality.noResults"),
-                resultCount: (count) =>
-                  translate("domain.searchCard.locality.resultCount", { count }),
-              }}
+              {...localityPanel}
+              labels={
+                localityPanel?.labels ?? {
+                  clear: translate("domain.searchCard.locality.clear"),
+                  loading: translate("domain.searchCard.locality.loading"),
+                  noResults: translate("domain.searchCard.locality.noResults"),
+                  resultCount: (count) =>
+                    translate("domain.searchCard.locality.resultCount", { count }),
+                }
+              }
               // The box is drawn by the field, and the combobox is pulled out over the field's padding so
               // the pin lines up with the label above it.
               className={cn("-mx-3 w-auto @xl:-mx-4", wide && "@4xl:-mx-5")}

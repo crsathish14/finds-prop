@@ -13,6 +13,7 @@ import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-d
 import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
 import { PhotoUploaderDemo } from "./photo-uploader-demos";
 import { PropertyPageDemo } from "./domain-demos-property";
+import { PlaceSuggestionsDemo } from "./domain-demos-place-suggestions";
 import { SearchCardDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
@@ -74,6 +75,14 @@ export const DOMAIN: LabEntry[] = [
       "The home page search box: Buy, Rent and New projects, a locality box with suggestions, property type, bedrooms, maximum budget and the copper Search button, with Popular and Quick-pick chips. Wide (one joined bar), stacked, with values, Rent, no AI link and no chips, and long text.",
     sources: ["domain/search-card.tsx"],
     Demo: SearchCardDemo,
+  },
+  {
+    id: "place-suggestions",
+    name: "Place suggestions",
+    description:
+      "The panel under the search box's locality field (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps), and the Ola Maps credit with the OpenStreetMap licence at the bottom. Drawn open, wide and stacked.",
+    sources: ["domain/place-panel.tsx"],
+    Demo: PlaceSuggestionsDemo,
   },
   {
     id: "filter-rail",
