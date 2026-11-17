@@ -12,7 +12,8 @@
  *   usePlacePanel and a NativeSelect of areas), found ({ label, detail, approximate }), onChange (the
  *   "Change" button of "found"), onChooseArea ("I can't find it"), onSearchAddress ("Search for the address
  *   instead"), unavailable (suggestions cannot be fetched: a warning is shown and the area is asked for),
- *   showError (the form was sent with no place: "Add a location to continue."), privacyHref ("/privacy" by
+ *   showError (the form was sent with no place: "Add a location to continue."), errorText (other words
+ *   for that error, such as a place outside the region), privacyHref ("/privacy" by
  *   default), className.
  * Responsive: one column at every width; the buttons wrap under the text on a narrow screen.
  * Accessibility: a group named by its title; the hint and the provider note are read with the box; the error
@@ -33,6 +34,10 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
 
+/** The switch between the two ways to give a place: the text may wrap on a narrow card instead of being cut off. */
+const SWITCH_BUTTON =
+  "-ml-4 h-auto min-h-(--size-btn-sm) py-2 text-left [&_span]:overflow-visible [&_span]:text-clip [&_span]:whitespace-normal";
+
 type LocationFound = { label: string; detail?: string | undefined; approximate: boolean };
 
 type LocationFieldProps = {
@@ -44,6 +49,8 @@ type LocationFieldProps = {
   onSearchAddress?: () => void;
   unavailable?: boolean;
   showError?: boolean;
+  /** The words of the error when it is not "Add a location to continue." (a place outside the region, say). */
+  errorText?: string;
   privacyHref?: string;
   className?: string;
 };
@@ -57,6 +64,7 @@ function LocationField({
   onSearchAddress,
   unavailable = false,
   showError = false,
+  errorText,
   privacyHref = "/privacy",
   className,
 }: LocationFieldProps) {
@@ -135,11 +143,11 @@ function LocationField({
           ) : null}
           <div>
             {searching ? (
-              <Button variant="ghost" size="sm" className="-ml-4" onClick={onChooseArea}>
+              <Button variant="ghost" size="sm" className={SWITCH_BUTTON} onClick={onChooseArea}>
                 {translate("domain.locationField.chooseArea")}
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" className="-ml-4" onClick={onSearchAddress}>
+              <Button variant="ghost" size="sm" className={SWITCH_BUTTON} onClick={onSearchAddress}>
                 {translate("domain.locationField.searchInstead")}
               </Button>
             )}
@@ -150,7 +158,7 @@ function LocationField({
       {showError ? (
         <p id={errorId} role="alert" className="flex items-center gap-2 text-small text-danger">
           <Icon icon={CircleAlert} size="sm" />
-          {translate("domain.locationField.required")}
+          {errorText ?? translate("domain.locationField.required")}
         </p>
       ) : null}
     </div>

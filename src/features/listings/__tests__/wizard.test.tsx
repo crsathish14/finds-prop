@@ -3,6 +3,7 @@ import { configure, fireEvent, screen, waitFor, within } from "@testing-library/
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import type { ActionResult } from "@/types/action";
+import { LocationFieldStub } from "./location-stub";
 
 // The full suite runs many test files at once, so every wait is patient (they pass in about two seconds alone).
 configure({ asyncUtilTimeout: 8000 });
@@ -40,6 +41,9 @@ function actions(overrides: Partial<Actions> = {}) {
     createDraft: vi.fn(async () => ok({ listingId: LISTING, shortId: "abcd2345" })),
     saveDraft: vi.fn(async () => ok({ listingId: LISTING })),
     submit: vi.fn(async () => ok({ listingId: LISTING, shortId: "abcd2345" })),
+    setLocation: vi.fn(async () =>
+      ok({ listingId: LISTING, shortId: "abcd2345", status: "draft", wentBackToReview: false }),
+    ),
     photos: {
       requestUpload: vi.fn(),
       finalize: vi.fn(),
@@ -57,6 +61,7 @@ function open(fake: Actions, props: Partial<React.ComponentProps<typeof PostingW
       actions={fake}
       uploader={UploaderStub as never}
       doneHref="/dashboard?tab=listings"
+      locationField={LocationFieldStub}
       {...props}
     />,
   );
@@ -71,6 +76,8 @@ async function fillStepOne() {
   type(/^Address/, "12, Second Cross Street, Velachery");
   type(/^Locality/, "Velachery");
   type(/^Pincode/, "600042");
+  // The address step asks for a place too: the stub reports one the way the real field does.
+  fireEvent.click(screen.getByRole("button", { name: "stub pick place" }));
 }
 
 async function reachReview(fake: Actions) {
@@ -108,7 +115,8 @@ describe("PostingWizard: the five steps, connected (S6-T02, FR-ACC-06)", () => {
 
   it("checks only this step on Continue, names the fields and sends nothing", async () => {
     const fake = actions();
-    open(fake);
+    // The listing already holds a place, so the boxes below it are the first fields with a problem.
+    open(fake, { locationHeld: true });
     press("Continue");
     expect(await screen.findByText("Add the street or building.")).toBeVisible();
     expect(screen.getByText("Enter the 6-digit pincode.")).toBeVisible();
@@ -240,7 +248,14 @@ describe("PostingWizard: the five steps, connected (S6-T02, FR-ACC-06)", () => {
         amenities: [],
         title: "",
         description: "",
+        locationLat: "",
+        locationLng: "",
+        locationKind: "",
+        locationLabel: "",
+        locationDetail: "",
       },
+      // The draft already holds a place (only that is known), so Continue is not held back for one.
+      locationHeld: true,
     });
     expect(screen.getByRole("radio", { name: /Rent out/ })).toBeChecked();
     expect(screen.getByLabelText(/^Locality/)).toHaveValue("Adyar");

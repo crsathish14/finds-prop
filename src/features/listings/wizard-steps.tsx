@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { fieldErrorText, type Translator } from "@/i18n/failure-text";
+import type { ListingLocationFieldProps } from "@/types/places";
 import { formatArea, formatPrice, type Translate } from "@/lib/format";
 import { AMENITY_OPTIONS, DESCRIPTION_MAX, STATE_NAME, TITLE_MAX } from "./constants";
 import { hasBedrooms, type StepErrors, type WizardStep, type WizardValues } from "./wizard-state";
@@ -29,6 +30,18 @@ type StepProps = {
   onChange: ChangeHandler;
   headingRef: Ref<HTMLHeadingElement>;
   disabled?: boolean;
+};
+
+/**
+ * The connected location field, handed in by the page (ADR-141, as the photo uploader and the place pickers are):
+ * the wizard cannot import the search feature's client code, so the page gives it as a prop.
+ */
+export type LocationFieldComponent = (props: ListingLocationFieldProps) => ReactNode;
+
+/** What the address step needs to draw the location field; the step adds the error text and the disabled state. */
+export type LocationSlot = {
+  Field: LocationFieldComponent;
+  props: Omit<ListingLocationFieldProps, "errorText" | "disabled">;
 };
 
 const PROPERTY_TYPES = ["apartment", "villa", "house", "plot", "commercial"] as const;
@@ -66,9 +79,24 @@ function useFieldText(errors: StepErrors) {
 /** Passes an error to a FormField only when there is one (the prop does not take undefined). */
 const errorProp = (message: string | undefined) => (message ? { error: message } : {});
 
-export function BasicsStep({ values, errors, onChange, headingRef, disabled }: StepProps) {
+export function BasicsStep({
+  values,
+  errors,
+  onChange,
+  headingRef,
+  disabled,
+  location,
+}: StepProps & { location: LocationSlot }) {
   const words = useTranslations("postProperty.basics");
+  const rootWords = useTranslations() as unknown as Translator;
   const errorText = useFieldText(errors);
+  // "Add a location to continue." is the field's own line; any other refusal (a place outside the region) has its words.
+  const placeError = errors["location"];
+  const placeErrorText = placeError
+    ? placeError.key === "validation.required"
+      ? rootWords("domain.locationField.required")
+      : fieldErrorText(rootWords, placeError)
+    : null;
   const typeLabels = {
     apartment: words("typeApartment"),
     villa: words("typeVilla"),
@@ -104,6 +132,7 @@ export function BasicsStep({ values, errors, onChange, headingRef, disabled }: S
           ))}
         </NativeSelect>
       </FormField>
+      <location.Field {...location.props} errorText={placeErrorText} disabled={disabled ?? false} />
       <FormField
         label={words("address")}
         required

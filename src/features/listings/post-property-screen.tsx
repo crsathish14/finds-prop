@@ -9,7 +9,8 @@ import {
   requestPhotoUpload,
   type SavedPhoto,
 } from "@/features/media";
-import { getTranslate } from "@/features/site";
+import { ListingLocationField } from "@/features/search";
+import { getSiteSettings, getTranslate } from "@/features/site";
 import { formatDate } from "@/lib/format";
 import { publicEnv } from "@/lib/public-env";
 import { publicStorageUrl } from "@/lib/storage-url";
@@ -18,6 +19,7 @@ import {
   deleteListingDraft,
   saveListingChanges,
   saveListingDraft,
+  setListingLocation,
   submitListing,
 } from "./actions";
 import { YourDrafts, type DraftRowView } from "./drafts.client";
@@ -36,6 +38,7 @@ const ACTIONS: WizardActions = {
   saveDraft: saveListingDraft,
   submit: submitListing,
   saveChanges: saveListingChanges,
+  setLocation: setListingLocation,
   photos: { requestUpload: requestPhotoUpload, finalize: finalizePhoto, remove: removePhoto },
 };
 
@@ -83,7 +86,9 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
     );
   }
 
-  const translate = await getTranslate();
+  const [translate, settings] = await Promise.all([getTranslate(), getSiteSettings()]);
+  // The site's curated localities are how an owner places a listing when suggestions cannot be fetched (ADR-141).
+  const areas = settings.homepage.localities.map(({ label, lat, lng }) => ({ label, lat, lng }));
   const drafts: DraftRowView[] = draft
     ? []
     : (await listMyDrafts()).map((item) => ({
@@ -109,9 +114,13 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
       ) : null}
       <PostingWizard
         listingId={draft?.id ?? null}
-        {...(draft ? { values: valuesFromDraft(draft), photos } : {})}
+        {...(draft
+          ? { values: valuesFromDraft(draft), photos, locationHeld: draft.hasLocation }
+          : {})}
         actions={ACTIONS}
         uploader={PhotoUploaderConnected}
+        locationField={ListingLocationField}
+        areas={areas}
         doneHref={MY_LISTINGS_HREF}
         {...(editing ? { edit: editing } : {})}
       />

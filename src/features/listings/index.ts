@@ -5,6 +5,7 @@ export {
   deleteListingDraft,
   saveListingChanges,
   saveListingDraft,
+  setListingLocation,
   submitListing,
 } from "./actions";
 export {
@@ -14,6 +15,7 @@ export {
   deleteListingConfig,
   saveDraftConfig,
   saveListingChangesConfig,
+  setListingLocationConfig,
   submitListingConfig,
 } from "./action-config";
 export { countMyListings, getMyDraft, getMyListings, isSignedIn, listMyDrafts } from "./queries";
@@ -50,6 +52,7 @@ export {
   draftFieldsSchema,
   saveDraftSchema,
   saveListingChangesSchema,
+  setListingLocationSchema,
   submitListingSchema,
 } from "./schemas";
 export type {
@@ -63,6 +66,7 @@ export type {
   DraftFields,
   SaveDraftInput,
   SaveListingChangesInput,
+  SetListingLocationInput,
   SubmitListingInput,
 } from "./schemas";
 export { changedModeratedFields, changesNeedReview, MODERATED_FIELDS } from "./review-rule";

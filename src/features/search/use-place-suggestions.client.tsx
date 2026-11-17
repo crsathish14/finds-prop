@@ -20,14 +20,17 @@ export const PLACE_MIN_CHARACTERS = 3;
 const ENDPOINT = "/api/places/autocomplete";
 
 /** Names the box in the usage count (ADR-134); the route ignores a value it does not know. */
-export type PlaceSource = "search_box" | "admin_picker";
+export type PlaceSource = "search_box" | "admin_picker" | "listing_form";
 const DEFAULT_SOURCE: PlaceSource = "search_box";
 
 /** What a picked suggestion gives the search: its name and its point. */
 export type PlaceChoice = Pick<
   PlaceAutocompleteSuggestion,
   "id" | "label" | "detail" | "lat" | "lng"
->;
+> & { kind?: PlaceAutocompleteSuggestion["kind"] };
+
+/** The kinds of place a suggestion can be (the route's own list). */
+const KINDS: readonly string[] = ["area", "street", "venue"];
 
 type Settled = "ready" | "empty" | "unavailable" | "limited";
 type Answer = { query: string; status: Settled | "loading"; suggestions: PlaceChoice[] };
@@ -49,7 +52,8 @@ function isChoice(value: unknown): value is PlaceChoice {
     typeof row["lat"] === "number" &&
     Number.isFinite(row["lat"]) &&
     typeof row["lng"] === "number" &&
-    Number.isFinite(row["lng"])
+    Number.isFinite(row["lng"]) &&
+    (row["kind"] === undefined || (typeof row["kind"] === "string" && KINDS.includes(row["kind"])))
   );
 }
 
@@ -94,10 +98,14 @@ function countCharacters(text: string): number {
  * The panel is `loading` from the moment there are three characters until the answer for exactly that
  * text arrives, and the old suggestions are not shown meanwhile, so a pick can never be a suggestion for
  * text that is no longer in the box. A text equal to the picked name asks nothing (it was answered).
+ *
+ * `kinds` (optional, give a constant) keeps only suggestions of those kinds, for a box that asks for an area and
+ * nothing finer (the listing form's area chooser, ADR-141). A list with none left is `empty`.
  */
 export function usePlaceSuggestions(
   text: string,
   source: PlaceSource = DEFAULT_SOURCE,
+  kinds?: readonly PlaceChoice["kind"][],
 ): {
   options: ComboboxOption[];
   state: PlacePanelState;
@@ -140,6 +148,10 @@ export function usePlaceSuggestions(
             },
           );
           settled = await readAnswer(response);
+          if (kinds && settled.status === "ready") {
+            const kept = settled.suggestions.filter((choice) => kinds.includes(choice.kind));
+            settled = { status: kept.length === 0 ? "empty" : "ready", suggestions: kept };
+          }
         } catch {
           settled = UNAVAILABLE;
         }
@@ -147,7 +159,7 @@ export function usePlaceSuggestions(
         setAnswer({ query: typed, ...settled });
       })();
     },
-    [source],
+    [source, kinds],
   );
 
   const pick = useCallback(

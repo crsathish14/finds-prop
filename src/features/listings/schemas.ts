@@ -236,3 +236,22 @@ export type SaveListingChangesInput = z.infer<typeof saveListingChangesSchema>;
 /** Delete one of the caller's own listings in any state (S6-T03, FR-ACC-11). */
 export const deleteListingSchema = z.object({ listingId: uuid });
 export type DeleteListingInput = z.infer<typeof deleteListingSchema>;
+
+/** A latitude or longitude as the browser sends it: a real, finite number inside its range. */
+const coordinate = (limit: number) =>
+  z
+    .number({ error: "validation.invalid" })
+    .min(-limit, { error: "validation.invalid" })
+    .max(limit, { error: "validation.invalid" });
+
+/**
+ * Where a listing is, from a place the owner picked (place search PR 7b, FR-GEO-02, ADR-141). The listing is named,
+ * never the owner: the owner is the signed-in account. Whether the point lies inside the region is the database's
+ * rule (`set_listing_location`, ADR-138), not this schema's.
+ */
+export const setListingLocationSchema = z.object({
+  listingId: uuid,
+  lat: coordinate(90),
+  lng: coordinate(180),
+});
+export type SetListingLocationInput = z.infer<typeof setListingLocationSchema>;

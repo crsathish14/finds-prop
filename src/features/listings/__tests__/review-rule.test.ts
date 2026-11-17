@@ -63,4 +63,12 @@ describe("review rule: which edits send a Live listing back to review (S6-T05, D
       expect(changesNeedReview(status, before, edited)).toBe(false);
     }
   });
+
+  it("sends a Live listing back when the place changed, and no other kind of listing (ADR-138, ADR-141)", () => {
+    expect(changesNeedReview("approved", before, before, true)).toBe(true);
+    expect(changesNeedReview("approved", before, before, false)).toBe(false);
+    for (const status of ["draft", "pending", "rejected", "sold", "rented"] as const) {
+      expect(changesNeedReview(status, before, before, true)).toBe(false);
+    }
+  });
 });
