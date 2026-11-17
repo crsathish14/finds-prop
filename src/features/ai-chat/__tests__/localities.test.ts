@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countLocalities,
   editDistance,
+  closeLocalityMatch,
   findLocalities,
   localityKey,
   type LocalityCount,
@@ -130,5 +131,45 @@ describe("UT-ai-localities: finding what the customer wrote", () => {
 
   it("never gives more than the limit", () => {
     expect(names("a", 2)).toHaveLength(2);
+  });
+});
+
+describe("UT-ai-localities: the one locality that is the text or a close spelling of it (ADR-142)", () => {
+  const listed = [
+    locality("Anna Nagar", 9),
+    locality("Velachery", 7),
+    locality("KK Nagar", 3),
+    locality("Adyar", 2),
+  ];
+
+  it("finds the same name however it is written", () => {
+    expect(closeLocalityMatch(listed, "velachery")?.name).toBe("Velachery");
+    expect(closeLocalityMatch(listed, "K.K. Nagar")?.name).toBe("KK Nagar");
+  });
+
+  it("finds a close spelling, as the customer would mistype it", () => {
+    expect(closeLocalityMatch(listed, "Velacheri")?.name).toBe("Velachery");
+    expect(closeLocalityMatch(listed, "kk nagr")?.name).toBe("KK Nagar");
+  });
+
+  it("never takes a name that only starts with or holds the text", () => {
+    expect(closeLocalityMatch(listed, "Anna")).toBeNull();
+    expect(closeLocalityMatch(listed, "Nagar")).toBeNull();
+    expect(closeLocalityMatch(listed, "Ada")).toBeNull();
+  });
+
+  it("finds nothing for text that is empty, too far off, or in another place", () => {
+    expect(closeLocalityMatch(listed, "   ")).toBeNull();
+    expect(closeLocalityMatch(listed, "Vyasarpaadi")).toBeNull();
+    expect(closeLocalityMatch([], "Velachery")).toBeNull();
+  });
+
+  it("prefers the nearer spelling, and the first (busiest) name on a tie", () => {
+    expect(closeLocalityMatch([locality("Adyaar", 9), locality("Adyar", 1)], "Adyar")?.name).toBe(
+      "Adyar",
+    );
+    expect(closeLocalityMatch([locality("Adyar", 9), locality("Adyer", 1)], "Adyor")?.name).toBe(
+      "Adyar",
+    );
   });
 });

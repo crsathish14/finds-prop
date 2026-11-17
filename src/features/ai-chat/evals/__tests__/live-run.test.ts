@@ -23,7 +23,8 @@ vi.mock("@/server/env", () => ({
   env: { RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
 }));
 
-const { AI_CHAT_TOOLS } = await import("../../tools/registry");
+const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
+const { worldPlaceLookup } = await import("../world");
 const { loadCases } = await import("../cases");
 const { scriptedProvider } = await import("../eval-run");
 const { runAndReport } = await import("../live-run");
@@ -36,7 +37,8 @@ const run = (selection: Parameters<typeof runAndReport>[0]["selection"]) =>
   runAndReport({
     cases: cases.all,
     tools: AI_CHAT_TOOLS,
-    providerFor: (evalCase) => scriptedProvider(evalCase, AI_CHAT_TOOLS),
+    placeTools: createAiChatTools(worldPlaceLookup),
+    providerFor: (evalCase, tools) => scriptedProvider(evalCase, tools),
     model: "fake",
     promptVersion: "test-version",
     selection,

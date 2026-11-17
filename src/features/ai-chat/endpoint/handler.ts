@@ -139,6 +139,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     const system = buildSystemPrompt({
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
+      ...(deps.placeSearch === true ? { placeSearch: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
     });
     const conversation = [...history, { role: "user" as const, text: latest.text }];

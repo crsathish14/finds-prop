@@ -49,6 +49,7 @@ describe("UT-env: server environment", () => {
     const env = parseServerEnv({});
     expect(env.APP_ENV).toBe("local");
     expect(env.FLAG_AI_SEARCH).toBe(false);
+    expect(env.FLAG_AI_PLACE_SEARCH).toBe(false);
     expect(env.FLAG_MAP_VIEW).toBe(false);
     expect(env.FLAG_PG_LISTINGS).toBe(false);
     expect(env.FLAG_CUSTOMER_EMAIL).toBe(false);
@@ -59,6 +60,7 @@ describe("UT-env: server environment", () => {
     expect(parseServerEnv({ FLAG_MAP_VIEW: "1" }).FLAG_MAP_VIEW).toBe(true);
     expect(parseServerEnv({ FLAG_MAP_VIEW: "true" }).FLAG_MAP_VIEW).toBe(true);
     expect(parseServerEnv({ FLAG_MAP_VIEW: "0" }).FLAG_MAP_VIEW).toBe(false);
+    expect(parseServerEnv({ FLAG_AI_PLACE_SEARCH: "1" }).FLAG_AI_PLACE_SEARCH).toBe(true);
     expect(() => parseServerEnv({ FLAG_MAP_VIEW: "yes" })).toThrow(/FLAG_MAP_VIEW/);
   });
 

@@ -41,6 +41,8 @@ const serverEnvSchema = z.object({
     .enum(["none", "minimal", "low", "medium", "high", "xhigh", "max"])
     .optional(),
   FLAG_AI_SEARCH: flag,
+  /** AI place search (ADR-142): the chat finds homes near a place. Needs FLAG_AI_SEARCH too; off by default. */
+  FLAG_AI_PLACE_SEARCH: flag,
   FLAG_MAP_VIEW: flag,
   FLAG_PG_LISTINGS: flag,
   /** Customer email: the sign-in email step, the dashboard prompt and the post-property gate. Off until an email provider is set up. */
