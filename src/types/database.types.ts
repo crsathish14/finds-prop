@@ -271,6 +271,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"places_usage_daily": {
+                  Row: {
+                    "api": string,"caller": string,"calls": number,"day": string,"outcome": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "api": string,"caller": string,"calls"?: number,"day": string,"outcome": string
+                  }
+                  Update: {
+                    "api"?: string,"caller"?: string,"calls"?: number,"day"?: string,"outcome"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"email_verified_at": string | null,"full_name": string | null,"id": string,"phone": string | null,"updated_at": string
@@ -543,6 +557,9 @@ isOneToOne: false
             }[]
                            },
 "admin_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"admin_places_usage":
 { Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
 "admin_project_overview":
@@ -885,6 +902,9 @@ isOneToOne: false
                            },
 "record_form_submission":
 { Args: { "p_data"?: Json,"p_email"?: string,"p_files"?: Json,"p_form_slug": string,"p_idempotency_key"?: string,"p_mobile"?: string,"p_name"?: string,"p_project_slug"?: string,"p_source"?: string,"p_visitor_hash": string }; Returns: string
+                           },
+"record_places_call":
+{ Args: { "p_api": string,"p_caller": string,"p_outcome": string }; Returns: undefined
                            },
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
