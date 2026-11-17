@@ -78,6 +78,15 @@ describe("IT-actions-listing: the wizard's server side against a real database (
     });
     if (error) throw new Error(`Could not add a photo (${error.code})`);
   };
+  // A listing needs a location to be submitted (ADR-138). The wizard step that sets one is PR 7b, so the
+  // set-up gives the draft a point the way the other integration tests do.
+  const addLocation = async (listingId: string) => {
+    const { error } = await admin
+      .from("properties")
+      .update({ location: "SRID=4326;POINT(80.27074 13.08274)" })
+      .eq("id", listingId);
+    if (error) throw new Error(`Could not add a location (${error.code})`);
+  };
 
   beforeAll(async () => {
     owner = await signInTestCustomer();
@@ -180,6 +189,7 @@ describe("IT-actions-listing: the wizard's server side against a real database (
 
     const { listingId } = await startDraft(store(), { fields: { ...stepOne, ...restOfListing } });
     await addPhoto(listingId);
+    await addLocation(listingId);
     await sendForReview(store(), { listingId });
     const pending = await failureOf(() =>
       keepDraft(store(), { listingId, fields: { title: "Changed after submitting" } }),
@@ -231,19 +241,31 @@ describe("IT-actions-listing: the wizard's server side against a real database (
   it("refuses to submit a complete draft with no photo", async () => {
     await clearOwnerListings();
     const { listingId } = await startDraft(store(), { fields: { ...stepOne, ...restOfListing } });
+    await addLocation(listingId);
     const refused = await failureOf(() => sendForReview(store(), { listingId }));
     expect(refused.fieldErrors?.photos).toEqual([{ key: "validation.photoRequired" }]);
   });
 
-  it("submits a complete draft with a photo and no location: it becomes pending (DEC-19 fallback)", async () => {
+  it("refuses to submit a complete draft with a photo and no location, and leaves it a draft (ADR-138)", async () => {
+    await clearOwnerListings();
+    const { listingId } = await startDraft(store(), { fields: { ...stepOne, ...restOfListing } });
+    await addPhoto(listingId);
+    const refused = await failureOf(() => sendForReview(store(), { listingId }));
+    expect(refused.code).toBe("VALIDATION");
+    expect(await row(listingId)).toMatchObject({ status: "draft", location: null });
+  });
+
+  it("submits a complete draft with a photo and a location, and no description: it becomes pending", async () => {
     await clearOwnerListings();
     const { listingId, shortId } = await startDraft(store(), {
       fields: { ...stepOne, ...restOfListing, description: null },
     });
     await addPhoto(listingId);
+    await addLocation(listingId);
     expect(await sendForReview(store(), { listingId })).toEqual({ listingId, shortId });
     const saved = await row(listingId);
-    expect(saved).toMatchObject({ status: "pending", location: null, description: null });
+    expect(saved).toMatchObject({ status: "pending", description: null });
+    expect(saved.location).not.toBeNull();
     expect(saved.submitted_at).not.toBeNull();
     const { data: trail } = await admin
       .from("audit_log")
@@ -258,6 +280,7 @@ describe("IT-actions-listing: the wizard's server side against a real database (
     await clearOwnerListings();
     const { listingId } = await startDraft(store(), { fields: { ...stepOne, ...restOfListing } });
     await addPhoto(listingId);
+    await addLocation(listingId);
     await sendForReview(store(), { listingId });
     expect((await failureOf(() => sendForReview(store(), { listingId }))).code).toBe("CONFLICT");
     expect(
