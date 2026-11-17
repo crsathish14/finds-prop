@@ -923,6 +923,9 @@ isOneToOne: false
               "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
             }[]
                            },
+"set_listing_location":
+{ Args: { "p_lat": number,"p_lng": number,"p_property_id": string }; Returns: string
+                           },
 "slugify":
 { Args: { "input": string }; Returns: string
                            },
