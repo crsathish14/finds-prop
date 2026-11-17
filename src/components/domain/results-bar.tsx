@@ -5,7 +5,8 @@
  *   Owner: design system. All three are controlled: values in, the choice out; they build no address
  *   (S4-T04 step C joins them to it) and fetch nothing.
  * Props:
- *   ResultsBar: sort and onSortChange, view ("grid" | "list") and onViewChange, filters (the
+ *   ResultsBar: sort and onSortChange, sortOptions (the orders listed; the four that need no place unless
+ *     the page adds "Nearest first", ADR-137), view ("grid" | "list") and onViewChange, filters (the
  *     "Filters (n)" button, drawn below 1024 px only; the wide rail takes its place), children (the
  *     rows under the bar: active filters, label choice), className.
  *   ActiveFilters: filters ([{ id, label }], already-translated text), onRemove(id), onClearAll.
@@ -41,6 +42,8 @@ type ResultsView = "grid" | "list";
 type ResultsBarProps = {
   sort: SortOption;
   onSortChange: (sort: SortOption) => void;
+  /** The orders the list offers; the four that need no place when left out ("Nearest first" needs one). */
+  sortOptions?: readonly SortOption[];
   view: ResultsView;
   onViewChange: (view: ResultsView) => void;
   filters?: ReactNode;
@@ -51,6 +54,7 @@ type ResultsBarProps = {
 function ResultsBar({
   sort,
   onSortChange,
+  sortOptions = SORT_OPTIONS,
   view,
   onViewChange,
   filters,
@@ -76,7 +80,7 @@ function ResultsBar({
               value={sort}
               onChange={(event) => onSortChange(parseSort(event.target.value))}
             >
-              {SORT_OPTIONS.map((option) => (
+              {sortOptions.map((option) => (
                 <option key={option} value={option}>
                   {translate(SORT_WORDS[option])}
                 </option>

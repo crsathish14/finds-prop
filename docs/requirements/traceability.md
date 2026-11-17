@@ -33,13 +33,13 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Location and maps
 
-| Req       | Name                              | Modules              | Stage                      | UX                     | Tests                               |
-| --------- | --------------------------------- | -------------------- | -------------------------- | ---------------------- | ----------------------------------- |
-| FR-GEO-01 | Address autocomplete              | `places`             | S4-T05 (ADR-131/133)       | Box wired (ADR-136)    | IT-places, UT-components (combobox) |
-| FR-GEO-02 | Store address parts + coordinates | `listings`, `places` | S6-T02 (gated by `DEC-19`) | Gap                    | IT-actions-listing                  |
-| FR-GEO-03 | Place-based search                | `search`             | S4-T03/T04, S4-T05         | Box wired (ADR-136)    | DB-FN-search                        |
-| FR-GEO-04 | Map view                          | `places`             | S4-T14 (optional)          | **Gap (not designed)** | E18                                 |
-| FR-GEO-05 | Project exact placement           | `projects`           | S7-T02                     | Gap                    | DB-FN-search (projects), E11        |
+| Req       | Name                              | Modules              | Stage                      | UX                                                                | Tests                               |
+| --------- | --------------------------------- | -------------------- | -------------------------- | ----------------------------------------------------------------- | ----------------------------------- |
+| FR-GEO-01 | Address autocomplete              | `places`             | S4-T05 (ADR-131/133)       | Box wired (ADR-136)                                               | IT-places, UT-components (combobox) |
+| FR-GEO-02 | Store address parts + coordinates | `listings`, `places` | S6-T02 (gated by `DEC-19`) | Gap                                                               | IT-actions-listing                  |
+| FR-GEO-03 | Place-based search                | `search`             | S4-T03/T04, S4-T05         | Box wired (ADR-136); distance, Nearest first, Also near (ADR-137) | DB-FN-search, UT-nearby             |
+| FR-GEO-04 | Map view                          | `places`             | S4-T14 (optional)          | **Gap (not designed)**                                            | E18                                 |
+| FR-GEO-05 | Project exact placement           | `projects`           | S7-T02                     | Gap                                                               | DB-FN-search (projects), E11        |
 
 ### Authentication
 

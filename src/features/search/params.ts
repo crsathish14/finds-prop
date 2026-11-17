@@ -1,3 +1,4 @@
+import { DISTANCE_SORT } from "@/config/search-options";
 import {
   DEFAULT_RADIUS_KM,
   addressName,
@@ -34,7 +35,7 @@ function insideBounds(lat: number, lng: number, bounds: SearchBounds): boolean {
  * Reads a search from an address (frontend.md 6.1). A parameter that does not fit its rule is
  * dropped, never thrown on, so a hand-edited or old link still opens a search. When a parameter
  * is repeated, the first one counts. The place needs both lat and lng (and to lie inside the
- * bounds, when they are given); without a place the radius means nothing and is dropped too.
+ * bounds, when they are given); without a place the radius and the distance sort mean nothing and are dropped too.
  * Sort, show and view always have a value: their defaults when left out.
  */
 export function parseSearchParams(
@@ -59,6 +60,8 @@ export function parseSearchParams(
     delete found["lat"];
     delete found["lng"];
     delete found["radiusKm"];
+    // "Nearest first" means nothing without a place: it is dropped like a radius is (ADR-137).
+    if (found["sort"] === DISTANCE_SORT) delete found["sort"];
   }
 
   // Each value above passed the schema of its own parameter, which is what SearchParams says.
@@ -131,4 +134,9 @@ export function clearSearchFilters(params: SearchParams): SearchParams {
 /** The radius to search with: the one in the address, or the default. */
 export function searchRadiusKm(params: SearchParams): number {
   return params.radiusKm ?? DEFAULT_RADIUS_KM;
+}
+
+/** True when the search has a place (a point): the radius, the distance and the nearby homes depend on it. */
+export function hasSearchPlace(params: SearchParams): boolean {
+  return params.lat !== undefined && params.lng !== undefined;
 }

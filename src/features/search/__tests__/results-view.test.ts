@@ -358,3 +358,51 @@ describe("UT-results-view: a place with a point from the place search (ADR-136)"
     expect(patch).toMatchObject({ place: "Velachery", lat: 12.9815, radiusKm: 4 });
   });
 });
+
+describe("UT-results-view: the distance chips and the distance sort (ADR-137)", () => {
+  const placed = { place: "Old", lat: "13.1", lng: "80.1" };
+  const base = filterValuesFromParams(parse(placed));
+
+  it("reads the radius in the address as a filter value, and none when the default is in use", () => {
+    expect(filterValuesFromParams(parse({ ...placed, ["r"]: "10" })).radiusKm).toBe(10);
+    expect(filterValuesFromParams(parse(placed))).not.toHaveProperty("radiusKm");
+    expect(filterValuesFromParams(parse({ sort: "price_asc" }))).not.toHaveProperty("radiusKm");
+  });
+
+  it("reads sort=distance as a filter value only with a place", () => {
+    expect(filterValuesFromParams(parse({ ...placed, sort: "distance" })).sort).toBe("distance");
+    expect(filterValuesFromParams(parse({ sort: "distance" })).sort).toBe("newest");
+  });
+
+  it("sets the radius when a chip is chosen, and leaves it out for the default 5 km", () => {
+    const params = parse(placed);
+    expect(
+      buildSearchHref(searchFromFilterValues(params, { ...base, radiusKm: 10 }, CURATED)),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old&r=10");
+    const wide = parse({ ...placed, ["r"]: "10" });
+    expect(
+      buildSearchHref(
+        searchFromFilterValues(wide, { ...filterValuesFromParams(wide), radiusKm: 5 }, CURATED),
+      ),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old");
+  });
+
+  it("keeps a radius the chips do not offer while no chip is chosen", () => {
+    const params = parse({ ...placed, ["r"]: "7" });
+    expect(
+      buildSearchHref(searchFromFilterValues(params, filterValuesFromParams(params), CURATED)),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old&r=7");
+  });
+
+  it("keeps the distance sort with the place, and drops it when the place goes", () => {
+    const params = parse({ ...placed, sort: "distance" });
+    const values = filterValuesFromParams(params);
+    expect(buildSearchHref(searchFromFilterValues(params, values, CURATED))).toContain(
+      "sort=distance",
+    );
+    expect(
+      buildSearchHref(searchFromFilterValues(params, { ...values, locality: null }, CURATED)),
+    ).toBe("/properties");
+    expect(buildSearchHref(withoutFilter(params, "place"))).toBe("/properties");
+  });
+});
