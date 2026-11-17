@@ -51,6 +51,8 @@ export interface Observed {
 export interface RunOptions {
   readonly provider: AiProvider;
   readonly tools: readonly AnyAiChatTool[];
+  /** True when `tools` hold the place-aware search, so the prompt carries the rules for places (ADR-142). */
+  readonly placeSearch?: boolean;
   /** Milliseconds; the real limits by default. The offline run passes shorter ones. */
   readonly timing?: { readonly timeLimitMs: number; readonly hardStopMs: number };
 }
@@ -77,6 +79,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     session: evalCase.session === "customer" ? CUSTOMER_SESSION : null,
     failingTools: evalCase.failingTools,
     ownedHomeIds: evalCase.ownedHomes,
+    placesDown: evalCase.placesDown,
   });
 
   const toolCalls: ObservedToolCall[] = [];
@@ -111,6 +114,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     enforceLimits: async () => undefined,
     createProvider: () => recording,
     tools: instrumented,
+    ...(options.placeSearch === true ? { placeSearch: true } : {}),
     translate: TOOL_CONTEXT.translate,
     recordUsage: async (record) => void usageRows.push(record),
     // The ticked homes are checked against the made-up world, as the real reads check them against what is listed.

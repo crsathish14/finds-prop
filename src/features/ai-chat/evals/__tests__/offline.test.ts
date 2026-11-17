@@ -24,10 +24,14 @@ vi.mock("@/server/env", () => ({
   env: { RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
 }));
 
-const { AI_CHAT_TOOLS } = await import("../../tools/registry");
+const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
+const { worldPlaceLookup } = await import("../world");
 const { checkToolNames, loadCases } = await import("../cases");
 const { runAll, scriptedProvider } = await import("../eval-run");
 const { judge, renderReport, runPassed, summarise } = await import("../report");
+
+// The cases that turn AI place search on run with the place-aware search tool over the world's own place lookup.
+const PLACE_TOOLS = createAiChatTools(worldPlaceLookup);
 
 const cases = loadCases();
 checkToolNames(
@@ -42,7 +46,8 @@ describe("UT-ai-eval-offline: the golden and red-team sets, scripted", () => {
     const all = await runAll(cases.all, {
       mode: "offline",
       tools: AI_CHAT_TOOLS,
-      providerFor: (evalCase) => scriptedProvider(evalCase, AI_CHAT_TOOLS),
+      placeTools: PLACE_TOOLS,
+      providerFor: (evalCase, tools) => scriptedProvider(evalCase, tools),
     });
     for (const score of all) scores.set(score.id, score);
   });

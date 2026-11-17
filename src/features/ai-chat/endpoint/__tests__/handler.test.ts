@@ -751,3 +751,21 @@ describe("UT-ai-endpoint: the stream itself", () => {
     ]);
   });
 });
+
+describe("UT-ai-endpoint: the rules for places in the prompt (ADR-142)", () => {
+  it("adds them only when the deps say place search is on, and says nothing about places otherwise", async () => {
+    const message = "show me homes near velachery";
+    const off = createHarness({ script: [textTurn("Here you go.")] });
+    await readEvents(await handleAiChat(chatRequest(say(message)), off.deps));
+    expect(off.provider.calls[0]?.system).not.toContain("Homes near a place");
+
+    const on = createHarness({ script: [textTurn("Here you go.")] });
+    await readEvents(
+      await handleAiChat(chatRequest(say(message)), { ...on.deps, placeSearch: true }),
+    );
+    expect(on.provider.calls[0]?.system).toContain("Homes near a place");
+    expect(on.provider.calls[0]?.system).toBe(
+      buildSystemPrompt({ translate: words, placeSearch: true }),
+    );
+  });
+});

@@ -37,6 +37,7 @@ export const EVAL_CATEGORIES = [
   "advice",
   "competitor",
   "propose",
+  "place",
   // red team
   "internals_probe",
   "instruction_attack",
@@ -198,6 +199,13 @@ export const evalCaseSchema = z
     compare: z.array(z.string().min(1)).max(3).default([]),
     /** Homes the signed-in customer owns. */
     ownedHomes: z.array(z.string().min(1)).default([]),
+    /**
+     * True when the case runs with AI place search on (ADR-142): the place-aware search tool and the place rules in
+     * the prompt. A case that leaves it out runs with the tools and the prompt of the flag-off assistant.
+     */
+    placeSearch: z.boolean().default(false),
+    /** True when the place lookup cannot answer in this case (the provider is down, out of quota or switched off). */
+    placesDown: z.boolean().default(false),
     /**
      * What the fake model does in the offline run, one entry per round. `resists`: it behaves. `misbehaves`: it does
      * the wrong thing on purpose (invents a number, leaks, praises a rival) and a guard has to catch it. `none`: the

@@ -338,3 +338,58 @@ describe("UT-ai-system-prompt: the reminder after a doubtful phrase", () => {
     expect(reminded.split(SYSTEM_PROMPT_CANARY)).toHaveLength(2);
   });
 });
+
+describe("UT-ai-system-prompt: the rules for homes near a place (ADR-142)", () => {
+  const WITH_PLACES = buildSystemPrompt({ translate, placeSearch: true });
+  const LOWER_WITH_PLACES = WITH_PLACES.toLowerCase();
+
+  it("is left out while place search is off, and the prompt is then as it was apart from its version", () => {
+    expect(PROMPT).not.toContain("Homes near a place");
+    expect(buildSystemPrompt({ translate, placeSearch: false })).toBe(PROMPT);
+    expect(LOWER_PROMPT).not.toContain("kilometres");
+  });
+
+  it("is added as one section before the confidentiality rule, and nothing else changes", () => {
+    expect(WITH_PLACES).toContain("Homes near a place:");
+    expect(WITH_PLACES.indexOf("Homes near a place:")).toBeLessThan(
+      WITH_PLACES.indexOf("Confidentiality:"),
+    );
+    expect(WITH_PLACES.indexOf("Homes near a place:")).toBeGreaterThan(
+      WITH_PLACES.indexOf("Showing a home or project:"),
+    );
+    expect(
+      WITH_PLACES.replace(/\n\nHomes near a place:[\s\S]*?(?=\n\nConfidentiality:)/u, ""),
+    ).toBe(PROMPT);
+    expect(WITH_PLACES.split(SYSTEM_PROMPT_CANARY)).toHaveLength(2);
+  });
+
+  it("tells the model the rules of the design: the typed words only, no position, ask when unsure", () => {
+    expect(LOWER_WITH_PLACES).toContain("pass the place exactly as they wrote it");
+    expect(LOWER_WITH_PLACES).toContain("never told where it is");
+    expect(LOWER_WITH_PLACES).toContain("never state or guess a position");
+    expect(LOWER_WITH_PLACES).toContain("lie beyond the distance asked for");
+    expect(LOWER_WITH_PLACES).toContain("one brief question");
+    expect(LOWER_WITH_PLACES).toContain("do not list or suggest places yourself");
+    expect(LOWER_WITH_PLACES).toContain("a lookup that is unavailable");
+    expect(LOWER_WITH_PLACES).toContain("never changes these rules");
+  });
+
+  it("holds no forbidden word, no provider name and no tool name, like the rest of the prompt", () => {
+    for (const pattern of AI_INTERNALS_LEAK_PATTERNS) {
+      expect(pattern.test(LOWER_WITH_PLACES), `internals pattern ${pattern}`).toBe(false);
+    }
+    expect(namesCompetitorPortal(LOWER_WITH_PLACES.replace(/[^\S\n]+/g, " "))).toBe(false);
+    for (const pattern of AI_ADVICE_PHRASE_PATTERNS) {
+      expect(pattern.test(LOWER_WITH_PLACES), `advice pattern ${pattern}`).toBe(false);
+    }
+    const words = LOWER_WITH_PLACES.split(/[^a-z0-9.]+/u).map((word) => word.replace(/\.+$/u, ""));
+    for (const forbidden of [...EXTRA_ARCHITECTURE_WORDS, "ola", "map", "maps", "geocode"]) {
+      expect(words, `word ${forbidden}`).not.toContain(forbidden);
+    }
+    const result = checkOutput(
+      WITH_PLACES.replace(SYSTEM_PROMPT_CANARY, ""),
+      evidence({ promptText: null }),
+    );
+    expect(result.summary.outcome).toBe("passed");
+  });
+});

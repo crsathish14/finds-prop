@@ -9,7 +9,7 @@ import { logger } from "../logger";
  * address, so none can be written. The database checks the three values again.
  */
 export type PlacesUsageApi = "autocomplete";
-/** Who asked. `ai_chat` is reserved for the later AI tool: no route sets it yet. */
+/** Who asked. `ai_chat` is the AI assistant's place search (ADR-142); the autocomplete route never sets it. */
 export type PlacesUsageCaller = "search_box" | "listing_form" | "admin_picker" | "ai_chat";
 export type PlacesUsageOutcome = "ok" | "empty" | "timeout" | "quota" | "error";
 
