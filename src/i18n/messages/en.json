@@ -1192,7 +1192,8 @@
         "newest": "Newest",
         "priceAsc": "Price: low to high",
         "priceDesc": "Price: high to low",
-        "areaDesc": "Largest first"
+        "areaDesc": "Largest first",
+        "distance": "Nearest first"
       },
       "button": "Filters",
       "buttonApplied": "Filters, {count} applied",

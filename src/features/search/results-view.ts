@@ -38,6 +38,8 @@ export function filterValuesFromParams(params: SearchParams): FilterValues {
       params.place !== undefined && params.lat !== undefined && params.lng !== undefined
         ? { lat: params.lat, lng: params.lng }
         : null,
+    // The chosen distance as written; left out while the default is in use (the chips then show 5 km).
+    ...(params.radiusKm === undefined ? {} : { radiusKm: params.radiusKm }),
     propertyType: params.propertyType ?? null,
     bedrooms,
     maxBudget: params.maxPrice ?? null,
@@ -74,6 +76,15 @@ export function searchFromFilterValues(
       next.lng = values.point.lng;
       if (params.radiusKm !== undefined) next.radiusKm = params.radiusKm;
     } else next.locality = values.locality;
+  }
+  // A distance chip changes the radius of the place being searched; without a place there is no radius.
+  const chosenRadius = values.radiusKm ?? null;
+  if (
+    next.lat !== undefined &&
+    chosenRadius !== null &&
+    chosenRadius !== (params.radiusKm ?? null)
+  ) {
+    next.radiusKm = chosenRadius;
   }
   if (values.propertyType !== null) next.propertyType = values.propertyType;
   if (values.bedrooms !== null) next.bhk = values.bedrooms;

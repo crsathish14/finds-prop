@@ -2,6 +2,7 @@ export {
   buildSearchHref,
   canonicalSearchHref,
   clearSearchFilters,
+  hasSearchPlace,
   parseSearchParams,
   searchRadiusKm,
   type RawSearchParams,
@@ -33,6 +34,14 @@ export {
   quickPickLinks,
   type SearchLink,
 } from "./home-links";
+export {
+  NEARBY_LIMIT,
+  NEARBY_RADIUS_KM,
+  NEARBY_THRESHOLD,
+  nearbyHomesToShow,
+  nearbySearchParams,
+  wantsNearby,
+} from "./nearby";
 export { HomeSearch } from "./home-search.client";
 export { LISTINGS_TAG, listingRowSchema, type ListingRow } from "./listing-row";
 export { getSearchResults, type SearchResults } from "./results";

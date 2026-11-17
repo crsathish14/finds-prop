@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PROPERTY_TYPES, SORT_OPTIONS } from "@/config/search-options";
+import { ALL_SORT_OPTIONS, PROPERTY_TYPES } from "@/config/search-options";
 
 /**
  * The search address contract: what `/properties` accepts in its address (docs/engineering/frontend.md
@@ -65,7 +65,7 @@ export const SEARCH_FIELD_SCHEMAS = {
   locality: text(80),
   keyword: text(120),
   label: z.enum(LABEL_FILTERS),
-  sort: z.enum(SORT_OPTIONS),
+  sort: z.enum(ALL_SORT_OPTIONS),
   show: digits(3)
     .transform(Number)
     .pipe(

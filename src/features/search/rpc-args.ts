@@ -1,5 +1,6 @@
 import type { Database } from "@/types/database.types";
-import { DEFAULT_RADIUS_KM, type SearchParams } from "./schemas";
+import { DISTANCE_SORT } from "@/config/search-options";
+import { DEFAULT_RADIUS_KM, DEFAULT_SORT, type SearchParams } from "./schemas";
 
 export type SearchRpcArgs = Database["public"]["Functions"]["search_properties"]["Args"];
 
@@ -8,7 +9,7 @@ export type SearchRpcArgs = Database["public"]["Functions"]["search_properties"]
  * visitor chose is sent: the function has its own defaults, and it checks every range itself, so a
  * value that got past the address rules is checked twice. The radius travels only with a place
  * (a radius alone means nothing), and `show` is the number of homes wanted (`p_limit`), because
- * "Show more" asks again for a longer list. The place's label is for display and is never sent.
+ * "Show more" asks again for a longer list. The place's label is for display and is never sent. The sort `distance` goes only with a place (ADR-137).
  */
 export function toSearchRpcArgs(params: SearchParams): SearchRpcArgs {
   const hasPlace = params.lat !== undefined && params.lng !== undefined;
@@ -28,7 +29,8 @@ export function toSearchRpcArgs(params: SearchParams): SearchRpcArgs {
       : {}),
     ...(params.keyword === undefined ? {} : { p_q: params.keyword }),
     ...(params.label === undefined ? {} : { p_label: params.label }),
-    p_sort: params.sort,
+    // The distance order needs a point; without one the function refuses it, so it is never sent.
+    p_sort: params.sort === DISTANCE_SORT && !hasPlace ? DEFAULT_SORT : params.sort,
     p_limit: params.show,
   };
 }

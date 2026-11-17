@@ -21,7 +21,8 @@
  *   (the id of the Locality label, the fields now, and the way to change them), so a box that chooses a
  *   place can set the locality and its point in the same set of values, in the sheet's draft as well as in
  *   the rail), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
- *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset). ADR-131.
+ *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset), sortOptions (the
+ *   orders Sort by lists; the four that need no place unless the page adds "Nearest first"). ADR-131, ADR-137.
  *   FilterRail also takes onClearAll (what Clear all does instead of clearing the four fields).
  *   All three take budgetNeedsLooking (default off): the results page turns it on, so the budget
  *   field is left out while Looking to is All and goes back to Any when All is chosen, because a sale
@@ -74,6 +75,7 @@ import {
   type BedroomChoice,
   type FilterValues,
   type RadiusChoice,
+  type SortOption,
 } from "@/config/search-options";
 
 /** The distance used when none was chosen: the same 5 km the search itself uses. */
@@ -100,6 +102,8 @@ type FilterFieldsProps = {
   placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place; leave it out and no distance field is drawn. */
   radiusChoices?: readonly RadiusChoice[];
+  /** The orders the Sort by list offers; leave it out for the four that need no place ("Nearest first" needs one). */
+  sortOptions?: readonly SortOption[];
 };
 
 /** One field: its label above, its control below. */
@@ -120,6 +124,7 @@ function FilterFields({
   budgetNeedsLooking = false,
   placeField,
   radiusChoices,
+  sortOptions = SORT_OPTIONS,
 }: FilterFieldsProps) {
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
@@ -285,7 +290,7 @@ function FilterFields({
               set({ sort: parseSort(event.target.value) })
             }
           >
-            {SORT_OPTIONS.map((option) => (
+            {sortOptions.map((option) => (
               <option key={option} value={option}>
                 {translate(SORT_WORDS[option])}
               </option>
@@ -369,6 +374,8 @@ type FilterSheetProps = {
   placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place (ADR-131). */
   radiusChoices?: readonly RadiusChoice[];
+  /** The orders its Sort by list offers (see FilterFields). */
+  sortOptions?: readonly SortOption[];
   className?: string | undefined;
 };
 
@@ -383,6 +390,7 @@ function FilterSheet({
   budgetNeedsLooking,
   placeField,
   radiusChoices,
+  sortOptions,
   className,
 }: FilterSheetProps) {
   const translate = useTranslations();
@@ -467,6 +475,7 @@ function FilterSheet({
           {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
           {...(placeField === undefined ? {} : { placeField })}
           {...(radiusChoices === undefined ? {} : { radiusChoices })}
+          {...(sortOptions === undefined ? {} : { sortOptions })}
         />
       </SheetContent>
     </Sheet>

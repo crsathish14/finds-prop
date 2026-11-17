@@ -83,6 +83,21 @@ describe("UT-search-rpc-args: a parsed search as search_properties() arguments",
     ).toMatchObject({ p_radius_km: 10 });
   });
 
+  it("sends the distance sort with a place, and never without one", () => {
+    const placed = { place: "Velachery", lat: "12.98", lng: "80.22" };
+    expect(toSearchRpcArgs(parseSearchParams({ ...placed, sort: "distance" }))).toMatchObject({
+      p_sort: "distance",
+      p_lat: 12.98,
+    });
+    expect(toSearchRpcArgs(parseSearchParams({ sort: "distance" })).p_sort).toBe("newest");
+    // Even a search built by hand with the sort and no point never sends it.
+    const handmade = { ...parseSearchParams({}), sort: "distance" } as const;
+    expect(toSearchRpcArgs(handmade).p_sort).toBe("newest");
+    expect(toSearchRpcArgs({ ...parseSearchParams(placed), sort: "price_asc" }).p_sort).toBe(
+      "price_asc",
+    );
+  });
+
   it("sends no radius without a place", () => {
     expect(toSearchRpcArgs(parseSearchParams({ ["r"]: "10" }))).not.toHaveProperty("p_radius_km");
   });
@@ -96,6 +111,16 @@ describe("UT-search-results: reading one page of results", () => {
     expect(tag).toHaveBeenCalledWith("home-listings");
     expect(result).toMatchObject({ status: "ok", total: 48 });
     expect(result.status === "ok" && result.homes).toHaveLength(2);
+  });
+
+  it("carries the distance of each home as a number, and null when no place was searched", async () => {
+    rpc.mockResolvedValue({
+      data: [home({ distance_km: 2.4 }), home({ short_id: "m4y8b3ce", distance_km: null })],
+      error: null,
+    });
+    const result = await getSearchResults(none);
+    const homes = result.status === "ok" ? result.homes : [];
+    expect(homes.map((row) => row.distance_km)).toEqual([2.4, null]);
   });
 
   it("reads total_count when it arrives as text", async () => {
