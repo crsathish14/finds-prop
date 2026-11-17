@@ -4,6 +4,11 @@ import type {
   PlaceAutocompleteResult,
   PlaceAutocompleteSuggestion,
 } from "@/types/places";
+import type {
+  PlacesUsageCaller,
+  PlacesUsageOutcome,
+  PlacesUsageRecord,
+} from "../audit/places-usage";
 import { RateLimitedError } from "../rate-limit/enforce";
 import type { Logger } from "../logger";
 import type { ErrorContext } from "../observability";
@@ -19,11 +24,13 @@ import {
  * `GET /api/places/autocomplete?q=` (ADR-133, FR-GEO-01). The browser's only way to ask for place suggestions: it never
  * sees the key and never calls the provider. The steps run in a fixed order, the same as `defineAction` where they apply:
  *
- *   1 parse `q` (400)   2 rate limit (429)   3 provider and region   4 look up   5 answer
+ *   1 parse `q` and `source` (400)   2 rate limit (429)   3 provider and region   4 look up   5 answer   6 count
  *
  * Every answer is JSON in the `ActionResult` envelope with `Cache-Control: no-store` (what a visitor typed must never
- * be cached by a browser, a proxy or the CDN). The typed text, the place names and the provider's request address (it
- * holds the key) are never logged or put in an error (R-BE-10): a line says only that a lookup failed and how.
+ * be cached by a browser, a proxy or the CDN). A call that reached the provider is counted once, after the answer is
+ * built and never before it (`recordUsage`; ADR-133 update, ADR-134). The typed text, the place names and the
+ * provider's request address (it holds the key) are never logged or put in an error (R-BE-10): a line says only that
+ * a lookup failed and how.
  */
 
 const ROUTE = "places-autocomplete";
@@ -46,6 +53,17 @@ const autocompleteQuery = z
     return length >= PLACE_TEXT_MIN_CHARACTERS && length <= PLACE_TEXT_MAX_CHARACTERS;
   });
 
+/** Where the call came from, as a label for the usage count only. `ai_chat` is not reachable from this route. */
+const PLACE_SOURCES = [
+  "search_box",
+  "listing_form",
+  "admin_picker",
+] as const satisfies readonly PlacesUsageCaller[];
+const DEFAULT_SOURCE = "search_box" satisfies PlacesUsageCaller;
+
+/** `source` may be left out (the search box) or given exactly once, from the list. Nothing else is accepted. */
+const autocompleteSource = z.enum(PLACE_SOURCES).default(DEFAULT_SOURCE);
+
 export interface PlaceAutocompleteDeps {
   requestId: string;
   /** Counts this call against the `places` limits. Throws `RateLimitedError` when one is used up (fail closed). */
@@ -55,6 +73,12 @@ export interface PlaceAutocompleteDeps {
   log: Logger;
   /** Sends an unexpected error to the error tracker (ADR-130). Optional: tests have none. */
   reportError?(error: unknown, context: ErrorContext): Promise<void>;
+  /**
+   * Counts one call that reached the provider. It must only schedule the write (the route hands it to `after()`) and
+   * return at once; the handler has already built the answer. It never changes the answer: if it throws, the handler
+   * logs one line and carries on. Optional: tests that do not look at the count have none.
+   */
+  recordUsage?(record: PlacesUsageRecord): void;
 }
 
 const NO_STORE = "no-store";
@@ -113,15 +137,31 @@ export async function handlePlaceAutocomplete(
 ): Promise<Response> {
   const { requestId, log } = deps;
 
-  const queries = new URL(request.url).searchParams.getAll("q");
+  const parameters = new URL(request.url).searchParams;
+  const queries = parameters.getAll("q");
   const parsed = autocompleteQuery.safeParse(queries.length === 1 ? queries[0] : undefined);
-  if (!parsed.success) return failure(400, requestId, { code: "VALIDATION" });
+  const sources = parameters.getAll("source");
+  const parsedSource = autocompleteSource.safeParse(sources.length <= 1 ? sources[0] : null);
+  if (!parsed.success || !parsedSource.success)
+    return failure(400, requestId, { code: "VALIDATION" });
+  const caller = parsedSource.data;
+
+  /** Called only once the answer is complete. Schedules the count and waits for nothing; it cannot fail the call. */
+  const count = (outcome: PlacesUsageOutcome) => {
+    try {
+      deps.recordUsage?.({ api: "autocomplete", caller, outcome });
+    } catch {
+      log.warn("place usage could not be scheduled");
+    }
+  };
 
   try {
     await deps.enforceLimits();
     const provider = await deps.getProvider();
     const suggestions = await provider.autocomplete(parsed.data);
-    return json({ ok: true, data: suggestions.map(toSuggestion) }, 200, requestId);
+    const response = json({ ok: true, data: suggestions.map(toSuggestion) }, 200, requestId);
+    count(suggestions.length > 0 ? "ok" : "empty");
+    return response;
   } catch (error) {
     if (error instanceof RateLimitedError) {
       log.info("place search rate limited", { scope: error.scope });
@@ -135,7 +175,10 @@ export async function handlePlaceAutocomplete(
       // `off` is the owner's switch or a missing key, not a fault: one quiet line is enough.
       if (error.failure === "off") log.debug("place search is off");
       else log.warn("place lookup failed", { failure: error.failure });
-      return providerFailure(error, requestId);
+      const response = providerFailure(error, requestId);
+      // `off` (the kill switch or no key) sent nothing to the provider, so it is not a call to count.
+      if (error.failure !== "off") count(error.failure);
+      return response;
     }
     // Anything else is ours (the counter, the settings read, a bug). The box degrades like for a provider failure.
     log.error("place search failed unexpectedly", {
