@@ -52,6 +52,7 @@ describe("UT-results-view: the address as filter values", () => {
     expect(filterValuesFromParams(params)).toEqual({
       intent: "rent",
       locality: "Velachery",
+      point: { lat: 12.9815, lng: 80.2209 },
       propertyType: "villa",
       bedrooms: 3,
       maxBudget: 40_000,
@@ -63,6 +64,7 @@ describe("UT-results-view: the address as filter values", () => {
     expect(filterValuesFromParams(parse({}))).toEqual({
       intent: "all",
       locality: null,
+      point: null,
       propertyType: null,
       bedrooms: null,
       maxBudget: null,
@@ -308,5 +310,51 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
       meta({ locality: "Velachery" }),
     ].map((entry) => entry.title);
     expect(new Set(titles).size).toBe(titles.length);
+  });
+});
+
+describe("UT-results-view: a place with a point from the place search (ADR-135)", () => {
+  const values: FilterValues = {
+    intent: "buy",
+    locality: "KK Nagar",
+    point: { lat: 13.0418, lng: 80.2341 },
+    propertyType: null,
+    bedrooms: 2,
+    maxBudget: null,
+    sort: "newest",
+  };
+
+  it("reads the point of a place in the address, and none for a text match", () => {
+    expect(
+      filterValuesFromParams(parse({ place: "KK Nagar", lat: "13.0418", lng: "80.2341" })).point,
+    ).toEqual({ lat: 13.0418, lng: 80.2341 });
+    expect(filterValuesFromParams(parse({ locality: "Adyar" })).point).toBeNull();
+  });
+
+  it("searches a place with a point by that point and keeps the radius the address has", () => {
+    const params = parse({ place: "Old", lat: "13.1", lng: "80.1", ["r"]: "10" });
+    const href = buildSearchHref(searchFromFilterValues(params, values, CURATED));
+    expect(href).toBe(
+      "/properties?bhk=2&lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar&r=10",
+    );
+  });
+
+  it("uses the default radius when the address had none", () => {
+    const href = buildSearchHref(searchFromFilterValues(parse({}), values, CURATED));
+    expect(href).toBe("/properties?bhk=2&lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar");
+  });
+
+  it("gives a text locality no point, and ignores a point when there is no locality", () => {
+    const text = searchFromFilterValues(parse({}), { ...values, point: null }, CURATED);
+    expect(text.locality).toBe("KK Nagar");
+    expect(text.lat).toBeUndefined();
+    const none = searchFromFilterValues(parse({}), { ...values, locality: null }, CURATED);
+    expect(none.lat).toBeUndefined();
+    expect(none.place).toBeUndefined();
+  });
+
+  it("keeps a curated name the curated place, even with a point", () => {
+    const patch = searchFromFilterValues(parse({}), { ...values, locality: "Velachery" }, CURATED);
+    expect(patch).toMatchObject({ place: "Velachery", lat: 12.9815, radiusKm: 4 });
   });
 });

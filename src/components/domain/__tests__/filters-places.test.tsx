@@ -94,3 +94,30 @@ describe("PropertyCard distance (ADR-131)", () => {
     expect(screen.queryByText(/km away/)).not.toBeInTheDocument();
   });
 });
+
+describe("the place box as a function of the fields (ADR-135)", () => {
+  it("gives a function the label's id, the values and the way to change them", async () => {
+    const onChange = rail({
+      values: { ...VALUES, locality: "KK Nagar" },
+      placeField: ({ id, values, onChange: change }) => (
+        <button
+          type="button"
+          id={id}
+          onClick={() => change({ ...values, locality: "Adyar", point: { lat: 1, lng: 2 } })}
+        >
+          {values.locality}
+        </button>
+      ),
+    });
+    // The Locality label is the button's name because it points at the id the function was given.
+    const box = screen.getByRole("button", { name: "Locality" });
+    expect(box).toHaveTextContent("KK Nagar");
+    expect(screen.getByText("Tamil Nadu only for now.")).toBeInTheDocument();
+    await userEvent.click(box);
+    expect(onChange).toHaveBeenCalledWith({
+      ...VALUES,
+      locality: "Adyar",
+      point: { lat: 1, lng: 2 },
+    });
+  });
+});

@@ -27,6 +27,8 @@ type SearchNavigation = {
   pending: boolean;
   /** True while the page that is on its way is a longer list ("Show more"): the cards stay put. */
   pendingMore: boolean;
+  /** True in the Design Lab, where nothing navigates (the filters then keep their pictured Locality list). */
+  preview: boolean;
   go: (next: Partial<SearchParams>, mode?: "replace" | "push") => void;
   retry: () => void;
 };
@@ -56,6 +58,7 @@ function PreviewNavigation({ params, children }: { params: SearchParams; childre
       params,
       pending: false,
       pendingMore: false,
+      preview: true,
       go: () => undefined,
       retry: () => undefined,
     }),
@@ -86,7 +89,7 @@ function LiveNavigation({ params, children }: { params: SearchParams; children: 
   }, [router]);
 
   const value = useMemo(
-    () => ({ params, pending, pendingMore: pending && asksMore, go, retry }),
+    () => ({ params, pending, pendingMore: pending && asksMore, preview: false, go, retry }),
     [params, pending, asksMore, go, retry],
   );
   return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>;

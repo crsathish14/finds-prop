@@ -53,6 +53,10 @@ export const PRIVACY: LegalDocument = {
           type: "paragraph",
           text: "[Owners and builders you contact; service providers for text messages, email, maps and hosting.]",
         },
+        {
+          type: "paragraph",
+          text: "When you type a place in a search box, the text you type is sent to Ola Maps to find matching places. Nothing else about you is sent to Ola Maps.",
+        },
       ],
     },
     {
