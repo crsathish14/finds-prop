@@ -34,6 +34,10 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
 
+/** The switch between the two ways to give a place: the text may wrap on a narrow card instead of being cut off. */
+const SWITCH_BUTTON =
+  "-ml-4 h-auto min-h-(--size-btn-sm) py-2 text-left [&_span]:overflow-visible [&_span]:text-clip [&_span]:whitespace-normal";
+
 type LocationFound = { label: string; detail?: string | undefined; approximate: boolean };
 
 type LocationFieldProps = {
@@ -139,11 +143,11 @@ function LocationField({
           ) : null}
           <div>
             {searching ? (
-              <Button variant="ghost" size="sm" className="-ml-4" onClick={onChooseArea}>
+              <Button variant="ghost" size="sm" className={SWITCH_BUTTON} onClick={onChooseArea}>
                 {translate("domain.locationField.chooseArea")}
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" className="-ml-4" onClick={onSearchAddress}>
+              <Button variant="ghost" size="sm" className={SWITCH_BUTTON} onClick={onSearchAddress}>
                 {translate("domain.locationField.searchInstead")}
               </Button>
             )}
