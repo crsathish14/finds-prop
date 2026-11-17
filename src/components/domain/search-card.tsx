@@ -13,6 +13,9 @@
  *   search is off and the link is not drawn), localityOptions, onLocalityQueryChange,
  *   localityPanel (the place panel of ADR-131: notes, the provider's credit and the keyword row, from
  *   usePlacePanel; choosing the keyword row searches the typed text),
+ *   onLocalityTextChange (every change of the text in the box, before the pause: a host that words its
+ *   panel by the text, as usePlacePanel does, needs it) and onLocalitySelect (called with the suggestion
+ *   chosen, not the keyword row), both optional,
  *   localityLoading, localityMinChars and localityDebounceMs (the suggestion list, passed to
  *   Combobox; 1 letter and 300 ms by default; a page whose list is local sets 0 ms, so a suggestion
  *   can never be out of date when Enter is pressed), popular (up to four { label, href } localities, links; none leaves the group out),
@@ -94,6 +97,10 @@ type SearchCardProps = {
   aiSearchHref?: string | undefined;
   localityOptions: ComboboxOption[];
   onLocalityQueryChange: (query: string) => void;
+  /** Called at every change of the text in the locality box (before the pause), for a host that words its panel by it. */
+  onLocalityTextChange?: ((text: string) => void) | undefined;
+  /** Called when a suggestion (not the keyword row) is chosen, so the host can keep what it stands for. */
+  onLocalitySelect?: ((option: ComboboxOption) => void) | undefined;
   localityLoading?: boolean;
   localityMinChars?: number;
   localityDebounceMs?: number;
@@ -211,6 +218,8 @@ function SearchCard({
   aiSearchHref,
   localityOptions,
   onLocalityQueryChange,
+  onLocalityTextChange,
+  onLocalitySelect,
   localityLoading = false,
   localityMinChars = 1,
   localityDebounceMs,
@@ -336,18 +345,23 @@ function SearchCard({
               placeholder={translate("domain.searchCard.locality.placeholder")}
               icon={MapPin}
               value={values.locality}
-              onValueChange={(text) => setValues((current) => ({ ...current, locality: text }))}
+              onValueChange={(text) => {
+                setValues((current) => ({ ...current, locality: text }));
+                onLocalityTextChange?.(text);
+              }}
               onQueryChange={onLocalityQueryChange}
               onSelect={(option) => {
+                // An Enter that chose a row (a suggestion or the keyword row) must not also search again.
+                justPicked.current = true;
+                queueMicrotask(() => {
+                  justPicked.current = false;
+                });
                 if (option.value === KEYWORD_ROW) {
                   // The keyword row keeps the typed text and searches it.
                   submit();
                   return;
                 }
-                justPicked.current = true;
-                queueMicrotask(() => {
-                  justPicked.current = false;
-                });
+                onLocalitySelect?.(option);
               }}
               options={localityOptions}
               loading={localityLoading}

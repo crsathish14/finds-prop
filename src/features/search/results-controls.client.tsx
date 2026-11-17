@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { FilterRail, FilterSheet } from "@/components/domain/filters";
+import { FilterRail, FilterSheet, type PlaceFieldSlot } from "@/components/domain/filters";
 import { ActiveFilters, LabelFilter, ResultsBar } from "@/components/domain/results-bar";
 import {
   ResultsEmpty,
@@ -15,6 +15,7 @@ import type { FilterValues } from "@/config/search-options";
 import type { Translate } from "@/lib/format";
 import type { CuratedLocality } from "./from-card";
 import { clearSearchFilters } from "./params";
+import { PlaceBox } from "./place-box.client";
 import {
   appliedFilters,
   atShowLimit,
@@ -43,6 +44,8 @@ function same(first: FilterValues, second: FilterValues): boolean {
   return (
     first.intent === second.intent &&
     first.locality === second.locality &&
+    first.point?.lat === second.point?.lat &&
+    first.point?.lng === second.point?.lng &&
     first.propertyType === second.propertyType &&
     first.bedrooms === second.bedrooms &&
     first.maxBudget === second.maxBudget &&
@@ -50,11 +53,26 @@ function same(first: FilterValues, second: FilterValues): boolean {
   );
 }
 
+/**
+ * The Locality field of the filters: the place search box (ADR-136). In the Design Lab (`preview`) the
+ * pictured Locality list stays, so nothing there calls the route.
+ */
+function placeFieldFor(
+  preview: boolean,
+  applyWhileTyping: boolean,
+): { placeField?: PlaceFieldSlot } {
+  if (preview) return {};
+  return {
+    placeField: (field) => <PlaceBox {...field} applyWhileTyping={applyWhileTyping} />,
+  };
+}
+
 /** The filter panel beside the results on a wide screen (hidden below 1024 px). */
 export function ResultsRail({ localities, allLocalitiesLabel }: FilterSource) {
-  const { params, go } = useSearchNavigation();
+  const { params, go, preview } = useSearchNavigation();
   return (
     <FilterRail
+      {...placeFieldFor(preview, false)}
       values={filterValuesFromParams(params)}
       onChange={(values) => go(searchFromFilterValues(params, values, localities))}
       onClearAll={() => go(clearSearchFilters(params))}
@@ -72,7 +90,7 @@ export function ResultsToolbar({
   allLocalitiesLabel,
   total,
 }: FilterSource & { total: number | null }) {
-  const { params, go, pending } = useSearchNavigation();
+  const { params, go, pending, preview } = useSearchNavigation();
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
   const values = filterValuesFromParams(params);
@@ -89,6 +107,7 @@ export function ResultsToolbar({
         onViewChange={(view) => go(changeSearch(params, { view }))}
         filters={
           <FilterSheet
+            {...placeFieldFor(preview, true)}
             values={values}
             onApply={(next) => go(searchFromFilterValues(params, next, localities), "push")}
             onDraftChange={setDraft}

@@ -94,3 +94,47 @@ describe("the search card as an address (S4-T06)", () => {
     expect(href).toBe("/properties?lat=13.0382&listingType=sale&lng=80.1565&place=Porur&r=4");
   });
 });
+
+describe("a picked place on the search card (ADR-136)", () => {
+  const KK_NAGAR = { label: "KK Nagar", lat: 13.0418, lng: 80.2341 };
+
+  it("searches the picked place by its point, with the default radius, while the text is its name", () => {
+    expect(searchHrefFromCard({ ...EMPTY, locality: "KK Nagar" }, CURATED, KK_NAGAR)).toBe(
+      "/properties?lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar",
+    );
+    expect(searchParamsFromCard({ ...EMPTY, locality: " KK Nagar " }, CURATED, KK_NAGAR)).toEqual({
+      listingType: "sale",
+      place: "KK Nagar",
+      lat: 13.0418,
+      lng: 80.2341,
+    });
+  });
+
+  it("searches the text as a locality once it is no longer the picked name", () => {
+    expect(
+      searchParamsFromCard({ ...EMPTY, locality: "KK Nagar West" }, CURATED, KK_NAGAR),
+    ).toEqual({ listingType: "sale", locality: "KK Nagar West" });
+    expect(searchParamsFromCard({ ...EMPTY, locality: "kk nagar" }, CURATED, KK_NAGAR)).toEqual({
+      listingType: "sale",
+      locality: "kk nagar",
+    });
+  });
+
+  it("does not use a picked place for an empty box, and a curated name stays the curated place", () => {
+    expect(searchParamsFromCard(EMPTY, CURATED, KK_NAGAR)).toEqual({ listingType: "sale" });
+    expect(
+      searchParamsFromCard({ ...EMPTY, locality: "adyar" }, CURATED, {
+        label: "adyar",
+        lat: 1,
+        lng: 2,
+      }),
+    ).toMatchObject({ place: "Adyar", lat: 13.0012, lng: 80.2565, radiusKm: 3 });
+  });
+
+  it("is unchanged without a pick", () => {
+    expect(searchParamsFromCard({ ...EMPTY, locality: "Anywhere" }, CURATED, null)).toEqual({
+      listingType: "sale",
+      locality: "Anywhere",
+    });
+  });
+});

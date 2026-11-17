@@ -33,6 +33,11 @@ export function filterValuesFromParams(params: SearchParams): FilterValues {
   return {
     intent: params.listingType === "sale" ? "buy" : params.listingType === "rent" ? "rent" : "all",
     locality: params.place ?? params.locality ?? null,
+    // A place of the address (not a text match) has the point it is searched by.
+    point:
+      params.place !== undefined && params.lat !== undefined && params.lng !== undefined
+        ? { lat: params.lat, lng: params.lng }
+        : null,
     propertyType: params.propertyType ?? null,
     bedrooms,
     maxBudget: params.maxPrice ?? null,
@@ -42,7 +47,8 @@ export function filterValuesFromParams(params: SearchParams): FilterValues {
 
 /**
  * The search the filter values mean. A locality that is one of the curated places becomes that place
- * (its point and radius); any other text is a text match. The budget is dropped while Looking to is
+ * (its point and radius). A locality with a point (picked from the place search, ADR-136) is that
+ * place, searched by its point and the radius the address already has. Any other text is a text match. The budget is dropped while Looking to is
  * All (a sale cap does not cap rents). What the filters do not hold (the keyword, the label and the
  * view) is kept, and "show" starts again, because a changed search starts from its first page.
  */
@@ -62,7 +68,12 @@ export function searchFromFilterValues(
       (place) => place.label.toLowerCase() === (values.locality ?? "").toLowerCase(),
     );
     if (picked) Object.assign(next, placeParams(picked));
-    else next.locality = values.locality;
+    else if (values.point) {
+      next.place = values.locality;
+      next.lat = values.point.lat;
+      next.lng = values.point.lng;
+      if (params.radiusKm !== undefined) next.radiusKm = params.radiusKm;
+    } else next.locality = values.locality;
   }
   if (values.propertyType !== null) next.propertyType = values.propertyType;
   if (values.bedrooms !== null) next.bhk = values.bedrooms;

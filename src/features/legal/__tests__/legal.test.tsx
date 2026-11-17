@@ -95,6 +95,14 @@ describe("LegalPage: the shared reading layout (ADD-12)", () => {
     );
   });
 
+  it("says the text typed in a place search box is sent to Ola Maps, and nothing about retention (ADR-136)", () => {
+    renderWithMessages(<LegalPage kind="privacy" />);
+    expect(
+      screen.getByText(/text you type is sent to Ola Maps to find matching places/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Ola Maps.*(keep|store|retain)/i)).not.toBeInTheDocument();
+  });
+
   it("has an On this page list that links to every section", () => {
     renderWithMessages(<LegalPage kind="privacy" />);
     const lists = screen.getAllByRole("link", { name: "1. Who we are" });

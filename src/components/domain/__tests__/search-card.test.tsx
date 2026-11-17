@@ -230,6 +230,49 @@ describe("SearchCard: the locality box", () => {
   });
 });
 
+describe("SearchCard: what a place search host needs from the locality box (ADR-136)", () => {
+  it("tells the host every change of the text, before the pause", async () => {
+    const onLocalityTextChange = vi.fn();
+    setup({ onLocalityTextChange });
+    await userEvent.type(locality(), "Ve");
+    expect(onLocalityTextChange).toHaveBeenNthCalledWith(1, "V");
+    expect(onLocalityTextChange).toHaveBeenNthCalledWith(2, "Ve");
+  });
+
+  it("tells the host which suggestion was chosen, but not for the keyword row", async () => {
+    const onLocalitySelect = vi.fn();
+    setup({
+      onLocalitySelect,
+      localityOptions: OPTIONS,
+      localityPanel: {
+        fallbackOption: { value: "keyword", label: "Search for it as a keyword" },
+      },
+    });
+    await userEvent.type(locality(), "Vel");
+    await userEvent.click(screen.getByRole("option", { name: /Velachery/ }));
+    expect(onLocalitySelect).toHaveBeenCalledTimes(1);
+    expect(onLocalitySelect).toHaveBeenCalledWith(expect.objectContaining({ value: "velachery" }));
+    await userEvent.click(locality());
+    await userEvent.click(screen.getByRole("option", { name: /as a keyword/ }));
+    expect(onLocalitySelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("searches once when Enter chooses the keyword row", async () => {
+    const { onSearch } = setup({
+      localityOptions: [],
+      localityPanel: {
+        fallbackOption: { value: "keyword", label: "Search for it as a keyword" },
+        notices: [],
+      },
+    });
+    await userEvent.type(locality(), "Adyar");
+    await screen.findByRole("option", { name: /as a keyword/ });
+    await userEvent.keyboard("{Enter}");
+    expect(onSearch).toHaveBeenCalledTimes(1);
+    expect(onSearch).toHaveBeenCalledWith(expect.objectContaining({ locality: "Adyar" }));
+  });
+});
+
 describe("SearchCard: links and chips", () => {
   it("draws Describe it in words only when the page gives the link (AI search on)", () => {
     const on = setup();

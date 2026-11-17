@@ -2,7 +2,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
@@ -54,7 +54,15 @@ function renderScreen(props: Partial<Parameters<typeof ResultsScreen>[0]> = {}) 
 
 const chips = () => screen.getByRole("group", { name: "Active filters" });
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // The locality box asks for place suggestions (ADR-136); no test reaches the network.
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise<Response>(() => undefined)),
+  );
+});
+afterEach(() => vi.unstubAllGlobals());
 
 describe("ResultsScreen: heading, count and breadcrumb (S4-T04)", () => {
   it("names the search and counts the homes, with the place and the region", () => {
@@ -70,7 +78,7 @@ describe("ResultsScreen: heading, count and breadcrumb (S4-T04)", () => {
     renderScreen({ regionName: undefined });
     expect(screen.getByText(/found in Velachery$/)).toBeVisible();
     expect(screen.getByRole("combobox", { name: "Locality" })).toHaveDisplayValue("Velachery");
-    expect(screen.getByRole("option", { name: "All localities" })).toBeInTheDocument();
+    expect(screen.getByText("Tamil Nadu only for now.")).toBeInTheDocument();
   });
 
   it("says Homes for sale and rent, with no place, when nothing is filtered", () => {
@@ -167,10 +175,7 @@ describe("ResultsScreen: every choice writes the address (S4-T04)", () => {
   it("changes a filter in the rail, turns a curated locality into its place, drops the budget for All", async () => {
     renderScreen({ params: parseSearchParams({ listingType: "sale", maxPrice: "7500000" }) });
     const rail = screen.getByRole("complementary", { name: "Filters" });
-    await userEvent.selectOptions(
-      within(rail).getByRole("combobox", { name: "Locality" }),
-      "Adyar",
-    );
+    await userEvent.type(within(rail).getByRole("combobox", { name: "Locality" }), "adyar{Enter}");
     expect(replace.mock.calls[0]?.[0]).toBe(
       "/properties?lat=13.0012&listingType=sale&lng=80.2565&maxPrice=7500000&place=Adyar&r=3",
     );

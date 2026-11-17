@@ -5,6 +5,9 @@ import { RADIUS_MAX_KM, RADIUS_MIN_KM, type SearchParams } from "./schemas";
 /** A place the site's content team curated (the homepage localities in the site settings, DEC-13). */
 export type CuratedLocality = { label: string; lat: number; lng: number; radiusKm: number };
 
+/** A suggestion of the place search that the visitor picked: its name and its point (ADR-136). */
+export type PickedPlace = { label: string; lat: number; lng: number };
+
 /** What the search card hands over when Search is pressed (the card knows nothing about addresses). */
 export type CardSearch = {
   intent: "buy" | "rent";
@@ -33,23 +36,29 @@ export function placeParams(locality: CuratedLocality): Partial<SearchParams> {
 
 /**
  * The search a card's values mean. Text that is one of the curated localities (however it is
- * written in capitals) is that place, searched by coordinates and radius; any other text is a
- * `locality` text match. Buy or Rent is always chosen on the card, so `listingType` is always set; the
+ * written in capitals) is that place, searched by coordinates and radius. Text that is still the
+ * name of the suggestion the visitor picked (`picked`) is that place, searched by its point and the
+ * default radius. Any other text is a `locality` text match. Buy or Rent is always chosen on the card, so `listingType` is always set; the
  * other filters are written only when chosen, so a card with nothing else chosen searches all
  * homes to buy (or all to rent).
  */
 export function searchParamsFromCard(
   values: CardSearch,
   curated: readonly CuratedLocality[] = [],
+  picked?: PickedPlace | null,
 ): Partial<SearchParams> {
   const text = values.locality.trim();
-  const picked =
+  const curatedMatch =
     text === ""
       ? undefined
       : curated.find((place) => place.label.toLowerCase() === text.toLowerCase());
   const params: Partial<SearchParams> = { listingType: values.intent === "rent" ? "rent" : "sale" };
-  if (picked) Object.assign(params, placeParams(picked));
-  else if (text !== "") params.locality = text;
+  if (curatedMatch) Object.assign(params, placeParams(curatedMatch));
+  else if (picked && text !== "" && picked.label === text) {
+    params.place = picked.label;
+    params.lat = picked.lat;
+    params.lng = picked.lng;
+  } else if (text !== "") params.locality = text;
   if (values.propertyType !== null) params.propertyType = values.propertyType;
   if (values.bedrooms !== null) params.bhk = values.bedrooms;
   if (values.maxBudget !== null) params.maxPrice = values.maxBudget;
@@ -60,6 +69,7 @@ export function searchParamsFromCard(
 export function searchHrefFromCard(
   values: CardSearch,
   curated: readonly CuratedLocality[] = [],
+  picked?: PickedPlace | null,
 ): string {
-  return buildSearchHref(searchParamsFromCard(values, curated));
+  return buildSearchHref(searchParamsFromCard(values, curated, picked));
 }

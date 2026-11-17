@@ -17,7 +17,10 @@
  *   what is being chosen), className (the page hides the "Filters" button on a wide screen).
  *   FilterFields: values, onChange, localities, allLocalitiesLabel, showSort, placeField (the place
  *   search box, a Combobox with usePlacePanel, which takes the place of the Locality list and adds
- *   "Tamil Nadu only for now"), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
+ *   "Tamil Nadu only for now". A node is drawn as it is; a function is called with { id, values, onChange }
+ *   (the id of the Locality label, the fields now, and the way to change them), so a box that chooses a
+ *   place can set the locality and its point in the same set of values, in the sheet's draft as well as in
+ *   the rail), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
  *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset). ADR-131.
  *   FilterRail also takes onClearAll (what Clear all does instead of clearing the four fields).
  *   All three take budgetNeedsLooking (default off): the results page turns it on, so the budget
@@ -76,6 +79,16 @@ import {
 /** The distance used when none was chosen: the same 5 km the search itself uses. */
 const DEFAULT_RADIUS_KM = 5;
 
+/** What the place box is given when the page passes a function: the label's id and the fields it may change. */
+type PlaceFieldContext = {
+  id: string;
+  values: FilterValues;
+  onChange: (next: FilterValues) => void;
+};
+
+/** The place search box: a node, or a function of the fields so the box can change them (see the header). */
+type PlaceFieldSlot = ReactNode | ((field: PlaceFieldContext) => ReactNode);
+
 type FilterFieldsProps = {
   values: FilterValues;
   onChange: (next: FilterValues) => void;
@@ -84,7 +97,7 @@ type FilterFieldsProps = {
   showSort?: boolean;
   budgetNeedsLooking?: boolean;
   /** The place search box (a Combobox with usePlacePanel) that takes the place of the Locality list. */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place; leave it out and no distance field is drawn. */
   radiusChoices?: readonly RadiusChoice[];
 };
@@ -118,6 +131,10 @@ function FilterFields({
       ? [values.locality, ...localities]
       : localities;
   const bedroomChoices: (BedroomChoice | null)[] = [null, ...BEDROOM_CHOICES];
+  const placeNode =
+    typeof placeField === "function"
+      ? placeField({ id: id("locality"), values, onChange })
+      : placeField;
 
   return (
     <div className="flex flex-col gap-5">
@@ -150,7 +167,7 @@ function FilterFields({
 
       <Field>
         <Label htmlFor={id("locality")}>{translate("domain.searchCard.locality.label")}</Label>
-        {placeField ?? (
+        {placeNode ?? (
           <NativeSelect
             id={id("locality")}
             className={SELECT_HEIGHT}
@@ -167,7 +184,7 @@ function FilterFields({
             ))}
           </NativeSelect>
         )}
-        {placeField ? (
+        {placeNode ? (
           <p className="text-caption text-muted">{translate("domain.filters.regionOnly")}</p>
         ) : null}
       </Field>
@@ -287,7 +304,7 @@ type FilterRailProps = {
   allLocalitiesLabel: string;
   budgetNeedsLooking?: boolean;
   /** The place search box in place of the Locality list (ADR-131). */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place (ADR-131). */
   radiusChoices?: readonly RadiusChoice[];
   /** What Clear all does when the page has more to clear than the four fields (the label, the keyword). */
@@ -349,7 +366,7 @@ type FilterSheetProps = {
   onDraftChange?: ((values: FilterValues) => void) | undefined;
   budgetNeedsLooking?: boolean;
   /** The place search box in place of the Locality list (ADR-131). */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place (ADR-131). */
   radiusChoices?: readonly RadiusChoice[];
   className?: string | undefined;
@@ -457,4 +474,10 @@ function FilterSheet({
 }
 
 export { FilterFields, FilterRail, FilterSheet };
-export type { FilterFieldsProps, FilterRailProps, FilterSheetProps };
+export type {
+  FilterFieldsProps,
+  FilterRailProps,
+  FilterSheetProps,
+  PlaceFieldContext,
+  PlaceFieldSlot,
+};
