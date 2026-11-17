@@ -9,11 +9,13 @@ const writePlacesUsage = vi.fn();
 const warn = vi.fn();
 const chooseProvider = vi.fn();
 const getLocalityCounts = vi.fn();
+const enforceActionRateLimit = vi.fn();
 const envFake = { OLA_MAPS_API_KEY: "made-up-key-for-tests", PLACES_DISABLED: false };
 
 vi.mock("next/server", () => ({ after: (work: () => unknown) => void work() }));
 vi.mock("@/server/audit/places-usage", () => ({ writePlacesUsage }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error: vi.fn(), info: vi.fn() } }));
+vi.mock("@/server/rate-limit/rate-limit", () => ({ enforceActionRateLimit }));
 vi.mock("@/server/env", () => ({ env: envFake }));
 vi.mock("@/features/site", () => ({
   getSiteSettings: async () => ({
@@ -28,7 +30,8 @@ vi.mock(import("@/server/places"), async (importOriginal) => {
 
 const { createFakePlaceProvider, PlaceLookupError } = await import("@/server/places");
 const { createPlaceLookup, toLookupResult } = await import("../place-lookup");
-const { createRealPlaceLookup } = await import("../real-place-lookup");
+const { createRealPlaceLookup, withPlacesLimit } = await import("../real-place-lookup");
+const { RateLimitedError } = await import("@/server/rate-limit/enforce");
 
 const LISTED = [{ name: "Velachery" }, { name: "Anna Nagar" }, { name: "Adyar" }];
 
@@ -44,6 +47,7 @@ function lookupWith(provider = createFakePlaceProvider(), localities: { name: st
 
 beforeEach(() => {
   vi.clearAllMocks();
+  enforceActionRateLimit.mockResolvedValue(undefined);
   getLocalityCounts.mockResolvedValue({ localities: LISTED });
   envFake.OLA_MAPS_API_KEY = "made-up-key-for-tests";
   envFake.PLACES_DISABLED = false;
@@ -213,5 +217,47 @@ describe("UT-ai-place-lookup: the real lookup and its count", () => {
     envFake.PLACES_DISABLED = true;
     await createRealPlaceLookup()("Velachery");
     expect(writePlacesUsage).not.toHaveBeenCalled();
+  });
+});
+
+describe("UT-ai-place-lookup: the same places limit as the search box (ADR-142)", () => {
+  it("asks the `places` limit, with no session, before each lookup that reaches the provider", async () => {
+    chooseProvider.mockReturnValue(createFakePlaceProvider());
+    await createRealPlaceLookup()("KK Nagar");
+    expect(enforceActionRateLimit).toHaveBeenCalledExactlyOnceWith({
+      scope: "places",
+      session: null,
+      requestId: expect.any(String),
+    });
+  });
+
+  it("says 'unavailable' when the limit is used up, reaches the provider not at all, and counts nothing", async () => {
+    const provider = createFakePlaceProvider();
+    chooseProvider.mockReturnValue(provider);
+    enforceActionRateLimit.mockRejectedValue(new RateLimitedError("places", 12));
+    expect(await createRealPlaceLookup()("KK Nagar")).toEqual({ status: "unavailable" });
+    expect(provider.asked).toEqual([]);
+    expect(writePlacesUsage).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the limit cannot be checked", async () => {
+    const provider = createFakePlaceProvider();
+    chooseProvider.mockReturnValue(provider);
+    enforceActionRateLimit.mockRejectedValue(new Error("the counter is down"));
+    expect(await createRealPlaceLookup()("KK Nagar")).toEqual({ status: "unavailable" });
+    expect(provider.asked).toEqual([]);
+  });
+
+  it("turns a refusal into a quota failure and a broken counter into an error, with no text", async () => {
+    const limited = withPlacesLimit(createFakePlaceProvider(), () =>
+      Promise.reject(new RateLimitedError("places", 5)),
+    );
+    await expect(limited.autocomplete("KK Nagar")).rejects.toMatchObject({ failure: "quota" });
+    const broken = withPlacesLimit(createFakePlaceProvider(), () =>
+      Promise.reject(new Error("KK Nagar")),
+    );
+    const failure = await broken.autocomplete("KK Nagar").catch((error: unknown) => error);
+    expect(failure).toMatchObject({ failure: "error" });
+    expect(String((failure as Error).message)).not.toContain("KK Nagar");
   });
 });

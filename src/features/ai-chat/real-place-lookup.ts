@@ -3,7 +3,15 @@ import { after } from "next/server";
 import { getSiteSettings } from "@/features/site";
 import { writePlacesUsage } from "@/server/audit/places-usage";
 import { env } from "@/server/env";
-import { choosePlaceProvider, createCountedPlaceProvider, type PlaceBounds } from "@/server/places";
+import {
+  choosePlaceProvider,
+  createCountedPlaceProvider,
+  PlaceLookupError,
+  type PlaceBounds,
+  type PlaceProvider,
+} from "@/server/places";
+import { RateLimitedError } from "@/server/rate-limit/enforce";
+import { enforceActionRateLimit } from "@/server/rate-limit/rate-limit";
 import { createPlaceLookup } from "./place-lookup";
 import { getLocalityCounts } from "./queries";
 import type { PlaceLookup } from "./tools/place-lookup";
@@ -25,7 +33,31 @@ function scheduleCount(outcome: Parameters<typeof writePlacesUsage>[0]["outcome"
   }
 }
 
-/** The lookup for this environment: the real provider with the region from the site settings, counted. */
+/**
+ * The same provider behind the `places` limit of the search box's route (60 a minute per visitor and 30 in 10 seconds
+ * per address, ADR-133), so the chat cannot spend more of the map quota than the box can. A lookup the limit refuses never
+ * reaches the provider (it is not counted as a call) and, like a failure of the counter itself (fail closed), reaches the
+ * assistant as "unavailable". `enforce` is the limit, handed in so a test needs no database.
+ */
+export function withPlacesLimit(
+  provider: PlaceProvider,
+  enforce: () => Promise<void>,
+): PlaceProvider {
+  return {
+    async autocomplete(text) {
+      try {
+        await enforce();
+      } catch (failure) {
+        throw failure instanceof RateLimitedError
+          ? new PlaceLookupError("quota", "The place search limit was reached")
+          : new PlaceLookupError("error", "The place search limit could not be checked");
+      }
+      return provider.autocomplete(text);
+    },
+  };
+}
+
+/** The lookup for this environment: the real provider with the region from the site settings, limited like the search box, counted. */
 export function createRealPlaceLookup(): PlaceLookup {
   // Only the real provider is counted: the fixed local list and the "off" provider never reach Ola Maps.
   const reachesOla = Boolean(env.OLA_MAPS_API_KEY) && !env.PLACES_DISABLED;
@@ -34,7 +66,10 @@ export function createRealPlaceLookup(): PlaceLookup {
       const settings = await getSiteSettings();
       const bounds: PlaceBounds = settings.region.bounds;
       const provider = choosePlaceProvider(env, bounds);
-      return reachesOla ? createCountedPlaceProvider(provider, scheduleCount) : provider;
+      const counted = reachesOla ? createCountedPlaceProvider(provider, scheduleCount) : provider;
+      return withPlacesLimit(counted, () =>
+        enforceActionRateLimit({ scope: "places", session: null, requestId: crypto.randomUUID() }),
+      );
     },
     localities: async () => (await getLocalityCounts()).localities,
   });
