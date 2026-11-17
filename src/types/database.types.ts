@@ -920,7 +920,7 @@ isOneToOne: false
                            },
 "search_properties":
 { Args: { "p_bhk"?: number,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
-              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
+              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
             }[]
                            },
 "slugify":
