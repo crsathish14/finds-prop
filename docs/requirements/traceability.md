@@ -35,7 +35,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 | Req       | Name                              | Modules              | Stage                      | UX                     | Tests                               |
 | --------- | --------------------------------- | -------------------- | -------------------------- | ---------------------- | ----------------------------------- |
-| FR-GEO-01 | Address autocomplete              | `places`             | S4-T05                     | Gap (suggestion rows)  | IT-places, UT-components (combobox) |
+| FR-GEO-01 | Address autocomplete              | `places`             | S4-T05 (ADR-131, started)  | Gap (suggestion rows)  | IT-places, UT-components (combobox) |
 | FR-GEO-02 | Store address parts + coordinates | `listings`, `places` | S6-T02 (gated by `DEC-19`) | Gap                    | IT-actions-listing                  |
 | FR-GEO-03 | Place-based search                | `search`             | S4-T03/T04                 | Gap                    | DB-FN-search                        |
 | FR-GEO-04 | Map view                          | `places`             | S4-T14 (optional)          | **Gap (not designed)** | E18                                 |
