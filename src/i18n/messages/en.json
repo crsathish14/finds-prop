@@ -1344,6 +1344,56 @@
     "nearby": {
       "title": "Also near {place}",
       "note": "{count, plural, one {# more home} other {# more homes}} within {radiusKm} km, nearest first."
+    },
+    "locationField": {
+      "title": "Where is the property?",
+      "hint": "Start typing and choose from the list. Tamil Nadu only for now.",
+      "areaTitle": "Which area is it in?",
+      "areaHint": "We will show your home by area. Choose the nearest one.",
+      "providerNote": "Suggestions come from Ola Maps. What you type is sent to them to find matching places.",
+      "privacy": "Privacy Policy",
+      "chooseArea": "I can't find it. Choose the area instead",
+      "searchInstead": "Search for the address instead",
+      "unavailableBody": "Choose the area your property is in instead.",
+      "foundTitle": "Location found",
+      "approximateTitle": "Approximate location",
+      "approximateNote": "We use the middle of the area, so your home will show as approximate.",
+      "visitorsSee": "Visitors see the area, not the exact spot: your home is shown within about 100 metres. Your phone number is never shown.",
+      "change": "Change",
+      "required": "Add a location to continue."
+    },
+    "locationPrompt": {
+      "title": "Add your location to appear in nearby searches",
+      "body": "{count, plural, one {# of your listings has no location.} other {# of your listings have no location.}} Homes without one are left out of searches by place.",
+      "action": "Add location"
+    },
+    "placesUsage": {
+      "title": "Place search: calls to Ola Maps",
+      "description": "Our own count of place suggestions asked for, per day, for the last 30 days.",
+      "series": "Calls",
+      "dateColumn": "Day",
+      "today": "Calls today",
+      "month": "Calls this month",
+      "problems": "Problems in 30 days",
+      "problemsSome": "Timed out, refused or failed. Place search fell back to typed text.",
+      "problemsNone": "None: every call was answered.",
+      "callers": {
+        "title": "Where the calls came from",
+        "description": "The search box, the post form and the admin pickers."
+      },
+      "outcomes": {
+        "title": "How the calls ended",
+        "description": "Ola's own bill is the one that counts; this is our count.",
+        "ok": "Answered",
+        "empty": "No place found",
+        "timeout": "Timed out",
+        "quota": "Refused (limit or balance)",
+        "error": "Failed"
+      },
+      "empty": {
+        "title": "No place searches yet",
+        "text": "Calls to Ola Maps appear here once visitors start using place search."
+      }
     }
   },
   "admin": {
