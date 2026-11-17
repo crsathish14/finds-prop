@@ -95,7 +95,7 @@ describe("PropertyCard distance (ADR-131)", () => {
   });
 });
 
-describe("the place box as a function of the fields (ADR-135)", () => {
+describe("the place box as a function of the fields (ADR-136)", () => {
   it("gives a function the label's id, the values and the way to change them", async () => {
     const onChange = rail({
       values: { ...VALUES, locality: "KK Nagar" },

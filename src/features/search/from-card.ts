@@ -5,7 +5,7 @@ import { RADIUS_MAX_KM, RADIUS_MIN_KM, type SearchParams } from "./schemas";
 /** A place the site's content team curated (the homepage localities in the site settings, DEC-13). */
 export type CuratedLocality = { label: string; lat: number; lng: number; radiusKm: number };
 
-/** A suggestion of the place search that the visitor picked: its name and its point (ADR-135). */
+/** A suggestion of the place search that the visitor picked: its name and its point (ADR-136). */
 export type PickedPlace = { label: string; lat: number; lng: number };
 
 /** What the search card hands over when Search is pressed (the card knows nothing about addresses). */

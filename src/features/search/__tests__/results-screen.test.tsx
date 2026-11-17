@@ -56,7 +56,7 @@ const chips = () => screen.getByRole("group", { name: "Active filters" });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // The locality box asks for place suggestions (ADR-135); no test reaches the network.
+  // The locality box asks for place suggestions (ADR-136); no test reaches the network.
   vi.stubGlobal(
     "fetch",
     vi.fn(() => new Promise<Response>(() => undefined)),

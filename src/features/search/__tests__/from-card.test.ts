@@ -95,7 +95,7 @@ describe("the search card as an address (S4-T06)", () => {
   });
 });
 
-describe("a picked place on the search card (ADR-135)", () => {
+describe("a picked place on the search card (ADR-136)", () => {
   const KK_NAGAR = { label: "KK Nagar", lat: 13.0418, lng: 80.2341 };
 
   it("searches the picked place by its point, with the default radius, while the text is its name", () => {

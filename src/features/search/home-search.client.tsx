@@ -20,7 +20,7 @@ type HomeSearchProps = {
 /**
  * The search card of the homepage, joined to the results address: the visitor's choices become the
  * address of the results page (`searchHrefFromCard`) and the page opens. The locality box suggests
- * places from Ola Maps (ADR-135): picking one searches by its name, point and the default radius; text
+ * places from Ola Maps (ADR-136): picking one searches by its name, point and the default radius; text
  * that is not picked, or typed while suggestions are unavailable, goes as a locality text match, and a
  * name that is one of the curated localities is that place, as before. Search is never held back.
  */

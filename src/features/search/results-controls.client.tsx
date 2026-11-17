@@ -54,7 +54,7 @@ function same(first: FilterValues, second: FilterValues): boolean {
 }
 
 /**
- * The Locality field of the filters: the place search box (ADR-135). In the Design Lab (`preview`) the
+ * The Locality field of the filters: the place search box (ADR-136). In the Design Lab (`preview`) the
  * pictured Locality list stays, so nothing there calls the route.
  */
 function placeFieldFor(

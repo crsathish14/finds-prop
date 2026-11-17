@@ -47,7 +47,7 @@ export function filterValuesFromParams(params: SearchParams): FilterValues {
 
 /**
  * The search the filter values mean. A locality that is one of the curated places becomes that place
- * (its point and radius). A locality with a point (picked from the place search, ADR-135) is that
+ * (its point and radius). A locality with a point (picked from the place search, ADR-136) is that
  * place, searched by its point and the radius the address already has. Any other text is a text match. The budget is dropped while Looking to is
  * All (a sale cap does not cap rents). What the filters do not hold (the keyword, the label and the
  * view) is kept, and "show" starts again, because a changed search starts from its first page.

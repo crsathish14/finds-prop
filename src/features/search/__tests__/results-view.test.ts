@@ -313,7 +313,7 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
   });
 });
 
-describe("UT-results-view: a place with a point from the place search (ADR-135)", () => {
+describe("UT-results-view: a place with a point from the place search (ADR-136)", () => {
   const values: FilterValues = {
     intent: "buy",
     locality: "KK Nagar",

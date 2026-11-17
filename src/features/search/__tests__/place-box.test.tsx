@@ -58,7 +58,7 @@ function renderScreen(raw: Record<string, string> = { listingType: "sale" }) {
 const rail = () => screen.getByRole("complementary", { name: "Filters" });
 const railBox = () => within(rail()).getByRole("combobox", { name: "Locality" });
 
-describe("The Locality field of the results filters is a place search box (ADR-135)", () => {
+describe("The Locality field of the results filters is a place search box (ADR-136)", () => {
   it("replaces the Locality list on the rail, with the Tamil Nadu note, and shows the chosen place", () => {
     renderScreen({ listingType: "sale", place: "KK Nagar", lat: "13.0418", lng: "80.2341" });
     expect(railBox()).toHaveValue("KK Nagar");

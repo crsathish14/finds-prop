@@ -94,7 +94,7 @@ export type FilterValues = {
   /** How far around a chosen place to look; used only when the page shows the radius choices. */
   radiusKm?: RadiusChoice | null | undefined;
   /**
-   * The point of the place picked from the place search, when the locality is one (ADR-135). It means
+   * The point of the place picked from the place search, when the locality is one (ADR-136). It means
    * something only while `locality` is set, so "Clear all" need not reset it.
    */
   point?: { lat: number; lng: number } | null | undefined;

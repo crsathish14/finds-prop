@@ -230,7 +230,7 @@ describe("SearchCard: the locality box", () => {
   });
 });
 
-describe("SearchCard: what a place search host needs from the locality box (ADR-135)", () => {
+describe("SearchCard: what a place search host needs from the locality box (ADR-136)", () => {
   it("tells the host every change of the text, before the pause", async () => {
     const onLocalityTextChange = vi.fn();
     setup({ onLocalityTextChange });

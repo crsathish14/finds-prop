@@ -120,7 +120,7 @@ describe("HomeSearch: the search card joined to the results address (S4-T06)", (
   });
 });
 
-describe("HomeSearch: place suggestions from Ola Maps (ADR-135)", () => {
+describe("HomeSearch: place suggestions from Ola Maps (ADR-136)", () => {
   async function typeAndWait(text: string) {
     await userEvent.type(box(), text);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled(), { timeout: 2000 });

@@ -44,7 +44,7 @@ function setup(text = "") {
   return renderHook(({ typed }) => usePlaceSuggestions(typed), { initialProps: { typed: text } });
 }
 
-describe("usePlaceSuggestions (ADR-135)", () => {
+describe("usePlaceSuggestions (ADR-136)", () => {
   it("asks the route once and goes loading, then ready with the suggestions as options", async () => {
     const pending = deferred();
     fetchMock.mockReturnValueOnce(pending.promise);

@@ -6,7 +6,7 @@ import type { ComboboxOption } from "@/components/patterns/combobox";
 import type { PlaceAutocompleteSuggestion } from "@/types/places";
 
 /**
- * The place suggestions of the search box (ADR-135): the browser side of `GET /api/places/autocomplete`
+ * The place suggestions of the search box (ADR-136): the browser side of `GET /api/places/autocomplete`
  * (ADR-133). The Combobox already waits for three characters and a 300 ms pause before it calls
  * `search`, so the hook only has to ask, cancel an older question when a newer one comes, and say in
  * which state the panel is. It never blocks: a failure of any kind is a state of the panel
