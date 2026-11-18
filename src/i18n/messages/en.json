@@ -1379,6 +1379,7 @@
     "locationPrompt": {
       "title": "Add your location to appear in nearby searches",
       "body": "{count, plural, one {# of your listings has no location.} other {# of your listings have no location.}} Homes without one are left out of searches by place.",
+      "reviewNote": "A live listing goes back to review when you add its location, and shows again once it is approved.",
       "action": "Add location"
     },
     "placesUsage": {
