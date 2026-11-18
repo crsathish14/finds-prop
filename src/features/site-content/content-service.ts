@@ -1,7 +1,13 @@
 import { ActionError } from "@/server/actions/normalise-error";
 import { SITE_SETTING_SCHEMAS } from "@/features/site";
 import type { EditableSetting } from "./constants";
-import type { FooterInput, HeaderInput, HeroInput, HomepageInput } from "./schemas";
+import type {
+  ContentModulesInput,
+  FooterInput,
+  HeaderInput,
+  HeroInput,
+  HomepageInput,
+} from "./schemas";
 
 /**
  * The rules of saving the site content (S7-T10, FR-ADM-10, FR-ADM-11), apart from the code that reaches the database
@@ -108,6 +114,10 @@ export function homepageValue(input: HomepageInput): Record<string, unknown> {
   };
 }
 
+export function contentModulesValue(input: ContentModulesInput): Record<string, unknown> {
+  return { blog: input.blog, faq: input.faq, careers: input.careers };
+}
+
 /** True when the point lies outside the launch area. */
 export function isOutside(lat: number, lng: number, bounds: RegionBounds): boolean {
   return lat < bounds.south || lat > bounds.north || lng < bounds.west || lng > bounds.east;
@@ -136,6 +146,14 @@ export function saveHeaderContent(store: ContentStore, input: HeaderInput): Prom
 
 export function saveFooterContent(store: ContentStore, input: FooterInput): Promise<ContentDone> {
   return publish(store, "footer", footerValue(input));
+}
+
+/** Switches the Blog, FAQ and Careers modules on or off (ADR-143). */
+export function saveContentModulesContent(
+  store: ContentStore,
+  input: ContentModulesInput,
+): Promise<ContentDone> {
+  return publish(store, "content_modules", contentModulesValue(input));
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

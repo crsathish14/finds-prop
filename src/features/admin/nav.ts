@@ -20,6 +20,9 @@ export type AdminIconName =
   | "hero"
   | "homepage"
   | "footer"
+  | "blog"
+  | "faq"
+  | "careers"
   | "insights"
   | "profile";
 
@@ -83,6 +86,19 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
         { key: "leads", href: "/admin/leads", label: translate("admin.nav.leads"), icon: "leads" },
         { key: "forms", href: "/admin/forms", label: translate("admin.nav.forms"), icon: "forms" },
         { key: "crm", href: "/admin/crm", label: translate("admin.nav.crm"), icon: "crm" },
+      ],
+    },
+    {
+      label: translate("admin.nav.content"),
+      items: [
+        { key: "blog", href: "/admin/blog", label: translate("admin.nav.blog"), icon: "blog" },
+        { key: "faq", href: "/admin/faq", label: translate("admin.nav.faq"), icon: "faq" },
+        {
+          key: "careers",
+          href: "/admin/careers",
+          label: translate("admin.nav.careers"),
+          icon: "careers",
+        },
       ],
     },
     {

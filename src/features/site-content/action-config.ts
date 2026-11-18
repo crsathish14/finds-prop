@@ -1,5 +1,6 @@
 import { tagsAfterSiteSettingsChange } from "@/lib/cache-tags";
 import {
+  contentModulesInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
@@ -54,6 +55,18 @@ export const saveFooterConfig = {
 export const saveSponsorsConfig = {
   name: "saveSponsors",
   input: sponsorsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The Blog, FAQ and Careers switches (ADR-143, FR-ADM-16): one row of `site_settings`, so the same limits and the same
+ * cache tag apply. The change shows on the public site, the menus, the sitemap and the AI assistant at once.
+ */
+export const saveContentModulesConfig = {
+  name: "saveContentModules",
+  input: contentModulesInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

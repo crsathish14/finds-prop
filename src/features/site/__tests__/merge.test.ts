@@ -29,6 +29,23 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     expect(merged.homepage).toEqual({ ...SITE_DEFAULTS.homepage, showWhyUs: false });
   });
 
+  it("switches every content module on by default, and applies a stored switch (ADR-143)", () => {
+    expect(mergeSiteSettings([], log()).content_modules).toEqual({
+      blog: true,
+      faq: true,
+      careers: true,
+    });
+    const merged = mergeSiteSettings([{ key: "content_modules", value: { blog: false } }], log());
+    expect(merged.content_modules).toEqual({ blog: false, faq: true, careers: true });
+  });
+
+  it("ignores a content module switch that is not a true or false", () => {
+    const logger = log();
+    const merged = mergeSiteSettings([{ key: "content_modules", value: { faq: "no" } }], logger);
+    expect(merged.content_modules).toEqual(SITE_DEFAULTS.content_modules);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores a row that fails its schema, and logs the key but not the content", () => {
     const logger = log();
     const merged = mergeSiteSettings(

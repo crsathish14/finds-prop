@@ -80,6 +80,16 @@ const sponsorsSchema = z.object({
   ads: z.array(z.unknown()).max(30),
 });
 
+/**
+ * Which of the optional content modules (Blog, FAQ, Careers) are switched on (ADR-143, FR-ADM-16). A module that is off
+ * answers 404 on its public pages and leaves the menus, the sitemap and the AI assistant, while its admin pages keep working.
+ */
+const contentModulesSchema = z.object({
+  blog: z.boolean(),
+  faq: z.boolean(),
+  careers: z.boolean(),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -87,6 +97,7 @@ export const SITE_SETTING_SCHEMAS = {
   homepage: homepageSchema,
   region: regionSchema,
   sponsors: sponsorsSchema,
+  content_modules: contentModulesSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;
