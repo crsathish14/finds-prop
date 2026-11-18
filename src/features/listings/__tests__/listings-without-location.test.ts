@@ -66,7 +66,7 @@ describe("getListingsWithoutLocation: the listings the location prompt is about 
     await getListingsWithoutLocation();
     expect(db.asked).toEqual([
       'rpc:my_properties:undefined:{"count":"exact"}',
-      "select:id, status",
+      "select:id, status, created_at",
       "in:status:pending,approved",
       "is:location:null",
       "order:created_at:false",
