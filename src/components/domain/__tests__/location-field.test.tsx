@@ -8,6 +8,7 @@ import { LocationField } from "../location-field";
 import { LocationPrompt } from "../location-prompt";
 
 const words = en.domain.locationField;
+const promptWords = en.domain.locationPrompt;
 
 describe("LocationField (ADR-131)", () => {
   it("asks where the property is, with the hint, the provider note and the privacy link", () => {
@@ -114,5 +115,13 @@ describe("LocationPrompt (ADR-131)", () => {
   it("says several listings in the plural", () => {
     renderWithMessages(<LocationPrompt count={3} href="/dashboard/listings" />);
     expect(screen.getByRole("status")).toHaveTextContent("3 of your listings have no location.");
+  });
+
+  it("explains the review only when asked to", () => {
+    const plain = renderWithMessages(<LocationPrompt count={2} href="/x" />);
+    expect(screen.queryByText(promptWords.reviewNote)).not.toBeInTheDocument();
+    plain.unmount();
+    renderWithMessages(<LocationPrompt count={2} href="/x" sendsBackToReview />);
+    expect(screen.getByText(promptWords.reviewNote)).toBeInTheDocument();
   });
 });

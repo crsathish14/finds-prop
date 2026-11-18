@@ -131,6 +131,7 @@ export function LocationFieldDemo() {
         <div className="flex w-full max-w-2xl flex-col gap-4">
           <LocationPrompt count={1} href="#edit-listing" />
           <LocationPrompt count={3} href="#edit-listing" />
+          <LocationPrompt count={2} href="#edit-listing" sendsBackToReview />
         </div>
       </Specimen>
     </div>

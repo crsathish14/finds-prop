@@ -18,7 +18,15 @@ export {
   setListingLocationConfig,
   submitListingConfig,
 } from "./action-config";
-export { countMyListings, getMyDraft, getMyListings, isSignedIn, listMyDrafts } from "./queries";
+export {
+  countMyListings,
+  getListingsWithoutLocation,
+  getMyDraft,
+  getMyListings,
+  isSignedIn,
+  listMyDrafts,
+} from "./queries";
+export type { ListingsWithoutLocation } from "./queries";
 export { MyListingsTab } from "./my-listings-tab";
 export {
   ADDRESS_MAX,
