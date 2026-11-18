@@ -6,7 +6,7 @@ import { NextSteps } from "@/components/domain/next-steps";
 import { ReviewList } from "@/components/domain/review-list";
 import { FormField } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { fieldErrorText, type Translator } from "@/i18n/failure-text";
 import type { ListingLocationFieldProps } from "@/types/places";
@@ -120,7 +120,7 @@ export function BasicsStep({
         ]}
       />
       <FormField label={words("propertyType")} {...errorProp(errorText("propertyType"))}>
-        <NativeSelect
+        <Select
           value={values.propertyType}
           disabled={disabled ?? false}
           onChange={(event) => onChange("propertyType", event.target.value)}
@@ -130,7 +130,7 @@ export function BasicsStep({
               {typeLabels[type]}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
       <location.Field {...location.props} errorText={placeErrorText} disabled={disabled ?? false} />
       <FormField
@@ -201,7 +201,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
       <div className="grid gap-5 md:grid-cols-3">
         {hasBedrooms(values.propertyType) ? (
           <FormField label={words("bedrooms")} {...errorProp(errorText("bhk"))}>
-            <NativeSelect
+            <Select
               value={values.bhk}
               disabled={disabled ?? false}
               onChange={(event) => onChange("bhk", event.target.value)}
@@ -212,11 +212,11 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                   {count}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </FormField>
         ) : null}
         <FormField label={words("bathrooms")} {...errorProp(errorText("bathrooms"))}>
-          <NativeSelect
+          <Select
             value={values.bathrooms}
             disabled={disabled ?? false}
             onChange={(event) => onChange("bathrooms", event.target.value)}
@@ -227,7 +227,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                 {count}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label={words("area")} required {...errorProp(errorText("areaSqft"))}>
           <Input
@@ -253,7 +253,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
           />
         </FormField>
         <FormField label={words("furnishing")} {...errorProp(errorText("furnishing"))}>
-          <NativeSelect
+          <Select
             value={values.furnishing}
             disabled={disabled ?? false}
             onChange={(event) => onChange("furnishing", event.target.value)}
@@ -264,7 +264,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                 {furnishingLabels[kind]}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
       </div>
       <div className="flex flex-col gap-2">

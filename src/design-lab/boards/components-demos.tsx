@@ -25,7 +25,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/components/ui/link";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RemovableChip } from "@/components/ui/removable-chip";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -213,21 +213,21 @@ export function FieldsDemo() {
             counter={`${message.length} / 500`}
           />
         </Specimen>
-        <Specimen label="NativeSelect" className="w-full">
-          <NativeSelect aria-label="Bedrooms" defaultValue="2">
+        <Specimen label="Select" className="w-full">
+          <Select aria-label="Bedrooms" defaultValue="2">
             <option value="1">1 BHK</option>
             <option value="2">2 BHK</option>
             <option value="3">3 BHK</option>
-          </NativeSelect>
+          </Select>
         </Specimen>
-        <Specimen label="NativeSelect, invalid and disabled" className="w-full">
+        <Specimen label="Select, invalid and disabled" className="w-full">
           <div className="flex w-full flex-col gap-4">
-            <NativeSelect aria-label="Type, invalid" invalid>
+            <Select aria-label="Type, invalid" invalid>
               <option>Apartment</option>
-            </NativeSelect>
-            <NativeSelect aria-label="Type, disabled" disabled>
+            </Select>
+            <Select aria-label="Type, disabled" disabled>
               <option>Apartment</option>
-            </NativeSelect>
+            </Select>
           </div>
         </Specimen>
       </Column>

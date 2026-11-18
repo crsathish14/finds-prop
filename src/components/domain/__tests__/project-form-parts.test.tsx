@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { optionTexts } from "../../../../tests/select";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
@@ -300,14 +301,10 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
     expect(spy).toHaveBeenLastCalledWith("priceMin", "7");
   });
 
-  it("offers each choice list with an empty first choice", () => {
+  it("offers each choice list with an empty first choice", async () => {
     render(<Live />);
     const type = screen.getByLabelText(/Project type/);
-    expect(
-      within(type)
-        .getAllByRole("option")
-        .map((option) => option.textContent),
-    ).toEqual(["Not set", "Residential"]);
+    expect(await optionTexts(type)).toEqual(["Not set", "Residential"]);
   });
 
   it("keeps the BHK counts in order, and shows a count outside the usual ones", async () => {

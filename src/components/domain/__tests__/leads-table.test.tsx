@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { LeadsTable, type LeadRow } from "../leads-table";
+import { changeField } from "../../../../tests/select";
 
 const COLUMNS = {
   date: "Date",
@@ -75,14 +76,14 @@ describe("LeadsTable: the enquiries, with the state as the only box (S7-T01)", (
     expect(screen.getAllByText("—")).toHaveLength(2);
   });
 
-  it("changes the state from the box named for the person, and tells the page", () => {
+  it("changes the state from the box named for the person, and tells the page", async () => {
     const onChange = vi.fn();
     renderWithMessages(
       <LeadsTable caption="c" columns={COLUMNS} rows={[lead("1", {}, onChange)]} countText="1" />,
     );
     const box = screen.getByRole("combobox", { name: "Status for Arjun Menon" });
     expect(box).toHaveValue("new");
-    fireEvent.change(box, { target: { value: "contacted" } });
+    await changeField(box, "contacted");
     expect(onChange).toHaveBeenCalledWith("contacted");
   });
 

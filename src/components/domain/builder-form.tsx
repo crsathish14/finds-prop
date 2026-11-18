@@ -12,13 +12,13 @@
  * Accessibility: every box has a visible label tied to it; the hint and the error are read with it; an error also
  *   shows an icon; the email in edit mode is read-only with a hint saying why.
  * States: empty, filled, with errors (such as an email that cannot be used), sending (all disabled), edit.
- * Dependencies: FormField, Input, NativeSelect, Textarea, cn. Tests: builder-parts.test.tsx; Design Lab "Admin"
+ * Dependencies: FormField, Input, Select, Textarea, cn. Tests: builder-parts.test.tsx; Design Lab "Admin"
  *   (S7-T05).
  * UX reference: admin-builders screen (new: the invite drawer, blocked: the reserved email).
  */
 import { FormField } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
 
@@ -104,10 +104,10 @@ function BuilderForm({
       </FormField>
       {showKind ? (
         <FormField label={words.kind} {...(errors.kind ? { error: errors.kind } : {})}>
-          <NativeSelect {...text("kind")}>
+          <Select {...text("kind")}>
             <option value="builder">{words.kindBuilder}</option>
             <option value="agent">{words.kindAgent}</option>
-          </NativeSelect>
+          </Select>
         </FormField>
       ) : null}
       <div className="grid gap-5 md:grid-cols-2">

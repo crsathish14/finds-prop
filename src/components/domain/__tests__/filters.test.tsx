@@ -7,6 +7,7 @@ import { clearFilters, type FilterValues } from "@/config/search-options";
 import en from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { FilterRail, FilterSheet } from "../filters";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const words = en.domain.filters;
 const card = en.domain.searchCard;
@@ -31,12 +32,6 @@ const FILLED: FilterValues = {
   maxBudget: 1_50_00_000,
   sort: "newest",
 };
-
-function optionTexts(select: HTMLElement) {
-  return within(select)
-    .getAllByRole("option")
-    .map((option) => option.textContent);
-}
 
 function renderRail(values: FilterValues, onChange = vi.fn()) {
   renderWithMessages(
@@ -77,31 +72,35 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
     expect(screen.getByRole("button", { name: "3 BHK" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("offers All of the city first, then the localities the page gives", () => {
+  it("offers All of the city first, then the localities the page gives", async () => {
     renderRail(EMPTY);
-    expect(optionTexts(locality())).toEqual([ALL_LOCALITIES, ...LOCALITIES]);
+    expect(await optionTexts(locality())).toEqual([ALL_LOCALITIES, ...LOCALITIES]);
   });
 
-  it("adds a locality that is not in the list, so the box never shows a different one", () => {
+  it("adds a locality that is not in the list, so the box never shows a different one", async () => {
     renderRail({ ...EMPTY, locality: "Sholinganallur" });
     expect(locality()).toHaveValue("Sholinganallur");
-    expect(optionTexts(locality())).toEqual([ALL_LOCALITIES, "Sholinganallur", ...LOCALITIES]);
+    expect(await optionTexts(locality())).toEqual([
+      ALL_LOCALITIES,
+      "Sholinganallur",
+      ...LOCALITIES,
+    ]);
   });
 
   it("reports every change at once, as the whole new set", async () => {
     const onChange = renderRail(EMPTY);
-    await userEvent.selectOptions(locality(), "Adyar");
+    await changeField(locality(), "Adyar");
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY, locality: "Adyar" });
-    await userEvent.selectOptions(typeSelect(), card.propertyType.villa);
+    await changeField(typeSelect(), card.propertyType.villa);
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY, propertyType: "villa" });
-    await userEvent.selectOptions(budgetSelect(), "Up to ₹75 L");
+    await changeField(budgetSelect(), "Up to ₹75 L");
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY, maxBudget: 75_00_000 });
     expect(onChange).toHaveBeenCalledTimes(3);
   });
 
   it("goes back to All of the city when that option is chosen", async () => {
     const onChange = renderRail({ ...EMPTY, locality: "Adyar" });
-    await userEvent.selectOptions(locality(), ALL_LOCALITIES);
+    await changeField(locality(), ALL_LOCALITIES);
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY, locality: null });
   });
 
@@ -120,7 +119,7 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
     expect(onChange).toHaveBeenLastCalledWith({ ...FILLED, bedrooms: null });
   });
 
-  it("lists sale amounts for All and Buy and monthly rents for Rent", () => {
+  it("lists sale amounts for All and Buy and monthly rents for Rent", async () => {
     const sale = [
       card.budget.any,
       "Up to ₹50 L",
@@ -146,7 +145,7 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
         allLocalitiesLabel={ALL_LOCALITIES}
       />,
     );
-    expect(optionTexts(budgetSelect())).toEqual(sale);
+    expect(await optionTexts(budgetSelect())).toEqual(sale);
     all.unmount();
     const buy = renderWithMessages(
       <FilterRail
@@ -156,7 +155,7 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
         allLocalitiesLabel={ALL_LOCALITIES}
       />,
     );
-    expect(optionTexts(budgetSelect())).toEqual(sale);
+    expect(await optionTexts(budgetSelect())).toEqual(sale);
     buy.unmount();
     renderWithMessages(
       <FilterRail
@@ -166,7 +165,7 @@ describe("FilterRail: the filter panel on a wide screen (S4-T01)", () => {
         allLocalitiesLabel={ALL_LOCALITIES}
       />,
     );
-    expect(optionTexts(budgetSelect())).toEqual(rent);
+    expect(await optionTexts(budgetSelect())).toEqual(rent);
   });
 
   it("puts the budget back to Any when Looking to changes to a list that lacks the amount", async () => {
@@ -246,7 +245,7 @@ describe("FilterSheet: the Filters button and the phone bottom sheet (S4-T01)", 
     );
     expect(within(dialog).getByRole("group", { name: words.bedrooms })).toBeInTheDocument();
     const sort = within(dialog).getByRole("combobox", { name: words.sortLabel });
-    expect(optionTexts(sort)).toEqual([
+    expect(await optionTexts(sort)).toEqual([
       words.sort.newest,
       words.sort.priceAsc,
       words.sort.priceDesc,
@@ -288,12 +287,9 @@ describe("FilterSheet: the Filters button and the phone bottom sheet (S4-T01)", 
   it("keeps the choices until Show is pressed, then applies them all and closes", async () => {
     const onApply = renderSheet(EMPTY, { resultCount: 12 });
     const dialog = await openSheet();
-    await userEvent.selectOptions(
-      within(dialog).getByRole("combobox", { name: card.locality.label }),
-      "Porur",
-    );
+    await changeField(within(dialog).getByRole("combobox", { name: card.locality.label }), "Porur");
     await userEvent.click(within(dialog).getByRole("button", { name: "4 BHK" }));
-    await userEvent.selectOptions(
+    await changeField(
       within(dialog).getByRole("combobox", { name: words.sortLabel }),
       words.sort.priceAsc,
     );
@@ -312,10 +308,7 @@ describe("FilterSheet: the Filters button and the phone bottom sheet (S4-T01)", 
   it("throws the choices away when the sheet is closed any other way", async () => {
     const onApply = renderSheet(FILLED);
     let dialog = await openSheet("Filters, 4 applied");
-    await userEvent.selectOptions(
-      within(dialog).getByRole("combobox", { name: card.locality.label }),
-      "Adyar",
-    );
+    await changeField(within(dialog).getByRole("combobox", { name: card.locality.label }), "Adyar");
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(onApply).not.toHaveBeenCalled();

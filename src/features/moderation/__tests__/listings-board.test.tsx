@@ -8,6 +8,7 @@ import type { ListingsBoardActions } from "../listings-board.client";
 import type { QueueFilters } from "../schemas";
 import { encodeCursor } from "../cursor";
 import type { QueueCounts, QueueItem } from "../view";
+import { changeField } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -119,13 +120,11 @@ describe("ListingsBoard: the queue, its tabs and filters (S6-T04)", () => {
     expect(router.push).toHaveBeenCalledWith("/admin/listings?tab=approved");
   });
 
-  it("takes the filters to the address and keeps the tab", () => {
+  it("takes the filters to the address and keeps the tab", async () => {
     open({ filters: { tab: "all" } });
-    fireEvent.change(screen.getByLabelText(words.filters.localityLabel), {
-      target: { value: "Adyar" },
-    });
+    await changeField(screen.getByLabelText(words.filters.localityLabel), "Adyar");
     expect(router.push).toHaveBeenLastCalledWith("/admin/listings?tab=all&locality=Adyar");
-    fireEvent.change(screen.getByLabelText(words.filters.kindLabel), { target: { value: "rent" } });
+    await changeField(screen.getByLabelText(words.filters.kindLabel), "rent");
     expect(router.push).toHaveBeenLastCalledWith("/admin/listings?tab=all&kind=rent");
   });
 

@@ -6,6 +6,7 @@ import { SubmissionDetail, type SubmissionDetailProps } from "../submission-deta
 import { SubmissionsFilters, type SubmissionsFiltersProps } from "../submissions-filters";
 import { SubmissionsTable, type SubmissionRow } from "../submissions-table";
 import { StatusBadge } from "@/components/patterns/status-badge";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const COLUMNS = {
   created: "Created",
@@ -135,26 +136,24 @@ function filters(extra: Partial<SubmissionsFiltersProps> = {}) {
 }
 
 describe("SubmissionsFilters: the boxes above the list (S7-T07)", () => {
-  it("has a box for each choice with its label and its chosen value, and the All choices where there are any", () => {
+  it("has a box for each choice with its label and its chosen value, and the All choices where there are any", async () => {
     filters();
     expect(screen.getByLabelText("Date range")).toHaveValue("30");
     expect(screen.getByLabelText("Form")).toHaveValue("");
-    expect(
-      within(screen.getByLabelText("Form")).getByRole("option", { name: "All forms" }),
-    ).toBeInTheDocument();
+    expect(await optionTexts(screen.getByLabelText("Form"))).toContain("All forms");
     expect(screen.getByLabelText("CRM status")).toHaveValue("any");
     expect(
       within(screen.getByLabelText("Date range")).queryByRole("option", { name: /^All/ }),
     ).toBeNull();
   });
 
-  it("tells the page which box changed and to what", () => {
+  it("tells the page which box changed and to what", async () => {
     const props = filters();
-    fireEvent.change(screen.getByLabelText("Date range"), { target: { value: "7" } });
+    await changeField(screen.getByLabelText("Date range"), "7");
     expect(props.onChange).toHaveBeenCalledWith("range", "7");
-    fireEvent.change(screen.getByLabelText("Project"), { target: { value: "vista" } });
+    await changeField(screen.getByLabelText("Project"), "vista");
     expect(props.onChange).toHaveBeenCalledWith("project", "vista");
-    fireEvent.change(screen.getByLabelText("CRM status"), { target: { value: "failed" } });
+    await changeField(screen.getByLabelText("CRM status"), "failed");
     expect(props.onChange).toHaveBeenCalledWith("crm", "failed");
   });
 

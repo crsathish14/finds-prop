@@ -14,13 +14,13 @@
  *   words; the Project box is off (not hidden) unless the placement is "one project", and says why; Active is a
  *   switch inside its label, so the whole line is the target.
  * States: empty, filled, with errors (a slug already used), a placement that needs a project, saving (all off).
- * Dependencies: FormField, Input, NativeSelect, Switch, Label, cn. Tests: form-parts.test.tsx; Design Lab "Forms"
+ * Dependencies: FormField, Input, Select, Switch, Label, cn. Tests: form-parts.test.tsx; Design Lab "Forms"
  *   (S7-T08).
  * UX reference: admin-forms screen, editor, Settings (form-grid two, field, select, switch).
  */
 import { FormField } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/cn";
 
@@ -107,29 +107,29 @@ function FormSettingsFields({
         <Input {...text("slug")} maxLength={80} autoComplete="off" spellCheck={false} />
       </FormField>
       <FormField label={words.kind} {...(errors.kind ? { error: errors.kind } : {})}>
-        <NativeSelect {...text("kind")}>
+        <Select {...text("kind")}>
           {kinds.map((choice) => (
             <option key={choice.value} value={choice.value}>
               {choice.label}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
       <FormField label={words.placement} {...(errors.placement ? { error: errors.placement } : {})}>
-        <NativeSelect {...text("placement")}>
+        <Select {...text("placement")}>
           {placements.map((choice) => (
             <option key={choice.value} value={choice.value}>
               {choice.label}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
       <FormField
         label={words.project}
         required={needsProject}
         {...(errors.projectId ? { error: errors.projectId } : {})}
       >
-        <NativeSelect {...text("projectId")} disabled={disabled || !needsProject}>
+        <Select {...text("projectId")} disabled={disabled || !needsProject}>
           {needsProject ? (
             <option value="">{words.projectChoose}</option>
           ) : (
@@ -142,20 +142,20 @@ function FormSettingsFields({
                 </option>
               ))
             : null}
-        </NativeSelect>
+        </Select>
       </FormField>
       <FormField
         label={words.crm}
         {...(errors.crmIntegrationId ? { error: errors.crmIntegrationId } : {})}
       >
-        <NativeSelect {...text("crmIntegrationId")}>
+        <Select {...text("crmIntegrationId")}>
           <option value="">{words.crmNone}</option>
           {integrations.map((choice) => (
             <option key={choice.value} value={choice.value}>
               {choice.label}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
       <FormField
         label={words.buttonText}

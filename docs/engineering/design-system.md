@@ -35,13 +35,13 @@ The approved UX package is in `docs/ux/` (text, HTML and CSS; renders are not co
 
 ## Enforcement against hard-coded values
 
-| Check                                                                                    | Tool                                                                     | Fails on                                                  |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
-| Hex/rgb/hsl colours, `bg-[#…]`, `text-[…px]`, `p-[…px]`, inline `style={{ color … }}`    | `scripts/check-tokens.mjs` (regex over `src/**` excluding `src/styles/`) | any match outside the allow-list                          |
-| Disallowed spacing steps                                                                 | same script                                                              | `p-7`, `gap-9`, `mt-12`…                                  |
-| Default Tailwind palette classes                                                         | reset in `theme.css` + script                                            | `bg-gray-*`, `text-red-*`…                                |
-| Raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<a>` in `features/**` and `app/**` | ESLint `no-restricted-syntax`                                            | use `Button`, `Input`, `NativeSelect`, `Textarea`, `Link` |
-| Token parity                                                                             | script above                                                             | drift from approved UX                                    |
+| Check                                                                                    | Tool                                                                     | Fails on                                            |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Hex/rgb/hsl colours, `bg-[#…]`, `text-[…px]`, `p-[…px]`, inline `style={{ color … }}`    | `scripts/check-tokens.mjs` (regex over `src/**` excluding `src/styles/`) | any match outside the allow-list                    |
+| Disallowed spacing steps                                                                 | same script                                                              | `p-7`, `gap-9`, `mt-12`…                            |
+| Default Tailwind palette classes                                                         | reset in `theme.css` + script                                            | `bg-gray-*`, `text-red-*`…                          |
+| Raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<a>` in `features/**` and `app/**` | ESLint `no-restricted-syntax`                                            | use `Button`, `Input`, `Select`, `Textarea`, `Link` |
+| Token parity                                                                             | script above                                                             | drift from approved UX                              |
 
 ## Component standards
 

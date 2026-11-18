@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { CrmIntegrationView } from "../view";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -96,12 +97,8 @@ describe("the CRM editor: a new connection (S7-T09 D2)", () => {
     type(box(words.connection.name), "Sample CRM");
     type(box(words.connection.baseUrl), "https://api.crm.example");
     type(box(words.connection.endpoint), "/v2/leads");
-    fireEvent.change(screen.getByLabelText(box(words.connection.method)), {
-      target: { value: "PUT" },
-    });
-    fireEvent.change(screen.getByLabelText(words.credentials.apiKey), {
-      target: { value: "fake-key-for-tests" },
-    });
+    await changeField(screen.getByLabelText(box(words.connection.method)), "PUT");
+    await changeField(screen.getByLabelText(words.credentials.apiKey), "fake-key-for-tests");
     saveIt();
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     expect(save).toHaveBeenCalledWith({
@@ -181,7 +178,7 @@ describe("the CRM editor: a connection that exists (S7-T09 D2)", () => {
     expect(box).toHaveAttribute("type", "password");
     expect(box).toHaveAttribute("autocomplete", "new-password");
     expect(box).toHaveValue("");
-    fireEvent.change(box, { target: { value: "fake-key-for-tests" } });
+    await changeField(box, "fake-key-for-tests");
     saveIt();
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     expect(save.mock.calls[0]?.[0]).toMatchObject({ secrets: { apiKey: "fake-key-for-tests" } });
@@ -195,9 +192,7 @@ describe("the CRM editor: a connection that exists (S7-T09 D2)", () => {
   it("drops what was typed when Cancel is pressed, and sends no secret", async () => {
     const { save } = open(connection());
     press(`${words.credentials.replace} ${words.credentials.apiKey}`);
-    fireEvent.change(screen.getByLabelText(words.credentials.apiKey), {
-      target: { value: "fake-key-for-tests" },
-    });
+    await changeField(screen.getByLabelText(words.credentials.apiKey), "fake-key-for-tests");
     fireEvent.click(
       screen.getAllByRole("button", { name: words.credentials.cancel })[0] as HTMLElement,
     );
@@ -235,9 +230,7 @@ describe("the CRM editor: the Headers and body lists (S7-T09 D2)", () => {
     type(words.headersBody.mapping.name, "full_name");
     type(words.headersBody.mapping.value, "{{name}}");
     press(words.headersBody.codes.add);
-    fireEvent.change(screen.getByLabelText(words.headersBody.codes.name), {
-      target: { value: PROJECT_B },
-    });
+    await changeField(screen.getByLabelText(words.headersBody.codes.name), PROJECT_B);
     type(words.headersBody.codes.value, "MC-7");
     type(box(words.connection.name), "Sample CRM");
     type(box(words.connection.baseUrl), "https://api.crm.example");
@@ -250,14 +243,12 @@ describe("the CRM editor: the Headers and body lists (S7-T09 D2)", () => {
     });
   });
 
-  it("offers every project for a code, by name", () => {
+  it("offers every project for a code, by name", async () => {
     open(connection());
     const choice = screen.getByLabelText(words.headersBody.codes.name);
-    expect(within(choice).getByRole("option", { name: "Kadal Vista" })).toBeVisible();
-    expect(within(choice).getByRole("option", { name: "Marina Court" })).toBeVisible();
-    expect(
-      within(choice).getByRole("option", { name: words.headersBody.codes.choose }),
-    ).toBeVisible();
+    expect(await optionTexts(choice)).toContain("Kadal Vista");
+    expect(await optionTexts(choice)).toContain("Marina Court");
+    expect(await optionTexts(choice)).toContain(words.headersBody.codes.choose);
   });
 
   it("removes a row, and names the row on its button", () => {
@@ -334,9 +325,7 @@ describe("the CRM editor: what the server says is wrong (S7-T09 D2)", () => {
       connection(),
       failing({ "secrets.apiSecret": [{ key: "validation.invalid" }] }),
     );
-    fireEvent.change(screen.getByLabelText(words.credentials.apiSecret), {
-      target: { value: "fake-secret-for-tests" },
-    });
+    await changeField(screen.getByLabelText(words.credentials.apiSecret), "fake-secret-for-tests");
     saveIt();
     await waitFor(() => expect(save).toHaveBeenCalled());
     expect(await screen.findByText(en.validation.invalid)).toBeVisible();
@@ -348,9 +337,7 @@ describe("the CRM editor: what the server says is wrong (S7-T09 D2)", () => {
       failing({ baseUrl: [{ key: "validation.crmUrlNotAllowed" }] }),
     );
     press(`${words.credentials.replace} ${words.credentials.apiKey}`);
-    fireEvent.change(screen.getByLabelText(words.credentials.apiKey), {
-      target: { value: "fake-key-for-tests" },
-    });
+    await changeField(screen.getByLabelText(words.credentials.apiKey), "fake-key-for-tests");
     type(box(words.connection.name), "Renamed CRM");
     saveIt();
     await waitFor(() => expect(save).toHaveBeenCalled());
