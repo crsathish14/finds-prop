@@ -136,7 +136,7 @@ export interface ListingsWithoutLocation {
 
 /**
  * The owner's listings in review or Live that have no place stored, for the one note at the top of My listings
- * (plan PR 7c). Asked of the database as a filter (`location is null`) with only the id and the state selected:
+ * (plan PR 7c). Asked of the database as a filter (`location is null`) with only the id, the state and the sort date selected:
  * the point is the owner's private location (DEC-35) and is never read. Rejected listings are left out (they must
  * add a place to be sent again), and so are sold and rented ones, which are final. A failed read throws, so the
  * account's error page shows it.
@@ -145,7 +145,9 @@ export async function getListingsWithoutLocation(): Promise<ListingsWithoutLocat
   const supabase = await createServerSupabase();
   const { data, count, error } = await supabase
     .rpc("my_properties", undefined, { count: "exact" })
-    .select("id, status")
+    // `created_at` is selected because the sort column must be in the select for an RPC (the sort on an
+    // unselected column fails on the live database: "column properties.created_at does not exist").
+    .select("id, status, created_at")
     .in("status", ["pending", "approved"])
     .is("location", null)
     .order("created_at", { ascending: false })
