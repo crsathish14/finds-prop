@@ -17,7 +17,7 @@
  *   an icon; the BHK choices are a named group of checkboxes; the RERA switch has a visible label and turns the
  *   RERA number box on and off.
  * States: empty, filled, with errors, saving (all disabled), builder mode (no Builder box), page address locked.
- * Dependencies: FormSection, FormField, TagListField, Input, Textarea, NativeSelect, Checkbox, Switch, Label, cn.
+ * Dependencies: FormSection, FormField, TagListField, Input, Textarea, Select, Checkbox, Switch, Label, cn.
  *   Tests: project-form-parts.test.tsx; Design Lab "Admin" (S7-T02).
  * UX reference: admin-project-form screen (Basics, Location, RERA, Details, Media, SEO), builder-project-form screen.
  */
@@ -29,7 +29,7 @@ import { TagListField, type TagListWords } from "@/components/patterns/tag-list-
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -211,24 +211,24 @@ function ProjectFields({
               className="md:col-span-2"
               {...problem("builderId")}
             >
-              <NativeSelect {...text("builderId")}>
+              <Select {...text("builderId")}>
                 <option value="">{words.unset}</option>
                 {options.builders.map((builder) => (
                   <option key={builder.value} value={builder.value}>
                     {builder.label}
                   </option>
                 ))}
-              </NativeSelect>
+              </Select>
             </FormField>
           ) : null}
           <FormField label={words.projectType} {...optional} {...problem("projectType")}>
-            <NativeSelect {...text("projectType")}>{choices(options.projectTypes)}</NativeSelect>
+            <Select {...text("projectType")}>{choices(options.projectTypes)}</Select>
           </FormField>
           <FormField label={words.propertyType} {...optional} {...problem("propertyType")}>
-            <NativeSelect {...text("propertyType")}>{choices(options.propertyTypes)}</NativeSelect>
+            <Select {...text("propertyType")}>{choices(options.propertyTypes)}</Select>
           </FormField>
           <FormField label={words.projectStatus} {...optional} {...problem("projectStatus")}>
-            <NativeSelect {...text("projectStatus")}>{choices(options.statuses)}</NativeSelect>
+            <Select {...text("projectStatus")}>{choices(options.statuses)}</Select>
           </FormField>
           <span aria-hidden="true" className="hidden md:block" />
           <FormField label={words.priceMin} {...optional} {...problem("priceMin")}>

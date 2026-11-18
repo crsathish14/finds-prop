@@ -15,6 +15,7 @@ import {
   type FormSettingsWords,
 } from "../form-settings-fields";
 import { FormsManager, type FormRowView } from "../forms-manager";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const COLUMNS = {
   name: "Name",
@@ -198,30 +199,28 @@ describe("FormSettingsFields: the Settings box of the form editor (S7-T08)", () 
     expect(screen.getByRole("switch", { name: "Active" })).toBeChecked();
   });
 
-  it("turns the Project box off, saying why, unless the placement is one project", () => {
+  it("turns the Project box off, saying why, unless the placement is one project", async () => {
     settings();
     const box = screen.getByLabelText("Project");
     expect(box).toBeDisabled();
-    expect(
-      within(box).getByRole("option", { name: "Not needed for this placement" }),
-    ).toBeVisible();
+    expect(box).toHaveTextContent("Not needed for this placement");
   });
 
-  it("turns the Project box on, with the projects to choose, for one project", () => {
+  it("turns the Project box on, with the projects to choose, for one project", async () => {
     settings({}, { placement: "project_specific" });
     const box = screen.getByLabelText(/^Project/);
     expect(box).toBeEnabled();
-    expect(within(box).getByRole("option", { name: "Choose a project" })).toBeVisible();
-    expect(within(box).getByRole("option", { name: "Kadal Vista" })).toBeVisible();
+    expect(await optionTexts(box)).toContain("Choose a project");
+    expect(await optionTexts(box)).toContain("Kadal Vista");
   });
 
-  it("offers Not linked first in the CRM box and tells the page what changed", () => {
+  it("offers Not linked first in the CRM box and tells the page what changed", async () => {
     const onChange = settings();
     const crm = screen.getByLabelText("CRM integration");
-    expect(within(crm).getAllByRole("option")[0]).toHaveTextContent("Not linked");
-    fireEvent.change(crm, { target: { value: "crm" } });
+    expect((await optionTexts(crm))[0]).toBe("Not linked");
+    await changeField(crm, "crm");
     expect(onChange).toHaveBeenCalledWith("crmIntegrationId", "crm");
-    fireEvent.change(screen.getByLabelText(/^Slug/), { target: { value: "contact-us" } });
+    await changeField(screen.getByLabelText(/^Slug/), "contact-us");
     expect(onChange).toHaveBeenCalledWith("slug", "contact-us");
     fireEvent.click(screen.getByRole("switch", { name: "Active" }));
     expect(onChange).toHaveBeenCalledWith("active", false);
@@ -374,13 +373,13 @@ describe("FormFieldsEditor: the Fields box of the form editor (S7-T08)", () => {
     expect(screen.queryByLabelText("Placeholder")).toBeNull();
   });
 
-  it("tells the page what was typed, picked and switched in the open row", () => {
+  it("tells the page what was typed, picked and switched in the open row", async () => {
     const { onChange } = editor({ openId: "two" });
-    fireEvent.change(screen.getByLabelText(/^Label/), { target: { value: "Phone" } });
+    await changeField(screen.getByLabelText(/^Label/), "Phone");
     expect(onChange).toHaveBeenCalledWith("two", "label", "Phone");
-    fireEvent.change(screen.getByLabelText(/^Key/), { target: { value: "phone" } });
+    await changeField(screen.getByLabelText(/^Key/), "phone");
     expect(onChange).toHaveBeenCalledWith("two", "key", "phone");
-    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "number" } });
+    await changeField(screen.getByLabelText("Type"), "number");
     expect(onChange).toHaveBeenCalledWith("two", "type", "number");
     fireEvent.click(screen.getByRole("switch", { name: "Required" }));
     expect(onChange).toHaveBeenCalledWith("two", "required", false);

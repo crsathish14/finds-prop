@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { SearchCard, type SearchCardProps } from "../search-card";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const words = en.domain.searchCard;
 
@@ -44,25 +45,19 @@ const typeSelect = () => screen.getByRole("combobox", { name: words.propertyType
 const bedroomsSelect = () => screen.getByRole("combobox", { name: words.bedrooms.label });
 const budgetSelect = () => screen.getByRole("combobox", { name: words.budget.label });
 
-function optionTexts(select: HTMLElement) {
-  return within(select)
-    .getAllByRole("option")
-    .map((option) => option.textContent);
-}
-
 describe("SearchCard: the home page search box (S4-T01)", () => {
   it("is a search form with the four fields in the fixed order and a Search button", () => {
     const { container } = setup();
     expect(screen.getByRole("search", { name: words.label })).toBeInTheDocument();
-    const controls = [...container.querySelectorAll("input, select")];
+    const controls = [...container.querySelectorAll("input, [data-slot=select]")];
     expect(controls).toEqual([locality(), typeSelect(), bedroomsSelect(), budgetSelect()]);
     expect(screen.getByRole("button", { name: words.search })).toBeInTheDocument();
   });
 
-  it("starts on Buy, and lists each kind of property and Any", () => {
+  it("starts on Buy, and lists each kind of property and Any", async () => {
     setup();
     expect(screen.getByRole("radio", { name: words.buy })).toBeChecked();
-    expect(optionTexts(typeSelect())).toEqual([
+    expect(await optionTexts(typeSelect())).toEqual([
       words.propertyType.any,
       words.propertyType.apartment,
       words.propertyType.villa,
@@ -72,9 +67,9 @@ describe("SearchCard: the home page search box (S4-T01)", () => {
     ]);
   });
 
-  it("takes bedrooms as one value, 1 to 4 or Any", () => {
+  it("takes bedrooms as one value, 1 to 4 or Any", async () => {
     setup();
-    expect(optionTexts(bedroomsSelect())).toEqual([
+    expect(await optionTexts(bedroomsSelect())).toEqual([
       words.bedrooms.any,
       "1 BHK",
       "2 BHK",
@@ -85,7 +80,7 @@ describe("SearchCard: the home page search box (S4-T01)", () => {
 
   it("offers sale amounts when buying and monthly rents when renting", async () => {
     setup();
-    expect(optionTexts(budgetSelect())).toEqual([
+    expect(await optionTexts(budgetSelect())).toEqual([
       words.budget.any,
       "Up to ₹50 L",
       "Up to ₹75 L",
@@ -96,7 +91,7 @@ describe("SearchCard: the home page search box (S4-T01)", () => {
     ]);
     await userEvent.click(screen.getByRole("radio", { name: words.rent }));
     expect(screen.getByRole("radio", { name: words.rent })).toBeChecked();
-    expect(optionTexts(budgetSelect())).toEqual([
+    expect(await optionTexts(budgetSelect())).toEqual([
       words.budget.any,
       "Up to ₹15,000",
       "Up to ₹25,000",
@@ -111,7 +106,7 @@ describe("SearchCard: the home page search box (S4-T01)", () => {
     expect(budgetSelect()).toHaveValue("15000000");
     await userEvent.click(screen.getByRole("radio", { name: words.rent }));
     expect(budgetSelect()).toHaveValue("");
-    await userEvent.selectOptions(budgetSelect(), "Up to ₹25,000");
+    await changeField(budgetSelect(), "Up to ₹25,000");
     await userEvent.click(screen.getByRole("radio", { name: words.buy }));
     expect(budgetSelect()).toHaveValue("");
   });
@@ -141,9 +136,9 @@ describe("SearchCard: the home page search box (S4-T01)", () => {
     const { onSearch } = setup();
     await userEvent.click(screen.getByRole("radio", { name: words.rent }));
     await userEvent.type(locality(), "  Adyar  ");
-    await userEvent.selectOptions(typeSelect(), words.propertyType.house);
-    await userEvent.selectOptions(bedroomsSelect(), "2 BHK");
-    await userEvent.selectOptions(budgetSelect(), "Up to ₹40,000");
+    await changeField(typeSelect(), words.propertyType.house);
+    await changeField(bedroomsSelect(), "2 BHK");
+    await changeField(budgetSelect(), "Up to ₹40,000");
     await userEvent.click(screen.getByRole("button", { name: words.search }));
     expect(onSearch).toHaveBeenCalledWith({
       intent: "rent",

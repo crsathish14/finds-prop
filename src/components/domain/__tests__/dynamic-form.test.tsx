@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { DynamicForm, type DynamicFormField } from "../dynamic-form";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const words = messages.domain.dynamicForm;
 
@@ -44,11 +45,7 @@ describe("DynamicForm: the fields of a stored form (S5-T05, BR-60)", () => {
   it("offers a dropdown's own choices after an empty one, and counts a message that has a limit", async () => {
     renderWithMessages(<DynamicForm fields={CONTACT} />);
     const select = screen.getByLabelText(/I am interested in/);
-    expect(Array.from((select as HTMLSelectElement).options).map((option) => option.text)).toEqual([
-      words.choose,
-      "Buy",
-      "Rent",
-    ]);
+    expect(await optionTexts(select)).toEqual([words.choose, "Buy", "Rent"]);
     const message = screen.getByLabelText(/Message/);
     expect(message).toHaveAttribute("maxlength", "100");
     await userEvent.type(message, "Hello");
@@ -70,7 +67,7 @@ describe("DynamicForm: the fields of a stored form (S5-T05, BR-60)", () => {
     renderWithMessages(<DynamicForm fields={CONTACT} onSubmit={onSubmit} />);
     await userEvent.type(screen.getByLabelText(/Your name/), "Priya Raman");
     await userEvent.type(screen.getByLabelText(/Mobile/), "98400 12345");
-    await userEvent.selectOptions(screen.getByLabelText(/I am interested in/), "Rent");
+    await changeField(screen.getByLabelText(/I am interested in/), "Rent");
     await userEvent.click(screen.getByRole("button", { name: words.send }));
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Priya Raman",

@@ -45,7 +45,7 @@ export const COMPONENTS: LabEntry[] = [
     sources: [
       "ui/input.tsx",
       "ui/textarea.tsx",
-      "ui/native-select.tsx",
+      "ui/select.tsx",
       "ui/checkbox.tsx",
       "ui/radio-group.tsx",
       "ui/switch.tsx",

@@ -9,7 +9,7 @@
  *   box or the area chooser as `box`.
  * Props: mode ("search" the owner is finding the address | "area" the owner is choosing the area | "found" a
  *   place is held), box (the place search box in "search", the area chooser in "area"; a Combobox with
- *   usePlacePanel and a NativeSelect of areas), found ({ label, detail, approximate }), onChange (the
+ *   usePlacePanel and a Select of areas), found ({ label, detail, approximate }), onChange (the
  *   "Change" button of "found"), onChooseArea ("I can't find it"), onSearchAddress ("Search for the address
  *   instead"), unavailable (suggestions cannot be fetched: a warning is shown and the area is asked for),
  *   showError (the form was sent with no place: "Add a location to continue."), errorText (other words

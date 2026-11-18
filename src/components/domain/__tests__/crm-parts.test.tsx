@@ -12,6 +12,7 @@ import { CrmLogsTable, type CrmLogRow } from "../crm-logs-table";
 import { CrmRowsEditor, type CrmRow } from "../crm-rows-editor";
 import { SubmissionDetail, type SubmissionDetailProps } from "../submission-detail";
 import { SubmissionsTable, type SubmissionRow } from "../submissions-table";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const WORDS = {
   endpoint: "Endpoint",
@@ -327,11 +328,11 @@ describe("CrmConnectionFields: the Connection box (S7-T09, BR-65)", () => {
     expect(screen.getByLabelText(/^Base URL/)).toBeRequired();
   });
 
-  it("tells what is typed, chosen and switched, by box", () => {
+  it("tells what is typed, chosen and switched, by box", async () => {
     const onChange = draw();
-    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: "Backup CRM" } });
+    await changeField(screen.getByLabelText(/^Name/), "Backup CRM");
     expect(onChange).toHaveBeenCalledWith("name", "Backup CRM");
-    fireEvent.change(screen.getByLabelText("HTTP method"), { target: { value: "PUT" } });
+    await changeField(screen.getByLabelText("HTTP method"), "PUT");
     expect(onChange).toHaveBeenCalledWith("method", "PUT");
     fireEvent.click(screen.getByRole("switch"));
     expect(onChange).toHaveBeenCalledWith("active", false);
@@ -402,13 +403,13 @@ describe("CrmCredentialField: a secret that is never shown (S7-T09, BR-64)", () 
     expect(onModeChange).toHaveBeenLastCalledWith("clear");
   });
 
-  it("while replacing, is a password box that does not autofill, with Cancel to keep the saved one", () => {
+  it("while replacing, is a password box that does not autofill, with Cancel to keep the saved one", async () => {
     const { onModeChange, onValueChange } = draw({ mode: "replace", value: "abc" });
     const box = screen.getByLabelText("API key");
     expect(box).toHaveAttribute("type", "password");
     expect(box).toHaveAttribute("autocomplete", "new-password");
     expect(box).toHaveValue("abc");
-    fireEvent.change(box, { target: { value: "abcd" } });
+    await changeField(box, "abcd");
     expect(onValueChange).toHaveBeenCalledWith("abcd");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(onModeChange).toHaveBeenCalledWith("keep");
@@ -483,11 +484,11 @@ describe("CrmRowsEditor: headers, body mapping and project codes (S7-T09)", () =
     expect(screen.getByLabelText("Header value")).toHaveValue("findprop");
   });
 
-  it("tells which row and which side changed, adds, and removes by the row's id", () => {
+  it("tells which row and which side changed, adds, and removes by the row's id", async () => {
     const { onChange, onAdd, onRemove } = draw();
-    fireEvent.change(screen.getByLabelText("Header name"), { target: { value: "X-Other" } });
+    await changeField(screen.getByLabelText("Header name"), "X-Other");
     expect(onChange).toHaveBeenCalledWith("h1", "first", "X-Other");
-    fireEvent.change(screen.getByLabelText("Header value"), { target: { value: "v" } });
+    await changeField(screen.getByLabelText("Header value"), "v");
     expect(onChange).toHaveBeenCalledWith("h1", "second", "v");
     fireEvent.click(screen.getByRole("button", { name: "Add header" }));
     expect(onAdd).toHaveBeenCalledTimes(1);
@@ -501,7 +502,7 @@ describe("CrmRowsEditor: headers, body mapping and project codes (S7-T09)", () =
     expect(screen.getByRole("button", { name: "Add header" })).toBeVisible();
   });
 
-  it("makes the first box a list when it is given choices, with a first choice that says to pick", () => {
+  it("makes the first box a list when it is given choices, with a first choice that says to pick", async () => {
     const { onChange } = draw({
       rows: [row("c1", { first: "vista", second: "KV-01" })],
       firstLabel: "Project",
@@ -513,10 +514,10 @@ describe("CrmRowsEditor: headers, body mapping and project codes (S7-T09)", () =
       choose: "Choose a project",
     });
     const list = screen.getByLabelText("Project");
-    expect(list.tagName).toBe("SELECT");
+    expect(list).toHaveAttribute("data-slot", "select");
     expect(list).toHaveValue("vista");
-    expect(within(list).getByRole("option", { name: "Choose a project" })).toBeInTheDocument();
-    fireEvent.change(list, { target: { value: "courts" } });
+    expect(await optionTexts(list)).toContain("Choose a project");
+    await changeField(list, "courts");
     expect(onChange).toHaveBeenCalledWith("c1", "first", "courts");
   });
 

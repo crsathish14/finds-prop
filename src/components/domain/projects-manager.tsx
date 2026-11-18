@@ -25,7 +25,7 @@
  *   alone.
  * States: any number of rows; pending, approved (published or not), featured, rejected, draft; a button that is
  *   working; no picture (a drawn tile); a long name; admin and builder mode; nothing yet.
- * Dependencies: ResponsiveTable, Tabs, DropdownMenu, EmptyState, Alert, Button, Input, NativeSelect, CardCover.
+ * Dependencies: ResponsiveTable, Tabs, DropdownMenu, EmptyState, Alert, Button, Input, Select, CardCover.
  *   Tests: projects-manager.test.tsx; Design Lab "Admin" (S7-T01).
  * UX reference: admin-projects and builder-projects screens (fp-projectspage).
  */
@@ -63,7 +63,7 @@ import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { cn } from "@/lib/cn";
@@ -351,7 +351,7 @@ function ProjectsManager({
           </div>
           {admin && builderFilter ? (
             <div className="md:w-60">
-              <NativeSelect
+              <Select
                 aria-label={builderFilter.label}
                 value={builderFilter.value}
                 onChange={(event) => builderFilter.onChange(event.target.value)}
@@ -362,7 +362,7 @@ function ProjectsManager({
                     {option.label}
                   </option>
                 ))}
-              </NativeSelect>
+              </Select>
             </div>
           ) : null}
         </div>

@@ -18,7 +18,7 @@
  *   items are named "Grid view" and "List view"; every chip has its own remove button named for the
  *   filter ("Remove filter: 3 BHK"); the label choice is a group of toggle chips with aria-pressed.
  * States: default; a chip set with and without filters; the label choice on each value.
- * Dependencies: NativeSelect, SegmentedControl, RemovableChip, Chip, Button, search-options, next-intl.
+ * Dependencies: Select, SegmentedControl, RemovableChip, Chip, Button, search-options, next-intl.
  * Tests: results.test.tsx; Design Lab "Domain" (S4-T04).
  * UX reference: search screen, results bar (.rbar, .sortsel, .view-toggle, .active-chips, quick label
  *   filter). Not as drawn: the open sort list is the browser's own list (like the sheet's), the
@@ -31,7 +31,7 @@ import { useId, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { RemovableChip } from "@/components/ui/removable-chip";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/cn";
@@ -75,7 +75,7 @@ function ResultsBar({
             {translate("domain.filters.sortLabel")}
           </label>
           <div className="min-w-0 flex-1 md:w-52 md:flex-none">
-            <NativeSelect
+            <Select
               id={sortId}
               value={sort}
               onChange={(event) => onSortChange(parseSort(event.target.value))}
@@ -85,7 +85,7 @@ function ResultsBar({
                   {translate(SORT_WORDS[option])}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </div>
           <SegmentedControl
             size="sm"

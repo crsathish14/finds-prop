@@ -41,16 +41,9 @@
  * Tests: search-card.test.tsx; Design Lab "Domain" (S4-T01).
  * UX reference: search card on home-a and home-b, ds-components "Search card" (c-cards.css .search).
  */
-import { ArrowRight, ChevronDown, MapPin, Search, Sparkles } from "lucide-react";
+import { ArrowRight, MapPin, Search, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  useId,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   Combobox,
   type ComboboxOption,
@@ -61,6 +54,7 @@ import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Select, type SelectChangeEvent } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 import { formatPrice, type Translate } from "@/lib/format";
 import {
@@ -162,14 +156,14 @@ type SelectFieldProps = {
   fullLabel: string;
   shortLabel?: string;
   value: string;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  onChange: (event: SelectChangeEvent) => void;
   wide: boolean;
   className?: string;
   children: ReactNode;
 };
 
 /**
- * A native select drawn inside the field box, so the phone's own picker opens. It is named in full
+ * A select drawn inside the field box, opening the site's own list. It is named in full
  * (aria-label) even where the visible label is the short word.
  */
 function SelectField({
@@ -185,27 +179,9 @@ function SelectField({
   return (
     <div className={cn(fieldBox(wide), className)}>
       <FieldLabel htmlFor={id} full={fullLabel} short={shortLabel} />
-      {/* On a phone the chevron sits in the field's top corner (as in the UX), freeing the width for the value. */}
-      <div className="@xl:relative">
-        <select
-          id={id}
-          aria-label={fullLabel}
-          value={value}
-          onChange={onChange}
-          className={cn(
-            "h-6 w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent @max-xs:pr-4 text-small font-semibold text-ink @xl:pr-6 @xl:text-body",
-            "focus-visible:outline-0",
-            value === "" && "font-normal text-muted",
-          )}
-        >
-          {children}
-        </select>
-        <Icon
-          icon={ChevronDown}
-          size="sm"
-          className="pointer-events-none absolute top-2 right-1 size-3 text-muted @max-xs:top-auto @max-xs:bottom-3 @xl:top-1/2 @xl:right-0 @xl:size-4 @xl:-translate-y-1/2"
-        />
-      </div>
+      <Select id={id} variant="inline" aria-label={fullLabel} value={value} onChange={onChange}>
+        {children}
+      </Select>
     </div>
   );
 }
