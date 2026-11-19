@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
@@ -11,6 +11,7 @@ import {
   ResultsLoadMore,
   ResultsSkeleton,
 } from "../results-list";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 function bar(overrides: Partial<Parameters<typeof ResultsBar>[0]> = {}) {
   const onSortChange = vi.fn();
@@ -31,12 +32,13 @@ describe("ResultsBar: sort and view (S4-T04)", () => {
   it("offers the four sort orders in a select named Sort by", async () => {
     const { onSortChange } = bar();
     const select = screen.getByRole("combobox", { name: "Sort by" });
-    expect(
-      within(select)
-        .getAllByRole("option")
-        .map((option) => option.textContent),
-    ).toEqual(["Newest", "Price: low to high", "Price: high to low", "Largest first"]);
-    await userEvent.selectOptions(select, "price_desc");
+    expect(await optionTexts(select)).toEqual([
+      "Newest",
+      "Price: low to high",
+      "Price: high to low",
+      "Largest first",
+    ]);
+    await changeField(select, "price_desc");
     expect(onSortChange).toHaveBeenCalledWith("price_desc");
   });
 

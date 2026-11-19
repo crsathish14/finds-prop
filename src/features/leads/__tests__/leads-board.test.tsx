@@ -6,6 +6,7 @@ import en from "@/i18n/messages/en.json";
 import type { CrmFilter, SubmissionRange } from "../constants";
 import type { LeadsBoardActions } from "../leads-board.client";
 import type { LeadCounts, LeadView, LeadsPage, SubmissionView, SubmissionsPage } from "../view";
+import { changeField } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -205,7 +206,7 @@ describe("LeadsBoard: the Project leads tab (S7-T07)", () => {
   it("saves a state as soon as it is chosen and shows the new one", async () => {
     const given = leadsTab();
     const box = screen.getByRole("combobox", { name: "Status for Person 1" });
-    fireEvent.change(box, { target: { value: "contacted" } });
+    await changeField(box, "contacted");
     await waitFor(() =>
       expect(given.setStatus).toHaveBeenCalledWith({
         leadId: "1",
@@ -224,7 +225,7 @@ describe("LeadsBoard: the Project leads tab (S7-T07)", () => {
       }),
     );
     const box = screen.getByRole("combobox", { name: "Status for Person 1" });
-    fireEvent.change(box, { target: { value: "closed" } });
+    await changeField(box, "closed");
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(words.conflict));
     expect(box).toHaveValue("new");
     expect(router.refresh).toHaveBeenCalled();
@@ -260,17 +261,13 @@ describe("LeadsBoard: the Form submissions tab (S7-T07)", () => {
     expect(screen.getByText(words.submissions.note)).toBeVisible();
   });
 
-  it("goes to the address for a filter choice, keeping the other choices, and drops a choice put back to its default", () => {
+  it("goes to the address for a filter choice, keeping the other choices, and drops a choice put back to its default", async () => {
     submissionsTab({}, { crm: "failed", project: "p1" });
-    fireEvent.change(screen.getByLabelText(words.submissions.filters.range), {
-      target: { value: "7" },
-    });
+    await changeField(screen.getByLabelText(words.submissions.filters.range), "7");
     expect(router.push).toHaveBeenLastCalledWith(
       "/admin/leads?tab=submissions&range=7&project=p1&crm=failed",
     );
-    fireEvent.change(screen.getByLabelText(words.submissions.filters.project), {
-      target: { value: "" },
-    });
+    await changeField(screen.getByLabelText(words.submissions.filters.project), "");
     expect(router.push).toHaveBeenLastCalledWith("/admin/leads?tab=submissions&crm=failed");
   });
 

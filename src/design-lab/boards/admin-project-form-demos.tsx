@@ -17,7 +17,7 @@ import {
 } from "@/components/domain/project-section-nav";
 import { Alert } from "@/components/patterns/alert";
 import { TagListField, type TagListWords } from "@/components/patterns/tag-list-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Specimen } from "../frame";
 import { LabPlacePicker } from "./admin-place-picker-demos";
 
@@ -263,14 +263,14 @@ function LiveForm({
                   title="Enquiry form"
                   text="Which form buyers see on the project page. If none is chosen, the standard enquiry form is used."
                 >
-                  <NativeSelect
+                  <Select
                     aria-label="Enquiry form"
                     value={formId}
                     onChange={(event) => setFormId(event.target.value)}
                   >
                     <option value="">Standard enquiry form</option>
                     <option value="f1">Kadal Vista site-visit form</option>
-                  </NativeSelect>
+                  </Select>
                 </SideBox>
               ),
             })}

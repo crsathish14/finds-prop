@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { FormField } from "../form-field";
 import { OtpInput } from "../otp-input";
 import { PasswordField } from "../password-field";
@@ -38,9 +38,9 @@ describe("FormField", () => {
   it("uses an id you give it, and works with a select", () => {
     render(
       <FormField label="Bedrooms" id="bedrooms">
-        <NativeSelect>
+        <Select>
           <option>1</option>
-        </NativeSelect>
+        </Select>
       </FormField>,
     );
     expect(screen.getByLabelText("Bedrooms")).toHaveAttribute("id", "bedrooms");

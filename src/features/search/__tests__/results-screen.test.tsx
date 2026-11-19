@@ -8,6 +8,7 @@ import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { parseSearchParams } from "../params";
 import { ResultsScreen } from "../results-screen";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const replace = vi.fn();
 const push = vi.fn();
@@ -151,7 +152,7 @@ describe("ResultsScreen: every choice writes the address (S4-T04)", () => {
 
   it("changes the sort order and starts again from the first page", async () => {
     renderScreen({ params: parseSearchParams({ show: "36", bhk: "2" }) });
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Sort by" }), "price_desc");
+    await changeField(screen.getByRole("combobox", { name: "Sort by" }), "price_desc");
     expect(replace.mock.calls[0]?.[0]).toBe("/properties?bhk=2&sort=price_desc");
   });
 
@@ -295,7 +296,7 @@ describe("ResultsScreen: the list and its states (S4-T04)", () => {
   it("navigates nowhere in the Design Lab preview", async () => {
     renderScreen({ preview: true });
     await userEvent.click(screen.getByRole("button", { name: "Remove filter: 3 BHK" }));
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Sort by" }), "price_asc");
+    await changeField(screen.getByRole("combobox", { name: "Sort by" }), "price_asc");
     expect(replace).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
   });
@@ -376,8 +377,8 @@ describe("ResultsScreen: the nearby choices of a place search (ADR-137)", () => 
   it("offers Nearest first in the sort only with a place, and writes sort=distance", async () => {
     const placed = renderScreen();
     const sort = screen.getByRole("combobox", { name: "Sort by" });
-    expect(within(sort).getByRole("option", { name: "Nearest first" })).toBeInTheDocument();
-    await userEvent.selectOptions(sort, "distance");
+    expect(await optionTexts(sort)).toContain("Nearest first");
+    await changeField(sort, "distance");
     expect(replace.mock.calls[0]?.[0]).toContain("sort=distance");
     placed.unmount();
     renderScreen({ params: parseSearchParams({ locality: "Adyar" }) });
@@ -392,11 +393,9 @@ describe("ResultsScreen: the nearby choices of a place search (ADR-137)", () => 
     const placed = renderScreen();
     await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filters" });
-    expect(
-      within(within(sheet).getByRole("combobox", { name: "Sort by" })).getByRole("option", {
-        name: "Nearest first",
-      }),
-    ).toBeInTheDocument();
+    expect(await optionTexts(within(sheet).getByRole("combobox", { name: "Sort by" }))).toContain(
+      "Nearest first",
+    );
     placed.unmount();
     renderScreen({ params: parseSearchParams({}) });
     await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
@@ -417,7 +416,7 @@ describe("ResultsScreen: the nearby choices of a place search (ADR-137)", () => 
         sort: "distance",
       }),
     });
-    expect(screen.getByRole("combobox", { name: "Sort by" })).toHaveDisplayValue("Nearest first");
+    expect(screen.getByRole("combobox", { name: "Sort by" })).toHaveTextContent("Nearest first");
   });
 });
 

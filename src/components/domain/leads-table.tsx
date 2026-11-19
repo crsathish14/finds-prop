@@ -17,7 +17,7 @@
  *   what it is; each state box has its own name that includes the person; the state is also a word in the box.
  * States: any number of rows; new, contacted, closed; no email or no message (a dash); a long name, email and
  *   message; a state box that is saving (off).
- * Dependencies: ResponsiveTable, NativeSelect, cn. Tests: leads-table.test.tsx; Design Lab "Admin" (S7-T01).
+ * Dependencies: ResponsiveTable, Select, cn. Tests: leads-table.test.tsx; Design Lab "Admin" (S7-T01).
  * UX reference: admin-leads and builder-leads screens (fp-leadspage, project leads).
  */
 import type { ReactNode } from "react";
@@ -26,7 +26,7 @@ import {
   type ResponsiveTableColumn,
   type ResponsiveTableRow,
 } from "@/components/patterns/responsive-table";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 type LeadRow = {
@@ -100,7 +100,7 @@ function LeadsTable({ caption, columns, rows, countText, note, className }: Lead
         </span>
       ),
       status: (
-        <NativeSelect
+        <Select
           aria-label={row.status.label}
           value={row.status.value}
           disabled={row.status.disabled ?? false}
@@ -112,7 +112,7 @@ function LeadsTable({ caption, columns, rows, countText, note, className }: Lead
               {option.label}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       ),
     },
   }));

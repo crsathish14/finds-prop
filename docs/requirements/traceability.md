@@ -30,6 +30,10 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-PUB-13  | Not-found and error pages          | `app`, `components/ui`           | S1-T10, S2-T08                                                                  | `errors`                      | E20                                                                     |
 | FR-PUB-14  | SEO and metadata                   | `seo`                            | S4-T10 (ADR-047)                                                                | n/a                           | SEO checks (`08` §7); unit and smoke tests                              |
 | FR-PUB-15  | Header, footer, drawer, bottom bar | `components/layout`, `site`      | S2-T06, S4-T06                                                                  | `ds-navigation`               | E17, UT-components                                                      |
+| FR-PUB-16  | Blog                               | `blog` (new)                     | ADR-143 ph. 3                                                                   | Lab, to design                | UT-blog, DB-RLS-blog, E-blog                                            |
+| FR-PUB-17  | FAQ                                | `faq` (new)                      | ADR-143 ph. 2                                                                   | Lab, to design                | UT-faq, DB-RLS-faq, E-faq                                               |
+| FR-PUB-18  | Careers                            | `careers` (new)                  | ADR-143 ph. 4                                                                   | Lab, to design                | UT-careers, DB-RLS-careers, E-careers                                   |
+| FR-PUB-19  | AI chat content tools              | `ai-chat`, content modules       | ADR-143 ph. 5                                                                   | ADD-14 to 17, sources: design | UT-ai-tool-search-content, UT-ai-tool-search-jobs, evals                |
 
 ### Location and maps
 
@@ -104,6 +108,10 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-ADM-10 | CMS                              | `site`, `site-content`             | S7-T10         | `admin-cms`                      | IT-sponsors, E15                                                                      |
 | FR-ADM-11 | Hero layout setting and sponsors | `site`, `sponsors`, `site-content` | S7-T10, S7-T11 | `admin-cms#hero`, ADD-11         | IT-sponsors, UT-sponsors-panel, E09, E15                                              |
 | FR-ADM-12 | Banner management                | `sponsors`                         | S7-T11         | Partial (`admin-cms#hero`) + Gap | IT-sponsors, E15                                                                      |
+| FR-ADM-13 | Blog management                  | `blog`, `admin`                    | ADR-143 ph. 3  | Lab, to design                   | UT-blog-editor, IT-blog, DB-RLS-blog                                                  |
+| FR-ADM-14 | FAQ management                   | `faq`, `admin`                     | ADR-143 ph. 2  | Lab, to design                   | UT-faq-manager, IT-faq, DB-RLS-faq                                                    |
+| FR-ADM-15 | Careers management               | `careers`, `admin`                 | ADR-143 ph. 4  | Lab, to design                   | UT-jobs-manager, IT-careers, DB-RLS-careers                                           |
+| FR-ADM-16 | Content module switches          | `site-content`, `admin`            | ADR-143 ph. 1  | Overview card, design            | UT-module-switch, IT-module-switch, E-modules                                         |
 
 ### Cross-cutting and gated
 

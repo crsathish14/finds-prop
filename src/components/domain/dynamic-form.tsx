@@ -23,7 +23,7 @@
  *   it has none), textarea, date. A file field draws nothing yet: the upload step comes in its own change
  *   (ADR-054), and the server takes no answer for one in the meantime.
  * States: default, filled, errors, send failed, limit reached, sending. Dependencies: FormField, Input,
- *   Textarea, NativeSelect, Checkbox, RadioGroup, Label, Alert, Button, Icon, next-intl, cn.
+ *   Textarea, Select, Checkbox, RadioGroup, Label, Alert, Button, Icon, next-intl, cn.
  * Tests: dynamic-form.test.tsx; Design Lab "Discovery" (S5-T05).
  * UX reference: contact screen (form-grid two, field, label, select, textarea).
  */
@@ -45,7 +45,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -197,7 +197,7 @@ function DynamicForm({
     }
     if (field.type === "dropdown") {
       return (
-        <NativeSelect
+        <Select
           name={field.key}
           value={text}
           onChange={(event) => change(field.key, event.target.value)}
@@ -208,7 +208,7 @@ function DynamicForm({
               {option}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       );
     }
     if (field.type === "number") {

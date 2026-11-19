@@ -8,6 +8,7 @@ import type { ActionResult } from "@/types/action";
 import type { MediaStorage } from "../media-storage";
 import type { ProjectDone } from "../project-service";
 import type { ProjectEditView } from "../view";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -187,7 +188,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
   it("creates the project with its boxes only, then opens its edit page", async () => {
     const { save } = open();
     await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
+    await changeField(
       screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
       BUILDER_ID,
     );
@@ -222,7 +223,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
     }));
     open({ save });
     await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
+    await changeField(
       screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
       BUILDER_ID,
     );
@@ -241,7 +242,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
     }));
     open({ save });
     await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
+    await changeField(
       screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
       BUILDER_ID,
     );
@@ -259,16 +260,12 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
 });
 
 describe("ProjectForm: a saved project, for the admin (S7-T02, part C)", () => {
-  it("opens filled, with its builder as the only choice, the enquiry form box and the price trends", () => {
+  it("opens filled, with its builder as the only choice, the enquiry form box and the price trends", async () => {
     open({ project: saved });
     expect(screen.getByRole("heading", { level: 1, name: "Kadal Vista" })).toBeVisible();
     expect((box(words.fields.name) as HTMLInputElement).value).toBe("Kadal Vista");
     const builder = screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) });
-    expect(
-      within(builder)
-        .getAllByRole("option")
-        .map((option) => option.textContent),
-    ).toEqual([words.fields.unset, "Kadal Homes"]);
+    expect(await optionTexts(builder)).toEqual([words.fields.unset, "Kadal Homes"]);
     const trends = screen.getByRole("group", { name: words.trends.title });
     expect((within(trends).getByLabelText("Month 1") as HTMLInputElement).value).toBe("2026-10");
     expect(screen.queryByText(words.media.locked)).toBeNull();
@@ -385,7 +382,7 @@ describe("ProjectForm: a saved project, for the admin (S7-T02, part C)", () => {
     fireEvent.change(within(trends).getByLabelText("₹ per sq.ft 2"), {
       target: { value: "eight" },
     });
-    fireEvent.change(within(trends).getByLabelText("Month 2"), { target: { value: "2026-10" } });
+    await changeField(within(trends).getByLabelText("Month 2"), "2026-10");
     await userEvent.click(saveButton());
     expect(save).not.toHaveBeenCalled();
     expect(await within(trends).findByText(words.trends.errors.monthTwice)).toBeVisible();

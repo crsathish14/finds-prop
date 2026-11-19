@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { ProjectLeadsActions } from "../project-leads-panel.client";
 import type { LeadView } from "../view";
+import { changeField } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -63,9 +64,7 @@ describe("BuilderLeadsBoard: the builder's Leads page (S7-T03)", () => {
 
   it("saves a state through the builder's own action as soon as it is chosen", async () => {
     const actions = open();
-    fireEvent.change(screen.getByRole("combobox", { name: "Status for Person 1" }), {
-      target: { value: "contacted" },
-    });
+    await changeField(screen.getByRole("combobox", { name: "Status for Person 1" }), "contacted");
     await waitFor(() =>
       expect(actions.setStatus).toHaveBeenCalledWith({ leadId: "1", status: "contacted" }),
     );
