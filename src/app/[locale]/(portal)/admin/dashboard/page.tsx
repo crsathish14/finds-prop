@@ -9,7 +9,13 @@ import {
   type PlacesUsageState,
   type ResolvedOverviewRange,
 } from "@/features/admin-overview";
+import {
+  ContentModulesSection,
+  getContentModulesView,
+  type ContentModulesView,
+} from "@/features/content-modules";
 import { getTranslate } from "@/features/site";
+import { saveContentModules } from "@/features/site-content";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -32,6 +38,8 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
  * read does not throw: the page says so and offers to try again (and keeps the numbers that last arrived). Under the
  * charts sits the place search card, our own count of calls to Ola Maps over the last 30 days (PR 6b of the Ola Maps
  * plan, ADR-134); it is read on its own, so a failure there shows its own failed block and leaves the rest as it is.
+ * Last comes the Content modules card (ADR-143): a switch for Blog, FAQ and Careers with the counts of their items; if
+ * it cannot be read, the card is left out and the rest of the page is as it was.
  */
 export default async function AdminOverviewPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -40,13 +48,20 @@ export default async function AdminOverviewPage({ searchParams }: PageProps) {
     { range: first(params.range), from: first(params.from), to: first(params.to) },
     now,
   );
-  const [state, placesUsage] = await Promise.all([readOverview(range, now), readPlacesUsage(now)]);
+  const [state, placesUsage, modules] = await Promise.all([
+    readOverview(range, now),
+    readPlacesUsage(now),
+    readContentModules(),
+  ]);
   return (
     <AdminOverview
       path="/admin/dashboard"
       state={state}
       filters={range}
       placesUsage={placesUsage}
+      contentModules={
+        modules ? <ContentModulesSection modules={modules} save={saveContentModules} /> : null
+      }
     />
   );
 }
@@ -68,5 +83,14 @@ async function readPlacesUsage(now: Date): Promise<PlacesUsageState> {
   } catch (problem) {
     unstable_rethrow(problem);
     return { ok: false };
+  }
+}
+
+async function readContentModules(): Promise<ContentModulesView | null> {
+  try {
+    return await getContentModulesView();
+  } catch (problem) {
+    unstable_rethrow(problem);
+    return null;
   }
 }

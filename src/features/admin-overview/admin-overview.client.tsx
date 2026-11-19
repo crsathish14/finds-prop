@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import {
   InsightsPanel,
   type InsightsGroup,
@@ -56,6 +56,8 @@ type AdminOverviewProps = {
   filters: ResolvedOverviewRange;
   /** The place search card under the charts (PR 6b of the Ola Maps plan); left out, there is no such section. */
   placesUsage?: PlacesUsageState;
+  /** The Content modules card (ADR-143), built by the page; left out, there is no such section. It sits last. */
+  contentModules?: ReactNode;
 };
 
 type Shown = { overview: Overview; range: ResolvedOverviewRange };
@@ -77,7 +79,13 @@ function initialsOf(name: string): string {
  * that did arrive stay under a notice with a way to try again; with none, the notice is all there is. It keeps nothing
  * the server does not also know.
  */
-export function AdminOverview({ path, state, filters, placesUsage }: AdminOverviewProps) {
+export function AdminOverview({
+  path,
+  state,
+  filters,
+  placesUsage,
+  contentModules,
+}: AdminOverviewProps) {
   const translate = useTranslations("admin.overview");
   const common = useTranslations("common");
   const locale = useLocale();
@@ -252,6 +260,7 @@ export function AdminOverview({ path, state, filters, placesUsage }: AdminOvervi
         </div>
       ) : null}
       {placesUsage ? <PlacesUsageSection state={placesUsage} /> : null}
+      {contentModules}
     </InsightsPanel>
   );
 }

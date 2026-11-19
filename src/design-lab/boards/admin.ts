@@ -25,6 +25,7 @@ import {
 import { ListingQueueDemo, ListingReviewDemo, RejectDialogDemo } from "./admin-demos";
 import { PlacesUsageDemo } from "./admin-places-usage-demos";
 import { PlacePickerDemo } from "./admin-place-picker-demos";
+import { ContentModuleBarDemo, ContentModulesCardDemo } from "./admin-content-modules-demos";
 
 /**
  * What the admin uses to review the listings owners post (S6-T04) and to invite and manage builders (S7-T05).
@@ -234,5 +235,21 @@ export const ADMIN: LabEntry[] = [
       "The place search box of the admin and builder forms (ADR-140): search for an area and choose it, and the latitude and longitude boxes fill (they stay editable, and are what is saved). The same three characters, 300 ms pause, rows and Ola Maps credit as the search box. Shown empty, typing, with results open, picked (a line says the boxes were filled), unavailable (the panel says to type the numbers instead), inside a row of the homepage localities (the approved screen) and inside the project form's Location section (new, for approval).",
     sources: ["domain/place-picker.tsx"],
     Demo: PlacePickerDemo,
+  },
+  {
+    id: "content-modules-card",
+    name: "Content modules card",
+    description:
+      "The admin dashboard card that switches Blog, FAQ and Careers on and off (ADR-143): a row per module with its switch, a Live or Hidden label, the counts of published and draft items (a dash when not available yet) and one sentence of what turning it off does. Turning a module off asks first; turning it on does not. Shown with a try-it card, a hidden module that was just saved, a save in progress (every switch off until it ends), a failed save and counts not available yet. The Blog, FAQ and Careers tracks add their admin lists and editors to this board.",
+    sources: ["domain/content-modules-card.tsx"],
+    Demo: ContentModulesCardDemo,
+  },
+  {
+    id: "content-module-bar",
+    name: "Content module switch bar",
+    description:
+      "The same switch as a bar at the top of each module's admin page (ADR-143), for the one module of the page: the switch with its label, Live or Hidden, the counts and the sentence about turning it off, and the question before hiding a module. Shown live, hidden and saved, counts not available, saving, a failed save and large counts on a narrow area. The module pages keep this bar at their top while their lists and editors are built under it.",
+    sources: ["domain/content-module-bar.tsx", "patterns/confirm-dialog.tsx"],
+    Demo: ContentModuleBarDemo,
   },
 ];
