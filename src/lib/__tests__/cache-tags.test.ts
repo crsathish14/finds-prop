@@ -118,6 +118,7 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
     ...tagsAfterProjectChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterSiteSettingsChange(),
     ...tagsAfterFormChange(),
+    ...tagsAfterContentCategoryChange(),
   ]);
 
   it("finds the cached reads", () => {
@@ -135,6 +136,11 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
           expect(REFRESHED, `${file}: ${part}`).toContain("property:");
         } else if (/^projectTag\(/.test(part)) {
           expect(REFRESHED, `${file}: ${part}`).toContain("project:");
+        } else if (/^categoryTag\(/.test(part)) {
+          // a content category list is tagged blog, faq or careers, and a category change refreshes all three
+          for (const tag of [CACHE_TAGS.blog, CACHE_TAGS.faq, CACHE_TAGS.careers]) {
+            expect(REFRESHED, `${file}: ${part}`).toContain(tag);
+          }
         } else {
           expect.fail(`${file}: cacheTag(${part}) is not a central tag (src/lib/cache-tags.ts)`);
         }
