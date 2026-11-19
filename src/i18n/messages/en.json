@@ -1448,6 +1448,48 @@
       "homepage": "Homepage",
       "footer": "Footer"
     },
+    "contentModules": {
+      "title": "Content modules",
+      "description": "Turn the Blog, FAQ and Careers sections on or off for visitors. Your content is kept while a section is hidden.",
+      "switchLabel": "Show {name} on the site",
+      "barLabel": "{name} switch",
+      "saving": "Saving the change",
+      "status": {
+        "live": "Live",
+        "hidden": "Hidden"
+      },
+      "counts": {
+        "published": "Published",
+        "drafts": "Drafts",
+        "unavailable": "Not available yet"
+      },
+      "blog": {
+        "name": "Blog",
+        "effect": "Hides /blog from the site, menus, sitemap and the AI assistant."
+      },
+      "faq": {
+        "name": "FAQ",
+        "effect": "Hides /faq from the site, menus, sitemap and the AI assistant."
+      },
+      "careers": {
+        "name": "Careers",
+        "effect": "Hides /careers from the site, menus, sitemap and the AI assistant."
+      },
+      "saved": {
+        "live": "{name} is now live on the site.",
+        "hidden": "{name} is now hidden from the site."
+      },
+      "error": {
+        "turnOn": "{name} could not be turned on, so it is still hidden.",
+        "turnOff": "{name} could not be turned off, so it is still live."
+      },
+      "confirm": {
+        "title": "Hide {name} from the site?",
+        "text": "Visitors will see a page not found for {name}, and it leaves the menus, the sitemap and the AI assistant. Nothing is deleted, and you can turn it back on at any time.",
+        "confirm": "Hide {name}",
+        "cancel": "Keep it live"
+      }
+    },
     "listings": {
       "metaTitle": "Listings",
       "title": "Listings",
