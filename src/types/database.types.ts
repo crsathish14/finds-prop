@@ -91,7 +91,7 @@ export type Database = {
                     "active"?: boolean,"created_at"?: string,"id"?: string,"module"?: string,"name"?: string,"slug"?: string,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"crm_api_logs": {
                   Row: {
