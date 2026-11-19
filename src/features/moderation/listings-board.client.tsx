@@ -13,7 +13,7 @@ import { StatusBadge } from "@/components/patterns/status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/patterns/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { PROPERTY_TYPES, PROPERTY_TYPE_WORDS, type PropertyType } from "@/config/search-options";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { formatArea, formatDate, formatPrice, formatRent, formatTime } from "@/lib/format";
@@ -401,7 +401,7 @@ export function ListingsBoard({
         </TabsList>
         <div className="flex flex-col gap-3 py-4 md:flex-row">
           <div className="md:w-60">
-            <NativeSelect
+            <Select
               aria-label={translate("filters.localityLabel")}
               value={filters.locality ?? ""}
               onChange={(event) => navigate({ locality: event.target.value || undefined })}
@@ -412,10 +412,10 @@ export function ListingsBoard({
                   {place}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </div>
           <div className="md:w-60">
-            <NativeSelect
+            <Select
               aria-label={translate("filters.kindLabel")}
               value={filters.kind ?? ""}
               onChange={(event) => {
@@ -426,7 +426,7 @@ export function ListingsBoard({
               <option value="">{translate("filters.allKinds")}</option>
               <option value="sale">{translate("filters.sale")}</option>
               <option value="rent">{translate("filters.rent")}</option>
-            </NativeSelect>
+            </Select>
           </div>
         </div>
         <TabsContent

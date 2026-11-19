@@ -6,7 +6,7 @@ import { LocationPrompt } from "@/components/domain/location-prompt";
 import { usePlacePanel, type PlacePanelState } from "@/components/domain/place-panel";
 import { Combobox, type ComboboxOption } from "@/components/patterns/combobox";
 import { FormField } from "@/components/patterns/form-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
 
@@ -59,14 +59,14 @@ export function AddressBox({
 function AreaChooser({ chosen }: { chosen?: string }) {
   return (
     <FormField label="Area">
-      <NativeSelect defaultValue={chosen ?? ""}>
+      <Select defaultValue={chosen ?? ""}>
         <option value="">Choose the area</option>
         {AREAS.map((area) => (
           <option key={area} value={area}>
             {area}
           </option>
         ))}
-      </NativeSelect>
+      </Select>
     </FormField>
   );
 }

@@ -20,7 +20,7 @@
  *   to it with an icon; at the limit Add field and the chips are off and a note says so; the kind and Required are
  *   words, never colour alone.
  * States: no fields, some fields, one open, a row with errors (a key already used), at the limit, disabled.
- * Dependencies: SortableList, SortableRow, FormField, Input, Textarea, NativeSelect, Switch, Chip, Badge, Button,
+ * Dependencies: SortableList, SortableRow, FormField, Input, Textarea, Select, Switch, Chip, Badge, Button,
  *   IconButton, Icon, Alert, cn. Tests: form-parts.test.tsx; Design Lab "Forms" (S7-T08).
  * UX reference: admin-forms screen, editor, Fields (dnd, dnd-head, dnd-body, chip-row, badge, switch). The arrow
  *   buttons are the shared sortable row's (beside the grip), so the Move up and Move down buttons are not repeated
@@ -36,7 +36,7 @@ import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -225,13 +225,13 @@ function FormFieldsEditor({
                         />
                       </FormField>
                       <FormField label={words.type} {...error("type")}>
-                        <NativeSelect {...box("type")}>
+                        <Select {...box("type")}>
                           {types.map((type) => (
                             <option key={type.value} value={type.value}>
                               {type.label}
                             </option>
                           ))}
-                        </NativeSelect>
+                        </Select>
                       </FormField>
                       {PLACEHOLDER_TYPES.includes(field.type) ? (
                         <FormField label={words.placeholder} {...error("placeholder")}>

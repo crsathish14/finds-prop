@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { InsightsNumbers } from "../view";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
@@ -142,7 +143,7 @@ describe("BuilderInsights: the builder's Dashboard (S7-T03 step E)", () => {
 });
 
 describe("BuilderInsights: the Insights page (S7-T03 step E)", () => {
-  it("shows the Activity and Actions groups, without the portfolio, and the project box", () => {
+  it("shows the Activity and Actions groups, without the portfolio, and the project box", async () => {
     open({ variant: "insights" });
     expect(screen.getByRole("heading", { level: 1, name: words.insights.title })).toBeVisible();
     expect(screen.getByRole("region", { name: words.groups.activity })).toBeVisible();
@@ -150,29 +151,36 @@ describe("BuilderInsights: the Insights page (S7-T03 step E)", () => {
     expect(screen.queryByRole("region", { name: words.groups.portfolio })).toBeNull();
     const box = screen.getByLabelText(words.project.label);
     expect(box).toHaveValue("");
-    expect(within(box).getByRole("option", { name: words.project.all })).toBeVisible();
+    expect(await optionTexts(box)).toContain(words.project.all);
   });
 
-  it("goes to the address for a project, keeping the dates, and back to all of them", () => {
+  it("goes to the address for a project, keeping the dates, and back to all of them", async () => {
     open({ variant: "insights", filters: { ...FILTERS, range: "7", from: "2026-11-03" } });
-    fireEvent.change(screen.getByLabelText(words.project.label), { target: { value: "p2" } });
+    await changeField(screen.getByLabelText(words.project.label), "p2");
     expect(router.push).toHaveBeenCalledWith("/builder/insights?range=7&project=p2");
-    fireEvent.change(screen.getByLabelText(words.project.label), { target: { value: "" } });
+  });
+
+  it("goes back to all projects from a chosen one, keeping the dates", async () => {
+    open({
+      variant: "insights",
+      filters: { ...FILTERS, range: "7", from: "2026-11-03", project: "p2" },
+    });
+    await changeField(screen.getByLabelText(words.project.label), "");
     expect(router.push).toHaveBeenLastCalledWith("/builder/insights?range=7");
   });
 
-  it("shows the two date boxes for a custom range and reads the page again for a typed day", () => {
+  it("shows the two date boxes for a custom range and reads the page again for a typed day", async () => {
     open({
       variant: "insights",
       filters: { range: "custom", from: "2026-10-01", to: "2026-10-28", project: "" },
     });
     const from = screen.getByLabelText(words.range.from);
     expect(from).toHaveValue("2026-10-01");
-    fireEvent.change(from, { target: { value: "2026-10-05" } });
+    await changeField(from, "2026-10-05");
     expect(router.push).toHaveBeenCalledWith(
       "/builder/insights?range=custom&from=2026-10-05&to=2026-10-28",
     );
-    fireEvent.change(screen.getByLabelText(words.range.to), { target: { value: "" } });
+    await changeField(screen.getByLabelText(words.range.to), "");
     expect(router.push).toHaveBeenCalledTimes(1);
   });
 });

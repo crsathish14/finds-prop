@@ -6,6 +6,7 @@ import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { UnitsBoardActions } from "../units-board.client";
 import type { UnitView, UnitsPage } from "../view";
+import { changeField } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -112,19 +113,19 @@ describe("UnitsBoard: the admin's Units page (S7-T07)", () => {
     expect(screen.getByText(words.note)).toBeVisible();
   });
 
-  it("offers every project and the chosen one is on, and goes to another project's page when one is picked", () => {
+  it("offers every project and the chosen one is on, and goes to another project's page when one is picked", async () => {
     open();
     const box = screen.getByLabelText(words.project);
     expect(box).toHaveValue(PROJECT);
-    fireEvent.change(box, { target: { value: OTHER } });
+    await changeField(box, OTHER);
     expect(router.push).toHaveBeenCalledWith(`/admin/units?project=${OTHER}`);
   });
 
-  it("keeps its links under the path it is given, and says the line it is given (the builder's page, S7-T03)", () => {
+  it("keeps its links under the path it is given, and says the line it is given (the builder's page, S7-T03)", async () => {
     open({ path: "/builder/units", intro: "Manage the units of your projects." });
     expect(screen.getByText("Manage the units of your projects.")).toBeVisible();
     expect(screen.queryByText(words.intro)).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(words.project), { target: { value: OTHER } });
+    await changeField(screen.getByLabelText(words.project), OTHER);
     expect(router.push).toHaveBeenCalledWith(`/builder/units?project=${OTHER}`);
   });
 
@@ -136,12 +137,12 @@ describe("UnitsBoard: the admin's Units page (S7-T07)", () => {
     );
   });
 
-  it("applies the search a moment after the last key, not at each letter", () => {
+  it("applies the search a moment after the last key, not at each letter", async () => {
     vi.useFakeTimers();
     open();
     const box = screen.getByRole("searchbox", { name: words.search.label });
-    fireEvent.change(box, { target: { value: "A-" } });
-    fireEvent.change(box, { target: { value: "A-1" } });
+    await changeField(box, "A-");
+    await changeField(box, "A-1");
     expect(router.replace).not.toHaveBeenCalled();
     act(() => {
       vi.advanceTimersByTime(500);

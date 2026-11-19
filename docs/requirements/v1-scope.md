@@ -17,6 +17,7 @@ This freezes what "version 1" means so Stages 1–9 can be planned and accepted 
 | Buyer                 | Saved homes, compare, enquiries (send and track), contact and project lead forms, dashboard tabs                                                                                                           |
 | Seller                | Five-step post-property flow with real photos, drafts, edit, mark sold/rented, delete, received enquiries                                                                                                  |
 | Admin                 | Listing moderation, project moderation, units, builders, leads, form builder, CRM with retries, site content (header, hero, homepage, footer), hero layout setting, sponsor management, overview analytics |
+| Content modules       | Blog, FAQ and Careers: admin management, public pages, SEO, on and off switches, read by the AI chat (ADR-143, scope change of 18 Nov 2026)                                                                |
 | Builder               | Dashboard, projects with re-approval rule, units, leads (status only), insights, profile                                                                                                                   |
 | Operations            | Structured logging, error tracking (by S8), backups and a restore drill, runbooks, rollback rehearsal                                                                                                      |
 

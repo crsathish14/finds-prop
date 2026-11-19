@@ -11,7 +11,7 @@ import {
 } from "@/components/domain/place-panel";
 import { Combobox, type ComboboxNotice } from "@/components/patterns/combobox";
 import { FormField } from "@/components/patterns/form-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import type { Translate } from "@/lib/format";
 import type { ListingLocationFieldProps, PlaceAutocompleteSuggestion } from "@/types/places";
 import { usePlaceSuggestions, type PlaceChoice } from "./use-place-suggestions.client";
@@ -114,7 +114,7 @@ export function ListingLocationField({
 
   const areaBox = useList ? (
     <FormField label={translate("postProperty.location.areaLabel")}>
-      <NativeSelect
+      <Select
         value=""
         disabled={disabled}
         onChange={(event) => {
@@ -128,7 +128,7 @@ export function ListingLocationField({
             {area.label}
           </option>
         ))}
-      </NativeSelect>
+      </Select>
     </FormField>
   ) : (
     <Combobox

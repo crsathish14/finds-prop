@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { ProjectsManager, type ProjectRow, type ProjectsManagerProps } from "../projects-manager";
+import { changeField } from "../../../../tests/select";
 
 const COLUMNS = {
   project: "Project",
@@ -84,7 +85,7 @@ describe("ProjectsManager: the projects list of the admin and the builder (S7-T0
     expect(screen.getByText("1 project")).toBeVisible();
   });
 
-  it("tells the page which tab was chosen, and what was typed and picked", () => {
+  it("tells the page which tab was chosen, and what was typed and picked", async () => {
     const props = manager();
     fireEvent.mouseDown(screen.getByRole("tab", { name: /Pending/ }), { button: 0 });
     expect(props.onTabChange).toHaveBeenCalledWith("pending");
@@ -92,9 +93,7 @@ describe("ProjectsManager: the projects list of the admin and the builder (S7-T0
       target: { value: "nila" },
     });
     expect(props.search.onChange).toHaveBeenCalledWith("nila");
-    fireEvent.change(screen.getByRole("combobox", { name: "Builder" }), {
-      target: { value: "kadal" },
-    });
+    await changeField(screen.getByRole("combobox", { name: "Builder" }), "kadal");
     expect(props.builderFilter?.onChange).toHaveBeenCalledWith("kadal");
   });
 

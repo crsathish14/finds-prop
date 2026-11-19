@@ -41,20 +41,20 @@
  *   sheet keeps its choices until Show is pressed; closing it any other way throws them away.
  * States: rail and sheet: default, filled, Rent, All, nothing set. Button: with and without a
  *   count. Sheet: closed, open. Show button: with a count, one home, count unknown.
- * Dependencies: Sheet, Button, Chip, Icon, Label, NativeSelect, SegmentedControl, search-options,
+ * Dependencies: Sheet, Button, Chip, Icon, Label, Select, SegmentedControl, search-options,
  *   format helpers, next-intl.
  * Tests: filters.test.tsx; Design Lab "Domain" (S4-T01).
  * UX reference: search screen, filters rail and sheet (s-browse.css .filter-panel, .filters-btn; fp-pages.js FP.filters).
  */
 import { SlidersHorizontal } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useState, type ChangeEvent, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/patterns/sheet";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select, type SelectChangeEvent } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/cn";
 import { formatPrice, type Translate } from "@/lib/format";
@@ -173,11 +173,11 @@ function FilterFields({
       <Field>
         <Label htmlFor={id("locality")}>{translate("domain.searchCard.locality.label")}</Label>
         {placeNode ?? (
-          <NativeSelect
+          <Select
             id={id("locality")}
             className={SELECT_HEIGHT}
             value={values.locality ?? ""}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+            onChange={(event: SelectChangeEvent) =>
               set({ locality: event.target.value === "" ? null : event.target.value })
             }
           >
@@ -187,7 +187,7 @@ function FilterFields({
                 {name}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         )}
         {placeNode ? (
           <p className="text-caption text-muted">{translate("domain.filters.regionOnly")}</p>
@@ -217,11 +217,11 @@ function FilterFields({
 
       <Field>
         <Label htmlFor={id("type")}>{translate("domain.searchCard.propertyType.label")}</Label>
-        <NativeSelect
+        <Select
           id={id("type")}
           className={SELECT_HEIGHT}
           value={values.propertyType ?? ""}
-          onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+          onChange={(event: SelectChangeEvent) =>
             set({ propertyType: parsePropertyType(event.target.value) })
           }
         >
@@ -231,7 +231,7 @@ function FilterFields({
               {translate(PROPERTY_TYPE_WORDS[type])}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </Field>
 
       <Field>
@@ -259,11 +259,11 @@ function FilterFields({
       {budgetNeedsLooking && values.intent === "all" ? null : (
         <Field>
           <Label htmlFor={id("budget")}>{translate("domain.searchCard.budget.label")}</Label>
-          <NativeSelect
+          <Select
             id={id("budget")}
             className={SELECT_HEIGHT}
             value={values.maxBudget === null ? "" : String(values.maxBudget)}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+            onChange={(event: SelectChangeEvent) =>
               set({ maxBudget: parseFilterBudget(values.intent, event.target.value) })
             }
           >
@@ -275,27 +275,25 @@ function FilterFields({
                 })}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </Field>
       )}
 
       {showSort ? (
         <Field>
           <Label htmlFor={id("sort")}>{translate("domain.filters.sortLabel")}</Label>
-          <NativeSelect
+          <Select
             id={id("sort")}
             className={SELECT_HEIGHT}
             value={values.sort}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-              set({ sort: parseSort(event.target.value) })
-            }
+            onChange={(event: SelectChangeEvent) => set({ sort: parseSort(event.target.value) })}
           >
             {sortOptions.map((option) => (
               <option key={option} value={option}>
                 {translate(SORT_WORDS[option])}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </Field>
       ) : null}
     </div>

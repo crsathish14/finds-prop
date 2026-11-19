@@ -12,12 +12,12 @@
  * Accessibility: every box has its label; Reset is a real button; the choices are a native list, so the phone's own
  *   picker opens.
  * States: nothing chosen, some chosen; many options.
- * Dependencies: FormField, NativeSelect, Button. Tests: submissions-parts.test.tsx; Design Lab "Admin" (S7-T07).
+ * Dependencies: FormField, Select, Button. Tests: submissions-parts.test.tsx; Design Lab "Admin" (S7-T07).
  * UX reference: admin-leads screen, "Form submissions" (filter-card).
  */
 import { FormField } from "@/components/patterns/form-field";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 type SubmissionsFilterBox = "range" | "form" | "project" | "source" | "crm";
@@ -58,14 +58,14 @@ function SubmissionsFilters({
     all?: string,
   ) => (
     <FormField label={label}>
-      <NativeSelect value={values[name]} onChange={(event) => onChange(name, event.target.value)}>
+      <Select value={values[name]} onChange={(event) => onChange(name, event.target.value)}>
         {all === undefined ? null : <option value="">{all}</option>}
         {choices.map((choice) => (
           <option key={choice.value} value={choice.value}>
             {choice.label}
           </option>
         ))}
-      </NativeSelect>
+      </Select>
     </FormField>
   );
   return (
