@@ -161,6 +161,9 @@ values ('00000000-0000-4000-f000-000000000001', 'not-a-real-key');
 insert into public.form_submissions (id, form_name) values ('00000000-0000-4000-d100-000000000001', 'Matrix form');
 insert into public.crm_api_logs (id, integration_name, outcome) values ('00000000-0000-4000-d200-000000000001', 'Matrix CRM', 'success');
 insert into public.site_settings (key, value) values ('matrix_probe', '{"matrix": 1}');
+insert into public.content_categories (module, slug, name, active) values
+  ('blog', 'matrix-active', 'Matrix active', true),
+  ('blog', 'matrix-hidden', 'Matrix hidden', false);
 insert into public.app_config (key, value) values ('matrix.probe', 'x');
 insert into public.internal_cron_tokens (name, token) values ('matrix_probe', repeat('x', 40));
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
@@ -176,6 +179,7 @@ insert into exp_grants values
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
+  ('content_categories', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('crm_api_logs', '', 'S', 'S,I,U,D,T'),
   ('crm_integration_secrets', '', '', 'S,I,U,D,T'),
   ('crm_integrations', '', 'S,I,U,D', 'S,I,U,D,T'),
@@ -234,6 +238,7 @@ insert into probe values
   ('project_events', 'v1', 'project_id = ''{pr1}'''), ('project_events', 'v3', 'project_id = ''{pr3}'''),
   ('forms', 'f1', 'id = ''{f1}'''), ('forms', 'f2', 'id = ''{f2}'''),
   ('site_settings', 'k1', 'key = ''matrix_probe'''),
+  ('content_categories', 'c1', 'slug = ''matrix-active'''), ('content_categories', 'c2', 'slug = ''matrix-hidden'''),
   ('form_submissions', 'x1', 'id = ''{fs1}'''), ('crm_api_logs', 'x1', 'id = ''{cl1}'''),
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
@@ -285,6 +290,7 @@ from (values
   ('project_events', array['', '', '', 'v1', 'v3', '', 'v1,v3']),
   ('forms', array['f1', 'f1', 'f1', 'f1', 'f1', 'f1', 'f1,f2']),
   ('site_settings', array['k1', 'k1', 'k1', 'k1', 'k1', 'k1', 'k1']),
+  ('content_categories', array['c1', 'c1', 'c1', 'c1', 'c1', 'c1', 'c1,c2']),
   ('form_submissions', array['', '', '', '', '', '', 'x1']),
   ('crm_api_logs', array['', '', '', '', '', '', 'x1']),
   ('crm_integrations', array['', '', '', '', '', '', 'x1']),
@@ -381,6 +387,15 @@ insert into exp_write (label, who, stmt, expected) values
   ('site_settings: a visitor cannot', 'anon', $q$update public.site_settings set value = '{"matrix": 2}' where key = 'matrix_probe'$q$, 'no'),
   ('site_settings: the admin adds a setting', 'ad', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'yes'),
   ('site_settings: a builder cannot add one', 'ba', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'no'),
+  -- content_categories: public to read while active, the admin alone writes
+  ('content_categories: the admin edits a category', 'ad', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'yes'),
+  ('content_categories: a customer cannot', 'ca', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: a builder cannot', 'ba', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: a visitor cannot', 'anon', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: the admin adds a category', 'ad', $q$insert into public.content_categories (module, slug, name) values ('faq', 'matrix-new', 'Matrix new')$q$, 'yes'),
+  ('content_categories: a builder cannot add one', 'ba', $q$insert into public.content_categories (module, slug, name) values ('faq', 'matrix-new', 'Matrix new')$q$, 'no'),
+  ('content_categories: the admin deletes a category', 'ad', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'yes'),
+  ('content_categories: a customer cannot delete one', 'ca', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'no'),
   -- builders: an active builder edits their own record; the admin edits any; no one else
   ('builders: an active builder edits their own record', 'ba', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'yes'),
   ('builders: another builder cannot', 'bb', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'no'),
