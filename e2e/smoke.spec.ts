@@ -320,9 +320,8 @@ test.describe("@smoke results page", () => {
     await page.goto("/properties");
     await page.getByRole("button", { name: en.domain.propertyCard.label.prime }).click();
     await expect(page).toHaveURL(/\/properties\?label=prime$/);
-    await page
-      .getByRole("combobox", { name: en.domain.filters.sortLabel })
-      .selectOption("price_asc");
+    await page.getByRole("combobox", { name: en.domain.filters.sortLabel }).click();
+    await page.locator('[role="option"][data-value="price_asc"]').click();
     await expect(page).toHaveURL(/\/properties\?label=prime&sort=price_asc$/);
   });
 

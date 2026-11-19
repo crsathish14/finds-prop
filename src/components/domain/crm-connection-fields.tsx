@@ -18,7 +18,7 @@
  *   Clear does before saving; a secret that is typed is a password box that does not autofill.
  * States: empty, filled, with errors (an address that is not allowed), saving (all off); a secret that is not saved,
  *   saved and kept, being replaced, and to be cleared.
- * Dependencies: FormField, Input, NativeSelect, Switch, Button, Icon, cn. Tests: crm-parts.test.tsx; Design Lab "CRM"
+ * Dependencies: FormField, Input, Select, Switch, Button, Icon, cn. Tests: crm-parts.test.tsx; Design Lab "CRM"
  *   (S7-T09).
  * UX reference: admin-crm screen, the editor (form-grid two, field, switch, cred, masked).
  */
@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { cn } from "@/lib/cn";
@@ -114,13 +114,13 @@ function CrmConnectionFields({
         <Input {...text("endpoint")} maxLength={300} autoComplete="off" spellCheck={false} />
       </FormField>
       <FormField label={words.method} {...(errors.method ? { error: errors.method } : {})}>
-        <NativeSelect {...text("method")}>
+        <Select {...text("method")}>
           {methods.map((choice) => (
             <option key={choice.value} value={choice.value}>
               {choice.label}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
       <FormField
         label={words.leadIdPath}

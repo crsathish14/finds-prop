@@ -21,7 +21,7 @@ import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { ProjectSectionNav, type ProjectSectionId } from "@/components/domain/project-section-nav";
 import { Alert } from "@/components/patterns/alert";
 import type { MediaItem } from "@/components/patterns/media-group-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
@@ -610,7 +610,7 @@ export function ProjectForm({
                   <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 md:p-6">
                     <h2 className="text-title font-bold text-ink">{translate("enquiry.title")}</h2>
                     <p className="text-small text-muted">{translate("enquiry.text")}</p>
-                    <NativeSelect
+                    <Select
                       aria-label={translate("enquiry.title")}
                       value={formId}
                       disabled={saving}
@@ -622,7 +622,7 @@ export function ProjectForm({
                           {form.name}
                         </option>
                       ))}
-                    </NativeSelect>
+                    </Select>
                   </div>
                   {projectId === null ? null : (
                     <PriceTrendsEditor

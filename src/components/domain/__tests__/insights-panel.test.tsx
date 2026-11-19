@@ -3,6 +3,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { InsightsPanel, type InsightsPanelProps } from "../insights-panel";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const GROUPS = [
   {
@@ -112,7 +113,7 @@ describe("InsightsPanel: the numbers of the dashboard and insights pages (S7-T01
     expect(screen.queryByLabelText("From")).toBeNull();
   });
 
-  it("shows the two dates and tells the page when one changes", () => {
+  it("shows the two dates and tells the page when one changes", async () => {
     const custom = {
       fromLabel: "From",
       toLabel: "To",
@@ -131,11 +132,11 @@ describe("InsightsPanel: the numbers of the dashboard and insights pages (S7-T01
       customRange: custom,
     });
     expect(screen.getByLabelText("From")).toHaveValue("2026-10-01");
-    fireEvent.change(screen.getByLabelText("To"), { target: { value: "2026-10-30" } });
+    await changeField(screen.getByLabelText("To"), "2026-10-30");
     expect(custom.onToChange).toHaveBeenCalledWith("2026-10-30");
   });
 
-  it("shows the project box only when given, with its All choice, and tells the page the pick", () => {
+  it("shows the project box only when given, with its All choice, and tells the page the pick", async () => {
     const onChange = vi.fn();
     panel({
       project: {
@@ -147,8 +148,8 @@ describe("InsightsPanel: the numbers of the dashboard and insights pages (S7-T01
       },
     });
     const box = screen.getByRole("combobox", { name: "Project" });
-    expect(within(box).getByRole("option", { name: "All projects" })).toBeInTheDocument();
-    fireEvent.change(box, { target: { value: "vista" } });
+    expect(await optionTexts(box)).toContain("All projects");
+    await changeField(box, "vista");
     expect(onChange).toHaveBeenCalledWith("vista");
   });
 

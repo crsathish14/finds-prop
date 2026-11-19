@@ -13,13 +13,13 @@
  * Accessibility: every box has its label; the number is marked required; an error is a message tied to its box,
  *   with an icon, never colour alone; the numbers open the number keyboard on a phone.
  * States: empty, filled, with errors, sending (every box off).
- * Dependencies: FormField, Input, NativeSelect. Tests: unit-form.test.tsx; Design Lab "Admin" (S7-T01).
+ * Dependencies: FormField, Input, Select. Tests: unit-form.test.tsx; Design Lab "Admin" (S7-T01).
  * UX reference: admin-units screen (the Add unit drawer).
  */
 import type { FormEvent } from "react";
 import { FormField } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 type UnitFormField =
@@ -102,39 +102,39 @@ function UnitForm({
           <Input {...text("floor")} inputMode="numeric" autoComplete="off" />
         </FormField>
         <FormField label={words.bhk} optionalLabel={words.optional} {...error("bhk")}>
-          <NativeSelect {...text("bhk")}>
+          <Select {...text("bhk")}>
             <option value="">{words.notSet}</option>
             {words.bhkOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label={words.area} optionalLabel={words.optional} {...error("area")}>
           <Input {...text("area")} inputMode="decimal" autoComplete="off" />
         </FormField>
         <FormField label={words.facing} optionalLabel={words.optional} {...error("facing")}>
-          <NativeSelect {...text("facing")}>
+          <Select {...text("facing")}>
             <option value="">{words.notSet}</option>
             {words.facingOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label={words.price} optionalLabel={words.optional} {...error("price")}>
           <Input {...text("price")} inputMode="numeric" autoComplete="off" />
         </FormField>
         <FormField label={words.status} {...error("status")}>
-          <NativeSelect {...text("status")}>
+          <Select {...text("status")}>
             {words.statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField
           label={words.availableFrom}

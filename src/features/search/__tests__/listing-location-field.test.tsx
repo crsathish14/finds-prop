@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
+import { changeField, optionTexts } from "../../../../tests/select";
 import type { ListingLocationFieldProps, PlaceAutocompleteSuggestion } from "@/types/places";
 import { ListingLocationField } from "../listing-location-field.client";
 
@@ -185,7 +186,7 @@ describe("UT-listing-location-field: the connected location field of the address
       const list = await screen.findByRole("combobox", { name: /Area/ }, { timeout: 2000 });
       expect(screen.getByText(places.unavailable.title)).toBeInTheDocument();
       expect(screen.getByText(words.unavailableBody)).toBeInTheDocument();
-      await userEvent.selectOptions(list, "1");
+      await changeField(list, "1");
       expect(onPickArea).toHaveBeenCalledWith(CURATED[1]);
       expect(onPick).not.toHaveBeenCalled();
     });
@@ -195,8 +196,11 @@ describe("UT-listing-location-field: the connected location field of the address
       open();
       await userEvent.type(addressBox(), "vel");
       const list = await screen.findByRole("combobox", { name: /Area/ }, { timeout: 2000 });
-      const options = Array.from((list as HTMLSelectElement).options).map((option) => option.text);
-      expect(options).toEqual([en.postProperty.location.areaOption, "Adyar", "Velachery"]);
+      expect(await optionTexts(list)).toEqual([
+        en.postProperty.location.areaOption,
+        "Adyar",
+        "Velachery",
+      ]);
     });
 
     it("also gives the list when the area search is unavailable, or we are asked to wait", async () => {

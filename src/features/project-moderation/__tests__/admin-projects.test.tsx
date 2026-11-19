@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { AdminProjectRow } from "../view";
+import { changeField } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -250,18 +251,16 @@ describe("AdminProjects: the admin's Projects page (S7-T04)", () => {
     expect(screen.queryByText(words.deleteBlocked.title)).toBeNull();
   });
 
-  it("filters by status tab, by builder and by a search of the name, the place and the builder", () => {
+  it("filters by status tab, by builder and by a search of the name, the place and the builder", async () => {
     open();
     fireEvent.mouseDown(screen.getByRole("tab", { name: /Pending/ }), { button: 0 });
     expect(screen.getByText("1 project")).toBeVisible();
     expect(screen.queryByText("Project 4", { selector: "p" })).toBeNull();
     fireEvent.mouseDown(screen.getByRole("tab", { name: /All/ }), { button: 0 });
-    fireEvent.change(screen.getByLabelText(words.builderFilter.label), {
-      target: { value: LIVE.builderId },
-    });
+    await changeField(screen.getByLabelText(words.builderFilter.label), LIVE.builderId);
     expect(screen.getByText("1 project")).toBeVisible();
     expect(rowOf("Project 4")).toBeVisible();
-    fireEvent.change(screen.getByLabelText(words.builderFilter.label), { target: { value: "" } });
+    await changeField(screen.getByLabelText(words.builderFilter.label), "");
     fireEvent.change(screen.getByRole("searchbox", { name: words.search }), {
       target: { value: "nila" },
     });

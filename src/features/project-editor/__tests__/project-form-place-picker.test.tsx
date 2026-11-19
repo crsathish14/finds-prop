@@ -6,6 +6,7 @@ import { AdminPlacePicker } from "@/features/search/admin-place-picker.client";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
 import { renderWithMessages } from "../../../../tests/render-intl";
+import { changeField } from "../../../../tests/select";
 import type { MediaStorage } from "../media-storage";
 import type { ProjectDone } from "../project-service";
 
@@ -110,7 +111,7 @@ describe("UT-project-form with the place picker (ADR-140)", () => {
   it("fills latitude and longitude from the place chosen, leaves locality and address alone, and saves them", async () => {
     const save = open();
     await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
+    await changeField(
       screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
       BUILDER_ID,
     );

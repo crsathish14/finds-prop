@@ -17,7 +17,7 @@ import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import type { Step } from "@/components/patterns/stepper";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AddressBox } from "./seller-location-demos";
 
@@ -98,13 +98,13 @@ export function BasicsStep({ withErrors = false }: { withErrors?: boolean }) {
       </div>
       <ListingTypeChoice />
       <FormField label="Property type">
-        <NativeSelect defaultValue="apartment">
+        <Select defaultValue="apartment">
           <option value="apartment">Apartment</option>
           <option value="villa">Villa</option>
           <option value="house">Independent House</option>
           <option value="plot">Plot / Land</option>
           <option value="commercial">Commercial</option>
-        </NativeSelect>
+        </Select>
       </FormField>
       {withErrors ? (
         <LocationField mode="search" showError box={<AddressBox text="" />} />
@@ -158,17 +158,17 @@ export function DetailsStep() {
       </div>
       <div className="grid gap-5 md:grid-cols-3">
         <FormField label="Bedrooms (BHK)">
-          <NativeSelect defaultValue="3">
+          <Select defaultValue="3">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label="Bathrooms">
-          <NativeSelect defaultValue="2">
+          <Select defaultValue="2">
             <option value="1">1</option>
             <option value="2">2</option>
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label="Area (sq.ft)">
           <Input defaultValue="1420" inputMode="numeric" />

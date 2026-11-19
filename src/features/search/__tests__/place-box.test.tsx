@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { changeField } from "../../../../tests/select";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -111,10 +112,7 @@ describe("The Locality field of the results filters is a place search box (ADR-1
       lng: "80.2341",
       ["r"]: "8",
     });
-    await userEvent.selectOptions(
-      within(rail()).getByRole("combobox", { name: "Property type" }),
-      "villa",
-    );
+    await changeField(within(rail()).getByRole("combobox", { name: "Property type" }), "villa");
     expect(replace.mock.calls[0]?.[0]).toBe(
       "/properties?lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar&propertyType=villa&r=8",
     );

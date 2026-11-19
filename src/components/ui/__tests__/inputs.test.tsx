@@ -10,7 +10,7 @@ import { Icon } from "../icon";
 import { IconButton } from "../icon-button";
 import { Input } from "../input";
 import { Label } from "../label";
-import { NativeSelect } from "../native-select";
+import { Select } from "../select";
 import { RemovableChip } from "../removable-chip";
 import { SegmentedControl } from "../segmented-control";
 import { Textarea } from "../textarea";
@@ -124,30 +124,45 @@ describe("Input and Textarea extras", () => {
   });
 });
 
-describe("NativeSelect", () => {
+describe("Select", () => {
   it("lets the reader pick an option", async () => {
     render(
       <>
         <Label htmlFor="bedrooms">Bedrooms</Label>
-        <NativeSelect id="bedrooms" defaultValue="2">
+        <Select id="bedrooms" defaultValue="2">
           <option value="1">1 BHK</option>
           <option value="2">2 BHK</option>
           <option value="3">3 BHK</option>
-        </NativeSelect>
+        </Select>
       </>,
     );
     const select = screen.getByLabelText("Bedrooms");
-    await userEvent.selectOptions(select, "3");
-    expect(select).toHaveValue("3");
+    expect(select).toHaveTextContent("2 BHK");
+    await userEvent.click(select);
+    await userEvent.click(await screen.findByRole("option", { name: "3 BHK" }));
+    expect(select).toHaveTextContent("3 BHK");
+  });
+
+  it("reports the chosen value, and an empty value for the placeholder row", async () => {
+    const changes: string[] = [];
+    render(
+      <Select aria-label="Type" value="flat" onChange={(event) => changes.push(event.target.value)}>
+        <option value="">Any type</option>
+        <option value="flat">Flat</option>
+      </Select>,
+    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Type" }));
+    await userEvent.click(await screen.findByRole("option", { name: "Any type" }));
+    expect(changes).toEqual([""]);
   });
 
   it("marks an invalid select", () => {
     render(
-      <NativeSelect aria-label="Type" invalid>
+      <Select aria-label="Type" invalid>
         <option>Flat</option>
-      </NativeSelect>,
+      </Select>,
     );
-    expect(screen.getByLabelText("Type")).toBeInvalid();
+    expect(screen.getByRole("combobox", { name: "Type" })).toBeInvalid();
   });
 });
 

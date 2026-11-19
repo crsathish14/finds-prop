@@ -17,6 +17,7 @@ import {
   type SiteLocalitiesWords,
   type SiteLocalityRow,
 } from "../site-localities-editor";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const HERO_WORDS: SiteHeroFieldsWords = {
   text: { title: "Text" },
@@ -207,7 +208,7 @@ describe("UT-site-localities-editor: the list of localities (S7-T10)", () => {
       { ...THREE_PLACES[1], label: "Velachery!" },
       THREE_PLACES[2],
     ]);
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Radius 1" }), "5");
+    await changeField(screen.getByRole("combobox", { name: "Radius 1" }), "5");
     expect(onChange).toHaveBeenLastCalledWith([
       { ...THREE_PLACES[0], radiusKm: "5" },
       THREE_PLACES[1],
@@ -215,11 +216,9 @@ describe("UT-site-localities-editor: the list of localities (S7-T10)", () => {
     ]);
   });
 
-  it("offers the distances and keeps a stored one that is not offered", () => {
+  it("offers the distances and keeps a stored one that is not offered", async () => {
     setup({ localities: [place("p1", "Adyar", "10")] });
-    const options = within(screen.getByRole("combobox", { name: "Radius 1" }))
-      .getAllByRole("option")
-      .map((option) => option.textContent);
+    const options = await optionTexts(screen.getByRole("combobox", { name: "Radius 1" }));
     expect(options).toEqual(["2 km", "3 km", "4 km", "5 km", "6 km", "10 km"]);
     expect(screen.getByRole("combobox", { name: "Radius 1" })).toHaveValue("10");
   });

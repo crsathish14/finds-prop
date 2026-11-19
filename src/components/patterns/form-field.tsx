@@ -1,7 +1,7 @@
 /**
  * FormField: a label, one control, an optional hint and an optional error, wired together.
  * Purpose: every form field on the site, so labels, hints and errors are always connected for
- *   screen readers. Owner: design system. Works with Input, Textarea, NativeSelect, PasswordField,
+ *   screen readers. Owner: design system. Works with Input, Textarea, Select, PasswordField,
  *   PhoneField and OtpInput; give it one control as the child.
  * Props: label (required, already-translated), hint, error (already-translated message), required,
  *   optionalLabel (already-translated "(optional)"), id (made for you when left out), className.

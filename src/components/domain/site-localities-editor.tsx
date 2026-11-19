@@ -20,7 +20,7 @@
  *   problems show an icon and words tied to their box; the buttons say which locality they move or remove; at the limit
  *   Add is off and a note says so; the list is a named group.
  * States: empty, some localities, at the limit, with errors on rows, disabled.
- * Dependencies: SortableList, SortableRow, FormField, Input, NativeSelect, Button, Alert, Icon, PlacePicker (types and
+ * Dependencies: SortableList, SortableRow, FormField, Input, Select, Button, Alert, Icon, PlacePicker (types and
  *   helpers), cn. Tests: site-hero-homepage-parts.test.tsx; Design Lab "Site content" (S7-T10).
  * UX reference: admin-localities screen (the Explore by locality panel). Its Place box is the place picker above the
  *   Latitude and Longitude boxes, which the admin can still edit (ADR-140); the radius choices include 6 km, which the
@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { pickedCoordinates, type PlacePickerComponent } from "@/components/domain/place-picker";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 /** The longest label a locality can have (the server checks it too). */
@@ -241,7 +241,7 @@ function SiteLocalitiesEditor({
                       />
                     </FormField>
                     <FormField label={words.radius} {...problem("radiusKm")}>
-                      <NativeSelect
+                      <Select
                         value={place.radiusKm}
                         disabled={disabled}
                         aria-label={`${words.radius} ${position}`}
@@ -252,7 +252,7 @@ function SiteLocalitiesEditor({
                             {km} {words.km}
                           </option>
                         ))}
-                      </NativeSelect>
+                      </Select>
                     </FormField>
                   </div>
                   <div className="flex justify-end">

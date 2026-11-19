@@ -19,7 +19,7 @@
  *   alone.
  * States: dashboard (three groups, no project box), full page (two groups and a project box), a custom range, a
  *   notice above, a tile with a note, a very large number.
- * Dependencies: StatTile, SegmentedControl, NativeSelect, FormField, Input, Heading, Text.
+ * Dependencies: StatTile, SegmentedControl, Select, FormField, Input, Heading, Text.
  *   Tests: insights-panel.test.tsx; Design Lab "Admin" (S7-T01).
  * UX reference: builder-insights and builder-dashboard screens (fp-insightspage, kpi-group, date-row).
  */
@@ -28,7 +28,7 @@ import { FormField } from "@/components/patterns/form-field";
 import { StatTile } from "@/components/patterns/stat-tile";
 import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
@@ -145,7 +145,7 @@ function InsightsPanel({
         ) : null}
         {project ? (
           <div className="md:w-60">
-            <NativeSelect
+            <Select
               aria-label={project.label}
               value={project.value}
               onChange={(event) => project.onChange(event.target.value)}
@@ -156,7 +156,7 @@ function InsightsPanel({
                   {option.label}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </div>
         ) : null}
       </div>

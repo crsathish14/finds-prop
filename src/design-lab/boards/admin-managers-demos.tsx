@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Specimen, Stage } from "../frame";
 
 /**
@@ -145,10 +145,10 @@ function UnitForm({ id, onSubmit }: { id: string; onSubmit: () => void }) {
           <Input inputMode="numeric" defaultValue="3" />
         </FormField>
         <FormField label="BHK">
-          <NativeSelect defaultValue="3">
+          <Select defaultValue="3">
             <option value="2">2</option>
             <option value="3">3</option>
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label="Area (sq.ft)">
           <Input inputMode="numeric" defaultValue="1480" />

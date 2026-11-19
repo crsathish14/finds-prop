@@ -124,7 +124,7 @@ export const DISCOVERY: LabEntry[] = [
       "patterns/form-field.tsx",
       "patterns/alert.tsx",
       "patterns/breadcrumb.tsx",
-      "ui/native-select.tsx",
+      "ui/select.tsx",
       "ui/checkbox.tsx",
       "ui/radio-group.tsx",
       "ui/textarea.tsx",
