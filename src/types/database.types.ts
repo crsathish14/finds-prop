@@ -79,6 +79,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"content_categories": {
+                  Row: {
+                    "active": boolean,"created_at": string,"id": string,"module": string,"name": string,"slug": string,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"module": string,"name": string,"slug": string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"module"?: string,"name"?: string,"slug"?: string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"crm_api_logs": {
                   Row: {
                     "attempt": number,"created_at": string,"form_name": string | null,"http_status": number | null,"id": string,"integration_id": string | null,"integration_name": string,"outcome": string,"response_snippet": string | null,"submission_id": string | null
