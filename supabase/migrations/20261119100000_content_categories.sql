@@ -34,8 +34,13 @@ create trigger content_categories_updated_at
   before update on public.content_categories
   for each row execute function public.touch_updated_at();
 
-create policy content_categories_select on public.content_categories
-  for select to anon, authenticated
+-- Two policies, because a visitor (anon) may not call is_super_admin().
+create policy content_categories_select_public on public.content_categories
+  for select to anon
+  using (active);
+
+create policy content_categories_select_signed_in on public.content_categories
+  for select to authenticated
   using (active or (select public.is_super_admin()));
 
 create policy content_categories_insert_admin on public.content_categories
