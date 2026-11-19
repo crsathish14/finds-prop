@@ -12,7 +12,7 @@ select plan(7);
 
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
--- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings.
+-- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings and content_categories (the active rows).
 create temporary table expected_public_columns (table_name text, column_name text);
 insert into expected_public_columns (table_name, column_name)
 select expected.table_name, unnest(expected.columns)
@@ -45,7 +45,10 @@ from (values
     'id', 'name', 'slug', 'kind', 'placement', 'project_id', 'button_text', 'success_message',
     'fields', 'active', 'created_at', 'updated_at'
   ]),
-  ('site_settings', array['key', 'value', 'updated_at'])
+  ('site_settings', array['key', 'value', 'updated_at']),
+  ('content_categories', array[
+    'id', 'module', 'slug', 'name', 'sort_order', 'active', 'created_at', 'updated_at'
+  ])
 ) as expected (table_name, columns);
 
 -- 1. Every column anon can read, on every relation in the public schema
