@@ -4,6 +4,7 @@ import {
   SiteContentFrameDemo,
   SiteFooterDemo,
 } from "./admin-site-content-demos";
+import { ContentModuleBarDemo, ContentModulesCardDemo } from "./admin-content-modules-demos";
 import {
   SiteHeroDemo,
   SiteHomepageDemo,
@@ -84,5 +85,21 @@ export const SITE_CONTENT: LabEntry[] = [
       "The list of localities the home page features: for each a label, a place search box that fills the latitude and the longitude (which can still be typed), a radius of 2 to 6 km, the grip and the arrows to change the order, and Remove; Add locality (off at the limit of 8, with a notice) and a note when the list is empty. On a phone every box is on its own line; from 768 px the latitude, longitude and radius share a line. Shown with five localities, empty, with problems on three rows, at the limit, with a very long name and a distance that is not offered, and off while saving.",
     sources: ["domain/site-localities-editor.tsx", "patterns/sortable-list.tsx"],
     Demo: SiteLocalitiesDemo,
+  },
+  {
+    id: "content-modules-card",
+    name: "Content modules card",
+    description:
+      "The admin dashboard card that switches Blog, FAQ and Careers on and off (ADR-143): a row per module with its switch, a Live or Hidden label, the counts of published and draft items (a dash when not available yet) and one sentence of what turning it off does. Turning a module off asks first; turning it on does not. Shown with a try-it card, a hidden module that was just saved, a save in progress (every switch off until it ends), a failed save and counts not available yet. The Blog, FAQ and Careers tracks add their admin parts to this board (the Admin board is too tall for more).",
+    sources: ["domain/content-modules-card.tsx"],
+    Demo: ContentModulesCardDemo,
+  },
+  {
+    id: "content-module-bar",
+    name: "Content module switch bar",
+    description:
+      "The same switch as a bar at the top of each module's admin page (ADR-143), for the one module of the page: the switch with its label, Live or Hidden, the counts and the sentence about turning it off, and the question before hiding a module. Shown live, hidden and saved, counts not available, saving, a failed save and large counts on a narrow area. The module pages keep this bar at their top while their lists and editors are built under it.",
+    sources: ["domain/content-module-bar.tsx", "patterns/confirm-dialog.tsx"],
+    Demo: ContentModuleBarDemo,
   },
 ];
