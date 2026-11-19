@@ -102,7 +102,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped
