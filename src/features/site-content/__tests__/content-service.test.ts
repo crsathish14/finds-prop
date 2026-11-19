@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { SITE_DEFAULTS } from "@/features/site/defaults";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
+  contentModulesValue,
   footerValue,
   headerValue,
   heroValue,
   homepageValue,
   isOutside,
   mapContentError,
+  saveContentModulesContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
@@ -16,6 +18,7 @@ import {
   type RegionBounds,
 } from "../content-service";
 import {
+  contentModulesInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
@@ -185,5 +188,34 @@ describe("UT-site-content-service: database failures (S7-T10)", () => {
     [undefined, "INTERNAL"],
   ] as const)("turns database code %s into %s", (code, expected) => {
     expect(mapContentError({ code }).code).toBe(expected);
+  });
+});
+
+describe("UT-site-content-service: the content module switches (ADR-143, FR-ADM-16)", () => {
+  it("stores the three switches as given", () => {
+    const value = contentModulesValue(
+      contentModulesInputSchema.parse({ blog: false, faq: true, careers: false }),
+    );
+    expect(value).toEqual({ blog: false, faq: true, careers: false });
+  });
+
+  it("writes the content_modules setting and says which one it saved", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveContentModulesContent(store, {
+      blog: true,
+      faq: false,
+      careers: true,
+    });
+    expect(done).toEqual({ key: "content_modules" });
+    expect(writes).toEqual([
+      { key: "content_modules", value: { blog: true, faq: false, careers: true } },
+    ]);
+  });
+
+  it("refuses a switch that is missing or not a true or false", () => {
+    expect(contentModulesInputSchema.safeParse({ blog: true, faq: true }).success).toBe(false);
+    expect(
+      contentModulesInputSchema.safeParse({ blog: "yes", faq: true, careers: true }).success,
+    ).toBe(false);
   });
 });

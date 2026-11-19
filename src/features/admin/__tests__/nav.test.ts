@@ -25,6 +25,7 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "Moderation",
       "Inventory",
       "Leads and CRM",
+      "Content",
       "Site content",
     ]);
     const links = groups.flatMap((group) => group.items.map((item) => item.href));
@@ -37,6 +38,9 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "/admin/leads",
       "/admin/forms",
       "/admin/crm",
+      "/admin/blog",
+      "/admin/faq",
+      "/admin/careers",
       "/admin/header",
       "/admin/hero",
       "/admin/homepage",

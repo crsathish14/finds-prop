@@ -3,7 +3,13 @@
  * row of `site_settings`, so saving the hero never touches the header, the footer or the sponsors (S7-T11). The
  * `region` row has no editor in the approved design and stays as it was seeded.
  */
-export const EDITABLE_SETTINGS = ["header", "hero", "homepage", "footer"] as const;
+export const EDITABLE_SETTINGS = [
+  "header",
+  "hero",
+  "homepage",
+  "footer",
+  "content_modules",
+] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
 /** How many links the header and the footer may hold (the same limits the public side reads with). */

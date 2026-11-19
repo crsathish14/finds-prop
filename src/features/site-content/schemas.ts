@@ -185,3 +185,14 @@ export const homepageInputSchema = z.object({
     }),
 });
 export type HomepageInput = z.infer<typeof homepageInputSchema>;
+
+/**
+ * The three switches of the content modules (ADR-143, FR-ADM-16): all three are sent together, so a save replaces the
+ * whole setting and repeating it changes nothing more.
+ */
+export const contentModulesInputSchema = z.object({
+  blog: z.boolean({ error: "validation.invalid" }),
+  faq: z.boolean({ error: "validation.invalid" }),
+  careers: z.boolean({ error: "validation.invalid" }),
+});
+export type ContentModulesInput = z.infer<typeof contentModulesInputSchema>;

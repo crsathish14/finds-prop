@@ -21,4 +21,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   region: { bounds: { south: 8.0, west: 76.2, north: 13.6, east: 80.4 } },
   // No sponsored banners until the admin adds some (Stage 8): the page shows no banner and no gap.
   sponsors: { ads: [] },
+  // Every module is on until the admin switches it off (ADR-143); a module with no page built yet simply has nothing to show.
+  content_modules: { blog: true, faq: true, careers: true },
 };

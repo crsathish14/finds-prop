@@ -3,6 +3,7 @@
 import {
   Building2,
   Briefcase,
+  BriefcaseBusiness,
   ChartColumn,
   ExternalLink,
   FileText,
@@ -10,8 +11,10 @@ import {
   Image as ImageIcon,
   Inbox,
   Layers,
+  CircleQuestionMark,
   LayoutDashboard,
   ListChecks,
+  Newspaper,
   PanelBottom,
   PanelTop,
   Plug,
@@ -37,6 +40,9 @@ const ICONS: Record<AdminIconName, LucideIcon> = {
   hero: ImageIcon,
   homepage: House,
   footer: PanelBottom,
+  blog: Newspaper,
+  faq: CircleQuestionMark,
+  careers: BriefcaseBusiness,
   insights: ChartColumn,
   profile: UserRound,
 };

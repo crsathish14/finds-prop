@@ -3,6 +3,7 @@
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
+  saveContentModulesConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
@@ -10,6 +11,7 @@ import {
   saveSponsorsConfig,
 } from "./action-config";
 import {
+  saveContentModulesContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
@@ -71,6 +73,17 @@ export const saveSponsors = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveSponsorsContent(await createSponsorStore(), input, log);
     log.info("sponsors saved", { count: done.count, active: done.active });
+    return done;
+  },
+});
+
+/** Switches the Blog, FAQ and Careers modules on or off from the admin dashboard (ADR-143). */
+export const saveContentModules = defineAction({
+  ...saveContentModulesConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveContentModulesContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
     return done;
   },
 });

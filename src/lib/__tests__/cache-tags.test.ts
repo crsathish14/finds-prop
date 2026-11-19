@@ -2,11 +2,17 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  blogPostTag,
   CACHE_TAGS,
+  jobTag,
   projectTag,
   propertyTag,
+  tagsAfterBlogChange,
   tagsAfterBuilderChange,
+  tagsAfterContentCategoryChange,
+  tagsAfterFaqChange,
   tagsAfterFormChange,
+  tagsAfterJobChange,
   tagsAfterListingChange,
   tagsAfterProjectChange,
   tagsAfterSiteSettingsChange,
@@ -17,13 +23,16 @@ import {
 // that part is not tested here; this proves the lists and the wiring that decide it.
 
 describe("IT-cache: the names", () => {
-  it("keeps the names the first reads were built with, and adds the forms name", () => {
+  it("keeps the names the first reads were built with, and adds the forms and content module names", () => {
     expect(CACHE_TAGS).toEqual({
       listings: "home-listings",
       homeProjects: "home-projects",
       projects: "projects",
       siteSettings: "site-settings",
       forms: "forms",
+      blog: "blog",
+      faq: "faq",
+      careers: "careers",
     });
   });
 
@@ -149,5 +158,30 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
 describe("IT-cache: what a change to a builder refreshes (S7-T05)", () => {
   it("refreshes the projects and the homepage's developers, because a deactivated builder leaves the showcase", () => {
     expect(tagsAfterBuilderChange()).toEqual([CACHE_TAGS.projects, CACHE_TAGS.homeProjects]);
+  });
+});
+
+describe("IT-cache: what a change to the content modules refreshes (ADR-143)", () => {
+  it("an article change refreshes the Blog and that article's page", () => {
+    expect(tagsAfterBlogChange("buying-guide")).toEqual(["blog", "blog-post:buying-guide"]);
+    expect(blogPostTag("buying-guide")).toBe("blog-post:buying-guide");
+  });
+
+  it("a question change refreshes the FAQ", () => {
+    expect(tagsAfterFaqChange()).toEqual(["faq"]);
+  });
+
+  it("a job change refreshes the careers list and that job's page", () => {
+    expect(tagsAfterJobChange("site-engineer")).toEqual(["careers", "job:site-engineer"]);
+    expect(jobTag("site-engineer")).toBe("job:site-engineer");
+  });
+
+  it("a category change refreshes every module that lists categories", () => {
+    expect(tagsAfterContentCategoryChange()).toEqual(["blog", "faq", "careers"]);
+  });
+
+  it("two articles never share a page tag", () => {
+    expect(tagsAfterBlogChange("one")).not.toContain(blogPostTag("two"));
+    expect(tagsAfterJobChange("one")).not.toContain(jobTag("two"));
   });
 });

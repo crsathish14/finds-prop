@@ -1,5 +1,13 @@
-export { saveFooter, saveHeader, saveHero, saveHomepage, saveSponsors } from "./actions";
 export {
+  saveContentModules,
+  saveFooter,
+  saveHeader,
+  saveHero,
+  saveHomepage,
+  saveSponsors,
+} from "./actions";
+export {
+  saveContentModulesConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
@@ -41,12 +49,19 @@ export {
 } from "./constants";
 export type { EditableSetting, HeroLayout } from "./constants";
 export {
+  contentModulesInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
 } from "./schemas";
-export type { FooterInput, HeaderInput, HeroInput, HomepageInput } from "./schemas";
+export type {
+  ContentModulesInput,
+  FooterInput,
+  HeaderInput,
+  HeroInput,
+  HomepageInput,
+} from "./schemas";
 export { sponsorsInputSchema } from "./sponsor-schemas";
 export type { SponsorsInput } from "./sponsor-schemas";
 export {
