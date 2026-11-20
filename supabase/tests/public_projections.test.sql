@@ -12,7 +12,8 @@ select plan(7);
 
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
--- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings, content_categories (the active rows) and faqs (the published rows of active categories).
+-- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings, content_categories (the active rows),
+-- faqs (the published rows of active categories) and blog_posts (the published, not trashed articles).
 create temporary table expected_public_columns (table_name text, column_name text);
 insert into expected_public_columns (table_name, column_name)
 select expected.table_name, unnest(expected.columns)
@@ -46,6 +47,11 @@ from (values
     'fields', 'active', 'created_at', 'updated_at'
   ]),
   ('site_settings', array['key', 'value', 'updated_at']),
+  ('blog_posts', array[
+    'id', 'slug', 'title', 'excerpt', 'body', 'cover_path', 'cover_alt', 'category_id', 'tags', 'author_name',
+    'status', 'published_at', 'seo_title', 'seo_description', 'read_minutes', 'search_vector', 'deleted_at',
+    'created_at', 'updated_at'
+  ]),
   ('content_categories', array[
     'id', 'module', 'slug', 'name', 'sort_order', 'active', 'created_at', 'updated_at'
   ]),
@@ -106,7 +112,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped
@@ -128,8 +134,8 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_faqs'), ('search_properties')$$,
-  'DB-RLS-column-grants: anon can run only the two searches, the label, the project form lookup and the two row-policy helpers in the public schema'
+  $$values ('blog_body_text'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_blog_posts'), ('search_faqs'), ('search_properties')$$,
+  'DB-RLS-column-grants: anon can run only the searches, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
 -- Data for the rounding checks: one approved home with an exact point, one live project.
