@@ -65,6 +65,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"blog_posts": {
+                  Row: {
+                    "author_name": string,"body": NonNullable<Json>,"category_id": string | null,"cover_alt": string | null,"cover_path": string | null,"created_at": string,"deleted_at": string | null,"excerpt": string,"id": string,"published_at": string | null,"read_minutes": number,"search_vector": unknown,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": string,"tags": (string)[],"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_name": string,"body"?: NonNullable<Json>,"category_id"?: string | null,"cover_alt"?: string | null,"cover_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"excerpt"?: string,"id"?: string,"published_at"?: string | null,"read_minutes"?: never,"search_vector"?: never,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"status"?: string,"tags"?: (string)[],"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "author_name"?: string,"body"?: NonNullable<Json>,"category_id"?: string | null,"cover_alt"?: string | null,"cover_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"excerpt"?: string,"id"?: string,"published_at"?: string | null,"read_minutes"?: never,"search_vector"?: never,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"status"?: string,"tags"?: (string)[],"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "blog_posts_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"builders": {
                   Row: {
                     "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"kind": string,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
@@ -696,6 +716,24 @@ isOneToOne: false
 "audit_write":
 { Args: { "action_name": string,"change": Json,"entity_key": string,"entity_kind": string }; Returns: undefined
                            },
+"blog_block_is_valid":
+{ Args: { "block": Json }; Returns: boolean
+                           },
+"blog_body_is_valid":
+{ Args: { "blocks": Json }; Returns: boolean
+                           },
+"blog_body_text":
+{ Args: { "blocks": Json }; Returns: string
+                           },
+"blog_read_minutes":
+{ Args: { "blocks": Json }; Returns: number
+                           },
+"blog_search_text":
+{ Args: { "blocks": Json,"post_excerpt": string,"post_tags": (string)[],"post_title": string }; Returns: string
+                           },
+"blog_tags_are_valid":
+{ Args: { "post_tags": (string)[] }; Returns: boolean
+                           },
 "build_property_slug":
 { Args: { "locality": string,"title": string }; Returns: string
                            },
@@ -931,6 +969,11 @@ isOneToOne: false
                            },
 "save_project_price_trends":
 { Args: { "p_project": string,"p_rows": Json }; Returns: number
+                           },
+"search_blog_posts":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_tag"?: string }; Returns: {
+              "author_name": string,"category_id": string,"category_name": string,"category_slug": string,"cover_alt": string,"cover_path": string,"excerpt": string,"id": string,"published_at": string,"read_minutes": number,"slug": string,"snippet": string,"tags": (string)[],"title": string,"total_count": number
+            }[]
                            },
 "search_properties":
 { Args: { "p_bhk"?: number,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {

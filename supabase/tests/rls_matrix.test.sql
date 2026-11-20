@@ -59,7 +59,9 @@ insert into alias values
   ('{l1}', '00000000-0000-4000-a000-000000000001'), ('{l3}', '00000000-0000-4000-a000-000000000003'),
   ('{f1}', '00000000-0000-4000-f100-000000000001'), ('{f2}', '00000000-0000-4000-f100-000000000002'),
   ('{ci1}', '00000000-0000-4000-f000-000000000001'), ('{fs1}', '00000000-0000-4000-d100-000000000001'),
-  ('{cl1}', '00000000-0000-4000-d200-000000000001');
+  ('{cl1}', '00000000-0000-4000-d200-000000000001'),
+  ('{bp1}', '00000000-0000-4000-c400-000000000001'), ('{bp2}', '00000000-0000-4000-c400-000000000002'),
+  ('{bp3}', '00000000-0000-4000-c400-000000000003');
 
 create function pg_temp.fill(stmt text) returns text
 language plpgsql
@@ -164,6 +166,10 @@ insert into public.site_settings (key, value) values ('matrix_probe', '{"matrix"
 insert into public.content_categories (module, slug, name, active) values
   ('blog', 'matrix-active', 'Matrix active', true),
   ('blog', 'matrix-hidden', 'Matrix hidden', false);
+insert into public.blog_posts (id, slug, title, excerpt, body, author_name, status, deleted_at) values
+  ('00000000-0000-4000-c400-000000000001', 'matrix-published', 'Matrix published', 'A summary.', '[{"type": "paragraph", "text": "Body."}]', 'Matrix Author', 'published', null),
+  ('00000000-0000-4000-c400-000000000002', 'matrix-draft', 'Matrix draft', '', '[]', 'Matrix Author', 'draft', null),
+  ('00000000-0000-4000-c400-000000000003', 'matrix-trashed', 'Matrix trashed', '', '[]', 'Matrix Author', 'draft', now());
 insert into public.app_config (key, value) values ('matrix.probe', 'x');
 insert into public.internal_cron_tokens (name, token) values ('matrix_probe', repeat('x', 40));
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
@@ -178,6 +184,7 @@ insert into exp_grants values
   ('ai_usage_events', '', '', 'S,I,U,D,T'),
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
+  ('blog_posts', 'S', 'S,I,U', 'S,I,U,D,T'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
   ('content_categories', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('crm_api_logs', '', 'S', 'S,I,U,D,T'),
@@ -239,6 +246,7 @@ insert into probe values
   ('forms', 'f1', 'id = ''{f1}'''), ('forms', 'f2', 'id = ''{f2}'''),
   ('site_settings', 'k1', 'key = ''matrix_probe'''),
   ('content_categories', 'c1', 'slug = ''matrix-active'''), ('content_categories', 'c2', 'slug = ''matrix-hidden'''),
+  ('blog_posts', 'b1', 'id = ''{bp1}'''), ('blog_posts', 'b2', 'id = ''{bp2}'''), ('blog_posts', 'b3', 'id = ''{bp3}'''),
   ('form_submissions', 'x1', 'id = ''{fs1}'''), ('crm_api_logs', 'x1', 'id = ''{cl1}'''),
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
@@ -291,6 +299,7 @@ from (values
   ('forms', array['f1', 'f1', 'f1', 'f1', 'f1', 'f1', 'f1,f2']),
   ('site_settings', array['k1', 'k1', 'k1', 'k1', 'k1', 'k1', 'k1']),
   ('content_categories', array['c1', 'c1', 'c1', 'c1', 'c1', 'c1', 'c1,c2']),
+  ('blog_posts', array['b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1,b2,b3']),
   ('form_submissions', array['', '', '', '', '', '', 'x1']),
   ('crm_api_logs', array['', '', '', '', '', '', 'x1']),
   ('crm_integrations', array['', '', '', '', '', '', 'x1']),
@@ -396,6 +405,18 @@ insert into exp_write (label, who, stmt, expected) values
   ('content_categories: a builder cannot add one', 'ba', $q$insert into public.content_categories (module, slug, name) values ('faq', 'matrix-new', 'Matrix new')$q$, 'no'),
   ('content_categories: the admin deletes a category', 'ad', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'yes'),
   ('content_categories: a customer cannot delete one', 'ca', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'no'),
+  -- blog_posts: public to read while published, the admin alone writes, and nobody deletes (Trash is an update)
+  ('blog_posts: the admin edits an article', 'ad', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'yes'),
+  ('blog_posts: a customer cannot', 'ca', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: a builder cannot', 'ba', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: a visitor cannot', 'anon', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: the admin moves an article to Trash', 'ad', $q$update public.blog_posts set deleted_at = now() where id = '{bp2}'$q$, 'yes'),
+  ('blog_posts: a customer cannot move one to Trash', 'ca', $q$update public.blog_posts set deleted_at = now() where id = '{bp2}'$q$, 'no'),
+  ('blog_posts: the admin adds an article', 'ad', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'yes'),
+  ('blog_posts: a customer cannot add one', 'ca', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: a builder cannot add one', 'ba', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: a visitor cannot add one', 'anon', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: not even the admin deletes one', 'ad', $q$delete from public.blog_posts where id = '{bp3}'$q$, 'no'),
   -- builders: an active builder edits their own record; the admin edits any; no one else
   ('builders: an active builder edits their own record', 'ba', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'yes'),
   ('builders: another builder cannot', 'bb', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'no'),
