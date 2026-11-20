@@ -116,6 +116,7 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
   const REFRESHED = new Set([
     ...tagsAfterListingChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterProjectChange("x").map((tag) => tag.replace(/:.*/, ":")),
+    ...tagsAfterBlogChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterSiteSettingsChange(),
     ...tagsAfterFormChange(),
     ...tagsAfterContentCategoryChange(),
@@ -136,6 +137,12 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
           expect(REFRESHED, `${file}: ${part}`).toContain("property:");
         } else if (/^projectTag\(/.test(part)) {
           expect(REFRESHED, `${file}: ${part}`).toContain("project:");
+        } else if (/^blogPostTag\(/.test(part)) {
+          expect(REFRESHED, `${file}: ${part}`).toContain("blog-post:");
+        } else if (/^CACHE_TAGS\.(blog|faq|careers)$/.test(part)) {
+          // a content module's own tag: its list, its pages and the AI assistant's reads (ADR-143)
+          const name = part.replace("CACHE_TAGS.", "") as "blog" | "faq" | "careers";
+          expect(REFRESHED, `${file}: ${part}`).toContain(CACHE_TAGS[name]);
         } else if (/^categoryTag\(/.test(part)) {
           // a content category list is tagged blog, faq or careers, and a category change refreshes all three
           for (const tag of [CACHE_TAGS.blog, CACHE_TAGS.faq, CACHE_TAGS.careers]) {
