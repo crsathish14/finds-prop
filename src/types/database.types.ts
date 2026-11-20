@@ -193,6 +193,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"faqs": {
+                  Row: {
+                    "answer": string,"category_id": string,"created_at": string,"deleted_at": string | null,"id": string,"question": string,"search_vector": unknown,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer": string,"category_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question": string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "answer"?: string,"category_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question"?: string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "faqs_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"form_submissions": {
                   Row: {
                     "created_at": string,"crm_attempts": number,"crm_claimed_until": string | null,"crm_http_status": number | null,"crm_integration_id": string | null,"crm_lead_id": string | null,"crm_status": string,"data": NonNullable<Json>,"email": string | null,"files": NonNullable<Json>,"form_id": string | null,"form_name": string,"id": string,"idempotency_key": string | null,"last_error": string | null,"mobile": string | null,"name": string | null,"next_retry_at": string | null,"project_id": string | null,"project_lead_id": string | null,"source": string | null,"visitor_hash": string | null
@@ -958,6 +978,9 @@ isOneToOne: false
 "record_places_call":
 { Args: { "p_api": string,"p_caller": string,"p_outcome": string }; Returns: undefined
                            },
+"reorder_faqs":
+{ Args: { "p_category": string,"p_ids": (string)[] }; Returns: number
+                           },
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
@@ -973,6 +996,11 @@ isOneToOne: false
 "search_blog_posts":
 { Args: { "p_category"?: string,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_tag"?: string }; Returns: {
               "author_name": string,"category_id": string,"category_name": string,"category_slug": string,"cover_alt": string,"cover_path": string,"excerpt": string,"id": string,"published_at": string,"read_minutes": number,"slug": string,"snippet": string,"tags": (string)[],"title": string,"total_count": number
+            }[]
+                           },
+"search_faqs":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_query"?: string }; Returns: {
+              "answer": string,"category_id": string,"category_name": string,"category_slug": string,"id": string,"question": string,"rank": number,"sort_order": number,"updated_at": string
             }[]
                            },
 "search_properties":

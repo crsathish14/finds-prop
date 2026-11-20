@@ -120,6 +120,7 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
     ...tagsAfterSiteSettingsChange(),
     ...tagsAfterFormChange(),
     ...tagsAfterContentCategoryChange(),
+    ...tagsAfterFaqChange(),
   ]);
 
   it("finds the cached reads", () => {
@@ -148,6 +149,11 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
           for (const tag of [CACHE_TAGS.blog, CACHE_TAGS.faq, CACHE_TAGS.careers]) {
             expect(REFRESHED, `${file}: ${part}`).toContain(tag);
           }
+        } else if (/^CACHE_TAGS\.\w+$/.test(part)) {
+          // a read that names a central tag directly: a helper must refresh that same tag
+          const name = part.slice("CACHE_TAGS.".length) as keyof typeof CACHE_TAGS;
+          expect(CACHE_TAGS, `${file}: ${part}`).toHaveProperty(name);
+          expect(REFRESHED, `${file}: ${part}`).toContain(CACHE_TAGS[name]);
         } else {
           expect.fail(`${file}: cacheTag(${part}) is not a central tag (src/lib/cache-tags.ts)`);
         }

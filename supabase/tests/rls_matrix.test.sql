@@ -165,7 +165,14 @@ insert into public.crm_api_logs (id, integration_name, outcome) values ('0000000
 insert into public.site_settings (key, value) values ('matrix_probe', '{"matrix": 1}');
 insert into public.content_categories (module, slug, name, active) values
   ('blog', 'matrix-active', 'Matrix active', true),
-  ('blog', 'matrix-hidden', 'Matrix hidden', false);
+  ('blog', 'matrix-hidden', 'Matrix hidden', false),
+  ('faq', 'matrix-faq', 'Matrix questions', true);
+insert into public.faqs (category_id, question, answer, status)
+select id, 'Matrix published question', 'Matrix published answer', 'published'
+  from public.content_categories where module = 'faq' and slug = 'matrix-faq'
+union all
+select id, 'Matrix draft question', 'Matrix draft answer', 'draft'
+  from public.content_categories where module = 'faq' and slug = 'matrix-faq';
 insert into public.blog_posts (id, slug, title, excerpt, body, author_name, status, deleted_at) values
   ('00000000-0000-4000-c400-000000000001', 'matrix-published', 'Matrix published', 'A summary.', '[{"type": "paragraph", "text": "Body."}]', 'Matrix Author', 'published', null),
   ('00000000-0000-4000-c400-000000000002', 'matrix-draft', 'Matrix draft', '', '[]', 'Matrix Author', 'draft', null),
@@ -191,6 +198,7 @@ insert into exp_grants values
   ('crm_integration_secrets', '', '', 'S,I,U,D,T'),
   ('crm_integrations', '', 'S,I,U,D', 'S,I,U,D,T'),
   ('enquiries', '', 'S,U', 'S,I,U,D,T'),
+  ('faqs', 'S', 'S,I,U', 'S,I,U,D,T'),
   ('form_submissions', '', 'S', 'S,I,U,D,T'),
   ('forms', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('idempotency_keys', '', '', 'S,I,U,D,T'),
@@ -247,6 +255,7 @@ insert into probe values
   ('site_settings', 'k1', 'key = ''matrix_probe'''),
   ('content_categories', 'c1', 'slug = ''matrix-active'''), ('content_categories', 'c2', 'slug = ''matrix-hidden'''),
   ('blog_posts', 'b1', 'id = ''{bp1}'''), ('blog_posts', 'b2', 'id = ''{bp2}'''), ('blog_posts', 'b3', 'id = ''{bp3}'''),
+  ('faqs', 'q1', 'question = ''Matrix published question'''), ('faqs', 'q2', 'question = ''Matrix draft question'''),
   ('form_submissions', 'x1', 'id = ''{fs1}'''), ('crm_api_logs', 'x1', 'id = ''{cl1}'''),
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
@@ -300,6 +309,7 @@ from (values
   ('site_settings', array['k1', 'k1', 'k1', 'k1', 'k1', 'k1', 'k1']),
   ('content_categories', array['c1', 'c1', 'c1', 'c1', 'c1', 'c1', 'c1,c2']),
   ('blog_posts', array['b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1,b2,b3']),
+  ('faqs', array['q1', 'q1', 'q1', 'q1', 'q1', 'q1', 'q1,q2']),
   ('form_submissions', array['', '', '', '', '', '', 'x1']),
   ('crm_api_logs', array['', '', '', '', '', '', 'x1']),
   ('crm_integrations', array['', '', '', '', '', '', 'x1']),
@@ -417,6 +427,15 @@ insert into exp_write (label, who, stmt, expected) values
   ('blog_posts: a builder cannot add one', 'ba', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
   ('blog_posts: a visitor cannot add one', 'anon', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
   ('blog_posts: not even the admin deletes one', 'ad', $q$delete from public.blog_posts where id = '{bp3}'$q$, 'no'),
+  -- faqs: public to read while published, not in the trash and in an active category; the admin alone writes; nobody deletes
+  ('faqs: the admin edits a question', 'ad', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix draft question'$q$, 'yes'),
+  ('faqs: a customer cannot', 'ca', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: a builder cannot', 'ba', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: a visitor cannot', 'anon', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: the admin adds a question', 'ad', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'yes'),
+  ('faqs: a builder cannot add one', 'ba', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'no'),
+  ('faqs: a customer cannot add one', 'ca', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'no'),
+  ('faqs: not even the admin deletes one', 'ad', $q$delete from public.faqs where question = 'Matrix draft question'$q$, 'no'),
   -- builders: an active builder edits their own record; the admin edits any; no one else
   ('builders: an active builder edits their own record', 'ba', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'yes'),
   ('builders: another builder cannot', 'bb', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'no'),
