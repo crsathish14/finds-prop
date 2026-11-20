@@ -120,6 +120,7 @@ function rowsFor(samples: Sample[], options: { order?: boolean; trash?: boolean 
 function managerProps(overrides: Partial<FaqManagerProps> = {}): FaqManagerProps {
   return {
     title: "FAQ",
+    headingLevel: "h2",
     intro: "Questions and answers shown on the public FAQ page and to the assistant.",
     addLabel: "Add question",
     addHref: "#new-question",

@@ -17,7 +17,7 @@
  * Dependencies: Input, Button, Chip, Link, Icon, Text, cn. Tests: faq-parts.test.tsx; Design Lab "Domain" (ADR-143).
  * UX reference: none approved yet; drawn in the Design Lab for the owner to approve (ADR-143).
  */
-import { Search } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -49,22 +49,23 @@ type FaqFilterBarProps = {
 };
 
 function CategoryChip({ chip }: { chip: FaqChip }) {
+  // A link is not a toggle, so the chip is marked with aria-current (through Link) and a tick, not aria-pressed.
   return (
     <li className="shrink-0">
-      <Chip asChild selected={chip.selected} size="sm">
+      <Chip asChild size="sm">
         <Link
           href={chip.href}
           variant="nav"
           current={chip.selected}
-          className="no-underline hover:no-underline"
+          className="no-underline hover:no-underline aria-[current=page]:border-primary aria-[current=page]:bg-primary-tint aria-[current=page]:text-primary"
         >
+          {chip.selected ? <Icon icon={Check} size="sm" /> : null}
           {chip.label}
         </Link>
       </Chip>
     </li>
   );
 }
-
 function FaqFilterBar({ search, categories, summary, clear, className }: FaqFilterBarProps) {
   return (
     <div data-slot="faq-filter-bar" className={cn("flex flex-col gap-4", className)}>
