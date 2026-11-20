@@ -67,7 +67,7 @@ export type Database = {
                   ]
                 },"blog_posts": {
                   Row: {
-                    "author_name": string,"body": NonNullable<Json>,"category_id": string | null,"cover_alt": string | null,"cover_path": string | null,"created_at": string,"deleted_at": string | null,"excerpt": string,"id": string,"published_at": string | null,"read_minutes": number,"search_vector": unknown,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": string,"tags": (string)[],"title": string,"updated_at": string
+                    "author_name": string,"body": NonNullable<Json>,"category_id": string | null,"cover_alt": string | null,"cover_path": string | null,"created_at": string,"deleted_at": string | null,"excerpt": string,"id": string,"published_at": string | null,"read_minutes": number | null,"search_vector": unknown,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": string,"tags": (string)[],"title": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
