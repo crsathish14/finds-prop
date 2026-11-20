@@ -49,11 +49,10 @@ select is_empty(
   $$select 1 from public.blog_posts where slug in ('draft-post', 'old-news', 'trashed-post')$$,
   'a visitor cannot ask for them by address either'
 );
-select throws_ok(
-  $$select deleted_at from public.blog_posts$$,
-  '42501',
-  null,
-  'a visitor cannot read the Trash date'
+select is(
+  (select count(*) from public.blog_posts where deleted_at is not null)::int,
+  0,
+  'a visitor never sees an article that has a Trash date'
 );
 select throws_ok(
   $$insert into public.blog_posts (slug, title, author_name) values ('visitor-post', 'Visitor post', 'Visitor')$$,
@@ -127,8 +126,8 @@ select is(
   'the super admin sees every article, Trash too'
 );
 select lives_ok(
-  $$insert into public.blog_posts (id, slug, title, excerpt, author_name, category_id, tags)
-    values ('00000000-0000-4000-c500-0000000000b1', 'new-guide', 'A new guide', 'Short.', 'Asha Rao',
+  $insert into public.blog_posts (slug, title, excerpt, author_name, category_id, tags)
+    values ('new-guide', 'A new guide', 'Short.', 'Asha Rao',
             '00000000-0000-4000-c500-000000000001', array['guide'])$$,
   'the super admin can add an article'
 );
@@ -306,7 +305,7 @@ select ok(
   exists (
     select 1 from public.audit_log
     where action = 'content.changed' and entity_type = 'blog_post'
-      and entity_id = '00000000-0000-4000-c500-0000000000b1'
+      and entity_id = (select id::text from public.blog_posts where slug = 'new-guide')
       and diff = '{"change": "created", "module": "blog"}'::jsonb
   ),
   'adding an article is recorded'
@@ -314,7 +313,7 @@ select ok(
 select ok(
   exists (
     select 1 from public.audit_log
-    where action = 'content.changed' and entity_id = '00000000-0000-4000-c500-0000000000b1'
+    where action = 'content.changed' and entity_id = (select id::text from public.blog_posts where slug = 'new-guide')
       and diff = '{"change": "updated", "module": "blog", "columns": ["excerpt", "title"]}'::jsonb
   ),
   'changing an article records the changed column names, not their values or the derived columns'
@@ -322,14 +321,14 @@ select ok(
 select ok(
   exists (
     select 1 from public.audit_log
-    where action = 'content.changed' and entity_id = '00000000-0000-4000-c500-0000000000b1'
+    where action = 'content.changed' and entity_id = (select id::text from public.blog_posts where slug = 'new-guide')
       and diff = '{"change": "updated", "module": "blog", "columns": ["deleted_at"]}'::jsonb
   ),
   'moving an article to Trash and back is recorded'
 );
 select is(
   (select count(*) from public.audit_log
-   where entity_id = '00000000-0000-4000-c500-0000000000b1' and diff::text like '%A better guide%'),
+   where entity_id = (select id::text from public.blog_posts where slug = 'new-guide') and diff::text like '%A better guide%'),
   0::bigint,
   'the title text is never in the audit entry'
 );

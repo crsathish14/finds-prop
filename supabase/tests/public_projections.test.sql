@@ -12,7 +12,7 @@ select plan(7);
 
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
--- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings and content_categories (the active rows), and the published, not trashed articles of blog_posts (no Trash date).
+-- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings and content_categories (the active rows), and the published, not trashed articles of blog_posts.
 create temporary table expected_public_columns (table_name text, column_name text);
 insert into expected_public_columns (table_name, column_name)
 select expected.table_name, unnest(expected.columns)
@@ -48,8 +48,8 @@ from (values
   ('site_settings', array['key', 'value', 'updated_at']),
   ('blog_posts', array[
     'id', 'slug', 'title', 'excerpt', 'body', 'cover_path', 'cover_alt', 'category_id', 'tags', 'author_name',
-    'status', 'published_at', 'seo_title', 'seo_description', 'read_minutes', 'search_vector', 'created_at',
-    'updated_at'
+    'status', 'published_at', 'seo_title', 'seo_description', 'read_minutes', 'search_vector', 'deleted_at',
+    'created_at', 'updated_at'
   ]),
   ('content_categories', array[
     'id', 'module', 'slug', 'name', 'sort_order', 'active', 'created_at', 'updated_at'
@@ -107,7 +107,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings', 'content_categories'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'blog_posts'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped

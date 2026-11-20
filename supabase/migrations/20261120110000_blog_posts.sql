@@ -229,15 +229,13 @@ create index blog_posts_by_category on public.blog_posts (category_id);
 -- The admin's list: Trash apart, newest edit first.
 create index blog_posts_admin_list on public.blog_posts (deleted_at, updated_at desc);
 
--- A visitor's columns are named: nothing the page does not show (ADR-017). Trash and the other private state stay out.
--- The signed-in role reads every column (the admin's list needs the status and the Trash date); the row policy keeps a
--- customer to the published articles.
+-- The columns are named (ADR-017), the same for a visitor and a signed-in person. The Trash date is among them: the row
+-- policy lets a visitor see only articles that have none, so it is always empty for them, and the admin's list needs it.
 revoke all on table public.blog_posts from anon, authenticated;
 grant select (
   id, slug, title, excerpt, body, cover_path, cover_alt, category_id, tags, author_name, status, published_at,
-  seo_title, seo_description, read_minutes, search_vector, created_at, updated_at
-) on table public.blog_posts to anon;
-grant select on table public.blog_posts to authenticated;
+  seo_title, seo_description, read_minutes, search_vector, deleted_at, created_at, updated_at
+) on table public.blog_posts to anon, authenticated;
 -- Nobody writes the id, the dates, the reading time or the search vector; the publish date is the trigger's.
 grant insert (
   slug, title, excerpt, body, cover_path, cover_alt, category_id, tags, author_name, status, seo_title,
