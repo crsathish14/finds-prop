@@ -22,6 +22,8 @@ export type ChatStreamEvent =
   /** A checked, plain-text piece of the answer (or a fixed refusal). */
   | { readonly type: "text"; readonly text: string }
   | { readonly type: "card"; readonly reference: ToolReference }
+  /** A page of the site (`site-links.ts`): the server built the label and the path from the table. */
+  | { readonly type: "link"; readonly key: string; readonly text: string; readonly href: string }
   /** The confirm card for an enquiry or a site visit: `ready` to send, or the sign-in prompt. */
   | { readonly type: "confirm"; readonly card: ConfirmCard }
   /** A fixed note beside the answer: "I removed personal details", the cap note, the disclaimer. */
