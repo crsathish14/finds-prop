@@ -126,7 +126,7 @@ select is(
   'the super admin sees every article, Trash too'
 );
 select lives_ok(
-  $insert into public.blog_posts (slug, title, excerpt, author_name, category_id, tags)
+  $$insert into public.blog_posts (slug, title, excerpt, author_name, category_id, tags)
     values ('new-guide', 'A new guide', 'Short.', 'Asha Rao',
             '00000000-0000-4000-c500-000000000001', array['guide'])$$,
   'the super admin can add an article'
