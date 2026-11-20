@@ -270,7 +270,7 @@ describe("IT-faq: the FAQ module against a real database (ADR-143)", () => {
       .select("actor_id, diff, entity_id")
       .eq("action", "content.changed")
       .eq("entity_type", "faq")
-      .order("created_at");
+      .order("at");
     if (error) throw new Error(`Could not read the audit log (${error.code})`);
     const mine = data.filter((entry) => entry.actor_id === staff.userId);
     expect(mine.length).toBeGreaterThan(0);
