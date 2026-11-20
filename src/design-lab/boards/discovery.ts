@@ -3,6 +3,7 @@ import { DashboardPageDemo } from "./dashboard-demos";
 import { MyListingsDemo, ReceivedEnquiriesDemo } from "./dashboard-owner-demos";
 import { CompareBarDemo, ComparePageDemo } from "./discovery-demos";
 import { ContactPageDemo } from "./contact-demos";
+import { FaqAccordionDemo, FaqFilterBarDemo } from "./discovery-demos-faq";
 import { LegalPagesDemo } from "./legal-demos";
 import { ProjectPageDemo } from "./project-demos";
 import { ProjectsPageDemo } from "./projects-demos";
@@ -138,5 +139,21 @@ export const DISCOVERY: LabEntry[] = [
       "The warning a form shows when the visitor's session ended before they could send it (S5-T07): \"Your session has ended\", that what they typed will be kept, and a Sign in again link. On its own, and inside the property enquiry card, the phone's enquiry sheet, the project's enquiry card and a project's own form, with what was typed still in the form. Nothing here signs in or navigates. The words are not approved yet.",
     sources: ["domain/session-ended-alert.tsx", "domain/enquiry-card.tsx", "patterns/alert.tsx"],
     Demo: SessionEndedDemo,
+  },
+  {
+    id: "faq-accordion",
+    name: "FAQ accordion",
+    description:
+      "The questions of the public FAQ page (ADR-143): a heading and a count for each category, and an accordion of its questions in a card. Several questions can be open at once; the answers are plain text in paragraphs and stay in the page when closed, so search engines read them. An address ending in a question's anchor opens that question and scrolls to it. Shown with two categories, one question open to start with, and a very long category name, question and word with three paragraphs.",
+    sources: ["patterns/accordion.tsx", "domain/faq-accordion.client.tsx"],
+    Demo: FaqAccordionDemo,
+  },
+  {
+    id: "faq-filter-bar",
+    name: "FAQ search and categories",
+    description:
+      "The search box and the category chips above the public FAQ (ADR-143). Both live in the address, so a search or a category can be shared and works without scripts: the search is a plain form with a Search button and each chip is a link; the chosen chip shows a tick as well as its fill. A line under them says how many questions were found and a Clear link shows while something is chosen. On a phone the chips scroll sideways. Shown with nothing chosen, with a category and words, and with nothing found and the page's empty state.",
+    sources: ["domain/faq-filter-bar.tsx", "patterns/empty-state.tsx"],
+    Demo: FaqFilterBarDemo,
   },
 ];
