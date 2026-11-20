@@ -173,6 +173,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"faqs": {
+                  Row: {
+                    "answer": string,"category_id": string,"created_at": string,"deleted_at": string | null,"id": string,"question": string,"search_vector": unknown,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer": string,"category_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question": string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "answer"?: string,"category_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question"?: string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "faqs_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"form_submissions": {
                   Row: {
                     "created_at": string,"crm_attempts": number,"crm_claimed_until": string | null,"crm_http_status": number | null,"crm_integration_id": string | null,"crm_lead_id": string | null,"crm_status": string,"data": NonNullable<Json>,"email": string | null,"files": NonNullable<Json>,"form_id": string | null,"form_name": string,"id": string,"idempotency_key": string | null,"last_error": string | null,"mobile": string | null,"name": string | null,"next_retry_at": string | null,"project_id": string | null,"project_lead_id": string | null,"source": string | null,"visitor_hash": string | null
@@ -923,6 +943,9 @@ isOneToOne: false
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
+"reorder_faqs":
+{ Args: { "p_category": string,"p_ids": (string)[] }; Returns: number
+                           },
 "run_retention":
 { Args: { "p_batch"?: number,"p_max_batches"?: number }; Returns: Json
                            },
@@ -931,6 +954,11 @@ isOneToOne: false
                            },
 "save_project_price_trends":
 { Args: { "p_project": string,"p_rows": Json }; Returns: number
+                           },
+"search_faqs":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_query"?: string }; Returns: {
+              "answer": string,"category_id": string,"category_name": string,"category_slug": string,"id": string,"question": string,"rank": number,"sort_order": number,"updated_at": string
+            }[]
                            },
 "search_properties":
 { Args: { "p_bhk"?: number,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
