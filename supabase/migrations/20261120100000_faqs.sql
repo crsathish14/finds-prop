@@ -49,7 +49,7 @@ create index faqs_search_keyword on public.faqs
 -- nothing, and the search runs as the caller and needs `search_vector`.
 revoke all on table public.faqs from anon, authenticated;
 grant select on table public.faqs to anon, authenticated;
-grant insert (category_id, question, answer, sort_order, status)
+grant insert (id, category_id, question, answer, sort_order, status)
   on table public.faqs to authenticated;
 grant update (category_id, question, answer, sort_order, status, deleted_at)
   on table public.faqs to authenticated;
