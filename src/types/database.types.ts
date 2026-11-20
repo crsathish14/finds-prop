@@ -940,11 +940,11 @@ isOneToOne: false
 "record_places_call":
 { Args: { "p_api": string,"p_caller": string,"p_outcome": string }; Returns: undefined
                            },
-"reserved_admin_emails":
-{ Args: Record<PropertyKey, never>; Returns: (string)[]
-                           },
 "reorder_faqs":
 { Args: { "p_category": string,"p_ids": (string)[] }; Returns: number
+                           },
+"reserved_admin_emails":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
 "run_retention":
 { Args: { "p_batch"?: number,"p_max_batches"?: number }; Returns: Json
