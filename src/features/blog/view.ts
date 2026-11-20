@@ -47,7 +47,7 @@ export interface PostRow {
   published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
-  read_minutes: number;
+  read_minutes: number | null;
   updated_at: string;
 }
 
@@ -196,7 +196,7 @@ export function toArticleView(
     tags: row.tags,
     authorName: row.author_name,
     publishedAt: row.published_at,
-    readMinutes: row.read_minutes,
+    readMinutes: row.read_minutes ?? 1,
     body: parseBody(row.body),
     categoryId: row.category_id,
     category,
