@@ -1,7 +1,7 @@
 -- F04 projects, units and price trends. Tests: DB-CON-projects, DB-RLS-projects-*,
 -- DB-TRG-projects-guard, DB-TRG-units-project-lock, DB-RLS-units, DB-RLS-price_trends.
 begin;
-select plan(69);
+select plan(84);
 
 -- b1 and b2 are builders (records B1 and B2), c1 is a customer, ad is the reserved admin.
 insert into auth.users (id, email, email_confirmed_at) values
@@ -55,11 +55,6 @@ insert into public.project_price_trends (project_id, month, price_per_sqft) valu
 
 -- DB-CON-projects
 select throws_ok(
-  $$insert into public.projects (slug, name, builder_id, locality, price_min, price_max)
-    values ('bad-price', 'Bad Price', '00000000-0000-4000-b000-000000000001', 'Adyar', 10, 5)$$,
-  '23514', null, 'the lowest price cannot exceed the highest'
-);
-select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality, latitude)
     values ('half-point', 'Half Point', '00000000-0000-4000-b000-000000000001', 'Adyar', 13.0)$$,
   '23514', null, 'latitude and longitude come together'
@@ -89,6 +84,68 @@ select throws_ok(
     values ('kadal-vista', 'Another', '00000000-0000-4000-b000-000000000001', 'Adyar')$$,
   '23505', null, 'a slug is unique'
 );
+-- DB-CON-projects-kind (ADR-148): the rules between the columns hold for every writer.
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, offer_type)
+    values ('commercial-flat-apartment', 'commercial-flat-apartment', '00000000-0000-4000-b000-000000000002', 'Adyar', 'commercial', 'apartment', 'sale')$$,
+  '23514', null, 'a commercial project cannot be an apartment'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type)
+    values ('residential-office', 'residential-office', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'office')$$,
+  '23514', null, 'a residential project cannot be an office'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type)
+    values ('commercial-no-offer', 'commercial-no-offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 'commercial', 'office')$$,
+  '23514', null, 'a commercial project is for sale or for rent'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, offer_type)
+    values ('residential-offer', 'residential-offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'apartment', 'rent')$$,
+  '23514', null, 'a residential project has no sale or rent choice'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, area_min_sqft, area_max_sqft, bhk_options)
+    values ('plot-bhk', 'plot-bhk', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'plot', 1200, 2400, '{2}')$$,
+  '23514', null, 'a plot has no bedrooms'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type)
+    values ('plot-no-area', 'plot-no-area', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'plot')$$,
+  '23514', null, 'a plot gives its area range'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, area_min_sqft, area_max_sqft)
+    values ('apartment-area', 'apartment-area', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'apartment', 500, 900)$$,
+  '23514', null, 'an apartment gives no area range'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_status, possession_date)
+    values ('ready-possession', 'ready-possession', '00000000-0000-4000-b000-000000000002', 'Adyar', 'ready_to_move', '2028-12-01')$$,
+  '23514', null, 'a ready project has no possession month'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_status)
+    values ('launch-no-possession', 'launch-no-possession', '00000000-0000-4000-b000-000000000002', 'Adyar', 'new_launch')$$,
+  '23514', null, 'a new launch gives its possession month'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_status, possession_date)
+    values ('possession-mid-month', 'possession-mid-month', '00000000-0000-4000-b000-000000000002', 'Adyar', 'under_construction', '2028-12-15')$$,
+  '23514', null, 'possession is the first day of a month'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, rera_applicable, rera_number, rera_not_applicable_reason)
+    values ('reason-with-rera', 'reason-with-rera', '00000000-0000-4000-b000-000000000002', 'Adyar', true, 'TN/1/2026', 'Not needed')$$,
+  '23514', null, 'the reason RERA does not apply is only given when RERA does not apply'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, project_type)
+    values ('old-layout', 'old-layout', '00000000-0000-4000-b000-000000000002', 'Adyar', 'plotted_layout')$$,
+  '23514', null, 'a plotted layout is no longer a project type'
+);
+
 -- DB-CON-projects-form (ADR-148): the columns of the project form change.
 select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality, price, price_type)
@@ -215,8 +272,35 @@ select is(
   'my_projects includes the moderation state'
 );
 select lives_ok(
-  $$insert into public.projects (slug, name, locality) values ('b1-new', 'B1 New Project', 'Adyar')$$,
-  'a builder can create a project; the builder link is filled in'
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, project_status, price, price_type,
+      rera_not_applicable_reason
+    ) values (
+      'b1-new', 'B1 New Project', 'Adyar', 'residential', 'apartment', 'ready_to_move', 5000000, 'basic',
+      'Below the size that needs registration.'
+    )$$,
+  'a builder can create a complete project; the builder link is filled in'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, locality, project_type, property_type, project_status)
+    values ('b1-no-price', 'B1 No Price', 'Adyar', 'residential', 'apartment', 'ready_to_move')$$,
+  '23514', 'projects.form_incomplete', 'a builder must give the type, the status and the price'
+);
+select throws_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, project_status, price, price_type, rera_applicable
+    ) values ('b1-no-rera', 'B1 No Rera', 'Adyar', 'residential', 'apartment', 'ready_to_move', 5000000, 'basic', true)$$,
+  '23514', 'projects.rera_number_required', 'a builder must give the RERA number when RERA applies'
+);
+select throws_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, project_status, price, price_type
+    ) values ('b1-no-reason', 'B1 No Reason', 'Adyar', 'residential', 'apartment', 'ready_to_move', 5000000, 'basic')$$,
+  '23514', 'projects.rera_reason_required', 'a builder must say why RERA does not apply when it does not'
+);
+select throws_ok(
+  $$update public.projects set price_type = 'basic' where id = '00000000-0000-4000-c000-000000000001'$$,
+  '23514', 'projects.form_incomplete', 'a change to the form''s own columns is asked for the whole form'
 );
 select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality)
@@ -241,9 +325,10 @@ select lives_ok(
 );
 select lives_ok(
   $$update public.projects
-    set price = 4500000, price_type = 'basic', rera_not_applicable_reason = 'Below the size that needs registration.'
+    set project_type = 'residential', property_type = 'apartment', project_status = 'ready_to_move',
+        price = 4500000, price_type = 'basic', rera_not_applicable_reason = 'Below the size that needs registration.'
     where id = '00000000-0000-4000-c000-000000000006'$$,
-  'a builder can write the price, the price type and the RERA reason'
+  'a builder can write the type, the status, the price, the price type and the RERA reason'
 );
 select throws_ok(
   $$update public.projects set slug = 'kadal-vista-new' where id = '00000000-0000-4000-c000-000000000001'$$,
@@ -320,9 +405,14 @@ select lives_ok(
   'the admin can edit a project'
 );
 select lives_ok(
-  $$insert into public.projects (slug, name, builder_id, locality)
-    values ('admin-made', 'Admin Made', '00000000-0000-4000-b000-000000000002', 'Adyar')$$,
-  'the admin can create a project for a builder'
+  $$insert into public.projects (
+      slug, name, builder_id, locality, project_type, property_type, project_status, price, price_type,
+      rera_applicable, rera_number
+    ) values (
+      'admin-made', 'Admin Made', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'apartment',
+      'ready_to_move', 5000000, 'basic', true, 'TN/29/Building/0123/2026'
+    )$$,
+  'the admin can create a complete project for a builder'
 );
 select lives_ok(
   $$insert into public.project_price_trends (project_id, month, price_per_sqft)

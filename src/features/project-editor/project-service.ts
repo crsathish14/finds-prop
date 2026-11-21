@@ -26,9 +26,6 @@ export interface ProjectRow {
   offer_type?: string | null;
   price?: number | null;
   price_type?: string | null;
-  /** Written with the price until the readers move to it (ADR-148 step D drops both columns). */
-  price_min?: number | null;
-  price_max?: number | null;
   area_min_sqft?: number | null;
   area_max_sqft?: number | null;
   bhk_options?: number[];
@@ -114,8 +111,29 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
   if (says(failure, "projects.slug_locked")) {
     return onBox("slug", "validation.slugLocked", "The page address cannot change once approved");
   }
-  if (says(failure, "projects_price_range")) {
-    return onBox("priceMax", "validation.priceRange", "The price range runs backwards");
+  if (says(failure, "projects.rera_number_required")) {
+    return onBox("reraNumber", "validation.required", "The RERA number is required");
+  }
+  if (says(failure, "projects.rera_reason_required")) {
+    return onBox(
+      "reraNotApplicableReason",
+      "validation.required",
+      "The reason RERA does not apply is required",
+    );
+  }
+  if (says(failure, "projects_possession_for_status")) {
+    return onBox(
+      "possessionDate",
+      "validation.invalid",
+      "The possession month does not fit the status",
+    );
+  }
+  if (says(failure, "projects_property_type_fits")) {
+    return onBox(
+      "propertyType",
+      "validation.invalid",
+      "That property type does not fit the project type",
+    );
   }
   if (says(failure, "projects_area_range")) {
     return onBox("areaMaxSqft", "validation.areaRange", "The largest area is below the smallest");
@@ -164,8 +182,7 @@ function put<Key extends keyof ProjectRow>(
  * form sent: bedrooms only for a residential apartment or villa, the sale or rent choice only for a commercial
  * project, the area range only for a plot and commercial projects, the possession month only while the project is
  * still to be built, the RERA number only when RERA applies and the reason only when it does not (the database
- * refuses a number without RERA, so a leftover box never blocks a save). The old lowest and highest price columns are
- * written from the one price until the pages read the new ones.
+ * refuses a number without RERA, so a leftover box never blocks a save).
  */
 export function projectRowFrom(
   input: Fields,
@@ -181,8 +198,6 @@ export function projectRowFrom(
     offer_type: offerTypeApplies(input.projectType) ? (input.offerType ?? null) : null,
     price: input.price,
     price_type: input.priceType,
-    price_min: input.price,
-    price_max: input.price,
     bhk_options: bedroomsApply(input.projectType, input.propertyType)
       ? (input.bhkOptions ?? [])
       : [],

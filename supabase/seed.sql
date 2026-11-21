@@ -53,7 +53,7 @@ values
 -- Projects: nine live (two featured), one approved but unpublished, one waiting for review, one
 -- rejected. The last two belong to the inactive builder.
 insert into public.projects (
-  id, slug, name, builder_id, project_type, property_type, project_status, price_min, price_max,
+  id, slug, name, builder_id, project_type, property_type, project_status,
   bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, address,
   latitude, longitude, advantages, nearby, rera_applicable, rera_number, description, specifications,
   amenities, moderation, published, featured, rejection_reason, moderated_at,
@@ -67,8 +67,6 @@ select
   spec.project_type,
   spec.property_type,
   spec.project_status,
-  spec.price_min,
-  spec.price_max,
   spec.bhk_options::smallint[],
   spec.acres,
   spec.total_units,
@@ -142,9 +140,8 @@ select
   end)::numeric(10, 2),
   (array['East', 'West', 'North', 'South', 'North-East', 'South-East'])[1 + (unit.k - 1) % 6],
   (round(
-    (project.price_min
-      + (project.price_max - project.price_min)
-        * ((unit.k - 1)::numeric / greatest(unit.total - 1, 1))) / 10000
+    (project.price
+      * (1 + 0.8 * ((unit.k - 1)::numeric / greatest(unit.total - 1, 1)))) / 10000
   ) * 10000)::bigint,
   current_date + unit.k * 20,
   case when unit.k % 5 = 0 then 'sold' when unit.k % 7 = 0 then 'hold' else 'available' end
