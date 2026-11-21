@@ -720,3 +720,46 @@ describe("UT-ai-output-send-claim: the assistant sends nothing, so it may not sa
     );
   });
 });
+
+describe("site-link markers", () => {
+  const linkEvents = (answer: string) =>
+    checkOutput(answer, evidence()).events.filter((event) => event.type === "link");
+
+  it("turns a key from the table into a link event and takes the marker out of the text", () => {
+    const { events, summary } = checkOutput(
+      "I can't post a property here, but you can on the website. [[link:post_property]]",
+      evidence(),
+    );
+    expect(events.filter((event) => event.type === "link")).toEqual([
+      { type: "link", key: "post_property" },
+    ]);
+    expect(JSON.stringify(events)).not.toContain("[[");
+    expect(summary.outcome).toBe("passed");
+  });
+
+  it("drops an unknown key, a path and a web address, and counts the key", () => {
+    const { events, summary } = checkOutput(
+      "Try this. [[link:https://evil.example]] [[link:admin_crm]]",
+      evidence(),
+    );
+    expect(events.some((event) => event.type === "link")).toBe(false);
+    expect(summary.counts.unknown_reference).toBe(2);
+  });
+
+  it("sends a key once and at most two links", () => {
+    expect(linkEvents("One. [[link:sign_in]] [[link:sign_in]]")).toHaveLength(1);
+    expect(
+      linkEvents(
+        "A. [[link:sign_in]] B. [[link:dashboard]] C. [[link:compare]] D. [[link:contact]]",
+      ),
+    ).toHaveLength(2);
+  });
+
+  it("still blocks a written web address, even beside a good marker", () => {
+    const { summary } = checkOutput(
+      "Go to https://example.test/post-property now. [[link:post_property]]",
+      evidence(),
+    );
+    expect(summary.outcome).toBe("blocked");
+  });
+});

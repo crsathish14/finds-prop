@@ -17,6 +17,12 @@ const eventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("status"), text: z.string() }),
   z.object({ type: z.literal("text"), text: z.string() }),
   z.object({ type: z.literal("card"), reference: referenceSchema }),
+  z.object({
+    type: z.literal("link"),
+    key: z.string(),
+    text: z.string().max(80),
+    href: z.string().max(80),
+  }),
   z.object({ type: z.literal("confirm"), card: confirmCardSchema }),
   z.object({ type: z.literal("notice"), key: z.string(), text: z.string() }),
   z.object({

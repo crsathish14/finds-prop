@@ -3232,6 +3232,18 @@
     "askHome": "Ask about this home",
     "askProject": "Ask about this project",
     "askCompare": "Ask about these homes",
+    "siteLinks": {
+      "post_property": "Post a property",
+      "my_listings": "Your listings",
+      "saved_homes": "Saved homes",
+      "enquiries": "Your enquiries",
+      "dashboard": "Your dashboard",
+      "sign_in": "Sign in or register",
+      "compare": "Compare homes",
+      "builder_sign_in": "Builder sign in",
+      "projects": "Browse projects",
+      "contact": "Contact us"
+    },
     "searching": "Searching…",
     "capNote": "I couldn't check everything. Here is what I found.",
     "fallback": "I couldn't finish that. Try a simpler question, or use the search filters.",

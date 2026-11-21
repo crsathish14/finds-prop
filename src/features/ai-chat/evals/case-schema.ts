@@ -38,6 +38,7 @@ export const EVAL_CATEGORIES = [
   "competitor",
   "propose",
   "place",
+  "site_link",
   // red team
   "internals_probe",
   "instruction_attack",
