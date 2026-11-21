@@ -61,7 +61,12 @@ export function AuthAside({ step }: { step: AuthStep }) {
       className="hidden flex-col justify-between gap-10 rounded-xl bg-dark p-10 text-on-dark lg:flex"
     >
       <div>
-        <Text as="span" variant="overline" tone="inherit" className="text-on-dark-accent">
+        <Text
+          as="span"
+          variant="overline"
+          tone="inherit"
+          className="text-on-dark-accent normal-case!"
+        >
           {translate("roleTag")}
         </Text>
         <Heading as="h2" size="2" className="mt-3 text-on-dark [&_em]:text-on-dark-accent">

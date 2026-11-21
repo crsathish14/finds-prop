@@ -26,8 +26,8 @@ function ListingsPage({ overlay }: { overlay?: ReactNode }) {
   return (
     <PortalShell
       brand={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" tone="on-dark" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" tone="on-dark" />
         </Link>
       }
       portalTag="Admin"
@@ -35,8 +35,8 @@ function ListingsPage({ overlay }: { overlay?: ReactNode }) {
       groups={GROUPS}
       footerItems={PORTAL_FOOTER}
       mobileLogo={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" />
         </Link>
       }
       mobileMenu={{ triggerLabel: "Open menu", title: "Admin menu", closeLabel: "Close menu" }}
@@ -58,7 +58,7 @@ function ListingsPage({ overlay }: { overlay?: ReactNode }) {
             Listings
           </Heading>
           <Text tone="muted">
-            Review listings posted by owners. Only approved listings appear on Find Prop.
+            Review listings posted by owners. Only approved listings appear on findsprop.
           </Text>
         </div>
         {/* With an overlay open the page is one screen tall, so the overlay covers all of it. */}

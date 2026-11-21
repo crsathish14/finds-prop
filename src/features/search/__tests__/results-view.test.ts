@@ -272,7 +272,7 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
   it("is the plain title and a description of the homes when nothing is filtered", () => {
     expect(meta({})).toEqual({
       title: "Properties",
-      description: "Homes for sale and rent. Photos, prices and details of homes on Find Prop.",
+      description: "Homes for sale and rent. Photos, prices and details of homes on findsprop.",
     });
   });
 
@@ -281,7 +281,7 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
       {
         title: "Apartments for sale in Velachery",
         description:
-          "Apartments for sale in Velachery. Photos, prices and details of homes on Find Prop.",
+          "Apartments for sale in Velachery. Photos, prices and details of homes on findsprop.",
       },
     );
   });

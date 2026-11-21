@@ -33,7 +33,7 @@ const WORDS: Record<
     description:
       "Your listing is live. If you change its kind, type, title, description or address, it goes back to review and stays hidden until it is approved again.",
     review: "Review and save",
-    next: "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on Find Prop at once.",
+    next: "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on findsprop at once.",
     save: "Save changes",
     saving: "Saving changes",
   },
@@ -58,7 +58,7 @@ const NOTICES: Record<EditState, ReactNode> = {
   approved: (
     <Alert tone="info" title="You're editing a live listing">
       A change to the kind, type, title, description or address sends it back to review. Any other
-      change shows on Find Prop at once.
+      change shows on findsprop at once.
     </Alert>
   ),
   pending: null,

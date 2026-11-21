@@ -180,7 +180,7 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Homepage sections" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("switch", { name: /Why Find Prop/ })).not.toBeChecked();
+    expect(screen.getByRole("switch", { name: /Why findsprop/ })).not.toBeChecked();
     expect(screen.getByRole("switch", { name: /Featured listings/ })).toBeChecked();
     expect(screen.getByRole("textbox", { name: "Label 1" })).toHaveValue("Adyar");
     expect(screen.getByRole("textbox", { name: "Latitude 2" })).toHaveValue("12.9815");
@@ -196,10 +196,10 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
   it("draws the sections and the localities as the boxes are changed", async () => {
     open();
     const home = () => picture("site-homepage-preview")?.textContent ?? "";
-    expect(home()).toContain("Why Find PropOff");
+    expect(home()).toContain("Why findspropOff");
     expect(home()).toContain("Adyar");
-    await userEvent.click(screen.getByRole("switch", { name: /Why Find Prop/ }));
-    expect(home()).toContain("Why Find PropOn");
+    await userEvent.click(screen.getByRole("switch", { name: /Why findsprop/ }));
+    expect(home()).toContain("Why findspropOn");
     await userEvent.click(screen.getByRole("button", { name: "Remove: Adyar" }));
     await userEvent.click(screen.getByRole("button", { name: "Remove: Velachery" }));
     expect(home()).toContain("Explore by localityOff");

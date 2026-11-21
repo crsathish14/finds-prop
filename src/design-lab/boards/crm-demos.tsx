@@ -331,7 +331,7 @@ const METHODS = [
 
 const SAMPLE_VALUES: CrmConnectionValues = {
   name: "Sample CRM",
-  leadSource: "Find Prop website",
+  leadSource: "findsprop website",
   baseUrl: "https://api.crm.example",
   endpoint: "/v2/leads",
   method: "POST",

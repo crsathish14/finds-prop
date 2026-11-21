@@ -73,8 +73,8 @@ describe("PublicFooter: the footer of the public pages (S4-T06)", () => {
       "/privacy",
     );
     expect(within(footer).getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
-    expect(within(footer).getByText("© 2026 Find Prop")).toBeInTheDocument();
-    expect(within(footer).getByRole("link", { name: "Find Prop, home" })).toHaveAttribute(
+    expect(within(footer).getByText("© 2026 findsprop")).toBeInTheDocument();
+    expect(within(footer).getByRole("link", { name: "findsprop, home" })).toHaveAttribute(
       "href",
       "/",
     );

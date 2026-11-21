@@ -129,7 +129,7 @@ export const DOMAIN: LabEntry[] = [
     id: "value-card",
     name: "Value card",
     description:
-      "One reason to use Find Prop: a green icon square, a bold title and a sentence, on a white card. Three in a row, and a long text.",
+      "One reason to use findsprop: a green icon square, a bold title and a sentence, on a white card. Three in a row, and a long text.",
     sources: ["domain/value-card.tsx"],
     Demo: ValueCardDemo,
   },
@@ -161,7 +161,7 @@ export const DOMAIN: LabEntry[] = [
     id: "home-sections",
     name: "Homepage sections",
     description:
-      "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why Find Prop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
+      "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why findsprop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
     sources: ["domain/home-section.tsx", "domain/section-grid.tsx"],
     Demo: HomeSectionsDemo,
   },
@@ -169,7 +169,7 @@ export const DOMAIN: LabEntry[] = [
     id: "home-card-sections",
     name: "Homepage card sections",
     description:
-      "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on Find Prop is the Scrolling row.",
+      "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on findsprop is the Scrolling row.",
     sources: [],
     Demo: HomeCardSectionsDemo,
   },

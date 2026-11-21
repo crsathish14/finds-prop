@@ -153,12 +153,12 @@ export function HomeSectionsDemo() {
             </SectionGrid>
           </HomeSection>
           <HomeSection labelledBy="lab-why-title">
-            <SectionHead id="lab-why-title" title="Why Find Prop" emphasis="Find Prop" />
+            <SectionHead id="lab-why-title" title="Why findsprop" emphasis="findsprop" />
             <SectionGrid variant="values">
               <ValueCard
                 icon={ShieldCheck}
                 title="Approved listings only"
-                description="Homes appear on Find Prop after they are approved."
+                description="Homes appear on findsprop after they are approved."
               />
               <ValueCard
                 icon={MessageCircle}
@@ -188,12 +188,12 @@ export function HomeSectionsDemo() {
         className="w-full"
       >
         <HomeSection labelledBy="lab-band-title" tone="band" className="w-full">
-          <SectionHead id="lab-band-title" title="Why Find Prop" emphasis="Find Prop" />
+          <SectionHead id="lab-band-title" title="Why findsprop" emphasis="findsprop" />
           <SectionGrid variant="values">
             <ValueCard
               icon={ShieldCheck}
               title="Approved listings only"
-              description="Homes appear on Find Prop after they are approved."
+              description="Homes appear on findsprop after they are approved."
             />
             <ValueCard
               icon={MessageCircle}
@@ -266,7 +266,7 @@ export function HomeCardSectionsDemo() {
         </HomeSection>
       </Specimen>
       <Text tone="muted">
-        Newest on Find Prop is the Scrolling row entry above. Each of these sections is left out
+        Newest on findsprop is the Scrolling row entry above. Each of these sections is left out
         whole when it has nothing to show.
       </Text>
     </div>

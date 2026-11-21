@@ -47,7 +47,7 @@ const LINK_WORDS: LinkListWords = {
 };
 
 const HEADER_WORDS: SiteHeaderFieldsWords = {
-  brand: { title: "Brand", description: "Leave the name empty to use Find Prop." },
+  brand: { title: "Brand", description: "Leave the name empty to use findsprop." },
   links: {
     title: "Navigation links",
     description:
@@ -102,7 +102,7 @@ const HEADER_LINKS = [
 ];
 
 const HEADER_FILLED: SiteHeaderValues = {
-  name: "Find Prop",
+  name: "findsprop",
   links: HEADER_LINKS,
   ctaLabel: "Post property",
   ctaHref: "/post-property",
@@ -117,7 +117,7 @@ const FOOTER_FILLED: SiteFooterValues = {
   email: "hello@findprop.example",
   address: "Chennai, Tamil Nadu",
   links: [row("f1", "Contact us", "/contact"), row("f2", "Builder sign in", "/builder/login")],
-  copyright: "© 2026 Find Prop",
+  copyright: "© 2026 findsprop",
 };
 
 const FOOTER_STANDARD: SiteFooterValues = {
@@ -150,7 +150,7 @@ function headerPreview(values: SiteHeaderValues): ReactNode {
   const cta = values.ctaLabel.trim();
   return (
     <SiteHeaderPreview
-      brandName={values.name.trim() || "Find Prop"}
+      brandName={values.name.trim() || "findsprop"}
       links={links}
       {...(cta ? { cta } : {})}
     />
@@ -161,13 +161,13 @@ function footerPreview(values: SiteFooterValues): ReactNode {
   const about = values.about.trim();
   return (
     <SiteFooterPreview
-      brandName="Find Prop"
+      brandName="findsprop"
       {...(about ? { about } : {})}
       contacts={[values.address, values.phone, values.email]
         .map((line) => line.trim())
         .filter(Boolean)}
       links={values.links.map((link) => link.label.trim()).filter(Boolean)}
-      copyright={values.copyright.trim() || "© 2026 Find Prop"}
+      copyright={values.copyright.trim() || "© 2026 findsprop"}
     />
   );
 }
@@ -371,12 +371,12 @@ export function SiteFooterDemo() {
             links={["Buy", "Rent", "Projects", "AI search", "Contact"]}
             cta="Post property"
           />
-          <SiteHeaderPreview brandName="Find Prop" links={[]} />
+          <SiteHeaderPreview brandName="findsprop" links={[]} />
           <SiteFooterPreview
-            brandName="Find Prop"
+            brandName="findsprop"
             contacts={[]}
             links={[]}
-            copyright="© 2026 Find Prop"
+            copyright="© 2026 findsprop"
           />
         </div>
       </Specimen>

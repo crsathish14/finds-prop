@@ -39,8 +39,8 @@ import {
 } from "./sample-data";
 
 const HOME_LINK = (
-  <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-    <Logo name="Find Prop" />
+  <Link href="#home" aria-label="findsprop, home" className="no-underline">
+    <Logo name="findsprop" />
   </Link>
 );
 
@@ -215,8 +215,8 @@ function FooterPage() {
       </main>
       <SiteFooter
         logo={
-          <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-            <Logo name="Find Prop" tone="on-dark" />
+          <Link href="#home" aria-label="findsprop, home" className="no-underline">
+            <Logo name="findsprop" tone="on-dark" />
           </Link>
         }
         about="Search, shortlist and compare homes across Chennai, and enquire directly with owners and builders."
@@ -224,7 +224,7 @@ function FooterPage() {
         columns={FOOTER_COLUMNS}
         contacts={FOOTER_CONTACTS}
         legal={{
-          copyright: "© 2026 Find Prop. Sample footer.",
+          copyright: "© 2026 findsprop. Sample footer.",
           links: [
             { label: "Privacy", href: "#privacy" },
             { label: "Terms", href: "#terms" },
@@ -239,8 +239,8 @@ function PortalPage() {
   return (
     <PortalShell
       brand={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" tone="on-dark" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" tone="on-dark" />
         </Link>
       }
       portalTag="Admin"
@@ -248,8 +248,8 @@ function PortalPage() {
       groups={PORTAL_GROUPS}
       footerItems={PORTAL_FOOTER}
       mobileLogo={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" />
         </Link>
       }
       mobileMenu={{ triggerLabel: "Open menu", title: "Admin menu", closeLabel: "Close menu" }}
