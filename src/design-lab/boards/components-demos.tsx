@@ -15,6 +15,8 @@ import { SpecTile } from "@/components/patterns/spec-tile";
 import { StatTile } from "@/components/patterns/stat-tile";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { UploadZone, type UploadFile } from "@/components/patterns/upload-zone";
+import { AiCta } from "@/components/ui/ai-cta.client";
+import { AiSparkle } from "@/components/ui/ai-sparkle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,6 +134,58 @@ export function IconButtonsDemo() {
             <Icon icon={Plus} />
           </IconButton>
         </Stage>
+      </Specimen>
+    </Row>
+  );
+}
+
+export function AiCtaDemo() {
+  return (
+    <Row className="items-center">
+      <Specimen label="pill (header AI Search)">
+        <AiCta name="nav" variant="pill">
+          <Link
+            href="#ai-cta"
+            variant="nav"
+            className="inline-flex items-center gap-2 rounded-pill border-2 border-transparent bg-cta-tint px-4 py-2 text-body font-bold text-cta-text hover:bg-cta-tint-2 hover:text-cta-text"
+          >
+            <AiSparkle />
+            AI Search
+          </Link>
+        </AiCta>
+      </Specimen>
+      <Specimen label="text, with the AI badge (search card)">
+        <AiCta name="hero" variant="text">
+          <Link
+            href="#ai-cta"
+            variant="nav"
+            className="inline-flex min-h-9 items-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text"
+          >
+            <AiSparkle />
+            Describe it in words
+            <span
+              aria-hidden="true"
+              className="ai-cta__badge rounded-pill bg-primary px-1 text-caption leading-4 font-bold text-on-primary"
+            >
+              AI
+            </span>
+          </Link>
+        </AiCta>
+      </Specimen>
+      <Specimen label="outline, entrance when in view (Ask about this home)">
+        <Button asChild variant="secondary" size="sm">
+          <AiCta name="ask" variant="outline" entrance>
+            <Link href="#ai-cta" className="no-underline hover:no-underline">
+              <AiSparkle />
+              Ask about this home
+            </Link>
+          </AiCta>
+        </Button>
+      </Specimen>
+      <Specimen label="sparkle on its own: still">
+        <span className="inline-flex items-center gap-2 text-cta-text">
+          <AiSparkle size="md" />
+        </span>
       </Specimen>
     </Row>
   );
