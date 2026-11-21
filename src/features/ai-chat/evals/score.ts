@@ -236,6 +236,17 @@ export function scoreCase(evalCase: EvalCase, observed: Observed, mode: Mode): C
     const stray = observed.cards.filter((card) => !allowed.includes(card));
     check("cards", stray.length === 0, `cards that may not appear: ${stray.join(", ")}`);
   }
+  if (expect.visible.sources !== undefined) {
+    const allowed = expect.visible.sources;
+    const stray = observed.sources.filter((source) => !allowed.includes(source));
+    check("sources", stray.length === 0, `source links that may not appear: ${stray.join(", ")}`);
+  }
+  for (const wanted of expect.visible.showsSources ?? [])
+    check(
+      `source ${wanted}`,
+      observed.sources.includes(wanted),
+      `the source link ${wanted} was not drawn`,
+    );
   for (const wanted of expect.visible.showsCards ?? [])
     check(`card ${wanted}`, observed.cards.includes(wanted), `the card ${wanted} was not drawn`);
   for (const word of expect.modelNeverSaw)

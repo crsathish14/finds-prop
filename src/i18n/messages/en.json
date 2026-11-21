@@ -460,7 +460,8 @@
       "projects": "Projects",
       "aiSearch": "AI Search",
       "contact": "Contact",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "blog": "Blog"
     },
     "header": {
       "postProperty": "Post property",
@@ -487,7 +488,8 @@
       "terms": "Terms",
       "copyright": "© {year} {brandName}",
       "navLabel": "Footer",
-      "linkFaq": "FAQ"
+      "linkFaq": "FAQ",
+      "linkBlog": "Blog"
     },
     "bottomBar": {
       "navLabel": "Primary",
@@ -3098,6 +3100,220 @@
         }
       }
     },
+    "blog": {
+      "editor": {
+        "empty": "This article has no text yet. Add a first block below.",
+        "blockLabel": "Block {place}: {kind}",
+        "kinds": {
+          "heading": "Heading",
+          "paragraph": "Paragraph",
+          "list": "List",
+          "quote": "Quote",
+          "image": "Picture"
+        },
+        "add": {
+          "heading": "Add heading",
+          "paragraph": "Add paragraph",
+          "list": "Add list",
+          "quote": "Add quote",
+          "image": "Add picture"
+        },
+        "addTitle": "Add a block",
+        "moveUp": "Move block {place} up",
+        "moveDown": "Move block {place} down",
+        "remove": "Delete block {place}",
+        "count": "{count} of {max} blocks used.",
+        "full": "You have used all {max} blocks. Delete one to add another.",
+        "headingLevel": "Heading size of block {place}",
+        "level2": "Section heading",
+        "level3": "Sub-heading",
+        "headingText": "Heading",
+        "paragraphText": "Text",
+        "listKind": "List style of block {place}",
+        "bulleted": "Bullets",
+        "numbered": "Numbers",
+        "listItems": "List items",
+        "listHint": "Write one item on each line.",
+        "quoteText": "Quote",
+        "quoteCite": "Who said it",
+        "optional": "(optional)",
+        "choosePicture": "Choose picture",
+        "replacePicture": "Replace picture",
+        "pictureRules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+        "imageAlt": "Describe the picture",
+        "imageAltHint": "Said aloud to people who cannot see it. Required.",
+        "imageCaption": "Caption"
+      },
+      "list": {
+        "tabsLabel": "Show articles by status",
+        "tabs": {
+          "all": "All",
+          "draft": "Drafts",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "Trash"
+        },
+        "status": {
+          "draft": "Draft",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "In Trash"
+        },
+        "actions": {
+          "edit": "Edit",
+          "publish": "Publish",
+          "unpublish": "Unpublish",
+          "archive": "Archive",
+          "trash": "Move to Trash",
+          "restore": "Restore"
+        },
+        "searchLabel": "Search articles",
+        "searchPlaceholder": "Search by title, text or tag",
+        "categoryLabel": "Filter by category",
+        "allCategories": "All categories",
+        "apply": "Apply",
+        "noMatchTitle": "No article matches",
+        "noMatchText": "Try other words, another category or another tab.",
+        "emptyTitle": "No articles yet",
+        "emptyText": "Write the first article and it will appear here as a draft.",
+        "address": "/blog/{slug}",
+        "updated": "Updated {date}"
+      },
+      "form": {
+        "basics": {
+          "title": "Basics",
+          "description": "What the list and the top of the article show."
+        },
+        "title": "Title",
+        "slug": "Address",
+        "slugHint": "The last part of the web address. Lower case words joined by hyphens.",
+        "slugSuggest": "Make from title",
+        "slugLive": "This article is on the site. Changing its address breaks links that already point to it.",
+        "author": "Author name",
+        "category": "Category",
+        "noCategory": "No category",
+        "tags": "Tags",
+        "tagsHint": "Up to 10 short tags, such as home-loans.",
+        "tagsPlaceholder": "Type a tag and press Enter",
+        "tagsAdd": "Add",
+        "tagsRemove": "Remove",
+        "tagsSuggestions": "Suggestions",
+        "tagsFull": "You have added the most you can, {max} tags.",
+        "excerpt": "Summary",
+        "excerptHint": "One or two sentences for the list and the top of the article. Needed before you publish.",
+        "cover": {
+          "title": "Cover picture",
+          "description": "Shown on the article's card and at the top of the article.",
+          "choose": "Choose cover",
+          "replace": "Replace cover",
+          "remove": "Remove cover",
+          "rules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+          "alt": "Describe the cover",
+          "altHint": "Said aloud to people who cannot see it. Required."
+        },
+        "body": {
+          "title": "Article text",
+          "description": "Build the article from blocks: headings, paragraphs, lists, quotes and pictures."
+        },
+        "seo": {
+          "title": "Search description",
+          "description": "What search engines and shared links show. Leave empty to use the title and the summary.",
+          "seoTitle": "Search title",
+          "seoTitleHint": "About 60 characters reads best.",
+          "seoDescription": "Search description",
+          "seoDescriptionHint": "About 150 characters reads best.",
+          "preview": "How it may look in search",
+          "previewEmptyTitle": "The article's title",
+          "previewAddress": "/blog/{slug}",
+          "previewEmptyDescription": "The article's summary"
+        },
+        "cancel": "Cancel",
+        "save": "Save article",
+        "saving": "Saving"
+      },
+      "metaTitle": "Blog",
+      "metaTitleNew": "Write an article",
+      "metaTitleEdit": "Edit article",
+      "title": "Blog",
+      "intro": "The articles shown on the Blog page and read by the assistant.",
+      "add": "New article",
+      "categoriesButton": "Categories",
+      "count": "{count, plural, one {# article} other {# articles}}",
+      "toast": {
+        "published": "Article published",
+        "unpublished": "Article unpublished and kept as a draft",
+        "archived": "Article archived",
+        "trashed": "Article moved to the Trash",
+        "restored": "Article restored",
+        "created": "Article created as a draft",
+        "saved": "Article saved"
+      },
+      "conflict": "That article is no longer there. The list has been refreshed.",
+      "gone": "This article is no longer there. Go back to the list.",
+      "uploadFailed": "A picture could not be uploaded. Check your connection and try again.",
+      "back": "Back to the articles",
+      "newTitle": "New article",
+      "editTitle": "Edit article",
+      "saveNote": {
+        "new": "A new article is saved as a draft. Publish it from the list when it is ready.",
+        "edit": "Saving shows the change on the site at once when the article is published."
+      },
+      "preview": {
+        "show": "Preview",
+        "hide": "Back to editing",
+        "note": "This is how the article reads on the site. Nothing is saved until you save.",
+        "empty": "Nothing to preview yet. Add a title and some text.",
+        "untitled": "Untitled article"
+      },
+      "category": {
+        "hidden": "{name} (hidden)"
+      },
+      "categories": {
+        "title": "Blog categories",
+        "description": "The groups of articles on the Blog page. The FAQ and job departments have their own.",
+        "close": "Close",
+        "listLabel": "Blog categories",
+        "empty": "There are no categories yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "inUse": "Move or delete its articles before you delete it.",
+        "conflict": "That category is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add category",
+          "editTitle": "Edit category {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden category and its articles are not shown to visitors or to the assistant.",
+          "add": "Add category",
+          "save": "Save category",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Category added",
+          "saved": "Category saved",
+          "hidden": "Category hidden",
+          "shown": "Category shown",
+          "moved": "Order saved",
+          "deleted": "Category deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The category is removed for good. This cannot be undone.",
+          "confirm": "Delete category",
+          "cancel": "Keep it"
+        }
+      }
+    },
     "careers": {
       "title": "Careers",
       "intro": "Add the jobs you are hiring for. Visitors see a job while it is open.",
@@ -3371,6 +3587,9 @@
       "projects": "Browse projects",
       "contact": "Contact us"
     },
+    "sources": {
+      "label": "Sources"
+    },
     "searching": "Searching…",
     "capNote": "I couldn't check everything. Here is what I found.",
     "fallback": "I couldn't finish that. Try a simpler question, or use the search filters.",
@@ -3500,6 +3719,79 @@
       "link": "Contact us"
     },
     "loadingTitle": "Loading the questions"
+  },
+  "blog": {
+    "meta": {
+      "by": "By {name}",
+      "readMinutes": "{minutes} min read"
+    },
+    "search": {
+      "label": "Search articles",
+      "placeholder": "Search the Blog",
+      "submit": "Search"
+    },
+    "filters": {
+      "categories": "Blog categories",
+      "all": "All",
+      "tags": "Tags",
+      "tag": "#{tag}",
+      "clearTag": "Clear tag"
+    },
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "goTo": "Go to page {page}",
+      "position": "Page {page} of {count}",
+      "current": "(current page)"
+    },
+    "related": {
+      "title": "Read next",
+      "all": "All articles"
+    },
+    "page": {
+      "metaTitle": "Blog",
+      "metaDescription": "Guides, tips and news on buying, selling and renting property in Tamil Nadu.",
+      "title": "Blog",
+      "lead": "Guides, tips and news on buying, selling and renting property.",
+      "loadingTitle": "Loading the Blog",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "backHome": "Back to home",
+        "backBlog": "Back to the Blog",
+        "home": "Home",
+        "blog": "Blog"
+      },
+      "summary": {
+        "all": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "filtered": "{count, plural, =0 {No articles match} one {# article matches} other {# articles match}}"
+      },
+      "clear": "Clear filters",
+      "noMatches": {
+        "title": "No article matches",
+        "text": "Try other words, another category or another tag.",
+        "showAll": "Show all articles"
+      },
+      "empty": {
+        "title": "No articles yet",
+        "text": "We are writing the first ones. Please check back soon."
+      }
+    },
+    "article": {
+      "tags": "Tags",
+      "loadingTitle": "Loading the article",
+      "share": {
+        "title": "Share this article",
+        "newTab": "(opens in a new tab)",
+        "networks": {
+          "whatsapp": "WhatsApp",
+          "facebook": "Facebook",
+          "x": "X",
+          "linkedin": "LinkedIn",
+          "email": "Email"
+        }
+      }
+    }
   },
   "careers": {
     "workMode": {

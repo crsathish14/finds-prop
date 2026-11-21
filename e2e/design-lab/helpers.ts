@@ -24,6 +24,7 @@ export const BOARDS = [
   "crm",
   "charts",
   "ai-chat",
+  "blog",
   "careers",
 ] as const;
 

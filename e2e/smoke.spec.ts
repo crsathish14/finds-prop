@@ -114,6 +114,7 @@ test.describe("@smoke site header", () => {
       nav.buy,
       nav.rent,
       nav.projects,
+      nav.blog,
       nav.faq,
       nav.contact,
     ]);
@@ -199,6 +200,7 @@ test.describe("@smoke site footer and bottom bar", () => {
       footerText.linkBuy,
       footerText.linkRent,
       footerText.linkProjects,
+      footerText.linkBlog,
       footerText.linkFaq,
       footerText.linkContact,
       footerText.linkPost,

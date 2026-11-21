@@ -1,5 +1,5 @@
 import "server-only";
-import { MAX_PARALLEL_READ_CALLS, TOOL_TIMEOUT_MS } from "@/config/ai";
+import { AI_TOOL_GROUP_CALL_LIMITS, MAX_PARALLEL_READ_CALLS, TOOL_TIMEOUT_MS } from "@/config/ai";
 import { runTool, toolError } from "./tools/run";
 import type { AnyAiChatTool, ToolContext, ToolOutcome } from "./tools/types";
 
@@ -28,6 +28,8 @@ export interface RoundRun {
   readonly attempted: number;
   /** The names of the known tools that were run, each once. */
   readonly ranNames: readonly string[];
+  /** How many calls of each capped tool group were run in this round (`AI_TOOL_GROUP_CALL_LIMITS`). */
+  readonly groupAttempts: Readonly<Record<string, number>>;
 }
 
 /** The same value written the same way whatever order the keys came in, so equal calls compare equal. */
@@ -56,7 +58,8 @@ function raceTimeout(work: Promise<ToolOutcome>, signal?: AbortSignal): Promise<
 /**
  * `budget` is how many more calls this customer message may make. In call order: a propose tool that shares its
  * round gets `call_alone`; a call that repeats an earlier one shares that one's result; past
- * `MAX_PARALLEL_READ_CALLS` the call gets `too_many_calls`; past the budget it gets `call_limit`. The rest run
+ * `MAX_PARALLEL_READ_CALLS` the call gets `too_many_calls`; past the budget it gets `call_limit`; past its tool group's cap
+ * (`groupUsed` is what the earlier rounds spent) it gets `content_limit`. The rest run
  * together, each raced against `TOOL_TIMEOUT_MS`, and one that fails or times out affects only its own result.
  */
 export async function runRoundCalls(options: {
@@ -64,9 +67,12 @@ export async function runRoundCalls(options: {
   calls: readonly RoundCall[];
   context: ToolContext;
   budget: number;
+  /** The calls each capped tool group has already used in this customer message. */
+  groupUsed?: Readonly<Record<string, number>> | undefined;
   signal?: AbortSignal | undefined;
 }): Promise<RoundRun> {
   const { tools, calls, context, budget, signal } = options;
+  const groupAttempts: Record<string, number> = {};
   const slots: Promise<ToolOutcome>[] = [];
   const firstSlotOf = new Map<string, number>();
   const ranNames = new Set<string>();
@@ -87,8 +93,17 @@ export async function runRoundCalls(options: {
       slots.push(Promise.resolve(toolError("too_many_calls")));
     } else if (attempted >= budget) {
       slots.push(Promise.resolve(toolError("call_limit")));
+    } else if (
+      tool?.callGroup !== undefined &&
+      (options.groupUsed?.[tool.callGroup] ?? 0) + (groupAttempts[tool.callGroup] ?? 0) >=
+        AI_TOOL_GROUP_CALL_LIMITS[tool.callGroup]
+    ) {
+      slots.push(Promise.resolve(toolError("content_limit")));
     } else {
       attempted += 1;
+      if (tool?.callGroup !== undefined) {
+        groupAttempts[tool.callGroup] = (groupAttempts[tool.callGroup] ?? 0) + 1;
+      }
       if (tool !== undefined) ranNames.add(tool.name);
       slots.push(raceTimeout(runTool(tools, call, context), signal));
     }
@@ -102,5 +117,6 @@ export async function runRoundCalls(options: {
     })),
     attempted,
     ranNames: [...ranNames],
+    groupAttempts,
   };
 }

@@ -79,6 +79,7 @@ function seen(change: Partial<Observed> = {}): Observed {
     noticeKeys: [],
     links: [],
     cards: [],
+    sources: [],
     usage: usageRow(),
     toolCalls: [],
     modelSaw: "",

@@ -21,6 +21,7 @@ export type LabBoardId =
   | "crm"
   | "charts"
   | "ai-chat"
+  | "blog"
   | "careers";
 
 export type LabEntry = {

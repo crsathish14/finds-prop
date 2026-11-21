@@ -33,6 +33,7 @@ import {
   type BlogListView,
   type SearchRow,
 } from "./view";
+import type { PublicBlogParams } from "./page-params";
 
 /** The address of a stored picture on the public bucket. */
 export function blogImageUrl(path: string): string {
@@ -109,18 +110,18 @@ export async function getBlogList(list: BlogListQuery): Promise<BlogListView> {
 }
 
 /**
- * One published article by its address, or `null` when there is none (a draft, an archived one, one in Trash and a
- * wrong address all read the same: the row policy hides them). Cached under the Blog's tag and the article's own.
+ * One published article by the column that finds it, or `null` when there is none. Public data read with the cookie-less
+ * client, so the row policy decides: a draft, an archived article, one in Trash and a wrong value all read the same. The
+ * two cached reads below share it.
  */
-export async function getBlogArticle(slug: string): Promise<BlogArticleView | null> {
-  "use cache";
-  cacheTag(CACHE_TAGS.blog, blogPostTag(slug));
-  cacheLife("minutes");
-
+async function readPublishedArticle(
+  column: "slug" | "id",
+  value: string,
+): Promise<BlogArticleView | null> {
   const { data, error } = await createPublicSupabase()
     .from("blog_posts")
     .select(PUBLIC_POST_COLUMNS)
-    .eq("slug", slug)
+    .eq(column, value)
     .maybeSingle();
   if (error) {
     logger.error("a blog article could not be read", { errorCode: error.code });
@@ -134,6 +135,32 @@ export async function getBlogArticle(slug: string): Promise<BlogArticleView | nu
     category ? { slug: category.slug, name: category.name } : null,
     blogImageUrl,
   );
+}
+
+/**
+ * One published article by its address, or `null` when there is none (a draft, an archived one, one in Trash and a
+ * wrong address all read the same: the row policy hides them). Cached under the Blog's tag and the article's own.
+ */
+export async function getBlogArticle(slug: string): Promise<BlogArticleView | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.blog, blogPostTag(slug));
+  cacheLife("minutes");
+
+  return readPublishedArticle("slug", slug);
+}
+
+/**
+ * One published article by its id, for the AI assistant's article tool (ADR-143 section 6), which has the id from a
+ * search and not the address. Same rules as the page's read. Cached under the Blog's tag, which every
+ * `tagsAfterBlogChange` refreshes, so a publish, an unpublish, an edit or a move to Trash changes the answer at once.
+ * The id must be a UUID: the caller checks it, because a malformed one is a database error and not a "no such article".
+ */
+export async function getPublishedBlogPostById(id: string): Promise<BlogArticleView | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.blog);
+  cacheLife("minutes");
+
+  return readPublishedArticle("id", id);
 }
 
 /**
@@ -325,4 +352,63 @@ export async function readAdminBlogPost(
 
 export async function getAdminBlogPost(postId: string): Promise<AdminBlogPostView | null> {
   return readAdminBlogPost(await createServerSupabase(), postId);
+}
+
+/** What the public list page shows for one request: the page of articles, the chips, and the choices that really exist. */
+export type BlogPageData = {
+  list: BlogListView;
+  /** The active categories, in the admin's order, for the chips. */
+  categories: { slug: string; name: string }[];
+  /** The tags of the published articles, most used first, for the tag row. */
+  tags: { tag: string; count: number }[];
+  /** The chosen category, or "" when none was chosen or the one in the address is not an active category. */
+  category: string;
+  /** True when nothing at all is published and nothing was asked for (so the page says so, not "no match"). */
+  nothingPublished: boolean;
+};
+
+/**
+ * Everything the public Blog list needs. The category chips are the active categories (the rule that hides the rest is
+ * the table's own), and a category in the address that is not among them is dropped. Free words go to the search
+ * function and are never cached; every other view of the list is a cached page under the Blog's tag.
+ */
+export async function getBlogPage(params: PublicBlogParams): Promise<BlogPageData> {
+  const [allCategories, tags] = await Promise.all([getPublicCategories("blog"), getBlogTags()]);
+  const categories = allCategories.map((item) => ({ slug: item.slug, name: item.name }));
+  const category = categories.some((item) => item.slug === params.category) ? params.category : "";
+  const list = await getBlogList({
+    query: params.query,
+    category: category === "" ? null : category,
+    tag: params.tag === "" ? null : params.tag,
+    page: params.page,
+  });
+  const asked = params.query !== "" || category !== "" || params.tag !== "";
+  return { list, categories, tags, category, nothingPublished: !asked && list.total === 0 };
+}
+
+/**
+ * How many articles each category holds, the Trash included (a category that holds only trashed articles still cannot
+ * be deleted), by category id. Read as the signed-in admin; never cached. A failed read throws.
+ */
+export async function readBlogCategoryUsage(
+  supabase: SupabaseClient<Database>,
+): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("category_id")
+    .not("category_id", "is", null)
+    .limit(10_000);
+  if (error) {
+    logger.error("the blog category usage could not be read", { errorCode: error.code });
+    throw error;
+  }
+  const usage: Record<string, number> = {};
+  for (const row of data) {
+    if (row.category_id) usage[row.category_id] = (usage[row.category_id] ?? 0) + 1;
+  }
+  return usage;
+}
+
+export async function getBlogCategoryUsage(): Promise<Record<string, number>> {
+  return readBlogCategoryUsage(await createServerSupabase());
 }

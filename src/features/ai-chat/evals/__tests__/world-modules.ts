@@ -7,16 +7,21 @@
  *   vi.mock("@/features/search", async () => (await import("./world-modules")).searchModule());
  */
 import {
+  getBlogList,
   getBuilderDirectory,
   getBuilderProfile,
   getComparedHomes,
+  getContentModuleOn,
   getLocalityCounts,
   getProject,
   getProjects,
   getProperty,
+  getPublicFaqs,
+  getPublishedBlogPostById,
   getSearchResults,
   getSessionView,
   ownsHome,
+  searchPublicFaqs,
 } from "../world";
 
 /** `@/features/search`: the read, and the defaults the tool takes from the real feature. */
@@ -76,4 +81,21 @@ export function queriesModule() {
 /** `@/server/auth/get-session-view`. */
 export function sessionModule() {
   return { getSessionView };
+}
+
+/** `@/features/blog`: the reads under search_content and get_content_item, and the page's own text rule. */
+export async function blogModule() {
+  const { blocksToPlainText } = await import("@/features/blog/body-text");
+  return { getBlogList, getPublishedBlogPostById, blocksToPlainText };
+}
+
+/** `@/features/faq`: the reads, and the page's own rule for an answer's paragraphs. */
+export async function faqModule() {
+  const { answerParagraphs } = await import("@/features/faq/view");
+  return { searchPublicFaqs, getPublicFaqs, answerParagraphs };
+}
+
+/** `@/features/site`: the one helper that says whether a content module is switched on. */
+export function siteModule() {
+  return { getContentModuleOn };
 }

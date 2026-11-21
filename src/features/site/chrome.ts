@@ -24,9 +24,12 @@ const FLAGGED_ROUTES: { path: string; flag: keyof FeatureFlags }[] = [
 /**
  * Routes that belong to a content module (ADR-143). A link to one is absent from the header and the footer while the
  * module is switched off, whether it is a default link or one the content team saved, so no menu points at a page
- * that answers not-found. The Blog and Careers join this list with their pages.
+ * that answers not-found. Careers joins this list with its pages.
  */
-const MODULE_ROUTES: { path: string; module: ContentModule }[] = [{ path: "/faq", module: "faq" }];
+const MODULE_ROUTES: { path: string; module: ContentModule }[] = [
+  { path: "/blog", module: "blog" },
+  { path: "/faq", module: "faq" },
+];
 
 /** Which content modules are switched on (the site content's `content_modules`). */
 export type ModuleSwitches = Record<ContentModule, boolean>;
@@ -135,6 +138,7 @@ function defaultNavigation(translate: Translate): { label: string; href: string 
     { label: translate("site.nav.rent"), href: "/properties" },
     { label: translate("site.nav.projects"), href: "/projects" },
     { label: translate("site.nav.aiSearch"), href: AI_SEARCH_PATH },
+    { label: translate("site.nav.blog"), href: "/blog" },
     { label: translate("site.nav.faq"), href: "/faq" },
     { label: translate("site.nav.contact"), href: "/contact" },
   ];
@@ -172,6 +176,7 @@ function defaultFooterLinks(translate: Translate): { label: string; href: string
     { label: translate("site.footer.linkRent"), href: "/properties" },
     { label: translate("site.footer.linkProjects"), href: "/projects" },
     { label: translate("site.footer.linkAiSearch"), href: AI_SEARCH_PATH },
+    { label: translate("site.footer.linkBlog"), href: "/blog" },
     { label: translate("site.footer.linkFaq"), href: "/faq" },
     { label: translate("site.footer.linkContact"), href: "/contact" },
     { label: translate("site.footer.linkPost"), href: "/post-property" },

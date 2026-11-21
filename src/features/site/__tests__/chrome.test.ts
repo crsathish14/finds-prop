@@ -50,6 +50,7 @@ describe("UT-site-chrome: header", () => {
       "Rent",
       "Projects",
       "AI Search",
+      "Blog",
       "FAQ",
       "Contact",
     ]);
@@ -67,6 +68,7 @@ describe("UT-site-chrome: header", () => {
       "Buy",
       "Rent",
       "Projects",
+      "Blog",
       "FAQ",
       "Contact",
     ]);
@@ -153,6 +155,7 @@ describe("UT-site-chrome: footer", () => {
       "Buy a home",
       "Rent a home",
       "New projects",
+      "Blog",
       "FAQ",
       "Contact us",
       "Post a property",
@@ -468,5 +471,45 @@ describe("UT-site-chrome: content module switches (ADR-143)", () => {
         (link) => link.href === "/faq",
       )?.label,
     ).toBe("FAQ");
+  });
+});
+
+describe("UT-site-chrome: the Blog link follows the Blog module's switch (ADR-143)", () => {
+  const blogOff = { blog: false, faq: true, careers: true };
+
+  it("recognises a link to the Blog or to an article, and only while the Blog is off", () => {
+    expect(isRouteEnabled("/blog", flagsOff, blogOff)).toBe(false);
+    expect(isRouteEnabled("/blog/stamp-duty-explained", flagsOff, blogOff)).toBe(false);
+    expect(isRouteEnabled("/blog?category=guides&page=2", flagsOff, blogOff)).toBe(false);
+    expect(isRouteEnabled("/blog", flagsOff)).toBe(true);
+    expect(isRouteEnabled("/blog", flagsOff, { ...blogOff, blog: true })).toBe(true);
+    expect(isRouteEnabled("/blogger", flagsOff, blogOff)).toBe(true);
+    expect(isRouteEnabled("https://example.org/blog", flagsOff, blogOff)).toBe(true);
+    expect(isRouteEnabled("/faq", flagsOff, blogOff)).toBe(true);
+  });
+
+  it("shows the Blog link in the default header and footer while the module is on, and drops it while it is off", () => {
+    const find = (links: { label: string; href: string }[]) =>
+      links.find((link) => link.href === "/blog")?.label;
+    expect(find(buildHeader(SITE_DEFAULTS.header, flagsOff, translate).links)).toBe("Blog");
+    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).links)).toBe("Blog");
+    expect(find(buildHeader(SITE_DEFAULTS.header, flagsOff, translate, blogOff).links)).toBe(
+      undefined,
+    );
+    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026, blogOff).links)).toBe(
+      undefined,
+    );
+  });
+
+  it("also leaves out a Blog link the content team saved", () => {
+    const saved = {
+      links: [
+        { label: "Articles", href: "/blog/stamp-duty" },
+        { label: "Contact", href: "/contact" },
+      ],
+    };
+    expect(
+      buildHeader(saved, flagsOff, translate, blogOff).links.map((link) => link.label),
+    ).toEqual(["Contact"]);
   });
 });

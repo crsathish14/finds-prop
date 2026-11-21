@@ -43,6 +43,8 @@ export interface Observed {
   readonly links: readonly { readonly text: string; readonly href: string }[];
   /** The cards drawn, as `home:<id>` and `project:<slug>`. */
   readonly cards: readonly string[];
+  /** The source links drawn under the answer (ADR-143 section 6.5), as the addresses the server built. */
+  readonly sources: readonly string[];
   readonly usage: ChatUsageRecord | null;
   readonly toolCalls: readonly ObservedToolCall[];
   /** Every word given to the model across all its calls: the system prompt, the messages and the tool results. */
@@ -82,6 +84,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     failingTools: evalCase.failingTools,
     ownedHomeIds: evalCase.ownedHomes,
     placesDown: evalCase.placesDown,
+    hiddenModules: evalCase.hiddenModules,
   });
 
   const toolCalls: ObservedToolCall[] = [];
@@ -161,6 +164,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
       ...replaced,
       ...notices.map((notice) => notice.text),
       ...links.map((link) => link.text),
+      ...events.flatMap((event) => (event.type === "source" ? [event.title] : [])),
     ].join("\n"),
     replaced: replaced.length > 0,
     links,
@@ -174,6 +178,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
           ]
         : [],
     ),
+    sources: events.flatMap((event) => (event.type === "source" ? [event.href] : [])),
     usage: usageRows[0] ?? null,
     toolCalls,
     modelSaw: modelSawText(modelCalls),

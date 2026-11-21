@@ -84,7 +84,7 @@ select is(
   public.run_retention(2, 1),
   '{"form_submissions": 2, "crm_api_logs": 2, "project_events": 2, "enquiries": 2, "project_leads": 2,
     "public_rate_limits": 2, "idempotency_keys": 2, "ai_usage_events": 2,
-    "places_usage_daily": 2,
+    "places_usage_daily": 2, "faqs": 0, "blog_posts": 0,
     "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a limited run deletes at most one batch of each table, and counts what it leaves alone'
 );
@@ -97,14 +97,14 @@ select is(
   public.run_retention(1, 2) - 'skipped',
   '{"form_submissions": 0, "crm_api_logs": 1, "project_events": 0, "enquiries": 0, "project_leads": 0,
     "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0,
-    "places_usage_daily": 0}'::jsonb,
+    "places_usage_daily": 0, "faqs": 0, "blog_posts": 0}'::jsonb,
   'the next run takes the rest, over as many small batches as it needs'
 );
 select is(
   public.run_retention(),
   '{"form_submissions": 0, "crm_api_logs": 0, "project_events": 0, "enquiries": 0, "project_leads": 0,
     "public_rate_limits": 0, "idempotency_keys": 0, "ai_usage_events": 0,
-    "places_usage_daily": 0, "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
+    "places_usage_daily": 0, "faqs": 0, "blog_posts": 0, "skipped": {"form_submissions_with_files": 1, "form_submissions_pending": 1}}'::jsonb,
   'a run with nothing left to delete deletes nothing, and still counts what it leaves alone'
 );
 
@@ -151,7 +151,7 @@ select is(
   (select array_agg(key order by key) from jsonb_object_keys(
     (select diff from public.audit_log where action = 'retention.ran' order by id desc limit 1)
   ) as key),
-  array['ai_usage_events', 'crm_api_logs', 'enquiries', 'form_submissions', 'idempotency_keys', 'places_usage_daily',
+  array['ai_usage_events', 'blog_posts', 'crm_api_logs', 'enquiries', 'faqs', 'form_submissions', 'idempotency_keys', 'places_usage_daily',
         'project_events', 'project_leads', 'public_rate_limits', 'skipped'],
   'an entry holds the counts of each table and of what was left alone'
 );

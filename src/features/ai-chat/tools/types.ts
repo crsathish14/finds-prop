@@ -28,7 +28,10 @@ export interface ToolContext {
  * is shown the id only; the slug is here for the address, which code builds (`/properties/{slug}-{shortId}`
  * for a home, `/projects/{slug}` for a project, whose slug is its only id).
  */
-export type ToolReference =
+export type ToolReference = CardReference | SourceReference;
+
+/** A record the chat draws as a card under the answer (a home or a project). */
+export type CardReference =
   | {
       readonly kind: "home";
       /** The public id of the home (`short_id`), the same value the tool result shows as `homeId`. */
@@ -41,9 +44,51 @@ export type ToolReference =
       readonly slug: string;
     };
 
-/** What names a reference once in a set: its kind and its id (a home's public id, a project's slug). */
+/**
+ * A record the chat names as a source under the answer (ADR-143 section 6.5): an article, a question of the FAQ, and,
+ * reserved for the Careers tool of a later change, a job. The server builds the link (`source-links.ts`) from the id or
+ * slug a tool returned in the same message, and the title it draws as the link's words is the one the read gave
+ * (cleaned as third-party text). `opened` is true for a record the assistant read in full (`get_content_item`): when
+ * one was, only the opened ones are drawn as sources; when none was, the best matches of the search are.
+ */
+export type SourceReference =
+  | {
+      readonly kind: "article";
+      /** The article's id, the same value the tool result shows as `id`. */
+      readonly id: string;
+      /** The article's address word (`/blog/<slug>`). */
+      readonly slug: string;
+      readonly title: string;
+      readonly opened: boolean;
+    }
+  | {
+      readonly kind: "faq";
+      /** The question's id, the same value the tool result shows as `id`. */
+      readonly id: string;
+      readonly title: string;
+      readonly opened: boolean;
+    }
+  | {
+      /** Reserved: no tool returns a job yet (the Careers tool is a later change). */
+      readonly kind: "job";
+      readonly slug: string;
+      readonly title: string;
+      readonly opened: boolean;
+    };
+
+/** What names a reference once in a set: its kind and its id (a home's public id, a project's slug, an article's id). */
 export function referenceKey(reference: ToolReference): string {
-  return reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
+  switch (reference.kind) {
+    case "home":
+      return `home:${reference.homeId}`;
+    case "project":
+      return `project:${reference.slug}`;
+    case "article":
+    case "faq":
+      return `${reference.kind}:${reference.id}`;
+    case "job":
+      return `job:${reference.slug}`;
+  }
 }
 
 /** What `run` gives back: the result for the model, and the records that result names. */
@@ -60,11 +105,19 @@ export interface ToolRun<Output> {
  */
 export type ToolKind = "read" | "propose";
 
+/** The groups of tools that share a cap of calls per customer message (`AI_TOOL_GROUP_CALL_LIMITS`). */
+export type ToolCallGroup = "content";
+
 export interface AiChatTool<Input, Output> {
   /** Lowercase letters, digits and underscores (`search_properties`): the name the model asks for. */
   readonly name: string;
   /** Whether the loop may run it beside other calls (`read`) or only alone (`propose`). */
   readonly kind: ToolKind;
+  /**
+   * The tool group whose calls are capped together inside the message's total (`AI_TOOL_GROUP_CALL_LIMITS`): the two
+   * content tools share 2 of the 6 calls (ADR-143 section 6.3). Absent for a tool with no cap of its own.
+   */
+  readonly callGroup?: ToolCallGroup;
   /** What the tool is for and how to read its result, written for the model. Never shown to a customer. */
   readonly description: string;
   /** What the tool takes. It must stay inside the portable subset (`toPortableJsonSchema`), and name no person. */
@@ -95,11 +148,12 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `own_home`: the signed-in customer owns the home, so they cannot enquire about it.
  * - `date_out_of_range`: the visit day is not from today to a year ahead.
  *
- * The last four are the agent loop's own refusals (ADR-128 section 4.5), given instead of running the call:
+ * The last five are the agent loop's own refusals (ADR-128 section 4.5), given instead of running the call:
  * - `timeout`: the tool did not answer within `TOOL_TIMEOUT_MS`.
  * - `too_many_calls`: more read calls than may run together in one round.
  * - `call_limit`: the calls for this customer message are used up.
  * - `call_alone`: a propose tool was mixed with other calls; ask for it alone in the next round.
+ * - `content_limit`: the content calls of this message (2 of the 6) are used up; the other tools still work.
  */
 export const TOOL_ERROR_CODES = [
   "unknown_tool",
@@ -112,6 +166,7 @@ export const TOOL_ERROR_CODES = [
   "too_many_calls",
   "call_limit",
   "call_alone",
+  "content_limit",
 ] as const;
 export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
 
@@ -129,6 +184,8 @@ export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   too_many_calls: "Too many calls this round. Ask again next round if it is still needed.",
   call_limit: "No more calls are allowed for this message. Answer from what you already have.",
   call_alone: "This tool must be called alone. Call it again next round with no other call.",
+  content_limit:
+    "No more articles or questions can be looked up for this message. Answer from what you already have; the other tools still work.",
 };
 
 /**
