@@ -3,11 +3,13 @@
  * Purpose: the card for the Projects page and the homepage's featured projects. Owner: design
  *   system. It holds no state and fetches nothing: the page passes the project's facts, already
  *   read from the database.
- * Props: project (href, name, developerName, locality, city, minRupees, maxRupees, bedrooms (the
- *   BHK sizes on offer, such as [2, 3]), status "new_launch" | "under_construction" |
- *   "ready_to_move", featured, cover { src, alt }), sizes (next/image `sizes` for this card's column),
- *   priority (first cards on the page), className. Missing facts are left out, never shown blank or
- *   as zero. One price is shown alone, two as a range.
+ * Props: project (href, name, developerName, locality, city, priceRupees, priceType ("per_sqft" |
+ *   "basic" | "all_inclusive" | "rent_per_month" | "rent_per_sqft_month": what the price means),
+ *   offerType ("sale" | "rent", a commercial project), bedrooms (the BHK sizes on offer, such as
+ *   [2, 3]), status "new_launch" | "under_construction" | "ready_to_move", featured, cover { src,
+ *   alt }), sizes (next/image `sizes` for this card's column), priority (first cards on the page),
+ *   className. Missing facts are left out, never shown blank or as zero. The one price is shown with
+ *   what it means ("₹8,500 per sq ft"); a price with no known type is shown alone.
  * Responsive: a column of picture over text at every width; the grid around it sets the columns.
  * Accessibility: the whole card is one link target: the project name link is stretched over the
  *   card. A keyboard ring is drawn around the card when that link has focus. The picture has the
@@ -29,6 +31,8 @@ import { formatPrice, type Translate } from "@/lib/format";
 import { CardCover } from "./property-card-controls.client";
 
 type ProjectStatus = "new_launch" | "under_construction" | "ready_to_move";
+type ProjectPriceType =
+  "per_sqft" | "basic" | "all_inclusive" | "rent_per_month" | "rent_per_sqft_month";
 
 type ProjectCardData = {
   href: string;
@@ -37,8 +41,10 @@ type ProjectCardData = {
   locality: string;
   /** Leave empty when the project has no city of its own: the card then shows the locality alone. */
   city: string;
-  minRupees?: number | null | undefined;
-  maxRupees?: number | null | undefined;
+  /** The one price in whole rupees; none when the developer gave none. */
+  priceRupees?: number | null | undefined;
+  priceType?: ProjectPriceType | null | undefined;
+  offerType?: "sale" | "rent" | null | undefined;
   /** The BHK sizes on offer, such as [2, 3]. Order and repeats do not matter. */
   bedrooms?: readonly number[] | null | undefined;
   status?: ProjectStatus | null | undefined;
@@ -59,6 +65,19 @@ const STATUS_KEYS = {
   ready_to_move: "domain.projectCard.status.readyToMove",
 } as const;
 
+const PRICE_TYPE_KEYS = {
+  per_sqft: "domain.projectCard.priceType.perSqft",
+  basic: "domain.projectCard.priceType.basic",
+  all_inclusive: "domain.projectCard.priceType.allInclusive",
+  rent_per_month: "domain.projectCard.priceType.rentPerMonth",
+  rent_per_sqft_month: "domain.projectCard.priceType.rentPerSqftMonth",
+} as const satisfies Record<ProjectPriceType, string>;
+
+const OFFER_KEYS = {
+  sale: "domain.projectCard.offer.sale",
+  rent: "domain.projectCard.offer.rent",
+} as const;
+
 const DEFAULT_SIZES = "(min-width: 1100px) 33vw, (min-width: 640px) 50vw, 100vw";
 
 function ProjectCard({
@@ -69,18 +88,16 @@ function ProjectCard({
 }: ProjectCardProps) {
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
-  const { minRupees, maxRupees } = project;
+  const { priceRupees } = project;
   const sizesOnOffer = [...new Set(project.bedrooms ?? [])].filter((size) => size > 0);
   sizesOnOffer.sort((smaller, larger) => smaller - larger);
 
   let price: string | null = null;
-  if (minRupees && maxRupees && maxRupees !== minRupees) {
-    price = translate("domain.projectCard.priceRange", {
-      min: formatPrice(translate, locale, Math.min(minRupees, maxRupees)),
-      max: formatPrice(translate, locale, Math.max(minRupees, maxRupees)),
-    });
-  } else if (minRupees || maxRupees) {
-    price = formatPrice(translate, locale, (minRupees || maxRupees) as number);
+  if (priceRupees) {
+    const amount = formatPrice(translate, locale, priceRupees);
+    price = project.priceType
+      ? translate(PRICE_TYPE_KEYS[project.priceType], { price: amount })
+      : amount;
   }
 
   return (
@@ -100,13 +117,16 @@ function ProjectCard({
           sizes={sizes}
           priority={priority}
         />
-        {project.featured || project.status ? (
+        {project.featured || project.status || project.offerType ? (
           <div className="pointer-events-none absolute top-3 left-3 z-10 flex flex-wrap gap-2">
             {project.featured ? (
               <Badge tone="featured">{translate("domain.projectCard.featured")}</Badge>
             ) : null}
             {project.status ? (
               <Badge tone="outline">{translate(STATUS_KEYS[project.status])}</Badge>
+            ) : null}
+            {project.offerType ? (
+              <Badge tone="outline">{translate(OFFER_KEYS[project.offerType])}</Badge>
             ) : null}
           </div>
         ) : null}

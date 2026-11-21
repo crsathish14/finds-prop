@@ -4,50 +4,72 @@
  * text by `src/lib/format.ts`: the model repeats that text and never formats a price itself.
  */
 import { z } from "zod";
-import { priceBounds } from "@/features/projects";
+import { OFFER_TYPES, priceOf, PRICE_TYPES, type PriceType } from "@/features/projects";
 import { formatMonth, formatPrice } from "@/lib/format";
 import type { ToolContext } from "./types";
 
-/** The price range of a project, as numbers and as text; every field is null when the developer gave no price. */
+/**
+ * The one price of a project (ADR-148), as a number and as text, with what it means. Every field is null when the
+ * developer gave no price. `priceType` says whether the price is a rate per sq ft, a basic price (without
+ * registration, GST and other costs), an all inclusive price, or a rent; `offerType` says whether a commercial
+ * project is for sale or for rent.
+ */
 export const projectPriceShape = {
-  lowestPriceRupees: z.number().nonnegative().nullable(),
-  lowestPriceText: z.string().min(1).nullable(),
-  highestPriceRupees: z.number().nonnegative().nullable(),
-  highestPriceText: z.string().min(1).nullable(),
+  priceRupees: z.number().nonnegative().nullable(),
+  priceText: z.string().min(1).nullable(),
+  priceType: z.enum(PRICE_TYPES).nullable(),
+  offerType: z.enum(OFFER_TYPES).nullable(),
 };
 
 export type ProjectPrices = {
-  lowestPriceRupees: number | null;
-  lowestPriceText: string | null;
-  highestPriceRupees: number | null;
-  highestPriceText: string | null;
+  priceRupees: number | null;
+  priceText: string | null;
+  priceType: PriceType | null;
+  offerType: "sale" | "rent" | null;
 };
 
+const PRICE_TYPE_WORDS = {
+  per_sqft: "domain.projectCard.priceType.perSqft",
+  basic: "domain.projectCard.priceType.basic",
+  all_inclusive: "domain.projectCard.priceType.allInclusive",
+  rent_per_month: "domain.projectCard.priceType.rentPerMonth",
+  rent_per_sqft_month: "domain.projectCard.priceType.rentPerSqftMonth",
+} as const satisfies Record<PriceType, string>;
+
 /**
- * The prices on offer, lowest first. One price is a range whose two ends are the same. The words around the
- * numbers ("from", "to") are the model's: only the two amounts are written here, so the model composes a range
- * in the customer's own language.
+ * The price as text the way the project page writes it ("₹8,500 per sq ft", "₹85 L basic price"): only this text is
+ * quoted, so the model never formats money or words the meaning itself.
  */
 export function projectPrices(
-  min: number | null,
-  max: number | null,
+  project: {
+    price: number | null;
+    priceType: PriceType | null;
+    offerType: "sale" | "rent" | null;
+  },
   context: ToolContext,
 ): ProjectPrices {
-  const bounds = priceBounds(min, max);
-  if (bounds === null) {
-    return {
-      lowestPriceRupees: null,
-      lowestPriceText: null,
-      highestPriceRupees: null,
-      highestPriceText: null,
-    };
+  const price = priceOf(project);
+  if (price === null) {
+    return { priceRupees: null, priceText: null, priceType: null, offerType: project.offerType };
   }
+  const amount = formatPrice(context.translate, context.locale, price.rupees);
   return {
-    lowestPriceRupees: bounds.low,
-    lowestPriceText: formatPrice(context.translate, context.locale, bounds.low),
-    highestPriceRupees: bounds.high,
-    highestPriceText: formatPrice(context.translate, context.locale, bounds.high),
+    priceRupees: price.rupees,
+    priceText:
+      price.type === null
+        ? amount
+        : context.translate(PRICE_TYPE_WORDS[price.type], { price: amount }),
+    priceType: price.type,
+    offerType: project.offerType,
   };
+}
+
+/**
+ * True when the price is a total that can be compared with what a customer will pay: a basic price or an all
+ * inclusive one. A rate per sq ft and a rent are not totals, so a search by the most a customer will pay leaves them out.
+ */
+export function isTotalPrice(type: PriceType | null): boolean {
+  return type === "basic" || type === "all_inclusive";
 }
 
 /** A stored day (`YYYY-MM-DD`) as "Dec 2028", the way the project page writes possession; null when it is not a day. */

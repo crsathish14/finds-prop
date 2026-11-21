@@ -15,8 +15,8 @@ const project = (id: string, extra: Partial<ProjectListRow> = {}): ProjectListRo
   name: `Project ${id}`,
   slug: `project-${id}`,
   locality: "OMR Navalur",
-  priceMin: 7800000,
-  priceMax: 14200000,
+  price: 7800000,
+  priceType: "basic",
   cover: null,
   moderation: "approved",
   published: true,
@@ -35,8 +35,8 @@ const ROWS = [
     name: "Kadal Courts",
     slug: "kadal-courts",
     locality: "OMR Siruseri",
-    priceMin: 5400000,
-    priceMax: 8600000,
+    price: 8500,
+    priceType: "per_sqft",
     moderation: "pending",
     published: false,
   }),
@@ -44,8 +44,8 @@ const ROWS = [
     name: "Kadal Bay",
     slug: "kadal-bay",
     locality: "Guindy",
-    priceMin: 9000000,
-    priceMax: 9000000,
+    price: 9000000,
+    priceType: "all_inclusive",
     moderation: "approved",
     published: false,
   }),
@@ -53,8 +53,8 @@ const ROWS = [
     name: "Nila Meadows",
     slug: "nila-meadows",
     locality: "Medavakkam",
-    priceMin: null,
-    priceMax: null,
+    price: null,
+    priceType: null,
     moderation: "rejected",
     published: false,
   }),
@@ -96,21 +96,21 @@ describe("BuilderProjects: the builder's Projects page (S7-T03)", () => {
     }
   });
 
-  it("shows each project's place, price range and state, with Published, Unpublished and Featured badges", () => {
+  it("shows each project's place, price with what it means and state, with Published, Unpublished and Featured badges", () => {
     open();
     const vista = within(rowOf("Kadal Vista"));
     expect(vista.getByText("OMR Navalur")).toBeVisible();
-    expect(vista.getByText("₹78 L – ₹1.42 Cr")).toBeVisible();
+    expect(vista.getByText("₹78 L basic price")).toBeVisible();
     expect(vista.getByText("Approved")).toBeVisible();
     expect(vista.getByText(words.badges.published)).toBeVisible();
     expect(vista.getByText(words.badges.featured)).toBeVisible();
     const courts = within(rowOf("Kadal Courts"));
     expect(courts.getByText("Pending")).toBeVisible();
+    expect(courts.getByText("₹8,500 per sq ft")).toBeVisible();
     expect(courts.queryByText(words.badges.published)).toBeNull();
     const bay = within(rowOf("Kadal Bay"));
     expect(bay.getByText(words.badges.unpublished)).toBeVisible();
-    // The same price twice is one price.
-    expect(bay.getByText("₹90 L")).toBeVisible();
+    expect(bay.getByText("₹90 L all inclusive")).toBeVisible();
     // A project with no price says so; a rejected one has no Published badge.
     const meadows = within(rowOf("Nila Meadows"));
     expect(meadows.getByText(words.noPrice)).toBeVisible();

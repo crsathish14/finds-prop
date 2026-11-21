@@ -26,6 +26,15 @@ type State = (typeof STATES)[number];
 const stateOf = (moderation: string): State =>
   (STATES as readonly string[]).includes(moderation) ? (moderation as State) : "pending";
 
+/** The words that say what the one price means ("{price} per sq ft"); a price type this page does not know is shown without them. */
+const PRICE_TYPE_KEYS: Record<string, string> = {
+  per_sqft: "domain.projectCard.priceType.perSqft",
+  basic: "domain.projectCard.priceType.basic",
+  all_inclusive: "domain.projectCard.priceType.allInclusive",
+  rent_per_month: "domain.projectCard.priceType.rentPerMonth",
+  rent_per_sqft_month: "domain.projectCard.priceType.rentPerSqftMonth",
+};
+
 /**
  * The builder's Projects page (S7-T03, FR-BLD-02): the projects list in builder mode, for the builder's own projects. It
  * filters what it was given by status and by a search of the name and place in the browser (a builder's own list is
@@ -54,15 +63,10 @@ export function BuilderProjects({
   };
 
   const priceText = (row: ProjectListRow): string => {
-    const { priceMin: low, priceMax: high } = row;
-    if (low === null && high === null) return translate("noPrice");
-    if (low === null || high === null || low === high) {
-      return formatPrice(everything, locale, (low ?? high) as number);
-    }
-    return everything("domain.projectCard.priceRange", {
-      min: formatPrice(everything, locale, low),
-      max: formatPrice(everything, locale, high),
-    });
+    if (row.price === null) return translate("noPrice");
+    const amount = formatPrice(everything, locale, row.price);
+    const key = row.priceType === null ? undefined : PRICE_TYPE_KEYS[row.priceType];
+    return key === undefined ? amount : everything(key, { price: amount });
   };
 
   const needle = query.trim().toLowerCase();

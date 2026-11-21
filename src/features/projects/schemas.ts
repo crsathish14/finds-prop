@@ -12,6 +12,29 @@ export const PROJECT_STATUSES = ["new_launch", "under_construction", "ready_to_m
 /** A status this site does not know is no status (the card then draws no tag). */
 const statusSchema = z.enum(PROJECT_STATUSES).nullable().catch(null);
 
+/** What the one price means, and whether a commercial project is for sale or rent (ADR-148). A value this site does not know is none. */
+export const PRICE_TYPES = [
+  "per_sqft",
+  "basic",
+  "all_inclusive",
+  "rent_per_month",
+  "rent_per_sqft_month",
+] as const;
+export const OFFER_TYPES = ["sale", "rent"] as const;
+export const PROPERTY_TYPES = [
+  "apartment",
+  "villa",
+  "plot",
+  "vacant_land",
+  "flat",
+  "office",
+  "co_working",
+] as const;
+
+const priceTypeSchema = z.enum(PRICE_TYPES).nullable().catch(null);
+const offerTypeSchema = z.enum(OFFER_TYPES).nullable().catch(null);
+const propertyTypeSchema = z.enum(PROPERTY_TYPES).nullable().catch(null);
+
 const developerSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -22,14 +45,15 @@ const developerSchema = z.object({
  * inactive builder is not visible to visitors at all, BR-94), and gives the developer's name.
  */
 export const PROJECT_LIST_COLUMNS =
-  "slug, name, project_status, price_min, price_max, bhk_options, locality, images, featured, builders!inner(id, name)";
+  "slug, name, project_status, offer_type, price, price_type, bhk_options, locality, images, featured, builders!inner(id, name)";
 
 export const projectListRowSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
   project_status: statusSchema,
-  price_min: z.number().nonnegative().nullable(),
-  price_max: z.number().nonnegative().nullable(),
+  offer_type: offerTypeSchema,
+  price: z.number().nonnegative().nullable(),
+  price_type: priceTypeSchema,
   bhk_options: z.array(z.number().int()),
   locality: z.string().min(1),
   images: z.array(z.string()),
@@ -41,15 +65,19 @@ export type ProjectListRow = z.infer<typeof projectListRowSchema>;
 
 /** The columns the project page reads from `projects`. */
 export const PROJECT_COLUMNS =
-  "id, slug, name, project_status, price_min, price_max, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
+  "id, slug, name, project_status, property_type, offer_type, price, price_type, area_min_sqft, area_max_sqft, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, rera_not_applicable_reason, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
 
 export const projectRowSchema = z.object({
   id: z.string().min(1),
   slug: z.string().min(1),
   name: z.string().min(1),
   project_status: statusSchema,
-  price_min: z.number().nonnegative().nullable(),
-  price_max: z.number().nonnegative().nullable(),
+  property_type: propertyTypeSchema,
+  offer_type: offerTypeSchema,
+  price: z.number().nonnegative().nullable(),
+  price_type: priceTypeSchema,
+  area_min_sqft: z.number().nonnegative().nullable(),
+  area_max_sqft: z.number().nonnegative().nullable(),
   bhk_options: z.array(z.number().int()),
   land_area_acres: z.number().nonnegative().nullable(),
   total_units: z.number().int().nonnegative().nullable(),
@@ -60,6 +88,7 @@ export const projectRowSchema = z.object({
   nearby: z.array(z.string()),
   rera_applicable: z.boolean(),
   rera_number: z.string().nullable(),
+  rera_not_applicable_reason: z.string().nullable(),
   description: z.string().nullable(),
   specifications: z.string().nullable(),
   amenities: z.array(z.string()),

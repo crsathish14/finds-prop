@@ -1665,7 +1665,7 @@
         ]
       },
       {
-        "text": "Velan Gardens in Tambaram is a new launch with prices from ₹48 L to ₹72 L. [[project:velan-gardens]]"
+        "text": "Velan Gardens in Tambaram is a new launch at ₹48 L basic price. [[project:velan-gardens]]"
       }
     ],
     "expect": {
@@ -1673,9 +1673,6 @@
       "facts": [
         {
           "rupees": 4800000
-        },
-        {
-          "rupees": 7200000
         }
       ],
       "tools": {
@@ -1728,7 +1725,7 @@
         ]
       },
       {
-        "text": "Kadal Vista in OMR Navalur is an under-construction project by Kadal Homes with prices from ₹78 L to ₹1.42 Cr. Possession is expected in Dec 2028. You can call the project's contact number, +914412345678. [[project:kadal-vista]]"
+        "text": "Kadal Vista in OMR Navalur is an under-construction project by Kadal Homes at ₹78 L basic price. Possession is expected in Dec 2028. You can call the project's contact number, +914412345678. [[project:kadal-vista]]"
       }
     ],
     "expect": {
@@ -1736,9 +1733,6 @@
       "facts": [
         {
           "rupees": 7800000
-        },
-        {
-          "rupees": 14200000
         },
         {
           "any": ["+914412345678"]
@@ -1786,7 +1780,7 @@
         ]
       },
       {
-        "text": "Kadal Bay in Perungudi is ready to move, with prices from ₹1.1 Cr to ₹1.9 Cr. [[project:kadal-bay]]"
+        "text": "Kadal Bay in Perungudi is ready to move, at ₹1.1 Cr basic price. [[project:kadal-bay]]"
       }
     ],
     "expect": {
@@ -1794,9 +1788,6 @@
       "facts": [
         {
           "rupees": 11000000
-        },
-        {
-          "rupees": 19000000
         }
       ],
       "tools": {
@@ -1836,7 +1827,7 @@
         ]
       },
       {
-        "text": "Kadal Vista in OMR Navalur is an under-construction project from ₹78 L to ₹1.42 Cr. [[project:kadal-vista]]"
+        "text": "Kadal Vista in OMR Navalur is an under-construction project at ₹78 L basic price. [[project:kadal-vista]]"
       }
     ],
     "expect": {

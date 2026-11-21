@@ -6,8 +6,10 @@ import {
   Check,
   CircleCheck,
   Download,
+  House,
   Layers,
   MapPin,
+  Maximize2,
   MessageCircle,
   Phone,
   Ruler,
@@ -33,13 +35,14 @@ import { formatAcres, formatMonth, formatPrice, type Translate } from "@/lib/for
 import { textParagraphs, uniqueTexts } from "@/lib/text";
 import { PROJECTS_PATH } from "./address";
 import { PriceTrend } from "./price-trend";
-import type { ProjectData, ProjectStatus } from "./types";
+import type { PriceType, ProjectData, ProjectPropertyType, ProjectStatus } from "./types";
 import { UnitsTable } from "./units-table";
 import {
   bhkSizes,
   contactLinks,
   developerInitials,
-  priceBounds,
+  priceOf,
+  reraReason,
   reraTag,
   specificationRows,
   specItems,
@@ -49,8 +52,10 @@ import {
 } from "./view";
 
 const SPEC_ICONS: Record<SpecItem["key"], LucideIcon> = {
-  priceRange: Tag,
+  price: Tag,
+  propertyType: House,
   configuration: BedDouble,
+  area: Maximize2,
   status: Building2,
   possession: CalendarDays,
   landArea: Ruler,
@@ -60,8 +65,10 @@ const SPEC_ICONS: Record<SpecItem["key"], LucideIcon> = {
 };
 
 const SPEC_LABELS = {
-  priceRange: "projects.page.overview.priceRange",
+  price: "projects.page.overview.price",
+  propertyType: "projects.page.overview.propertyType",
   configuration: "projects.page.overview.configuration",
+  area: "projects.page.overview.area",
   status: "projects.page.overview.status",
   possession: "projects.page.overview.possession",
   landArea: "projects.page.overview.landArea",
@@ -69,6 +76,29 @@ const SPEC_LABELS = {
   availableUnits: "projects.page.overview.availableUnits",
   rera: "projects.page.overview.rera",
 } as const satisfies Record<SpecItem["key"], string>;
+
+const PRICE_TYPE_WORDS = {
+  per_sqft: "domain.projectCard.priceType.perSqft",
+  basic: "domain.projectCard.priceType.basic",
+  all_inclusive: "domain.projectCard.priceType.allInclusive",
+  rent_per_month: "domain.projectCard.priceType.rentPerMonth",
+  rent_per_sqft_month: "domain.projectCard.priceType.rentPerSqftMonth",
+} as const satisfies Record<PriceType, string>;
+
+const PROPERTY_TYPE_WORDS = {
+  apartment: "projects.page.propertyType.apartment",
+  villa: "projects.page.propertyType.villa",
+  plot: "projects.page.propertyType.plot",
+  vacant_land: "projects.page.propertyType.vacantLand",
+  flat: "projects.page.propertyType.flat",
+  office: "projects.page.propertyType.office",
+  co_working: "projects.page.propertyType.coWorking",
+} as const satisfies Record<ProjectPropertyType, string>;
+
+const OFFER_WORDS = {
+  sale: "domain.projectCard.offer.sale",
+  rent: "domain.projectCard.offer.rent",
+} as const;
 
 const STATUS_WORDS = {
   new_launch: "domain.projectCard.status.newLaunch",
@@ -128,7 +158,8 @@ export function ProjectScreen({
   const rera = reraTag(project);
   const contact = contactLinks(project.contactPhone);
   const sizes = bhkSizes(project.bhkOptions);
-  const prices = priceBounds(project.priceMin, project.priceMax);
+  const priceFact = priceOf(project);
+  const noRera = reraReason(project);
 
   const newTab = translate("common.opensInNewTab");
   const featuredBadge = project.featured ? (
@@ -144,25 +175,29 @@ export function ProjectScreen({
     alt: translate("projects.page.photoAlt", { name: project.name, number: index + 1 }),
   }));
 
+  /** The one price with what it means ("₹8,500 per sq ft"); a price with no known type stands alone. */
+  function priceWords(rupees: number, type: PriceType | null): string {
+    const amount = formatPrice(words, locale, rupees);
+    return type === null ? amount : translate(PRICE_TYPE_WORDS[type], { price: amount });
+  }
+
   function priceText(): string | null {
-    if (prices === null) return null;
-    const low = formatPrice(words, locale, prices.low);
-    if (prices.low === prices.high) return low;
-    return translate("domain.projectCard.priceRange", {
-      min: low,
-      max: formatPrice(words, locale, prices.high),
-    });
+    return priceFact === null ? null : priceWords(priceFact.rupees, priceFact.type);
   }
 
   function specValue(item: SpecItem): ReactNode {
     switch (item.key) {
-      case "priceRange":
-        return item.low === item.high
-          ? formatPrice(words, locale, item.low)
-          : translate("domain.projectCard.priceRange", {
-              min: formatPrice(words, locale, item.low),
-              max: formatPrice(words, locale, item.high),
-            });
+      case "price":
+        return priceWords(item.rupees, item.type);
+      case "propertyType":
+        return translate(PROPERTY_TYPE_WORDS[item.value]);
+      case "area": {
+        const number = new Intl.NumberFormat(locale);
+        return translate("projects.page.overview.areaRange", {
+          min: number.format(item.min),
+          max: number.format(item.max),
+        });
+      }
       case "configuration":
         return translate("projects.page.overview.bhk", { sizes: item.sizes.join(", ") });
       case "status":
@@ -254,7 +289,15 @@ export function ProjectScreen({
                     : translate("projects.page.reraTag", { number: rera.number })}
                 </Badge>
               )}
+              {project.offerType === null ? null : (
+                <Badge tone="outline">{translate(OFFER_WORDS[project.offerType])}</Badge>
+              )}
             </div>
+            {noRera === null ? null : (
+              <p className="text-small text-muted">
+                {translate("projects.page.reraNotApplicable", { reason: noRera })}
+              </p>
+            )}
             {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
           </header>
 

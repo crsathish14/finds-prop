@@ -16,8 +16,10 @@ export {
 } from "./queries";
 export { submitProjectLead } from "./actions";
 export { visitDateProblem } from "./lead-view";
-export { PROJECT_STATUSES } from "./schemas";
+export { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } from "./schemas";
 export type {
+  OfferType,
+  PriceType,
   ProjectData,
   ProjectListItem,
   ProjectStatus,
@@ -29,9 +31,11 @@ export {
   bhkSizes,
   contactLinks,
   developerInitials,
+  areaRange,
   orderUnits,
-  priceBounds,
+  priceOf,
   projectMetaDescription,
+  reraReason,
   reraTag,
   specificationRows,
   specItems,

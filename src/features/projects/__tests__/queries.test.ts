@@ -42,8 +42,9 @@ const listRow = (overrides: Record<string, unknown> = {}) => ({
   slug: "kadal-vista",
   name: "Kadal Vista",
   project_status: "under_construction",
-  price_min: 7_800_000,
-  price_max: 14_200_000,
+  offer_type: null,
+  price: 7_800_000,
+  price_type: "basic",
   bhk_options: [2, 3],
   locality: "OMR Navalur",
   images: ["kadal/1.webp", "kadal/2.webp"],
@@ -57,8 +58,12 @@ const projectRow = (overrides: Record<string, unknown> = {}) => ({
   slug: "kadal-vista",
   name: "Kadal Vista",
   project_status: "under_construction",
-  price_min: 7_800_000,
-  price_max: 14_200_000,
+  property_type: "apartment",
+  offer_type: null,
+  price: 7_800_000,
+  price_type: "basic",
+  area_min_sqft: null,
+  area_max_sqft: null,
   bhk_options: [2, 3],
   land_area_acres: 4.2,
   total_units: 320,
@@ -69,6 +74,7 @@ const projectRow = (overrides: Record<string, unknown> = {}) => ({
   nearby: ["Shopping mall"],
   rera_applicable: true,
   rera_number: "TN/SAMPLE/0000",
+  rera_not_applicable_reason: null,
   description: "A gated community.",
   specifications: "Structure: RCC",
   amenities: ["Gym"],
@@ -155,8 +161,9 @@ describe("UT-project-queries: the list of projects", () => {
           name: "Kadal Vista",
           developerName: "Kadal Homes",
           status: "under_construction",
-          priceMin: 7_800_000,
-          priceMax: 14_200_000,
+          offerType: null,
+          price: 7_800_000,
+          priceType: "basic",
           bhkOptions: [2, 3],
           locality: "OMR Navalur",
           coverPath: "kadal/1.webp",
@@ -183,6 +190,21 @@ describe("UT-project-queries: the list of projects", () => {
     );
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]?.status).toBeNull();
+  });
+
+  it("treats a price type or a sale or rent choice this site does not know as none", async () => {
+    from.mockReturnValue(
+      builder({
+        data: [listRow({ price_type: "weekly", offer_type: "lease" })],
+        error: null,
+      }).query,
+    );
+    const result = await getProjects();
+    expect(result.status === "ok" && result.projects[0]).toMatchObject({
+      price: 7_800_000,
+      priceType: null,
+      offerType: null,
+    });
   });
 
   it("skips a row that does not fit and says how many, without the row", async () => {
@@ -244,6 +266,13 @@ describe("UT-project-queries: one project by its slug", () => {
       availableCount: 184,
       totalUnits: 320,
       reraNumber: "TN/SAMPLE/0000",
+      reraNotApplicableReason: null,
+      propertyType: "apartment",
+      offerType: null,
+      price: 7_800_000,
+      priceType: "basic",
+      areaMinSqft: null,
+      areaMaxSqft: null,
     });
     // The rows are put in the order of the table, and the trend oldest month first.
     expect(result.project.units.map((unit) => unit.number)).toEqual(["A-2", "A-10"]);

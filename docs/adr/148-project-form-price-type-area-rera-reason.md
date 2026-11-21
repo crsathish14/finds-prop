@@ -38,3 +38,11 @@ Rollback: nothing is dropped before D; converted rows keep their old price colum
 - The admin form changes with the builder's, because they are the same form.
 - Existing approved projects keep their approval: the conversion runs as the system, and the guard trigger sends a project back to review only for a client's edit.
 - A builder's later edit of a converted project is checked against the new rules in step D, so a project converted with a placeholder (a reason that says none was given, a placeholder price on a row that never had one) shows the builder what to fill in.
+
+## Step C: what a visitor and the assistant see
+
+- The project card, the project page and the builder's list write the one price with what it means: "₹8,500 per sq ft", "₹85 L basic price", "₹1.42 Cr all inclusive", "₹45,000 per month", "₹85 per sq ft per month" (`domain.projectCard.priceType.*`). A commercial project carries a "For sale" or "For rent" tag.
+- The overview of the page gains the property type and the area range (a plot and every commercial project give one); "Price range" becomes "Starting price".
+- The reason RERA does not apply is shown under the title as plain text ("RERA not applicable: {reason}"). The developer wrote it, so it is never drawn as markup and the assistant treats it as untrusted text.
+- The assistant's `search_projects` and `get_project` give `priceRupees`, `priceText`, `priceType` and `offerType` in place of a lowest and highest price. A search by the most a customer will pay compares only totals (basic and all inclusive); a project priced per sq ft or for rent never matches it, because the numbers are not comparable.
+- The admin's list still reads the old columns through `admin_project_overview()`; it moves in step D with the function.

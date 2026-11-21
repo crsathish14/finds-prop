@@ -16,8 +16,12 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   name: "Kadal Vista",
   developer: { id: "b1", name: "Kadal Homes" },
   status: "under_construction",
-  priceMin: 7_800_000,
-  priceMax: 14_200_000,
+  propertyType: "apartment",
+  offerType: null,
+  price: 7_800_000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [3, 2],
   landAreaAcres: 4.2,
   totalUnits: 320,
@@ -28,6 +32,7 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   nearby: ["Navalur junction", "Shopping mall"],
   reraApplicable: true,
   reraNumber: "TN/SAMPLE/0000",
+  reraNotApplicableReason: null,
   description: "A gated community.\n\nSecond paragraph.",
   specifications: "Structure: RCC framed structure\nFlooring: Vitrified tiles",
   amenities: ["Clubhouse", "Gym", "gym"],
@@ -73,8 +78,9 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
 const sparse = (): ProjectData =>
   project({
     status: null,
-    priceMin: null,
-    priceMax: null,
+    propertyType: null,
+    price: null,
+    priceType: null,
     bhkOptions: [],
     landAreaAcres: null,
     totalUnits: null,
@@ -163,8 +169,10 @@ describe("ProjectScreen: the project page (S4-T09)", () => {
     renderScreen(project());
     const overview = screen.getByRole("region", { name: words.overview.heading });
     for (const text of [
-      words.overview.priceRange,
-      "₹78 L – ₹1.42 Cr",
+      words.overview.price,
+      "₹78 L basic price",
+      words.overview.propertyType,
+      words.propertyType.apartment,
       "2, 3 BHK",
       "Under construction",
       "Dec 2028",
@@ -235,7 +243,7 @@ describe("ProjectScreen: the project page (S4-T09)", () => {
   it("puts the price, the sizes and the possession in the side card, with the badges", () => {
     renderScreen(project());
     const aside = screen.getByRole("complementary", { name: words.aside.label });
-    expect(within(aside).getByText("₹78 L – ₹1.42 Cr")).toBeInTheDocument();
+    expect(within(aside).getByText("₹78 L basic price")).toBeInTheDocument();
     expect(within(aside).getByText("2 and 3 BHK · Possession Dec 2028")).toBeInTheDocument();
     expect(within(aside).getByText(en.domain.projectCard.featured)).toBeInTheDocument();
     expect(within(aside).getByText("Under construction")).toBeInTheDocument();
@@ -263,10 +271,74 @@ describe("ProjectScreen: the project page (S4-T09)", () => {
     expect(container.textContent).not.toMatch(/₹0|\b0 acres|undefined|null/);
   });
 
-  it("draws one price alone, not a range with equal ends", () => {
-    renderScreen(project({ priceMin: 10_500_000, priceMax: 10_500_000 }));
+  it("draws the one price with what it means, in the overview and in the price card", () => {
+    renderScreen(project({ price: 10_500_000, priceType: "all_inclusive" }));
     const aside = screen.getByRole("complementary", { name: words.aside.label });
-    expect(within(aside).getByText("₹1.05 Cr")).toBeInTheDocument();
+    expect(within(aside).getByText("₹1.05 Cr all inclusive")).toBeInTheDocument();
+    const overview = screen.getByRole("region", { name: words.overview.heading });
+    expect(within(overview).getByText("₹1.05 Cr all inclusive")).toBeInTheDocument();
+  });
+
+  it.each([
+    ["per_sqft", 8_500, "₹8,500 per sq ft"],
+    ["rent_per_month", 45_000, "₹45,000 per month"],
+    ["rent_per_sqft_month", 85, "₹85 per sq ft per month"],
+  ] as const)("says what a %s price means", (priceType, price, text) => {
+    renderScreen(project({ price, priceType }));
+    const aside = screen.getByRole("complementary", { name: words.aside.label });
+    expect(within(aside).getByText(text)).toBeInTheDocument();
+  });
+
+  it("draws the area range of a plot or a commercial project, and the kind of property", () => {
+    renderScreen(
+      project({
+        propertyType: "office",
+        offerType: "rent",
+        bhkOptions: [],
+        areaMinSqft: 500,
+        areaMaxSqft: 2500,
+      }),
+    );
+    const overview = screen.getByRole("region", { name: words.overview.heading });
+    expect(within(overview).getByText(words.overview.area)).toBeInTheDocument();
+    expect(within(overview).getByText("500 – 2,500 sq ft")).toBeInTheDocument();
+    expect(within(overview).getByText(words.propertyType.office)).toBeInTheDocument();
+  });
+
+  it("leaves out the area when only one end was given", () => {
+    renderScreen(project({ areaMinSqft: 500, areaMaxSqft: null }));
+    const overview = screen.getByRole("region", { name: words.overview.heading });
+    expect(within(overview).queryByText(words.overview.area)).toBeNull();
+  });
+
+  it("tags a commercial project for sale or for rent, and leaves the tag out otherwise", () => {
+    const sale = renderScreen(project({ offerType: "sale" }));
+    expect(screen.getByText(en.domain.projectCard.offer.sale)).toBeInTheDocument();
+    sale.unmount();
+    const rent = renderScreen(project({ offerType: "rent" }));
+    expect(screen.getByText(en.domain.projectCard.offer.rent)).toBeInTheDocument();
+    rent.unmount();
+    renderScreen(project());
+    expect(screen.queryByText(en.domain.projectCard.offer.sale)).toBeNull();
+    expect(screen.queryByText(en.domain.projectCard.offer.rent)).toBeNull();
+  });
+
+  it("says in public why RERA does not apply, as plain text, only for a project that is not under RERA", () => {
+    const reason = "Below the size that needs registration. <b>not bold</b>";
+    const none = renderScreen(
+      project({ reraApplicable: false, reraNumber: null, reraNotApplicableReason: reason }),
+    );
+    expect(screen.getByText(`RERA not applicable: ${reason}`)).toBeInTheDocument();
+    expect(document.querySelector("b")).toBeNull();
+    none.unmount();
+    renderScreen(project({ reraApplicable: true, reraNotApplicableReason: reason }));
+    expect(screen.queryByText(/RERA not applicable/)).toBeNull();
+  });
+
+  it("says nothing about RERA for a project that is not under it and gave no reason", () => {
+    renderScreen(project({ reraApplicable: false, reraNumber: null }));
+    expect(screen.queryByText(/RERA not applicable/)).toBeNull();
+    expect(screen.queryByText(/RERA applicable/)).toBeNull();
   });
 
   it("leaves out the trend when there is only one month", () => {

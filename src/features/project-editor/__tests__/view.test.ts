@@ -131,8 +131,8 @@ describe("UT-project-list-row: a project as the builder's list shows it (S7-T03)
       name: "Kadal Vista",
       slug: "kadal-vista",
       locality: "OMR Navalur",
-      priceMin: 7800000,
-      priceMax: 14200000,
+      price: 7800000,
+      priceType: "basic",
       cover: "a/first.jpg",
       moderation: "approved",
       published: true,
@@ -141,9 +141,9 @@ describe("UT-project-list-row: a project as the builder's list shows it (S7-T03)
   });
 
   it("has no cover for a project without images, and keeps a missing price as none", () => {
-    const listed = toProjectListRow(row({ images: [], price_min: null, price_max: null }));
+    const listed = toProjectListRow(row({ images: [], price: null, price_type: null }));
     expect(listed.cover).toBeNull();
-    expect(listed.priceMin).toBeNull();
-    expect(listed.priceMax).toBeNull();
+    expect(listed.price).toBeNull();
+    expect(listed.priceType).toBeNull();
   });
 });

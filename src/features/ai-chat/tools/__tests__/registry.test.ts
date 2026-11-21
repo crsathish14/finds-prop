@@ -69,18 +69,21 @@ vi.mock("@/features/property", async () => {
   return { getProperty, amenityList, perSqftRupees };
 });
 vi.mock("@/features/projects", async () => {
-  const { bhkSizes, priceBounds, TREND_MONTHS } = await import("@/features/projects/view");
+  const { bhkSizes, priceOf, TREND_MONTHS } = await import("@/features/projects/view");
   const { isProjectSlug } = await import("@/features/projects/address");
-  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
+  const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
+    await import("@/features/projects/schemas");
   const { visitDateProblem } = await import("@/features/projects/lead-view");
   return {
     getProjects,
     getProject,
     bhkSizes,
-    priceBounds,
+    priceOf,
     TREND_MONTHS,
     isProjectSlug,
     visitDateProblem,
+    OFFER_TYPES,
+    PRICE_TYPES,
     PROJECT_STATUSES,
     PROJECT_LIST_LIMIT: 60,
   };

@@ -3,10 +3,12 @@ import type { ProjectData, ProjectUnit, TrendPoint } from "../types";
 import {
   bhkSizes,
   contactLinks,
+  areaRange,
   developerInitials,
   orderUnits,
-  priceBounds,
+  priceOf,
   projectMetaDescription,
+  reraReason,
   reraTag,
   specificationRows,
   specItems,
@@ -25,8 +27,12 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   name: "Kadal Vista",
   developer: { id: "00000000-0000-4000-8000-0000000000aa", name: "Kadal Homes" },
   status: "under_construction",
-  priceMin: 7_800_000,
-  priceMax: 14_200_000,
+  propertyType: "apartment",
+  offerType: null,
+  price: 7_800_000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [3, 2],
   landAreaAcres: 4.2,
   totalUnits: 320,
@@ -37,6 +43,7 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   nearby: [],
   reraApplicable: true,
   reraNumber: "TN/SAMPLE/0000",
+  reraNotApplicableReason: null,
   description: null,
   specifications: null,
   amenities: [],
@@ -73,26 +80,41 @@ describe("UT-project-view: what the project pages show", () => {
     });
   });
 
-  describe("priceBounds", () => {
-    it("gives the range lowest first, whatever order it is given in", () => {
-      expect(priceBounds(100, 300)).toEqual({ low: 100, high: 300 });
-      expect(priceBounds(300, 100)).toEqual({ low: 100, high: 300 });
-    });
-    it("makes one price a range with equal ends", () => {
-      expect(priceBounds(100, null)).toEqual({ low: 100, high: 100 });
-      expect(priceBounds(null, 300)).toEqual({ low: 300, high: 300 });
+  describe("priceOf", () => {
+    it("gives the one price with what it means", () => {
+      expect(priceOf({ price: 8_500, priceType: "per_sqft" })).toEqual({
+        rupees: 8_500,
+        type: "per_sqft",
+      });
+      expect(priceOf({ price: 100, priceType: null })).toEqual({ rupees: 100, type: null });
     });
     it("gives nothing when no price, or only 0, is given", () => {
-      expect(priceBounds(null, null)).toBeNull();
-      expect(priceBounds(0, 0)).toBeNull();
+      expect(priceOf({ price: null, priceType: "basic" })).toBeNull();
+      expect(priceOf({ price: 0, priceType: "basic" })).toBeNull();
+    });
+  });
+
+  describe("areaRange", () => {
+    it("gives the range smallest first, whatever order it is given in", () => {
+      expect(areaRange({ areaMinSqft: 500, areaMaxSqft: 2500 })).toEqual({ min: 500, max: 2500 });
+      expect(areaRange({ areaMinSqft: 2500, areaMaxSqft: 500 })).toEqual({ min: 500, max: 2500 });
+    });
+    it("gives nothing when an end is missing or is 0", () => {
+      expect(areaRange({ areaMinSqft: 500, areaMaxSqft: null })).toBeNull();
+      expect(areaRange({ areaMinSqft: null, areaMaxSqft: null })).toBeNull();
+      expect(areaRange({ areaMinSqft: 0, areaMaxSqft: 500 })).toBeNull();
     });
   });
 
   describe("specItems", () => {
     it("lists the facts in the order of the UX", () => {
-      expect(specItems(project()).map((item) => item.key)).toEqual([
-        "priceRange",
+      expect(
+        specItems(project({ areaMinSqft: 500, areaMaxSqft: 900 })).map((item) => item.key),
+      ).toEqual([
+        "price",
+        "propertyType",
         "configuration",
+        "area",
         "status",
         "possession",
         "landArea",
@@ -103,21 +125,24 @@ describe("UT-project-view: what the project pages show", () => {
     });
 
     it("carries each fact's value", () => {
-      const items = specItems(project());
-      expect(items[0]).toEqual({ key: "priceRange", low: 7_800_000, high: 14_200_000 });
-      expect(items[1]).toEqual({ key: "configuration", sizes: [2, 3] });
-      expect(items[2]).toEqual({ key: "status", value: "under_construction" });
-      expect(items[3]).toEqual({ key: "possession", date: "2028-12-31" });
-      expect(items[4]).toEqual({ key: "landArea", acres: 4.2 });
-      expect(items[5]).toEqual({ key: "totalUnits", value: 320 });
-      expect(items[6]).toEqual({ key: "availableUnits", value: 184 });
-      expect(items[7]).toEqual({ key: "rera", number: "TN/SAMPLE/0000" });
+      const items = specItems(project({ areaMinSqft: 500, areaMaxSqft: 900 }));
+      expect(items[0]).toEqual({ key: "price", rupees: 7_800_000, type: "basic" });
+      expect(items[1]).toEqual({ key: "propertyType", value: "apartment" });
+      expect(items[2]).toEqual({ key: "configuration", sizes: [2, 3] });
+      expect(items[3]).toEqual({ key: "area", min: 500, max: 900 });
+      expect(items[4]).toEqual({ key: "status", value: "under_construction" });
+      expect(items[5]).toEqual({ key: "possession", date: "2028-12-31" });
+      expect(items[6]).toEqual({ key: "landArea", acres: 4.2 });
+      expect(items[7]).toEqual({ key: "totalUnits", value: 320 });
+      expect(items[8]).toEqual({ key: "availableUnits", value: 184 });
+      expect(items[9]).toEqual({ key: "rera", number: "TN/SAMPLE/0000" });
     });
 
     it("leaves out what the developer did not give, never drawing a blank or a zero", () => {
       const sparse = project({
-        priceMin: null,
-        priceMax: null,
+        price: null,
+        priceType: null,
+        propertyType: null,
         bhkOptions: [],
         status: null,
         possessionDate: null,
@@ -156,6 +181,21 @@ describe("UT-project-view: what the project pages show", () => {
       expect(keys({ reraApplicable: false, reraNumber: null })).not.toContain("rera");
       expect(keys({ reraApplicable: true, reraNumber: null })).not.toContain("rera");
       expect(keys({ reraApplicable: true, reraNumber: "   " })).not.toContain("rera");
+    });
+  });
+
+  describe("reraReason", () => {
+    it("gives the trimmed reason only for a project that is not under RERA", () => {
+      expect(
+        reraReason({ reraApplicable: false, reraNotApplicableReason: "  Small layout " }),
+      ).toBe("Small layout");
+      expect(
+        reraReason({ reraApplicable: true, reraNotApplicableReason: "Small layout" }),
+      ).toBeNull();
+    });
+    it("gives nothing when the reason is missing or blank", () => {
+      expect(reraReason({ reraApplicable: false, reraNotApplicableReason: null })).toBeNull();
+      expect(reraReason({ reraApplicable: false, reraNotApplicableReason: "   " })).toBeNull();
     });
   });
 
