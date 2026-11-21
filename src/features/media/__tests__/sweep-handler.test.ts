@@ -32,8 +32,10 @@ describe("UT-sweep-media-route: error tracker (ADR-130)", () => {
     reportError.mockClear();
     sweepOrphanPhotos.mockResolvedValueOnce({ allowed: false });
     expect((await handleSweepMedia(post())).status).toBe(401);
-    sweepOrphanPhotos.mockResolvedValueOnce({ allowed: true, removed: 3 });
-    expect((await handleSweepMedia(post())).status).toBe(200);
+    sweepOrphanPhotos.mockResolvedValueOnce({ allowed: true, removed: 3, blogFilesRemoved: 1 });
+    const good = await handleSweepMedia(post());
+    expect(good.status).toBe(200);
+    await expect(good.json()).resolves.toEqual({ removed: 3, blogFilesRemoved: 1 });
     expect(reportError).not.toHaveBeenCalled();
   });
 });

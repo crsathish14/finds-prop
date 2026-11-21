@@ -42,5 +42,12 @@ export const SWEEP_AFTER_HOURS = 24;
 /** The most files one sweep removes; the next hourly run takes the rest. */
 export const SWEEP_BATCH = 500;
 
+/**
+ * The public bucket that holds the pictures of blog articles, under `blog/<article id>/` (ADR-144). The sweep also
+ * removes the files of articles that were purged from Trash (ADR-146). The same name as the blog feature's own
+ * constant (a feature does not import another's); the bucket's name is fixed by the migration that creates it.
+ */
+export const BLOG_FILES_BUCKET = "site-assets";
+
 /** The name of the sweeper's token in `internal_cron_tokens`. */
 export const SWEEP_TOKEN_NAME = "media_sweep";

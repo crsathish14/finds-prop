@@ -7,6 +7,10 @@ import { SWEEP_AFTER_HOURS, SWEEP_BATCH } from "./constants";
  * upload the browser never finished, a photo the owner removed, or a listing that was deleted. The
  * database lists them (`orphan_listing_photos`), this deletes them through the storage service.
  *
+ * It also removes the picture files of blog articles that no longer exist (ADR-146): the nightly retention job purges
+ * an article that has been in Trash for 30 days, and the database lists the files left under `blog/<article id>/`
+ * (`orphan_blog_files`).
+ *
  * Who may call it: the scheduled job in the database sends the token stored in `internal_cron_tokens`
  * (`media_sweep`) in the `x-cron-token` header. Anything else is refused.
  */
@@ -15,6 +19,9 @@ export interface SweepStore {
   readToken(): Promise<string | null>;
   listOrphans(olderThanHours: number, limit: number): Promise<string[]>;
   removeObjects(paths: string[]): Promise<void>;
+  /** Files of the blog bucket whose article no longer exists, older than the given hours. */
+  listOrphanBlogFiles(olderThanHours: number, limit: number): Promise<string[]>;
+  removeBlogFiles(paths: string[]): Promise<void>;
 }
 
 /** Compares two secrets without leaking, through the length or the first difference, how close a guess was. */
@@ -24,7 +31,8 @@ export function sameSecret(provided: string, expected: string): boolean {
   return timingSafeEqual(left, right);
 }
 
-export type SweepResult = { allowed: false } | { allowed: true; removed: number };
+export type SweepResult =
+  { allowed: false } | { allowed: true; removed: number; blogFilesRemoved: number };
 
 export async function sweepOrphanPhotos(
   store: SweepStore,
@@ -36,5 +44,8 @@ export async function sweepOrphanPhotos(
   }
   const orphans = await store.listOrphans(SWEEP_AFTER_HOURS, SWEEP_BATCH);
   if (orphans.length > 0) await store.removeObjects(orphans);
-  return { allowed: true, removed: orphans.length };
+  // The photos are done first: a failure to list or remove the blog files never undoes them.
+  const blogFiles = await store.listOrphanBlogFiles(SWEEP_AFTER_HOURS, SWEEP_BATCH);
+  if (blogFiles.length > 0) await store.removeBlogFiles(blogFiles);
+  return { allowed: true, removed: orphans.length, blogFilesRemoved: blogFiles.length };
 }
