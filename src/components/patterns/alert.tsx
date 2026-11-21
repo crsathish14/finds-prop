@@ -31,7 +31,7 @@ const alertStyles = cva("flex items-start gap-3 rounded-md border px-4 py-3 text
       info: "border-info/30 bg-info-tint text-info",
       success: "border-success/30 bg-success-tint text-success",
       warning: "border-warning/30 bg-warning-tint text-warning",
-      danger: "border-danger/30 bg-danger-tint text-danger",
+      danger: "border-danger/30 bg-danger-tint text-danger-text",
       neutral: "border-line-strong bg-canvas-sunken text-ink",
     },
   },

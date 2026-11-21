@@ -91,7 +91,7 @@ function DropdownMenuItem({
             <span
               className={cn(
                 "ml-auto inline-grid h-5.5 min-w-5.5 place-items-center rounded-pill px-2 text-caption font-bold",
-                metaTone === "new" ? "bg-cta text-on-cta" : "bg-canvas-sunken text-ink",
+                metaTone === "new" ? "bg-amber text-on-amber" : "bg-canvas-sunken text-ink",
               )}
             >
               {meta}

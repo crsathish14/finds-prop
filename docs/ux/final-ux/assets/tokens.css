@@ -1,54 +1,63 @@
 /* Find Prop — final UX design tokens.
-   Brand values are Palette A "Grove" from design-exploration-v2/assets/palettes.css, unchanged.
+   Colour values updated 21 Nov 2026 to the findsprop palette (teal, ink, amber on white); the
+   earlier "Grove" forest and copper values are retired. Type, spacing, radii and layout are unchanged.
    Additions (marked NEW) are semantic status colours, a sidebar/footer surface, a focus ring and scales
-   that Concept 1 did not need. Every text pair is measured in design-system.md. */
+   that Concept 1 did not need. The screens in this folder were drawn with the Grove palette and
+   still show it where they hard-code a colour. */
 :root {
   color-scheme: light;
 
   /* ── Brand: surfaces ───────────────────────────── */
-  --c-bg: #FAF6EE;              /* page canvas (ivory) */
-  --c-bg-sunken: #F1EADB;       /* secondary canvas, segmented-control track (parchment) */
+  --c-bg: #FFFFFF;              /* page canvas */
+  --c-bg-sunken: #F6F8F8;       /* alternate sections, dashboard canvas, segmented-control track */
   --c-surface: #FFFFFF;         /* cards, inputs, dialogs */
 
-  /* ── Brand: forest green (identity, selected, secondary actions) ── */
-  --c-primary: #1F4A38;
-  --c-primary-hover: #163829;
-  --c-primary-deep: #163829;    /* footer, portal sidebar */
+  /* ── Brand: action teal (identity, links, selected, primary buttons) ── */
+  --c-primary: #0B7A6C;         /* white on it is 5.2:1 */
+  --c-primary-hover: #08665A;
+  --c-primary-deep: #0F1A19;    /* footer, portal sidebar, scrims (ink) */
   --c-on-primary: #FFFFFF;
-  --c-primary-tint: #E2ECE5;
-  --c-primary-tint-2: #C9DDD0;
+  --c-primary-tint: #E8F7F4;
+  --c-primary-tint-2: #DDECEA;  /* derived: 14% of action teal over white */
 
-  /* ── Brand: muted copper (conversion action, selected highlight) ── */
-  --c-accent: #B4592A;          /* fill only: 4.77:1 with white label */
-  --c-accent-hover: #9A4A20;
+  /* ── Brand: conversion action (token names kept from the copper era) ── */
+  --c-accent: #0B7A6C;          /* fill only */
+  --c-accent-hover: #08665A;
   --c-on-accent: #FFFFFF;
-  --c-accent-text: #9A4A20;     /* small text in copper. #B4592A as small text is 4.42:1 and fails */
-  --c-accent-tint: #F7E6D8;
-  --c-accent-tint-2: #EDCDB4;
+  --c-accent-text: #08665A;     /* small teal text on a light tint */
+  --c-accent-tint: #E8F7F4;
+  --c-accent-tint-2: #DDECEA;
+
+  /* ── NEW: amber (Featured and New badges, always with ink text) ── */
+  --c-amber: #F2A93B;
+  --c-on-amber: #0F1A19;
 
   /* ── Text and lines ───────────────────────────── */
-  --c-ink: #1C2A23;
-  --c-muted: #55635A;
-  --c-subtle: #626F67;          /* placeholders, 4.88:1 on ivory */
-  --c-border: #E2D9C7;          /* dividers and card edges (decorative) */
-  --c-border-strong: #CBBFA6;   /* chip edges, table rules */
-  --c-border-input: #829086;    /* input outlines, 3.34:1 on white */
+  --c-ink: #0F1A19;
+  --c-muted: #5B6B69;
+  --c-subtle: #5B6B69;          /* placeholders, 5.6:1 on white */
+  --c-disabled: #8A9997;        /* disabled controls only */
+  --c-border: #DDE4E3;          /* dividers and card edges (decorative) */
+  --c-border-strong: #C9D3D1;   /* secondary button outlines, chip edges, table rules */
+  --c-border-input: #7D8C8A;    /* input outlines, 3.5:1 on white */
+  --c-divider: #EEF2F1;         /* separators, table rows */
 
-  /* ── NEW: semantic status colours (each pair ≥ 5.5:1) ── */
-  --c-success: #1E6B47;  --c-success-bg: #E1F1E7;
-  --c-warning: #7A4F00;  --c-warning-bg: #FBEBC8;
-  --c-danger:  #A62A1B;  --c-danger-bg:  #FBE2DD;
-  --c-info:    #24566F;  --c-info-bg:    #E0EEF4;
-  --c-neutral: #3D4A43;  --c-neutral-bg: #E9E2D0;
+  /* ── NEW: semantic status colours (each pair ≥ 4.5:1) ── */
+  --c-success: #15803D;  --c-success-bg: #ECFDF3;
+  --c-warning: #B45309;  --c-warning-bg: #FFF7E6;
+  --c-danger:  #DC2626;  --c-danger-bg:  #FEF2F2;
+  --c-danger-text: #B91C1C;     /* error text on the error tint (#DC2626 on it is 4.4:1) */
+  --c-info:    #08665A;  --c-info-bg:    #E8F7F4;
+  --c-neutral: #5B6B69;  --c-neutral-bg: #EEF2F1;
 
   /* ── NEW: dark surfaces (footer, portal sidebar) ── */
-  --c-dark: #163829;
-  --c-on-dark: #FAF6EE;
-  --c-on-dark-muted: #B9CBC0;
-  --c-dark-line: rgba(250, 246, 238, .16);
-  --c-dark-hover: rgba(250, 246, 238, .10);
-  --c-dark-active: #2E6450;
-  --c-on-dark-accent: #E8B98F;
+  --c-dark: #0F1A19;
+  --c-on-dark: #FFFFFF;
+  --c-on-dark-muted: #B9C6C4;
+  --c-dark-line: rgba(255, 255, 255, .16);
+  --c-dark-hover: rgba(255, 255, 255, .10);
+  --c-dark-active: #3A4342;     /* derived: 18% white over ink */
+  --c-on-dark-accent: #16B9A4;  /* brand teal: only on ink, never as text on white */
 
   /* ── NEW: chart series (admin and builder dashboards; see design-system.md) ── */
   /* Validated with the dataviz validator on white: lightness band, chroma floor, worst adjacent CVD ΔE 8.6 (target ≥ 8),
@@ -83,11 +92,11 @@
   --r-pill: 999px;
 
   /* ── Elevation ────────────────────────────────── */
-  --shadow-card: 0 1px 2px rgba(28, 42, 35, .05), 0 10px 28px -16px rgba(28, 42, 35, .22);
-  --shadow-hover: 0 2px 4px rgba(28, 42, 35, .06), 0 18px 36px -16px rgba(28, 42, 35, .30);
-  --shadow-float: 0 28px 60px -28px rgba(31, 74, 56, .38), 0 2px 6px rgba(28, 42, 35, .06); /* hero search card only */
-  --shadow-pop: 0 4px 8px rgba(28, 42, 35, .08), 0 24px 48px -12px rgba(28, 42, 35, .28);   /* menus, popovers */
-  --shadow-modal: 0 32px 80px -24px rgba(22, 56, 41, .55);
+  --shadow-card: 0 1px 2px rgba(15, 26, 25, .05), 0 10px 28px -16px rgba(15, 26, 25, .22);
+  --shadow-hover: 0 2px 4px rgba(15, 26, 25, .06), 0 18px 36px -16px rgba(15, 26, 25, .30);
+  --shadow-float: 0 28px 60px -28px rgba(11, 122, 108, .38), 0 2px 6px rgba(15, 26, 25, .06); /* hero search card only */
+  --shadow-pop: 0 4px 8px rgba(15, 26, 25, .08), 0 24px 48px -12px rgba(15, 26, 25, .28);   /* menus, popovers */
+  --shadow-modal: 0 32px 80px -24px rgba(15, 26, 25, .55);
 
   /* ── Layout ───────────────────────────────────── */
   --container: 1328px;

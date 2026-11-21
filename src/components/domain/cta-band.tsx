@@ -1,5 +1,5 @@
 /**
- * CtaBand: the green banner that invites a visitor to post a property.
+ * CtaBand: the ink banner that invites a visitor to post a property.
  * Purpose: the last block of the homepage ("Want to sell or rent your property?"). Owner: design
  *   system. It holds no state and fetches nothing: the page passes the words, already translated,
  *   and where the button leads.
@@ -8,7 +8,7 @@
  * Responsive: stacked on a phone (title, sentence, button); from 768 px the button sits at the
  *   right, centred on the text.
  * Accessibility: the title is a level 2 heading; the button is a link named by its label. The
- *   arches are decoration. White and pale-green text on the forest green passes 4.5 : 1.
+ *   arches are decoration. White and pale-grey text on the ink passes 4.5 : 1.
  * States: button default, hover, focus, pressed.
  * Dependencies: Button, Link, Heading, Icon, cn.
  * Tests: section-blocks.test.tsx; Design Lab "Domain" (S4-T06).
@@ -37,7 +37,7 @@ function CtaBand({ title, description, actionLabel, href, id, className }: CtaBa
     <div
       data-slot="cta-band"
       className={cn(
-        "relative flex flex-col items-start gap-5 overflow-hidden rounded-xl bg-primary px-6 py-8 text-on-primary",
+        "relative flex flex-col items-start gap-5 overflow-hidden rounded-xl bg-dark px-6 py-8 text-on-dark",
         "md:flex-row md:items-center md:justify-between md:px-10 md:py-10",
         className,
       )}
@@ -47,7 +47,7 @@ function CtaBand({ title, description, actionLabel, href, id, className }: CtaBa
       <svg
         viewBox="0 0 480 480"
         aria-hidden="true"
-        className="pointer-events-none absolute -right-35 -bottom-50 size-120 text-on-primary"
+        className="pointer-events-none absolute -right-35 -bottom-50 size-120 text-on-dark"
       >
         <path
           d="M0 480V240a240 240 0 0 1 480 0v240ZM80 480V240a160 160 0 0 1 320 0v240Z"
@@ -70,7 +70,7 @@ function CtaBand({ title, description, actionLabel, href, id, className }: CtaBa
         />
       </svg>
       <div className="relative">
-        <Heading as="h2" size="2" id={id} className="text-on-primary">
+        <Heading as="h2" size="2" id={id} className="text-on-dark">
           {title}
         </Heading>
         {description ? <p className="mt-2 text-body text-on-dark-muted">{description}</p> : null}

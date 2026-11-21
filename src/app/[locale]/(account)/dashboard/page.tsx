@@ -67,7 +67,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   if (!person) return null;
 
   return (
-    <main id="main" className="flex-1">
+    <main id="main" className="flex-1 bg-canvas-sunken">
       <DashboardScreen
         name={person.name}
         active={tab}

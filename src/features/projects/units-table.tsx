@@ -60,7 +60,7 @@ export function UnitsTable({
           </thead>
           <tbody>
             {units.map((unit) => (
-              <tr key={unit.number} className="border-t border-line">
+              <tr key={unit.number} className="border-t border-divider">
                 <th
                   scope="row"
                   className={cn(CELL, "sticky left-0 z-10 bg-surface text-left font-bold")}

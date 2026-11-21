@@ -144,7 +144,7 @@ function PortalShell({ topBar, mobileLogo, mobileMenu, children, ...sidebar }: P
       <aside className="on-dark sticky top-0 hidden h-screen flex-col overflow-y-auto bg-dark px-3 pt-5 pb-4 text-on-dark md:flex md:max-portal:items-center md:max-portal:px-3">
         <SidebarBody props={sidebar} inDrawer={false} />
       </aside>
-      <div className="min-w-0">
+      <div className="min-w-0 bg-canvas-sunken">
         <div className="sticky top-0 z-sticky flex h-16 items-center gap-3 border-b border-line bg-canvas/94 px-gutter backdrop-blur-md">
           <Sheet>
             <SheetTrigger asChild>
