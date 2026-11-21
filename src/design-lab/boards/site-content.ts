@@ -7,6 +7,7 @@ import {
 import { BlogBlockEditorDemo, BlogPostFormDemo, BlogPostRowsDemo } from "./admin-blog-demos";
 import { BlogArticleCardDemo, BlogArticlePartsDemo, BlogListControlsDemo } from "./blog-demos";
 import { ContentModuleBarDemo, ContentModulesCardDemo } from "./admin-content-modules-demos";
+import { CategoryManagerDemo, FaqFormDemo, FaqManagerDemo } from "./admin-faq-demos";
 import {
   SiteHeroDemo,
   SiteHomepageDemo,
@@ -103,6 +104,30 @@ export const SITE_CONTENT: LabEntry[] = [
       "The same switch as a bar at the top of each module's admin page (ADR-143), for the one module of the page: the switch with its label, Live or Hidden, the counts and the sentence about turning it off, and the question before hiding a module. Shown live, hidden and saved, counts not available, saving, a failed save and large counts on a narrow area. The module pages keep this bar at their top while their lists and editors are built under it.",
     sources: ["domain/content-module-bar.tsx", "patterns/confirm-dialog.tsx"],
     Demo: ContentModuleBarDemo,
+  },
+  {
+    id: "faq-manager",
+    name: "FAQ list",
+    description:
+      "The admin's FAQ list (ADR-143): the heading with Categories and Add question, the tabs All, Published, Drafts and Trash with their counts, a category filter and a search of the questions and answers, a table that becomes cards below 1024 px of room, and on each row Edit, Publish or Unpublish (Restore in the Trash), Move to Trash and, when one category is chosen, Move up and Move down (the first and last are off). A question in the Trash says so in words and has no Edit. Shown as a try-it list, with one category chosen, the Trash tab, nothing yet and no match.",
+    sources: ["domain/faq-manager.tsx"],
+    Demo: FaqManagerDemo,
+  },
+  {
+    id: "faq-form-fields",
+    name: "FAQ question form",
+    description:
+      "The admin's question page (ADR-143): a Question and answer card (the category, the question and the answer with a counter) and a Publishing card (Draft or Published), above the project form's save bar. Shown for a new question, a published one being edited, with problems on the boxes, while saving, and when the list has no category yet.",
+    sources: ["domain/faq-form-fields.tsx", "domain/project-save-bar.tsx"],
+    Demo: FaqFormDemo,
+  },
+  {
+    id: "category-manager",
+    name: "Category manager",
+    description:
+      "The inside of the drawer where the admin manages the categories of one list (ADR-143), shared by the FAQ, the Blog and the job departments: a row for each category with its address word and what uses it, a Hidden label, and the buttons Move up, Move down, Edit, Hide or Show and Delete (off while the category still holds items, with the reason beside it), and a form to add or rename one (name, address word, show on the site). Shown in its drawer, adding, editing with problems, saving and with no categories yet.",
+    sources: ["domain/category-manager.tsx", "patterns/manager-drawer.tsx"],
+    Demo: CategoryManagerDemo,
   },
   {
     id: "blog-article-card",
