@@ -4843,5 +4843,368 @@
         "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
       }
     }
+  },
+  {
+    "id": "G-jobs-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks what jobs are open: lists them and names the first three as sources",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Are there any jobs open at findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there are four open jobs right now: a customer support associate in Coimbatore, a content writing intern, a sales executive in Madurai and a site engineer in Chennai. Open the Careers page to read each one."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["site engineer"], ["Madurai"]],
+        "mustNotContain": ["zzhiddenmarker", "head of growth", "accountant", "data analyst"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": [
+          "/careers/customer-support-associate",
+          "/careers/content-writing-intern",
+          "/careers/sales-executive-madurai"
+        ],
+        "showsSources": [
+          "/careers/customer-support-associate",
+          "/careers/content-writing-intern",
+          "/careers/sales-executive-madurai"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-02",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks about a site engineer job in Chennai: searches, reads the posting and names only that job as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Is there a site engineer job in Chennai? What do they ask for?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "site engineer",
+              "department": null,
+              "location": "Chennai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "b2000000-0000-4000-8000-000000000001",
+              "query": "requirements"
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes. The site engineer job is hybrid and full time, in Chennai. They ask for a civil engineering degree and three years on building sites. Open the job on the Careers page to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "query": "site engineer"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "b2000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["civil engineering"], ["three years"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/careers/site-engineer"],
+        "showsSources": ["/careers/site-engineer"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about a remote internship: the model searches in English with the work mode and type",
+    "messages": [
+      {
+        "role": "user",
+        "text": "remote la intern job edhavadhu irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": "remote",
+              "type": "internship",
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Aama, oru content writing intern job irukku. Idhu remote internship, stipend irukku. Careers page la paarunga."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "workMode": "remote",
+              "type": "internship"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["content writing"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/careers/content-writing-intern"],
+        "showsSources": ["/careers/content-writing-intern"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-04",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks for a job that does not exist: says none was found and does not invent one",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Do you have a pilot job?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "pilot",
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find an open job like that at findsprop right now."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-jobs-05",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks how to apply: reads the job and says to apply on its page, taking no CV and no number",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I apply for the sales executive job in Madurai? Can I send my CV here?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "sales executive",
+              "department": null,
+              "location": "Madurai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "b2000000-0000-4000-8000-000000000002",
+              "query": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open the sales executive job on the Careers page and use its Apply button. I can't take a CV or apply for you here, so please don't send your CV or phone number in this chat."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "b2000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Careers page"], ["can't take a CV"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/sales-executive-madurai"],
+        "showsSources": ["/careers/sales-executive-madurai"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-06",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the admin switched Careers off: the assistant finds no job and says so",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Any vacancies at findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find any open jobs at findsprop right now."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["zzhiddenmarker", "site engineer"],
+        "sources": []
+      }
+    },
+    "hiddenModules": ["careers"]
   }
 ]

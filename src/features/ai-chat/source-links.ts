@@ -1,6 +1,6 @@
 /**
  * The links under an answer that name where a content answer came from (ADR-143 section 6.5): an article of the Blog, a
- * question of the FAQ, and, reserved for the Careers tool of a later change, a job. The model never writes one. A tool
+ * question of the FAQ and a job of Careers. The model never writes one. A tool
  * returns the id of what it read; the server builds the address here from that id, and the chat draws it as a source.
  * A link the model wrote is dropped by the output check unless it is exactly one of these built for this message
  * (`guards/output.ts`), and the browser draws only an address that `isSourcePath` accepts.

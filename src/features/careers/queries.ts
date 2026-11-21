@@ -378,3 +378,31 @@ export async function readJobDepartmentUsage(
 export async function getJobDepartmentUsage(): Promise<Record<string, number>> {
   return readJobDepartmentUsage(await createServerSupabase());
 }
+
+/**
+ * One open job by its id, for the AI assistant job tools (ADR-143 section 6), which have the id from a search and not
+ * the address. Same rules as the page read: the row policy hides a draft, a closed job, one past its closing date and
+ * one in Trash, so all of them are `null`. Cached under the Careers tag, which every job change refreshes, so opening,
+ * closing, editing or trashing a job changes the answer at once. The caller checks `isJobOpenAt` again, because a cached
+ * job may have passed its closing date a few minutes ago. The id must be a UUID: the caller checks it, because a
+ * malformed one is a database error and not a "no such job". A failed read throws.
+ */
+export async function getOpenJobById(id: string): Promise<JobDetailView | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.careers);
+  cacheLife("minutes");
+
+  const { data, error } = await createPublicSupabase()
+    .from("job_postings")
+    .select(PUBLIC_JOB_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    logger.error("a job could not be read by its id", { errorCode: error.code });
+    throw error;
+  }
+  if (!data) return null;
+  const departments = await getPublicCategories("department");
+  const department = departments.find((item) => item.id === data.department_id);
+  return toDetailView(data, department ? { slug: department.slug, name: department.name } : null);
+}

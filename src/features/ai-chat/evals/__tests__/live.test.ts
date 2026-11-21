@@ -25,6 +25,7 @@ vi.mock("@/features/projects", async () => (await import("./world-modules")).pro
 vi.mock("../../queries", async () => (await import("./world-modules")).queriesModule());
 vi.mock("@/features/blog", async () => (await import("./world-modules")).blogModule());
 vi.mock("@/features/faq", async () => (await import("./world-modules")).faqModule());
+vi.mock("@/features/careers", async () => (await import("./world-modules")).careersModule());
 vi.mock("@/features/site", async () => (await import("./world-modules")).siteModule());
 vi.mock("@/server/auth/get-session-view", async () =>
   (await import("./world-modules")).sessionModule(),

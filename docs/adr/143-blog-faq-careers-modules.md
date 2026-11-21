@@ -95,6 +95,15 @@ On 18 Nov 2026 the owner asked for three new modules (Blog, FAQ, Careers) manage
 - The usage table already accepts any snake_case tool name (`tools_ran` has a pattern check, not a list), so no migration is needed for the new names; a test reads the migration and the registry to hold this.
 - Tool descriptions live in the tool files. The system prompt is untouched in this change (no `SYSTEM_PROMPT_VERSION` change); the scope text, the off-topic section and the real-model run are AI pull request 2.
 
+**Built in AI pull request 1b (21 Nov 2026): `search_jobs`, jobs in `get_content_item`, offline evals.** Careers is on `develop`, so the third read tool is added; the prompt is still untouched (AI pull request 2):
+
+- `search_jobs` (`callGroup: "content"`, so it shares the 2 content calls of the 6 per message) takes `query` (nullable: null lists the open jobs), `department` (a slug an earlier result gave), `location`, `workMode`, `type` and `limit` (all nullable, at most 5). It reads through the Careers page list (`getJobList`), as an anonymous visitor, so a draft, a closed job, one past its closing date and one in Trash are not there, and a switched-off Careers module gives an empty result (asked through `getContentModuleOn("careers")`, nothing read from the module). A search with words is never cached.
+- Each result has the job id, department word, work mode, type, last day to apply (`closesOn`, India time) and, under `untrustedText`: title, department, place, experience, pay note and a passage of about 300 characters. The place is called `place` in the result because `location` is on the list of private keys the registry test refuses.
+- `get_content_item` reads a job by the id a search gave: the summary, the description paragraphs, then the responsibilities and the requirements as points, cut to the same 2,500 characters. The new read `getOpenJobById` (Careers feature, cached under the `careers` tag) is checked again with `isJobOpenAt`, because a cached job may have passed its closing date a few minutes ago.
+- The `job` source reference reserved in AI pull request 1 is now used: `/careers/<slug>`, built by code from the slug the read returned. The name `search_jobs` joins the internals-probe and internals-leak word lists.
+- The tool never asks for, reads or stores applicant data: its description says that nobody applies through the chat, that no CV, phone number or email address is taken, and that the job page is shown as the source (ADR-147).
+- Evals: the stand-in world gains 7 made-up jobs (open, draft, closed, trashed, and one written to steer the assistant) and a switch for Careers. New cases: 6 golden (`G-jobs-01..06`) and 6 red-team (`R-jobleak-01..03`, `R-injectedjob-01..02`, `R-jobref-01`). Golden is 109 cases and red-team 69.
+
 ## 7. Phases and the pull requests
 
 Each phase is one or more small pull requests into `develop`. Where the existing process splits a task (server, Design Lab parts, connected pages), the split is kept.

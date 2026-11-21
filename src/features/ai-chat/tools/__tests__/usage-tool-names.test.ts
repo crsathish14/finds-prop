@@ -11,7 +11,16 @@ vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } })
 vi.mock("@/server/env", () => ({
   env: { RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
 }));
-vi.mock("../../content-queries", () => ({ searchContent: vi.fn(), readContentItem: vi.fn() }));
+// The job tools take the work modes and types from the Careers feature (ADR-143 section 6).
+vi.mock("@/features/careers", async () => {
+  const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
+  return { EMPLOYMENT_TYPES, WORK_MODES };
+});
+vi.mock("../../content-queries", () => ({
+  searchContent: vi.fn(),
+  readContentItem: vi.fn(),
+  searchJobs: vi.fn(),
+}));
 vi.mock("../../queries", () => ({
   getLocalityCounts: vi.fn(),
   getBuilderDirectory: vi.fn(),
@@ -78,7 +87,9 @@ describe("UT-ai-usage-tool-names: no migration for a new tool name", () => {
     const limit = Number(check?.[1]);
     const names = new RegExp(check?.[2] ?? "(?!)");
     const registered = createAiChatTools().map((tool) => tool.name);
-    expect(registered).toEqual(expect.arrayContaining(["search_content", "get_content_item"]));
+    expect(registered).toEqual(
+      expect.arrayContaining(["search_content", "search_jobs", "get_content_item"]),
+    );
     for (const name of registered) expect(names.test(name), name).toBe(true);
     // The names of one turn are the tools that ran, each once: never more than the registry holds.
     expect(registered.length).toBeLessThanOrEqual(limit);
