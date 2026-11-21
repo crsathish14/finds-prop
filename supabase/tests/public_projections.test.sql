@@ -13,7 +13,8 @@ select plan(7);
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
 -- exact coordinates, DEC-35), the fields and project of an active form, and all of site_settings, content_categories (the active rows),
--- faqs (the published rows of active categories) and blog_posts (the published, not trashed articles).
+-- faqs (the published rows of active categories), blog_posts (the published, not trashed articles) and job_postings
+-- (the open jobs that have not closed and are not trashed).
 create temporary table expected_public_columns (table_name text, column_name text);
 insert into expected_public_columns (table_name, column_name)
 select expected.table_name, unnest(expected.columns)
@@ -112,7 +113,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts', 'job_postings'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped
@@ -134,7 +135,7 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('blog_body_text'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_blog_posts'), ('search_faqs'), ('search_properties')$$,
+  $$values ('blog_body_text'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties')$$,
   'DB-RLS-column-grants: anon can run only the searches, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
