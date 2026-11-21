@@ -117,6 +117,7 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
     ...tagsAfterListingChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterProjectChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterBlogChange("x").map((tag) => tag.replace(/:.*/, ":")),
+    ...tagsAfterJobChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterSiteSettingsChange(),
     ...tagsAfterFormChange(),
     ...tagsAfterContentCategoryChange(),
@@ -138,6 +139,8 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
           expect(REFRESHED, `${file}: ${part}`).toContain("property:");
         } else if (/^projectTag\(/.test(part)) {
           expect(REFRESHED, `${file}: ${part}`).toContain("project:");
+        } else if (/^jobTag\(/.test(part)) {
+          expect(REFRESHED, `${file}: ${part}`).toContain("job:");
         } else if (/^blogPostTag\(/.test(part)) {
           expect(REFRESHED, `${file}: ${part}`).toContain("blog-post:");
         } else if (/^CACHE_TAGS\.(blog|faq|careers)$/.test(part)) {

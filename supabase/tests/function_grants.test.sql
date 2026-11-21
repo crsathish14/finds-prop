@@ -23,7 +23,7 @@ $$;
 select is(
   pg_temp.who_runs('anon'),
   'blog_body_text, listing_is_public, listing_label, project_is_live, public_project_form, search_blog_posts, '
-  || 'search_faqs, search_properties',
+  || 'search_faqs, search_job_postings, search_properties',
   'visitors can run only the public read helpers and the searches'
 );
 
@@ -38,7 +38,8 @@ select is(
   || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listing_is_editable, listing_is_public, '
   || 'listing_label, moderate_listing, moderate_project, my_builder, my_projects, my_properties, owns_property, '
   || 'project_is_live, project_is_mine, public_project_form, reorder_faqs, save_crm_integration, '
-  || 'save_project_price_trends, search_blog_posts, search_faqs, search_properties, set_listing_location, '
+  || 'save_project_price_trends, search_blog_posts, search_faqs, search_job_postings, search_properties, '
+  || 'set_listing_location, '
   || 'storage_listing_path_ok, storage_project_path_ok, submit_listing',
   'signed-in people can run the visitors'' list and the helpers and portal functions that check the caller themselves'
 );

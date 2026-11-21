@@ -61,7 +61,9 @@ insert into alias values
   ('{ci1}', '00000000-0000-4000-f000-000000000001'), ('{fs1}', '00000000-0000-4000-d100-000000000001'),
   ('{cl1}', '00000000-0000-4000-d200-000000000001'),
   ('{bp1}', '00000000-0000-4000-c400-000000000001'), ('{bp2}', '00000000-0000-4000-c400-000000000002'),
-  ('{bp3}', '00000000-0000-4000-c400-000000000003');
+  ('{bp3}', '00000000-0000-4000-c400-000000000003'),
+  ('{jp1}', '00000000-0000-4000-c600-000000000001'), ('{jp2}', '00000000-0000-4000-c600-000000000002'),
+  ('{jp3}', '00000000-0000-4000-c600-000000000003'), ('{jp4}', '00000000-0000-4000-c600-000000000004');
 
 create function pg_temp.fill(stmt text) returns text
 language plpgsql
@@ -166,7 +168,8 @@ insert into public.site_settings (key, value) values ('matrix_probe', '{"matrix"
 insert into public.content_categories (module, slug, name, active) values
   ('blog', 'matrix-active', 'Matrix active', true),
   ('blog', 'matrix-hidden', 'Matrix hidden', false),
-  ('faq', 'matrix-faq', 'Matrix questions', true);
+  ('faq', 'matrix-faq', 'Matrix questions', true),
+  ('department', 'matrix-dept', 'Matrix department', true);
 insert into public.faqs (category_id, question, answer, status)
 select id, 'Matrix published question', 'Matrix published answer', 'published'
   from public.content_categories where module = 'faq' and slug = 'matrix-faq'
@@ -177,6 +180,21 @@ insert into public.blog_posts (id, slug, title, excerpt, body, author_name, stat
   ('00000000-0000-4000-c400-000000000001', 'matrix-published', 'Matrix published', 'A summary.', '[{"type": "paragraph", "text": "Body."}]', 'Matrix Author', 'published', null),
   ('00000000-0000-4000-c400-000000000002', 'matrix-draft', 'Matrix draft', '', '[]', 'Matrix Author', 'draft', null),
   ('00000000-0000-4000-c400-000000000003', 'matrix-trashed', 'Matrix trashed', '', '[]', 'Matrix Author', 'draft', now());
+insert into public.job_postings (
+  id, slug, title, department_id, location, work_mode, employment_type, summary, description, requirements,
+  apply_url, status, closes_at, posted_at, deleted_at
+)
+select vals.id::uuid, vals.slug, vals.title, category.id, 'Chennai', 'onsite', 'full_time', 'A summary.', 'A description.',
+  'A requirement.', 'https://jobs.example.test/apply', vals.status, vals.closes_at::timestamptz,
+  case when vals.status = 'open' then now() end, vals.deleted_at::timestamptz
+from public.content_categories as category
+cross join (values
+  ('00000000-0000-4000-c600-000000000001', 'matrix-open-job', 'Matrix open job', 'open', null, null),
+  ('00000000-0000-4000-c600-000000000002', 'matrix-draft-job', 'Matrix draft job', 'draft', null, null),
+  ('00000000-0000-4000-c600-000000000003', 'matrix-expired-job', 'Matrix expired job', 'open', '2020-01-01 00:00:00+00', null),
+  ('00000000-0000-4000-c600-000000000004', 'matrix-trashed-job', 'Matrix trashed job', 'closed', null, '2026-01-01 00:00:00+00')
+) as vals (id, slug, title, status, closes_at, deleted_at)
+where category.module = 'department' and category.slug = 'matrix-dept';
 insert into public.app_config (key, value) values ('matrix.probe', 'x');
 insert into public.internal_cron_tokens (name, token) values ('matrix_probe', repeat('x', 40));
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
@@ -199,6 +217,7 @@ insert into exp_grants values
   ('crm_integrations', '', 'S,I,U,D', 'S,I,U,D,T'),
   ('enquiries', '', 'S,U', 'S,I,U,D,T'),
   ('faqs', 'S', 'S,I,U', 'S,I,U,D,T'),
+  ('job_postings', 'S', 'S,I,U', 'S,I,U,D,T'),
   ('form_submissions', '', 'S', 'S,I,U,D,T'),
   ('forms', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('idempotency_keys', '', '', 'S,I,U,D,T'),
@@ -256,6 +275,8 @@ insert into probe values
   ('content_categories', 'c1', 'slug = ''matrix-active'''), ('content_categories', 'c2', 'slug = ''matrix-hidden'''),
   ('blog_posts', 'b1', 'id = ''{bp1}'''), ('blog_posts', 'b2', 'id = ''{bp2}'''), ('blog_posts', 'b3', 'id = ''{bp3}'''),
   ('faqs', 'q1', 'question = ''Matrix published question'''), ('faqs', 'q2', 'question = ''Matrix draft question'''),
+  ('job_postings', 'j1', 'id = ''{jp1}'''), ('job_postings', 'j2', 'id = ''{jp2}'''),
+  ('job_postings', 'j3', 'id = ''{jp3}'''), ('job_postings', 'j4', 'id = ''{jp4}'''),
   ('form_submissions', 'x1', 'id = ''{fs1}'''), ('crm_api_logs', 'x1', 'id = ''{cl1}'''),
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
@@ -310,6 +331,7 @@ from (values
   ('content_categories', array['c1', 'c1', 'c1', 'c1', 'c1', 'c1', 'c1,c2']),
   ('blog_posts', array['b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1,b2,b3']),
   ('faqs', array['q1', 'q1', 'q1', 'q1', 'q1', 'q1', 'q1,q2']),
+  ('job_postings', array['j1', 'j1', 'j1', 'j1', 'j1', 'j1', 'j1,j2,j3,j4']),
   ('form_submissions', array['', '', '', '', '', '', 'x1']),
   ('crm_api_logs', array['', '', '', '', '', '', 'x1']),
   ('crm_integrations', array['', '', '', '', '', '', 'x1']),
@@ -427,6 +449,18 @@ insert into exp_write (label, who, stmt, expected) values
   ('blog_posts: a builder cannot add one', 'ba', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
   ('blog_posts: a visitor cannot add one', 'anon', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
   ('blog_posts: not even the admin deletes one', 'ad', $q$delete from public.blog_posts where id = '{bp3}'$q$, 'no'),
+  -- job_postings: public to read while open, not closed by date and not in Trash; the admin alone writes; nobody deletes
+  ('job_postings: the admin edits a job', 'ad', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'yes'),
+  ('job_postings: a customer cannot', 'ca', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: a builder cannot', 'ba', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: a visitor cannot', 'anon', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: the admin closes a job', 'ad', $q$update public.job_postings set status = 'closed' where id = '{jp1}'$q$, 'yes'),
+  ('job_postings: a customer cannot close one', 'ca', $q$update public.job_postings set status = 'closed' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: the admin adds a job', 'ad', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'yes'),
+  ('job_postings: a customer cannot add one', 'ca', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: a builder cannot add one', 'ba', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: a visitor cannot add one', 'anon', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: not even the admin deletes one', 'ad', $q$delete from public.job_postings where id = '{jp4}'$q$, 'no'),
   -- faqs: public to read while published, not in the trash and in an active category; the admin alone writes; nobody deletes
   ('faqs: the admin edits a question', 'ad', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix draft question'$q$, 'yes'),
   ('faqs: a customer cannot', 'ca', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
