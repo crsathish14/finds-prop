@@ -54,7 +54,7 @@ describe("UT-site-chrome: header", () => {
       "FAQ",
       "Contact",
     ]);
-    expect(header.brandName).toBe("Find Prop");
+    expect(header.brandName).toBe("findsprop");
     expect(header.cta).toEqual({ label: "Post property", href: "/post-property" });
   });
 
@@ -162,7 +162,7 @@ describe("UT-site-chrome: footer", () => {
       "Post a property",
     ]);
     expect(footer.legalLinks.map((link) => link.href)).toEqual(["/privacy", "/terms"]);
-    expect(footer.copyright).toBe("© 2026 Find Prop");
+    expect(footer.copyright).toBe("© 2026 findsprop");
     expect(footer.about).toBeUndefined();
     expect(footer.contacts).toEqual([]);
   });

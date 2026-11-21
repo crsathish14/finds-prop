@@ -135,7 +135,7 @@ function ListingsFull() {
         status={<StatusBadge kind="listing" status="pendingReview" />}
         note={{
           tone: "waiting",
-          text: "Waiting for review. It will appear on Find Prop once it is approved.",
+          text: "Waiting for review. It will appear on findsprop once it is approved.",
         }}
         actions={[act("delete", "Delete", VILLA, "danger-outline")]}
       />
@@ -183,7 +183,7 @@ function ListingsOther() {
         status={<StatusBadge kind="listing" status="pendingReview" />}
         note={{
           tone: "waiting",
-          text: "Waiting for review. It will appear on Find Prop once it is approved.",
+          text: "Waiting for review. It will appear on findsprop once it is approved.",
         }}
         actions={[act("delete", "Delete", "Untitled listing", "danger-outline", { pending: true })]}
       />

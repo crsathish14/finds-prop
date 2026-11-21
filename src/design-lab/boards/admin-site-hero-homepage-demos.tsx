@@ -182,7 +182,7 @@ const HOMEPAGE_WORDS: SiteHomepageFieldsWords = {
       label: "Explore by locality",
       hint: "The locality tiles below. Needs at least one locality.",
     },
-    whyUs: { label: "Why Find Prop", hint: "Three short value points." },
+    whyUs: { label: "Why findsprop", hint: "Three short value points." },
     cta: { label: "Post-property call to action", hint: "The closing banner." },
   },
   localities: LOCALITIES_WORDS,
@@ -232,7 +232,7 @@ function homepagePreview(values: SiteHomepageValues): ReactNode {
         section("Explore by locality", values.showDiscovery && labels.length > 0),
         section("Featured homes", values.showFeatured),
         section("Browse by what matters", values.showProjectTypes),
-        section("Why Find Prop", values.showWhyUs),
+        section("Why findsprop", values.showWhyUs),
         section("Call to action", values.showCta),
       ]}
       popular={labels.slice(0, 4)}

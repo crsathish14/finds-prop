@@ -169,7 +169,7 @@ describe("the consent line under Send (S5-T06)", () => {
   it("names the developer the request goes to, with a link to the privacy page", () => {
     renderWithMessages(PANEL);
     expect(
-      screen.getByText(/Your name, phone number and message go to Kadal Homes and Find Prop/),
+      screen.getByText(/Your name, phone number and message go to Kadal Homes and findsprop/),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: words.consentPrivacy })).toHaveAttribute(
       "href",

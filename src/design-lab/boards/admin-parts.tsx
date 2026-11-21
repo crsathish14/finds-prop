@@ -369,7 +369,7 @@ export function SampleReject({
         open={open}
         onOpenChange={setOpen}
         title="Reject this listing?"
-        description={`"${VILLA}" stays off Find Prop and the owner will see it as not approved, with the reason you give.`}
+        description={`"${VILLA}" stays off findsprop and the owner will see it as not approved, with the reason you give.`}
         icon={<Icon icon={CircleX} size="lg" />}
         reasonLabel="Reason for the owner"
         reasonHint="The owner reads this, so say what to fix."

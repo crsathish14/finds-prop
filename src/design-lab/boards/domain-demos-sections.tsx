@@ -43,8 +43,8 @@ export function SectionHeadDemo() {
           }
         />
       </Specimen>
-      <Specimen label="An emphasised word (Why Find Prop) and no action" className="w-full">
-        <SectionHead className="mb-0 w-full" title="Why Find Prop" emphasis="Find Prop" />
+      <Specimen label="An emphasised word (Why findsprop) and no action" className="w-full">
+        <SectionHead className="mb-0 w-full" title="Why findsprop" emphasis="findsprop" />
       </Specimen>
       <Specimen
         label="A long title: the link drops under it instead of squeezing it"
@@ -129,7 +129,7 @@ const VALUES = [
   {
     icon: ShieldCheck,
     title: "Approved listings only",
-    description: "Homes appear on Find Prop after they are approved.",
+    description: "Homes appear on findsprop after they are approved.",
   },
   {
     icon: MessageCircle,
@@ -161,7 +161,7 @@ export function ValueCardDemo() {
         <ValueCard
           icon={ShieldCheck}
           title="Every listing is read by a person before it goes live, every time"
-          description="Homes appear on Find Prop after they are approved, and a listing that changes is approved again before the change shows."
+          description="Homes appear on findsprop after they are approved, and a listing that changes is approved again before the change shows."
         />
       </Specimen>
     </div>
@@ -198,10 +198,10 @@ export function ScrollRowDemo() {
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-3">
         <Text variant="overline">
-          Newest on Find Prop: swipe on a phone; from 768 px the buttons show and Previous starts
+          Newest on findsprop: swipe on a phone; from 768 px the buttons show and Previous starts
           disabled
         </Text>
-        <ScrollRow title="Newest on Find Prop" label="Newest homes">
+        <ScrollRow title="Newest on findsprop" label="Newest homes">
           <InteractiveCard property={SALE_BUDGET} />
           <InteractiveCard property={RENT_PRIME} />
           <InteractiveCard property={SALE_FEATURED} />
@@ -214,7 +214,7 @@ export function ScrollRowDemo() {
         label="One card only: nothing to scroll, so both buttons are disabled"
         className="w-full"
       >
-        <ScrollRow title="Newest on Find Prop" label="Newest homes (one)" className="w-full">
+        <ScrollRow title="Newest on findsprop" label="Newest homes (one)" className="w-full">
           <InteractiveCard property={SALE_FEATURED} />
         </ScrollRow>
       </Specimen>

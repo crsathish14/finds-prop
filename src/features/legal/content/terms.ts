@@ -13,7 +13,7 @@ export const TERMS: LegalDocument = {
   sections: [
     {
       id: "using-find-prop",
-      heading: "Using Find Prop",
+      heading: "Using findsprop",
       blocks: [{ type: "paragraph", text: "[Text.]" }],
     },
     {

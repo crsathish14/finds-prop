@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Find Prop",
-    "titleTemplate": "%s · Find Prop",
+    "title": "findsprop",
+    "titleTemplate": "%s · findsprop",
     "description": "Find homes, plots and new projects in Tamil Nadu."
   },
   "common": {
@@ -85,7 +85,7 @@
   },
   "auth": {
     "phone": {
-      "roleTag": "Find Prop",
+      "roleTag": "findsprop",
       "asideTitle": "Find the place that fits your life.",
       "asideEmphasis": "your life",
       "benefitShortlist": "Shortlist the homes you like",
@@ -93,7 +93,7 @@
       "benefitEnquire": "Enquire directly with owners and builders",
       "benefitPost": "Post your own property",
       "title": "Sign in or create your account",
-      "lead": "Enter your mobile number and we'll text you a 6-digit code. New to Find Prop? We'll set up your account.",
+      "lead": "Enter your mobile number and we'll text you a 6-digit code. New to findsprop? We'll set up your account.",
       "gateTitle": "Sign in to contact the owner",
       "gateBody": "We will take you straight back to the home you were viewing.",
       "saveGateTitle": "Sign in to save homes",
@@ -126,7 +126,7 @@
       }
     },
     "code": {
-      "roleTag": "Find Prop",
+      "roleTag": "findsprop",
       "asideTitle": "Nearly there. One code and you're in.",
       "asideEmphasis": "in",
       "benefitPrivate": "Your number stays private",
@@ -162,7 +162,7 @@
       "resendSoon": "You can ask for a new code in {seconds, plural, one {# second} other {# seconds}}.",
       "resendReady": "You can now ask for a new code.",
       "successTitle": "Number verified",
-      "successBody": "Welcome to Find Prop. Taking you back to what you were doing…",
+      "successBody": "Welcome to findsprop. Taking you back to what you were doing…",
       "continue": "Continue"
     },
     "name": {
@@ -225,9 +225,9 @@
       "builder": {
         "roleTag": "Builder portal",
         "title": "Builder and agent sign in",
-        "lead": "Sign in with the Google account Find Prop invited. There is no password to remember.",
+        "lead": "Sign in with the Google account findsprop invited. There is no password to remember.",
         "deniedTitle": "This Google account can't sign in here",
-        "deniedBody": "It isn't an active builder or agent account. Try a different Google account, or contact Find Prop if you think this is a mistake. You have been signed out.",
+        "deniedBody": "It isn't an active builder or agent account. Try a different Google account, or contact findsprop if you think this is a mistake. You have been signed out.",
         "invitationOnly": "Builder and agent accounts are created by invitation only. There is no sign-up here.",
         "buyerLink": "Looking for a buyer or owner account?",
         "asideTitle": "Manage your projects, units and leads.",
@@ -240,9 +240,9 @@
       "admin": {
         "roleTag": "Administrator",
         "title": "Administrator sign in",
-        "lead": "For Find Prop administrators only. Sign in with your Google account.",
+        "lead": "For findsprop administrators only. Sign in with your Google account.",
         "deniedTitle": "This account isn't authorised",
-        "deniedBody": "You have been signed out. Only a Find Prop administrator account can use this area.",
+        "deniedBody": "You have been signed out. Only a findsprop administrator account can use this area.",
         "backLink": "Back to the public site",
         "quietNote": "Admin pages are never indexed by search engines."
       }
@@ -408,7 +408,7 @@
         "properties": "Properties",
         "back": "Back to results"
       },
-      "metaFallback": "{title}. See the photos, price and details on Find Prop.",
+      "metaFallback": "{title}. See the photos, price and details on findsprop.",
       "photoAlt": "{title}: photo {number}",
       "location": "{place} · Listed {ago}",
       "listedOnly": "Listed {ago}",
@@ -431,7 +431,7 @@
       "amenities": "Amenities",
       "aside": {
         "label": "Price and enquiry",
-        "note": "Only approved homes are listed on Find Prop."
+        "note": "Only approved homes are listed on findsprop."
       },
       "enquiry": {
         "signInToEnquire": "Sign in to enquire",
@@ -462,7 +462,7 @@
     "container": "Notifications"
   },
   "site": {
-    "brandName": "Find Prop",
+    "brandName": "findsprop",
     "nav": {
       "buy": "Buy",
       "rent": "Rent",
@@ -528,7 +528,7 @@
     "metaTitle": "Properties",
     "meta": {
       "titleFiltered": "{heading}, {filters}",
-      "description": "{title}. Photos, prices and details of homes on Find Prop."
+      "description": "{title}. Photos, prices and details of homes on findsprop."
     },
     "keyword": "“{keyword}”",
     "title": {
@@ -565,7 +565,7 @@
   "projects": {
     "list": {
       "metaTitle": "Projects",
-      "metaDescription": "Browse new projects with prices, sizes and possession dates on Find Prop.",
+      "metaDescription": "Browse new projects with prices, sizes and possession dates on findsprop.",
       "crumb": {
         "nav": "Breadcrumb",
         "home": "Home",
@@ -575,7 +575,7 @@
       "overline": "New launches",
       "title": "New projects",
       "titleIn": "Projects in {region}",
-      "sub": "New developments from developers on Find Prop. Only approved and published projects are shown.",
+      "sub": "New developments from developers on findsprop. Only approved and published projects are shown.",
       "listLabel": "Projects",
       "loadingTitle": "Loading projects",
       "empty": {
@@ -596,7 +596,7 @@
         "projects": "Projects",
         "back": "All projects"
       },
-      "metaFallback": "{name} by {developer} in {locality}. See prices, plans and amenities on Find Prop.",
+      "metaFallback": "{name} by {developer} in {locality}. See prices, plans and amenities on findsprop.",
       "loading": "Loading project",
       "photoAlt": "{name}: photo {number}",
       "reraTag": "RERA applicable · {number}",
@@ -681,7 +681,7 @@
         "send": "Send enquiry",
         "requestVisit": "Request a site visit",
         "phoneHint": "The number you signed in with.",
-        "consent": "Your name, phone number and message go to {developer} and Find Prop so they can contact you.",
+        "consent": "Your name, phone number and message go to {developer} and findsprop so they can contact you.",
         "consentDeveloper": "the developer",
         "consentPrivacy": "Privacy Policy",
         "failed": "We couldn't send your request. Please try again.",
@@ -721,7 +721,7 @@
     },
     "meta": {
       "title": "Contact",
-      "description": "Questions about a listing, a project or your account? Send Find Prop a message."
+      "description": "Questions about a listing, a project or your account? Send findsprop a message."
     },
     "title": "Talk to us",
     "loadingTitle": "Loading contact page",
@@ -770,9 +770,9 @@
       "cookies": "Cookie information"
     },
     "description": {
-      "privacy": "How Find Prop collects, uses and protects your information.",
-      "terms": "The terms for using Find Prop.",
-      "cookies": "What Find Prop stores in your browser and why."
+      "privacy": "How findsprop collects, uses and protects your information.",
+      "terms": "The terms for using findsprop.",
+      "cookies": "What findsprop stores in your browser and why."
     }
   },
   "enquiries": {
@@ -841,7 +841,7 @@
         "sale": "For sale",
         "rent": "For rent",
         "footnote": "Only approved listings can be marked as sold or rented. A sold or rented home is removed from search.",
-        "waiting": "Waiting for review. It will appear on Find Prop once it is approved.",
+        "waiting": "Waiting for review. It will appear on findsprop once it is approved.",
         "reason": "Reason: {reason}",
         "edit": "Edit",
         "sold": "Mark as sold",
@@ -1020,10 +1020,10 @@
       "reviewSave": "Review and save",
       "reviewResubmit": "Review and resubmit",
       "liveNoticeTitle": "You're editing a live listing",
-      "liveNoticeBody": "A change to the kind, type, title, description or address sends it back to review. Any other change shows on Find Prop at once.",
+      "liveNoticeBody": "A change to the kind, type, title, description or address sends it back to review. Any other change shows on findsprop at once.",
       "rejectedNoticeTitle": "This listing was not approved",
       "rejectedNoticeBody": "Reason: {reason}",
-      "nextApproved": "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on Find Prop at once.",
+      "nextApproved": "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on findsprop at once.",
       "nextPending": "Your changes are saved to your listing. It is still waiting for review and stays hidden until it is approved.",
       "nextRejected": "When you resubmit, your listing goes back to review. It stays hidden until it is approved.",
       "save": "Save changes",
@@ -1539,7 +1539,7 @@
     "listings": {
       "metaTitle": "Listings",
       "title": "Listings",
-      "intro": "Review listings posted by owners. Only approved listings appear on Find Prop.",
+      "intro": "Review listings posted by owners. Only approved listings appear on findsprop.",
       "loadingTitle": "Loading listings",
       "tabsLabel": "Filter by status",
       "tabs": {
@@ -1645,7 +1645,7 @@
       },
       "reject": {
         "title": "Reject this listing?",
-        "description": "“{title}” stays off Find Prop and the owner will see it as not approved, with the reason you give.",
+        "description": "“{title}” stays off findsprop and the owner will see it as not approved, with the reason you give.",
         "reasonLabel": "Reason for the owner",
         "reasonHint": "The owner reads this, so say what to fix.",
         "counter": "{count} / {max}",
@@ -1657,7 +1657,7 @@
       "toast": {
         "approved": {
           "title": "Listing approved",
-          "text": "It is now live on Find Prop."
+          "text": "It is now live on findsprop."
         },
         "rejected": {
           "title": "Listing rejected",
@@ -1665,11 +1665,11 @@
         },
         "featured": {
           "title": "Listing featured",
-          "text": "It is marked as featured on Find Prop."
+          "text": "It is marked as featured on findsprop."
         },
         "unfeatured": {
           "title": "Removed from featured",
-          "text": "It stays live on Find Prop."
+          "text": "It stays live on findsprop."
         }
       },
       "conflict": "Someone has already decided this listing. The list has been refreshed."
@@ -2547,7 +2547,7 @@
             "hint": "The locality tiles below. Needs at least one locality."
           },
           "whyUs": {
-            "label": "Why Find Prop",
+            "label": "Why findsprop",
             "hint": "Three short value points."
           },
           "cta": {
@@ -2587,7 +2587,7 @@
             "discovery": "Explore by locality",
             "featured": "Featured homes",
             "projectTypes": "Browse by what matters",
-            "whyUs": "Why Find Prop",
+            "whyUs": "Why findsprop",
             "cta": "Call to action"
           }
         },
@@ -3642,9 +3642,9 @@
     "profile": {
       "metaTitle": "Profile",
       "title": "Company profile",
-      "intro": "How your company appears on Find Prop.",
+      "intro": "How your company appears on findsprop.",
       "details": "Details",
-      "emailLockedHint": "Only a Find Prop admin can change your login email.",
+      "emailLockedHint": "Only a findsprop admin can change your login email.",
       "save": "Save profile",
       "saving": "Saving",
       "note": "Changes to your profile don't need approval.",
@@ -3999,7 +3999,7 @@
     },
     "page": {
       "metaTitle": "Careers",
-      "metaDescription": "Open jobs at Find Prop: see the roles, the places and how to apply.",
+      "metaDescription": "Open jobs at findsprop: see the roles, the places and how to apply.",
       "title": "Careers",
       "lead": "Join the team that helps people find a home. See the jobs that are open now.",
       "loadingTitle": "Loading the jobs",

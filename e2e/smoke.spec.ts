@@ -305,7 +305,7 @@ test.describe("@smoke results page", () => {
         name: en.results.title.any.replace("{kind}", en.results.kind.any),
       }),
     ).toBeVisible();
-    await expect(page).toHaveTitle(`${en.results.metaTitle} · Find Prop`);
+    await expect(page).toHaveTitle(`${en.results.metaTitle} · findsprop`);
     await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeVisible();
     await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
     await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
@@ -584,7 +584,7 @@ test.describe("@smoke projects page", () => {
     await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
       LIST_WAIT,
     );
-    await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · Find Prop`);
+    await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · findsprop`);
     await expect(page.getByText(en.projects.list.overline)).toBeVisible();
     await expect(page.getByText(en.projects.list.sub)).toBeVisible();
     const trail = page.getByRole("navigation", { name: en.projects.list.crumb.nav });

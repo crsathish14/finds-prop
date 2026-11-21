@@ -108,7 +108,7 @@ export function ContactPageDemo() {
   return (
     <div className="flex flex-col gap-14">
       <Specimen
-        label="The contact page: the form (name and mobile needed, the rest optional) with the consent line, and the details to reach Find Prop directly"
+        label="The contact page: the form (name and mobile needed, the rest optional) with the consent line, and the details to reach findsprop directly"
         className="w-full"
       >
         <Page id="contact-default">

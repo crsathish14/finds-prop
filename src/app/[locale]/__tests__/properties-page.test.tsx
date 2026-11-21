@@ -61,7 +61,7 @@ describe("the results page's metadata (FR-PUB-14)", () => {
     const metadata = await generateMetadata(search({}));
     expect(metadata.title).toBe("Properties");
     expect(metadata.alternates?.canonical).toBe("/properties");
-    expect(metadata.openGraph).toMatchObject({ url: "/properties", siteName: "Find Prop" });
+    expect(metadata.openGraph).toMatchObject({ url: "/properties", siteName: "findsprop" });
   });
 
   it("is titled and described by the search", async () => {

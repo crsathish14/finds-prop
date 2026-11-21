@@ -235,7 +235,7 @@ describe("ProjectLeadCard: the consent line without a developer name (S5-T06)", 
   it("says the developer when the page gives no name", () => {
     renderWithMessages(<ProjectLeadCard state="form" />);
     expect(
-      screen.getByText(/Your name, phone number and message go to the developer and Find Prop/),
+      screen.getByText(/Your name, phone number and message go to the developer and findsprop/),
     ).toBeInTheDocument();
   });
 });

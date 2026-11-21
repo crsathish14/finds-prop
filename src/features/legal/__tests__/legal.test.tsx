@@ -38,7 +38,7 @@ describe("the legal documents (S5-T06, ADR-053)", () => {
 
   it("builds the contents list from the sections, numbered from 1, in order", () => {
     const entries = contentsOf(legalDocument("terms").sections);
-    expect(entries[0]).toEqual({ id: "using-find-prop", number: 1, heading: "Using Find Prop" });
+    expect(entries[0]).toEqual({ id: "using-find-prop", number: 1, heading: "Using findsprop" });
     expect(entries.map((entry) => entry.number)).toEqual(entries.map((_entry, index) => index + 1));
   });
 
@@ -71,7 +71,7 @@ describe("LegalPage: the shared reading layout (ADD-12)", () => {
 
   it("numbers the sections, each a heading with its anchor", () => {
     renderWithMessages(<LegalPage kind="terms" />);
-    const first = screen.getByRole("heading", { level: 2, name: "1. Using Find Prop" });
+    const first = screen.getByRole("heading", { level: 2, name: "1. Using findsprop" });
     expect(first.closest("section")).toHaveAttribute("id", "using-find-prop");
     expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(
       legalDocument("terms").sections.length,

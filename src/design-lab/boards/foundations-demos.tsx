@@ -474,11 +474,11 @@ export function IconsDemo() {
           </Stage>
         </Specimen>
         <Specimen label="Logo">
-          <Logo name="Find Prop" />
+          <Logo name="findsprop" />
         </Specimen>
         <Specimen label='Logo tone="on-dark"'>
           <Stage tone="dark" className="p-3">
-            <Logo name="Find Prop" tone="on-dark" />
+            <Logo name="findsprop" tone="on-dark" />
           </Stage>
         </Specimen>
         <Specimen label="ArchIllustration (empty states)">
