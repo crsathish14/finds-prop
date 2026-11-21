@@ -40,9 +40,65 @@ const TEXT_PAIRS = [
   ["--c-on-dark-muted", "--c-dark", 4.5],
   ["--c-on-dark-accent", "--c-dark", 4.5],
   ["--c-on-dark", "--c-dark-active", 4.5],
+  // The other surfaces the same text colours sit on (cards, sunken bands, tints, hover tints)
+  ["--c-subtle", "--c-surface", 4.5],
+  ["--c-subtle", "--c-bg-sunken", 4.5],
+  ["--c-primary", "--c-surface", 4.5],
+  ["--c-primary", "--c-bg-sunken", 4.5],
+  ["--c-primary-hover", "--c-primary-tint", 4.5],
+  ["--c-muted", "--c-primary-tint-2", 4.5],
+  ["--c-ink", "--c-bg-sunken", 4.5],
+  ["--c-ink", "--c-primary-tint", 4.5],
+  ["--c-ink", "--c-primary-tint-2", 4.5],
+  ["--c-ink", "--c-neutral-bg", 4.5],
+  ["--c-ink", "--c-success-bg", 4.5],
+  ["--c-ink", "--c-warning-bg", 4.5],
+  ["--c-ink", "--c-danger-bg", 4.5],
+  ["--c-on-dark-muted", "--c-dark-active", 4.5],
+  // The AI calls to action (header pill, search card link, "Ask about" button, bottom-bar disc)
+  // are accent text on white, on the light tint and on its hover tint.
+  ["--c-accent-text", "--c-surface", 4.5],
+  ["--c-accent-text", "--c-bg-sunken", 4.5],
+  ["--c-accent-text", "--c-accent-tint-2", 4.5],
+  // Status text on a white card, and the red error text (the red background uses danger-text)
+  ["--c-success", "--c-surface", 4.5],
+  ["--c-warning", "--c-surface", 4.5],
+  ["--c-info", "--c-surface", 4.5],
+  ["--c-neutral", "--c-surface", 4.5],
+  ["--c-danger-text", "--c-surface", 4.5],
 ];
 
+// Left out on purpose. --c-disabled is a disabled control, which WCAG 1.4.3 exempts. --c-border and
+// --c-border-strong are decorative lines (a control is identified by --c-border-input, below).
+// --c-amber is only ever a fill with --c-on-amber on it (listed above), never text or an icon on white.
+// --c-danger on --c-danger-bg is 4.4 : 1: red text on that tint uses --c-danger-text instead.
+
 const NON_TEXT_PAIRS = [
+  // Icons, links' marks and control outlines against the surfaces they sit on
+  ["--c-primary", "--c-bg", 3],
+  ["--c-primary", "--c-primary-tint", 3],
+  ["--c-primary", "--c-primary-tint-2", 3],
+  ["--c-accent", "--c-bg", 3],
+  ["--c-border-input", "--c-bg", 3],
+  ["--c-border-input", "--c-primary-tint", 3],
+  ["--c-focus", "--c-surface", 3],
+  ["--c-focus", "--c-bg-sunken", 3],
+  ["--c-focus", "--c-primary-tint-2", 3],
+  ["--c-focus", "--c-neutral-bg", 3],
+  ["--c-on-dark-accent", "--c-dark-active", 3],
+  // Status icons on their own tint and on white
+  ["--c-success", "--c-success-bg", 3],
+  ["--c-warning", "--c-warning-bg", 3],
+  ["--c-danger", "--c-danger-bg", 3],
+  ["--c-info", "--c-info-bg", 3],
+  ["--c-success", "--c-surface", 3],
+  ["--c-danger", "--c-surface", 3],
+  // Chart marks on a white card
+  ["--c-series-1", "--c-surface", 3],
+  ["--c-series-2", "--c-surface", 3],
+  ["--c-series-3", "--c-surface", 3],
+  ["--c-series-4", "--c-surface", 3],
+  ["--c-series-other", "--c-surface", 3],
   ["--c-border-input", "--c-surface", 3],
   ["--c-border-input", "--c-bg-sunken", 3],
   ["--c-focus", "--c-bg", 3],
