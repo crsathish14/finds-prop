@@ -125,6 +125,10 @@ Each phase is one or more small pull requests into `develop`. Where the existing
 - **A hidden module** must disappear everywhere at once: one helper, `isModuleOn`, is used by the pages, the nav, the sitemap and the AI tools, and a test fails if one reads the setting another way.
 - **Wording** is new visitor-facing text. It starts as draft wording, is flagged in each pull request, and the owner's earlier approval of "everything as recommended" covers the structure, not each sentence.
 
+## 8a. Built in Careers pull request C (21 Nov 2026): the connected pages
+
+The admin's `/admin/careers` (the shared JobManager with its status tabs, department filter and search in the address, the departments drawer, and Open, Close posting, Reopen, Restore and Move to Trash on each row), the job form at `/admin/careers/new` and `/admin/careers/[id]` (one press of Save makes a new job and then stores the whole form; Open job and Close posting are their own buttons; a closing date is typed and shown in India time), and the public `/careers` and `/careers/[slug]` pages (search, four filters and page links in the address; the job page draws the Apply button as a link or an email, or the closed note when the closing date has passed since the page was cached). A job is in the sitemap and in the structured data (JobPosting) only while it is open. A switched-off module answers not-found on every public Careers address and drops the footer link. No new component: every part is from the `careers` Design Lab board; the job header gained a `headingLevel` so a page with its own level-1 title can draw it as level 2.
+
 ## 9. Not in this release
 
 Scheduled publishing, an RSS feed, comments, a staff-profile author, in-site job applications and applicant storage, translations, file uploads other than the cover image, vector search (unless the evals call for it).
