@@ -5206,5 +5206,358 @@
       }
     },
     "hiddenModules": ["careers"]
+  },
+  {
+    "id": "G-scope-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "documents for registration day: found from the guide, dated, and said to be general information",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Which documents should I carry on the day the sale deed is registered?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "documents registration sale deed",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "documents to carry"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide, published on 5 Nov 2026, lists the sale deed, an identity proof and an encumbrance certificate as the documents to carry. This is general information and not legal advice, so please check the list with the sub-registrar office."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": ["search_properties", "propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sale deed"], ["encumbrance"], ["published on", "5 Nov"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-02",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about reaching a home's owner: answered from the FAQ without giving a number",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ஒரு வீட்டின் உரிமையாளரை எப்படி தொடர்பு கொள்வது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "contact the owner of a home",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Use the enquiry form on the page of the home. The owner's phone number is never shown here; the enquiry is passed to the owner for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "owner"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["enquiry form"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "\\+?\\d[\\d ]{8,}\\d"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about home loan papers: finds the checklist and names it as the source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Home loan vaanga enna papers venum?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "home loan documents checklist",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000002",
+              "query": "papers income proof"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says banks usually ask for identity proof, address proof, income proof for the last six months and the property papers. Keep copies ready before you apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": ["calculate_emi"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["identity proof"], ["income proof"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
+        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-04",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks about sales jobs in Madurai: searches the open jobs and names that one posting",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Is there any sales job open in Madurai?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "sales",
+              "department": null,
+              "location": "Madurai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there is one open: a sales executive job in Madurai, working on site and full time. Open it on the Careers page to read the details and to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "location": "Madurai"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sales executive"], ["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/sales-executive-madurai"],
+        "showsSources": ["/careers/sales-executive-madurai"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-05",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about a site engineer job in Chennai: searches in English and names that posting",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Chennai la site engineer velai irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "site engineer",
+              "department": null,
+              "location": "Chennai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there is a site engineer job open in Chennai. It is a hybrid, full time job. Open it on the Careers page to read the details and to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "query": "site engineer"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["site engineer"], ["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/site-engineer"],
+        "showsSources": ["/careers/site-engineer"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-06",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about work at findsprop: lists the open jobs and sends the customer to the Careers page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ஃபைண்ட்ஸ்ப்ராப்பில் ஏதேனும் வேலை வாய்ப்பு உள்ளதா?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there are open jobs now: a customer support associate, a content writing intern, a sales executive and a site engineer. Open the Careers page to read each one and apply there."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker", "draft"],
+        "mustNotMatch": ["https?://", "@"]
+      }
+    }
   }
 ]
