@@ -1,5 +1,13 @@
 import { textParagraphs } from "@/lib/text";
-import type { ProjectData, ProjectStatus, ProjectUnit, TrendPoint, UnitStatus } from "./types";
+import type {
+  PriceType,
+  ProjectData,
+  ProjectPropertyType,
+  ProjectStatus,
+  ProjectUnit,
+  TrendPoint,
+  UnitStatus,
+} from "./types";
 
 /**
  * The rules the project pages apply between a project and the screen (S4-T09, ADR-046). Pure and
@@ -24,23 +32,36 @@ export function bhkSizes(options: readonly number[]): number[] {
 }
 
 /**
- * The prices on offer as a range, lowest first, or null when the developer gave none. One price is a
- * range whose two ends are the same. The database keeps the two in order, but a page must not depend
- * on that.
+ * The one price and what it means, or null when the developer gave none (a price of nothing is none). The words and
+ * the formatting are the page's.
  */
-export function priceBounds(
-  min: number | null,
-  max: number | null,
-): { low: number; high: number } | null {
-  const given = [min, max].filter((value): value is number => value !== null && value > 0);
-  if (given.length === 0) return null;
-  return { low: Math.min(...given), high: Math.max(...given) };
+export function priceOf(
+  project: Pick<ProjectData, "price" | "priceType">,
+): { rupees: number; type: PriceType | null } | null {
+  if (project.price === null || project.price <= 0) return null;
+  return { rupees: project.price, type: project.priceType };
+}
+
+/**
+ * The size range of a plot or a commercial project, smallest first, or null when it was not given (or one end is
+ * missing: half a range says nothing).
+ */
+export function areaRange(
+  project: Pick<ProjectData, "areaMinSqft" | "areaMaxSqft">,
+): { min: number; max: number } | null {
+  const { areaMinSqft, areaMaxSqft } = project;
+  if (areaMinSqft === null || areaMaxSqft === null || areaMinSqft <= 0 || areaMaxSqft <= 0) {
+    return null;
+  }
+  return { min: Math.min(areaMinSqft, areaMaxSqft), max: Math.max(areaMinSqft, areaMaxSqft) };
 }
 
 /** One entry of "Project overview", in the order of the UX. */
 export type SpecItem =
-  | { key: "priceRange"; low: number; high: number }
+  | { key: "price"; rupees: number; type: PriceType | null }
+  | { key: "propertyType"; value: ProjectPropertyType }
   | { key: "configuration"; sizes: number[] }
+  | { key: "area"; min: number; max: number }
   | { key: "status"; value: ProjectStatus }
   | { key: "possession"; date: string }
   | { key: "landArea"; acres: number }
@@ -50,8 +71,11 @@ export type SpecItem =
 
 type SpecSource = Pick<
   ProjectData,
-  | "priceMin"
-  | "priceMax"
+  | "price"
+  | "priceType"
+  | "propertyType"
+  | "areaMinSqft"
+  | "areaMaxSqft"
   | "bhkOptions"
   | "status"
   | "possessionDate"
@@ -70,17 +94,21 @@ function isDay(text: string | null): text is string {
 }
 
 /**
- * The facts for "Project overview": price range, configuration, status, possession, land area,
- * total units, available units and the RERA number. Each is left out when not given. Available units
+ * The facts for "Project overview": the price, property type, configuration, area range, status, possession, land
+ * area, total units, available units and the RERA number. Each is left out when not given. Available units
  * are counted from the units the developer listed, so they are left out when none are listed. The
  * RERA number is drawn only for a project that is under RERA and has a number.
  */
 export function specItems(project: SpecSource): SpecItem[] {
   const items: SpecItem[] = [];
-  const prices = priceBounds(project.priceMin, project.priceMax);
-  if (prices) items.push({ key: "priceRange", ...prices });
+  const price = priceOf(project);
+  if (price) items.push({ key: "price", ...price });
+  if (project.propertyType !== null)
+    items.push({ key: "propertyType", value: project.propertyType });
   const sizes = bhkSizes(project.bhkOptions);
   if (sizes.length > 0) items.push({ key: "configuration", sizes });
+  const area = areaRange(project);
+  if (area) items.push({ key: "area", ...area });
   if (project.status !== null) items.push({ key: "status", value: project.status });
   if (isDay(project.possessionDate))
     items.push({ key: "possession", date: project.possessionDate });
@@ -106,6 +134,18 @@ export function reraTag(
   if (!project.reraApplicable) return null;
   const number = project.reraNumber?.trim();
   return { number: number ? number : null };
+}
+
+/**
+ * Why a project that is not under RERA is not, or null for a project that is under RERA and for one that gave no
+ * reason. The developer wrote it, so the page draws it as plain text.
+ */
+export function reraReason(
+  project: Pick<ProjectData, "reraApplicable" | "reraNotApplicableReason">,
+): string | null {
+  if (project.reraApplicable) return null;
+  const reason = project.reraNotApplicableReason?.trim();
+  return reason ? reason : null;
 }
 
 const unitCollator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });

@@ -278,7 +278,8 @@ function ProjectsManager({
     ...(admin
       ? [{ id: "builder", heading: columns.builder, width: 14 } satisfies ResponsiveTableColumn]
       : []),
-    { id: "priceRange", heading: columns.priceRange, align: "end", width: 15, nowrap: true },
+    // The price may say what it means ("₹85 L basic price"), so it may wrap.
+    { id: "priceRange", heading: columns.priceRange, align: "end", width: 15 },
     { id: "status", heading: columns.status, width: admin ? 19 : 24 },
     { id: "actions", heading: columns.actions, role: "actions", width: admin ? 26 : 23 },
   ];

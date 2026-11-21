@@ -602,6 +602,7 @@
       "photoAlt": "{name}: photo {number}",
       "reraTag": "RERA applicable · {number}",
       "reraTagBare": "RERA applicable",
+      "reraNotApplicable": "RERA not applicable: {reason}",
       "actions": {
         "call": "Call",
         "whatsapp": "WhatsApp",
@@ -609,8 +610,11 @@
       },
       "overview": {
         "heading": "Project overview",
-        "priceRange": "Price range",
+        "price": "Starting price",
+        "propertyType": "Property type",
         "configuration": "Configuration",
+        "area": "Area",
+        "areaRange": "{min} – {max} sq ft",
         "status": "Status",
         "possession": "Possession",
         "landArea": "Land area",
@@ -698,6 +702,15 @@
       },
       "bar": {
         "enquire": "Enquire about this project"
+      },
+      "propertyType": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "plot": "Plot",
+        "vacantLand": "Vacant land",
+        "flat": "Flat",
+        "office": "Office",
+        "coWorking": "Co-working space"
       }
     }
   },
@@ -1131,6 +1144,17 @@
         "newLaunch": "New launch",
         "underConstruction": "Under construction",
         "readyToMove": "Ready to move"
+      },
+      "offer": {
+        "sale": "For sale",
+        "rent": "For rent"
+      },
+      "priceType": {
+        "perSqft": "{price} per sq ft",
+        "basic": "{price} basic price",
+        "allInclusive": "{price} all inclusive",
+        "rentPerMonth": "{price} per month",
+        "rentPerSqftMonth": "{price} per sq ft per month"
       },
       "location": "{locality}, {city}",
       "priceRange": "{min} – {max}"
@@ -3580,7 +3604,7 @@
       "columns": {
         "project": "Project",
         "builder": "Builder",
-        "priceRange": "Price range",
+        "priceRange": "Price",
         "status": "Status",
         "actions": "Actions"
       },

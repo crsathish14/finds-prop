@@ -176,14 +176,14 @@ export function toProjectEditView(
   };
 }
 
-/** One project as the builder's list shows it (S7-T03): the name and place, the price range, where it stands and a cover. */
+/** One project as the builder's list shows it (S7-T03): the name and place, the price and what it means, where it stands and a cover. */
 export interface ProjectListRow {
   id: string;
   name: string;
   slug: string;
   locality: string;
-  priceMin: number | null;
-  priceMax: number | null;
+  price: number | null;
+  priceType: string | null;
   /** The first image's path in the media bucket, or none. */
   cover: string | null;
   moderation: string;
@@ -198,8 +198,8 @@ export type ProjectListDbRow = Pick<
   | "name"
   | "slug"
   | "locality"
-  | "price_min"
-  | "price_max"
+  | "price"
+  | "price_type"
   | "images"
   | "moderation"
   | "published"
@@ -213,8 +213,8 @@ export function toProjectListRow(row: ProjectListDbRow): ProjectListRow {
     name: row.name,
     slug: row.slug,
     locality: row.locality,
-    priceMin: row.price_min,
-    priceMax: row.price_max,
+    price: row.price,
+    priceType: row.price_type,
     cover: row.images[0] ?? null,
     moderation: row.moderation,
     published: row.published,

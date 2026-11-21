@@ -11,8 +11,8 @@ const project: ProjectCardData = {
   developerName: "Kadal Homes",
   locality: "OMR Navalur",
   city: "Chennai",
-  minRupees: 78_00_000,
-  maxRupees: 1_42_00_000,
+  priceRupees: 78_00_000,
+  priceType: "basic",
   bedrooms: [3, 2, 3],
   status: "under_construction",
   featured: true,
@@ -22,12 +22,12 @@ const project: ProjectCardData = {
 const words = en.domain.projectCard;
 
 describe("ProjectCard: one project in a grid (S4-T01)", () => {
-  it("shows the developer, name, place, price range, BHK sizes and the two badges", () => {
+  it("shows the developer, name, place, price with what it means, BHK sizes and the two badges", () => {
     renderWithMessages(<ProjectCard project={project} />);
     expect(screen.getByText("Kadal Homes")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: "Kadal Vista" })).toBeInTheDocument();
     expect(screen.getByText("OMR Navalur, Chennai")).toBeInTheDocument();
-    expect(screen.getByText("₹78 L – ₹1.42 Cr")).toBeInTheDocument();
+    expect(screen.getByText("₹78 L basic price")).toBeInTheDocument();
     expect(screen.getByText(words.featured)).toBeInTheDocument();
     expect(screen.getByText(words.status.underConstruction)).toBeInTheDocument();
   });
@@ -68,12 +68,32 @@ describe("ProjectCard: one project in a grid (S4-T01)", () => {
     }
   });
 
-  it("shows one price alone when there is no second price or both are the same", () => {
-    const alone = renderWithMessages(<ProjectCard project={{ ...project, maxRupees: null }} />);
+  it.each([
+    ["per_sqft", 8_500, "₹8,500 per sq ft"],
+    ["basic", 78_00_000, "₹78 L basic price"],
+    ["all_inclusive", 1_42_00_000, "₹1.42 Cr all inclusive"],
+    ["rent_per_month", 45_000, "₹45,000 per month"],
+    ["rent_per_sqft_month", 85, "₹85 per sq ft per month"],
+  ] as const)("says what a %s price means", (priceType, priceRupees, text) => {
+    renderWithMessages(<ProjectCard project={{ ...project, priceType, priceRupees }} />);
+    expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  it("shows a price with no known type alone", () => {
+    renderWithMessages(<ProjectCard project={{ ...project, priceType: null }} />);
     expect(screen.getByText("₹78 L")).toBeInTheDocument();
-    alone.unmount();
-    renderWithMessages(<ProjectCard project={{ ...project, maxRupees: project.minRupees }} />);
-    expect(screen.getByText("₹78 L")).toBeInTheDocument();
+  });
+
+  it("shows a For sale or For rent badge for a commercial project, and none otherwise", () => {
+    const sale = renderWithMessages(<ProjectCard project={{ ...project, offerType: "sale" }} />);
+    expect(screen.getByText(words.offer.sale)).toBeInTheDocument();
+    sale.unmount();
+    const rent = renderWithMessages(<ProjectCard project={{ ...project, offerType: "rent" }} />);
+    expect(screen.getByText(words.offer.rent)).toBeInTheDocument();
+    rent.unmount();
+    renderWithMessages(<ProjectCard project={project} />);
+    expect(screen.queryByText(words.offer.sale)).toBeNull();
+    expect(screen.queryByText(words.offer.rent)).toBeNull();
   });
 
   it("leaves out what is missing, never showing blanks or zeros", () => {
@@ -84,7 +104,7 @@ describe("ProjectCard: one project in a grid (S4-T01)", () => {
           name: "Quiet Court",
           locality: "Porur",
           city: "Chennai",
-          minRupees: 0,
+          priceRupees: 0,
           bedrooms: [],
           cover: null,
         }}

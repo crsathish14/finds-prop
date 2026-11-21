@@ -87,7 +87,7 @@ export async function readMyProjectList(supabase: Client): Promise<ProjectListRo
     .rpc("my_projects")
     // `created_at` is read only to order by: PostgREST orders a function's rows by a column that is also selected.
     .select(
-      "id, name, slug, locality, price_min, price_max, images, moderation, published, featured, created_at",
+      "id, name, slug, locality, price, price_type, images, moderation, published, featured, created_at",
     )
     .order("created_at", { ascending: false });
   if (error) {

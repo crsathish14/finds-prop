@@ -1,6 +1,15 @@
-import type { PROJECT_STATUSES, UNIT_STATUSES } from "./schemas";
+import type {
+  OFFER_TYPES,
+  PRICE_TYPES,
+  PROJECT_STATUSES,
+  PROPERTY_TYPES,
+  UNIT_STATUSES,
+} from "./schemas";
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
+export type PriceType = (typeof PRICE_TYPES)[number];
+export type OfferType = (typeof OFFER_TYPES)[number];
+export type ProjectPropertyType = (typeof PROPERTY_TYPES)[number];
 export type UnitStatus = (typeof UNIT_STATUSES)[number];
 
 /** One project on the list: only what its card draws, with the names of the page (not the columns'). */
@@ -9,9 +18,11 @@ export type ProjectListItem = {
   name: string;
   developerName: string;
   status: ProjectStatus | null;
-  /** Whole rupees; the lowest price on offer, or null when the developer gave none. */
-  priceMin: number | null;
-  priceMax: number | null;
+  /** Sale or rent; only a commercial project has one. */
+  offerType: OfferType | null;
+  /** Whole rupees: the one price, or null when there is none. What it means is `priceType`. */
+  price: number | null;
+  priceType: PriceType | null;
   /** The BHK sizes on offer, as stored (order and repeats do not matter). */
   bhkOptions: number[];
   locality: string;
@@ -50,13 +61,18 @@ export type ProjectData = {
   name: string;
   developer: { id: string; name: string };
   status: ProjectStatus | null;
-  priceMin: number | null;
-  priceMax: number | null;
+  propertyType: ProjectPropertyType | null;
+  offerType: OfferType | null;
+  price: number | null;
+  priceType: PriceType | null;
+  /** The smallest and largest area in square feet: a plot and a commercial project give them. */
+  areaMinSqft: number | null;
+  areaMaxSqft: number | null;
   bhkOptions: number[];
   landAreaAcres: number | null;
   /** What the developer says the whole project has; the units below may be fewer. */
   totalUnits: number | null;
-  /** `YYYY-MM-DD`, as stored. */
+  /** `YYYY-MM-DD`, as stored (always the first of a month). */
   possessionDate: string | null;
   contactPhone: string | null;
   locality: string;
@@ -64,6 +80,8 @@ export type ProjectData = {
   nearby: string[];
   reraApplicable: boolean;
   reraNumber: string | null;
+  /** Why a project that is not under RERA is not: public, written by the developer, so untrusted text. */
+  reraNotApplicableReason: string | null;
   description: string | null;
   specifications: string | null;
   amenities: string[];

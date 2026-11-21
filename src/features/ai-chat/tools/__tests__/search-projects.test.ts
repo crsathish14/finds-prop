@@ -11,9 +11,18 @@ const error = vi.fn();
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The projects feature is stood in for by its read (a stand-in) and its real page rules.
 vi.mock("@/features/projects", async () => {
-  const { bhkSizes, priceBounds } = await import("@/features/projects/view");
-  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
-  return { getProjects, bhkSizes, priceBounds, PROJECT_STATUSES, PROJECT_LIST_LIMIT: 60 };
+  const { bhkSizes, priceOf } = await import("@/features/projects/view");
+  const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
+    await import("@/features/projects/schemas");
+  return {
+    getProjects,
+    bhkSizes,
+    priceOf,
+    OFFER_TYPES,
+    PRICE_TYPES,
+    PROJECT_STATUSES,
+    PROJECT_LIST_LIMIT: 60,
+  };
 });
 
 const { toPortableJsonSchema } = await import("@/server/ai");
@@ -48,8 +57,8 @@ const PROJECTS = [
     name: "Velan Heights",
     developerName: "Velan Builders",
     status: "ready_to_move",
-    priceMin: 5_500_000,
-    priceMax: null,
+    price: 5_500_000,
+    priceType: "all_inclusive",
     bhkOptions: [1, 2],
     locality: "Velachery",
   }),
@@ -57,8 +66,8 @@ const PROJECTS = [
     slug: "no-price-yet",
     name: "No Price Yet",
     status: "new_launch",
-    priceMin: null,
-    priceMax: null,
+    price: null,
+    priceType: null,
     bhkOptions: [3],
     locality: "Velachery",
   }),
@@ -66,8 +75,8 @@ const PROJECTS = [
     slug: "plot-gardens",
     name: "Plot Gardens",
     status: null,
-    priceMin: 2_000_000,
-    priceMax: 2_000_000,
+    price: 2_450,
+    priceType: "per_sqft",
     bhkOptions: [0],
     locality: "T. Nagar",
   }),
@@ -148,14 +157,30 @@ describe("UT-ai-tool-projects-search: the filters", () => {
     expect(await slugsFor({ bhk: 4 })).toEqual([]);
   });
 
-  it("matches a maximum price against the lowest price, and never a project with no price", async () => {
-    expect(await slugsFor({ maxPrice: 6_000_000 })).toEqual(["velan-heights", "plot-gardens"]);
-    expect(await slugsFor({ maxPrice: 7_800_000 })).toEqual([
-      "kadal-vista",
-      "velan-heights",
-      "plot-gardens",
-    ]);
+  it("matches a maximum price against a price that is a total (basic or all inclusive), and never a project with no price", async () => {
+    expect(await slugsFor({ maxPrice: 6_000_000 })).toEqual(["velan-heights"]);
+    expect(await slugsFor({ maxPrice: 7_800_000 })).toEqual(["kadal-vista", "velan-heights"]);
     expect(await slugsFor({ maxPrice: 1_000_000 })).toEqual([]);
+  });
+
+  it("leaves a project priced per sq ft, or for rent, out of a maximum price, even a very high one", async () => {
+    getProjects.mockResolvedValue({
+      status: "ok",
+      projects: [
+        projectListItem({ slug: "by-the-sqft", price: 2_450, priceType: "per_sqft" }),
+        projectListItem({
+          slug: "office-for-rent",
+          price: 85_000,
+          priceType: "rent_per_month",
+          offerType: "rent",
+        }),
+        projectListItem({ slug: "a-total", price: 9_000_000, priceType: "basic" }),
+      ],
+      readAt: READ_AT,
+    });
+    expect(await slugsFor({ maxPrice: 999_999_999_999 })).toEqual(["a-total"]);
+    expect(await slugsFor({ maxPrice: 3_000 })).toEqual([]);
+    expect(await slugsFor({})).toEqual(["by-the-sqft", "office-for-rent", "a-total"]);
   });
 
   it("combines every filter", async () => {
@@ -185,10 +210,10 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
             slug: "kadal-vista",
             status: "under_construction",
             bhkOptions: [2, 3],
-            lowestPriceRupees: 7_800_000,
-            lowestPriceText: "₹78 L",
-            highestPriceRupees: 14_200_000,
-            highestPriceText: "₹1.42 Cr",
+            priceRupees: 7_800_000,
+            priceText: "₹78 L basic price",
+            priceType: "basic",
+            offerType: null,
             untrustedText: {
               name: "Kadal Vista",
               developerName: "Kadal Homes",
@@ -202,20 +227,47 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
     });
   });
 
-  it("gives one price as a range whose ends are the same, and no price as null", async () => {
+  it("gives the one price with what it means, and no price as null", async () => {
     const projects = await projectsFor({ locality: "velachery" });
     expect(projects[0]).toMatchObject({
-      lowestPriceRupees: 5_500_000,
-      lowestPriceText: "₹55 L",
-      highestPriceRupees: 5_500_000,
-      highestPriceText: "₹55 L",
+      priceRupees: 5_500_000,
+      priceText: "₹55 L all inclusive",
+      priceType: "all_inclusive",
     });
     expect(projects[1]).toMatchObject({
-      lowestPriceRupees: null,
-      lowestPriceText: null,
-      highestPriceRupees: null,
-      highestPriceText: null,
+      priceRupees: null,
+      priceText: null,
+      priceType: null,
     });
+  });
+
+  it("writes each price type the way the project page does, and says when a project is for rent", async () => {
+    getProjects.mockResolvedValue({
+      status: "ok",
+      projects: [
+        projectListItem({ slug: "a", price: 8_500, priceType: "per_sqft" }),
+        projectListItem({
+          slug: "b",
+          price: 45_000,
+          priceType: "rent_per_month",
+          offerType: "rent",
+        }),
+        projectListItem({
+          slug: "c",
+          price: 85,
+          priceType: "rent_per_sqft_month",
+          offerType: "rent",
+        }),
+      ],
+      readAt: READ_AT,
+    });
+    const projects = await projectsFor();
+    expect(projects.map((project) => project.priceText)).toEqual([
+      "₹8,500 per sq ft",
+      "₹45,000 per month",
+      "₹85 per sq ft per month",
+    ]);
+    expect(projects.map((project) => project.offerType)).toEqual([null, "rent", "rent"]);
   });
 
   it("names every project it gives, and no other, in the references", async () => {

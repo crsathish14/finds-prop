@@ -7,7 +7,7 @@ import { Specimen } from "../frame";
 
 const PICTURES = "/design-lab/listings";
 
-/** Sample projects: the first has everything, the last has no picture and no price. */
+/** Sample projects: the first has everything, the fourth has no picture and no price, the last two are a plot priced per sq ft and an office for rent. */
 const PROJECTS: ProjectCardData[] = [
   {
     href: "#project-1",
@@ -15,8 +15,8 @@ const PROJECTS: ProjectCardData[] = [
     developerName: "Kadal Homes",
     locality: "OMR Navalur",
     city: "",
-    minRupees: 78_00_000,
-    maxRupees: 1_42_00_000,
+    priceRupees: 78_00_000,
+    priceType: "basic",
     bedrooms: [2, 3],
     status: "under_construction",
     featured: true,
@@ -28,8 +28,8 @@ const PROJECTS: ProjectCardData[] = [
     developerName: "Nila Habitats",
     locality: "Medavakkam",
     city: "",
-    minRupees: 62_00_000,
-    maxRupees: 98_00_000,
+    priceRupees: 62_00_000,
+    priceType: "basic",
     bedrooms: [1, 2],
     status: "new_launch",
     cover: { src: `${PICTURES}/home-b.svg`, alt: "Nila Grove" },
@@ -40,8 +40,8 @@ const PROJECTS: ProjectCardData[] = [
     developerName: "Olive Builders",
     locality: "Porur",
     city: "",
-    minRupees: 1_05_00_000,
-    maxRupees: 1_05_00_000,
+    priceRupees: 1_05_00_000,
+    priceType: "basic",
     bedrooms: [3],
     status: "ready_to_move",
     cover: { src: `${PICTURES}/home-c.svg`, alt: "Olive Residency" },
@@ -52,6 +52,31 @@ const PROJECTS: ProjectCardData[] = [
     developerName: "Marina Group",
     locality: "Velachery",
     city: "",
+    cover: null,
+  },
+  {
+    href: "/projects/thendral-gardens",
+    name: "Thendral Gardens",
+    developerName: "Thendral Estates",
+    locality: "Tambaram",
+    city: "",
+    priceRupees: 2_450,
+    priceType: "per_sqft",
+    bedrooms: [],
+    status: "ready_to_move",
+    cover: null,
+  },
+  {
+    href: "/projects/marina-trade-centre",
+    name: "Marina Trade Centre",
+    developerName: "Marina Group",
+    locality: "Anna Nagar",
+    city: "",
+    priceRupees: 85,
+    priceType: "rent_per_sqft_month",
+    offerType: "rent",
+    bedrooms: [],
+    status: "new_launch",
     cover: null,
   },
 ];
@@ -92,6 +117,12 @@ export function ProjectsPageDemo() {
         className="w-full"
       >
         <Screen count={4} regionName="Chennai" />
+      </Specimen>
+      <Specimen
+        label="Six projects: a plot priced per sq ft and a commercial office for rent (with the For rent tag and a rent price type) after the four above"
+        className="w-full"
+      >
+        <Screen count={6} regionName="Chennai" />
       </Specimen>
       <Specimen label="One project, with no region name in the site content" className="w-full">
         <Screen count={1} />
