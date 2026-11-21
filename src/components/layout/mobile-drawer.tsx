@@ -19,6 +19,7 @@
  */
 import { ChevronRight, Menu } from "lucide-react";
 import type { ReactNode } from "react";
+import { AiCta } from "@/components/ui/ai-cta.client";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Link } from "@/components/ui/link";
@@ -60,27 +61,38 @@ function MobileDrawer({
       >
         <nav aria-label={title} className="flex min-h-full flex-col">
           <ul>
-            {nav.map((item) => (
-              <li key={`${item.href}|${item.label}`}>
-                <SheetClose asChild>
-                  <Link
-                    href={item.href}
-                    current={item.current}
-                    className={cn(
-                      "flex h-13.5 items-center justify-between border-b border-line font-display text-h3 text-primary no-underline",
-                      "aria-[current=page]:border-l-4 aria-[current=page]:border-l-cta aria-[current=page]:pl-3 aria-[current=page]:font-semibold",
-                      item.accent && "text-cta-text",
+            {nav.map((item) => {
+              const link = (
+                <Link
+                  href={item.href}
+                  current={item.current}
+                  className={cn(
+                    "flex h-13.5 items-center justify-between border-b border-line font-display text-h3 text-primary no-underline",
+                    "aria-[current=page]:border-l-4 aria-[current=page]:border-l-cta aria-[current=page]:pl-3 aria-[current=page]:font-semibold",
+                    item.accent && "text-cta-text",
+                  )}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    {item.icon}
+                    {item.label}
+                  </span>
+                  <Icon icon={ChevronRight} className="text-muted" />
+                </Link>
+              );
+              return (
+                <li key={`${item.href}|${item.label}`}>
+                  <SheetClose asChild>
+                    {item.accent ? (
+                      <AiCta name="nav" variant="inline">
+                        {link}
+                      </AiCta>
+                    ) : (
+                      link
                     )}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      {item.icon}
-                      {item.label}
-                    </span>
-                    <Icon icon={ChevronRight} className="text-muted" />
-                  </Link>
-                </SheetClose>
-              </li>
-            ))}
+                  </SheetClose>
+                </li>
+              );
+            })}
           </ul>
           {groups.map((group, groupIndex) => (
             <div key={groupIndex} className="mt-5">

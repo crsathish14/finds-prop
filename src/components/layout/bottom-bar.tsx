@@ -11,12 +11,14 @@
  *   class pb-bottombar (and md:pb-0) so the bar does not cover the last content.
  * Accessibility: a nav landmark; the current item has aria-current="page" and a copper tick, so
  *   it is not only colour (the AI disc also gets an outline border). Each item is at least 44 px wide and tall.
+ *   The AI disc gets the AI motion (AiCta "disc": sparkle and glow; see src/styles/ai-cta.css).
  *   A badge is part of the name.
  * States: default, current, hover, focus. Dependencies: Link, Icon, cn.
  * Tests: layout.test.tsx; Design Lab "Navigation" (S2-T07).
  * UX reference: ds-navigation, bottom bar (c-nav.css .bottombar).
  */
 import type { ReactNode } from "react";
+import { AiCta } from "@/components/ui/ai-cta.client";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
 
@@ -46,8 +48,8 @@ function BottomBar({ navLabel, items, className }: BottomBarProps) {
       )}
     >
       <ul className="grid h-full grid-cols-5">
-        {items.map((item) => (
-          <li key={item.href} className="min-w-0">
+        {items.map((item) => {
+          const link = (
             <Link
               href={item.href}
               current={item.current}
@@ -64,7 +66,7 @@ function BottomBar({ navLabel, items, className }: BottomBarProps) {
                   item.raised &&
                     "-my-1 size-9 rounded-pill bg-primary text-on-primary [&_svg]:size-5",
                   item.accent &&
-                    "-my-1 size-8.5 rounded-pill bg-cta-tint-2 text-cta-text [&_svg]:size-5",
+                    "ai-cta__disc -my-1 size-8.5 rounded-pill bg-cta-tint-2 text-cta-text [&_svg]:size-5",
                   item.accent && item.current && "border-2 border-cta-text",
                 )}
               >
@@ -77,8 +79,19 @@ function BottomBar({ navLabel, items, className }: BottomBarProps) {
                 </span>
               ) : null}
             </Link>
-          </li>
-        ))}
+          );
+          return (
+            <li key={item.href} className="min-w-0">
+              {item.accent ? (
+                <AiCta name="nav" variant="disc">
+                  {link}
+                </AiCta>
+              ) : (
+                link
+              )}
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

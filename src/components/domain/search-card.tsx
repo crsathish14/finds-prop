@@ -26,7 +26,7 @@
  *   disabled: an empty search shows everything.
  * Responsive: it answers to its own width (container queries), not the screen's. Under 576 px: the
  *   tabs on a full row, then the fields (locality on its own row, the other three side by side), then
- *   Search, then the AI link; short labels and no chips. From 576 px: the tabs and the AI link share a
+ *   Search, then the AI link (with the AI motion, AiCta "text", and a small "AI" badge); short labels and no chips. From 576 px: the tabs and the AI link share a
  *   row, the locality and Search share a row, the labels are in full and the chips show. A wide card
  *   joins all four fields and the button in one bar from 896 px.
  * Accessibility: a form named "Property search" (role search). Buy and Rent are a radio group named
@@ -41,7 +41,7 @@
  * Tests: search-card.test.tsx; Design Lab "Domain" (S4-T01).
  * UX reference: search card on home-a and home-b, ds-components "Search card" (c-cards.css .search).
  */
-import { ArrowRight, MapPin, Search, Sparkles } from "lucide-react";
+import { ArrowRight, MapPin, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
@@ -49,6 +49,8 @@ import {
   type ComboboxOption,
   type ComboboxPanelProps,
 } from "@/components/patterns/combobox";
+import { AiCta } from "@/components/ui/ai-cta.client";
+import { AiSparkle } from "@/components/ui/ai-sparkle";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -289,14 +291,23 @@ function SearchCard({
         />
 
         {aiSearchHref ? (
-          <Link
-            href={aiSearchHref}
-            variant="nav"
-            className="order-3 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text @xl:order-2 @xl:ml-auto @xl:w-auto"
-          >
-            <Icon icon={Sparkles} size="sm" />
-            {translate("domain.searchCard.describeInWords")}
-          </Link>
+          <AiCta name="hero" variant="text">
+            <Link
+              href={aiSearchHref}
+              variant="nav"
+              className="order-3 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text @xl:order-2 @xl:ml-auto @xl:w-auto"
+            >
+              <AiSparkle />
+              {translate("domain.searchCard.describeInWords")}
+              {/* Decoration: the link keeps its name, "Describe it in words" */}
+              <span
+                aria-hidden="true"
+                className="ai-cta__badge rounded-pill bg-primary px-1 text-caption leading-4 font-bold text-on-primary"
+              >
+                {translate("domain.searchCard.aiBadge")}
+              </span>
+            </Link>
+          </AiCta>
         ) : null}
 
         <div

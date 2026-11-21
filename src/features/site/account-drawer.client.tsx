@@ -1,11 +1,10 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
 import { SheetClose } from "@/components/patterns/sheet";
+import { AiSparkle } from "@/components/ui/ai-sparkle";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { markCurrent, type NavLink } from "./chrome";
 import { useClientPathname } from "@/lib/client-pathname";
@@ -34,7 +33,7 @@ export function AccountDrawer({ labels, links, groups, actions, trailing }: Acco
     label: link.label,
     href: link.href,
     ...(link.current ? { current: true } : {}),
-    ...(link.accent ? { accent: true, icon: <Icon icon={Sparkles} size="sm" /> } : {}),
+    ...(link.accent ? { accent: true, icon: <AiSparkle /> } : {}),
   }));
   return (
     <MobileDrawer

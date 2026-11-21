@@ -1207,6 +1207,7 @@
       "rent": "Rent",
       "newProjects": "New projects",
       "describeInWords": "Describe it in words",
+      "aiBadge": "AI",
       "locality": {
         "label": "Locality",
         "placeholder": "Search a locality",

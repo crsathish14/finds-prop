@@ -39,8 +39,10 @@ if (typeof window !== "undefined" && !window.matchMedia) {
 }
 
 // jsdom has no IntersectionObserver, which Embla reads to know which slides are in view.
+// The stub keeps its callback so a test can report an element as in view (see ai-cta.test.tsx).
 if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
   class IntersectionObserverStub {
+    constructor(readonly callback?: IntersectionObserverCallback) {}
     observe() {}
     unobserve() {}
     disconnect() {}

@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import {
+  AiCtaDemo,
   ButtonsDemo,
   IconButtonsDemo,
   LinksDemo,
@@ -81,6 +82,14 @@ export const COMPONENTS: LabEntry[] = [
       "Drop area and file picker with progress, errors, a cover tag and named remove buttons. Interface only.",
     sources: ["patterns/upload-zone.tsx"],
     Demo: UploadDemo,
+  },
+  {
+    id: "ai-cta",
+    name: "AI calls to action",
+    description:
+      "The motion of the AI entry points: sparkle twinkle, breathing glow and shimmer that play a few times and settle; lift on hover, press scale, an entrance when in view, calm once clicked this session, still under reduced motion.",
+    sources: ["ui/ai-cta.client.tsx", "ui/ai-sparkle.tsx"],
+    Demo: AiCtaDemo,
   },
   {
     id: "chips",
