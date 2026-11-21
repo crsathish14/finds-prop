@@ -306,6 +306,7 @@
     "slugTaken": "This page address is already used by another project.",
     "slugLocked": "The page address cannot be changed once the project is approved.",
     "priceRange": "The highest price must be the same as or more than the lowest.",
+    "areaRange": "The largest area must be the same as or more than the smallest.",
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
     "localityLabelTaken": "Another row already uses this name.",
@@ -2093,13 +2094,15 @@
         "unset": "Not set",
         "projectType": "Project type",
         "propertyType": "Property type",
+        "offerType": "This project is for",
         "projectStatus": "Status",
-        "priceMin": "Price from (₹)",
-        "priceMax": "Price to (₹)",
+        "price": "Starting price (₹)",
+        "priceType": "Price type",
+        "areaMin": "Minimum area (sq ft)",
+        "areaMax": "Maximum area (sq ft)",
         "bhk": "BHK options",
         "landArea": "Land area (acres)",
-        "totalUnits": "Total units",
-        "possession": "Possession",
+        "possession": "Possession (month and year)",
         "contactPhone": "Contact phone",
         "locality": "Locality",
         "address": "Address",
@@ -2109,6 +2112,8 @@
         "nearby": "Nearby places",
         "reraApplicable": "RERA applicable",
         "reraNumber": "RERA number",
+        "reraReason": "Why is RERA not applicable?",
+        "reraReasonHint": "This reason will be shown publicly on your project page.",
         "description": "Description",
         "specifications": "Specifications",
         "amenities": "Amenities",
@@ -2129,12 +2134,27 @@
       "options": {
         "projectType": {
           "residential": "Residential",
-          "commercial": "Commercial",
-          "plottedLayout": "Plotted layout"
+          "commercial": "Commercial"
         },
         "propertyType": {
           "apartment": "Apartment",
-          "villa": "Villa"
+          "villa": "Villa",
+          "plot": "Plot",
+          "vacantLand": "Vacant land",
+          "flat": "Flat",
+          "office": "Office",
+          "coWorking": "Co-working space"
+        },
+        "offerType": {
+          "sale": "Sale",
+          "rent": "Rent"
+        },
+        "priceType": {
+          "perSqft": "Rate per sq ft",
+          "basic": "Basic price (excludes registration, GST and other costs)",
+          "allInclusive": "All inclusive (includes GST, registration and other costs)",
+          "rentPerMonth": "Rent per month",
+          "rentPerSqftMonth": "Rent per sq ft per month"
         },
         "status": {
           "newLaunch": "New launch",
@@ -2216,7 +2236,18 @@
       "problems": {
         "name": "Enter the project name.",
         "builder": "Choose the builder.",
-        "locality": "Enter the locality."
+        "projectType": "Choose the project type.",
+        "propertyType": "Choose the property type.",
+        "offerType": "Choose whether the project is for sale or for rent.",
+        "status": "Choose the status.",
+        "possession": "Choose the possession month.",
+        "price": "Enter the price.",
+        "priceType": "Choose a price type.",
+        "area": "Enter the minimum and maximum area.",
+        "areaRange": "The maximum area must be the same as or more than the minimum.",
+        "locality": "Enter the locality.",
+        "reraNumber": "Enter the RERA number.",
+        "reraReason": "Tell us why RERA is not applicable."
       },
       "alert": {
         "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",

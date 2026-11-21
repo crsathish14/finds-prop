@@ -9,12 +9,16 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   project_type: "residential",
   property_type: "apartment",
   project_status: "under_construction",
+  offer_type: null,
+  price: 7800000,
+  price_type: "basic",
   price_min: 7800000,
   price_max: 14200000,
+  area_min_sqft: null,
+  area_max_sqft: null,
   bhk_options: [2, 3],
   land_area_acres: "4.50",
-  total_units: 320,
-  possession_date: "2027-06-30",
+  possession_date: "2027-06-01",
   contact_phone: "+919841055512",
   locality: "OMR Navalur",
   address: "Navalur, Chennai",
@@ -24,6 +28,7 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   nearby: [],
   rera_applicable: true,
   rera_number: "TN/29/Building/0123/2026",
+  rera_not_applicable_reason: null,
   description: "A gated community.",
   specifications: null,
   amenities: ["Clubhouse"],
@@ -52,7 +57,11 @@ describe("UT-project-view: the project as the form opens it (S7-T02)", () => {
       landAreaAcres: 4.5,
       latitude: 12.84,
       longitude: 80.23,
-      priceMin: 7800000,
+      price: 7800000,
+      priceType: "basic",
+      offerType: null,
+      possessionDate: "2027-06-01",
+      reraNotApplicableReason: null,
       bhkOptions: [2, 3],
       images: ["p/cover.webp"],
       brochure: null,
@@ -68,6 +77,31 @@ describe("UT-project-view: the project as the form opens it (S7-T02)", () => {
       [],
     );
     expect(view).toMatchObject({ landAreaAcres: null, latitude: null, longitude: null });
+  });
+
+  it("carries the area range as numbers, the sale or rent choice and the reason RERA does not apply", () => {
+    const view = toProjectEditView(
+      row({
+        project_type: "commercial",
+        property_type: "office",
+        offer_type: "rent",
+        price_type: "rent_per_sqft_month",
+        area_min_sqft: "500.00",
+        area_max_sqft: 2500,
+        rera_applicable: false,
+        rera_number: null,
+        rera_not_applicable_reason: "Below the size that needs registration.",
+      }),
+      [],
+    );
+    expect(view).toMatchObject({
+      offerType: "rent",
+      priceType: "rent_per_sqft_month",
+      areaMinSqft: 500,
+      areaMaxSqft: 2500,
+      reraApplicable: false,
+      reraNotApplicableReason: "Below the size that needs registration.",
+    });
   });
 
   it("shows the price trends by month, oldest first, as year and month", () => {

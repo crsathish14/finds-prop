@@ -19,12 +19,14 @@ const WORDS: ProjectFieldsWords = {
   unset: "Not set",
   projectType: "Project type",
   propertyType: "Property type",
+  offerType: "This project is for",
   projectStatus: "Status",
-  priceMin: "Price from",
-  priceMax: "Price to",
+  price: "Starting price",
+  priceType: "Price type",
+  areaMin: "Minimum area",
+  areaMax: "Maximum area",
   bhk: "BHK options",
   landArea: "Land area",
-  totalUnits: "Total units",
   possession: "Possession",
   contactPhone: "Contact phone",
   locality: "Locality",
@@ -35,6 +37,8 @@ const WORDS: ProjectFieldsWords = {
   nearby: "Nearby places",
   reraApplicable: "RERA applicable",
   reraNumber: "RERA number",
+  reraReason: "Why is RERA not applicable?",
+  reraReasonHint: "This reason will be shown publicly.",
   description: "Description",
   specifications: "Specifications",
   amenities: "Amenities",
@@ -56,6 +60,8 @@ const WORDS: ProjectFieldsWords = {
 const OPTIONS = {
   projectTypes: [{ value: "residential", label: "Residential" }],
   propertyTypes: [{ value: "apartment", label: "Apartment" }],
+  offerTypes: [{ value: "sale", label: "Sale" }],
+  priceTypes: [{ value: "basic", label: "Basic price" }],
   statuses: [{ value: "new_launch", label: "New launch" }],
 };
 
@@ -64,12 +70,14 @@ const VALUES: ProjectFieldValues = {
   builderId: "b1",
   projectType: "",
   propertyType: "",
+  offerType: "",
   projectStatus: "",
-  priceMin: "",
-  priceMax: "",
+  price: "",
+  priceType: "",
+  areaMinSqft: "",
+  areaMaxSqft: "",
   bhkOptions: [3],
   landAreaAcres: "",
-  totalUnits: "",
   possessionDate: "",
   contactPhone: "",
   locality: "OMR",
@@ -80,6 +88,7 @@ const VALUES: ProjectFieldValues = {
   nearby: [],
   reraApplicable: false,
   reraNumber: "",
+  reraNotApplicableReason: "",
   description: "",
   specifications: "",
   amenities: [],
@@ -87,6 +96,8 @@ const VALUES: ProjectFieldValues = {
   slug: "kadal-vista",
   seoDescription: "",
 };
+
+const APPLIES = { offerType: false, bedrooms: true, area: false, possession: true };
 
 /** A stand-in for the page's place picker: one button that reports a fixed place, so no network is involved. */
 function FakePicker({ id, disabled, onPick }: PlacePickerFieldProps) {
@@ -118,6 +129,7 @@ function Live({
         setValues((now) => ({ ...now, [name]: value }));
       }}
       options={OPTIONS}
+      applies={APPLIES}
       words={WORDS}
       {...props}
     />

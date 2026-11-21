@@ -1,4 +1,5 @@
 import { ActionError } from "@/server/actions/normalise-error";
+import { areaApplies, bedroomsApply, offerTypeApplies, possessionApplies } from "./rules";
 import type {
   CreateMyProjectInput,
   CreateProjectInput,
@@ -22,11 +23,16 @@ export interface ProjectRow {
   project_type?: string | null;
   property_type?: string | null;
   project_status?: string | null;
+  offer_type?: string | null;
+  price?: number | null;
+  price_type?: string | null;
+  /** Written with the price until the readers move to it (ADR-148 step D drops both columns). */
   price_min?: number | null;
   price_max?: number | null;
+  area_min_sqft?: number | null;
+  area_max_sqft?: number | null;
   bhk_options?: number[];
   land_area_acres?: number | null;
-  total_units?: number | null;
   possession_date?: string | null;
   contact_phone?: string | null;
   locality?: string;
@@ -37,6 +43,7 @@ export interface ProjectRow {
   nearby?: string[];
   rera_applicable?: boolean;
   rera_number?: string | null;
+  rera_not_applicable_reason?: string | null;
   description?: string | null;
   specifications?: string | null;
   amenities?: string[];
@@ -110,6 +117,12 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
   if (says(failure, "projects_price_range")) {
     return onBox("priceMax", "validation.priceRange", "The price range runs backwards");
   }
+  if (says(failure, "projects_area_range")) {
+    return onBox("areaMaxSqft", "validation.areaRange", "The largest area is below the smallest");
+  }
+  if (says(failure, "projects_price_type")) {
+    return onBox("priceType", "validation.invalid", "That price type does not fit the project");
+  }
   if (says(failure, "projects_coordinates_together")) {
     return onBox("longitude", "validation.coordinatesTogether", "Give both coordinates or none");
   }
@@ -147,8 +160,12 @@ function put<Key extends keyof ProjectRow>(
 }
 
 /**
- * The columns from what the form gave. A number of bedrooms and the lists are written as given; the RERA number is
- * kept only when RERA applies (the database refuses a number without it, so a leftover box never blocks a save).
+ * The columns from what the form gave (ADR-148). What does not apply to this kind of project is cleared, whatever the
+ * form sent: bedrooms only for a residential apartment or villa, the sale or rent choice only for a commercial
+ * project, the area range only for a plot and commercial projects, the possession month only while the project is
+ * still to be built, the RERA number only when RERA applies and the reason only when it does not (the database
+ * refuses a number without RERA, so a leftover box never blocks a save). The old lowest and highest price columns are
+ * written from the one price until the pages read the new ones.
  */
 export function projectRowFrom(
   input: Fields,
@@ -158,23 +175,33 @@ export function projectRowFrom(
     slug: input.slug,
     locality: input.locality,
     rera_applicable: input.reraApplicable,
+    project_type: input.projectType,
+    property_type: input.propertyType,
+    project_status: input.projectStatus,
+    offer_type: offerTypeApplies(input.projectType) ? (input.offerType ?? null) : null,
+    price: input.price,
+    price_type: input.priceType,
+    price_min: input.price,
+    price_max: input.price,
+    bhk_options: bedroomsApply(input.projectType, input.propertyType)
+      ? (input.bhkOptions ?? [])
+      : [],
+    possession_date: possessionApplies(input.projectStatus) ? (input.possessionDate ?? null) : null,
+    rera_number: input.reraApplicable ? (input.reraNumber ?? null) : null,
+    rera_not_applicable_reason: input.reraApplicable
+      ? null
+      : (input.reraNotApplicableReason ?? null),
   };
-  put(row, "project_type", input.projectType);
-  put(row, "property_type", input.propertyType);
-  put(row, "project_status", input.projectStatus);
-  put(row, "price_min", input.priceMin);
-  put(row, "price_max", input.priceMax);
-  put(row, "bhk_options", input.bhkOptions);
+  const sized = areaApplies(input.projectType, input.propertyType);
+  row.area_min_sqft = sized ? (input.areaMinSqft ?? null) : null;
+  row.area_max_sqft = sized ? (input.areaMaxSqft ?? null) : null;
   put(row, "land_area_acres", input.landAreaAcres);
-  put(row, "total_units", input.totalUnits);
-  put(row, "possession_date", input.possessionDate);
   put(row, "contact_phone", input.contactPhone);
   put(row, "address", input.address);
   put(row, "latitude", input.latitude);
   put(row, "longitude", input.longitude);
   put(row, "advantages", input.advantages);
   put(row, "nearby", input.nearby);
-  row.rera_number = input.reraApplicable ? (input.reraNumber ?? null) : null;
   put(row, "description", input.description);
   put(row, "specifications", input.specifications);
   put(row, "amenities", input.amenities);

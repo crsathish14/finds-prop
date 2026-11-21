@@ -77,7 +77,19 @@ function harness(
   };
 }
 
-const minimal = { name: "Kadal Vista", slug: "kadal-vista", locality: "OMR Navalur" };
+/** A complete project: a residential apartment, ready to move, not under RERA (and so with the reason). */
+const minimal = {
+  name: "Kadal Vista",
+  slug: "kadal-vista",
+  locality: "OMR Navalur",
+  projectType: "residential",
+  propertyType: "apartment",
+  projectStatus: "ready_to_move",
+  price: "7800000",
+  priceType: "basic",
+  reraApplicable: false,
+  reraNotApplicableReason: "Below the size that needs registration.",
+};
 const adminNew = { ...minimal, builderId: BUILDER };
 const save = { projectId: PROJECT, ...minimal };
 

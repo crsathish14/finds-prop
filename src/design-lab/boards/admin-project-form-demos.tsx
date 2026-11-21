@@ -52,13 +52,15 @@ const WORDS: ProjectFieldsWords = {
   unset: "Not set",
   projectType: "Project type",
   propertyType: "Property type",
+  offerType: "This project is for",
   projectStatus: "Status",
-  priceMin: "Price from (₹)",
-  priceMax: "Price to (₹)",
+  price: "Starting price (₹)",
+  priceType: "Price type",
+  areaMin: "Minimum area (sq ft)",
+  areaMax: "Maximum area (sq ft)",
   bhk: "BHK options",
   landArea: "Land area (acres)",
-  totalUnits: "Total units",
-  possession: "Possession",
+  possession: "Possession (month and year)",
   contactPhone: "Contact phone",
   locality: "Locality",
   address: "Address",
@@ -68,6 +70,8 @@ const WORDS: ProjectFieldsWords = {
   nearby: "Nearby places",
   reraApplicable: "RERA applicable",
   reraNumber: "RERA number",
+  reraReason: "Why is RERA not applicable?",
+  reraReasonHint: "This reason will be shown publicly on your project page.",
   description: "Description",
   specifications: "Specifications",
   amenities: "Amenities",
@@ -80,33 +84,77 @@ const WORDS: ProjectFieldsWords = {
   tags: TAG_WORDS,
 };
 
-const OPTIONS = {
-  builders: [
-    { value: "b1", label: "Kadal Homes" },
-    { value: "b2", label: "Nila Habitats" },
-    { value: "b3", label: "Thendral Estates" },
-  ],
-  projectTypes: [
-    { value: "residential", label: "Residential" },
-    { value: "commercial", label: "Commercial" },
-    { value: "plotted_layout", label: "Plotted layout" },
-  ],
-  propertyTypes: [
-    { value: "apartment", label: "Apartment" },
-    { value: "villa", label: "Villa" },
-  ],
-  statuses: [
-    { value: "new_launch", label: "New launch" },
-    { value: "under_construction", label: "Under construction" },
-    { value: "ready_to_move", label: "Ready to move" },
-  ],
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  apartment: "Apartment",
+  villa: "Villa",
+  plot: "Plot",
+  vacant_land: "Vacant land",
+  flat: "Flat",
+  office: "Office",
+  co_working: "Co-working space",
 };
 
-const BUILDER_OPTIONS = {
-  projectTypes: OPTIONS.projectTypes,
-  propertyTypes: OPTIONS.propertyTypes,
-  statuses: OPTIONS.statuses,
+const PROPERTY_TYPES_OF: Record<string, string[]> = {
+  residential: ["apartment", "villa", "plot"],
+  commercial: ["vacant_land", "flat", "office", "co_working", "villa"],
 };
+
+const PRICE_TYPE_LABELS: Record<string, string> = {
+  per_sqft: "Rate per sq ft",
+  basic: "Basic price (excludes registration, GST and other costs)",
+  all_inclusive: "All inclusive (includes GST, registration and other costs)",
+  rent_per_month: "Rent per month",
+  rent_per_sqft_month: "Rent per sq ft per month",
+};
+
+const BUILDERS = [
+  { value: "b1", label: "Kadal Homes" },
+  { value: "b2", label: "Nila Habitats" },
+  { value: "b3", label: "Thendral Estates" },
+];
+
+/** The choices and the boxes that apply, as the page works them out from what is chosen (ADR-148). */
+function optionsFor(values: ProjectFieldValues, builder: boolean) {
+  const option = (labels: Record<string, string>) => (value: string) => ({
+    value,
+    label: labels[value] ?? value,
+  });
+  const rent = values.projectType === "commercial" && values.offerType === "rent";
+  return {
+    ...(builder ? {} : { builders: BUILDERS }),
+    projectTypes: [
+      { value: "residential", label: "Residential" },
+      { value: "commercial", label: "Commercial" },
+    ],
+    propertyTypes: (PROPERTY_TYPES_OF[values.projectType] ?? []).map(option(PROPERTY_TYPE_LABELS)),
+    offerTypes: [
+      { value: "sale", label: "Sale" },
+      { value: "rent", label: "Rent" },
+    ],
+    priceTypes: (rent
+      ? ["rent_per_month", "rent_per_sqft_month"]
+      : ["per_sqft", "basic", "all_inclusive"]
+    ).map(option(PRICE_TYPE_LABELS)),
+    statuses: [
+      { value: "new_launch", label: "New launch" },
+      { value: "under_construction", label: "Under construction" },
+      { value: "ready_to_move", label: "Ready to move" },
+    ],
+  };
+}
+
+function appliesTo(values: ProjectFieldValues) {
+  const commercial = values.projectType === "commercial";
+  return {
+    offerType: commercial,
+    bedrooms:
+      values.projectType === "residential" &&
+      (values.propertyType === "apartment" || values.propertyType === "villa"),
+    area: values.propertyType === "plot" || commercial,
+    possession:
+      values.projectStatus === "new_launch" || values.projectStatus === "under_construction",
+  };
+}
 
 const SUGGESTIONS = ["Clubhouse", "Swimming pool", "Gym", "24x7 security", "Power backup", "Lift"];
 
@@ -115,12 +163,14 @@ const EMPTY: ProjectFieldValues = {
   builderId: "",
   projectType: "",
   propertyType: "",
+  offerType: "",
   projectStatus: "",
-  priceMin: "",
-  priceMax: "",
+  price: "",
+  priceType: "",
+  areaMinSqft: "",
+  areaMaxSqft: "",
   bhkOptions: [],
   landAreaAcres: "",
-  totalUnits: "",
   possessionDate: "",
   contactPhone: "",
   locality: "",
@@ -129,8 +179,9 @@ const EMPTY: ProjectFieldValues = {
   longitude: "",
   advantages: [],
   nearby: [],
-  reraApplicable: true,
+  reraApplicable: false,
   reraNumber: "",
+  reraNotApplicableReason: "",
   description: "",
   specifications: "",
   amenities: [],
@@ -144,13 +195,15 @@ const FILLED: ProjectFieldValues = {
   builderId: "b1",
   projectType: "residential",
   propertyType: "apartment",
+  offerType: "",
   projectStatus: "under_construction",
-  priceMin: "78,00,000",
-  priceMax: "1,42,00,000",
+  price: "78,00,000",
+  priceType: "basic",
+  areaMinSqft: "",
+  areaMaxSqft: "",
   bhkOptions: [2, 3],
   landAreaAcres: "4.2",
-  totalUnits: "320",
-  possessionDate: "2028-12-31",
+  possessionDate: "2028-12",
   contactPhone: "+91 90000 00000",
   locality: "OMR Navalur",
   address: "Rajiv Gandhi Salai, Navalur",
@@ -160,12 +213,49 @@ const FILLED: ProjectFieldValues = {
   nearby: ["Navalur junction"],
   reraApplicable: true,
   reraNumber: "TN/SAMPLE/0000",
+  reraNotApplicableReason: "",
   description: "A gated community of mid-rise towers around landscaped courtyards.",
   specifications: "RCC framed structure. Vitrified tiles in living areas.",
   amenities: ["Clubhouse", "Swimming pool", "Gym"],
   seoTitle: "Kadal Vista, 2 and 3 BHK homes in OMR Navalur",
   slug: "kadal-vista",
   seoDescription: "Gated homes with a clubhouse and pool, a few minutes from the IT corridor.",
+};
+
+/** A plotted layout: plots priced per sq ft, an area range, no bedrooms, and no RERA (so the reason is asked and shown to the public). */
+const PLOTS: ProjectFieldValues = {
+  ...FILLED,
+  name: "Thendral Gardens",
+  projectType: "residential",
+  propertyType: "plot",
+  projectStatus: "ready_to_move",
+  price: "2,450",
+  priceType: "per_sqft",
+  areaMinSqft: "1200",
+  areaMaxSqft: "2400",
+  bhkOptions: [],
+  possessionDate: "",
+  reraApplicable: false,
+  reraNumber: "",
+  reraNotApplicableReason: "A small layout below the size that needs registration.",
+  slug: "thendral-gardens",
+};
+
+/** A commercial office space for rent: the sale or rent choice, rent price types, an area range, no bedrooms. */
+const OFFICE_FOR_RENT: ProjectFieldValues = {
+  ...FILLED,
+  name: "Marina Trade Centre",
+  projectType: "commercial",
+  propertyType: "office",
+  offerType: "rent",
+  projectStatus: "new_launch",
+  price: "85",
+  priceType: "rent_per_sqft_month",
+  areaMinSqft: "500",
+  areaMaxSqft: "2500",
+  bhkOptions: [],
+  possessionDate: "2027-06",
+  slug: "marina-trade-centre",
 };
 
 const NAV_WORDS = { nav: "Form sections", done: "Complete", error: "Needs attention" };
@@ -288,7 +378,8 @@ function LiveForm({
           values={values}
           {...(errors ? { errors } : {})}
           onChange={(name, value) => setValues((now) => ({ ...now, [name]: value }))}
-          options={builder ? BUILDER_OPTIONS : OPTIONS}
+          options={optionsFor(values, builder)}
+          applies={appliesTo(values)}
           amenitySuggestions={SUGGESTIONS}
           slugLocked={slugLocked}
           disabled={saving}
@@ -310,19 +401,41 @@ export function ProjectFormDemo() {
           note="Admins can save without re-approval."
         />
       </Specimen>
+      <Specimen label="A plotted layout: residential plot, priced per sq ft, a smallest and a largest area, no bedrooms, no possession (ready to move), RERA off so the reason is asked and it says it is shown publicly">
+        <LiveForm
+          initial={PLOTS}
+          states={{ basics: "done", location: "done", rera: "done", details: "done", seo: "done" }}
+          note="Admins can save without re-approval."
+        />
+      </Specimen>
+      <Specimen label="A commercial office for rent: the sale or rent choice, rent price types, an area range, a possession month">
+        <LiveForm
+          initial={OFFICE_FOR_RENT}
+          states={{ basics: "done", location: "done", rera: "done", details: "done", seo: "done" }}
+          note="Admins can save without re-approval."
+        />
+      </Specimen>
       <Specimen label="A new project: empty, saved with the name, the locality and the page address missing; the alert lists them and the section list marks where">
         <LiveForm
           initial={EMPTY}
-          states={{ basics: "error", location: "error", seo: "error" }}
+          states={{ basics: "error", location: "error", rera: "error", seo: "error" }}
           errors={{
             name: "Enter the project name.",
             builderId: "Choose the builder.",
+            projectType: "Choose the project type.",
+            propertyType: "Choose the property type.",
+            projectStatus: "Choose the status.",
+            price: "Enter the price.",
+            priceType: "Choose a price type.",
+            reraNotApplicableReason: "Tell us why RERA is not applicable.",
             locality: "Enter the locality.",
             slug: "Use lower case letters, numbers and single hyphens, from 2 to 80 characters.",
           }}
           top={
-            <Alert tone="danger" title="3 things need attention">
-              Add the project name, the locality and the page address before saving.
+            <Alert tone="danger" title="10 things need attention">
+              Add the project name, the project type, the property type, the status, the price, the
+              price type, the reason RERA is not applicable, the locality and the page address
+              before saving.
             </Alert>
           }
           note="Admins can save without re-approval."

@@ -110,10 +110,18 @@ describe("UT-project-form with the place picker (ADR-140)", () => {
 
   it("fills latitude and longitude from the place chosen, leaves locality and address alone, and saves them", async () => {
     const save = open();
+    const choose = (label: string, value: string) =>
+      changeField(screen.getByRole("combobox", { name: new RegExp(`^${label}`) }), value);
     await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await changeField(
-      screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
-      BUILDER_ID,
+    await choose(words.fields.builder, BUILDER_ID);
+    await choose(words.fields.projectType, "residential");
+    await choose(words.fields.propertyType, "apartment");
+    await choose(words.fields.projectStatus, "ready_to_move");
+    await userEvent.type(box("Starting price"), "78,00,000");
+    await choose(words.fields.priceType, "basic");
+    await userEvent.type(
+      box("Why is RERA not applicable"),
+      "Below the size that needs registration.",
     );
     await userEvent.type(box(words.fields.locality), "OMR Navalur");
     await userEvent.type(picker(), "nava");

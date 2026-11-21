@@ -13,12 +13,16 @@ export interface ProjectEditView {
   projectType: string | null;
   propertyType: string | null;
   projectStatus: string | null;
-  priceMin: number | null;
-  priceMax: number | null;
+  /** Sale or rent; only a commercial project has one. */
+  offerType: string | null;
+  price: number | null;
+  priceType: string | null;
+  /** The area range in square feet: a plot and every commercial project. */
+  areaMinSqft: number | null;
+  areaMaxSqft: number | null;
   bhkOptions: number[];
   landAreaAcres: number | null;
-  totalUnits: number | null;
-  /** yyyy-mm-dd */
+  /** yyyy-mm-dd, the first day of the month */
   possessionDate: string | null;
   contactPhone: string | null;
   locality: string;
@@ -29,6 +33,8 @@ export interface ProjectEditView {
   nearby: string[];
   reraApplicable: boolean;
   reraNumber: string | null;
+  /** Public, like the number: why a project that is not under RERA is not. */
+  reraNotApplicableReason: string | null;
   description: string | null;
   specifications: string | null;
   amenities: string[];
@@ -71,11 +77,16 @@ export interface ProjectDbRow {
   project_type: string | null;
   property_type: string | null;
   project_status: string | null;
+  offer_type: string | null;
+  price: number | null;
+  price_type: string | null;
+  /** Still read by the lists until they move to `price` (ADR-148 step C); dropped in step D. */
   price_min: number | null;
   price_max: number | null;
+  area_min_sqft: number | string | null;
+  area_max_sqft: number | string | null;
   bhk_options: number[];
   land_area_acres: number | string | null;
-  total_units: number | null;
   possession_date: string | null;
   contact_phone: string | null;
   locality: string;
@@ -86,6 +97,7 @@ export interface ProjectDbRow {
   nearby: string[];
   rera_applicable: boolean;
   rera_number: string | null;
+  rera_not_applicable_reason: string | null;
   description: string | null;
   specifications: string | null;
   amenities: string[];
@@ -124,11 +136,13 @@ export function toProjectEditView(
     projectType: row.project_type,
     propertyType: row.property_type,
     projectStatus: row.project_status,
-    priceMin: row.price_min,
-    priceMax: row.price_max,
+    offerType: row.offer_type,
+    price: row.price,
+    priceType: row.price_type,
+    areaMinSqft: asNumber(row.area_min_sqft),
+    areaMaxSqft: asNumber(row.area_max_sqft),
     bhkOptions: row.bhk_options,
     landAreaAcres: asNumber(row.land_area_acres),
-    totalUnits: row.total_units,
     possessionDate: row.possession_date,
     contactPhone: row.contact_phone,
     locality: row.locality,
@@ -139,6 +153,7 @@ export function toProjectEditView(
     nearby: row.nearby,
     reraApplicable: row.rera_applicable,
     reraNumber: row.rera_number,
+    reraNotApplicableReason: row.rera_not_applicable_reason,
     description: row.description,
     specifications: row.specifications,
     amenities: row.amenities,
