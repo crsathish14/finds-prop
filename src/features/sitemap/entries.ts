@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { blogArticlePath, BLOG_PATH } from "@/features/blog";
+import { CAREERS_PATH, jobPath } from "@/features/careers";
 import { FAQ_PATH } from "@/features/faq";
 import { projectPath, PROJECTS_PATH } from "@/features/projects";
 import { propertyPath } from "@/features/property";
@@ -26,6 +27,10 @@ export type SitemapFaq = { updatedAt: string };
 export type SitemapBlogPost = { slug: string; updatedAt: string };
 export type SitemapBlog = { posts: readonly SitemapBlogPost[] };
 
+/** The open Careers jobs. Absent (null) while the Careers module is off or no job is open. */
+export type SitemapJob = { slug: string; updatedAt: string };
+export type SitemapCareers = { jobs: readonly SitemapJob[] };
+
 /** A date the database stored, or nothing when it does not read as one (the entry then has no date). */
 function modified(updatedAt: string): Date | undefined {
   const date = new Date(updatedAt);
@@ -48,6 +53,7 @@ export function sitemapEntries(input: {
   projects: readonly SitemapProject[];
   faq?: SitemapFaq | null;
   blog?: SitemapBlog | null;
+  careers?: SitemapCareers | null;
 }): MetadataRoute.Sitemap {
   const at = (path: string) => `${input.origin}${path}`;
   const entries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({ url: at(path) }));
@@ -62,6 +68,14 @@ export function sitemapEntries(input: {
     );
     entries.push({ url: at(BLOG_PATH), lastModified: modified(newest.updatedAt) });
   }
+  // The Careers list is listed the same way while the module is on and a job is open (ADR-143).
+  const jobs = input.careers?.jobs ?? [];
+  if (jobs.length > 0) {
+    const newest = jobs.reduce((latest, job) =>
+      new Date(job.updatedAt) > new Date(latest.updatedAt) ? job : latest,
+    );
+    entries.push({ url: at(CAREERS_PATH), lastModified: modified(newest.updatedAt) });
+  }
   for (const project of input.projects) {
     entries.push({ url: at(projectPath(project.slug)), lastModified: modified(project.updatedAt) });
   }
@@ -73,6 +87,9 @@ export function sitemapEntries(input: {
   }
   for (const post of articles) {
     entries.push({ url: at(blogArticlePath(post.slug)), lastModified: modified(post.updatedAt) });
+  }
+  for (const job of jobs) {
+    entries.push({ url: at(jobPath(job.slug)), lastModified: modified(job.updatedAt) });
   }
   return entries.slice(0, SITEMAP_MAX_URLS);
 }

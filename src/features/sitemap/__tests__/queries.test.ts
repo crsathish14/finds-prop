@@ -23,16 +23,23 @@ const blogState = vi.hoisted(() => ({
   on: true,
   posts: [] as { slug: string; updatedAt: string }[],
 }));
-vi.mock("@/features/site", () => ({
-  getContentModuleOn: async (module: string) => (module === "blog" ? blogState.on : faqState.on),
+const careersState = vi.hoisted(() => ({
+  on: true,
+  jobs: [] as { slug: string; updatedAt: string }[],
 }));
+vi.mock("@/features/site", () => ({
+  getContentModuleOn: async (module: string) =>
+    module === "blog" ? blogState.on : module === "careers" ? careersState.on : faqState.on,
+}));
+vi.mock("@/features/careers", () => ({ getJobSitemapEntries: async () => careersState.jobs }));
 vi.mock("@/features/blog", () => ({ getBlogSitemapEntries: async () => blogState.posts }));
 vi.mock("@/features/faq", () => ({ getPublicFaqs: async () => faqState.faqs }));
 vi.mock("@/features/property", () => ({
   propertyPath: (slug: string, shortId: string) => `/properties/${slug}-${shortId}`,
 }));
 
-const { getSitemapBlog, getSitemapFaq, getSitemapSources } = await import("../queries");
+const { getSitemapBlog, getSitemapCareers, getSitemapFaq, getSitemapSources } =
+  await import("../queries");
 const { SITEMAP_MAX_URLS } = await import("../entries");
 
 type Result = { data: unknown; error: { code: string } | null };
@@ -227,5 +234,34 @@ describe("UT-sitemap-blog: the Blog's entries (ADR-143)", () => {
     faqState.on = false;
     blogState.posts = [{ slug: "one-article", updatedAt: "2026-11-10T08:00:00+00:00" }];
     expect(await getSitemapBlog()).not.toBeNull();
+  });
+});
+
+describe("UT-sitemap-careers: the Careers entries (ADR-143)", () => {
+  beforeEach(() => {
+    careersState.on = true;
+    careersState.jobs = [];
+  });
+
+  it("is the open jobs the cached list gives", async () => {
+    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapCareers()).toEqual({ jobs: careersState.jobs });
+  });
+
+  it("is left out while the Careers module is off, even when jobs are open", async () => {
+    careersState.on = false;
+    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapCareers()).toBeNull();
+  });
+
+  it("is left out while no job is open, so the sitemap never lists an empty page", async () => {
+    expect(await getSitemapCareers()).toBeNull();
+  });
+
+  it("does not depend on the Blog or FAQ switches", async () => {
+    faqState.on = false;
+    blogState.on = false;
+    careersState.jobs = [{ slug: "one-job", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapCareers()).not.toBeNull();
   });
 });

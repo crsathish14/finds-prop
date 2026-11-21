@@ -498,7 +498,8 @@
       "copyright": "© {year} {brandName}",
       "navLabel": "Footer",
       "linkFaq": "FAQ",
-      "linkBlog": "Blog"
+      "linkBlog": "Blog",
+      "linkCareers": "Careers"
     },
     "bottomBar": {
       "navLabel": "Primary",
@@ -3429,6 +3430,85 @@
         },
         "closesAt": "Last moment to apply",
         "closesAtHint": "Leave empty to keep the job open until you close it."
+      },
+      "departmentsPanel": {
+        "title": "Job departments",
+        "description": "The departments jobs belong to. The Blog and the FAQ have their own.",
+        "close": "Close",
+        "listLabel": "Job departments",
+        "empty": "There are no departments yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No jobs} one {# job} other {# jobs}}",
+        "inUse": "Move or delete its jobs before you delete it.",
+        "conflict": "That department is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add department",
+          "editTitle": "Edit department {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden department and its jobs are not shown to visitors or to the assistant.",
+          "add": "Add department",
+          "save": "Save department",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Department added",
+          "saved": "Department saved",
+          "hidden": "Department hidden",
+          "shown": "Department shown",
+          "moved": "Order saved",
+          "deleted": "Department deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The department is removed for good. This cannot be undone.",
+          "confirm": "Delete department",
+          "cancel": "Keep it"
+        }
+      },
+      "metaTitle": "Careers",
+      "metaTitleNew": "New job",
+      "metaTitleEdit": "Edit job",
+      "caption": "Jobs",
+      "count": "{count, plural, one {# job} other {# jobs}}",
+      "conflict": "That job is no longer there. The list has been refreshed.",
+      "hiddenDepartment": "{name} (hidden)",
+      "toast": {
+        "opened": "Job is open on the site",
+        "closed": "Job closed",
+        "restored": "Job restored. It is closed until you open it.",
+        "trashed": "Job moved to the Trash"
+      },
+      "editor": {
+        "newTitle": "New job",
+        "editTitle": "Edit job",
+        "back": "Back to the jobs",
+        "save": "Save job",
+        "cancel": "Cancel",
+        "saving": "Saving",
+        "gone": "This job is no longer there. Go back to the list.",
+        "open": "Open job",
+        "reopen": "Open job again",
+        "toast": {
+          "created": "Job created as a draft",
+          "saved": "Job saved",
+          "opened": "Job is open on the site",
+          "closed": "Job closed"
+        },
+        "saveNote": {
+          "new": "A new job is saved as a draft. Open it when it is ready.",
+          "edit": "Saving shows the change on the site at once when the job is open."
+        }
       }
     }
   },
@@ -3863,6 +3943,21 @@
       "title": "No jobs match your search",
       "text": "Try fewer or different words, or clear a filter.",
       "reset": "Show all jobs"
+    },
+    "page": {
+      "metaTitle": "Careers",
+      "metaDescription": "Open jobs at Find Prop: see the roles, the places and how to apply.",
+      "title": "Careers",
+      "lead": "Join the team that helps people find a home. See the jobs that are open now.",
+      "loadingTitle": "Loading the jobs",
+      "jobLoadingTitle": "Loading the job",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "backHome": "Back to home",
+        "backCareers": "Back to the jobs",
+        "home": "Home",
+        "careers": "Careers"
+      }
     }
   }
 }

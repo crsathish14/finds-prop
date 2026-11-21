@@ -24,11 +24,12 @@ const FLAGGED_ROUTES: { path: string; flag: keyof FeatureFlags }[] = [
 /**
  * Routes that belong to a content module (ADR-143). A link to one is absent from the header and the footer while the
  * module is switched off, whether it is a default link or one the content team saved, so no menu points at a page
- * that answers not-found. Careers joins this list with its pages.
+ * that answers not-found. The module routes are the Blog, the FAQ and Careers.
  */
 const MODULE_ROUTES: { path: string; module: ContentModule }[] = [
   { path: "/blog", module: "blog" },
   { path: "/faq", module: "faq" },
+  { path: "/careers", module: "careers" },
 ];
 
 /** Which content modules are switched on (the site content's `content_modules`). */
@@ -178,6 +179,7 @@ function defaultFooterLinks(translate: Translate): { label: string; href: string
     { label: translate("site.footer.linkAiSearch"), href: AI_SEARCH_PATH },
     { label: translate("site.footer.linkBlog"), href: "/blog" },
     { label: translate("site.footer.linkFaq"), href: "/faq" },
+    { label: translate("site.footer.linkCareers"), href: "/careers" },
     { label: translate("site.footer.linkContact"), href: "/contact" },
     { label: translate("site.footer.linkPost"), href: "/post-property" },
   ];
