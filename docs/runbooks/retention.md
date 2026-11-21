@@ -4,21 +4,31 @@ Old personal data and old bookkeeping rows are deleted by a job that runs by its
 
 ## What it deletes
 
-| What                                                           | Older than                                                                                                                    |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Form submissions (`form_submissions`)                          | 12 months                                                                                                                     |
-| CRM call log lines (`crm_api_logs`)                            | 12 months                                                                                                                     |
-| Project events: views, shortlists and so on (`project_events`) | 12 months                                                                                                                     |
-| Enquiries on listings (`enquiries`)                            | 24 months                                                                                                                     |
-| Project leads (`project_leads`)                                | 24 months                                                                                                                     |
-| Rate limit windows (`public_rate_limits`)                      | 7 days; the AI chat trial scopes `ai_chat_trial_cookie` and `ai_chat_trial_visitor` 400 days (a 366-day window plus a margin) |
-| Repeat-request keys (`idempotency_keys`)                       | 24 hours                                                                                                                      |
-| AI chat usage rows (`ai_usage_events`)                         | 12 months (provisional)                                                                                                       |
-| Place search usage counts (`places_usage_daily`)               | 24 months (provisional; counts only, no personal data)                                                                        |
+| What                                                                   | Older than                                                                                                                    |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Form submissions (`form_submissions`)                                  | 12 months                                                                                                                     |
+| CRM call log lines (`crm_api_logs`)                                    | 12 months                                                                                                                     |
+| Project events: views, shortlists and so on (`project_events`)         | 12 months                                                                                                                     |
+| Enquiries on listings (`enquiries`)                                    | 24 months                                                                                                                     |
+| Project leads (`project_leads`)                                        | 24 months                                                                                                                     |
+| Rate limit windows (`public_rate_limits`)                              | 7 days; the AI chat trial scopes `ai_chat_trial_cookie` and `ai_chat_trial_visitor` 400 days (a 366-day window plus a margin) |
+| Repeat-request keys (`idempotency_keys`)                               | 24 hours                                                                                                                      |
+| AI chat usage rows (`ai_usage_events`)                                 | 12 months (provisional)                                                                                                       |
+| Place search usage counts (`places_usage_daily`)                       | 24 months (provisional; counts only, no personal data)                                                                        |
+| Content in Trash: FAQ questions (`faqs`), blog articles (`blog_posts`) | 30 days after they were moved to Trash (ADR-143 D3, ADR-146); a row with no Trash date is never deleted                       |
 
 It leaves alone: the audit log (never deleted), a submission that has an uploaded file, and a submission still waiting on a CRM delivery. Those two are counted every night (see "Check it") so they are not forgotten. One-time codes sent by text message are Supabase Auth's own rows and are not touched here.
 
 The windows are provisional until counsel confirms them (DEC-28).
+
+## Content in Trash (ADR-146)
+
+Blog articles and FAQ questions that an admin moved to Trash are deleted for good 30 days later. Until then they can be restored from the admin's Trash tab.
+
+- Every table that purged something gets its own audit entry: `select at, diff from public.audit_log where action = 'content.purged' order by at desc limit 10;`. The `diff` holds the table, how many rows, the window in days and the purged ids (at most 500), never any text. To see what is in Trash now and when it goes: `select id, deleted_at, deleted_at + interval '30 days' as purge_after from public.blog_posts where deleted_at is not null order by deleted_at;` (the same for `public.faqs`).
+- The nightly `retention.ran` entry also holds a count for each of these tables (`faqs`, `blog_posts`).
+- **Picture files.** A purged article's pictures are files in the `site-assets` bucket under `blog/<article id>/`. SQL cannot delete files, so the hourly media sweep removes them (`docs/runbooks/media-sweep.md`): it lists files whose article no longer exists and deletes them through the Storage service. If that sweep is not armed, the files stay until it is. To see what it would remove now: `select * from public.orphan_blog_files();` (use `public.orphan_blog_files(0)` for every such file regardless of age). An article that is in Trash keeps its files, so a restore loses nothing.
+- To add another module's Trash (for example job postings), add its table name to the `content_trash_tables` list in a new migration that replaces the function; do not change the migration that exists. The table needs `id` and `deleted_at` columns.
 
 ## Check it
 
