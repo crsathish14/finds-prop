@@ -56,6 +56,11 @@ from (values
   ('content_categories', array[
     'id', 'module', 'slug', 'name', 'sort_order', 'active', 'created_at', 'updated_at'
   ]),
+  ('job_postings', array[
+    'id', 'slug', 'title', 'department_id', 'location', 'work_mode', 'employment_type', 'experience', 'summary',
+    'description', 'responsibilities', 'requirements', 'salary_note', 'apply_url', 'apply_email', 'status',
+    'closes_at', 'posted_at', 'search_vector', 'deleted_at', 'created_at', 'updated_at'
+  ]),
   ('faqs', array[
     'id', 'category_id', 'question', 'answer', 'sort_order', 'status', 'deleted_at', 'created_at',
     'updated_at', 'search_vector'

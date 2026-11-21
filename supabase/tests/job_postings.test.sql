@@ -517,7 +517,7 @@ select set_config(
 );
 select set_eq(
   $$select slug from public.search_job_postings(p_limit => 50)$$,
-  $values ('site-engineer'), ('sales-executive')$,
+  $$values ('site-engineer'), ('sales-executive')$$,
   'the search never lists a draft, a closed, an expired or a trashed job, even for the super admin'
 );
 reset role;
