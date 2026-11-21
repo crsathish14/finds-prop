@@ -3106,6 +3106,135 @@
           "cancel": "Keep it"
         }
       }
+    },
+    "blog": {
+      "editor": {
+        "empty": "This article has no text yet. Add a first block below.",
+        "blockLabel": "Block {place}: {kind}",
+        "kinds": {
+          "heading": "Heading",
+          "paragraph": "Paragraph",
+          "list": "List",
+          "quote": "Quote",
+          "image": "Picture"
+        },
+        "add": {
+          "heading": "Add heading",
+          "paragraph": "Add paragraph",
+          "list": "Add list",
+          "quote": "Add quote",
+          "image": "Add picture"
+        },
+        "addTitle": "Add a block",
+        "moveUp": "Move block {place} up",
+        "moveDown": "Move block {place} down",
+        "remove": "Delete block {place}",
+        "count": "{count} of {max} blocks used.",
+        "full": "You have used all {max} blocks. Delete one to add another.",
+        "headingLevel": "Heading size of block {place}",
+        "level2": "Section heading",
+        "level3": "Sub-heading",
+        "headingText": "Heading",
+        "paragraphText": "Text",
+        "listKind": "List style of block {place}",
+        "bulleted": "Bullets",
+        "numbered": "Numbers",
+        "listItems": "List items",
+        "listHint": "Write one item on each line.",
+        "quoteText": "Quote",
+        "quoteCite": "Who said it",
+        "optional": "(optional)",
+        "choosePicture": "Choose picture",
+        "replacePicture": "Replace picture",
+        "pictureRules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+        "imageAlt": "Describe the picture",
+        "imageAltHint": "Said aloud to people who cannot see it. Required.",
+        "imageCaption": "Caption"
+      },
+      "list": {
+        "tabsLabel": "Show articles by status",
+        "tabs": {
+          "all": "All",
+          "draft": "Drafts",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "Trash"
+        },
+        "status": {
+          "draft": "Draft",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "In Trash"
+        },
+        "actions": {
+          "edit": "Edit",
+          "publish": "Publish",
+          "unpublish": "Unpublish",
+          "archive": "Archive",
+          "trash": "Move to Trash",
+          "restore": "Restore"
+        },
+        "searchLabel": "Search articles",
+        "searchPlaceholder": "Search by title, text or tag",
+        "categoryLabel": "Filter by category",
+        "allCategories": "All categories",
+        "apply": "Apply",
+        "noMatchTitle": "No article matches",
+        "noMatchText": "Try other words, another category or another tab.",
+        "emptyTitle": "No articles yet",
+        "emptyText": "Write the first article and it will appear here as a draft.",
+        "address": "/blog/{slug}",
+        "updated": "Updated {date}"
+      },
+      "form": {
+        "basics": {
+          "title": "Basics",
+          "description": "What the list and the top of the article show."
+        },
+        "title": "Title",
+        "slug": "Address",
+        "slugHint": "The last part of the web address. Lower case words joined by hyphens.",
+        "slugSuggest": "Make from title",
+        "slugLive": "This article is on the site. Changing its address breaks links that already point to it.",
+        "author": "Author name",
+        "category": "Category",
+        "noCategory": "No category",
+        "tags": "Tags",
+        "tagsHint": "Up to 10 short tags, such as home-loans.",
+        "tagsPlaceholder": "Type a tag and press Enter",
+        "tagsAdd": "Add",
+        "tagsRemove": "Remove",
+        "tagsSuggestions": "Suggestions",
+        "tagsFull": "You have added the most you can, {max} tags.",
+        "excerpt": "Summary",
+        "excerptHint": "One or two sentences for the list and the top of the article. Needed before you publish.",
+        "cover": {
+          "title": "Cover picture",
+          "description": "Shown on the article's card and at the top of the article.",
+          "choose": "Choose cover",
+          "replace": "Replace cover",
+          "remove": "Remove cover",
+          "rules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+          "alt": "Describe the cover",
+          "altHint": "Said aloud to people who cannot see it. Required."
+        },
+        "body": {
+          "title": "Article text",
+          "description": "Build the article from blocks: headings, paragraphs, lists, quotes and pictures."
+        },
+        "seo": {
+          "title": "Search description",
+          "description": "What search engines and shared links show. Leave empty to use the title and the summary.",
+          "seoTitle": "Search title",
+          "seoTitleHint": "About 60 characters reads best.",
+          "seoDescription": "Search description",
+          "seoDescriptionHint": "About 150 characters reads best.",
+          "preview": "How it may look in search",
+          "previewEmptyTitle": "The article's title",
+          "previewAddress": "/blog/{slug}",
+          "previewEmptyDescription": "The article's summary"
+        }
+      }
     }
   },
   "builderPortal": {
@@ -3401,5 +3530,35 @@
       "link": "Contact us"
     },
     "loadingTitle": "Loading the questions"
+  },
+  "blog": {
+    "meta": {
+      "by": "By {name}",
+      "readMinutes": "{minutes} min read"
+    },
+    "search": {
+      "label": "Search articles",
+      "placeholder": "Search the Blog",
+      "submit": "Search"
+    },
+    "filters": {
+      "categories": "Blog categories",
+      "all": "All",
+      "tags": "Tags",
+      "tag": "#{tag}",
+      "clearTag": "Clear tag"
+    },
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "goTo": "Go to page {page}",
+      "position": "Page {page} of {count}",
+      "current": "(current page)"
+    },
+    "related": {
+      "title": "Read next",
+      "all": "All articles"
+    }
   }
 }

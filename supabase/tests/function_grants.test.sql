@@ -64,7 +64,7 @@ select is(
        'run_retention', 'audit_record', 'audit_write', 'rate_limit_hit', 'record_form_submission',
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
-       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call'
+       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files'
      )
      and not has_function_privilege('service_role', proc.oid, 'execute')),
   '',
@@ -80,7 +80,7 @@ select is(
        'run_retention', 'audit_record', 'audit_write', 'rate_limit_hit', 'record_form_submission',
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
-       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call'
+       'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files'
      )
      and (has_function_privilege('anon', proc.oid, 'execute')
           or has_function_privilege('authenticated', proc.oid, 'execute'))),

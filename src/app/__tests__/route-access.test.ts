@@ -137,8 +137,12 @@ describe("UT-route-access: /api/internal/sweep-media with the right token (the c
     const { POST } = await import("@/app/api/internal/sweep-media/route");
     const response = await POST(post("/api/internal/sweep-media", { "x-cron-token": TOKEN }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ removed: 0 });
-    expect(state.adminCalls).toEqual(["from:internal_cron_tokens", "rpc:orphan_listing_photos"]);
+    expect(await response.json()).toEqual({ removed: 0, blogFilesRemoved: 0 });
+    expect(state.adminCalls).toEqual([
+      "from:internal_cron_tokens",
+      "rpc:orphan_listing_photos",
+      "rpc:orphan_blog_files",
+    ]);
   });
 });
 
