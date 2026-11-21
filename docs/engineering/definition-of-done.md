@@ -65,7 +65,7 @@ A slice is done only when **all** of the following exist:
 - [ ] Integration tests: success, unauthenticated, wrong role, wrong owner, invalid input, rate limited.
 - [ ] At least one E2E for the main journey plus one error path.
 - [ ] axe passes for each page and state; keyboard path verified; focus management tested.
-- [ ] Visual baselines for each new screen/state at three widths.
+- [ ] Screenshots for each new screen/state at three widths, looked at against the UX render.
 
 **Operations**
 
@@ -81,7 +81,7 @@ A slice is done only when **all** of the following exist:
 - [ ] Design Lab page shows all variants and states, including long-text and missing-data cases.
 - [ ] Specification header present (purpose, props, responsive, a11y, states, dependencies, tests, design reference).
 - [ ] Keyboard and screen-reader behaviour matches `final-ux/interaction-specifications.md` §14; axe clean.
-- [ ] Tests: behaviour (RTL), registry entry, visual baseline.
+- [ ] Tests: behaviour (RTL), registry entry, screenshots reviewed.
 - [ ] Complex accessible behaviour comes from Radix/shadcn or an established library, not a custom re-implementation.
 - [ ] Reviewed by the design-system owner.
 

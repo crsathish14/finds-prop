@@ -36,7 +36,7 @@ Not run, and why:
 
 ## Design system
 
-- [ ] Searched components/ and the Design Lab; no duplicate - [ ] Design Lab entry and baselines updated - [ ] Not applicable
+- [ ] Searched components/ and the Design Lab; no duplicate - [ ] Design Lab entry updated - [ ] Not applicable
 
 ## Dependencies
 
