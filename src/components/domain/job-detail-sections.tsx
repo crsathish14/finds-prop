@@ -5,7 +5,8 @@
  *   body holds the description (paragraphs), the responsibilities and the requirements (bulleted lists) as plain
  *   text, never as HTML. Owner: design system. They hold no state and fetch nothing.
  * Props: JobDetailHeader: job (title, department, summary, location, workMode, employmentType, experience,
- *   salaryNote, postedAt, closesAt), className. JobDetailBody: job (description: paragraphs, responsibilities and
+ *   salaryNote, postedAt, closesAt), headingLevel (h1 by default; the Design Lab and any page that
+ *   already has a level-1 title use h2), className. JobDetailBody: job (description: paragraphs, responsibilities and
  *   requirements: one point per line), className. A part with no text is left out with its heading.
  * Responsive: the facts are one column on a phone and two from 768 px; the text is capped at a readable width.
  * Accessibility: one level-1 heading (the title); the body sections have level-2 headings; the facts are a
@@ -46,7 +47,15 @@ function Fact({ name, children }: { name: string; children: React.ReactNode }) {
   );
 }
 
-function JobDetailHeader({ job, className }: { job: JobDetailHeaderData; className?: string }) {
+function JobDetailHeader({
+  job,
+  headingLevel = "h1",
+  className,
+}: {
+  job: JobDetailHeaderData;
+  headingLevel?: "h1" | "h2";
+  className?: string;
+}) {
   const translate = useTranslations();
   const locale = useLocale();
   return (
@@ -56,7 +65,7 @@ function JobDetailHeader({ job, className }: { job: JobDetailHeaderData; classNa
         <Badge tone="outline">{translate(`careers.workMode.${job.workMode}`)}</Badge>
         <Badge tone="outline">{translate(`careers.employmentType.${job.employmentType}`)}</Badge>
       </div>
-      <Heading as="h1" size="1" className="[overflow-wrap:anywhere]">
+      <Heading as={headingLevel} size="1" className="[overflow-wrap:anywhere]">
         {job.title}
       </Heading>
       {job.summary ? (
