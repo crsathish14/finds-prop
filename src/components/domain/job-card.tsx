@@ -74,7 +74,11 @@ function JobCard({ job, className }: JobCardProps) {
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        {job.department ? <Badge tone="budget">{job.department}</Badge> : null}
+        {job.department ? (
+          <Badge tone="budget" className="max-w-full min-w-0">
+            <span className="truncate">{job.department}</span>
+          </Badge>
+        ) : null}
         <Badge tone="outline">{translate(`careers.workMode.${job.workMode}`)}</Badge>
         <Badge tone="outline">{translate(`careers.employmentType.${job.employmentType}`)}</Badge>
       </div>
