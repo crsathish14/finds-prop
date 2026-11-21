@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { blogArticlePath, BLOG_PATH } from "@/features/blog";
 import { FAQ_PATH } from "@/features/faq";
 import { projectPath, PROJECTS_PATH } from "@/features/projects";
 import { propertyPath } from "@/features/property";
@@ -21,6 +22,9 @@ export type SitemapHome = { slug: string; shortId: string; updatedAt: string };
 export type SitemapProject = { slug: string; updatedAt: string };
 /** The FAQ page: when its newest question changed. Absent (null) while the FAQ module is off or nothing is published. */
 export type SitemapFaq = { updatedAt: string };
+/** The published, non-trashed Blog articles. Absent (null) while the Blog module is off or nothing is published. */
+export type SitemapBlogPost = { slug: string; updatedAt: string };
+export type SitemapBlog = { posts: readonly SitemapBlogPost[] };
 
 /** A date the database stored, or nothing when it does not read as one (the entry then has no date). */
 function modified(updatedAt: string): Date | undefined {
@@ -35,7 +39,7 @@ export function homesRoom(projectCount: number): number {
 
 /**
  * The sitemap (FR-PUB-14): the built public pages, then every live project and every approved home
- * with the date it last changed, and the FAQ page when it is on and has questions. Only addresses that exist today
+ * with the date it last changed, the FAQ page when it is on and has questions, and the Blog list and its articles when the Blog is on and has some. Only addresses that exist today
  * are listed; the contact and legal pages join when they are built. Never more than `SITEMAP_MAX_URLS`.
  */
 export function sitemapEntries(input: {
@@ -43,11 +47,21 @@ export function sitemapEntries(input: {
   homes: readonly SitemapHome[];
   projects: readonly SitemapProject[];
   faq?: SitemapFaq | null;
+  blog?: SitemapBlog | null;
 }): MetadataRoute.Sitemap {
   const at = (path: string) => `${input.origin}${path}`;
   const entries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({ url: at(path) }));
   // The FAQ page is listed only while the module is on and a question is published (ADR-143).
   if (input.faq) entries.push({ url: at(FAQ_PATH), lastModified: modified(input.faq.updatedAt) });
+  // The Blog list is listed with the fixed pages while the module is on and an article is published (ADR-143); the
+  // articles themselves follow the homes, so a cap cuts articles before it cuts homes.
+  const articles = input.blog?.posts ?? [];
+  if (articles.length > 0) {
+    const newest = articles.reduce((latest, post) =>
+      new Date(post.updatedAt) > new Date(latest.updatedAt) ? post : latest,
+    );
+    entries.push({ url: at(BLOG_PATH), lastModified: modified(newest.updatedAt) });
+  }
   for (const project of input.projects) {
     entries.push({ url: at(projectPath(project.slug)), lastModified: modified(project.updatedAt) });
   }
@@ -56,6 +70,9 @@ export function sitemapEntries(input: {
       url: at(propertyPath(home.slug, home.shortId)),
       lastModified: modified(home.updatedAt),
     });
+  }
+  for (const post of articles) {
+    entries.push({ url: at(blogArticlePath(post.slug)), lastModified: modified(post.updatedAt) });
   }
   return entries.slice(0, SITEMAP_MAX_URLS);
 }

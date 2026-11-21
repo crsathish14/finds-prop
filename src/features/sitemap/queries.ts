@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
+import { getBlogSitemapEntries } from "@/features/blog";
 import { getPublicFaqs } from "@/features/faq";
 import { PROJECTS_TAG } from "@/features/projects";
 import { LISTINGS_TAG } from "@/features/search";
@@ -11,6 +12,7 @@ import { SITEMAP_HOME_COLUMNS, SITEMAP_PROJECT_COLUMNS } from "./columns";
 import {
   homesRoom,
   SITEMAP_PROJECTS_MAX,
+  type SitemapBlog,
   type SitemapFaq,
   type SitemapHome,
   type SitemapProject,
@@ -126,4 +128,15 @@ export async function getSitemapFaq(): Promise<SitemapFaq | null> {
     if (newest === null || new Date(faq.updatedAt) > new Date(newest)) newest = faq.updatedAt;
   }
   return newest === null ? null : { updatedAt: newest };
+}
+
+/**
+ * The Blog's entries (ADR-143): the published, non-trashed articles with the date each last changed, or null while the
+ * Blog module is switched off or nothing is published, so the sitemap never lists a page that answers not-found. Reads
+ * the cached list (tag `blog`), so a published, unpublished or trashed article refreshes it.
+ */
+export async function getSitemapBlog(): Promise<SitemapBlog | null> {
+  if (!(await getContentModuleOn("blog"))) return null;
+  const posts = await getBlogSitemapEntries();
+  return posts.length === 0 ? null : { posts };
 }

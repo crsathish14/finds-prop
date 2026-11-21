@@ -62,6 +62,7 @@ describe("PublicFooter: the footer of the public pages (S4-T06)", () => {
       "Buy a home",
       "Rent a home",
       "New projects",
+      "Blog",
       "FAQ",
       "Contact us",
       "Post a property",

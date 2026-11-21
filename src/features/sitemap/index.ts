@@ -4,8 +4,10 @@ export {
   SITEMAP_PROJECTS_MAX,
   sitemapEntries,
   STATIC_PATHS,
+  type SitemapBlog,
+  type SitemapBlogPost,
   type SitemapFaq,
   type SitemapHome,
   type SitemapProject,
 } from "./entries";
-export { getSitemapFaq, getSitemapSources } from "./queries";
+export { getSitemapBlog, getSitemapFaq, getSitemapSources } from "./queries";

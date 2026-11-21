@@ -7,7 +7,7 @@ vi.mock("@/features/content-modules", () => ({
 }));
 vi.mock("@/features/site-content", () => ({ saveContentModules: "the save action" }));
 
-const MODULES = [{ module: "blog", live: true, published: null, drafts: null }];
+const MODULES = [{ module: "careers", live: true, published: null, drafts: null }];
 
 type Child = { type: unknown; props: Record<string, unknown> };
 
@@ -23,12 +23,9 @@ beforeEach(() => {
   read.modules.mockResolvedValue(MODULES);
 });
 
-// The FAQ page is built (ADR-143 phase 2); its own test is faq-pages.test.tsx.
-describe("the admin Blog and Careers pages carry the module's switch bar until they are built (ADR-143)", () => {
-  const pages = [
-    ["blog", () => import("../blog/page")],
-    ["careers", () => import("../careers/page")],
-  ] as const;
+// The FAQ and Blog pages are built (ADR-143 phases 2 and 3); their own tests are faq-pages and blog-pages.
+describe("the admin Careers page carries the module's switch bar until it is built (ADR-143)", () => {
+  const pages = [["careers", () => import("../careers/page")]] as const;
 
   for (const [module, load] of pages) {
     it(`/admin/${module} puts its own module's bar first, with all three switches and the save action`, async () => {

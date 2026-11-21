@@ -460,7 +460,8 @@
       "projects": "Projects",
       "aiSearch": "AI Search",
       "contact": "Contact",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "blog": "Blog"
     },
     "header": {
       "postProperty": "Post property",
@@ -487,7 +488,8 @@
       "terms": "Terms",
       "copyright": "© {year} {brandName}",
       "navLabel": "Footer",
-      "linkFaq": "FAQ"
+      "linkFaq": "FAQ",
+      "linkBlog": "Blog"
     },
     "bottomBar": {
       "navLabel": "Primary",
@@ -3224,6 +3226,91 @@
           "previewEmptyTitle": "The article's title",
           "previewAddress": "/blog/{slug}",
           "previewEmptyDescription": "The article's summary"
+        },
+        "cancel": "Cancel",
+        "save": "Save article",
+        "saving": "Saving"
+      },
+      "metaTitle": "Blog",
+      "metaTitleNew": "Write an article",
+      "metaTitleEdit": "Edit article",
+      "title": "Blog",
+      "intro": "The articles shown on the Blog page and read by the assistant.",
+      "add": "New article",
+      "categoriesButton": "Categories",
+      "count": "{count, plural, one {# article} other {# articles}}",
+      "toast": {
+        "published": "Article published",
+        "unpublished": "Article unpublished and kept as a draft",
+        "archived": "Article archived",
+        "trashed": "Article moved to the Trash",
+        "restored": "Article restored",
+        "created": "Article created as a draft",
+        "saved": "Article saved"
+      },
+      "conflict": "That article is no longer there. The list has been refreshed.",
+      "gone": "This article is no longer there. Go back to the list.",
+      "uploadFailed": "A picture could not be uploaded. Check your connection and try again.",
+      "back": "Back to the articles",
+      "newTitle": "New article",
+      "editTitle": "Edit article",
+      "saveNote": {
+        "new": "A new article is saved as a draft. Publish it from the list when it is ready.",
+        "edit": "Saving shows the change on the site at once when the article is published."
+      },
+      "preview": {
+        "show": "Preview",
+        "hide": "Back to editing",
+        "note": "This is how the article reads on the site. Nothing is saved until you save.",
+        "empty": "Nothing to preview yet. Add a title and some text.",
+        "untitled": "Untitled article"
+      },
+      "category": {
+        "hidden": "{name} (hidden)"
+      },
+      "categories": {
+        "title": "Blog categories",
+        "description": "The groups of articles on the Blog page. The FAQ and job departments have their own.",
+        "close": "Close",
+        "listLabel": "Blog categories",
+        "empty": "There are no categories yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "inUse": "Move or delete its articles before you delete it.",
+        "conflict": "That category is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add category",
+          "editTitle": "Edit category {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden category and its articles are not shown to visitors or to the assistant.",
+          "add": "Add category",
+          "save": "Save category",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Category added",
+          "saved": "Category saved",
+          "hidden": "Category hidden",
+          "shown": "Category shown",
+          "moved": "Order saved",
+          "deleted": "Category deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The category is removed for good. This cannot be undone.",
+          "confirm": "Delete category",
+          "cancel": "Keep it"
         }
       }
     }
@@ -3553,6 +3640,49 @@
     "related": {
       "title": "Read next",
       "all": "All articles"
+    },
+    "page": {
+      "metaTitle": "Blog",
+      "metaDescription": "Guides, tips and news on buying, selling and renting property in Tamil Nadu.",
+      "title": "Blog",
+      "lead": "Guides, tips and news on buying, selling and renting property.",
+      "loadingTitle": "Loading the Blog",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "backHome": "Back to home",
+        "backBlog": "Back to the Blog",
+        "home": "Home",
+        "blog": "Blog"
+      },
+      "summary": {
+        "all": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "filtered": "{count, plural, =0 {No articles match} one {# article matches} other {# articles match}}"
+      },
+      "clear": "Clear filters",
+      "noMatches": {
+        "title": "No article matches",
+        "text": "Try other words, another category or another tag.",
+        "showAll": "Show all articles"
+      },
+      "empty": {
+        "title": "No articles yet",
+        "text": "We are writing the first ones. Please check back soon."
+      }
+    },
+    "article": {
+      "tags": "Tags",
+      "loadingTitle": "Loading the article",
+      "share": {
+        "title": "Share this article",
+        "newTab": "(opens in a new tab)",
+        "networks": {
+          "whatsapp": "WhatsApp",
+          "facebook": "Facebook",
+          "x": "X",
+          "linkedin": "LinkedIn",
+          "email": "Email"
+        }
+      }
     }
   }
 }
