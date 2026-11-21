@@ -28,6 +28,17 @@ const { ActionError } = await import("@/server/actions/normalise-error");
 const RUN = randomUUID().slice(0, 8);
 const slug = (name: string) => `it-editor-${RUN}-${name}`;
 
+/** What every save needs (ADR-148): a residential apartment, ready to move, with a price and no RERA (so its reason). */
+const COMPLETE = {
+  projectType: "residential",
+  propertyType: "apartment",
+  projectStatus: "ready_to_move",
+  price: "7800000",
+  priceType: "basic",
+  reraApplicable: false,
+  reraNotApplicableReason: "Below the size that needs registration.",
+};
+
 async function failureOf(run: () => Promise<unknown>) {
   try {
     await run();
@@ -71,6 +82,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
     const done = await addProject(
       asBuilder(),
       createMyProjectSchema.parse({
+        ...COMPLETE,
         name: `Project ${name} ${RUN}`,
         slug: slug(name),
         locality: "Integration Test Locality",
@@ -140,7 +152,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
 
   describe("adding a project", () => {
     it("lets a builder add their own project, which starts in review", async () => {
-      const done = await makeMine("mine", { priceMin: "7800000", priceMax: "14200000" });
+      const done = await makeMine("mine", { price: "7800000" });
       expect(done).toMatchObject({
         slug: slug("mine"),
         moderation: "pending",
@@ -150,8 +162,13 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         builder_id: builderId,
         moderation: "pending",
         published: false,
+        price: 7800000,
+        price_type: "basic",
+        // The old columns are written with the price until the pages read the new ones (ADR-148).
         price_min: 7800000,
-        price_max: 14200000,
+        price_max: 7800000,
+        rera_applicable: false,
+        rera_not_applicable_reason: "Below the size that needs registration.",
       });
     });
 
@@ -159,6 +176,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const done = await addProject(
         asAdmin(),
         createProjectSchema.parse({
+          ...COMPLETE,
           builderId,
           formId,
           name: `Admin made ${RUN}`,
@@ -188,6 +206,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         addProject(
           projectStore(visitorClient(), "builder"),
           createMyProjectSchema.parse({
+            ...COMPLETE,
             name: "Nobody",
             slug: slug("nobody"),
             locality: "Nowhere",
@@ -205,6 +224,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const done = await saveProject(
         asBuilder(),
         updateMyProjectSchema.parse({
+          ...COMPLETE,
           projectId: made.projectId,
           name: `Renamed ${RUN}`,
           slug: slug("review"),
@@ -224,6 +244,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const done = await saveProject(
         asAdmin(),
         updateProjectSchema.parse({
+          ...COMPLETE,
           projectId: made.projectId,
           name: `Admin renamed ${RUN}`,
           slug: slug("admin-edit"),
@@ -238,6 +259,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const made = await makeMine("locked");
       await approve(made.projectId);
       const change = (to: string) => ({
+        ...COMPLETE,
         projectId: made.projectId,
         name: `Locked ${RUN}`,
         slug: to,
@@ -262,6 +284,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const done = await saveProject(
         asBuilder(),
         updateMyProjectSchema.parse({
+          ...COMPLETE,
           projectId: made.projectId,
           name: `Media ${RUN}`,
           slug: slug("media"),
@@ -298,6 +321,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       await saveProject(
         asBuilder(),
         updateMyProjectSchema.parse({
+          ...COMPLETE,
           projectId: made.projectId,
           name: `Rera ${RUN}`,
           slug: slug("rera"),
@@ -309,6 +333,97 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       expect(await row(made.projectId)).toMatchObject({
         rera_applicable: false,
         rera_number: null,
+      });
+    });
+
+    it("saves a plot priced per sq ft and a commercial project for rent with the new columns, and reads them back", async () => {
+      const made = await makeMine("kinds");
+      const input = (extra: Record<string, unknown>) =>
+        updateMyProjectSchema.parse({
+          ...COMPLETE,
+          projectId: made.projectId,
+          name: `Kinds ${RUN}`,
+          slug: slug("kinds"),
+          locality: "Integration Test Locality",
+          ...extra,
+        });
+      await saveProject(
+        asBuilder(),
+        input({
+          propertyType: "plot",
+          priceType: "per_sqft",
+          price: "2,450",
+          areaMinSqft: "1200",
+          areaMaxSqft: "2400.5",
+          bhkOptions: [3],
+          offerType: "rent",
+          possessionDate: "2028-12",
+        }),
+      );
+      expect(await row(made.projectId)).toMatchObject({
+        project_type: "residential",
+        property_type: "plot",
+        offer_type: null,
+        price: 2450,
+        price_type: "per_sqft",
+        price_min: 2450,
+        price_max: 2450,
+        area_min_sqft: 1200,
+        area_max_sqft: 2400.5,
+        bhk_options: [],
+        possession_date: null,
+      });
+
+      await saveProject(
+        asBuilder(),
+        input({
+          projectType: "commercial",
+          propertyType: "office",
+          offerType: "rent",
+          priceType: "rent_per_sqft_month",
+          price: "85",
+          areaMinSqft: "500",
+          areaMaxSqft: "2500",
+          projectStatus: "new_launch",
+          possessionDate: "2028-12",
+          reraApplicable: true,
+          reraNumber: "TN/29/Building/0123/2026",
+        }),
+      );
+      expect(await row(made.projectId)).toMatchObject({
+        project_type: "commercial",
+        property_type: "office",
+        offer_type: "rent",
+        price: 85,
+        price_type: "rent_per_sqft_month",
+        area_min_sqft: 500,
+        area_max_sqft: 2500,
+        possession_date: "2028-12-01",
+        rera_applicable: true,
+        rera_number: "TN/29/Building/0123/2026",
+        rera_not_applicable_reason: null,
+      });
+      expect(await readProjectForEdit(builder.client, "builder", made.projectId)).toMatchObject({
+        projectType: "commercial",
+        propertyType: "office",
+        offerType: "rent",
+        price: 85,
+        priceType: "rent_per_sqft_month",
+        areaMinSqft: 500,
+        areaMaxSqft: 2500,
+        possessionDate: "2028-12-01",
+        reraNotApplicableReason: null,
+      });
+    });
+
+    it("puts the largest area below the smallest on the largest-area box when the database refuses it", async () => {
+      const made = await makeMine("area");
+      const error = await failureOf(() =>
+        asBuilder().update(made.projectId, { area_min_sqft: 2000, area_max_sqft: 1000 }),
+      );
+      expect(error).toMatchObject({
+        code: "VALIDATION",
+        fieldErrors: { areaMaxSqft: [{ key: "validation.areaRange" }] },
       });
     });
 
@@ -335,6 +450,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         saveProject(
           asBuilder(),
           updateMyProjectSchema.parse({
+            ...COMPLETE,
             projectId: otherProjectId,
             name: "Hijacked",
             slug: slug("theirs"),
@@ -359,6 +475,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       const made = await makeMine("trends");
       const input = (priceTrends: { month: string; pricePerSqft: number }[]) =>
         updateProjectSchema.parse({
+          ...COMPLETE,
           projectId: made.projectId,
           name: `Trends ${RUN}`,
           slug: slug("trends"),

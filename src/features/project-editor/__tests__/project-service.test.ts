@@ -19,7 +19,19 @@ import {
 const BUILDER = "00000000-0000-4000-b000-000000000001";
 const PROJECT = "00000000-0000-4000-a000-000000000001";
 const FORM = "00000000-0000-4000-9000-000000000001";
-const minimal = { name: "Kadal Vista", slug: "kadal-vista", locality: "OMR Navalur" };
+/** A complete residential apartment project that is ready to move and not under RERA: the least a save needs. */
+const minimal = {
+  name: "Kadal Vista",
+  slug: "kadal-vista",
+  locality: "OMR Navalur",
+  projectType: "residential",
+  propertyType: "apartment",
+  projectStatus: "ready_to_move",
+  price: "7800000",
+  priceType: "basic",
+  reraApplicable: false,
+  reraNotApplicableReason: "Below the size that needs registration.",
+};
 
 const done: ProjectDone = {
   projectId: PROJECT,
@@ -39,13 +51,26 @@ function store(overrides: Partial<ProjectStore> = {}): ProjectStore {
 }
 
 describe("UT-project-service: the columns a project form gives (S7-T02)", () => {
-  it("writes only the name, the address, the locality and the RERA flag when nothing else was given", () => {
+  it("writes the columns every project has, and none of what does not apply to it", () => {
     expect(projectRowFrom(createMyProjectSchema.parse(minimal))).toEqual({
       name: "Kadal Vista",
       slug: "kadal-vista",
       locality: "OMR Navalur",
+      project_type: "residential",
+      property_type: "apartment",
+      project_status: "ready_to_move",
+      offer_type: null,
+      price: 7800000,
+      price_type: "basic",
+      price_min: 7800000,
+      price_max: 7800000,
+      area_min_sqft: null,
+      area_max_sqft: null,
+      bhk_options: [],
+      possession_date: null,
       rera_applicable: false,
       rera_number: null,
+      rera_not_applicable_reason: "Below the size that needs registration.",
     });
   });
 
@@ -53,15 +78,11 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     const row = projectRowFrom(
       createMyProjectSchema.parse({
         ...minimal,
-        projectType: "residential",
-        propertyType: "apartment",
         projectStatus: "under_construction",
-        priceMin: "7800000",
-        priceMax: "14200000",
+        price: "7800000",
         bhkOptions: [2, 3],
         landAreaAcres: "4.5",
-        totalUnits: "320",
-        possessionDate: "2027-06-30",
+        possessionDate: "2027-06",
         contactPhone: "+91 98410 55512",
         address: "Navalur, Chennai",
         latitude: "12.84",
@@ -84,12 +105,16 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       project_type: "residential",
       property_type: "apartment",
       project_status: "under_construction",
+      offer_type: null,
+      price: 7800000,
+      price_type: "basic",
       price_min: 7800000,
-      price_max: 14200000,
+      price_max: 7800000,
+      area_min_sqft: null,
+      area_max_sqft: null,
       bhk_options: [2, 3],
       land_area_acres: 4.5,
-      total_units: 320,
-      possession_date: "2027-06-30",
+      possession_date: "2027-06-01",
       contact_phone: "+919841055512",
       address: "Navalur, Chennai",
       latitude: 12.84,
@@ -98,6 +123,7 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       nearby: ["Navalur junction"],
       rera_applicable: true,
       rera_number: "TN/29/Building/0123/2026",
+      rera_not_applicable_reason: null,
       description: "A gated community.",
       specifications: "RCC framed structure.",
       amenities: ["Clubhouse", "Gym"],
@@ -106,20 +132,106 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     });
   });
 
-  it("keeps the RERA number only when RERA applies, so a leftover box never blocks a save", () => {
+  it("writes a plot priced per sq ft with its area range, and no bedrooms even if some were sent", () => {
+    const row = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        propertyType: "plot",
+        price: "2,450",
+        priceType: "per_sqft",
+        areaMinSqft: "1200",
+        areaMaxSqft: "2,400.5",
+        bhkOptions: [2, 3],
+      }),
+    );
+    expect(row).toMatchObject({
+      property_type: "plot",
+      price: 2450,
+      price_type: "per_sqft",
+      price_min: 2450,
+      price_max: 2450,
+      area_min_sqft: 1200,
+      area_max_sqft: 2400.5,
+      bhk_options: [],
+      offer_type: null,
+    });
+  });
+
+  it("writes a commercial project for rent with its offer type, area range and no bedrooms", () => {
+    const row = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        projectType: "commercial",
+        propertyType: "office",
+        offerType: "rent",
+        priceType: "rent_per_sqft_month",
+        price: "85",
+        areaMinSqft: "500",
+        areaMaxSqft: "2500",
+        bhkOptions: [3],
+      }),
+    );
+    expect(row).toMatchObject({
+      project_type: "commercial",
+      property_type: "office",
+      offer_type: "rent",
+      price_type: "rent_per_sqft_month",
+      price: 85,
+      area_min_sqft: 500,
+      area_max_sqft: 2500,
+      bhk_options: [],
+    });
+  });
+
+  it("drops the sale or rent choice of a residential project, and the area range of an apartment", () => {
+    const row = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        offerType: "rent",
+        areaMinSqft: "500",
+        areaMaxSqft: "900",
+      }),
+    );
+    expect(row.offer_type).toBeNull();
+    expect(row.area_min_sqft).toBeNull();
+    expect(row.area_max_sqft).toBeNull();
+  });
+
+  it("keeps the possession month only while the project is still to be built", () => {
+    const building = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        projectStatus: "new_launch",
+        possessionDate: "2028-12",
+      }),
+    );
+    expect(building.possession_date).toBe("2028-12-01");
+    const ready = projectRowFrom(
+      createMyProjectSchema.parse({ ...minimal, possessionDate: "2028-12" }),
+    );
+    expect(ready.possession_date).toBeNull();
+  });
+
+  it("keeps the RERA number only when RERA applies and the reason only when it does not, so a leftover box never blocks a save", () => {
     const without = projectRowFrom(
       createMyProjectSchema.parse({ ...minimal, reraApplicable: false, reraNumber: "TN/1" }),
     );
     expect(without.rera_number).toBeNull();
     expect(without.rera_applicable).toBe(false);
+    expect(without.rera_not_applicable_reason).toBe("Below the size that needs registration.");
+    const under = projectRowFrom(
+      createMyProjectSchema.parse({ ...minimal, reraApplicable: true, reraNumber: "TN/1" }),
+    );
+    expect(under.rera_number).toBe("TN/1");
+    expect(under.rera_not_applicable_reason).toBeNull();
   });
 
   it("clears a column when its box was blanked, and leaves it when it was not sent", () => {
     const row = projectRowFrom(
-      updateMyProjectSchema.parse({ projectId: PROJECT, ...minimal, priceMin: "", address: "" }),
+      updateMyProjectSchema.parse({ projectId: PROJECT, ...minimal, address: "" }),
     );
-    expect(row).toMatchObject({ price_min: null, address: null });
-    expect("price_max" in row).toBe(false);
+    expect(row).toMatchObject({ address: null });
+    expect("land_area_acres" in row).toBe(false);
     expect("images" in row).toBe(false);
   });
 
@@ -233,6 +345,16 @@ describe("UT-project-service: what the database says when it refuses (S7-T02)", 
       { code: "23514", message: 'violates check constraint "projects_price_range"' },
       "priceMax",
       "validation.priceRange",
+    ],
+    [
+      { code: "23514", message: 'violates check constraint "projects_area_range"' },
+      "areaMaxSqft",
+      "validation.areaRange",
+    ],
+    [
+      { code: "23514", message: 'violates check constraint "projects_price_type_offer"' },
+      "priceType",
+      "validation.invalid",
     ],
     [
       { code: "23514", message: 'violates check constraint "projects_coordinates_together"' },

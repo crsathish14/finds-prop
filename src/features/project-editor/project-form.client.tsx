@@ -29,15 +29,19 @@ import { notify } from "@/lib/notify";
 import { publicEnv } from "@/lib/public-env";
 import type { ActionResult } from "@/types/action";
 import { MEDIA_MAX, TREND_MONTHS_MAX } from "./constants";
+import { priceTypesFor, propertyTypesFor } from "./rules";
 import {
   EMPTY_PROJECT_VALUES,
   MEDIA_GROUPS,
   MEDIA_MAX_MEGABYTES,
+  appliesOf,
   errorFieldOf,
   fileProblem,
   itemOfPath,
   mediaOf,
   payloadOf,
+  projectProblems,
+  reconcile,
   sectionOfError,
   sectionStatesOf,
   slugFromName,
@@ -85,12 +89,14 @@ const LABEL_OF: Record<ProjectFieldName, keyof ProjectFieldsWords> = {
   builderId: "builder",
   projectType: "projectType",
   propertyType: "propertyType",
+  offerType: "offerType",
   projectStatus: "projectStatus",
-  priceMin: "priceMin",
-  priceMax: "priceMax",
+  price: "price",
+  priceType: "priceType",
+  areaMinSqft: "areaMin",
+  areaMaxSqft: "areaMax",
   bhkOptions: "bhk",
   landAreaAcres: "landArea",
-  totalUnits: "totalUnits",
   possessionDate: "possession",
   contactPhone: "contactPhone",
   locality: "locality",
@@ -101,6 +107,7 @@ const LABEL_OF: Record<ProjectFieldName, keyof ProjectFieldsWords> = {
   nearby: "nearby",
   reraApplicable: "reraApplicable",
   reraNumber: "reraNumber",
+  reraNotApplicableReason: "reraReason",
   description: "description",
   specifications: "specifications",
   amenities: "amenities",
@@ -187,7 +194,8 @@ export function ProjectForm({
 
   const change = <Name extends ProjectFieldName>(name: Name, value: ProjectFieldValues[Name]) => {
     setValues((now) => {
-      const next = { ...now, [name]: value };
+      // A choice can make other boxes stop applying (a plot has no bedrooms): they are cleared, not left to be sent.
+      const next = reconcile({ ...now, [name]: value });
       if (name === "name" && !slugTouched) next.slug = slugFromName(String(value));
       return next;
     });
@@ -286,11 +294,10 @@ export function ProjectForm({
     if (saving) return;
 
     const found: Errors = {};
-    if (values.name.trim() === "") found.name = translate("problems.name");
-    if (admin && projectId === null && values.builderId === "") {
-      found.builderId = translate("problems.builder");
+    const problemsFound = projectProblems(values, { needsBuilder: admin && projectId === null });
+    for (const [field, problem] of Object.entries(problemsFound)) {
+      found[field as ProjectFieldName] = translate(`problems.${problem}`);
     }
-    if (values.locality.trim() === "") found.locality = translate("problems.locality");
     if (Object.keys(found).length > 0) {
       showErrors(found);
       return;
@@ -400,12 +407,14 @@ export function ProjectForm({
       unset: translate("fields.unset"),
       projectType: translate("fields.projectType"),
       propertyType: translate("fields.propertyType"),
+      offerType: translate("fields.offerType"),
       projectStatus: translate("fields.projectStatus"),
-      priceMin: translate("fields.priceMin"),
-      priceMax: translate("fields.priceMax"),
+      price: translate("fields.price"),
+      priceType: translate("fields.priceType"),
+      areaMin: translate("fields.areaMin"),
+      areaMax: translate("fields.areaMax"),
       bhk: translate("fields.bhk"),
       landArea: translate("fields.landArea"),
-      totalUnits: translate("fields.totalUnits"),
       possession: translate("fields.possession"),
       contactPhone: translate("fields.contactPhone"),
       locality: translate("fields.locality"),
@@ -416,6 +425,8 @@ export function ProjectForm({
       nearby: translate("fields.nearby"),
       reraApplicable: translate("fields.reraApplicable"),
       reraNumber: translate("fields.reraNumber"),
+      reraReason: translate("fields.reraReason"),
+      reraReasonHint: translate("fields.reraReasonHint"),
       description: translate("fields.description"),
       specifications: translate("fields.specifications"),
       amenities: translate("fields.amenities"),
@@ -511,16 +522,40 @@ export function ProjectForm({
     </>
   );
 
+  // The property types and price types offered are the ones that fit what is chosen above them (ADR-148).
+  const propertyTypeLabels: Record<string, string> = {
+    apartment: translate("options.propertyType.apartment"),
+    villa: translate("options.propertyType.villa"),
+    plot: translate("options.propertyType.plot"),
+    vacant_land: translate("options.propertyType.vacantLand"),
+    flat: translate("options.propertyType.flat"),
+    office: translate("options.propertyType.office"),
+    co_working: translate("options.propertyType.coWorking"),
+  };
+  const priceTypeLabels: Record<string, string> = {
+    per_sqft: translate("options.priceType.perSqft"),
+    basic: translate("options.priceType.basic"),
+    all_inclusive: translate("options.priceType.allInclusive"),
+    rent_per_month: translate("options.priceType.rentPerMonth"),
+    rent_per_sqft_month: translate("options.priceType.rentPerSqftMonth"),
+  };
   const options = {
     projectTypes: [
       { value: "residential", label: translate("options.projectType.residential") },
       { value: "commercial", label: translate("options.projectType.commercial") },
-      { value: "plotted_layout", label: translate("options.projectType.plottedLayout") },
     ],
-    propertyTypes: [
-      { value: "apartment", label: translate("options.propertyType.apartment") },
-      { value: "villa", label: translate("options.propertyType.villa") },
+    propertyTypes: propertyTypesFor(values.projectType).map((type) => ({
+      value: type,
+      label: propertyTypeLabels[type] ?? type,
+    })),
+    offerTypes: [
+      { value: "sale", label: translate("options.offerType.sale") },
+      { value: "rent", label: translate("options.offerType.rent") },
     ],
+    priceTypes: priceTypesFor(values.projectType, values.offerType).map((type) => ({
+      value: type,
+      label: priceTypeLabels[type] ?? type,
+    })),
     statuses: [
       { value: "new_launch", label: translate("options.status.newLaunch") },
       { value: "under_construction", label: translate("options.status.underConstruction") },
@@ -664,6 +699,7 @@ export function ProjectForm({
           errors={fieldErrors}
           onChange={change}
           options={options}
+          applies={appliesOf(values)}
           amenitySuggestions={[
             translate("amenitySuggestions.clubhouse"),
             translate("amenitySuggestions.swimmingPool"),

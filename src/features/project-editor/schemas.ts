@@ -4,6 +4,7 @@ import {
   ADDRESS_MAX,
   ADVANTAGES_MAX,
   AMENITIES_MAX,
+  AREA_SQFT_MAX,
   BHK_MAX,
   BHK_MIN,
   DESCRIPTION_MAX,
@@ -14,23 +15,32 @@ import {
   NAME_MAX,
   NAME_MIN,
   NEARBY_MAX,
+  OFFER_TYPES,
   PRICE_MAX,
+  PRICE_TYPES,
   PROJECT_STATUSES,
   PROJECT_TYPES,
   PROPERTY_TYPES,
   RERA_NUMBER_MAX,
+  RERA_REASON_MAX,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_MAX,
   SLUG_MAX,
   SLUG_MIN,
   SPECIFICATIONS_MAX,
   TAG_MAX,
-  TOTAL_UNITS_MAX,
   TREND_MONTHS_MAX,
   TREND_PRICE_MAX,
   TREND_PRICE_MIN,
   VIDEOS_MAX,
 } from "./constants";
+import {
+  areaApplies,
+  offerTypeApplies,
+  possessionApplies,
+  priceTypesFor,
+  propertyTypeFits,
+} from "./rules";
 
 /**
  * What the project form sends (S7-T02, FR-ADM-03, FR-BLD-02). A schema message is a key under `validation.*`; the
@@ -58,16 +68,28 @@ const toNumber = (typed: unknown): unknown => {
   return Number(typed.replace(/[,\s]/g, ""));
 };
 
-const wholeNumber = (min: number, max: number) =>
-  clearable(
-    z.preprocess(
-      toNumber,
-      z
-        .number({ error: "validation.numberInvalid" })
-        .refine(Number.isInteger, { error: "validation.numberInvalid" })
-        .min(min, { error: "validation.invalid" })
-        .max(max, { error: "validation.invalid" }),
-    ),
+/** A box left empty is missing, which is not the same as a word that is not a choice or a number. */
+const blankToMissing = (typed: unknown): unknown =>
+  typeof typed === "string" && typed.trim() === "" ? undefined : typed;
+
+const choiceError = (issue: { input?: unknown }) =>
+  issue.input === undefined ? "validation.required" : "validation.invalid";
+
+/** A whole number that must be given (the price). */
+const requiredWholeNumber = (min: number, max: number) =>
+  z.preprocess(
+    (typed) => {
+      const given = blankToMissing(typed);
+      return given === undefined ? undefined : toNumber(given);
+    },
+    z
+      .number({
+        error: (issue) =>
+          issue.input === undefined ? "validation.required" : "validation.numberInvalid",
+      })
+      .refine(Number.isInteger, { error: "validation.numberInvalid" })
+      .min(min, { error: "validation.invalid" })
+      .max(max, { error: "validation.invalid" }),
   );
 
 /** A number with at most `places` decimals. */
@@ -110,14 +132,12 @@ const paragraph = (max: number) =>
     ),
   );
 
-const isCalendarDate = (value: string): boolean => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const parsed = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(value);
-};
-
-const calendarDate = clearable(
-  z.string({ error: "validation.invalid" }).refine(isCalendarDate, { error: "validation.invalid" }),
+/** A month as the month box gives it, "2026-10", kept as the first day of that month. */
+const calendarMonth = clearable(
+  z
+    .string({ error: "validation.invalid" })
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: "validation.invalid" })
+    .transform((month) => `${month}-01`),
 );
 
 /** A list of tags: each trimmed, empty ones dropped, repeats (ignoring case) dropped, at most `count` of them. */
@@ -216,9 +236,16 @@ const bhkOptions = z
   )
   .optional();
 
-const projectType = clearable(z.enum(PROJECT_TYPES, { error: "validation.invalid" }));
-const propertyType = clearable(z.enum(PROPERTY_TYPES, { error: "validation.invalid" }));
-const projectStatus = clearable(z.enum(PROJECT_STATUSES, { error: "validation.invalid" }));
+/** The choices the owner made required (ADR-148): the project type, the property type, the status and the price type. */
+const projectType = z.preprocess(blankToMissing, z.enum(PROJECT_TYPES, { error: choiceError }));
+const propertyType = z.preprocess(blankToMissing, z.enum(PROPERTY_TYPES, { error: choiceError }));
+const projectStatus = z.preprocess(
+  blankToMissing,
+  z.enum(PROJECT_STATUSES, { error: choiceError }),
+);
+const priceType = z.preprocess(blankToMissing, z.enum(PRICE_TYPES, { error: choiceError }));
+/** Sale or rent: asked of a commercial project only; the rule that it is given is below. */
+const offerType = clearable(z.enum(OFFER_TYPES, { error: "validation.invalid" }));
 
 /** The boxes of the form that both the admin and a builder fill in. */
 const fieldShape = {
@@ -226,13 +253,15 @@ const fieldShape = {
   slug,
   projectType,
   propertyType,
+  offerType,
   projectStatus,
-  priceMin: wholeNumber(0, PRICE_MAX),
-  priceMax: wholeNumber(0, PRICE_MAX),
+  price: requiredWholeNumber(1, PRICE_MAX),
+  priceType,
+  areaMinSqft: decimal(0.01, AREA_SQFT_MAX, 2),
+  areaMaxSqft: decimal(0.01, AREA_SQFT_MAX, 2),
   bhkOptions,
   landAreaAcres: decimal(0, ACRES_MAX, 2),
-  totalUnits: wholeNumber(0, TOTAL_UNITS_MAX),
-  possessionDate: calendarDate,
+  possessionDate: calendarMonth,
   contactPhone,
   locality,
   address: line(ADDRESS_MAX),
@@ -242,6 +271,7 @@ const fieldShape = {
   nearby: tags(NEARBY_MAX),
   reraApplicable: yesNo,
   reraNumber: line(RERA_NUMBER_MAX),
+  reraNotApplicableReason: paragraph(RERA_REASON_MAX),
   description: paragraph(DESCRIPTION_MAX),
   specifications: paragraph(SPECIFICATIONS_MAX),
   amenities: tags(AMENITIES_MAX),
@@ -250,22 +280,60 @@ const fieldShape = {
 };
 
 type RuleInput = {
-  priceMin?: number | null | undefined;
-  priceMax?: number | null | undefined;
+  projectType: string;
+  propertyType: string;
+  offerType?: string | null | undefined;
+  projectStatus: string;
+  priceType: string;
+  areaMinSqft?: number | null | undefined;
+  areaMaxSqft?: number | null | undefined;
+  possessionDate?: string | null | undefined;
+  reraApplicable: boolean;
+  reraNumber?: string | null | undefined;
+  reraNotApplicableReason?: string | null | undefined;
   latitude?: number | null | undefined;
   longitude?: number | null | undefined;
 };
 
-/** The rules that look at two boxes together; each message goes on the box that has to change. */
+/**
+ * The rules that look at several boxes together (ADR-148); each message goes on the box that has to change. They run
+ * once every box is valid on its own. What does not apply to a kind of project is not an error: it is dropped on
+ * save (see `projectRowFrom`), so a box the form hid can never block a save.
+ */
 function crossRules(value: RuleInput, problems: z.RefinementCtx): void {
-  const { priceMin, priceMax, latitude, longitude } = value;
-  if (typeof priceMin === "number" && typeof priceMax === "number" && priceMin > priceMax) {
-    problems.addIssue({ code: "custom", path: ["priceMax"], message: "validation.priceRange" });
+  const missing = (path: string) =>
+    problems.addIssue({ code: "custom", path: [path], message: "validation.required" });
+
+  if (!propertyTypeFits(value.projectType, value.propertyType)) {
+    problems.addIssue({ code: "custom", path: ["propertyType"], message: "validation.invalid" });
   }
-  if ((latitude == null) !== (longitude == null)) {
+  if (offerTypeApplies(value.projectType) && value.offerType == null) missing("offerType");
+  if (!priceTypesFor(value.projectType, value.offerType ?? "").includes(value.priceType)) {
+    problems.addIssue({ code: "custom", path: ["priceType"], message: "validation.invalid" });
+  }
+  if (areaApplies(value.projectType, value.propertyType)) {
+    if (value.areaMinSqft == null) missing("areaMinSqft");
+    if (value.areaMaxSqft == null) missing("areaMaxSqft");
+    if (
+      value.areaMinSqft != null &&
+      value.areaMaxSqft != null &&
+      value.areaMinSqft > value.areaMaxSqft
+    ) {
+      problems.addIssue({ code: "custom", path: ["areaMaxSqft"], message: "validation.areaRange" });
+    }
+  }
+  if (possessionApplies(value.projectStatus) && value.possessionDate == null) {
+    missing("possessionDate");
+  }
+  if (value.reraApplicable) {
+    if (value.reraNumber == null) missing("reraNumber");
+  } else if (value.reraNotApplicableReason == null) {
+    missing("reraNotApplicableReason");
+  }
+  if ((value.latitude == null) !== (value.longitude == null)) {
     problems.addIssue({
       code: "custom",
-      path: [latitude == null ? "latitude" : "longitude"],
+      path: [value.latitude == null ? "latitude" : "longitude"],
       message: "validation.coordinatesTogether",
     });
   }

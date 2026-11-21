@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 import type { ProjectFieldValues } from "@/components/domain/project-fields";
 import {
   EMPTY_PROJECT_VALUES,
+  appliesOf,
   displayNameOf,
   errorFieldOf,
   fileProblem,
   itemOfPath,
   mediaOf,
   payloadOf,
+  projectProblems,
   publicMediaUrl,
+  reconcile,
   sectionOfError,
   sectionStatesOf,
   slugFromName,
@@ -31,13 +34,15 @@ const project: ProjectEditView = {
   builderId: "22222222-2222-4222-8222-222222222222",
   projectType: "residential",
   propertyType: null,
+  offerType: null,
   projectStatus: "under_construction",
-  priceMin: 7800000,
-  priceMax: 14200000,
+  price: 7800000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [2, 3],
   landAreaAcres: 4.2,
-  totalUnits: null,
-  possessionDate: "2028-12-31",
+  possessionDate: "2028-12-01",
   contactPhone: null,
   locality: "OMR Navalur",
   address: null,
@@ -47,6 +52,7 @@ const project: ProjectEditView = {
   nearby: [],
   reraApplicable: true,
   reraNumber: "TN/SAMPLE/0000",
+  reraNotApplicableReason: null,
   description: null,
   specifications: null,
   amenities: ["Gym"],
@@ -73,13 +79,16 @@ describe("UT-project-form-helpers: what the form opens with and sends (S7-T02)",
   it("fills every box from a saved project, with a blank box for what is not given", () => {
     const values = valuesOf(project);
     expect(values.name).toBe("Kadal Vista");
-    expect(values.priceMin).toBe("7800000");
+    expect(values.price).toBe("7800000");
+    expect(values.priceType).toBe("basic");
+    expect(values.offerType).toBe("");
+    expect(values.areaMinSqft).toBe("");
     expect(values.landAreaAcres).toBe("4.2");
     expect(values.latitude).toBe("12.8451");
     expect(values.propertyType).toBe("");
-    expect(values.totalUnits).toBe("");
     expect(values.address).toBe("");
-    expect(values.possessionDate).toBe("2028-12-31");
+    // The month box holds the month; the project keeps its first day.
+    expect(values.possessionDate).toBe("2028-12");
     expect(values.reraApplicable).toBe(true);
     expect(values.bhkOptions).toEqual([2, 3]);
     expect(Object.keys(values).sort()).toEqual(Object.keys(EMPTY_PROJECT_VALUES).sort());
@@ -123,7 +132,9 @@ describe("UT-project-form-errors: where a failure goes (S7-T02)", () => {
   });
 
   it("puts each box in its section, and the side boxes in none", () => {
-    expect(sectionOfError("priceMax")).toBe("basics");
+    expect(sectionOfError("price")).toBe("basics");
+    expect(sectionOfError("areaMaxSqft")).toBe("basics");
+    expect(sectionOfError("reraNotApplicableReason")).toBe("rera");
     expect(sectionOfError("longitude")).toBe("location");
     expect(sectionOfError("reraNumber")).toBe("rera");
     expect(sectionOfError("amenities")).toBe("details");
@@ -176,6 +187,13 @@ describe("UT-section-states: what the section list shows (S7-T02)", () => {
     expect(states({ needsBuilder: true, values: { name: "Kadal Vista" } }).basics).toBe("idle");
     expect(states({ values: { reraApplicable: true } }).rera).toBe("idle");
     expect(states({ values: { reraApplicable: true, reraNumber: "TN/1" } }).rera).toBe("done");
+  });
+
+  it("needs the reason once RERA does not apply", () => {
+    expect(states({ values: { reraApplicable: false } }).rera).toBe("idle");
+    expect(
+      states({ values: { reraApplicable: false, reraNotApplicableReason: "Small layout" } }).rera,
+    ).toBe("done");
   });
 
   it("shows a problem over everything else", () => {
@@ -356,5 +374,180 @@ describe("UT-project-payload: what a save sends (S7-T02)", () => {
     expect("formId" in payload).toBe(false);
     expect("priceTrends" in payload).toBe(false);
     expect(payload.images).toEqual([`${PROJECT_ID}/3f2a9c1b-front-view.jpg`]);
+  });
+});
+
+const complete = (overrides: Partial<ProjectFieldValues> = {}): ProjectFieldValues => ({
+  ...EMPTY_PROJECT_VALUES,
+  name: "Kadal Vista",
+  projectType: "residential",
+  propertyType: "apartment",
+  projectStatus: "ready_to_move",
+  price: "78,00,000",
+  priceType: "basic",
+  locality: "Navalur",
+  reraNotApplicableReason: "Below the size that needs registration.",
+  ...overrides,
+});
+
+describe("UT-project-form-applies: which boxes the kind of project asks for (ADR-148)", () => {
+  it.each([
+    [
+      { projectType: "residential", propertyType: "apartment", projectStatus: "ready_to_move" },
+      { offerType: false, bedrooms: true, area: false, possession: false },
+    ],
+    [
+      { projectType: "residential", propertyType: "villa", projectStatus: "new_launch" },
+      { offerType: false, bedrooms: true, area: false, possession: true },
+    ],
+    [
+      { projectType: "residential", propertyType: "plot", projectStatus: "under_construction" },
+      { offerType: false, bedrooms: false, area: true, possession: true },
+    ],
+    [
+      { projectType: "commercial", propertyType: "office", projectStatus: "ready_to_move" },
+      { offerType: true, bedrooms: false, area: true, possession: false },
+    ],
+    [
+      { projectType: "commercial", propertyType: "villa", projectStatus: "new_launch" },
+      { offerType: true, bedrooms: false, area: true, possession: true },
+    ],
+    [
+      { projectType: "", propertyType: "", projectStatus: "" },
+      { offerType: false, bedrooms: false, area: false, possession: false },
+    ],
+  ])("%j asks for %j", (chosen, expected) => {
+    expect(appliesOf(complete(chosen))).toEqual(expected);
+  });
+});
+
+describe("UT-project-form-reconcile: what a choice clears (ADR-148)", () => {
+  it("clears the bedrooms and asks for an area when a project becomes a plot", () => {
+    const next = reconcile(complete({ propertyType: "plot", bhkOptions: [2, 3], areaMinSqft: "" }));
+    expect(next.bhkOptions).toEqual([]);
+    expect(next.propertyType).toBe("plot");
+  });
+
+  it("clears the area range when a plot becomes an apartment", () => {
+    const next = reconcile(complete({ areaMinSqft: "1200", areaMaxSqft: "2400" }));
+    expect(next.areaMinSqft).toBe("");
+    expect(next.areaMaxSqft).toBe("");
+  });
+
+  it("drops a property type that does not fit the project type, and the sale or rent choice of a residential project", () => {
+    const next = reconcile(
+      complete({
+        projectType: "commercial",
+        propertyType: "apartment",
+        offerType: "rent",
+        priceType: "rent_per_month",
+      }),
+    );
+    expect(next.propertyType).toBe("");
+    expect(next.offerType).toBe("rent");
+    expect(next.priceType).toBe("rent_per_month");
+    const back = reconcile({ ...next, projectType: "residential" });
+    expect(back.offerType).toBe("");
+    expect(back.priceType).toBe("");
+  });
+
+  it("drops the price type when sale becomes rent and the other way round", () => {
+    const sale = complete({
+      projectType: "commercial",
+      propertyType: "office",
+      offerType: "sale",
+      priceType: "all_inclusive",
+      areaMinSqft: "500",
+      areaMaxSqft: "900",
+    });
+    expect(reconcile(sale).priceType).toBe("all_inclusive");
+    expect(reconcile({ ...sale, offerType: "rent" }).priceType).toBe("");
+    const rent = { ...sale, offerType: "rent", priceType: "rent_per_month" };
+    expect(reconcile(rent).priceType).toBe("rent_per_month");
+    expect(reconcile({ ...rent, offerType: "sale" }).priceType).toBe("");
+  });
+
+  it("clears the possession month when the project is ready to move", () => {
+    const next = reconcile(complete({ projectStatus: "ready_to_move", possessionDate: "2028-12" }));
+    expect(next.possessionDate).toBe("");
+    expect(
+      reconcile(complete({ projectStatus: "new_launch", possessionDate: "2028-12" }))
+        .possessionDate,
+    ).toBe("2028-12");
+  });
+
+  it("leaves a complete, consistent form as it is", () => {
+    const values = complete();
+    expect(reconcile(values)).toEqual(values);
+  });
+});
+
+describe("UT-project-form-problems: what is missing before a save is sent (ADR-148)", () => {
+  const found = (overrides: Partial<ProjectFieldValues> = {}, needsBuilder = false) =>
+    projectProblems(complete(overrides), { needsBuilder });
+
+  it("finds nothing wrong with a complete project", () => {
+    expect(found()).toEqual({});
+  });
+
+  it("names every missing required box at once", () => {
+    expect(projectProblems(EMPTY_PROJECT_VALUES, { needsBuilder: true })).toEqual({
+      name: "name",
+      builderId: "builder",
+      projectType: "projectType",
+      propertyType: "propertyType",
+      projectStatus: "status",
+      price: "price",
+      priceType: "priceType",
+      reraNotApplicableReason: "reraReason",
+      locality: "locality",
+    });
+  });
+
+  it("needs the sale or rent choice for a commercial project only", () => {
+    const commercial = {
+      projectType: "commercial",
+      propertyType: "office",
+      areaMinSqft: "500",
+      areaMaxSqft: "900",
+    };
+    expect(found(commercial).offerType).toBe("offerType");
+    expect(found({ ...commercial, offerType: "sale" }).offerType).toBeUndefined();
+    expect(found().offerType).toBeUndefined();
+  });
+
+  it("needs a price of at least 1, written the way the server reads it", () => {
+    expect(found({ price: "" }).price).toBe("price");
+    expect(found({ price: "0" }).price).toBe("price");
+    expect(found({ price: "12.5" }).price).toBe("price");
+    expect(found({ price: "lakhs" }).price).toBe("price");
+    expect(found({ price: "1,480" }).price).toBeUndefined();
+  });
+
+  it("needs the area range for a plot and a commercial project, with the smallest not above the largest", () => {
+    const plot = { propertyType: "plot" };
+    expect(found(plot)).toMatchObject({ areaMinSqft: "area", areaMaxSqft: "area" });
+    expect(found({ ...plot, areaMinSqft: "2400", areaMaxSqft: "1200" })).toEqual({
+      areaMaxSqft: "areaRange",
+    });
+    expect(found({ ...plot, areaMinSqft: "1,200", areaMaxSqft: "1200" })).toEqual({});
+    expect(found({ ...plot, areaMinSqft: "0", areaMaxSqft: "1200" }).areaMinSqft).toBe("area");
+    expect(found().areaMinSqft).toBeUndefined();
+  });
+
+  it("needs the possession month while the project is still to be built, and not for a ready one", () => {
+    expect(found({ projectStatus: "new_launch" }).possessionDate).toBe("possession");
+    expect(
+      found({ projectStatus: "under_construction", possessionDate: "2028-12" }).possessionDate,
+    ).toBeUndefined();
+    expect(found({ projectStatus: "ready_to_move" }).possessionDate).toBeUndefined();
+  });
+
+  it("needs the RERA number when RERA applies and the reason when it does not", () => {
+    expect(found({ reraApplicable: true })).toEqual({ reraNumber: "reraNumber" });
+    expect(found({ reraApplicable: true, reraNumber: "TN/1" })).toEqual({});
+    expect(found({ reraApplicable: false, reraNotApplicableReason: "  " })).toEqual({
+      reraNotApplicableReason: "reraReason",
+    });
   });
 });

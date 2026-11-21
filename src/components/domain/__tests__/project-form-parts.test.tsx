@@ -181,12 +181,14 @@ const FIELD_WORDS: ProjectFieldsWords = {
   unset: "Not set",
   projectType: "Project type",
   propertyType: "Property type",
+  offerType: "This project is for",
   projectStatus: "Status",
-  priceMin: "Price from",
-  priceMax: "Price to",
+  price: "Starting price",
+  priceType: "Price type",
+  areaMin: "Minimum area",
+  areaMax: "Maximum area",
   bhk: "BHK options",
   landArea: "Land area",
-  totalUnits: "Total units",
   possession: "Possession",
   contactPhone: "Contact phone",
   locality: "Locality",
@@ -197,6 +199,8 @@ const FIELD_WORDS: ProjectFieldsWords = {
   nearby: "Nearby places",
   reraApplicable: "RERA applicable",
   reraNumber: "RERA number",
+  reraReason: "Why is RERA not applicable?",
+  reraReasonHint: "This reason will be shown publicly.",
   description: "Description",
   specifications: "Specifications",
   amenities: "Amenities",
@@ -212,6 +216,8 @@ const FIELD_WORDS: ProjectFieldsWords = {
 const OPTIONS = {
   projectTypes: [{ value: "residential", label: "Residential" }],
   propertyTypes: [{ value: "apartment", label: "Apartment" }],
+  offerTypes: [{ value: "sale", label: "Sale" }],
+  priceTypes: [{ value: "basic", label: "Basic price" }],
   statuses: [{ value: "new_launch", label: "New launch" }],
 };
 
@@ -220,12 +226,14 @@ const VALUES: ProjectFieldValues = {
   builderId: "b1",
   projectType: "",
   propertyType: "",
+  offerType: "",
   projectStatus: "",
-  priceMin: "",
-  priceMax: "",
+  price: "",
+  priceType: "",
+  areaMinSqft: "",
+  areaMaxSqft: "",
   bhkOptions: [3],
   landAreaAcres: "",
-  totalUnits: "",
   possessionDate: "",
   contactPhone: "",
   locality: "OMR",
@@ -236,6 +244,7 @@ const VALUES: ProjectFieldValues = {
   nearby: [],
   reraApplicable: true,
   reraNumber: "TN/1",
+  reraNotApplicableReason: "",
   description: "",
   specifications: "",
   amenities: [],
@@ -243,6 +252,8 @@ const VALUES: ProjectFieldValues = {
   slug: "kadal-vista",
   seoDescription: "",
 };
+
+const APPLIES = { offerType: false, bedrooms: true, area: false, possession: true };
 
 /** The fields with their own state, as a page keeps it; the spy sees every change. */
 function Live({
@@ -260,6 +271,7 @@ function Live({
         setValues((now) => ({ ...now, [name]: value }));
       }}
       options={OPTIONS}
+      applies={APPLIES}
       words={FIELD_WORDS}
       {...props}
     />
@@ -286,19 +298,52 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
     expect(box).toHaveAccessibleDescription("Only admins can assign.");
   });
 
-  it("requires the name, the locality and the slug, and marks the rest optional", () => {
+  it("requires the name, the types, the status, the price, the locality and the slug, and marks the rest optional", () => {
     render(<Live />);
-    expect(screen.getByLabelText(/Project name/)).toBeRequired();
-    expect(screen.getByLabelText(/Locality/)).toBeRequired();
-    expect(screen.getByLabelText(/Slug/)).toBeRequired();
+    for (const label of [
+      /Project name/,
+      /Project type/,
+      /Property type/,
+      /Status/,
+      /Possession/,
+      /Starting price/,
+      /Price type/,
+      /Locality/,
+      /Slug/,
+    ]) {
+      expect(screen.getByLabelText(label)).toBeRequired();
+    }
     expect(screen.getByLabelText(/Address/)).not.toBeRequired();
+    expect(screen.getByLabelText(/Land area/)).not.toBeRequired();
+  });
+
+  it("shows only the boxes that apply to this kind of project", () => {
+    const { rerender } = render(<Live />);
+    expect(screen.getByRole("group", { name: /BHK options/ })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Possession/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/This project is for/)).toBeNull();
+    expect(screen.queryByLabelText(/Minimum area/)).toBeNull();
+    expect(screen.queryByLabelText(/Maximum area/)).toBeNull();
+    rerender(
+      <Live applies={{ offerType: true, bedrooms: false, area: true, possession: false }} />,
+    );
+    expect(screen.queryByRole("group", { name: /BHK options/ })).toBeNull();
+    expect(screen.queryByLabelText(/Possession/)).toBeNull();
+    expect(screen.getByLabelText(/This project is for/)).toBeRequired();
+    expect(screen.getByLabelText(/Minimum area/)).toBeRequired();
+    expect(screen.getByLabelText(/Maximum area/)).toBeRequired();
+  });
+
+  it("asks for the possession as a month", () => {
+    render(<Live />);
+    expect(screen.getByLabelText(/Possession/)).toHaveAttribute("type", "month");
   });
 
   it("reports a typed value by box name", async () => {
     const spy = vi.fn();
     render(<Live spy={spy} />);
-    await userEvent.type(screen.getByLabelText(/Price from/), "7");
-    expect(spy).toHaveBeenLastCalledWith("priceMin", "7");
+    await userEvent.type(screen.getByLabelText(/Starting price/), "7");
+    expect(spy).toHaveBeenLastCalledWith("price", "7");
   });
 
   it("offers each choice list with an empty first choice", async () => {
@@ -324,6 +369,7 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
         values={{ ...VALUES, bhkOptions: [0, 7] }}
         onChange={() => undefined}
         options={OPTIONS}
+        applies={APPLIES}
         words={FIELD_WORDS}
       />,
     );
@@ -331,16 +377,21 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
     expect(within(group).getAllByRole("checkbox")).toHaveLength(7);
   });
 
-  it("turns the RERA number off with the switch and back on", async () => {
+  it("asks for the RERA number, or for the reason when RERA does not apply, and says the reason is public", async () => {
     const spy = vi.fn();
     render(<Live spy={spy} />);
-    const number = screen.getByLabelText(/RERA number/);
-    expect(number).toBeEnabled();
+    expect(screen.getByLabelText(/RERA number/)).toBeRequired();
+    expect(screen.queryByLabelText(/Why is RERA not applicable/)).toBeNull();
     await userEvent.click(screen.getByRole("switch", { name: "RERA applicable" }));
     expect(spy).toHaveBeenLastCalledWith("reraApplicable", false);
-    expect(number).toBeDisabled();
+    expect(screen.queryByLabelText(/RERA number/)).toBeNull();
+    const reason = screen.getByLabelText(/Why is RERA not applicable/);
+    expect(reason).toBeRequired();
+    expect(reason).toHaveAccessibleDescription("This reason will be shown publicly.");
+    await userEvent.type(reason, "Small layout");
+    expect(spy).toHaveBeenLastCalledWith("reraNotApplicableReason", "Small layout");
     await userEvent.click(screen.getByRole("switch", { name: "RERA applicable" }));
-    expect(number).toBeEnabled();
+    expect(screen.getByLabelText(/RERA number/)).toBeRequired();
   });
 
   it("shows the page address under the slug, and says why it is locked when it is", () => {
@@ -355,12 +406,12 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
   });
 
   it("shows each error beside its box and marks the box invalid", () => {
-    render(<Live errors={{ name: "Enter the project name.", priceMax: "Too low." }} />);
+    render(<Live errors={{ name: "Enter the project name.", price: "Enter the price." }} />);
     expect(screen.getByLabelText(/Project name/)).toBeInvalid();
     expect(screen.getByLabelText(/Project name/)).toHaveAccessibleDescription(
       "Enter the project name.",
     );
-    expect(screen.getByLabelText(/Price to/)).toBeInvalid();
+    expect(screen.getByLabelText(/Starting price/)).toBeInvalid();
     expect(screen.getByLabelText(/Locality/)).toBeValid();
   });
 

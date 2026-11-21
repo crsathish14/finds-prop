@@ -10,7 +10,19 @@ const BUILDER = "00000000-0000-4000-b000-000000000001";
 const PROJECT = "00000000-0000-4000-a000-000000000001";
 const FORM = "00000000-0000-4000-9000-000000000001";
 
-const minimal = { name: "Kadal Vista", slug: "kadal-vista", locality: "OMR Navalur" };
+/** A complete residential apartment project that is ready to move and not under RERA: the least a save needs. */
+const minimal = {
+  name: "Kadal Vista",
+  slug: "kadal-vista",
+  locality: "OMR Navalur",
+  projectType: "residential",
+  propertyType: "apartment",
+  projectStatus: "ready_to_move",
+  price: "78,00,000",
+  priceType: "basic",
+  reraApplicable: false,
+  reraNotApplicableReason: "Below the size that needs registration.",
+};
 
 /** The messages the schema gives, by box. */
 const problems = (schema: { safeParse: (input: unknown) => unknown }, input: unknown) => {
@@ -25,6 +37,7 @@ const problems = (schema: { safeParse: (input: unknown) => unknown }, input: unk
 describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
   it("takes a name, an address and a locality, and tidies them", () => {
     const parsed = createMyProjectSchema.parse({
+      ...minimal,
       name: "  Kadal   Vista ",
       slug: " Kadal-Vista ",
       locality: " OMR  Navalur ",
@@ -51,35 +64,41 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
     expect(problems(createMyProjectSchema, input)).toEqual([message]);
   });
 
-  it("reads prices, area and units typed with commas, and keeps a blank box as no value", () => {
+  it("reads the price and the area typed with commas, and keeps a blank box as no value", () => {
     const parsed = createMyProjectSchema.parse({
       ...minimal,
-      priceMin: "78,00,000",
-      priceMax: " 1,42,00,000 ",
+      price: " 1,42,00,000 ",
       landAreaAcres: "4.25",
-      totalUnits: "320",
       address: "",
       possessionDate: "",
     });
     expect(parsed).toMatchObject({
-      priceMin: 7800000,
-      priceMax: 14200000,
+      price: 14200000,
       landAreaAcres: 4.25,
-      totalUnits: 320,
       address: null,
       possessionDate: null,
     });
   });
 
   const refused: [string, string, string, Record<string, string>?][] = [
-    ["priceMin", "free", "priceMin:validation.numberInvalid"],
-    ["priceMin", "-1", "priceMin:validation.invalid"],
+    ["price", "free", "price:validation.numberInvalid"],
+    ["price", "-1", "price:validation.invalid"],
+    ["price", "0", "price:validation.invalid"],
+    ["price", "12.5", "price:validation.numberInvalid"],
+    ["price", "", "price:validation.required"],
+    ["priceType", "", "priceType:validation.required"],
+    ["priceType", "weekly", "priceType:validation.invalid"],
+    ["projectType", "", "projectType:validation.required"],
+    ["projectType", "castle", "projectType:validation.invalid"],
+    ["projectType", "plotted_layout", "projectType:validation.invalid"],
+    ["propertyType", "", "propertyType:validation.required"],
+    ["propertyType", "house", "propertyType:validation.invalid"],
+    ["projectStatus", "", "projectStatus:validation.required"],
     ["landAreaAcres", "1.234", "landAreaAcres:validation.invalid"],
-    ["totalUnits", "1.5", "totalUnits:validation.numberInvalid"],
     ["possessionDate", "2026-02-30", "possessionDate:validation.invalid"],
+    ["possessionDate", "2026-13", "possessionDate:validation.invalid"],
     ["latitude", "91", "latitude:validation.invalid", { longitude: "80.2" }],
     ["longitude", "181", "longitude:validation.invalid", { latitude: "13.0" }],
-    ["projectType", "castle", "projectType:validation.invalid"],
     ["contactPhone", "12ab", "contactPhone:validation.phoneInvalid"],
   ];
 
@@ -89,15 +108,14 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
     ]);
   });
 
-  it("puts a price range that runs backwards on the 'to' box", () => {
-    expect(
-      problems(createMyProjectSchema, { ...minimal, priceMin: "200", priceMax: "100" }),
-    ).toEqual(["priceMax:validation.priceRange"]);
-    expect(
-      problems(createMyProjectSchema, { ...minimal, priceMin: "100", priceMax: "100" }),
-    ).toEqual([]);
+  it("reads the possession month as the first day of that month", () => {
+    const parsed = createMyProjectSchema.parse({
+      ...minimal,
+      projectStatus: "under_construction",
+      possessionDate: "2028-12",
+    });
+    expect(parsed.possessionDate).toBe("2028-12-01");
   });
-
   it("needs both coordinates or neither, and says which box is missing", () => {
     expect(
       problems(createMyProjectSchema, { ...minimal, latitude: "13.0", longitude: "" }),
@@ -146,12 +164,13 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
   });
 
   it("reads RERA as yes or no", () => {
-    expect(createMyProjectSchema.parse({ ...minimal, reraApplicable: "on" }).reraApplicable).toBe(
-      true,
-    );
-    expect(createMyProjectSchema.parse({ ...minimal, reraApplicable: true }).reraApplicable).toBe(
-      true,
-    );
+    const withNumber = { ...minimal, reraNumber: "TN/1" };
+    expect(
+      createMyProjectSchema.parse({ ...withNumber, reraApplicable: "on" }).reraApplicable,
+    ).toBe(true);
+    expect(
+      createMyProjectSchema.parse({ ...withNumber, reraApplicable: true }).reraApplicable,
+    ).toBe(true);
     expect(createMyProjectSchema.parse(minimal).reraApplicable).toBe(false);
   });
 });
@@ -260,5 +279,106 @@ describe("UT-project-schemas: media and price trends on a save (S7-T02)", () => 
     );
     expect("formId" in parsed).toBe(false);
     expect("priceTrends" in parsed).toBe(false);
+  });
+});
+
+describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
+  const parse = (input: Record<string, unknown>) => problems(createMyProjectSchema, input);
+  const commercial = {
+    ...minimal,
+    projectType: "commercial",
+    propertyType: "office",
+    offerType: "sale",
+    areaMinSqft: "500",
+    areaMaxSqft: "2,500",
+  };
+  const plot = {
+    ...minimal,
+    propertyType: "plot",
+    priceType: "per_sqft",
+    price: "2450",
+    areaMinSqft: "1200",
+    areaMaxSqft: "2400",
+  };
+
+  it("accepts a residential project of each property type and a commercial one of each", () => {
+    expect(parse({ ...minimal, propertyType: "villa" })).toEqual([]);
+    expect(parse(plot)).toEqual([]);
+    for (const propertyType of ["vacant_land", "flat", "office", "co_working", "villa"]) {
+      expect(parse({ ...commercial, propertyType })).toEqual([]);
+    }
+  });
+
+  it("refuses a property type that does not go with the project type", () => {
+    expect(parse({ ...minimal, propertyType: "office" })).toEqual([
+      "propertyType:validation.invalid",
+    ]);
+    expect(parse({ ...commercial, propertyType: "apartment" })).toEqual([
+      "propertyType:validation.invalid",
+    ]);
+    expect(parse({ ...commercial, propertyType: "plot" })).toEqual([
+      "propertyType:validation.invalid",
+    ]);
+  });
+
+  it("needs sale or rent for a commercial project, and ignores it for a residential one", () => {
+    expect(parse({ ...commercial, offerType: "" })).toEqual(["offerType:validation.required"]);
+    expect(parse({ ...commercial, offerType: "lease" })).toEqual(["offerType:validation.invalid"]);
+    expect(parse({ ...minimal, offerType: "rent" })).toEqual([]);
+  });
+
+  it("offers the sale price types for sale and the rent ones for rent", () => {
+    for (const priceType of ["per_sqft", "basic", "all_inclusive"]) {
+      expect(parse({ ...commercial, priceType })).toEqual([]);
+      expect(parse({ ...commercial, offerType: "rent", priceType })).toEqual([
+        "priceType:validation.invalid",
+      ]);
+    }
+    for (const priceType of ["rent_per_month", "rent_per_sqft_month"]) {
+      expect(parse({ ...commercial, offerType: "rent", priceType })).toEqual([]);
+      expect(parse({ ...commercial, priceType })).toEqual(["priceType:validation.invalid"]);
+      expect(parse({ ...minimal, priceType })).toEqual(["priceType:validation.invalid"]);
+    }
+  });
+
+  it("needs the smallest and the largest area for a plot and a commercial project, in order", () => {
+    expect(parse({ ...plot, areaMinSqft: "", areaMaxSqft: "" })).toEqual([
+      "areaMinSqft:validation.required",
+      "areaMaxSqft:validation.required",
+    ]);
+    expect(parse({ ...plot, areaMaxSqft: "" })).toEqual(["areaMaxSqft:validation.required"]);
+    expect(parse({ ...plot, areaMinSqft: "2400", areaMaxSqft: "1200" })).toEqual([
+      "areaMaxSqft:validation.areaRange",
+    ]);
+    expect(parse({ ...plot, areaMinSqft: "1200", areaMaxSqft: "1200" })).toEqual([]);
+    expect(parse({ ...plot, areaMinSqft: "0" })).toEqual(["areaMinSqft:validation.invalid"]);
+    expect(parse({ ...commercial, areaMinSqft: "" })).toEqual(["areaMinSqft:validation.required"]);
+  });
+
+  it("does not ask an apartment for an area", () => {
+    expect(parse({ ...minimal, areaMinSqft: "", areaMaxSqft: "" })).toEqual([]);
+  });
+
+  it("needs the possession month for a new launch and a project under construction, not a ready one", () => {
+    for (const projectStatus of ["new_launch", "under_construction"]) {
+      expect(parse({ ...minimal, projectStatus })).toEqual(["possessionDate:validation.required"]);
+      expect(parse({ ...minimal, projectStatus, possessionDate: "2028-12" })).toEqual([]);
+    }
+    expect(parse({ ...minimal, possessionDate: "" })).toEqual([]);
+  });
+
+  it("needs the RERA number when RERA applies and the reason when it does not", () => {
+    expect(parse({ ...minimal, reraApplicable: true, reraNotApplicableReason: "" })).toEqual([
+      "reraNumber:validation.required",
+    ]);
+    expect(
+      parse({ ...minimal, reraApplicable: true, reraNumber: "TN/1", reraNotApplicableReason: "" }),
+    ).toEqual([]);
+    expect(parse({ ...minimal, reraNotApplicableReason: " " })).toEqual([
+      "reraNotApplicableReason:validation.required",
+    ]);
+    expect(parse({ ...minimal, reraNotApplicableReason: "x".repeat(301) })).toEqual([
+      "reraNotApplicableReason:validation.invalid",
+    ]);
   });
 });
