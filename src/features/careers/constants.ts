@@ -1,5 +1,5 @@
 /**
- * The Careers module's limits and fixed lists (ADR-143, ADR-145). Each limit is also a check in the `job_postings`
+ * The Careers module's limits and fixed lists (ADR-143, ADR-147). Each limit is also a check in the `job_postings`
  * table, so the form, the action and the database agree; a change here needs a new migration beside it.
  */
 export const JOB_STATUSES = ["draft", "open", "closed"] as const;

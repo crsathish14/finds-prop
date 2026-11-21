@@ -1,4 +1,4 @@
-# ADR-145 · Job postings: the fields, the visibility rule and the apply link
+# ADR-147 · Job postings: the fields, the visibility rule and the apply link
 
 - Status: Accepted. Decision D4 of ADR-143 (an external link or an email address only, no applicant data stored) was approved by the owner on 18 Nov 2026; this records the exact shape built for phase 4.
 - Date: 2026-11-21

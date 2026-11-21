@@ -1,6 +1,6 @@
 -- ADR-143 phase 4: the Careers module's job postings, and the search over them.
 -- Rules: ADR-143 sections 3 and 4 (a job is open until it is closed or its closing date passes, soft delete, who may
--- read and write), ADR-145 (the job's fields, plain text and the apply link), ADR-017 (the public columns are named),
+-- read and write), ADR-147 (the job's fields, plain text and the apply link), ADR-017 (the public columns are named),
 -- plan 07 section 5 (a visitor reads what is visible; only the super admin writes).
 -- A visitor (anon or a signed-in customer) reads a job only when it is open, its closing date is empty or still ahead,
 -- and it is not in Trash; the super admin reads them all. The test is in the row policy, so the pages, the sitemap and

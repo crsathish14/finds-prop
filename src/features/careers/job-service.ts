@@ -4,7 +4,7 @@ import type { CreateJobInput, JobIdInput, UpdateJobInput } from "./schemas";
 import { slugFromTitle, slugWithSuffix, slugWithTail } from "./slug";
 
 /**
- * The rules of the Careers admin (ADR-143, ADR-145), apart from the code that reaches the database so they can be
+ * The rules of the Careers admin (ADR-143, ADR-147), apart from the code that reaches the database so they can be
  * tested with a stand-in. The real store is in `service.ts` and acts as the signed-in admin through their own session:
  * the table's policies let only the super admin write, so nothing here uses the service role. The action has already
  * checked the caller is the super admin and counted the rate limit.

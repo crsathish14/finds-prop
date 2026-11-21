@@ -21,7 +21,7 @@ import {
 } from "./constants";
 
 /**
- * What the Careers admin sends (ADR-143, ADR-145). Nothing here says who is saving or what a job's status is: the
+ * What the Careers admin sends (ADR-143, ADR-147). Nothing here says who is saving or what a job's status is: the
  * admin is the signed-in session and each status change is its own action (R-BE-03). A schema message is a key under
  * `validation.*`; the screen looks the words up (ADR-035). The limits match the `job_postings` table's checks, so the
  * database only refuses what the form could not see (a slug already used, a department of another list). Zod only:

@@ -24,7 +24,7 @@ import {
 } from "../constants";
 
 /**
- * The table checks the same limits as the form (ADR-145), so a bad row cannot be stored by any route. This reads the
+ * The table checks the same limits as the form (ADR-147), so a bad row cannot be stored by any route. This reads the
  * migration as text and fails when a limit here and a limit there drift apart: a change to either needs a new
  * migration and a change to the other.
  */

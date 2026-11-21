@@ -3,7 +3,7 @@ import { JOB_SLUG_MAX } from "./constants";
 
 /**
  * A suggested slug for a title typed in the editor: lower case words joined by hyphens, accents dropped, cut to the
- * limit. The admin may edit it (ADR-145). Pure, so the browser and the server make the same one.
+ * limit. The admin may edit it (ADR-147). Pure, so the browser and the server make the same one.
  */
 export function slugFromTitle(title: string): string {
   return slugFromName(title, JOB_SLUG_MAX);
