@@ -110,7 +110,13 @@ test.describe("@smoke site header", () => {
       }),
     ).toHaveAttribute("href", "/");
     const main = banner.getByRole("navigation", { name: en.site.header.navLabel });
-    await expect(main.getByRole("link")).toHaveText([nav.buy, nav.rent, nav.projects, nav.contact]);
+    await expect(main.getByRole("link")).toHaveText([
+      nav.buy,
+      nav.rent,
+      nav.projects,
+      nav.faq,
+      nav.contact,
+    ]);
     await expect(banner.getByRole("link", { name: en.site.header.signIn })).toHaveAttribute(
       "href",
       "/auth",
@@ -193,6 +199,7 @@ test.describe("@smoke site footer and bottom bar", () => {
       footerText.linkBuy,
       footerText.linkRent,
       footerText.linkProjects,
+      footerText.linkFaq,
       footerText.linkContact,
       footerText.linkPost,
     ]);
