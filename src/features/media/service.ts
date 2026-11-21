@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminSupabase } from "@/server/supabase/admin.server";
 import { createServerSupabase } from "@/server/supabase/server";
 import type { Database } from "@/types/database.types";
-import { PHOTO_BUCKET, SWEEP_TOKEN_NAME } from "./constants";
+import { BLOG_FILES_BUCKET, PHOTO_BUCKET, SWEEP_TOKEN_NAME } from "./constants";
 import { mapMediaWriteError, type PhotoCallerStore, type PhotoServerStore } from "./media-service";
 import type { SweepStore } from "./sweep";
 
@@ -116,6 +116,18 @@ export function createSweepStore(requestId: string): SweepStore {
     },
     async removeObjects(paths) {
       const { error } = await client.storage.from(PHOTO_BUCKET).remove(paths);
+      if (error) throw mapMediaWriteError({});
+    },
+    async listOrphanBlogFiles(olderThanHours, limit) {
+      const { data, error } = await client.rpc("orphan_blog_files", {
+        p_older_than_hours: olderThanHours,
+        p_limit: limit,
+      });
+      if (error) throw mapMediaWriteError({ code: error.code, message: error.message });
+      return data.map((row) => row.name);
+    },
+    async removeBlogFiles(paths) {
+      const { error } = await client.storage.from(BLOG_FILES_BUCKET).remove(paths);
       if (error) throw mapMediaWriteError({});
     },
   };

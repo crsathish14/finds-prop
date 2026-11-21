@@ -2,6 +2,8 @@
 
 A listing photo lands in the `listing-photos` bucket before the server has looked at it. If the upload is never finished, the owner removes the photo, or a listing is deleted, the file is left behind with no `listing_media` row. An hourly job removes such files once they are 24 hours old (ADR-058). Nothing breaks if the job is not running; unclaimed files just pile up.
 
+The same hourly job also removes the picture files of blog articles that no longer exist (ADR-146): files in the `site-assets` bucket under `blog/<article id>/` that are at least 24 hours old and whose article has no row any more, which happens after the nightly retention job purges an article that spent 30 days in Trash (`docs/runbooks/retention.md`). An article that is only in Trash keeps its files. Nothing else in that bucket is touched: only names of exactly that shape are listed.
+
 ## Arm it (once per environment, the owner)
 
 You need the site's public address and a secret token. Run these in the project's **SQL Editor** (dev first). Pick your own token of at least 32 random characters; do not paste it anywhere else.
@@ -33,8 +35,8 @@ You need the site's public address and a secret token. Run these in the project'
 ## Check it
 
 - The job exists: `select jobname, schedule, active from cron.job where jobname = 'media-sweep';` (hourly, at minute 17).
-- It ran: `select status, return_message, start_time from cron.job_run_details where jobid = (select jobid from cron.job where jobname = 'media-sweep') order by start_time desc limit 5;`. A `succeeded` row means the request was sent; the site's log line `sweep done` says how many files were removed (`removed`). A `sweep refused: token missing or wrong` line means the token in the table is not the one the job sent, so arm again.
-- What would be removed right now: `select * from public.orphan_listing_photos();` (files older than 24 hours with no photo row). Use `public.orphan_listing_photos(0)` to see every unclaimed file.
+- It ran: `select status, return_message, start_time from cron.job_run_details where jobid = (select jobid from cron.job where jobname = 'media-sweep') order by start_time desc limit 5;`. A `succeeded` row means the request was sent; the site's log line `sweep done` says how many files were removed (`removed` for listing photos, `blogFilesRemoved` for blog pictures). A `sweep refused: token missing or wrong` line means the token in the table is not the one the job sent, so arm again.
+- What would be removed right now: `select * from public.orphan_listing_photos();` (files older than 24 hours with no photo row). Use `public.orphan_listing_photos(0)` to see every unclaimed file. The blog pictures it would remove: `select * from public.orphan_blog_files();` (`orphan_blog_files(0)` for any age).
 
 ## Stop it
 
@@ -45,5 +47,5 @@ select public.disarm_media_sweep();
 ## Rules
 
 - The token is a secret: the route answers anything else with a plain 401. Rotate it by repeating step 2 and step 3.
-- The job removes only files in `listing-photos` that have no row. It never touches a photo that belongs to a listing.
+- The job removes only files in `listing-photos` that have no row, and files in `site-assets` named `blog/<uuid>/<file>` whose article row is gone. It never touches a photo that belongs to a listing or a picture of an article that exists (in Trash or not).
 - Photo files of the fictional seed are safe: the seed script records each file's row right after uploading it.

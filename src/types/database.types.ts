@@ -942,6 +942,11 @@ isOneToOne: false
 "normalise_phone":
 { Args: { "raw_phone": string }; Returns: string
                            },
+"orphan_blog_files":
+{ Args: { "p_limit"?: number,"p_older_than_hours"?: number }; Returns: {
+              "name": string
+            }[]
+                           },
 "orphan_listing_photos":
 { Args: { "p_limit"?: number,"p_older_than_hours"?: number }; Returns: {
               "name": string

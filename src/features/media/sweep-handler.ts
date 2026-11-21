@@ -25,8 +25,14 @@ export async function handleSweepMedia(request: Request): Promise<Response> {
         { status: 401, headers: { "Cache-Control": "no-store" } },
       );
     }
-    log.info("sweep done", { removed: result.removed });
-    return Response.json({ removed: result.removed }, { headers: { "Cache-Control": "no-store" } });
+    log.info("sweep done", {
+      removed: result.removed,
+      blogFilesRemoved: result.blogFilesRemoved,
+    });
+    return Response.json(
+      { removed: result.removed, blogFilesRemoved: result.blogFilesRemoved },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     log.error("sweep failed", { error });
     await reportError(error, { source: "handler", requestId, route: "sweep-media" });
