@@ -15,13 +15,13 @@ Old personal data and old bookkeeping rows are deleted by a job that runs by its
 | Repeat-request keys (`idempotency_keys`)                               | 24 hours                                                                                                                      |
 | AI chat usage rows (`ai_usage_events`)                                 | 12 months (provisional)                                                                                                       |
 | Place search usage counts (`places_usage_daily`)                       | 24 months (provisional; counts only, no personal data)                                                                        |
-| Content in Trash: FAQ questions (`faqs`), blog articles (`blog_posts`) | 30 days after they were moved to Trash (ADR-143 D3, ADR-146); a row with no Trash date is never deleted                       |
+| Content in Trash: FAQ questions (`faqs`), blog articles (`blog_posts`) | 30 days after they were moved to Trash (ADR-143 D3, ADR-147); a row with no Trash date is never deleted                       |
 
 It leaves alone: the audit log (never deleted), a submission that has an uploaded file, and a submission still waiting on a CRM delivery. Those two are counted every night (see "Check it") so they are not forgotten. One-time codes sent by text message are Supabase Auth's own rows and are not touched here.
 
 The windows are provisional until counsel confirms them (DEC-28).
 
-## Content in Trash (ADR-146)
+## Content in Trash (ADR-147)
 
 Blog articles and FAQ questions that an admin moved to Trash are deleted for good 30 days later. Until then they can be restored from the admin's Trash tab.
 

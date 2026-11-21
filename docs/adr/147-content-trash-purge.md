@@ -1,4 +1,4 @@
-# ADR-146 · Content in Trash is purged after 30 days, and the pictures of purged articles are swept
+# ADR-147 · Content in Trash is purged after 30 days, and the pictures of purged articles are swept
 
 - Status: Accepted (the window is the owner's choice in ADR-143 D3; the pictures' cleanup is a small, reversible decision recorded here)
 - Date: 2026-11-21
