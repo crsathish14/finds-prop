@@ -5,9 +5,6 @@ import en from "@/i18n/messages/en.json";
 import { resetDraftsForTests, saveDraft } from "@/lib/form-draft";
 import { renderWithMessages } from "../../../../tests/render-intl";
 
-/** A day two weeks from now (in the card's one-year window), so the test does not age out as days pass. */
-const VISIT_DATE = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
 const notes = vi.hoisted(() => ({ info: vi.fn() }));
 vi.mock("@/lib/notify", () => ({ notify: notes }));
 const submitProjectLead = vi.hoisted(() => vi.fn());
