@@ -15,6 +15,9 @@ const { ProjectLeadPanel } = await import("../project-lead-panel.client");
 const { ProjectViewTracker } = await import("../project-view-tracker.client");
 
 const words = en.projects.page.lead;
+
+/** A visit day inside the allowed window whatever day the tests run: a month from today (the rule reads the real clock). */
+const VISIT_DAY = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 const PANEL = (
   <ProjectLeadPanel
     slug="kadal-vista"
@@ -67,12 +70,12 @@ describe("ProjectLeadPanel: the card connected to the action (S4-T09 D1b)", () =
     renderWithMessages(PANEL);
     fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
     type(words.name, "Priya Raman");
-    type(words.visitDate, "2026-11-20");
+    type(words.visitDate, VISIT_DAY);
     send(words.requestVisit);
     await waitFor(() => expect(submitProjectLead).toHaveBeenCalled());
     expect(submitProjectLead.mock.calls[0]?.[0]).toMatchObject({
       kind: "site_visit",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DAY,
     });
   });
 
@@ -211,7 +214,7 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
     renderWithMessages(PANEL);
     fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
     type(words.name, "Priya Raman");
-    type(words.visitDate, "2026-11-20");
+    type(words.visitDate, VISIT_DAY);
     send(words.requestVisit);
     await waitFor(() => expect(screen.getByText(ended.title)).toBeInTheDocument());
     fireEvent.click(screen.getByRole("link", { name: ended.action }));
@@ -221,7 +224,7 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
     expect(stored.values).toMatchObject({
       kind: "site_visit",
       name: "Priya Raman",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DAY,
     });
   });
 
@@ -230,14 +233,14 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
       kind: "site_visit",
       name: "Priya Raman",
       email: "",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DAY,
       message: "Morning please",
     });
     renderWithMessages(PANEL);
     await waitFor(() =>
       expect(screen.getByLabelText(new RegExp("^" + words.name))).toHaveValue("Priya Raman"),
     );
-    expect(screen.getByLabelText(new RegExp("^" + words.visitDate))).toHaveValue("2026-11-20");
+    expect(screen.getByLabelText(new RegExp("^" + words.visitDate))).toHaveValue(VISIT_DAY);
     expect(screen.getByLabelText(new RegExp("^" + words.message))).toHaveValue("Morning please");
     expect(screen.getByRole("button", { name: words.requestVisit })).toBeInTheDocument();
     expect(notes.info).toHaveBeenCalledTimes(1);
