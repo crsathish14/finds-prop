@@ -29,7 +29,7 @@ const allEntries = LAB_BOARDS.flatMap((board) => board.entries.map((entry) => ({
 const registered = new Set(allEntries.flatMap(({ entry }) => entry.sources));
 
 describe("Design Lab registry", () => {
-  it("has the five boards of the approved UX, in order, then the domain, discovery, seller, admin, site content, sponsors, forms, CRM, charts, AI chat and Blog boards", () => {
+  it("has the five boards of the approved UX, in order, then the domain, discovery, seller, admin, site content, sponsors, forms, CRM, charts, AI chat Blog and Careers boards", () => {
     expect(LAB_BOARDS.map((board) => board.id)).toEqual([
       "foundations",
       "components",
@@ -47,6 +47,7 @@ describe("Design Lab registry", () => {
       "charts",
       "ai-chat",
       "blog",
+      "careers",
     ]);
     expect(LAB_BOARDS.map((board) => board.uxBoard)).toEqual([
       "ds-foundations",
@@ -64,6 +65,7 @@ describe("Design Lab registry", () => {
       "admin-crm",
       "admin-overview",
       "ai-chat",
+      "admin-cms",
       "admin-cms",
     ]);
   });

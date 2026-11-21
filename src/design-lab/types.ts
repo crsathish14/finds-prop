@@ -21,7 +21,8 @@ export type LabBoardId =
   | "crm"
   | "charts"
   | "ai-chat"
-  | "blog";
+  | "blog"
+  | "careers";
 
 export type LabEntry = {
   /** Anchor on the board page: lowercase words joined by hyphens. */

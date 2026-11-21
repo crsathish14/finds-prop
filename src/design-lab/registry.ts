@@ -2,6 +2,7 @@ import { AI_CHAT } from "./boards/ai-chat";
 import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
 import { BLOG } from "./boards/blog";
+import { CAREERS } from "./boards/careers";
 import { COMPONENTS } from "./boards/components";
 import { CHARTS } from "./boards/charts";
 import { CRM } from "./boards/crm";
@@ -147,6 +148,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the Blog is drawn with: on the public side the article card, the article's header, body and Read next list, and the controls above the list (search box, category and tag chips and the page bar); on the admin side the block editor, the list of articles with its status tabs and the post form. The Blog has no approved design yet, so it follows the admin Site content screen and the public pages, and is drawn for the owner's approval.",
     entries: BLOG,
+  },
+  {
+    id: "careers",
+    title: "Careers",
+    uxBoard: "admin-cms",
+    summary:
+      "What Careers is drawn with: on the public side the job card, the search box and filters with their empty and loading states, the job page's header and body, and the Apply button (a link or an email, or a note when the job has closed); on the admin side the list of jobs with its status tabs, the job form and the Close posting button with its question. Careers has no approved design yet, so it follows the admin Site content screen and the public pages, and is drawn for the owner's approval.",
+    entries: CAREERS,
   },
 ];
 
