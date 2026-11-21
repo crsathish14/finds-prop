@@ -31,12 +31,7 @@ export async function PublicBottomBar() {
         navLabel={bar.navLabel}
         items={bar.items.map((item) => ({
           ...item,
-          icon:
-            item.key === "ai" ? (
-              <AiSparkle size="md" minis={false} />
-            ) : (
-              <Icon icon={ICONS[item.key]} />
-            ),
+          icon: item.key === "ai" ? <AiSparkle size="md" /> : <Icon icon={ICONS[item.key]} />,
         }))}
       />
     </Suspense>

@@ -5,8 +5,9 @@
    Rules the motion keeps:
    - Only transform and opacity are animated (the glow is a box-shadow on a pseudo-element whose
      opacity and scale move), so nothing is laid out again and there is no layout shift.
-   - Every idle loop runs a few times after the page loads and then stops (--ai-cycles). Hovering
-     or focusing the control pauses it; leaving it plays the loops again.
+   - The glow, shimmer, underline and badge run a few times after the page loads and then stop
+     (--ai-cycles). The star keeps a gentle loop with a long rest (--ai-star-cycles) until the
+     visitor clicks. Hovering or focusing the control pauses the loops; leaving it plays them again.
    - The CTAs start at different times (--ai-delay) so they never pulse together.
    - Once a visitor has clicked a CTA in this tab, it is calm for the rest of the session
      (data-ai-cta-state="calm", set by <AiCta> from sessionStorage).
@@ -19,6 +20,9 @@
   --ai-cycles: 3;
   /* When this CTA's loops start, after the page has loaded (staggered per variant) */
   --ai-delay: 0s;
+  /* The star: one loop (spin, burst, rest) and how many loops; infinite = until clicked */
+  --ai-star-dur: 4s;
+  --ai-star-cycles: infinite;
   /* Loop lengths */
   --ai-twinkle-dur: 2.5s;
   --ai-halo-dur: 2.8s;
@@ -55,18 +59,21 @@
   --ai-delay: 2.2s;
   --ai-cycles: 4;
   --ai-twinkle-dur: 2.7s;
+  --ai-star-dur: 4.4s;
   --ai-lift: -1px;
 }
 [data-ai-cta="outline"] {
   --ai-delay: 1.1s;
   --ai-cycles: 2;
   --ai-twinkle-dur: 2.6s;
+  --ai-star-dur: 4.2s;
   --ai-sweep-cycles: 1;
   --ai-sweep-color: color-mix(in oklab, var(--c-primary) 16%, transparent);
 }
 [data-ai-cta="disc"] {
   --ai-delay: 1.6s;
   --ai-cycles: 3;
+  --ai-star-dur: 3.6s;
   --ai-halo-spread: 4px;
 }
 [data-ai-cta="inline"] {
@@ -76,87 +83,200 @@
 
 /* ---------------------------------------------------------------- sparkle (A) */
 
+/* The star: a pop and a full spin, a small burst of sparkles flying out and a glow flash behind
+   it, then a rest. Unlike the glow, shimmer and underline it keeps going (--ai-star-cycles) until
+   the visitor clicks; set a number there to make it stop after that many loops. */
 .ai-sparkle {
   position: relative;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
+  /* The burst sparkles below are sized in em: this ties them to the icon size, not the text */
+  font-size: 1rem;
+}
+.ai-sparkle--md {
+  font-size: 1.25rem;
+}
+.ai-sparkle--lg {
+  font-size: 1.5rem;
 }
 .ai-sparkle__glyph {
+  position: relative;
   transform-origin: 50% 50%;
 }
-/* The two tiny secondary sparkles: a four-point star in the text colour */
+/* The soft glow that flashes behind the star */
+.ai-sparkle::before {
+  content: "";
+  position: absolute;
+  inset: -55%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--c-primary) 30%, transparent) 0%,
+    transparent 65%
+  );
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+}
+/* The three tiny sparkles that fly out of the star: four-point stars in the text colour */
 .ai-sparkle__mini {
   position: absolute;
-  width: 0.34em;
-  height: 0.34em;
+  top: 50%;
+  left: 50%;
+  width: 0.36em;
+  height: 0.36em;
+  margin: -0.18em 0 0 -0.18em;
   background: currentColor;
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   opacity: 0;
   pointer-events: none;
 }
-.ai-sparkle__mini:nth-of-type(1) {
-  top: -0.2em;
-  right: -0.28em;
-}
 .ai-sparkle__mini:nth-of-type(2) {
-  bottom: -0.12em;
-  left: -0.3em;
-  width: 0.26em;
-  height: 0.26em;
+  width: 0.28em;
+  height: 0.28em;
+  margin: -0.14em 0 0 -0.14em;
+}
+.ai-sparkle__mini:nth-of-type(3) {
+  width: 0.22em;
+  height: 0.22em;
+  margin: -0.11em 0 0 -0.11em;
 }
 
 [data-ai-cta] .ai-sparkle__glyph {
-  animation: ai-twinkle var(--ai-twinkle-dur) var(--ease) var(--ai-delay) var(--ai-cycles) both;
+  animation: ai-star var(--ai-star-dur) var(--ease) var(--ai-delay) var(--ai-star-cycles) both;
+}
+[data-ai-cta] .ai-sparkle::before {
+  animation: ai-star-glow var(--ai-star-dur) ease-out var(--ai-delay) var(--ai-star-cycles) both;
 }
 [data-ai-cta] .ai-sparkle__mini:nth-of-type(1) {
-  animation: ai-mini var(--ai-twinkle-dur) ease-out calc(var(--ai-delay) + 0.35s) var(--ai-cycles)
-    both;
+  animation: ai-burst-1 var(--ai-star-dur) ease-out var(--ai-delay) var(--ai-star-cycles) both;
 }
 [data-ai-cta] .ai-sparkle__mini:nth-of-type(2) {
-  animation: ai-mini var(--ai-twinkle-dur) ease-out calc(var(--ai-delay) + 1.1s) var(--ai-cycles)
-    both;
+  animation: ai-burst-2 var(--ai-star-dur) ease-out var(--ai-delay) var(--ai-star-cycles) both;
+}
+[data-ai-cta] .ai-sparkle__mini:nth-of-type(3) {
+  animation: ai-burst-3 var(--ai-star-dur) ease-out var(--ai-delay) var(--ai-star-cycles) both;
 }
 
-@keyframes ai-twinkle {
-  0%,
-  70%,
-  100% {
+/* A little wind-up, a full turn with a pop, a settle, a small twinkle, then still until the next
+   loop. It ends at 360deg, which looks the same as 0deg, so the loop has no jump. */
+@keyframes ai-star {
+  0% {
     transform: scale(1) rotate(0deg);
     opacity: 1;
   }
-  22% {
-    transform: scale(1.15) rotate(8deg);
-    opacity: 0.78;
+  6% {
+    transform: scale(0.85) rotate(-15deg);
   }
-  44% {
-    transform: scale(0.97) rotate(-8deg);
+  16% {
+    transform: scale(1.3) rotate(200deg);
+  }
+  24% {
+    transform: scale(0.94) rotate(350deg);
+  }
+  32% {
+    transform: scale(1.05) rotate(362deg);
+  }
+  38%,
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+  52% {
+    transform: scale(1.12) rotate(368deg);
+    opacity: 0.8;
+  }
+  60% {
+    transform: scale(1) rotate(360deg);
     opacity: 1;
   }
 }
-/* The same shape, played once and faster on hover and focus */
-@keyframes ai-twinkle-burst {
+@keyframes ai-star-glow {
   0%,
-  100% {
-    transform: scale(1) rotate(0deg);
+  4% {
+    opacity: 0;
+    transform: scale(0.4);
   }
-  35% {
-    transform: scale(1.2) rotate(12deg);
+  14% {
+    opacity: 1;
+    transform: scale(1);
   }
-  70% {
-    transform: scale(0.96) rotate(-6deg);
+  40% {
+    opacity: 0;
+    transform: scale(1.3);
   }
-}
-@keyframes ai-mini {
-  0%,
-  45%,
+  52% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  64%,
   100% {
     opacity: 0;
-    transform: scale(0.3) rotate(0deg);
+    transform: scale(1.1);
   }
-  15% {
+}
+/* The same turn, once and quicker, on hover and focus */
+@keyframes ai-star-hover {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.3) rotate(200deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+/* Up and right */
+@keyframes ai-burst-1 {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2) rotate(0deg);
+  }
+  20% {
     opacity: 1;
-    transform: scale(1) rotate(45deg);
+    transform: translate(0.75em, -0.7em) scale(1) rotate(45deg);
+  }
+  34%,
+  100% {
+    opacity: 0;
+    transform: translate(1em, -0.95em) scale(0.5) rotate(90deg);
+  }
+}
+/* Left */
+@keyframes ai-burst-2 {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2) rotate(0deg);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-0.85em, -0.2em) scale(1) rotate(-45deg);
+  }
+  36%,
+  100% {
+    opacity: 0;
+    transform: translate(-1.1em, -0.3em) scale(0.5) rotate(-90deg);
+  }
+}
+/* Down and right */
+@keyframes ai-burst-3 {
+  0%,
+  14% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2) rotate(0deg);
+  }
+  24% {
+    opacity: 1;
+    transform: translate(0.45em, 0.8em) scale(1) rotate(45deg);
+  }
+  38%,
+  100% {
+    opacity: 0;
+    transform: translate(0.6em, 1.05em) scale(0.5) rotate(90deg);
   }
 }
 
@@ -228,13 +348,17 @@
 
 /* ---------------------------------------------------------------- hero text button */
 
-/* A gradient underline that draws itself, then settles as a faint line */
-[data-ai-cta="text"]::after {
+/* A gradient underline under the words only (the link is full width on phones), that draws
+   itself and then settles as a faint line */
+.ai-cta__label {
+  position: relative;
+}
+[data-ai-cta="text"] .ai-cta__label::after {
   content: "";
   position: absolute;
-  left: var(--s-2);
-  right: var(--s-2);
-  bottom: 3px;
+  left: 0;
+  right: 0;
+  bottom: -4px;
   height: 2px;
   border-radius: var(--r-pill);
   background: linear-gradient(
@@ -343,23 +467,33 @@
   box-shadow: 0 0 0 3px var(--ai-glow-strong);
 }
 [data-ai-cta]:is(:hover, :focus-visible)::after,
-[data-ai-cta]:is(:hover, :focus-visible) .ai-cta__disc::after {
+[data-ai-cta]:is(:hover, :focus-visible) .ai-cta__disc::after,
+[data-ai-cta]:is(:hover, :focus-visible) .ai-cta__label::after {
   animation: none;
 }
-[data-ai-cta="text"]:is(:hover, :focus-visible)::after {
+[data-ai-cta="text"]:is(:hover, :focus-visible) .ai-cta__label::after {
   transform: scaleX(1);
   opacity: 0.6;
 }
-/* The idle loops pause; the sparkle plays once, faster */
+/* The idle loops pause; the star turns once, faster, with its burst and glow */
 [data-ai-cta]:is(:hover, :focus-visible) .ai-cta__sweep::before,
 [data-ai-cta]:is(:hover, :focus-visible) .ai-cta__badge {
   animation-play-state: paused;
 }
 [data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle__glyph {
-  animation: ai-twinkle-burst 0.6s var(--ease) 1 both;
+  animation: ai-star-hover 0.7s var(--ease) 1 both;
 }
-[data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle__mini {
-  animation: ai-mini 0.9s ease-out 1 both;
+[data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle::before {
+  animation: ai-star-glow 1.6s ease-out 1 both;
+}
+[data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle__mini:nth-of-type(1) {
+  animation: ai-burst-1 1.6s ease-out 1 both;
+}
+[data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle__mini:nth-of-type(2) {
+  animation: ai-burst-2 1.6s ease-out 1 both;
+}
+[data-ai-cta]:is(:hover, :focus-visible) .ai-sparkle__mini:nth-of-type(3) {
+  animation: ai-burst-3 1.6s ease-out 1 both;
 }
 
 /* ---------------------------------------------------------------- calm (clicked this session) */
@@ -378,7 +512,7 @@
   animation: none !important;
 }
 /* The hero underline stays as its faint settled line */
-[data-ai-cta-state="calm"][data-ai-cta="text"]::after {
+[data-ai-cta-state="calm"][data-ai-cta="text"] .ai-cta__label::after {
   transform: scaleX(1);
   opacity: 0.3;
 }
@@ -398,6 +532,7 @@
     transform: none;
   }
   .ai-sparkle__mini,
+  .ai-sparkle::before,
   .ai-cta__sweep {
     display: none;
   }
@@ -408,7 +543,7 @@
   [data-ai-cta="disc"] .ai-cta__disc {
     box-shadow: 0 0 0 2px var(--ai-glow-strong);
   }
-  [data-ai-cta="text"]::after {
+  [data-ai-cta="text"] .ai-cta__label::after {
     transform: scaleX(1);
     opacity: 0.45;
   }
@@ -417,9 +552,11 @@
 /* Windows high contrast: no decoration, the system colours carry the control */
 @media (forced-colors: active) {
   .ai-sparkle__mini,
+  .ai-sparkle::before,
   .ai-cta__sweep,
   [data-ai-cta]::after,
-  [data-ai-cta] .ai-cta__disc::after {
+  [data-ai-cta] .ai-cta__disc::after,
+  [data-ai-cta] .ai-cta__label::after {
     display: none;
   }
 }

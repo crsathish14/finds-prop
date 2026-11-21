@@ -298,7 +298,9 @@ function SearchCard({
               className="order-3 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text @xl:order-2 @xl:ml-auto @xl:w-auto"
             >
               <AiSparkle />
-              {translate("domain.searchCard.describeInWords")}
+              <span className="ai-cta__label">
+                {translate("domain.searchCard.describeInWords")}
+              </span>
               {/* Decoration: the link keeps its name, "Describe it in words" */}
               <span
                 aria-hidden="true"

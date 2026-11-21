@@ -162,7 +162,7 @@ export function AiCtaDemo() {
             className="inline-flex min-h-9 items-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text"
           >
             <AiSparkle />
-            Describe it in words
+            <span className="ai-cta__label">Describe it in words</span>
             <span
               aria-hidden="true"
               className="ai-cta__badge rounded-pill bg-primary px-1 text-caption leading-4 font-bold text-on-primary"
