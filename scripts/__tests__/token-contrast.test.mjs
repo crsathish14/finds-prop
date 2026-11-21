@@ -27,8 +27,12 @@ const TEXT_PAIRS = [
   ["--c-accent-text", "--c-accent-tint", 4.5],
   ["--c-success", "--c-success-bg", 4.5],
   ["--c-warning", "--c-warning-bg", 4.5],
-  ["--c-danger", "--c-danger-bg", 4.5],
+  ["--c-danger-text", "--c-danger-bg", 4.5],
   ["--c-danger", "--c-surface", 4.5],
+  ["--c-on-primary", "--c-danger", 4.5],
+  ["--c-muted", "--c-primary-tint", 4.5],
+  ["--c-muted", "--c-neutral-bg", 4.5],
+  ["--c-on-amber", "--c-amber", 4.5],
   ["--c-info", "--c-info-bg", 4.5],
   ["--c-neutral", "--c-neutral-bg", 4.5],
   ["--c-on-primary", "--c-ink", 4.5],
@@ -40,7 +44,9 @@ const TEXT_PAIRS = [
 
 const NON_TEXT_PAIRS = [
   ["--c-border-input", "--c-surface", 3],
+  ["--c-border-input", "--c-bg-sunken", 3],
   ["--c-focus", "--c-bg", 3],
+  ["--c-focus", "--c-primary-tint", 3],
   ["--c-focus-on-dark", "--c-dark", 3],
 ];
 
@@ -58,9 +64,15 @@ describe("UT-tokens: contrast of the colour pairs", () => {
     },
   );
 
-  it("matches the measured value the UX documents for white on copper", () => {
+  it("matches the measured value the brand documents for white on action teal", () => {
     const ratio = contrastRatio(colour("--c-on-accent"), colour("--c-accent"));
-    expect(ratio).toBeGreaterThan(4.7);
-    expect(ratio).toBeLessThan(4.9);
+    expect(ratio).toBeGreaterThan(5.1);
+    expect(ratio).toBeLessThan(5.3);
+  });
+
+  it("keeps brand teal off white: it is only for ink surfaces (2.5 : 1 on white)", () => {
+    const ratio = contrastRatio(colour("--p-teal-500"), colour("--c-surface"));
+    expect(ratio).toBeLessThan(3);
+    expect(colour("--c-on-dark-accent")).toBe(colour("--p-teal-500"));
   });
 });

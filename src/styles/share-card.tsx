@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 /**
  * The brand card shown when a page is shared and has no photo of its own (FR-PUB-14, the default
- * Open Graph image): the arch mark, the name and the tagline on the brand's dark green.
+ * Open Graph image): the arch mark, the name and the tagline on the brand's ink.
  *
  * It lives with the styles because the picture renderer (`next/og`) cannot read CSS variables, so the
  * colours are written out here, and this is the one place a colour may be written out. Each value is a
@@ -10,14 +10,14 @@ import type { CSSProperties } from "react";
  * props, from `en.json`, like all visitor-facing text.
  */
 export const SHARE_CARD_COLORS = {
-  /** `--p-forest-950`, the dark surface of the brand. */
-  background: "#163829",
-  /** `--p-ivory-50`, the text and the mark's square. */
-  ink: "#faf6ee",
-  /** `--p-mist-300`, the quieter line under the name. */
-  muted: "#b9cbc0",
-  /** `--p-copper-400`, the copper that reads on dark; the last word of the name. */
-  accent: "#e8b98f",
+  /** `--p-ink-950`, the dark surface of the brand. */
+  background: "#0f1a19",
+  /** `--p-white`, the text and the mark's square. */
+  ink: "#ffffff",
+  /** `--p-ink-200`, the quieter line under the name. */
+  muted: "#b9c6c4",
+  /** `--p-teal-500`, the brand teal that reads on dark; the last word of the name. */
+  accent: "#16b9a4",
 } as const;
 
 const root: CSSProperties = {

@@ -60,7 +60,7 @@ type SponsorImageSlotProps = {
 const STATUS_LOOK = {
   filled: { icon: CircleCheck, box: "bg-success-tint", head: "text-success", role: "status" },
   near: { icon: CircleAlert, box: "bg-warning-tint", head: "text-warning", role: "status" },
-  rejected: { icon: CircleX, box: "bg-danger-tint", head: "text-danger", role: "alert" },
+  rejected: { icon: CircleX, box: "bg-danger-tint", head: "text-danger-text", role: "alert" },
 } as const;
 
 function SponsorImageSlot({

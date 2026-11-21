@@ -48,7 +48,9 @@ const TEXT_PAIRS: Pair[] = [
   { text: "--c-accent-text", ground: "--c-bg", minimum: 4.5 },
   { text: "--c-success", ground: "--c-success-bg", minimum: 4.5 },
   { text: "--c-warning", ground: "--c-warning-bg", minimum: 4.5 },
-  { text: "--c-danger", ground: "--c-danger-bg", minimum: 4.5 },
+  { text: "--c-danger-text", ground: "--c-danger-bg", minimum: 4.5 },
+  { text: "--c-danger", ground: "--c-surface", minimum: 4.5 },
+  { text: "--c-on-amber", ground: "--c-amber", minimum: 4.5 },
   { text: "--c-info", ground: "--c-info-bg", minimum: 4.5 },
   { text: "--c-neutral", ground: "--c-neutral-bg", minimum: 4.5 },
   { text: "--c-on-dark", ground: "--c-dark", minimum: 4.5 },
@@ -115,7 +117,7 @@ function ContrastRow({ pair }: { pair: Pair }) {
 const SWATCH_GROUPS: { title: string; tokens: string[] }[] = [
   { title: "Surfaces", tokens: ["--c-bg", "--c-bg-sunken", "--c-surface"] },
   {
-    title: "Forest (identity, portals)",
+    title: "Action teal (identity, links, selected)",
     tokens: [
       "--c-primary",
       "--c-primary-hover",
@@ -125,7 +127,7 @@ const SWATCH_GROUPS: { title: string; tokens: string[] }[] = [
     ],
   },
   {
-    title: "Copper (the one conversion action)",
+    title: "Accent (the one conversion action, same teal)",
     tokens: [
       "--c-accent",
       "--c-accent-hover",
@@ -134,15 +136,18 @@ const SWATCH_GROUPS: { title: string; tokens: string[] }[] = [
       "--c-accent-tint-2",
     ],
   },
+  { title: "Amber (Featured and New, with ink text)", tokens: ["--c-amber", "--c-on-amber"] },
   {
     title: "Text and lines",
     tokens: [
       "--c-ink",
       "--c-muted",
       "--c-subtle",
+      "--c-disabled",
       "--c-border",
       "--c-border-strong",
       "--c-border-input",
+      "--c-divider",
     ],
   },
   {
@@ -153,6 +158,7 @@ const SWATCH_GROUPS: { title: string; tokens: string[] }[] = [
       "--c-warning",
       "--c-warning-bg",
       "--c-danger",
+      "--c-danger-text",
       "--c-danger-bg",
       "--c-info",
       "--c-info-bg",

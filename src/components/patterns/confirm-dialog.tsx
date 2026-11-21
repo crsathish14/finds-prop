@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 const discStyles = cva("mb-4 grid size-12 place-items-center rounded-pill", {
   variants: {
     tone: {
-      danger: "bg-danger-tint text-danger",
+      danger: "bg-danger-tint text-danger-text",
       warning: "bg-warning-tint text-warning",
       info: "bg-info-tint text-info",
     },

@@ -76,7 +76,7 @@ function RejectListingDialog({
             className="w-full max-w-120 rounded-xl bg-surface p-6 shadow-modal"
           >
             {icon ? (
-              <div className="mb-4 grid size-12 place-items-center rounded-pill bg-danger-tint text-danger">
+              <div className="mb-4 grid size-12 place-items-center rounded-pill bg-danger-tint text-danger-text">
                 {icon}
               </div>
             ) : null}

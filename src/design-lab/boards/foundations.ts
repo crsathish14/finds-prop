@@ -21,7 +21,7 @@ export const FOUNDATIONS: LabEntry[] = [
     id: "typography",
     name: "Typography",
     description:
-      "Heading, Text and Price: level and size are separate, small copper text uses the AA-safe tone.",
+      "Heading, Text and Price: level and size are separate, small teal text uses the AA-safe tone.",
     sources: ["ui/heading.tsx", "ui/text.tsx", "ui/price.tsx"],
     Demo: TypographyDemo,
   },
@@ -35,7 +35,7 @@ export const FOUNDATIONS: LabEntry[] = [
   {
     id: "focus",
     name: "Focus",
-    description: "One focus ring everywhere, switching to light copper on dark surfaces.",
+    description: "One focus ring everywhere, switching to brand teal on dark surfaces.",
     sources: [],
     Demo: FocusDemo,
   },

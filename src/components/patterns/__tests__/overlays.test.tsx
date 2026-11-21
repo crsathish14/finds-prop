@@ -112,7 +112,7 @@ describe("DropdownMenu", () => {
     render(<Example />);
     screen.getByRole("button", { name: "Account" }).focus();
     await userEvent.keyboard("{Enter}");
-    expect(screen.getByText("2")).toHaveClass("bg-cta");
+    expect(screen.getByText("2")).toHaveClass("bg-amber");
     expect(screen.getByRole("menuitem", { name: "Delete account" })).toHaveClass("text-danger");
   });
 });

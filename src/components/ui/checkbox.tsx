@@ -25,7 +25,7 @@ function Checkbox({ className, ...props }: ComponentProps<typeof CheckboxPrimiti
         "transition-colors duration-(--dur-fast) hover:border-primary",
         "data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary",
         "aria-invalid:border-[length:var(--bw-error)] aria-invalid:border-danger",
-        "disabled:cursor-not-allowed disabled:border-line-strong disabled:bg-canvas-sunken disabled:text-subtle",
+        "disabled:cursor-not-allowed disabled:border-line-strong disabled:bg-canvas-sunken disabled:text-disabled",
         className,
       )}
       {...props}

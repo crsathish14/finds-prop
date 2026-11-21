@@ -18,7 +18,7 @@ import { cn } from "@/lib/cn";
 const iconButtonStyles = cva(
   [
     "inline-grid size-(--size-icon-btn) shrink-0 place-items-center rounded-pill",
-    "transition-colors duration-(--dur-fast) disabled:cursor-not-allowed disabled:text-subtle",
+    "transition-colors duration-(--dur-fast) disabled:cursor-not-allowed disabled:text-disabled",
     "[&_svg:not([class*='size-'])]:size-6",
   ],
   {

@@ -121,7 +121,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   };
 
   return (
-    <main id="main" className="flex-1">
+    <main id="main" className="flex-1 bg-canvas-sunken">
       <ResultsScreen
         params={params}
         status={results.status}
