@@ -157,6 +157,7 @@ describe("UT-site-chrome: footer", () => {
       "New projects",
       "Blog",
       "FAQ",
+      "Careers",
       "Contact us",
       "Post a property",
     ]);

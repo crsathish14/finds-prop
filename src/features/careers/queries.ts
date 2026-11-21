@@ -308,3 +308,73 @@ export async function readAdminJob(
 export async function getAdminJob(jobId: string): Promise<AdminJobView | null> {
   return readAdminJob(await createServerSupabase(), jobId);
 }
+
+/** What the public Careers list draws: the page of jobs, the filter choices and whether nothing is open at all. */
+export interface CareersPageData {
+  list: JobListView;
+  filters: JobFilters;
+  /** The department that really exists among the open jobs (an unknown one in the address is dropped), or "". */
+  department: string;
+  /** No open job and no search or filter: the page says so instead of drawing an empty search. */
+  nothingOpen: boolean;
+}
+
+/** The unfiltered words of a choice, for a test and the page alike. */
+export interface CareersPageParams {
+  query: string;
+  department: string;
+  location: string;
+  mode: WorkMode | "";
+  type: EmploymentType | "";
+  page: number;
+}
+
+/**
+ * Everything the public list needs, in one call: the filter row's choices and the page of jobs. A department in the
+ * address that no open job belongs to is dropped. Free words go to the search function and are never cached; every other
+ * view of the list is a cached page under the Careers tag.
+ */
+export async function getCareersPage(params: CareersPageParams): Promise<CareersPageData> {
+  const filters = await getJobFilters();
+  const department = filters.departments.some((item) => item.slug === params.department)
+    ? params.department
+    : "";
+  const list = await getJobList({
+    query: params.query,
+    department: department === "" ? null : department,
+    location: params.location === "" ? null : params.location,
+    workMode: params.mode === "" ? null : params.mode,
+    type: params.type === "" ? null : params.type,
+    page: params.page,
+  });
+  const asked =
+    params.query !== "" ||
+    department !== "" ||
+    params.location !== "" ||
+    params.mode !== "" ||
+    params.type !== "";
+  return { list, filters, department, nothingOpen: !asked && list.total === 0 };
+}
+
+/**
+ * How many jobs each department holds, the Trash included (a department that holds only trashed jobs still cannot be
+ * deleted), by department id. Read as the signed-in admin; never cached. A failed read throws.
+ */
+export async function readJobDepartmentUsage(
+  supabase: SupabaseClient<Database>,
+): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from("job_postings").select("department_id").limit(10_000);
+  if (error) {
+    logger.error("the job department usage could not be read", { errorCode: error.code });
+    throw error;
+  }
+  const usage: Record<string, number> = {};
+  for (const row of data) {
+    usage[row.department_id] = (usage[row.department_id] ?? 0) + 1;
+  }
+  return usage;
+}
+
+export async function getJobDepartmentUsage(): Promise<Record<string, number>> {
+  return readJobDepartmentUsage(await createServerSupabase());
+}

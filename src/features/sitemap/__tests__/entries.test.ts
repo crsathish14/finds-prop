@@ -124,6 +124,37 @@ describe("UT-sitemap: the entries", () => {
     }
   });
 
+  it("lists the Careers list with the newest job date, and then the jobs after the homes, only when given some", () => {
+    const entries = sitemapEntries({
+      origin: ORIGIN,
+      homes: [{ slug: "flat", shortId: "ab12cd34", updatedAt: "2026-11-02T10:30:00+00:00" }],
+      projects: [],
+      careers: {
+        jobs: [
+          { slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" },
+          { slug: "sales-lead", updatedAt: "2026-11-18T08:00:00+00:00" },
+        ],
+      },
+    });
+    expect(entries.map((entry) => entry.url)).toEqual([
+      "https://findsprop.test/",
+      "https://findsprop.test/properties",
+      "https://findsprop.test/projects",
+      "https://findsprop.test/careers",
+      "https://findsprop.test/properties/flat-ab12cd34",
+      "https://findsprop.test/careers/site-engineer",
+      "https://findsprop.test/careers/sales-lead",
+    ]);
+    expect(entries[3]?.lastModified).toEqual(new Date("2026-11-18T08:00:00+00:00"));
+    for (const without of [
+      sitemapEntries({ origin: ORIGIN, homes: [], projects: [], careers: null }),
+      sitemapEntries({ origin: ORIGIN, homes: [], projects: [], careers: { jobs: [] } }),
+      sitemapEntries({ origin: ORIGIN, homes: [], projects: [] }),
+    ]) {
+      expect(without.map((entry) => entry.url).join(" ")).not.toContain("/careers");
+    }
+  });
+
   it("cuts the Blog's articles before it cuts homes when the cap is reached", () => {
     const homes = Array.from({ length: SITEMAP_MAX_URLS }, (_, index) => ({
       slug: "home",
