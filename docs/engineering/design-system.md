@@ -10,9 +10,9 @@ The approved UX package is in `docs/ux/` (text, HTML and CSS; renders are not co
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------------------ |
 | R-DS-01 | `src/styles/tokens.css` is the single source of tokens and stays in parity with the approved UX tokens (allow-file for intentional differences). shadcn `--accent` is a hover surface; copper is `cta` | G-04                                      | ADR-004, plan 04 §2.12   |
 | R-DS-02 | Shared UI lives only in `components/{ui,patterns,layout,domain,charts}`. Search it and the Design Lab before creating a component. Promote to a shared layer on the second use, in the same PR         | G-02 (R-FE-06); G-18, G-19; PR template   | plan 04 §9               |
-| R-DS-03 | A shared component ships with a specification header, a Design Lab entry, a registry test, an axe pass and baselines at 390, 820 and 1440                                                              | G-05 (registry test), G-10                | plan 04 §7.1             |
+| R-DS-03 | A shared component ships with a specification header, a Design Lab entry, a registry test, an axe pass and screenshots at 390, 820 and 1440                                                            | G-05 (registry test), G-10                | plan 04 §7.1             |
 | R-DS-04 | Dialog, menu, popover, combobox, tabs and tooltip come from Radix or shadcn, not custom code                                                                                                           | Review                                    | plan 13 §3               |
-| R-DS-05 | The approved UX (`docs/ux/`) is the visual source of truth. Baselines come from the implementation and are reviewed against the UX renders; a deviation needs approval                                 | Review (PR field)                         | plan 04 §8               |
+| R-DS-05 | The approved UX (`docs/ux/`) is the visual source of truth. Screenshots come from the implementation and are reviewed against the UX renders; a deviation needs approval                               | Review (PR field)                         | plan 04 §8               |
 | R-DS-06 | A proposed or unapproved UX item is not built, not even hidden                                                                                                                                         | Review (PR field)                         | plan 13 §2, §9           |
 | R-DS-07 | Responsive checks use the UX widths 390, 820, 1024, 1280, 1440. No Tailwind default breakpoints (`sm` to `2xl`)                                                                                        | G-04, G-10 (`scrollWidth <= clientWidth`) | plan 04 §2.7, plan 08 §6 |
 | R-DS-08 | The sponsor slot renders nothing when no sponsor fits: no frame, label or gap. Image errors remove the slot                                                                                            | G-05 (`UT-sponsors`), G-10 (E2E-09)       | plan 04 §5.2             |
@@ -55,7 +55,7 @@ Recorded in the component's Design Lab page and in a short header comment. The h
 4. **Accessibility** (roles, keyboard, labels, live regions, target size).
 5. **States:** default, hover, focus, pressed/selected, disabled, loading, error, empty (where applicable).
 6. **Dependencies** (atoms/molecules it composes; libraries).
-7. **Tests:** RTL behaviour, axe in the Design Lab, visual baseline.
+7. **Tests:** RTL behaviour, axe in the Design Lab, screenshots reviewed.
 8. **Design reference:** UX board/screen key and render file.
 
 ### 7.2 Key component notes (beyond the tables)
@@ -85,15 +85,15 @@ Each section renders from a typed registry so adding a component without a lab e
 
 **Running it.** Set `DESIGN_LAB=1` in `.env.local` (it is off by default, and a production deployment never serves it whatever the flag says), start the app, and open `/design-system`. Screens that change with the width (header, bottom bar, footer, portal shell, hero placements) are shown as real pages in frames at 390, 820 and 1280 px; the same pages are served at `/design-system/preview/<name>` and listed in `src/design-lab/preview-names.ts`.
 
-**Browser checks.** `npm run build` then `npm run test:ds` (which starts the production build with the lab on) runs, for every board and preview at 390, 820 and 1440 px: zero serious or critical axe violations, no sideways scrolling of the page, and a full-page screenshot attached to the test report for review. `e2e/design-lab/keyboard.spec.ts` covers what jsdom cannot show: the combobox keeps the cursor in its box, menus, dialogs and sheets return focus, toasts appear, and the header, bottom bar and portal change at the right widths. Set `DESIGN_LAB_VISUAL=compare` to also compare screenshots with stored baselines (none are stored yet; see the sign-off step below).
+**Browser checks.** `npm run build` then `npm run test:ds` (which starts the production build with the lab on) runs, for every board and preview at 390, 820 and 1440 px: zero serious or critical axe violations, no sideways scrolling of the page, and a full-page screenshot attached to the test report for review. `e2e/design-lab/keyboard.spec.ts` covers what jsdom cannot show: the combobox keeps the cursor in its box, menus, dialogs and sheets return focus, toasts appear, and the header, bottom bar and portal change at the right widths. The screenshots are not compared with stored images (ADR-145); the owner looks at them in the CI report.
 
 **Review workflow**
 
-1. A change under `components/**` must update its lab page and Playwright baselines in the same PR.
-2. CI runs axe on every lab page and Playwright screenshots at 390 / 820 / 1440; diffs fail the PR unless the baseline is intentionally updated.
+1. A change under `components/**` must update its lab page in the same PR.
+2. CI runs axe on every lab page, checks for sideways scrolling and keyboard use, and attaches screenshots at 390 / 820 / 1440 to the report; the reviewer looks at them against the UX render.
 3. The reviewer compares the lab render with the matching UX render in `final-ux/renders/` (side by side) and ticks the checklist: token usage, states, keyboard, responsive, long text.
 4. **Stage 2 sign-off:** you review the five lab pages against the UX boards. Approval is recorded before S4 starts.
-5. Baselines are taken from the _implementation_ (fonts and real icons differ slightly from the prototypes), not pixel-matched to the prototype PNG/WEBP.
+5. Screenshots are taken from the _implementation_ (fonts and real icons differ slightly from the prototypes), not pixel-matched to the prototype PNG/WEBP.
 
 ## Preventing duplicated components
 
