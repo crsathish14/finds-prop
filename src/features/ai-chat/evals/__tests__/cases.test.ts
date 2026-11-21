@@ -58,6 +58,7 @@ describe("UT-ai-eval-cases: the real files", () => {
       "personal_data",
       "forged_history",
       "propose",
+      "site_link",
     ] as const)
       expect(covered.has(category), `no case for ${category}`).toBe(true);
   });

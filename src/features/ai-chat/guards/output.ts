@@ -20,6 +20,9 @@
  *    Cards are also automatic: at the end of an answer, every home or project a tool returned this turn that no marker
  *    named gets a card too, in the order the tools returned them (`automaticCards`; the caller turns it off for an
  *    answer that must not show cards). At most `AI_MAX_CARDS_PER_ANSWER` cards in all, markers first, none twice.
+ *    A site-link marker (`[[link:KEY]]`) is accepted only when KEY is in `site-links.ts`; it becomes a `link` event and
+ *    is taken out of the text. An unknown key is dropped and counted (`unknown_reference`). At most
+ *    `MAX_SITE_LINKS_PER_ANSWER`, none twice. The path comes from the table, never from the model.
  * 6. Advice and guarantee phrases: the text stays and the fixed disclaimer line follows the answer (`advice_phrase`).
  * 7. Number grounding: SHADOW MODE. Figures that no tool result or customer message holds are counted and logged;
  *    nothing is changed or blocked until the offline evals show an acceptable false-positive rate.
@@ -39,6 +42,7 @@ import {
   AI_SEND_CLAIM_PATTERNS,
 } from "@/config/ai";
 import { logger } from "@/server/logger";
+import { isSiteLinkKey, MAX_SITE_LINKS_PER_ANSWER, type SiteLinkKey } from "../site-links";
 import type { ToolReference } from "../tools/types";
 import { namesCompetitorPortal } from "./competitors";
 import {
@@ -98,6 +102,8 @@ export type OutputBlockTag = Extract<
 export type OutputEvent =
   /** A checked, plain-text piece of the answer. Send it as it is. */
   | { readonly type: "text"; readonly text: string }
+  /** A page of the site from the table in `site-links.ts`: the endpoint builds the button from the key. */
+  | { readonly type: "link"; readonly key: SiteLinkKey }
   /** A home or project the answer refers to, and a tool returned this turn: draw its card (built by code). */
   | { readonly type: "card"; readonly reference: ToolReference }
   /** The fixed disclaimer, after the last text of an answer that used an advice or guarantee phrase. */
@@ -166,9 +172,12 @@ const INTERNAL_PATH = /(?<![\p{L}\p{N}_/.:-])\/(properties|projects)\/([\p{L}\p{
 /** A home's public id: 8 characters, as the database allows them. */
 const HOME_ID = /[a-hjkmnp-z2-9]{8}$/u;
 
+const LINK_MARKER = /\[\[\s*link\s*:\s*([^\]\s]{1,40})\s*\]\]/giu;
+
 interface ReferenceOutcome {
   readonly text: string;
   readonly cards: readonly ToolReference[];
+  readonly links: readonly SiteLinkKey[];
   readonly unknown: number;
 }
 
@@ -178,6 +187,7 @@ function resolveReferences(
   references: readonly ToolReference[],
 ): ReferenceOutcome {
   const cards: ToolReference[] = [];
+  const links: SiteLinkKey[] = [];
   let unknown = 0;
 
   const lookUp = (kind: "home" | "project", written: string): void => {
@@ -192,7 +202,13 @@ function resolveReferences(
     else unknown += 1;
   };
 
-  const withoutMarkers = text.replace(CARD_MARKER, (_match, kind: string, id: string) => {
+  const withoutLinks = text.replace(LINK_MARKER, (_match, written: string) => {
+    const key = written.toLowerCase();
+    if (isSiteLinkKey(key)) links.push(key);
+    else unknown += 1;
+    return "";
+  });
+  const withoutMarkers = withoutLinks.replace(CARD_MARKER, (_match, kind: string, id: string) => {
     lookUp(kind.toLowerCase() === "home" ? "home" : "project", id);
     return "";
   });
@@ -209,7 +225,7 @@ function resolveReferences(
       return "";
     },
   );
-  return { text: withoutPaths, cards, unknown };
+  return { text: withoutPaths, cards, links, unknown };
 }
 
 // ---------------------------------------------------------------- one segment
@@ -220,6 +236,7 @@ type SegmentVerdict =
       readonly kind: "pass";
       readonly text: string;
       readonly cards: readonly ToolReference[];
+      readonly links: readonly SiteLinkKey[];
       readonly tags: readonly OutputTag[];
       readonly numberUngrounded: number;
     };
@@ -301,6 +318,7 @@ function checkSegment(
     kind: "pass",
     text: stripped.text,
     cards: resolved.cards,
+    links: resolved.links,
     tags,
     numberUngrounded,
   };
@@ -349,6 +367,7 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
   let finished = false;
   let disclaimerDue = false;
   const sentCards = new Set<string>();
+  const sentLinks = new Set<SiteLinkKey>();
   const carry: Carry = { words: [], compact: "" };
 
   const count = (tag: OutputTag, times = 1): void => {
@@ -399,6 +418,11 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
     const events: OutputEvent[] = [];
     if (verdict.text !== "") events.push({ type: "text", text: verdict.text });
     for (const reference of verdict.cards) events.push(...sendCard(reference));
+    for (const key of verdict.links) {
+      if (sentLinks.has(key) || sentLinks.size >= MAX_SITE_LINKS_PER_ANSWER) continue;
+      sentLinks.add(key);
+      events.push({ type: "link", key });
+    }
     return events;
   };
 

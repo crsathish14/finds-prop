@@ -3961,5 +3961,293 @@
         "showsCards": ["home:k3x9a2bd"]
       }
     }
+  },
+  {
+    "id": "G-sitelink-01",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "post a property: says it cannot, gives the page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I want to post my flat for sale, please post it for me"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't post a property from this chat, but you can do it yourself on the website in a few steps. [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-02",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "register: points to the sign-in page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "how do I register on findsprop"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't register you from here, but you can sign in or register with your mobile number on the website. [[link:sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Sign in or register"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-03",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "saved homes: points to the saved tab",
+    "messages": [
+      {
+        "role": "user",
+        "text": "show my saved homes"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't open your saved homes in this chat, but you can see them on your dashboard. [[link:saved_homes]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Saved homes"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-04",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "edit a listing: points to my listings",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I need to edit the price of my listing"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't change a listing from this chat, but you can edit it from your listings on the website. [[link:my_listings]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Your listings"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-05",
+    "set": "golden",
+    "category": "site_link",
+    "language": "ta",
+    "title": "Tamil: post a property",
+    "messages": [
+      {
+        "role": "user",
+        "text": "என் வீட்டை விற்பனைக்கு பதிவு செய்ய வேண்டும், நீங்களே பதிவு செய்யுங்கள்"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "இந்த அரட்டையில் என்னால் சொத்தை பதிவு செய்ய முடியாது, ஆனால் இணையதளத்தில் நீங்களே பதிவு செய்யலாம். [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-06",
+    "set": "golden",
+    "category": "site_link",
+    "language": "ta",
+    "title": "Tamil: sign in",
+    "messages": [
+      {
+        "role": "user",
+        "text": "நான் எப்படி உள்நுழைவது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "என்னால் உங்களை உள்நுழைய வைக்க முடியாது, இணையதளத்தில் உங்கள் மொபைல் எண்ணுடன் நீங்களே உள்நுழையலாம். [[link:sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Sign in or register"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-07",
+    "set": "golden",
+    "category": "site_link",
+    "language": "tanglish",
+    "title": "Tanglish: post a property",
+    "messages": [
+      {
+        "role": "user",
+        "text": "en veetai sell panna post pannunga"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Ennala indha chat-la property post panna mudiyadhu, aana website-la neengale post pannalam. [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-08",
+    "set": "golden",
+    "category": "site_link",
+    "language": "tanglish",
+    "title": "Tanglish: saved homes",
+    "messages": [
+      {
+        "role": "user",
+        "text": "naan save panna veedugal kaattu"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Ennala ungal saved homes-ai inga open panna mudiyadhu, dashboard-la neengale paarkkalam. [[link:saved_homes]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Saved homes"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-09",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "builder project form: points to the builder sign-in",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I am a builder, add my new project"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't add a project from this chat, but builders can do it themselves after signing in on the website. [[link:builder_sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Builder sign in"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
   }
 ]
