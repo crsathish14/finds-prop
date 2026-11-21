@@ -202,6 +202,7 @@ test.describe("@smoke site footer and bottom bar", () => {
       footerText.linkProjects,
       footerText.linkBlog,
       footerText.linkFaq,
+      footerText.linkCareers,
       footerText.linkContact,
       footerText.linkPost,
     ]);
