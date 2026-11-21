@@ -303,7 +303,7 @@ isOneToOne: false
                     "created_at"?: string,"name"?: string,"token"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"job_postings": {
                   Row: {
