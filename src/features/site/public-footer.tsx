@@ -19,7 +19,13 @@ const CONTACT_ICONS = { address: MapPin, phone: Phone, email: Mail } as const;
 export async function PublicFooter() {
   const translate = await getTranslate();
   const settings = await getSiteSettings();
-  const footer = buildFooter(settings, getFeatureFlags(), translate, await getCurrentYear());
+  const footer = buildFooter(
+    settings,
+    getFeatureFlags(),
+    translate,
+    await getCurrentYear(),
+    settings.content_modules,
+  );
 
   return (
     <SiteFooter

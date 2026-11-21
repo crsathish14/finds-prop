@@ -137,7 +137,11 @@ function FaqManager({
   pending = false,
   className,
 }: FaqManagerProps) {
-  const filtering = search.value.trim() !== "" || category.value !== "";
+  // A tab other than the first (All) narrows the list too, so an empty Drafts tab is "no match", not "nothing yet".
+  const filtering =
+    search.value.trim() !== "" ||
+    category.value !== "" ||
+    tabs.value !== (tabs.options[0]?.value ?? tabs.value);
   const tableColumns: ResponsiveTableColumn[] = [
     { id: "question", heading: columns.question, role: "main", width: 34 },
     { id: "category", heading: columns.category, width: 16 },

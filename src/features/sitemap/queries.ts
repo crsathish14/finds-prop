@@ -1,12 +1,20 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
+import { getPublicFaqs } from "@/features/faq";
 import { PROJECTS_TAG } from "@/features/projects";
 import { LISTINGS_TAG } from "@/features/search";
+import { getContentModuleOn } from "@/features/site";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import { SITEMAP_HOME_COLUMNS, SITEMAP_PROJECT_COLUMNS } from "./columns";
-import { homesRoom, SITEMAP_PROJECTS_MAX, type SitemapHome, type SitemapProject } from "./entries";
+import {
+  homesRoom,
+  SITEMAP_PROJECTS_MAX,
+  type SitemapFaq,
+  type SitemapHome,
+  type SitemapProject,
+} from "./entries";
 
 /** PostgREST answers at most this many rows at a time (`max_rows` in the project), so the reads page. */
 const PAGE_SIZE = 1000;
@@ -103,4 +111,19 @@ export async function getSitemapSources(): Promise<{
   const homes = await readHomes(room);
   if (homes.length >= room) logger.warn("sitemap reached its address cap", { cap: room });
   return { homes, projects };
+}
+
+/**
+ * The FAQ page's entry (ADR-143): its newest question's date, or null while the FAQ module is switched off or no
+ * question is published, so the sitemap never lists a page that answers not-found or has nothing on it. Reads the
+ * cached list of published questions (tag `faq`), so a published or trashed question refreshes it.
+ */
+export async function getSitemapFaq(): Promise<SitemapFaq | null> {
+  if (!(await getContentModuleOn("faq"))) return null;
+  const faqs = await getPublicFaqs();
+  let newest: string | null = null;
+  for (const faq of faqs) {
+    if (newest === null || new Date(faq.updatedAt) > new Date(newest)) newest = faq.updatedAt;
+  }
+  return newest === null ? null : { updatedAt: newest };
 }

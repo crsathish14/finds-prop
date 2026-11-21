@@ -18,7 +18,12 @@ import { getTranslate } from "./translator";
 export async function PublicHeader() {
   const translate = await getTranslate();
   const settings = await getSiteSettings();
-  const header = buildHeader(settings.header, getFeatureFlags(), translate);
+  const header = buildHeader(
+    settings.header,
+    getFeatureFlags(),
+    translate,
+    settings.content_modules,
+  );
 
   const view = {
     header,

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { FAQ_PATH } from "@/features/faq";
 import { projectPath, PROJECTS_PATH } from "@/features/projects";
 import { propertyPath } from "@/features/property";
 import { SEARCH_PATH } from "@/features/search";
@@ -18,6 +19,8 @@ export const SITEMAP_PROJECTS_MAX = 5_000;
 
 export type SitemapHome = { slug: string; shortId: string; updatedAt: string };
 export type SitemapProject = { slug: string; updatedAt: string };
+/** The FAQ page: when its newest question changed. Absent (null) while the FAQ module is off or nothing is published. */
+export type SitemapFaq = { updatedAt: string };
 
 /** A date the database stored, or nothing when it does not read as one (the entry then has no date). */
 function modified(updatedAt: string): Date | undefined {
@@ -32,16 +35,19 @@ export function homesRoom(projectCount: number): number {
 
 /**
  * The sitemap (FR-PUB-14): the built public pages, then every live project and every approved home
- * with the date it last changed. Only addresses that exist today are listed; the contact and legal
- * pages join when they are built. Never more than `SITEMAP_MAX_URLS`.
+ * with the date it last changed, and the FAQ page when it is on and has questions. Only addresses that exist today
+ * are listed; the contact and legal pages join when they are built. Never more than `SITEMAP_MAX_URLS`.
  */
 export function sitemapEntries(input: {
   origin: string;
   homes: readonly SitemapHome[];
   projects: readonly SitemapProject[];
+  faq?: SitemapFaq | null;
 }): MetadataRoute.Sitemap {
   const at = (path: string) => `${input.origin}${path}`;
   const entries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({ url: at(path) }));
+  // The FAQ page is listed only while the module is on and a question is published (ADR-143).
+  if (input.faq) entries.push({ url: at(FAQ_PATH), lastModified: modified(input.faq.updatedAt) });
   for (const project of input.projects) {
     entries.push({ url: at(projectPath(project.slug)), lastModified: modified(project.updatedAt) });
   }

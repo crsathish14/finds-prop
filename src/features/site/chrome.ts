@@ -1,6 +1,7 @@
 import type { Translate } from "@/lib/format";
 import type { AppRole } from "@/server/auth/session";
 import type { FeatureFlags } from "./flags";
+import type { ContentModule } from "./modules";
 import type { SiteSettings } from "./schemas";
 
 /**
@@ -19,6 +20,18 @@ const AI_SEARCH_PATH = "/ai-search";
 const FLAGGED_ROUTES: { path: string; flag: keyof FeatureFlags }[] = [
   { path: AI_SEARCH_PATH, flag: "aiSearch" },
 ];
+
+/**
+ * Routes that belong to a content module (ADR-143). A link to one is absent from the header and the footer while the
+ * module is switched off, whether it is a default link or one the content team saved, so no menu points at a page
+ * that answers not-found. The Blog and Careers join this list with their pages.
+ */
+const MODULE_ROUTES: { path: string; module: ContentModule }[] = [{ path: "/faq", module: "faq" }];
+
+/** Which content modules are switched on (the site content's `content_modules`). */
+export type ModuleSwitches = Record<ContentModule, boolean>;
+
+const ALL_MODULES_ON: ModuleSwitches = { blog: true, faq: true, careers: true };
 
 export type NavLink = { label: string; href: string; accent?: boolean };
 
@@ -95,11 +108,18 @@ function pathOf(href: string): string {
 }
 
 /** False for a link to a route whose flag is off. Addresses on other sites are never flagged. */
-export function isRouteEnabled(href: string, flags: FeatureFlags): boolean {
+export function isRouteEnabled(
+  href: string,
+  flags: FeatureFlags,
+  modules: ModuleSwitches = ALL_MODULES_ON,
+): boolean {
   if (!href.startsWith("/")) return true;
   const path = pathOf(href);
-  return !FLAGGED_ROUTES.some(
-    (route) => !flags[route.flag] && (path === route.path || path.startsWith(`${route.path}/`)),
+  const under = (route: { path: string }) =>
+    path === route.path || path.startsWith(`${route.path}/`);
+  return (
+    !FLAGGED_ROUTES.some((route) => !flags[route.flag] && under(route)) &&
+    !MODULE_ROUTES.some((route) => !modules[route.module] && under(route))
   );
 }
 
@@ -115,6 +135,7 @@ function defaultNavigation(translate: Translate): { label: string; href: string 
     { label: translate("site.nav.rent"), href: "/properties" },
     { label: translate("site.nav.projects"), href: "/projects" },
     { label: translate("site.nav.aiSearch"), href: AI_SEARCH_PATH },
+    { label: translate("site.nav.faq"), href: "/faq" },
     { label: translate("site.nav.contact"), href: "/contact" },
   ];
 }
@@ -123,10 +144,11 @@ export function buildHeader(
   header: SiteSettings["header"],
   flags: FeatureFlags,
   translate: Translate,
+  modules: ModuleSwitches = ALL_MODULES_ON,
 ): HeaderModel {
   const source = header.links.length > 0 ? header.links : defaultNavigation(translate);
   const links = source
-    .filter((link) => isRouteEnabled(link.href, flags))
+    .filter((link) => isRouteEnabled(link.href, flags, modules))
     .map((link) => ({
       label: link.label,
       href: link.href,
@@ -139,7 +161,7 @@ export function buildHeader(
   return {
     brandName: resolveBrandName(header, translate),
     links,
-    ...(isRouteEnabled(cta.href, flags) ? { cta } : {}),
+    ...(isRouteEnabled(cta.href, flags, modules) ? { cta } : {}),
   };
 }
 
@@ -150,6 +172,7 @@ function defaultFooterLinks(translate: Translate): { label: string; href: string
     { label: translate("site.footer.linkRent"), href: "/properties" },
     { label: translate("site.footer.linkProjects"), href: "/projects" },
     { label: translate("site.footer.linkAiSearch"), href: AI_SEARCH_PATH },
+    { label: translate("site.footer.linkFaq"), href: "/faq" },
     { label: translate("site.footer.linkContact"), href: "/contact" },
     { label: translate("site.footer.linkPost"), href: "/post-property" },
   ];
@@ -181,12 +204,13 @@ export function buildFooter(
   flags: FeatureFlags,
   translate: Translate,
   year: number,
+  modules: ModuleSwitches = ALL_MODULES_ON,
 ): FooterModel {
   const { footer } = settings;
   const brandName = resolveBrandName(settings.header, translate);
   const source = footer.links.length > 0 ? footer.links : defaultFooterLinks(translate);
   const links = source
-    .filter((link) => isRouteEnabled(link.href, flags))
+    .filter((link) => isRouteEnabled(link.href, flags, modules))
     .map((link): FooterLinkModel => {
       if (link.href.startsWith("/")) return { label: link.label, href: link.href };
       return {

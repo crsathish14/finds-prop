@@ -23,10 +23,10 @@ beforeEach(() => {
   read.modules.mockResolvedValue(MODULES);
 });
 
-describe("the admin Blog, FAQ and Careers pages carry the module's switch bar (ADR-143)", () => {
+// The FAQ page is built (ADR-143 phase 2); its own test is faq-pages.test.tsx.
+describe("the admin Blog and Careers pages carry the module's switch bar until they are built (ADR-143)", () => {
   const pages = [
     ["blog", () => import("../blog/page")],
-    ["faq", () => import("../faq/page")],
     ["careers", () => import("../careers/page")],
   ] as const;
 
@@ -41,7 +41,7 @@ describe("the admin Blog, FAQ and Careers pages carry the module's switch bar (A
   }
 
   it("reads the switches and counts once for the visit", async () => {
-    await render(pages[1][1]);
+    await render(pages[0][1]);
     expect(read.modules).toHaveBeenCalledTimes(1);
   });
 });

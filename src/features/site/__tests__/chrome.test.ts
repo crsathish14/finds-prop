@@ -50,6 +50,7 @@ describe("UT-site-chrome: header", () => {
       "Rent",
       "Projects",
       "AI Search",
+      "FAQ",
       "Contact",
     ]);
     expect(header.brandName).toBe("Find Prop");
@@ -62,7 +63,13 @@ describe("UT-site-chrome: header", () => {
     expect(on.links.filter((link) => link.accent)).toHaveLength(1);
 
     const off = buildHeader(SITE_DEFAULTS.header, flagsOff, translate);
-    expect(off.links.map((link) => link.label)).toEqual(["Buy", "Rent", "Projects", "Contact"]);
+    expect(off.links.map((link) => link.label)).toEqual([
+      "Buy",
+      "Rent",
+      "Projects",
+      "FAQ",
+      "Contact",
+    ]);
   });
 
   it("uses the saved links whole instead of the defaults, and still applies the flags", () => {
@@ -146,6 +153,7 @@ describe("UT-site-chrome: footer", () => {
       "Buy a home",
       "Rent a home",
       "New projects",
+      "FAQ",
       "Contact us",
       "Post a property",
     ]);
@@ -402,5 +410,63 @@ describe("UT-site-chrome: the header's Sign in link", () => {
     ]) {
       expect(signInHref(path)).toBe("/auth");
     }
+  });
+});
+
+describe("UT-site-chrome: content module switches (ADR-143)", () => {
+  const faqOff = { blog: true, faq: false, careers: true };
+
+  it("recognises a link to a module's page, and only while the module is off", () => {
+    expect(isRouteEnabled("/faq", flagsOff, faqOff)).toBe(false);
+    expect(isRouteEnabled("/faq?category=buyers#faq-1", flagsOff, faqOff)).toBe(false);
+    expect(isRouteEnabled("/faq", flagsOff)).toBe(true);
+    expect(isRouteEnabled("/faq", flagsOff, { ...faqOff, faq: true })).toBe(true);
+    expect(isRouteEnabled("/faqs-and-more", flagsOff, faqOff)).toBe(true);
+    expect(isRouteEnabled("https://example.org/faq", flagsOff, faqOff)).toBe(true);
+  });
+
+  it("leaves the FAQ link out of the default header and footer while the FAQ module is off", () => {
+    const header = buildHeader(SITE_DEFAULTS.header, flagsOff, translate, faqOff);
+    expect(header.links.map((link) => link.label)).not.toContain("FAQ");
+    const footer = buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026, faqOff);
+    expect(footer.links.map((link) => link.label)).not.toContain("FAQ");
+    expect(header.links.map((link) => link.label)).toContain("Contact");
+  });
+
+  it("also leaves out a FAQ link the content team saved, so no menu points at a page that is not there", () => {
+    const saved = {
+      links: [
+        { label: "Help", href: "/faq" },
+        { label: "Contact", href: "/contact" },
+      ],
+    };
+    expect(buildHeader(saved, flagsOff, translate, faqOff).links.map((link) => link.label)).toEqual(
+      ["Contact"],
+    );
+    expect(buildHeader(saved, flagsOff, translate).links.map((link) => link.label)).toEqual([
+      "Help",
+      "Contact",
+    ]);
+    const footer = buildFooter(
+      { header: { links: [] }, footer: saved },
+      flagsOff,
+      translate,
+      2026,
+      faqOff,
+    );
+    expect(footer.links.map((link) => link.label)).toEqual(["Contact"]);
+  });
+
+  it("shows the FAQ link in the default header and footer while the module is on", () => {
+    expect(
+      buildHeader(SITE_DEFAULTS.header, flagsOff, translate).links.find(
+        (link) => link.href === "/faq",
+      )?.label,
+    ).toBe("FAQ");
+    expect(
+      buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).links.find(
+        (link) => link.href === "/faq",
+      )?.label,
+    ).toBe("FAQ");
   });
 });
