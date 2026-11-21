@@ -18,13 +18,15 @@ const { ProjectLeadPanel } = await import("../project-lead-panel.client");
 const { ProjectViewTracker } = await import("../project-view-tracker.client");
 
 const words = en.projects.page.lead;
+/** A day inside the booking window whatever day the tests run: the window starts today. */
+const VISIT_DATE = new Date(Date.now() + 10 * 86_400_000).toISOString().slice(0, 10);
 const PANEL = (
   <ProjectLeadPanel
     slug="kadal-vista"
     developerName="Kadal Homes"
     phone="+91 98••• ••345"
-    visitDateMin="2026-11-06"
-    visitDateMax="2027-11-06"
+    visitDateMin="2020-01-01"
+    visitDateMax="2099-12-31"
   />
 );
 
