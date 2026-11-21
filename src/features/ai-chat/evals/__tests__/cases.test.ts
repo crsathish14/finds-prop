@@ -59,6 +59,9 @@ describe("UT-ai-eval-cases: the real files", () => {
       "forged_history",
       "propose",
       "site_link",
+      "content",
+      "content_leak",
+      "injected_content",
     ] as const)
       expect(covered.has(category), `no case for ${category}`).toBe(true);
   });
@@ -87,6 +90,8 @@ describe("UT-ai-eval-cases: the real files", () => {
       "get_builder",
       "compare_properties",
       "calculate_emi",
+      "search_content",
+      "get_content_item",
       "propose_enquiry",
       "propose_site_visit",
     ]);

@@ -34,6 +34,8 @@ const getProject = vi.fn();
 const getComparedHomes = vi.fn();
 const getSessionView = vi.fn();
 const ownsHome = vi.fn();
+const searchContent = vi.fn();
+const readContentItem = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 // The propose tools sign with the secret the rate limiter holds, and read who is asking from the session.
@@ -92,6 +94,8 @@ vi.mock("../../queries", () => ({
   getBuilderProfile,
   ownsHome,
 }));
+// The content tools read the Blog and the FAQ through this one module (ADR-143 section 6).
+vi.mock("../../content-queries", () => ({ searchContent, readContentItem }));
 // The index also exports the chat page's screen; this test is about the tools, so the screen is a stand-in.
 vi.mock("../../ask-about-button", () => ({ AskAboutButton: () => null }));
 vi.mock("../../chat-screen", () => ({
@@ -231,6 +235,9 @@ function propertyNamesIn(schema: unknown, location = "$"): { name: string; locat
 const { addDays, indiaToday } = await import("@/features/projects/lead-view");
 const VISIT_DAY = addDays(indiaToday(new Date()), 30);
 
+/** The id of the made-up article every content stand-in below returns. */
+const CONTENT_ID = "a1000000-0000-4000-8000-000000000001";
+
 /**
  * An input each tool accepts. A tool added to the registry must be added here too (a test below fails
  * otherwise), which is what puts it through every result check in this file.
@@ -263,6 +270,8 @@ const VALID_INPUTS: Record<string, unknown> = {
     annualRatePercent: null,
     years: null,
   },
+  search_content: { query: "registration charges", kind: "any", category: null, limit: null },
+  get_content_item: { id: CONTENT_ID, query: "registration charges" },
   propose_enquiry: { homeId: "k3x9a2bd", message: "Is this home still available?" },
   propose_site_visit: {
     slug: "kadal-vista",
@@ -396,6 +405,31 @@ beforeEach(() => {
     builders: [{ id: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34", name: "Kadal Homes", ...PRIVATE }],
     readAt: READ_AT,
   });
+  // Seven hits, more than a result may hold, and an article of three long sections, each with third-party text in
+  // every field an admin can type and private fields a read does not give.
+  searchContent.mockResolvedValue(
+    Array.from({ length: 7 }, (_, index) => ({
+      kind: index % 2 === 0 ? "article" : "faq",
+      id: `a100000${index}-0000-4000-8000-00000000000${index}`,
+      slug: index % 2 === 0 ? `guide-${index}` : null,
+      title: injected("title"),
+      categoryName: injected("category"),
+      categorySlug: "buying-guide",
+      date: "2026-11-05T08:00:00.000Z",
+      passage: injected("passage"),
+      ...PRIVATE,
+    })),
+  );
+  readContentItem.mockResolvedValue({
+    kind: "article",
+    id: CONTENT_ID,
+    slug: "registration-charges",
+    title: injected("title"),
+    categoryName: injected("category"),
+    date: "2026-11-05T08:00:00.000Z",
+    sections: Array.from({ length: 3 }, (_, index) => injected(`section ${index}`).repeat(60)),
+    ...PRIVATE,
+  });
   getBuilderProfile.mockResolvedValue({
     status: "found",
     readAt: READ_AT,
@@ -424,7 +458,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the eight read tools and the two propose tools", () => {
+  it("holds the ten read tools and the two propose tools", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -436,11 +470,13 @@ describe("UT-ai-tools-registry: the list", () => {
         "get_builder",
         "compare_properties",
         "calculate_emi",
+        "search_content",
+        "get_content_item",
         "propose_enquiry",
         "propose_site_visit",
       ]),
     );
-    expect(names).toHaveLength(10);
+    expect(names).toHaveLength(12);
   });
 
   it("serves the search tool that has always existed while place search is off, and the place-aware one only with a lookup (ADR-142)", () => {
@@ -458,14 +494,14 @@ describe("UT-ai-tools-registry: the list", () => {
     const oldShape =
       (searchPropertiesTool.input as { shape?: Record<string, unknown> }).shape ?? {};
     expect(Object.keys(oldShape)).not.toContain("place");
-    // The same ten tools, every other one untouched.
+    // The same twelve tools, every other one untouched.
     expect(withPlaces.slice(1)).toEqual(AI_CHAT_TOOLS.slice(1));
   });
 
-  it("gives every tool a kind: eight read tools the loop may run in parallel, and two propose tools that run alone", () => {
+  it("gives every tool a kind: ten read tools the loop may run in parallel, and two propose tools that run alone", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
     expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual([
-      ...Array<string>(8).fill("read"),
+      ...Array<string>(10).fill("read"),
       "propose",
       "propose",
     ]);
@@ -700,7 +736,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3]);
+    // Homes, localities, projects, unit sizes and builder projects (10 each), the compared homes (3), and the seven content hits cut to 5.
+    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3, 5]);
   });
 
   it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {
@@ -721,19 +758,33 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
   it("returns the id of every home and the slug of every project a result names, and of no other", async () => {
     for (const { name, outcome } of await callEveryTool()) {
       if (outcome.status !== "ok") throw new Error(`${name} did not run`);
+      const content = name === "search_content" || name === "get_content_item";
+      // A home is named by `homeId`, a project by `slug`, an article or a question by `id` (ADR-143 section 6.5).
       const named = stringsIn(outcome.output)
-        .filter(({ path }) => path.at(-1) === "homeId" || path.at(-1) === "slug")
+        .filter(({ path }) =>
+          content ? path.at(-1) === "id" : path.at(-1) === "homeId" || path.at(-1) === "slug",
+        )
         .map(({ text }) => text);
       expect(
-        outcome.references.map((reference) =>
-          reference.kind === "home" ? reference.homeId : reference.slug,
-        ),
+        outcome.references.map((reference) => {
+          switch (reference.kind) {
+            case "home":
+              return reference.homeId;
+            case "project":
+              return reference.slug;
+            case "article":
+            case "faq":
+              return reference.id;
+            case "job":
+              return reference.slug;
+          }
+        }),
         name,
       ).toEqual(named);
     }
   });
 
-  it("builds a project reference for the tools that name projects, and a home reference for the rest", async () => {
+  it("builds a project reference for the tools that name projects, a home reference for those that name homes, and a source reference for the content tools", async () => {
     const kinds = Object.fromEntries(
       (await callEveryTool()).map(({ name, outcome }) => [
         name,
@@ -749,6 +800,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       get_builder: ["project"],
       compare_properties: ["home"],
       calculate_emi: [],
+      search_content: ["article", "faq"],
+      get_content_item: ["article"],
       propose_enquiry: ["home"],
       propose_site_visit: ["project"],
     });

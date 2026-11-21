@@ -109,18 +109,18 @@ export async function getBlogList(list: BlogListQuery): Promise<BlogListView> {
 }
 
 /**
- * One published article by its address, or `null` when there is none (a draft, an archived one, one in Trash and a
- * wrong address all read the same: the row policy hides them). Cached under the Blog's tag and the article's own.
+ * One published article by the column that finds it, or `null` when there is none. Public data read with the cookie-less
+ * client, so the row policy decides: a draft, an archived article, one in Trash and a wrong value all read the same. The
+ * two cached reads below share it.
  */
-export async function getBlogArticle(slug: string): Promise<BlogArticleView | null> {
-  "use cache";
-  cacheTag(CACHE_TAGS.blog, blogPostTag(slug));
-  cacheLife("minutes");
-
+async function readPublishedArticle(
+  column: "slug" | "id",
+  value: string,
+): Promise<BlogArticleView | null> {
   const { data, error } = await createPublicSupabase()
     .from("blog_posts")
     .select(PUBLIC_POST_COLUMNS)
-    .eq("slug", slug)
+    .eq(column, value)
     .maybeSingle();
   if (error) {
     logger.error("a blog article could not be read", { errorCode: error.code });
@@ -134,6 +134,32 @@ export async function getBlogArticle(slug: string): Promise<BlogArticleView | nu
     category ? { slug: category.slug, name: category.name } : null,
     blogImageUrl,
   );
+}
+
+/**
+ * One published article by its address, or `null` when there is none (a draft, an archived one, one in Trash and a
+ * wrong address all read the same: the row policy hides them). Cached under the Blog's tag and the article's own.
+ */
+export async function getBlogArticle(slug: string): Promise<BlogArticleView | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.blog, blogPostTag(slug));
+  cacheLife("minutes");
+
+  return readPublishedArticle("slug", slug);
+}
+
+/**
+ * One published article by its id, for the AI assistant's article tool (ADR-143 section 6), which has the id from a
+ * search and not the address. Same rules as the page's read. Cached under the Blog's tag, which every
+ * `tagsAfterBlogChange` refreshes, so a publish, an unpublish, an edit or a move to Trash changes the answer at once.
+ * The id must be a UUID: the caller checks it, because a malformed one is a database error and not a "no such article".
+ */
+export async function getPublishedBlogPostById(id: string): Promise<BlogArticleView | null> {
+  "use cache";
+  cacheTag(CACHE_TAGS.blog);
+  cacheLife("minutes");
+
+  return readPublishedArticle("id", id);
 }
 
 /**

@@ -17,8 +17,14 @@ import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { isSiteLinkPath } from "../site-links";
+import { isSourcePath } from "../source-links";
 import { Text } from "@/components/ui/text";
-import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from "@/config/ai";
+import {
+  AI_MAX_CARDS_PER_ANSWER,
+  AI_MAX_SOURCES_PER_ANSWER,
+  AI_TRIAL_MESSAGES,
+  MAX_INPUT_CHARACTERS,
+} from "@/config/ai";
 import { saveDraft } from "@/lib/form-draft";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ChatContext } from "../context/page-context";
@@ -37,6 +43,7 @@ import {
   type ChatEntry,
   type ChatNote,
   type ChatReference,
+  type ChatSource,
 } from "./chat-model";
 import { readChatEvents, readChatFailure } from "./chat-stream";
 import { ChatConfirm } from "./confirm-card.client";
@@ -61,6 +68,7 @@ type LiveAnswer = {
   notes: ChatNote[];
   references: ChatReference[];
   links: { text: string; href: string }[];
+  sources: ChatSource[];
   replaced: boolean;
   href: string | undefined;
 };
@@ -78,6 +86,7 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   notes: [],
   references: [],
   links: [],
+  sources: [],
   replaced: false,
   href: undefined,
 };
@@ -106,13 +115,42 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
   );
 }
 
+/**
+ * The "Sources" row of a content answer (ADR-143 section 6.5): the articles and questions it drew on, each a link the
+ * server built (`source-links.ts`) and the browser draws only when the address is one of those shapes. Nothing is
+ * drawn for an answer with no source.
+ */
+function sourceRow(sources: readonly ChatSource[], label: string) {
+  const shown = sources
+    .filter((source) => isSourcePath(source.href))
+    .slice(0, AI_MAX_SOURCES_PER_ANSWER);
+  if (shown.length === 0) return null;
+  return (
+    <div className="mt-3" data-slot="chat-sources">
+      <Text variant="caption" tone="muted" className="font-bold">
+        {label}
+      </Text>
+      <ul className="mt-1 flex flex-col gap-1">
+        {shown.map((source) => (
+          <li key={source.href}>
+            <Link href={source.href} variant="arrow">
+              {source.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** The text, the cards and the notes of one answer, as the parts of a `ChatAssistantMessage`. */
 function answerParts(
   entry: Pick<
     AssistantEntry,
-    "text" | "notes" | "references" | "links" | "replaced" | "href" | "confirm"
+    "text" | "notes" | "references" | "links" | "sources" | "replaced" | "href" | "confirm"
   >,
   filtersLabel: string,
+  sourcesLabel: string,
   streaming: boolean,
   controls: ChatCardControls,
   keepMessage: (message: string) => void,
@@ -138,6 +176,7 @@ function answerParts(
               </p>
             ) : null;
           })}
+          {sourceRow(entry.sources ?? [], sourcesLabel)}
         </>
       ),
     cards:
@@ -285,7 +324,13 @@ export function ChatIsland({
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
-      const answer: LiveAnswer = { ...NO_ANSWER, id: newId(), notes: [], references: [] };
+      const answer: LiveAnswer = {
+        ...NO_ANSWER,
+        id: newId(),
+        notes: [],
+        references: [],
+        sources: [],
+      };
       setLive({ ...answer });
       setProblem(null);
 
@@ -336,6 +381,14 @@ export function ChatIsland({
             if (!answer.links.some((link) => link.href === event.href)) {
               answer.links.push({ text: event.text, href: event.href });
             }
+          } else if (event.type === "source") {
+            if (
+              isSourcePath(event.href) &&
+              answer.sources.length < AI_MAX_SOURCES_PER_ANSWER &&
+              !answer.sources.some((source) => source.href === event.href)
+            ) {
+              answer.sources.push({ kind: event.kind, title: event.title, href: event.href });
+            }
           } else if (event.type === "confirm") {
             answer.confirm = event.card;
           } else if (event.type === "notice") {
@@ -353,6 +406,7 @@ export function ChatIsland({
             answer.notes = [];
             answer.references = [];
             answer.links = [];
+            answer.sources = [];
             answer.confirm = undefined;
             answer.replaced = true;
             answer.href = event.href;
@@ -372,6 +426,7 @@ export function ChatIsland({
             notes: answer.notes,
             references: answer.references,
             ...(answer.links.length === 0 ? {} : { links: answer.links }),
+            ...(answer.sources.length === 0 ? {} : { sources: answer.sources }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),
@@ -513,6 +568,7 @@ export function ChatIsland({
                   key={entry.id}
                   answer={entry}
                   filtersLabel={translate("notice.useFilters")}
+                  sourcesLabel={translate("sources.label")}
                   controls={controls}
                   keepMessage={keepMessage}
                 />
@@ -526,6 +582,7 @@ export function ChatIsland({
                     answer={live}
                     streaming
                     filtersLabel={translate("notice.useFilters")}
+                    sourcesLabel={translate("sources.label")}
                     controls={controls}
                     keepMessage={keepMessage}
                   />,
@@ -584,16 +641,18 @@ function Answer({
   answer,
   streaming = false,
   filtersLabel,
+  sourcesLabel,
   controls,
   keepMessage,
 }: {
   answer: AssistantEntry | LiveAnswer;
   streaming?: boolean;
   filtersLabel: string;
+  sourcesLabel: string;
   controls: ChatCardControls;
   keepMessage: (message: string) => void;
 }) {
-  const parts = answerParts(answer, filtersLabel, streaming, controls, keepMessage);
+  const parts = answerParts(answer, filtersLabel, sourcesLabel, streaming, controls, keepMessage);
   const searching = streaming && answer.text === "" && answer.references.length === 0;
   return (
     <ChatAssistantMessage

@@ -20,6 +20,11 @@
  *    Cards are also automatic: at the end of an answer, every home or project a tool returned this turn that no marker
  *    named gets a card too, in the order the tools returned them (`automaticCards`; the caller turns it off for an
  *    answer that must not show cards). At most `AI_MAX_CARDS_PER_ANSWER` cards in all, markers first, none twice.
+ *    The same holds for the sources of a content answer (ADR-143 section 6.5): an article or a question a content tool
+ *    returned this turn is drawn as a `source` link built by code (`source-links.ts`) when the answer is complete
+ *    (`automaticSources`) or when the text names it (`[[article:ID]]`, `[[faq:ID]]`, or the path `/blog/SLUG`,
+ *    `/faq#faq-ID`, `/careers/SLUG`); a name no tool returned is dropped and counted (`unknown_reference`), so the
+ *    only links an answer can carry are the ones built for it. At most `AI_MAX_SOURCES_PER_ANSWER`, none twice.
  *    A site-link marker (`[[link:KEY]]`) is accepted only when KEY is in `site-links.ts`; it becomes a `link` event and
  *    is taken out of the text. An unknown key is dropped and counted (`unknown_reference`). At most
  *    `MAX_SITE_LINKS_PER_ANSWER`, none twice. The path comes from the table, never from the model.
@@ -39,11 +44,18 @@ import {
   AI_PROMPT_COPY_RUN_WORDS,
   AI_SEGMENT_MAX_CHARACTERS,
   AI_MAX_CARDS_PER_ANSWER,
+  AI_MAX_SOURCES_PER_ANSWER,
   AI_SEND_CLAIM_PATTERNS,
 } from "@/config/ai";
 import { logger } from "@/server/logger";
 import { isSiteLinkKey, MAX_SITE_LINKS_PER_ANSWER, type SiteLinkKey } from "../site-links";
-import type { ToolReference } from "../tools/types";
+import { sourceHref, sourcesToShow } from "../source-links";
+import {
+  referenceKey,
+  type CardReference,
+  type SourceReference,
+  type ToolReference,
+} from "../tools/types";
 import { namesCompetitorPortal } from "./competitors";
 import {
   buildEvidence,
@@ -105,7 +117,9 @@ export type OutputEvent =
   /** A page of the site from the table in `site-links.ts`: the endpoint builds the button from the key. */
   | { readonly type: "link"; readonly key: SiteLinkKey }
   /** A home or project the answer refers to, and a tool returned this turn: draw its card (built by code). */
-  | { readonly type: "card"; readonly reference: ToolReference }
+  | { readonly type: "card"; readonly reference: CardReference }
+  /** An article or a question a content tool returned this turn: draw its link under the answer (built by code). */
+  | { readonly type: "source"; readonly reference: SourceReference }
   /** The fixed disclaimer, after the last text of an answer that used an advice or guarantee phrase. */
   | { readonly type: "notice"; readonly messageKey: typeof OUTPUT_MESSAGE_KEYS.disclaimer }
   /** Swap the whole message for the fixed line. The stream stops; nothing more is sent. */
@@ -130,6 +144,8 @@ export interface OutputSummary {
 export type OutputGuardInput = OutputEvidenceInput & {
   /** Draw a card for every record a tool returned this turn that the text did not name. Default: false. */
   readonly automaticCards?: boolean;
+  /** Draw a source link for the articles and questions the content tools returned this turn. Default: false. */
+  readonly automaticSources?: boolean;
 };
 
 export interface OutputGuard {
@@ -166,9 +182,12 @@ function checkableText(cleaned: string): string {
 
 // ---------------------------------------------------------------- references
 
-const CARD_MARKER = /\[\[\s*(home|project)\s*:\s*([^\]\s]{1,80})\s*\]\]/giu;
+const CARD_MARKER = /\[\[\s*(home|project|article|faq)\s*:\s*([^\]\s]{1,80})\s*\]\]/giu;
 /** An internal path such as `/properties/velachery-flat-k3m9p2xw`; one after a host is a web address and is not this. */
-const INTERNAL_PATH = /(?<![\p{L}\p{N}_/.:-])\/(properties|projects)\/([\p{L}\p{N}-]+)/giu;
+const INTERNAL_PATH =
+  /(?<![\p{L}\p{N}_/.:-])\/(properties|projects|blog|careers)\/([\p{L}\p{N}-]+)/giu;
+/** The address of a question of the FAQ, `/faq#faq-<id>`. A bare `/faq` is only a word in a sentence and is left alone. */
+const FAQ_PATH = /(?<![\p{L}\p{N}_/.:-])\/faq#faq-([\p{L}\p{N}-]{1,80})/giu;
 /** A home's public id: 8 characters, as the database allows them. */
 const HOME_ID = /[a-hjkmnp-z2-9]{8}$/u;
 
@@ -176,7 +195,8 @@ const LINK_MARKER = /\[\[\s*link\s*:\s*([^\]\s]{1,40})\s*\]\]/giu;
 
 interface ReferenceOutcome {
   readonly text: string;
-  readonly cards: readonly ToolReference[];
+  readonly cards: readonly CardReference[];
+  readonly sources: readonly SourceReference[];
   readonly links: readonly SiteLinkKey[];
   readonly unknown: number;
 }
@@ -186,19 +206,52 @@ function resolveReferences(
   evidence: OutputEvidence,
   references: readonly ToolReference[],
 ): ReferenceOutcome {
-  const cards: ToolReference[] = [];
+  const cards: CardReference[] = [];
+  const sources: SourceReference[] = [];
   const links: SiteLinkKey[] = [];
   let unknown = 0;
 
   const lookUp = (kind: "home" | "project", written: string): void => {
     const id = written.toLowerCase();
-    const found = references.find((reference) =>
-      reference.kind === "home"
-        ? kind === "home" && reference.homeId.toLowerCase() === id
-        : kind === "project" && reference.slug.toLowerCase() === id,
+    const found = references.find(
+      (reference): reference is CardReference =>
+        (reference.kind === "home" && kind === "home" && reference.homeId.toLowerCase() === id) ||
+        (reference.kind === "project" && kind === "project" && reference.slug.toLowerCase() === id),
     );
     const known = kind === "home" ? evidence.homeIds.has(id) : evidence.projectSlugs.has(id);
     if (found !== undefined && known) cards.push(found);
+    else unknown += 1;
+  };
+
+  /** A source the text names, by id (an article, a question) or by address word (an article, a job). */
+  const lookUpSource = (
+    kind: "article" | "faq" | "article-slug" | "job-slug",
+    written: string,
+  ): void => {
+    const name = written.toLowerCase();
+    const found = references.find((reference): reference is SourceReference => {
+      switch (reference.kind) {
+        case "article":
+          return kind === "article"
+            ? reference.id.toLowerCase() === name
+            : kind === "article-slug" && reference.slug.toLowerCase() === name;
+        case "faq":
+          return kind === "faq" && reference.id.toLowerCase() === name;
+        case "job":
+          return kind === "job-slug" && reference.slug.toLowerCase() === name;
+        default:
+          return false;
+      }
+    });
+    const known =
+      kind === "article"
+        ? evidence.articleIds.has(name)
+        : kind === "faq"
+          ? evidence.faqIds.has(name)
+          : kind === "article-slug"
+            ? evidence.articleSlugs.has(name)
+            : evidence.jobSlugs.has(name);
+    if (found !== undefined && known) sources.push(found);
     else unknown += 1;
   };
 
@@ -209,23 +262,34 @@ function resolveReferences(
     return "";
   });
   const withoutMarkers = withoutLinks.replace(CARD_MARKER, (_match, kind: string, id: string) => {
-    lookUp(kind.toLowerCase() === "home" ? "home" : "project", id);
+    const word = kind.toLowerCase();
+    if (word === "article" || word === "faq") lookUpSource(word, id);
+    else lookUp(word === "home" ? "home" : "project", id);
     return "";
   });
   const withoutPaths = withoutMarkers.replace(
     INTERNAL_PATH,
     (_match, kind: string, slug: string) => {
-      if (kind.toLowerCase() === "properties") {
+      const word = kind.toLowerCase();
+      if (word === "properties") {
         const shortId = HOME_ID.exec(slug.toLowerCase())?.[0];
         if (shortId === undefined) unknown += 1;
         else lookUp("home", shortId);
+      } else if (word === "blog") {
+        lookUpSource("article-slug", slug);
+      } else if (word === "careers") {
+        lookUpSource("job-slug", slug);
       } else {
         lookUp("project", slug);
       }
       return "";
     },
   );
-  return { text: withoutPaths, cards, links, unknown };
+  const withoutFaqPaths = withoutPaths.replace(FAQ_PATH, (_match, id: string) => {
+    lookUpSource("faq", id);
+    return "";
+  });
+  return { text: withoutFaqPaths, cards, sources, links, unknown };
 }
 
 // ---------------------------------------------------------------- one segment
@@ -235,7 +299,8 @@ type SegmentVerdict =
   | {
       readonly kind: "pass";
       readonly text: string;
-      readonly cards: readonly ToolReference[];
+      readonly cards: readonly CardReference[];
+      readonly sources: readonly SourceReference[];
       readonly links: readonly SiteLinkKey[];
       readonly tags: readonly OutputTag[];
       readonly numberUngrounded: number;
@@ -318,6 +383,7 @@ function checkSegment(
     kind: "pass",
     text: stripped.text,
     cards: resolved.cards,
+    sources: resolved.sources,
     links: resolved.links,
     tags,
     numberUngrounded,
@@ -367,6 +433,7 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
   let finished = false;
   let disclaimerDue = false;
   const sentCards = new Set<string>();
+  const sentSources = new Set<string>();
   const sentLinks = new Set<SiteLinkKey>();
   const carry: Carry = { words: [], compact: "" };
 
@@ -393,12 +460,25 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
   };
 
   /** A card event for the reference, unless one was already sent for it or the cap is reached. */
-  const sendCard = (reference: ToolReference): OutputEvent[] => {
-    const key =
-      reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
+  const sendCard = (reference: CardReference): OutputEvent[] => {
+    const key = referenceKey(reference);
     if (sentCards.has(key) || sentCards.size >= AI_MAX_CARDS_PER_ANSWER) return [];
     sentCards.add(key);
     return [{ type: "card", reference }];
+  };
+
+  /** A source event for the reference, unless one was already sent for it, the cap is reached or it has no address. */
+  const sendSource = (reference: SourceReference): OutputEvent[] => {
+    const key = referenceKey(reference);
+    if (
+      sentSources.has(key) ||
+      sentSources.size >= AI_MAX_SOURCES_PER_ANSWER ||
+      sourceHref(reference) === null
+    ) {
+      return [];
+    }
+    sentSources.add(key);
+    return [{ type: "source", reference }];
   };
 
   const release = (segment: string): OutputEvent[] => {
@@ -418,6 +498,7 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
     const events: OutputEvent[] = [];
     if (verdict.text !== "") events.push({ type: "text", text: verdict.text });
     for (const reference of verdict.cards) events.push(...sendCard(reference));
+    for (const reference of verdict.sources) events.push(...sendSource(reference));
     for (const key of verdict.links) {
       if (sentLinks.has(key) || sentLinks.size >= MAX_SITE_LINKS_PER_ANSWER) continue;
       sentLinks.add(key);
@@ -458,7 +539,16 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
       if (!blockedNow && input.automaticCards === true) {
         // After the markers' cards, in the order the tools returned the records. They come from the turn's own
         // references, so nothing the model wrote can add one.
-        for (const reference of input.references) events.push(...sendCard(reference));
+        for (const reference of input.references) {
+          if (reference.kind === "home" || reference.kind === "project") {
+            events.push(...sendCard(reference));
+          }
+        }
+      }
+      if (!blockedNow && input.automaticSources === true) {
+        for (const reference of sourcesToShow(input.references)) {
+          events.push(...sendSource(reference));
+        }
       }
       if (!blockedNow && disclaimerDue) {
         events.push({ type: "notice", messageKey: OUTPUT_MESSAGE_KEYS.disclaimer });
