@@ -7,8 +7,10 @@ import { createPublicSupabase } from "@/server/supabase/public";
 import { createServerSupabase } from "@/server/supabase/server";
 import type { Database } from "@/types/database.types";
 import { FAQ_LIST_LIMIT, FAQ_SEARCH_MAX } from "./constants";
+import type { PublicFaqParams } from "./page-params";
 import {
   FAQ_ADMIN_COLUMNS,
+  groupFaqs,
   toAdminFaqViews,
   toFaqViews,
   type FaqAdminView,
@@ -74,6 +76,36 @@ export async function searchPublicFaqs(search: FaqSearch): Promise<FaqView[]> {
   }
 }
 
+/** What the public page shows for one request: the questions, the chips, and the category that really exists. */
+export type FaqPageData = {
+  faqs: FaqView[];
+  categories: { slug: string; name: string }[];
+  /** The chosen category, or "" when none was chosen or the one in the address has no published question. */
+  category: string;
+  /** True when no question is published at all (so the page says so, instead of "no match"). */
+  nothingPublished: boolean;
+};
+
+/**
+ * Everything the public FAQ page needs. The chips come from the cached list of published questions, so a category with
+ * nothing in it never shows; a category in the address that is not among them is dropped. Words go to the search
+ * function (never cached); a category alone is a filter of the cached list.
+ */
+export async function getFaqPage(params: PublicFaqParams): Promise<FaqPageData> {
+  const all = await getPublicFaqs();
+  const categories = groupFaqs(all).map((group) => ({ slug: group.slug, name: group.name }));
+  const category = categories.some((one) => one.slug === params.category) ? params.category : "";
+  const faqs =
+    params.query === ""
+      ? category === ""
+        ? all
+        : all.filter((faq) => faq.categorySlug === category)
+      : await searchPublicFaqs({
+          query: params.query,
+          ...(category === "" ? {} : { categorySlug: category }),
+        });
+  return { faqs, categories, category, nothingPublished: all.length === 0 };
+}
 function errorCodeOf(failure: unknown): string {
   return typeof failure === "object" && failure !== null && "code" in failure
     ? String((failure as { code: unknown }).code)

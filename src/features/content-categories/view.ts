@@ -45,14 +45,4 @@ export function toCategoryViews(rows: CategoryRecord[]): CategoryView[] {
   );
 }
 
-/** A suggested slug for a name typed in the manager: lower case words joined by hyphens, cut to the limit. */
-export function slugFromName(name: string, max = 60): string {
-  return name
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, max)
-    .replace(/-+$/, "");
-}
+export { slugFromName } from "@/lib/slug";
