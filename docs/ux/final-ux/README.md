@@ -1,5 +1,7 @@
 # Find Prop · Final UX package (Phase 2)
 
+> **Palette and name changed (ADR-149, 21 Nov 2026).** The live site now uses the findsprop palette (action teal, ink, amber, white) and the name "findsprop". This package is the record of what was approved earlier: its mock-ups, CSS, renders and texts still show the Grove palette (ivory, forest, copper) and "Find Prop". Where they say "copper" read the action teal; where they say "forest" read the action teal or ink. The layout, components and behaviour here are still the approved ones.
+
 **Status: complete, waiting for your review and explicit approval.** No production code has been written.
 
 The approved direction, **Concept 1 (Search Desk) in the Grove palette** with IBM Plex Serif and IBM Plex Sans, applied to every route in the Phase 1 inventory: **33 routes → 38 designed screens → 180 states → 265 rendered images**, with a documented design system, navigation model, interaction rules, the two homepage advertising layouts with the no-sponsor fallback, and a list of open decisions.

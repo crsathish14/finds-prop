@@ -2,6 +2,8 @@
 
 Index from routes to the approved UX screens. States are selected with a URL hash in the prototypes (for example `screens/auth-otp.html#wrong`); the full state list of each screen is in `docs/ux/final-ux/screen-inventory.md` and, for the addendum, in `docs/ux/ux-addendum/assets/manifest.js`. Behaviour and visual rules: `docs/ux/final-ux/design-system.md`, `interaction-specifications.md`, `navigation-and-information-architecture.md`.
 
+The mock-ups show the Grove palette and the name "Find Prop"; the built site uses the findsprop palette and name (ADR-149). Layout and behaviour are as approved.
+
 The addendum screens (`docs/ux/ux-addendum/`) replace or extend the approved screens named in the plan for sign-in, address, map, legal, sponsors and localities. They were designed by Claude on 30 Oct 2026 and are marked **Proposed** until the owner approves each one. **A proposed screen is not built until approved** (R-DS-06).
 
 ## Routes to approved screens
