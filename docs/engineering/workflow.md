@@ -222,6 +222,6 @@ Of the 100 rules above, 89 have at least one automated or preventive control and
 
 | Rule                              | What is checked                                              | What is left to review                           |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
-| R-FE-08 one copper button         | A dev-only count in the Design Lab and E2E (`G-10`)          | Pages not covered by a journey                   |
+| R-FE-08 one accent button         | A dev-only count in the Design Lab and E2E (`G-10`)          | Pages not covered by a journey                   |
 | R-BE-03 identity from the session | Forged-input tests per action (`G-08`)                       | An action nobody wrote a forged-input test for   |
 | R-DEP-02 no new technology        | New packages are reported (`G-11`) and installs ask (`L-03`) | Services, tools and skills that are not packages |

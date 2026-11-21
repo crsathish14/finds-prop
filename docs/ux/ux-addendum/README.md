@@ -1,5 +1,7 @@
 # Find Prop · UX addendum
 
+> **Palette and name changed (ADR-149, 21 Nov 2026).** The live site now uses the findsprop palette (action teal, ink, amber, white) and the name "findsprop". This package is the record of what was approved earlier: its mock-ups, CSS, renders and texts still show the Grove palette (ivory, forest, copper) and "Find Prop". Where they say "copper" read the action teal; where they say "forest" read the action teal or ink. The layout, components and behaviour here are still the approved ones.
+
 **Status: batches 1, 2 and 3 are built and waiting for your review. No production code has been written.** Only ADD-13 (PG and hostels) is not built, because it is gated until the requirement exists.
 
 The approved package in `../final-ux/` was designed for email and Google sign-in and an AI search. The architecture (29 Oct 2026) changed that: customers sign in with a **phone code**, builders and the administrator use **email or Google plus a second step**, **AI search is deferred**, and places come from an **address search** instead of a fixed list. This folder adds only the screens that change or are missing. It is built from the approved tokens and components; **`final-ux` was not modified** (it is read from this folder through relative links).

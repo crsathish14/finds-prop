@@ -1,5 +1,7 @@
 # Design system
 
+> **Palette and name changed (ADR-149, 21 Nov 2026).** The live site now uses the findsprop palette (action teal, ink, amber, white) and the name "findsprop". This package is the record of what was approved earlier: its mock-ups, CSS, renders and texts still show the Grove palette (ivory, forest, copper) and "Find Prop". Where they say "copper" read the action teal; where they say "forest" read the action teal or ink. The layout, components and behaviour here are still the approved ones.
+
 The system is **Concept 1 (Search Desk) with the Grove palette**, IBM Plex Serif for display and IBM Plex Sans for the interface. Brand values are carried over unchanged from `design-exploration-v2/assets/palettes.css`. Everything below is implemented in `assets/` and shown live on four boards:
 
 | Board | What it shows |
