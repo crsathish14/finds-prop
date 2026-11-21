@@ -86,7 +86,7 @@ describe("StatusBadge", () => {
         <StatusBadge kind="unit" status="onHold" />
       </>,
     );
-    expect(screen.getByText("Not approved")).toHaveClass("text-danger");
+    expect(screen.getByText("Not approved")).toHaveClass("text-danger-text");
     expect(screen.getByText("Waiting for owner")).toHaveClass("text-warning");
     expect(screen.getByText("On hold")).toBeInTheDocument();
   });
