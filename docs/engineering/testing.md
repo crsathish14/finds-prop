@@ -8,38 +8,38 @@ The named tests (`UT-`, `DB-`, `IT-`, `E2E-`) are listed in `test-catalogue.md`.
 
 | ID        | Rule                                                                                                                                                                                | Enforced by                                               | Source       |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------ |
-| R-TEST-01 | A slice carries the tests in plan 08 §9: unit, pgTAP, integration, one E2E main path plus one error path, axe, baselines                                                            | PR template; G-06 (`DB-BR-TRACE`); Review                 | plan 08 §9   |
+| R-TEST-01 | A slice carries the tests in plan 08 §9: unit, pgTAP, integration, one E2E main path plus one error path, axe, screenshots                                                          | PR template; G-06 (`DB-BR-TRACE`); Review                 | plan 08 §9   |
 | R-TEST-02 | Never weaken a test to make it pass: no `.only`, no `.skip` or `.todo` without an issue and date, no deleted assertion without a stated reason, no snapshot update without a reason | G-02 (`no-restricted-syntax` in test files), G-14; Review | plan 08 §8.4 |
 | R-TEST-03 | Deterministic tests: no `waitForTimeout`, injectable clock, unique data per test, cleaned up                                                                                        | G-02 (`no-restricted-syntax`)                             | plan 08 §2   |
 | R-TEST-04 | External providers are faked. No unit or integration test uses the network, a real SMS or a real email                                                                              | G-08 (CI has no provider keys)                            | plan 08 §2   |
 | R-TEST-05 | Fixtures and screenshots contain fictional data only                                                                                                                                | G-12; Review                                              | plan 08 §2   |
-| R-TEST-06 | A visual baseline changes only on purpose and with a reviewer's comparison against the UX render                                                                                    | G-10; Review                                              | plan 08 §6   |
+| R-TEST-06 | Design Lab screenshots are attached to the CI report and looked at by the owner against the UX render; they are not compared with stored images (ADR-145)                           | G-10 (axe, overflow, keyboard); Review                    | plan 08 §6   |
 | R-TEST-07 | A bug fix starts with a test that fails for the right reason                                                                                                                        | Review                                                    | harness      |
 | R-TEST-08 | Authorization tests cover success, unauthenticated, wrong role, wrong owner, invalid input, rate limited                                                                            | G-08                                                      | plan 08 §9   |
 
 ## Test pyramid and tooling
 
-| Layer              | Tool                                                                    | Runs against                      | Purpose                                                              | Speed           |
-| ------------------ | ----------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- | --------------- |
-| Unit and component | **Vitest** + Testing Library (+ `happy-dom`/`jsdom`)                    | pure code, components with fakes  | Rules, schemas, utilities, UI logic                                  | seconds         |
-| Database           | **pgTAP** via `supabase test db`                                        | throwaway Supabase Postgres (CI)  | RLS, triggers, constraints, RPC functions, storage policies          | tens of seconds |
-| Integration        | **Vitest** with real local Supabase (Auth, Postgres, Storage, Inbucket) | services + fake provider adapters | Data-access, workflows, authorization with real JWTs, route handlers | minutes         |
-| End-to-end         | **Playwright**                                                          | production build + local Supabase | Critical journeys, redirects, role access, responsive navigation     | minutes         |
-| Accessibility      | `@axe-core/playwright` + manual                                         | Design Lab pages and E2E states   | Automated WCAG checks; keyboard and screen-reader passes             | with E2E        |
-| Visual regression  | Playwright `toHaveScreenshot`                                           | Design Lab and key screens        | Component variants and layout at 390 / 820 / 1440                    | with E2E        |
-| Performance        | Lighthouse CI + Vercel Speed Insights                                   | preview URL; field data           | LCP/INP/CLS, bundle budget                                           | nightly         |
-| Static             | ESLint (flat config), `tsc --noEmit`, token/boundary scripts            | source                            | Style, boundaries, types, no hard-coded values                       | seconds         |
+| Layer              | Tool                                                                       | Runs against                      | Purpose                                                              | Speed           |
+| ------------------ | -------------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- | --------------- |
+| Unit and component | **Vitest** + Testing Library (+ `happy-dom`/`jsdom`)                       | pure code, components with fakes  | Rules, schemas, utilities, UI logic                                  | seconds         |
+| Database           | **pgTAP** via `supabase test db`                                           | throwaway Supabase Postgres (CI)  | RLS, triggers, constraints, RPC functions, storage policies          | tens of seconds |
+| Integration        | **Vitest** with real local Supabase (Auth, Postgres, Storage, Inbucket)    | services + fake provider adapters | Data-access, workflows, authorization with real JWTs, route handlers | minutes         |
+| End-to-end         | **Playwright**                                                             | production build + local Supabase | Critical journeys, redirects, role access, responsive navigation     | minutes         |
+| Accessibility      | `@axe-core/playwright` + manual                                            | Design Lab pages and E2E states   | Automated WCAG checks; keyboard and screen-reader passes             | with E2E        |
+| Visual review      | Playwright full-page screenshots in the report (no stored images, ADR-145) | Design Lab                        | Component variants and layout at 390 / 820 / 1440                    | with E2E        |
+| Performance        | Lighthouse CI + Vercel Speed Insights                                      | preview URL; field data           | LCP/INP/CLS, bundle budget                                           | nightly         |
+| Static             | ESLint (flat config), `tsc --noEmit`, token/boundary scripts               | source                            | Style, boundaries, types, no hard-coded values                       | seconds         |
 
 Layout: unit/component tests beside code (`__tests__/`); `supabase/tests/` for pgTAP (on an empty database) and `supabase/seed-tests/` for the seed data and `supabase/seed-dev-tests/` for what `scripts/seed-dev.mjs` adds to it; `supabase/perf/` for the search performance spike (S4-SPK-01: 10,000 fictional listings, run by the CI `db` job, never part of the seed); `tests/integration/` for Vitest integration; `e2e/` for Playwright; shared fakes and factories in `tests/`.
 
 ## Design Lab checks and screenshots (G-10, lab part)
 
-`npm run test:ds` runs in the CI `build` job, after the smoke tests, with `DESIGN_LAB_VISUAL=compare`. It opens the six boards and the thirteen whole-page previews at 390, 820 and 1440 px (57 page checks) and for each runs axe (no serious or critical violation), the sideways-scroll check and a full-page screenshot compared with the stored baseline. It also runs the keyboard tests and three route checks (92 tests, about 2.5 minutes on the runner's 2 CPUs; one worker, because more would only compete with the server).
+`npm run test:ds` runs in the CI `build` job, after the smoke tests. It opens the boards and the whole-page previews at 390, 820 and 1440 px and for each runs axe (no serious or critical violation) and the sideways-scroll check, and attaches a full-page screenshot to the test report. It also runs the keyboard tests and three route checks (about 2.5 minutes on the runner's 2 CPUs; one worker, because more would only compete with the server).
 
-- **Where the baselines are:** `e2e/design-lab/boards.spec.ts-snapshots/`, one `<name>-design-lab-linux.png` per page and width, 8.7 MB in all. They can only be made by the Linux CI runner: Windows draws text differently, so a baseline made on a developer machine would never match. A local `npm run test:ds` (after `npx playwright install chromium`) runs the same checks without the screenshot comparison.
-- **Changing one on purpose (R-TEST-06):** change the component, push, and let the step fail. The failure artifact `playwright-report` holds the new image as `*-actual.png` under `test-results/`. The reviewer compares it with the UX render, and only then is it copied over the baseline (renamed to the baseline's name) in **its own commit**, with the reason in the message and in the pull request. A **new** board or preview has no baseline yet: the first run fails with "A snapshot doesn't exist" and the failure artifact also holds the new image in the snapshot folder.
-- **Never** raise `maxDiffPixelRatio` (1%), add `--update-snapshots` to CI, or skip a page to make the step pass (R-TEST-02).
-- **Known limits:** the ads board shows the sponsor carousel at its first slide, and its hero frames load lazily, so they stay blank in a full-page screenshot; the same previews have their own baselines.
+- **Screenshots are for looking, not for comparing (ADR-145).** The `playwright-report` artifact of every CI run (kept 7 days, also when the run is green) holds one full-page picture per board and preview and width. The owner looks at the ones for the screens that changed and compares them with the UX render. No image is stored in the repository and no step fails because a picture changed, so a new board or preview needs no extra commit.
+- **What still fails the step:** a serious or critical axe violation, a page that scrolls sideways, and a keyboard test. These are the checks that cannot be done by eye.
+- **Locally:** `npm run test:ds` (after `npx playwright install chromium`) runs the same checks. Windows draws text differently from the runner, so judge pictures from CI, not from a local run.
+- **Known limits:** the ads board shows the sponsor carousel at its first slide, and its hero frames load lazily, so they stay blank in a full-page screenshot; the same previews have their own pictures.
 
 ## Test data, environments and fakes
 
@@ -66,7 +66,7 @@ A slice is not complete unless it has, as applicable:
 | 3   | Integration tests for each service function: success, unauthenticated, wrong role, wrong owner, invalid input, rate limited |
 | 4   | At least one E2E journey covering its main path (and an error path)                                                         |
 | 5   | axe pass on each new page and each designed state                                                                           |
-| 6   | Visual baselines for each new screen/state at 390 / 820 / 1440                                                              |
+| 6   | Screenshots for each new screen/state at 390 / 820 / 1440, looked at against the UX render                                  |
 | 7   | Design Lab entries for any new shared component                                                                             |
 | 8   | Loading, empty, error, success and rate-limited states implemented as in the UX screen list                                 |
 | 9   | Security checklist items from `07` §4.2 ticked                                                                              |

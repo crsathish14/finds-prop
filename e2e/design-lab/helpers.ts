@@ -80,18 +80,11 @@ export async function expectNoHorizontalOverflow(page: Page) {
 
 /**
  * Keep a full-page screenshot with the test results, for the owner's review against the UX boards.
- * Set DESIGN_LAB_VISUAL=compare to also compare it with the stored baseline (see docs/engineering).
+ * It is not compared with a stored image (ADR-145); the review is by eye.
  */
 export async function captureScreenshot(page: Page, testInfo: TestInfo, name: string) {
   await testInfo.attach(name, {
     body: await page.screenshot({ fullPage: true, animations: "disabled" }),
     contentType: "image/png",
   });
-  if (process.env.DESIGN_LAB_VISUAL === "compare") {
-    await expect(page).toHaveScreenshot(`${name}.png`, {
-      fullPage: true,
-      animations: "disabled",
-      maxDiffPixelRatio: 0.01,
-    });
-  }
 }
