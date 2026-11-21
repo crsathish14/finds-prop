@@ -455,14 +455,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "address": string | null,"advantages": (string)[],"amenities": (string)[],"bhk_options": (number)[],"brochure_path": string | null,"builder_id": string,"contact_phone": string | null,"created_at": string,"description": string | null,"elevations": (string)[],"featured": boolean,"floor_plans": (string)[],"form_id": string | null,"id": string,"images": (string)[],"land_area_acres": number | null,"latitude": number | null,"locality": string,"location": unknown,"longitude": number | null,"moderated_at": string | null,"moderated_by": string | null,"moderation": string,"name": string,"nearby": (string)[],"plot_images": (string)[],"possession_date": string | null,"price_max": number | null,"price_min": number | null,"project_status": string | null,"project_type": string | null,"property_type": string | null,"published": boolean,"rejection_reason": string | null,"rera_applicable": boolean,"rera_number": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"specifications": string | null,"total_units": number | null,"updated_at": string,"videos": (string)[]
+                    "address": string | null,"advantages": (string)[],"amenities": (string)[],"area_max_sqft": number | null,"area_min_sqft": number | null,"bhk_options": (number)[],"brochure_path": string | null,"builder_id": string,"contact_phone": string | null,"created_at": string,"description": string | null,"elevations": (string)[],"featured": boolean,"floor_plans": (string)[],"form_id": string | null,"id": string,"images": (string)[],"land_area_acres": number | null,"latitude": number | null,"locality": string,"location": unknown,"longitude": number | null,"moderated_at": string | null,"moderated_by": string | null,"moderation": string,"name": string,"nearby": (string)[],"offer_type": string | null,"plot_images": (string)[],"possession_date": string | null,"price": number | null,"price_max": number | null,"price_min": number | null,"price_type": string | null,"project_status": string | null,"project_type": string | null,"property_type": string | null,"published": boolean,"rejection_reason": string | null,"rera_applicable": boolean,"rera_not_applicable_reason": string | null,"rera_number": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"specifications": string | null,"total_units": number | null,"updated_at": string,"videos": (string)[]
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality": string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name": string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"area_max_sqft"?: number | null,"area_min_sqft"?: number | null,"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality": string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name": string,"nearby"?: (string)[],"offer_type"?: string | null,"plot_images"?: (string)[],"possession_date"?: string | null,"price"?: number | null,"price_max"?: number | null,"price_min"?: number | null,"price_type"?: string | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_not_applicable_reason"?: string | null,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
                   }
                   Update: {
-                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality"?: string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name"?: string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"area_max_sqft"?: number | null,"area_min_sqft"?: number | null,"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality"?: string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name"?: string,"nearby"?: (string)[],"offer_type"?: string | null,"plot_images"?: (string)[],"possession_date"?: string | null,"price"?: number | null,"price_max"?: number | null,"price_min"?: number | null,"price_type"?: string | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_not_applicable_reason"?: string | null,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
                   }
                   Relationships: [
                     {
@@ -646,6 +646,8 @@ isOneToOne: false
               "address": string | null,
 "advantages": (string)[],
 "amenities": (string)[],
+"area_max_sqft": number | null,
+"area_min_sqft": number | null,
 "bhk_options": (number)[],
 "brochure_path": string | null,
 "builder_id": string,
@@ -668,16 +670,20 @@ isOneToOne: false
 "moderation": string,
 "name": string,
 "nearby": (string)[],
+"offer_type": string | null,
 "plot_images": (string)[],
 "possession_date": string | null,
+"price": number | null,
 "price_max": number | null,
 "price_min": number | null,
+"price_type": string | null,
 "project_status": string | null,
 "project_type": string | null,
 "property_type": string | null,
 "published": boolean,
 "rejection_reason": string | null,
 "rera_applicable": boolean,
+"rera_not_applicable_reason": string | null,
 "rera_number": string | null,
 "seo_description": string | null,
 "seo_title": string | null,
@@ -870,6 +876,8 @@ isOneToOne: false
               "address": string | null,
 "advantages": (string)[],
 "amenities": (string)[],
+"area_max_sqft": number | null,
+"area_min_sqft": number | null,
 "bhk_options": (number)[],
 "brochure_path": string | null,
 "builder_id": string,
@@ -892,16 +900,20 @@ isOneToOne: false
 "moderation": string,
 "name": string,
 "nearby": (string)[],
+"offer_type": string | null,
 "plot_images": (string)[],
 "possession_date": string | null,
+"price": number | null,
 "price_max": number | null,
 "price_min": number | null,
+"price_type": string | null,
 "project_status": string | null,
 "project_type": string | null,
 "property_type": string | null,
 "published": boolean,
 "rejection_reason": string | null,
 "rera_applicable": boolean,
+"rera_not_applicable_reason": string | null,
 "rera_number": string | null,
 "seo_description": string | null,
 "seo_title": string | null,

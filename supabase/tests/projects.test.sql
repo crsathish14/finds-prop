@@ -1,7 +1,7 @@
 -- F04 projects, units and price trends. Tests: DB-CON-projects, DB-RLS-projects-*,
 -- DB-TRG-projects-guard, DB-TRG-units-project-lock, DB-RLS-units, DB-RLS-price_trends.
 begin;
-select plan(56);
+select plan(69);
 
 -- b1 and b2 are builders (records B1 and B2), c1 is a customer, ad is the reserved admin.
 insert into auth.users (id, email, email_confirmed_at) values
@@ -89,6 +89,72 @@ select throws_ok(
     values ('kadal-vista', 'Another', '00000000-0000-4000-b000-000000000001', 'Adyar')$$,
   '23505', null, 'a slug is unique'
 );
+-- DB-CON-projects-form (ADR-148): the columns of the project form change.
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, price, price_type)
+    values ('zero-price', 'Zero Price', '00000000-0000-4000-b000-000000000002', 'Adyar', 0, 'basic')$$,
+  '23514', null, 'the price is more than zero'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, price, price_type)
+    values ('odd-type', 'Odd Type', '00000000-0000-4000-b000-000000000002', 'Adyar', 100, 'weekly')$$,
+  '23514', null, 'the price type is one of the five'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, price, price_type)
+    values ('rent-no-offer', 'Rent No Offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 100, 'rent_per_month')$$,
+  '23514', null, 'a rent price type needs a project for rent'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, offer_type, price, price_type)
+    values ('sale-for-rent', 'Sale For Rent', '00000000-0000-4000-b000-000000000002', 'Adyar', 'rent', 100, 'all_inclusive')$$,
+  '23514', null, 'a sale price type does not go with a project for rent'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, offer_type)
+    values ('lease-offer', 'Lease Offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 'lease')$$,
+  '23514', null, 'a project is offered for sale or for rent'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, area_min_sqft, area_max_sqft)
+    values ('area-back', 'Area Back', '00000000-0000-4000-b000-000000000002', 'Adyar', 2000, 1000)$$,
+  '23514', null, 'the smallest area cannot exceed the largest'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, area_min_sqft)
+    values ('area-half', 'Area Half', '00000000-0000-4000-b000-000000000002', 'Adyar', 1000)$$,
+  '23514', null, 'the smallest and the largest area come together'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, rera_not_applicable_reason)
+    values ('blank-reason', 'Blank Reason', '00000000-0000-4000-b000-000000000002', 'Adyar', '   ')$$,
+  '23514', null, 'the reason RERA does not apply is not blank'
+);
+select throws_ok(
+  $$insert into public.projects (slug, name, builder_id, locality, property_type)
+    values ('odd-property', 'Odd Property', '00000000-0000-4000-b000-000000000002', 'Adyar', 'house')$$,
+  '23514', null, 'the property type is one of the seven'
+);
+select lives_ok(
+  $$insert into public.projects (
+      slug, name, builder_id, locality, project_type, property_type, offer_type, price, price_type,
+      area_min_sqft, area_max_sqft
+    ) values (
+      'office-for-rent', 'Office For Rent', '00000000-0000-4000-b000-000000000002', 'Adyar', 'commercial',
+      'office', 'rent', 85, 'rent_per_sqft_month', 500, 2500
+    )$$,
+  'a commercial office for rent with a rent price type and an area range is accepted'
+);
+select lives_ok(
+  $$insert into public.projects (
+      slug, name, builder_id, locality, project_type, property_type, price, price_type, area_min_sqft,
+      area_max_sqft, rera_applicable, rera_not_applicable_reason
+    ) values (
+      'plots-by-the-lake', 'Plots By The Lake', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential',
+      'plot', 3500, 'per_sqft', 1200, 2400, false, 'Below the size that needs registration.'
+    )$$,
+  'a residential plot project priced per sq ft with an area range and a RERA reason is accepted'
+);
 select ok(
   (select extensions.st_x(location::extensions.geometry) between 80.27 and 80.28
    from public.projects where id = '00000000-0000-4000-c000-000000000001'),
@@ -101,6 +167,11 @@ select is((select count(*) from public.projects)::int, 3, 'BR-42: anon sees only
 select lives_ok(
   $$select slug, name, latitude, longitude, location, rera_number from public.projects$$,
   'anon can read the public columns, including the exact coordinates'
+);
+select lives_ok(
+  $$select offer_type, price, price_type, area_min_sqft, area_max_sqft, rera_not_applicable_reason
+    from public.projects$$,
+  'anon can read the price, the price type, the area range, the offer type and the RERA reason'
 );
 select throws_ok($$select moderation from public.projects$$, '42501', null, 'anon cannot read the moderation state');
 select throws_ok($$select rejection_reason from public.projects$$, '42501', null, 'anon cannot read the rejection reason');
@@ -167,6 +238,12 @@ select lives_ok(
 select lives_ok(
   $$update public.projects set name = 'Rejected One, Revised' where id = '00000000-0000-4000-c000-000000000006'$$,
   'a builder can revise a rejected project'
+);
+select lives_ok(
+  $$update public.projects
+    set price = 4500000, price_type = 'basic', rera_not_applicable_reason = 'Below the size that needs registration.'
+    where id = '00000000-0000-4000-c000-000000000006'$$,
+  'a builder can write the price, the price type and the RERA reason'
 );
 select throws_ok(
   $$update public.projects set slug = 'kadal-vista-new' where id = '00000000-0000-4000-c000-000000000001'$$,

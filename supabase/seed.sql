@@ -56,7 +56,8 @@ insert into public.projects (
   id, slug, name, builder_id, project_type, property_type, project_status, price_min, price_max,
   bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, address,
   latitude, longitude, advantages, nearby, rera_applicable, rera_number, description, specifications,
-  amenities, moderation, published, featured, rejection_reason, moderated_at
+  amenities, moderation, published, featured, rejection_reason, moderated_at,
+  offer_type, price, price_type, area_min_sqft, area_max_sqft, rera_not_applicable_reason
 )
 select
   ('5eed0000-0000-4000-8002-' || lpad(spec.n::text, 12, '0'))::uuid,
@@ -71,7 +72,9 @@ select
   spec.bhk_options::smallint[],
   spec.acres,
   spec.total_units,
-  (date_trunc('month', current_date) + make_interval(months => spec.possession_months))::date,
+  case when spec.project_status <> 'ready_to_move'
+    then (date_trunc('month', current_date) + make_interval(months => spec.possession_months))::date
+  end,
   '+9190003000' || lpad(spec.n::text, 2, '0'),
   spec.locality,
   spec.locality || ', ' || spec.city || ', Tamil Nadu',
@@ -88,18 +91,24 @@ select
   spec.published,
   spec.featured,
   spec.rejection_reason,
-  case when spec.moderation in ('approved', 'rejected') then now() - interval '2 days' end
+  case when spec.moderation in ('approved', 'rejected') then now() - interval '2 days' end,
+  case when spec.project_type = 'commercial' then 'sale' end,
+  spec.price_min,
+  'basic',
+  case when spec.property_type = 'plot' then 1200 when spec.project_type = 'commercial' then 600 end,
+  case when spec.property_type = 'plot' then 2700 when spec.project_type = 'commercial' then 1500 end,
+  case when spec.rera_number is null then 'This project is below the size that needs RERA registration.' end
 from (
   values
     (1, 'kadal-heights-adyar', 'Kadal Heights', 1, 'residential', 'apartment', 'ready_to_move', 9500000, 21000000, '{2,3,4}', 2.4, 180, -6, 'Adyar', 'Chennai', 13.0067, 80.2573, 'approved', true, true, null, 'TN/01/Building/0001/2026'),
     (2, 'kadal-greens-navalur', 'Kadal Greens', 1, 'residential', 'villa', 'under_construction', 11000000, 18500000, '{3,4}', 6.0, 64, 14, 'Navalur', 'Chennai', 12.8458, 80.2265, 'approved', true, false, null, 'TN/01/Building/0002/2026'),
     (3, 'marina-bay-residences', 'Marina Bay Residences', 2, 'residential', 'apartment', 'new_launch', 7200000, 14800000, '{1,2,3}', 3.1, 240, 24, 'Perungudi', 'Chennai', 12.9650, 80.2461, 'approved', true, false, null, 'TN/01/Building/0003/2026'),
-    (4, 'marina-trade-centre', 'Marina Trade Centre', 2, 'commercial', null, 'under_construction', 6500000, 32000000, '{}', 1.8, 90, 10, 'Anna Nagar', 'Chennai', 13.0850, 80.2101, 'approved', true, false, null, null),
-    (5, 'cauvery-meadows', 'Cauvery Meadows', 3, 'plotted_layout', null, 'new_launch', 1800000, 5200000, '{}', 12.5, 150, 18, 'Srirangam', 'Tiruchirappalli', 10.8630, 78.6900, 'approved', true, false, null, 'TN/02/Layout/0004/2026'),
+    (4, 'marina-trade-centre', 'Marina Trade Centre', 2, 'commercial', 'office', 'under_construction', 6500000, 32000000, '{}', 1.8, 90, 10, 'Anna Nagar', 'Chennai', 13.0850, 80.2101, 'approved', true, false, null, null),
+    (5, 'cauvery-meadows', 'Cauvery Meadows', 3, 'residential', 'plot', 'new_launch', 1800000, 5200000, '{}', 12.5, 150, 18, 'Srirangam', 'Tiruchirappalli', 10.8630, 78.6900, 'approved', true, false, null, 'TN/02/Layout/0004/2026'),
     (6, 'cauvery-riverside', 'Cauvery Riverside', 3, 'residential', 'apartment', 'under_construction', 4200000, 8900000, '{2,3}', 2.2, 120, 12, 'Thillai Nagar', 'Tiruchirappalli', 10.8210, 78.6860, 'approved', true, false, null, null),
     (7, 'nilgiri-orchard-villas', 'Nilgiri Orchard Villas', 4, 'residential', 'villa', 'ready_to_move', 8800000, 15400000, '{3,4,5}', 4.7, 48, -3, 'Saravanampatti', 'Coimbatore', 11.0770, 76.9970, 'approved', true, true, null, 'TN/03/Building/0005/2026'),
     (8, 'nilgiri-skyline', 'Nilgiri Skyline', 4, 'residential', 'apartment', 'under_construction', 5400000, 11200000, '{2,3}', 2.9, 210, 20, 'RS Puram', 'Coimbatore', 11.0070, 76.9490, 'approved', true, false, null, null),
-    (9, 'meenakshi-gardens', 'Meenakshi Gardens', 6, 'plotted_layout', null, 'ready_to_move', 1500000, 3800000, '{}', 8.4, 110, -2, 'KK Nagar', 'Madurai', 9.9470, 78.1480, 'approved', true, false, null, null),
+    (9, 'meenakshi-gardens', 'Meenakshi Gardens', 6, 'residential', 'plot', 'ready_to_move', 1500000, 3800000, '{}', 8.4, 110, -2, 'KK Nagar', 'Madurai', 9.9470, 78.1480, 'approved', true, false, null, null),
     (10, 'meenakshi-towers', 'Meenakshi Towers', 6, 'residential', 'apartment', 'new_launch', 4800000, 9600000, '{2,3}', 1.6, 96, 26, 'Tallakulam', 'Madurai', 9.9390, 78.1350, 'approved', false, false, null, null),
     (11, 'vaigai-residency', 'Vaigai Residency', 5, 'residential', 'apartment', 'under_construction', 4100000, 7800000, '{1,2,3}', 2.0, 130, 16, 'Palayamkottai', 'Tirunelveli', 8.7260, 77.7340, 'pending', false, false, null, null),
     (12, 'vaigai-enclave', 'Vaigai Enclave', 5, 'residential', 'villa', 'new_launch', 6300000, 9900000, '{3,4}', 3.5, 40, 30, 'Katpadi', 'Vellore', 12.9710, 79.1450, 'rejected', false, false, 'Brochure and approvals are missing. Please add them and submit again.', null)
@@ -114,7 +123,7 @@ insert into public.project_units
   (project_id, unit_number, floor_number, bhk, area_sqft, facing, price, available_from, status)
 select
   project.id,
-  case when project.project_type = 'plotted_layout'
+  case when project.property_type = 'plot'
     then 'P-' || lpad(unit.k::text, 2, '0')
     else 'U-' || lpad(unit.k::text, 3, '0')
   end,
@@ -125,7 +134,7 @@ select
     then project.bhk_options[1 + (unit.k - 1) % cardinality(project.bhk_options)]
   end,
   (case
-    when project.project_type = 'plotted_layout' then 1200 + (unit.k % 6) * 300
+    when project.property_type = 'plot' then 1200 + (unit.k % 6) * 300
     when project.project_type = 'commercial' then 600 + (unit.k % 7) * 150
     when project.property_type = 'villa'
       then 1800 + project.bhk_options[1 + (unit.k - 1) % cardinality(project.bhk_options)] * 350
