@@ -12,6 +12,9 @@ const getPublishedBlogPostById = vi.fn();
 const searchPublicFaqs = vi.fn();
 const getPublicFaqs = vi.fn();
 const getContentModuleOn = vi.fn();
+const getJobList = vi.fn();
+const getOpenJobById = vi.fn();
+let careersOn = false;
 
 vi.mock("@/features/blog", async () => {
   const { blocksToPlainText } = await import("@/features/blog/body-text");
@@ -21,9 +24,13 @@ vi.mock("@/features/faq", async () => {
   const { answerParagraphs } = await import("@/features/faq/view");
   return { answerParagraphs, getPublicFaqs, searchPublicFaqs };
 });
+vi.mock("@/features/careers", async () => {
+  const { descriptionParagraphs, isJobOpenAt, pointsOf } = await import("@/features/careers/view");
+  return { descriptionParagraphs, getJobList, getOpenJobById, isJobOpenAt, pointsOf };
+});
 vi.mock("@/features/site", () => ({ getContentModuleOn }));
 
-const { readContentItem, searchContent } = await import("../content-queries");
+const { readContentItem, searchContent, searchJobs } = await import("../content-queries");
 
 const card = (index: number, overrides: Record<string, unknown> = {}) => ({
   id: `a100000${index}-0000-4000-8000-00000000000${index}`,
@@ -48,7 +55,7 @@ const question = (index: number, overrides: Record<string, unknown> = {}) => ({
 
 function modulesOn(blog: boolean, faq: boolean) {
   getContentModuleOn.mockImplementation(async (module: string) =>
-    module === "blog" ? blog : module === "faq" ? faq : false,
+    module === "blog" ? blog : module === "faq" ? faq : module === "careers" ? careersOn : false,
   );
 }
 
@@ -252,5 +259,138 @@ describe("UT-ai-content-queries: a publish, an unpublish or a delete changes the
 
   it("the question change helper refreshes the FAQ's tag, the one the cached list the item read uses carries", () => {
     expect(tagsAfterFaqChange()).toContain(CACHE_TAGS.faq);
+  });
+});
+
+const job = (index: number, overrides: Record<string, unknown> = {}) => ({
+  id: `b200000${index}-0000-4000-8000-00000000000${index}`,
+  slug: `site-engineer-${index}`,
+  title: `Site engineer ${index}`,
+  department: { slug: "engineering", name: "Engineering" },
+  location: "Chennai",
+  workMode: "hybrid",
+  employmentType: "full_time",
+  experience: "3 years",
+  summary: `Summary of job ${index}.`,
+  snippet: null as string | null,
+  salaryNote: null,
+  closesAt: null as string | null,
+  postedAt: "2026-11-10T08:00:00.000Z",
+  ...overrides,
+});
+
+const JOB_REQUEST = {
+  query: "site engineer",
+  departmentSlug: null,
+  location: null,
+  workMode: null,
+  type: null,
+  limit: 5,
+} as const;
+
+describe("UT-ai-content-queries: the open jobs (ADR-143 section 6)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    modulesOn(true, true);
+    careersOn = true;
+    getJobList.mockResolvedValue({ items: [job(0), job(1)] });
+  });
+
+  it("is empty and reads nothing while the Careers module is switched off", async () => {
+    careersOn = false;
+    expect(await searchJobs(JOB_REQUEST)).toEqual([]);
+    expect(getJobList).not.toHaveBeenCalled();
+  });
+
+  it("asks the page read for the words and the four filters, page 1, and names each job plainly", async () => {
+    const hits = await searchJobs({
+      query: "site engineer",
+      departmentSlug: "engineering",
+      location: "Chennai",
+      workMode: "hybrid",
+      type: "full_time",
+      limit: 5,
+    });
+    expect(getJobList).toHaveBeenCalledWith({
+      query: "site engineer",
+      department: "engineering",
+      location: "Chennai",
+      workMode: "hybrid",
+      type: "full_time",
+      page: 1,
+    });
+    expect(hits[0]).toMatchObject({
+      id: job(0).id,
+      slug: "site-engineer-0",
+      title: "Site engineer 0",
+      departmentName: "Engineering",
+      departmentSlug: "engineering",
+      location: "Chennai",
+      workMode: "hybrid",
+      employmentType: "full_time",
+      experience: "3 years",
+      passage: "Summary of job 0.",
+    });
+  });
+
+  it("shows the matched words as plain text and cuts the passage to the snippet size", async () => {
+    getJobList.mockResolvedValue({
+      items: [job(0, { snippet: `[[site]] ${"engineer ".repeat(200)}` })],
+    });
+    const [hit] = await searchJobs(JOB_REQUEST);
+    expect(hit?.passage).not.toContain("[[");
+    expect(hit?.passage).not.toContain("]]");
+    expect(hit?.passage.length).toBeLessThanOrEqual(CONTENT_SNIPPET_CHARACTERS);
+  });
+
+  it("returns no more than the limit it was asked for", async () => {
+    getJobList.mockResolvedValue({ items: [job(0), job(1), job(2)] });
+    expect(await searchJobs({ ...JOB_REQUEST, limit: 2 })).toHaveLength(2);
+  });
+
+  it("reads one open job by its id as sections: the summary, the paragraphs, then the points", async () => {
+    getPublishedBlogPostById.mockResolvedValue(null);
+    getPublicFaqs.mockResolvedValue([]);
+    getOpenJobById.mockResolvedValue({
+      ...job(0),
+      description: "First paragraph.\n\nSecond paragraph.",
+      responsibilities: "Plan the work\nBuild it",
+      requirements: "A degree",
+    });
+    const item = await readContentItem(job(0).id);
+    expect(item).toMatchObject({
+      kind: "job",
+      id: job(0).id,
+      slug: "site-engineer-0",
+      title: "Site engineer 0",
+      categoryName: "Engineering",
+      date: "2026-11-10T08:00:00.000Z",
+    });
+    expect(item?.sections).toEqual([
+      "Summary of job 0.",
+      "First paragraph.",
+      "Second paragraph.",
+      "- Plan the work\n- Build it",
+      "- A degree",
+    ]);
+  });
+
+  it("answers null for a job past its closing date even when a cached read still has it, and for a module that is off", async () => {
+    getPublishedBlogPostById.mockResolvedValue(null);
+    getPublicFaqs.mockResolvedValue([]);
+    getOpenJobById.mockResolvedValue({
+      ...job(0),
+      description: "Text.",
+      responsibilities: "",
+      requirements: "",
+      closesAt: "2020-01-01T00:00:00.000Z",
+    });
+    expect(await readContentItem(job(0).id)).toBeNull();
+    getOpenJobById.mockResolvedValue(null);
+    expect(await readContentItem(job(0).id)).toBeNull();
+    vi.clearAllMocks();
+    careersOn = false;
+    expect(await readContentItem(job(0).id)).toBeNull();
+    expect(getOpenJobById).not.toHaveBeenCalled();
   });
 });

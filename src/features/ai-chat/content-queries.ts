@@ -5,6 +5,15 @@ import {
   getPublishedBlogPostById,
   type Block,
 } from "@/features/blog";
+import {
+  getJobList,
+  getOpenJobById,
+  isJobOpenAt,
+  pointsOf,
+  descriptionParagraphs,
+  type EmploymentType,
+  type WorkMode,
+} from "@/features/careers";
 import { answerParagraphs, getPublicFaqs, searchPublicFaqs } from "@/features/faq";
 import { getContentModuleOn } from "@/features/site";
 import { CONTENT_SNIPPET_CHARACTERS } from "@/config/ai";
@@ -46,9 +55,36 @@ export interface ContentSearchRequest {
   readonly limit: number;
 }
 
-/** One article or question, as sections of plain text in reading order. */
+/** One open job in a search result: enough to choose it and to say where it comes from. */
+export interface JobHit {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly departmentName: string | null;
+  readonly departmentSlug: string | null;
+  readonly location: string;
+  readonly workMode: WorkMode;
+  readonly employmentType: EmploymentType;
+  readonly experience: string;
+  readonly salaryNote: string | null;
+  /** The last moment to apply (ISO date and time), or null when the job has no closing date. */
+  readonly closesAt: string | null;
+  /** About `CONTENT_SNIPPET_CHARACTERS` characters, one line: the matched passage, or the summary. */
+  readonly passage: string;
+}
+
+export interface JobSearchRequest {
+  readonly query: string | null;
+  readonly departmentSlug: string | null;
+  readonly location: string | null;
+  readonly workMode: WorkMode | null;
+  readonly type: EmploymentType | null;
+  readonly limit: number;
+}
+
+/** One article, question or job, as sections of plain text in reading order. */
 export interface ContentItem {
-  readonly kind: ContentKind;
+  readonly kind: ContentKind | "job";
   readonly id: string;
   readonly slug: string | null;
   readonly title: string;
@@ -57,7 +93,7 @@ export interface ContentItem {
   readonly sections: readonly string[];
 }
 
-/** The two switches the content tools depend on, read through the one helper. */
+/** The two switches `search_content` and the article and question reads depend on, read through the one helper. */
 async function modulesOn(): Promise<{ article: boolean; faq: boolean }> {
   const [article, faq] = await Promise.all([getContentModuleOn("blog"), getContentModuleOn("faq")]);
   return { article, faq };
@@ -139,6 +175,40 @@ export async function searchContent(request: ContentSearchRequest): Promise<Cont
   return interleave(articles, questions, request.limit);
 }
 
+/**
+ * The open jobs that match the words and the filters, best match first (the database ranks them), as an anonymous visitor
+ * through the page's own read, so a draft, a closed job, one past its closing date and one in Trash are not there.
+ * A switched-off Careers module answers as if it had no jobs (an empty list, never an error). A failed read throws.
+ */
+export async function searchJobs(request: JobSearchRequest): Promise<JobHit[]> {
+  if (!(await getContentModuleOn("careers"))) return [];
+  const list = await getJobList({
+    query: request.query,
+    department: request.departmentSlug,
+    location: request.location,
+    workMode: request.workMode,
+    type: request.type,
+    page: 1,
+  });
+  return list.items.slice(0, request.limit).map((job) => ({
+    id: job.id,
+    slug: job.slug,
+    title: job.title,
+    departmentName: job.department?.name ?? null,
+    departmentSlug: job.department?.slug ?? null,
+    location: job.location,
+    workMode: job.workMode,
+    employmentType: job.employmentType,
+    experience: job.experience,
+    salaryNote: job.salaryNote,
+    closesAt: job.closesAt,
+    passage: cutAtWord(
+      oneLine(job.snippet === null ? job.summary : withoutMatchMarks(job.snippet)),
+      CONTENT_SNIPPET_CHARACTERS,
+    ),
+  }));
+}
+
 /** The sections of an article: a heading starts one, and what comes before the first heading is the first. */
 function articleSections(blocks: readonly Block[]): string[] {
   const sections: string[] = [];
@@ -157,11 +227,9 @@ function articleSections(blocks: readonly Block[]): string[] {
 }
 
 /**
- * One published article or question by the id a search gave, or null when there is none (no such id, not published, in
- * Trash, in an inactive category, or its module switched off: the same answer for all). A failed read throws.
- *
- * Extension point (a later change): a job posting is a third place an id can come from. The Careers tool adds its own
- * read here, behind `getContentModuleOn("careers")`, and returns `kind: "job"`; nothing about jobs is built yet.
+ * One published article, question or open job by the id a search gave, or null when there is none (no such id, not
+ * published or open, in Trash, past its closing date, in an inactive category, or its module switched off: the same
+ * answer for all). A failed read throws.
  */
 export async function readContentItem(id: string): Promise<ContentItem | null> {
   const on = await modulesOn();
@@ -195,5 +263,31 @@ export async function readContentItem(id: string): Promise<ContentItem | null> {
       };
     }
   }
+  if (await getContentModuleOn("careers")) {
+    const job = await getOpenJobById(id);
+    // The read is cached for a few minutes, so a job that passed its closing date since is asked about again here.
+    if (job !== null && isJobOpenAt(job, new Date())) {
+      return {
+        kind: "job",
+        id: job.id,
+        slug: job.slug,
+        title: job.title,
+        categoryName: job.department?.name ?? null,
+        date: job.postedAt,
+        sections: [
+          job.summary,
+          ...descriptionParagraphs(job.description),
+          ...jobPointsSection(job.responsibilities),
+          ...jobPointsSection(job.requirements),
+        ].filter((section) => section.trim() !== ""),
+      };
+    }
+  }
   return null;
+}
+
+/** A list of points (one per line) as one section, so the text selection keeps the points together. */
+function jobPointsSection(text: string): string[] {
+  const points = pointsOf(text);
+  return points.length === 0 ? [] : [points.map((point) => `- ${point}`).join("\n")];
 }

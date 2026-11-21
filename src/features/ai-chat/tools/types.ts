@@ -45,8 +45,8 @@ export type CardReference =
     };
 
 /**
- * A record the chat names as a source under the answer (ADR-143 section 6.5): an article, a question of the FAQ, and,
- * reserved for the Careers tool of a later change, a job. The server builds the link (`source-links.ts`) from the id or
+ * A record the chat names as a source under the answer (ADR-143 section 6.5): an article, a question of the FAQ and a job
+ * (ADR-143 section 6). The server builds the link (`source-links.ts`) from the id or
  * slug a tool returned in the same message, and the title it draws as the link's words is the one the read gave
  * (cleaned as third-party text). `opened` is true for a record the assistant read in full (`get_content_item`): when
  * one was, only the opened ones are drawn as sources; when none was, the best matches of the search are.
@@ -69,7 +69,7 @@ export type SourceReference =
       readonly opened: boolean;
     }
   | {
-      /** Reserved: no tool returns a job yet (the Careers tool is a later change). */
+      /** An open job (`search_jobs`, `get_content_item`); the page is `/careers/<slug>`. */
       readonly kind: "job";
       readonly slug: string;
       readonly title: string;

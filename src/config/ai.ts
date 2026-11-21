@@ -296,7 +296,7 @@ export const AI_INTERNALS_PROBE_PATTERNS: readonly RegExp[] = [
   /\b(who|which company|which team) (built|made|created|developed|programmed|trained) (you|this assistant|this chatbot|this bot|this site|this website|findsprop)\b/u,
   /\b(what|which) (tools|functions|apis|endpoints|plugins) (do you|are you|can you|you)\b[^.!?\n]{0,15}\b(have|use|call|access|using|available|allowed)\b/u,
   /\b(list|show|name|tell me|give me)\b[^.!?\n]{0,15}\b(your|all your) (tools|functions|apis|endpoints|plugins|tables|columns|database tables)\b/u,
-  /\b(search_properties|get_property|list_localities|search_projects|get_project|get_builder|compare_properties|calculate_emi|search_content|get_content_item)\b/u,
+  /\b(search_properties|get_property|list_localities|search_projects|get_project|get_builder|compare_properties|calculate_emi|search_content|get_content_item|search_jobs)\b/u,
   /\b(findsprop'?s?|your) (backend|back end|architecture|tech stack|infrastructure|admin panel|server code)\b/u,
   // A claim of authority. Chat messages carry none, and the answer says so by not changing.
   /\bi\s*(am|'m|’m)\s+(the|your)\s+(developer|dev)\b(?!\s+(of|for)\b)/u,
@@ -401,7 +401,7 @@ export const AI_LINK_TLDS: readonly string[] = [
  */
 export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
   // The tools by name.
-  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit|search_content|get_content_item)\b/u,
+  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
   // The stack and the provider.
   /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|tailwind|typescript|langchain|openai|anthropic|chat ?gpt|gpt-?[0-9][a-z0-9.-]*)\b/u,
   /\b(large language model|language model|llm)\b/u,

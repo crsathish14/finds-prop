@@ -25,6 +25,7 @@ export {
   getJobFilters,
   getJobDepartmentUsage,
   getJobList,
+  getOpenJobById,
   getJobSitemapEntries,
   toJobFilters,
 } from "./queries";

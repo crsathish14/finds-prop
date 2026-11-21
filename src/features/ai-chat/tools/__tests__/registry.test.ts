@@ -36,6 +36,7 @@ const getSessionView = vi.fn();
 const ownsHome = vi.fn();
 const searchContent = vi.fn();
 const readContentItem = vi.fn();
+const searchJobs = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 // The propose tools sign with the secret the rate limiter holds, and read who is asking from the session.
@@ -94,8 +95,13 @@ vi.mock("../../queries", () => ({
   getBuilderProfile,
   ownsHome,
 }));
-// The content tools read the Blog and the FAQ through this one module (ADR-143 section 6).
-vi.mock("../../content-queries", () => ({ searchContent, readContentItem }));
+// The job tools take the work modes and types from the Careers feature (ADR-143 section 6).
+vi.mock("@/features/careers", async () => {
+  const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
+  return { EMPLOYMENT_TYPES, WORK_MODES };
+});
+// The content tools read the Blog, the FAQ and Careers through this one module (ADR-143 section 6).
+vi.mock("../../content-queries", () => ({ searchContent, readContentItem, searchJobs }));
 // The index also exports the chat page's screen; this test is about the tools, so the screen is a stand-in.
 vi.mock("../../ask-about-button", () => ({ AskAboutButton: () => null }));
 vi.mock("../../chat-screen", () => ({
@@ -271,6 +277,14 @@ const VALID_INPUTS: Record<string, unknown> = {
     years: null,
   },
   search_content: { query: "registration charges", kind: "any", category: null, limit: null },
+  search_jobs: {
+    query: "site engineer",
+    department: null,
+    location: null,
+    workMode: null,
+    type: null,
+    limit: null,
+  },
   get_content_item: { id: CONTENT_ID, query: "registration charges" },
   propose_enquiry: { homeId: "k3x9a2bd", message: "Is this home still available?" },
   propose_site_visit: {
@@ -420,6 +434,24 @@ beforeEach(() => {
       ...PRIVATE,
     })),
   );
+  // Seven open jobs, more than a result may hold, with third-party text in every field an admin can type.
+  searchJobs.mockResolvedValue(
+    Array.from({ length: 7 }, (_, index) => ({
+      ...PRIVATE,
+      id: `b200000${index}-0000-4000-8000-00000000000${index}`,
+      slug: `site-engineer-${index}`,
+      title: injected("title"),
+      departmentName: injected("department"),
+      departmentSlug: "engineering",
+      location: injected("location"),
+      workMode: "hybrid",
+      employmentType: "full_time",
+      experience: injected("experience"),
+      salaryNote: injected("pay"),
+      closesAt: "2026-12-31T12:30:00.000Z",
+      passage: injected("passage"),
+    })),
+  );
   readContentItem.mockResolvedValue({
     kind: "article",
     id: CONTENT_ID,
@@ -458,7 +490,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the ten read tools and the two propose tools", () => {
+  it("holds the eleven read tools and the two propose tools", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -471,12 +503,13 @@ describe("UT-ai-tools-registry: the list", () => {
         "compare_properties",
         "calculate_emi",
         "search_content",
+        "search_jobs",
         "get_content_item",
         "propose_enquiry",
         "propose_site_visit",
       ]),
     );
-    expect(names).toHaveLength(12);
+    expect(names).toHaveLength(13);
   });
 
   it("serves the search tool that has always existed while place search is off, and the place-aware one only with a lookup (ADR-142)", () => {
@@ -498,10 +531,10 @@ describe("UT-ai-tools-registry: the list", () => {
     expect(withPlaces.slice(1)).toEqual(AI_CHAT_TOOLS.slice(1));
   });
 
-  it("gives every tool a kind: ten read tools the loop may run in parallel, and two propose tools that run alone", () => {
+  it("gives every tool a kind: eleven read tools the loop may run in parallel, and two propose tools that run alone", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
     expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual([
-      ...Array<string>(10).fill("read"),
+      ...Array<string>(11).fill("read"),
       "propose",
       "propose",
     ]);
@@ -736,8 +769,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    // Homes, localities, projects, unit sizes and builder projects (10 each), the compared homes (3), and the seven content hits cut to 5.
-    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3, 5]);
+    // Homes, localities, projects, unit sizes and builder projects (10 each), the compared homes (3), the seven content hits and the seven open jobs, each cut to 5.
+    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3, 5, 5]);
   });
 
   it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {
@@ -759,6 +792,12 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     for (const { name, outcome } of await callEveryTool()) {
       if (outcome.status !== "ok") throw new Error(`${name} did not run`);
       const content = name === "search_content" || name === "get_content_item";
+      if (name === "search_jobs") {
+        // A job is named by its address word, which the result does not show the model: one reference per item.
+        const items = (outcome.output as { items: unknown[] }).items;
+        expect(outcome.references.map(({ kind }) => kind)).toEqual(items.map(() => "job"));
+        continue;
+      }
       // A home is named by `homeId`, a project by `slug`, an article or a question by `id` (ADR-143 section 6.5).
       const named = stringsIn(outcome.output)
         .filter(({ path }) =>
@@ -801,6 +840,7 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       compare_properties: ["home"],
       calculate_emi: [],
       search_content: ["article", "faq"],
+      search_jobs: ["job"],
       get_content_item: ["article"],
       propose_enquiry: ["home"],
       propose_site_visit: ["project"],

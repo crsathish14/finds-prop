@@ -211,7 +211,7 @@ export const evalCaseSchema = z
     /** Homes the signed-in customer owns. */
     ownedHomes: z.array(z.string().min(1)).default([]),
     /** Content modules the admin has switched off in this case (ADR-143): the assistant finds nothing in them. */
-    hiddenModules: z.array(z.enum(["blog", "faq"])).default([]),
+    hiddenModules: z.array(z.enum(["blog", "faq", "careers"])).default([]),
     /**
      * True when the case runs with AI place search on (ADR-142): the place-aware search tool and the place rules in
      * the prompt. A case that leaves it out runs with the tools and the prompt of the flag-off assistant.
