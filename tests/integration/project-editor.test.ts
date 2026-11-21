@@ -164,9 +164,6 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         published: false,
         price: 7800000,
         price_type: "basic",
-        // The old columns are written with the price until the pages read the new ones (ADR-148).
-        price_min: 7800000,
-        price_max: 7800000,
         rera_applicable: false,
         rera_not_applicable_reason: "Below the size that needs registration.",
       });
@@ -366,8 +363,6 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         offer_type: null,
         price: 2450,
         price_type: "per_sqft",
-        price_min: 2450,
-        price_max: 2450,
         area_min_sqft: 1200,
         area_max_sqft: 2400.5,
         bhk_options: [],
@@ -427,14 +422,15 @@ describe("IT-project-editor: the project form's saves and reads against a real d
       });
     });
 
-    it("puts a price range that runs backwards on the 'to' box, and coordinates given by halves on the longitude", async () => {
+    it("puts a possession month that does not fit the status on the possession box, and coordinates given by halves on the longitude", async () => {
       const made = await makeMine("range");
-      const priceError = await failureOf(() =>
-        asBuilder().update(made.projectId, { price_min: 200, price_max: 100 }),
+      const possessionError = await failureOf(() =>
+        // The project is ready to move, which has no possession month.
+        asBuilder().update(made.projectId, { possession_date: "2028-12-01" }),
       );
-      expect(priceError).toMatchObject({
+      expect(possessionError).toMatchObject({
         code: "VALIDATION",
-        fieldErrors: { priceMax: [{ key: "validation.priceRange" }] },
+        fieldErrors: { possessionDate: [{ key: "validation.invalid" }] },
       });
       const placeError = await failureOf(() =>
         asBuilder().update(made.projectId, { latitude: 13, longitude: null }),
@@ -443,6 +439,31 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         code: "VALIDATION",
         fieldErrors: { longitude: [{ key: "validation.coordinatesTogether" }] },
       });
+    });
+
+    it("refuses a builder a change to the form's own columns that leaves the project incomplete, and a RERA claim with no number", async () => {
+      const made = await makeMine("incomplete");
+      expect(
+        await failureOf(() => asBuilder().update(made.projectId, { price: null })),
+      ).toMatchObject({ code: "VALIDATION" });
+      const rera = await failureOf(() =>
+        asBuilder().update(made.projectId, {
+          rera_applicable: true,
+          rera_number: null,
+          rera_not_applicable_reason: null,
+        }),
+      );
+      expect(rera).toMatchObject({
+        code: "VALIDATION",
+        fieldErrors: { reraNumber: [{ key: "validation.required" }] },
+      });
+      expect((await row(made.projectId)).price).toBe(7800000);
+    });
+
+    it("lets the system and the admin approve a project whatever its form holds (the rules apply to the portal's writers)", async () => {
+      const made = await makeMine("approve");
+      await approve(made.projectId);
+      expect(await row(made.projectId)).toMatchObject({ moderation: "approved", published: true });
     });
 
     it("says not found when a builder saves a project that is not theirs, and changes nothing", async () => {

@@ -32,7 +32,7 @@ from (values
   ('builders', array['id', 'name', 'logo_url', 'website', 'description']),
   ('projects', array[
     'id', 'slug', 'name', 'builder_id', 'project_type', 'property_type', 'project_status',
-    'price_min', 'price_max', 'bhk_options', 'land_area_acres', 'total_units', 'possession_date',
+    'bhk_options', 'land_area_acres', 'total_units', 'possession_date',
     'contact_phone', 'locality', 'address', 'latitude', 'longitude', 'location', 'advantages',
     'nearby', 'rera_applicable', 'rera_number', 'description', 'specifications', 'amenities',
     'images', 'floor_plans', 'elevations', 'plot_images', 'videos', 'brochure_path', 'seo_title',

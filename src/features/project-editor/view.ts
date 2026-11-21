@@ -80,9 +80,6 @@ export interface ProjectDbRow {
   offer_type: string | null;
   price: number | null;
   price_type: string | null;
-  /** Still read by the lists until they move to `price` (ADR-148 step C); dropped in step D. */
-  price_min: number | null;
-  price_max: number | null;
   area_min_sqft: number | string | null;
   area_max_sqft: number | string | null;
   bhk_options: number[];

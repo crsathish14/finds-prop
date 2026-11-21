@@ -12,8 +12,6 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   offer_type: null,
   price: 7800000,
   price_type: "basic",
-  price_min: 7800000,
-  price_max: 14200000,
   area_min_sqft: null,
   area_max_sqft: null,
   bhk_options: [2, 3],
