@@ -1,4 +1,4 @@
-# Find Prop
+# findsprop
 
 Property listing platform for Tamil Nadu. One Next.js 16 app (App Router, React 19, TypeScript strict, Tailwind v4, shadcn/ui) on Vercel; Supabase (Postgres + PostGIS, Auth, Storage) per environment. **npm only.** Business rules live in `docs/requirements/`. The earlier demo app is a reference for business rules and pages only: never copy its code, SQL or tooling.
 
@@ -53,7 +53,7 @@ Each is enforced by a check unless marked Review. The ID points to the full rule
 
 1. Server Components by default. `"use client"` only in `*.client.tsx` leaves. (R-FE-01)
 2. Shared components and tokens only: no raw `<button>`, `<input>`, `<a>`, no hex colours, no arbitrary pixel values, no default Tailwind palette. Search `src/components/` and the Design Lab before creating anything. (R-FE-06, R-FE-07, R-DS-02)
-3. One copper (`accent`) button per view (Review). All visitor-facing text comes from `src/i18n/messages/en.json` via `translate('key')`; never type it into a component. (R-FE-21)
+3. One action-teal (`accent`) button per view (Review). All visitor-facing text comes from `src/i18n/messages/en.json` via `translate('key')`; never type it into a component. (R-FE-21)
 4. Every mutation is a Server Action built with `defineAction`. Machine callers use Route Handlers that verify signature or token first. (R-BE-01)
 5. Never take user id, role, owner, status or price flags from client input. A foreign id returns `NOT_FOUND`. (R-BE-03, R-BE-04)
 6. Reads name their columns; no `.select('*')`. The service role is used only in allow-listed modules. (R-BE-06, R-BE-07)
@@ -72,7 +72,7 @@ Each is enforced by a check unless marked Review. The ID points to the full rule
 - After writes to public data call `updateTag(tag)` or `revalidateTag(tag, 'max')`. Search results are never cached.
 - Cacheable public reads use the cookie-less `publicAnon` client inside `"use cache"`. Anything reading cookies, headers or search params sits under `<Suspense>`.
 - Check identity with `getClaims()`. Refresh sessions only in `src/proxy.ts`. Never trust `getSession()` on the server.
-- shadcn's `--accent` is a hover surface, not Grove copper. Copper is `cta`.
+- shadcn's `--accent` is a hover surface, not the action teal (ADR-149). The action teal is `cta`.
 - Money is integer rupees, formatted only by `src/lib/format.ts`. Property URLs are `/properties/{slug}-{shortId}`.
 - AI search, map view and PG/hostels sit behind `FLAG_*` (off by default) and are absent from navigation when off.
 - Windows and OneDrive: LF line endings, no symlinks, short paths, pause sync during `npm ci`.

@@ -1,4 +1,4 @@
-# Find Prop (`findsprop`)
+# findsprop
 
 Property listing platform for Tamil Nadu: a Next.js 16 app on Vercel with Supabase (Postgres + PostGIS, Auth, Storage). Customers sign in with a phone code; builders and the administrator sign in with email or Google plus a second step.
 
