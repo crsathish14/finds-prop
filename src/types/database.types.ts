@@ -305,6 +305,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"job_postings": {
+                  Row: {
+                    "apply_email": string | null,"apply_url": string | null,"closes_at": string | null,"created_at": string,"deleted_at": string | null,"department_id": string,"description": string,"employment_type": string,"experience": string,"id": string,"location": string,"posted_at": string | null,"requirements": string,"responsibilities": string,"salary_note": string | null,"search_vector": unknown,"slug": string,"status": string,"summary": string,"title": string,"updated_at": string,"work_mode": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "apply_email"?: string | null,"apply_url"?: string | null,"closes_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"department_id": string,"description"?: string,"employment_type": string,"experience"?: string,"id"?: string,"location": string,"posted_at"?: string | null,"requirements"?: string,"responsibilities"?: string,"salary_note"?: string | null,"search_vector"?: never,"slug": string,"status"?: string,"summary"?: string,"title": string,"updated_at"?: string,"work_mode": string
+                  }
+                  Update: {
+                    "apply_email"?: string | null,"apply_url"?: string | null,"closes_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"department_id"?: string,"description"?: string,"employment_type"?: string,"experience"?: string,"id"?: string,"location"?: string,"posted_at"?: string | null,"requirements"?: string,"responsibilities"?: string,"salary_note"?: string | null,"search_vector"?: never,"slug"?: string,"status"?: string,"summary"?: string,"title"?: string,"updated_at"?: string,"work_mode"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "job_postings_department_id_fkey"
+      columns: ["department_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_media": {
                   Row: {
                     "alt_text": string | null,"bytes": number,"created_at": string,"height": number,"id": string,"is_cover": boolean,"listing_id": string,"mime": string,"position": number,"storage_path": string,"width": number
@@ -1006,6 +1026,11 @@ isOneToOne: false
 "search_faqs":
 { Args: { "p_category"?: string,"p_limit"?: number,"p_query"?: string }; Returns: {
               "answer": string,"category_id": string,"category_name": string,"category_slug": string,"id": string,"question": string,"rank": number,"sort_order": number,"updated_at": string
+            }[]
+                           },
+"search_job_postings":
+{ Args: { "p_department"?: string,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_query"?: string,"p_type"?: string,"p_work_mode"?: string }; Returns: {
+              "closes_at": string,"department_id": string,"department_name": string,"department_slug": string,"employment_type": string,"experience": string,"id": string,"location": string,"posted_at": string,"salary_note": string,"slug": string,"snippet": string,"summary": string,"title": string,"total_count": number,"work_mode": string
             }[]
                            },
 "search_properties":

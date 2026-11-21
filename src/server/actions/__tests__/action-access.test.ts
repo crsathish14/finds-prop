@@ -128,6 +128,13 @@ const EXPECTED: Record<string, Level> = {
   "faq/trashFaq": "super_admin",
   "faq/restoreFaq": "super_admin",
   "faq/reorderFaqs": "super_admin",
+  "careers/createJobPosting": "super_admin",
+  "careers/updateJobPosting": "super_admin",
+  "careers/openJobPosting": "super_admin",
+  "careers/closeJobPosting": "super_admin",
+  "careers/unpublishJobPosting": "super_admin",
+  "careers/trashJobPosting": "super_admin",
+  "careers/restoreJobPosting": "super_admin",
   "staff-auth/startStaffGoogleSignIn": "none",
   "units/addUnit": "super_admin",
   "units/updateUnit": "super_admin",
@@ -161,17 +168,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 51 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
+  it("holds the counts by level: 58 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 51,
+      super_admin: 58,
       builder: 9,
       "verified-phone": 20,
       none: 8,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(89);
+    expect(Object.keys(table)).toHaveLength(96);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {
