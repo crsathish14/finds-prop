@@ -29,7 +29,7 @@ import {
  * migration and a change to the other.
  */
 const SQL = readFileSync(
-  join(process.cwd(), "supabase/migrations/20261121100000_job_postings.sql"),
+  join(process.cwd(), "supabase/migrations/20261121120000_job_postings.sql"),
   "utf8",
 );
 
