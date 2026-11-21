@@ -12,15 +12,14 @@ import {
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { ManagerDrawer } from "@/components/patterns/manager-drawer";
 import { Icon } from "@/components/ui/icon";
-import {
-  CATEGORY_SLUG_MAX,
-  slugFromName,
-  type CategoryView,
-  type CreateCategoryInput,
-  type UpdateCategoryInput,
+import type {
+  CategoryView,
+  CreateCategoryInput,
+  UpdateCategoryInput,
 } from "@/features/content-categories";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { notify } from "@/lib/notify";
+import { slugFromName } from "@/lib/slug";
 import type { ActionResult } from "@/types/action";
 
 type Done = ActionResult<{ categoryId: string; module: string; slug: string }>;
@@ -108,7 +107,7 @@ export function FaqCategoriesPanel({
     // Typing in the address box takes it over from the name; until then it follows the name when adding.
     if (next.slug !== values.slug) setSlugTouched(true);
     const follows = editingId === null && !slugTouched && next.slug === values.slug;
-    setValues(follows ? { ...next, slug: slugFromName(next.name, CATEGORY_SLUG_MAX) } : next);
+    setValues(follows ? { ...next, slug: slugFromName(next.name) } : next);
     setErrors({});
   };
 
