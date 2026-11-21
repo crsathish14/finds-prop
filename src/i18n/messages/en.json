@@ -459,7 +459,8 @@
       "rent": "Rent",
       "projects": "Projects",
       "aiSearch": "AI Search",
-      "contact": "Contact"
+      "contact": "Contact",
+      "faq": "FAQ"
     },
     "header": {
       "postProperty": "Post property",
@@ -485,7 +486,8 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "copyright": "© {year} {brandName}",
-      "navLabel": "Footer"
+      "navLabel": "Footer",
+      "linkFaq": "FAQ"
     },
     "bottomBar": {
       "navLabel": "Primary",
@@ -2949,6 +2951,152 @@
           }
         }
       }
+    },
+    "faq": {
+      "metaTitle": "FAQ",
+      "metaTitleNew": "Add a question",
+      "metaTitleEdit": "Edit question",
+      "title": "FAQ",
+      "intro": "The questions and answers shown on the FAQ page and used by the assistant.",
+      "add": "Add question",
+      "categoriesButton": "Categories",
+      "tabs": {
+        "label": "Show",
+        "all": "All",
+        "published": "Published",
+        "drafts": "Drafts",
+        "trash": "Trash"
+      },
+      "category": {
+        "label": "Category",
+        "all": "All categories",
+        "hidden": "{name} (hidden)"
+      },
+      "search": {
+        "label": "Search the questions and answers",
+        "placeholder": "Search questions and answers"
+      },
+      "columns": {
+        "question": "Question",
+        "category": "Category",
+        "status": "Status",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "caption": "FAQ questions",
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "trash": "In the Trash"
+      },
+      "actions": {
+        "edit": "Edit",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "restore": "Restore",
+        "trash": "Move to Trash: {question}",
+        "moveUp": "Move up: {question}",
+        "moveDown": "Move down: {question}",
+        "forQuestion": "question: {question}"
+      },
+      "count": "{shown} of {total, plural, one {# question} other {# questions}}",
+      "orderNote": "To change the order, choose a category and clear the search.",
+      "empty": {
+        "title": "No questions yet",
+        "text": "Add the first question. Visitors see it once you publish it."
+      },
+      "noMatches": {
+        "title": "No questions match",
+        "text": "Try other words, or choose another tab or category."
+      },
+      "toast": {
+        "published": "Question published",
+        "unpublished": "Question unpublished",
+        "trashed": "Question moved to the Trash",
+        "restored": "Question restored as a draft",
+        "moved": "Order saved",
+        "created": "Question added",
+        "saved": "Question saved"
+      },
+      "conflict": "That question is no longer there. The list has been refreshed.",
+      "gone": "This question is no longer there. Go back to the list.",
+      "back": "Back to the FAQ list",
+      "newTitle": "Add a question",
+      "editTitle": "Edit question",
+      "saveNote": {
+        "new": "A new question is saved as a draft until you publish it.",
+        "edit": "Saving shows the change on the site at once when the question is published."
+      },
+      "form": {
+        "content": {
+          "title": "Question and answer",
+          "text": "What a visitor reads on the FAQ page."
+        },
+        "publishing": {
+          "title": "Publishing",
+          "text": "A draft is saved but not shown on the site or to the assistant."
+        },
+        "category": "Category",
+        "categoryPlaceholder": "Choose a category",
+        "noCategory": "There are no FAQ categories yet. Add one with Categories on the FAQ list first.",
+        "question": "Question",
+        "questionHint": "One line, as a visitor would ask it.",
+        "answer": "Answer",
+        "answerHint": "Plain text. Leave a blank line between paragraphs.",
+        "answerCounter": "{count} / {max}",
+        "status": "Status",
+        "statusDraft": "Draft",
+        "statusPublished": "Published",
+        "statusHint": "Publishing shows the question on the FAQ page straight away.",
+        "cancel": "Cancel",
+        "save": "Save question",
+        "saving": "Saving"
+      },
+      "categories": {
+        "title": "FAQ categories",
+        "description": "The groups of questions on the FAQ page. The Blog and job departments have their own.",
+        "close": "Close",
+        "listLabel": "FAQ categories",
+        "empty": "There are no categories yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No questions} one {# question} other {# questions}}",
+        "inUse": "Move or delete its questions before you delete it.",
+        "conflict": "That category is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add category",
+          "editTitle": "Edit category {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden category and its questions are not shown to visitors or to the assistant.",
+          "add": "Add category",
+          "save": "Save category",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Category added",
+          "saved": "Category saved",
+          "hidden": "Category hidden",
+          "shown": "Category shown",
+          "moved": "Order saved",
+          "deleted": "Category deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The category is removed for good. This cannot be undone.",
+          "confirm": "Delete category",
+          "cancel": "Keep it"
+        }
+      }
     }
   },
   "builderPortal": {
@@ -3186,5 +3334,51 @@
       "expiredTitle": "This request is no longer valid",
       "expiredBody": "Ask the assistant to prepare it again, then press Send."
     }
+  },
+  "faq": {
+    "meta": {
+      "title": "Frequently asked questions",
+      "description": "Quick answers about buying, selling and renting a home, and about using the site."
+    },
+    "crumb": {
+      "nav": "Breadcrumb",
+      "backHome": "Back to home",
+      "home": "Home",
+      "faq": "FAQ"
+    },
+    "title": "Frequently asked questions",
+    "lead": "Quick answers about buying, selling and renting. Search the questions or choose a category.",
+    "search": {
+      "label": "Search the questions",
+      "placeholder": "Search questions, such as sale deed",
+      "submit": "Search"
+    },
+    "categories": {
+      "label": "Question categories",
+      "all": "All"
+    },
+    "groupCount": "{count, plural, one {# question} other {# questions}}",
+    "summary": {
+      "all": "{count, plural, one {# question} other {# questions}}",
+      "query": "{count, plural, one {# question} other {# questions}} for “{query}”",
+      "inCategory": "{count, plural, one {# question} other {# questions}} in {category}",
+      "queryInCategory": "{count, plural, one {# question} other {# questions}} for “{query}” in {category}"
+    },
+    "clear": "Clear search and category",
+    "noMatches": {
+      "title": "No questions match your search",
+      "text": "Try fewer or different words, or choose another category.",
+      "showAll": "Show all questions"
+    },
+    "empty": {
+      "title": "No questions yet",
+      "text": "We are still writing the answers. If you need help now, contact us and we will reply."
+    },
+    "help": {
+      "title": "Still need help?",
+      "text": "Tell us what you are looking for and our team will get back to you.",
+      "link": "Contact us"
+    },
+    "loadingTitle": "Loading the questions"
   }
 }

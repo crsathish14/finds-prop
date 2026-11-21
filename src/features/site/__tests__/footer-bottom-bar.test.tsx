@@ -58,7 +58,14 @@ describe("PublicFooter: the footer of the public pages (S4-T06)", () => {
       within(nav)
         .getAllByRole("link")
         .map((link) => link.textContent),
-    ).toEqual(["Buy a home", "Rent a home", "New projects", "Contact us", "Post a property"]);
+    ).toEqual([
+      "Buy a home",
+      "Rent a home",
+      "New projects",
+      "FAQ",
+      "Contact us",
+      "Post a property",
+    ]);
     expect(within(footer).getByRole("link", { name: "Privacy" })).toHaveAttribute(
       "href",
       "/privacy",

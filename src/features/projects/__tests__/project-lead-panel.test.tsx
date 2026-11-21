@@ -5,6 +5,9 @@ import en from "@/i18n/messages/en.json";
 import { resetDraftsForTests, saveDraft } from "@/lib/form-draft";
 import { renderWithMessages } from "../../../../tests/render-intl";
 
+/** A day two weeks from now (in the card's one-year window), so the test does not age out as days pass. */
+const VISIT_DATE = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
 const notes = vi.hoisted(() => ({ info: vi.fn() }));
 vi.mock("@/lib/notify", () => ({ notify: notes }));
 const submitProjectLead = vi.hoisted(() => vi.fn());
@@ -67,12 +70,12 @@ describe("ProjectLeadPanel: the card connected to the action (S4-T09 D1b)", () =
     renderWithMessages(PANEL);
     fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
     type(words.name, "Priya Raman");
-    type(words.visitDate, "2026-11-20");
+    type(words.visitDate, VISIT_DATE);
     send(words.requestVisit);
     await waitFor(() => expect(submitProjectLead).toHaveBeenCalled());
     expect(submitProjectLead.mock.calls[0]?.[0]).toMatchObject({
       kind: "site_visit",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DATE,
     });
   });
 
@@ -211,7 +214,7 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
     renderWithMessages(PANEL);
     fireEvent.click(screen.getByRole("radio", { name: words.siteVisit }));
     type(words.name, "Priya Raman");
-    type(words.visitDate, "2026-11-20");
+    type(words.visitDate, VISIT_DATE);
     send(words.requestVisit);
     await waitFor(() => expect(screen.getByText(ended.title)).toBeInTheDocument());
     fireEvent.click(screen.getByRole("link", { name: ended.action }));
@@ -221,7 +224,7 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
     expect(stored.values).toMatchObject({
       kind: "site_visit",
       name: "Priya Raman",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DATE,
     });
   });
 
@@ -230,14 +233,14 @@ describe("ProjectLeadPanel: the session ended before the request was sent (S5-T0
       kind: "site_visit",
       name: "Priya Raman",
       email: "",
-      visitDate: "2026-11-20",
+      visitDate: VISIT_DATE,
       message: "Morning please",
     });
     renderWithMessages(PANEL);
     await waitFor(() =>
       expect(screen.getByLabelText(new RegExp("^" + words.name))).toHaveValue("Priya Raman"),
     );
-    expect(screen.getByLabelText(new RegExp("^" + words.visitDate))).toHaveValue("2026-11-20");
+    expect(screen.getByLabelText(new RegExp("^" + words.visitDate))).toHaveValue(VISIT_DATE);
     expect(screen.getByLabelText(new RegExp("^" + words.message))).toHaveValue("Morning please");
     expect(screen.getByRole("button", { name: words.requestVisit })).toBeInTheDocument();
     expect(notes.info).toHaveBeenCalledTimes(1);

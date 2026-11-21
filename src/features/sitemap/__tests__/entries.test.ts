@@ -72,4 +72,23 @@ describe("UT-sitemap: the entries", () => {
     expect(homesRoom(12)).toBe(SITEMAP_MAX_URLS - 15);
     expect(homesRoom(SITEMAP_MAX_URLS * 2)).toBe(0);
   });
+
+  it("lists the FAQ page after the fixed pages when it is given one, with its date, and not otherwise", () => {
+    const withFaq = sitemapEntries({
+      origin: ORIGIN,
+      homes: [],
+      projects: [],
+      faq: { updatedAt: "2026-11-20T10:00:00+00:00" },
+    });
+    expect(withFaq[3]).toEqual({
+      url: "https://findsprop.test/faq",
+      lastModified: new Date("2026-11-20T10:00:00+00:00"),
+    });
+    for (const without of [
+      sitemapEntries({ origin: ORIGIN, homes: [], projects: [], faq: null }),
+      sitemapEntries({ origin: ORIGIN, homes: [], projects: [] }),
+    ]) {
+      expect(without.map((entry) => entry.url)).not.toContain("https://findsprop.test/faq");
+    }
+  });
 });

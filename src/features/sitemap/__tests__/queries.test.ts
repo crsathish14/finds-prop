@@ -15,11 +15,17 @@ vi.mock("@/features/projects", () => ({
   PROJECTS_PATH: "/projects",
   projectPath: (slug: string) => `/projects/${slug}`,
 }));
+const faqState = vi.hoisted(() => ({
+  on: true,
+  faqs: [] as { updatedAt: string }[],
+}));
+vi.mock("@/features/site", () => ({ getContentModuleOn: async () => faqState.on }));
+vi.mock("@/features/faq", () => ({ getPublicFaqs: async () => faqState.faqs }));
 vi.mock("@/features/property", () => ({
   propertyPath: (slug: string, shortId: string) => `/properties/${slug}-${shortId}`,
 }));
 
-const { getSitemapSources } = await import("../queries");
+const { getSitemapFaq, getSitemapSources } = await import("../queries");
 const { SITEMAP_MAX_URLS } = await import("../entries");
 
 type Result = { data: unknown; error: { code: string } | null };
@@ -160,5 +166,31 @@ describe("UT-sitemap-queries: reading what the sitemap lists", () => {
     expect(warn).toHaveBeenCalledWith("sitemap reached its address cap", {
       cap: SITEMAP_MAX_URLS - 3 - 3,
     });
+  });
+});
+
+describe("UT-sitemap-faq: the FAQ page's entry (ADR-143)", () => {
+  beforeEach(() => {
+    faqState.on = true;
+    faqState.faqs = [];
+  });
+
+  it("is the date of the newest published question", async () => {
+    faqState.faqs = [
+      { updatedAt: "2026-11-10T08:00:00+00:00" },
+      { updatedAt: "2026-11-20T10:00:00+00:00" },
+      { updatedAt: "2026-11-15T09:00:00+00:00" },
+    ];
+    expect(await getSitemapFaq()).toEqual({ updatedAt: "2026-11-20T10:00:00+00:00" });
+  });
+
+  it("is left out while the FAQ module is off, even when questions are published", async () => {
+    faqState.on = false;
+    faqState.faqs = [{ updatedAt: "2026-11-20T10:00:00+00:00" }];
+    expect(await getSitemapFaq()).toBeNull();
+  });
+
+  it("is left out while no question is published, so the sitemap never lists an empty page", async () => {
+    expect(await getSitemapFaq()).toBeNull();
   });
 });
