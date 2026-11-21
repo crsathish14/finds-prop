@@ -19,13 +19,20 @@ const faqState = vi.hoisted(() => ({
   on: true,
   faqs: [] as { updatedAt: string }[],
 }));
-vi.mock("@/features/site", () => ({ getContentModuleOn: async () => faqState.on }));
+const blogState = vi.hoisted(() => ({
+  on: true,
+  posts: [] as { slug: string; updatedAt: string }[],
+}));
+vi.mock("@/features/site", () => ({
+  getContentModuleOn: async (module: string) => (module === "blog" ? blogState.on : faqState.on),
+}));
+vi.mock("@/features/blog", () => ({ getBlogSitemapEntries: async () => blogState.posts }));
 vi.mock("@/features/faq", () => ({ getPublicFaqs: async () => faqState.faqs }));
 vi.mock("@/features/property", () => ({
   propertyPath: (slug: string, shortId: string) => `/properties/${slug}-${shortId}`,
 }));
 
-const { getSitemapFaq, getSitemapSources } = await import("../queries");
+const { getSitemapBlog, getSitemapFaq, getSitemapSources } = await import("../queries");
 const { SITEMAP_MAX_URLS } = await import("../entries");
 
 type Result = { data: unknown; error: { code: string } | null };
@@ -192,5 +199,33 @@ describe("UT-sitemap-faq: the FAQ page's entry (ADR-143)", () => {
 
   it("is left out while no question is published, so the sitemap never lists an empty page", async () => {
     expect(await getSitemapFaq()).toBeNull();
+  });
+});
+
+describe("UT-sitemap-blog: the Blog's entries (ADR-143)", () => {
+  beforeEach(() => {
+    blogState.on = true;
+    blogState.posts = [];
+  });
+
+  it("is the published articles the cached list gives", async () => {
+    blogState.posts = [{ slug: "stamp-duty-explained", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapBlog()).toEqual({ posts: blogState.posts });
+  });
+
+  it("is left out while the Blog module is off, even when articles are published", async () => {
+    blogState.on = false;
+    blogState.posts = [{ slug: "stamp-duty-explained", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapBlog()).toBeNull();
+  });
+
+  it("is left out while no article is published, so the sitemap never lists an empty page", async () => {
+    expect(await getSitemapBlog()).toBeNull();
+  });
+
+  it("does not depend on the FAQ module's switch", async () => {
+    faqState.on = false;
+    blogState.posts = [{ slug: "one-article", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    expect(await getSitemapBlog()).not.toBeNull();
   });
 });
