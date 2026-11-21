@@ -4249,5 +4249,599 @@
         "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
       }
     }
+  },
+  {
+    "id": "G-content-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "registration charges: searches the Blog, reads the matching part, names the article as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How are stamp duty and registration charges worked out?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "registration charge"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says stamp duty is paid on the guideline value or on the sale price, whichever is higher, and the registration charge is paid at the sub-registrar office on the day the sale deed is registered. The rates in that guide are made-up examples, 7 percent and 2 percent, and it was published on 5 Nov 2026, so please check the current rates before you plan."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "number": 7
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "registration"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sub-registrar"], ["check the current rates", "published on"]],
+        "mustNotContain": ["zzhiddenmarker", "old advice", "festival"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-content-02",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "how to post a property: finds the FAQ answer and names the question as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I post my property on findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open Post a property from the menu, sign in with your mobile number and follow the steps. Every listing is reviewed before it goes live."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "kind": "faq"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Post a property"], ["reviewed"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+      }
+    }
+  },
+  {
+    "id": "G-content-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about contacting an owner: the model searches in English keywords",
+    "messages": [
+      {
+        "role": "user",
+        "text": "owner ah eppadi contact panradhu? number kedaikuma?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "contact owner",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Use the enquiry form on the page of the home. The owner's phone number is never shown; your enquiry is passed to the owner for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "owner"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["enquiry"]],
+        "mustNotMatch": ["\\d{10}", "\\+91"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+      }
+    }
+  },
+  {
+    "id": "G-content-04",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about home loan papers: the model searches in English keywords and reads the part it needs",
+    "messages": [
+      {
+        "role": "user",
+        "text": "வீட்டுக் கடன் வாங்க என்ன ஆவணங்கள் தேவை?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "home loan checklist",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000002",
+              "query": "income proof"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says banks usually ask for identity proof, address proof, income proof for the last six months and the property papers. Keep copies ready before you apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "loan"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["identity proof"], ["income proof"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
+        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+      }
+    }
+  },
+  {
+    "id": "G-content-05",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "no match: says nothing was found, draws no source and does not answer from memory",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What are the rules for a swimming pool permit in Chennai?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "swimming pool permit",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find an article or a question about that on findsprop, so I can't say what the rules are. A local authority will be able to tell you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": ["get_content_item"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find", "could not find", "no article"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-06",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "a mixed question calls a content tool and the home search together: the answer holds the guide's point, the home's card and the guide as a source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What are the registration charges, and are there any 2 BHK flats in Velachery?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          },
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 2,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says the registration charge is paid at the sub-registrar office on the day the sale deed is registered. For homes, I found a 2 BHK apartment near the lake in Velachery: 980 sq ft for ₹78 L. [[home:m4y8b3ce]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 7800000
+        },
+        {
+          "number": 980
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "registration"
+            }
+          },
+          {
+            "name": "search_properties",
+            "args": {
+              "bhk": 2,
+              "locality": "velachery"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sub-registrar"]],
+        "cards": ["home:m4y8b3ce"],
+        "showsCards": ["home:m4y8b3ce"],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-content-07",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the FAQ is switched off: nothing is found in it, so the answer cannot use it",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I post my property on findsprop?"
+      }
+    ],
+    "hiddenModules": ["faq"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find anything about that on findsprop right now, so I can't give the steps."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["Post a property from the menu", "reviewed before"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-08",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the Blog is switched off: its guide is not found",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How are registration charges worked out?"
+      }
+    ],
+    "hiddenModules": ["blog"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find anything about that on findsprop right now, so I can't say how they are worked out."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["sub-registrar", "7 percent", "2 percent"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-09",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about stamp duty: finds the guide and says to check the date",
+    "messages": [
+      {
+        "role": "user",
+        "text": "stamp duty registration evlo aagum? edhavadhu guide irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "stamp duty registration",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "stamp duty"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide explains that stamp duty is paid on the guideline value or the sale price, whichever is higher. Its example rate is made up, and the guide was published on 5 Nov 2026, so please confirm the current rate before you rely on it."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["published on"], ["guideline value"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-content-10",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about posting a property: the model searches the FAQ in English keywords",
+    "messages": [
+      {
+        "role": "user",
+        "text": "என் வீட்டை இந்தத் தளத்தில் எப்படிப் பதிவிடுவது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open Post a property from the menu, sign in with your mobile number and follow the steps. You can edit or pause the listing from your dashboard."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "kind": "faq"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+      }
+    }
   }
 ]

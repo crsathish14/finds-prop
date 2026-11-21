@@ -28,6 +28,7 @@ export {
   getBlogList,
   getBlogSitemapEntries,
   getBlogTags,
+  getPublishedBlogPostById,
   getRelatedPosts,
 } from "./queries";
 export type { AdminBlogCounts, AdminBlogList, AdminBlogListQuery, BlogListQuery } from "./queries";

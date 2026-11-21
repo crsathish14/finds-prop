@@ -39,6 +39,7 @@ export const EVAL_CATEGORIES = [
   "propose",
   "place",
   "site_link",
+  "content",
   // red team
   "internals_probe",
   "instruction_attack",
@@ -51,6 +52,8 @@ export const EVAL_CATEGORIES = [
   "invented_contact",
   "invented_reference",
   "prompt_leak",
+  "content_leak",
+  "injected_content",
 ] as const;
 export type EvalCategory = (typeof EVAL_CATEGORIES)[number];
 
@@ -139,6 +142,13 @@ const expectSchema = z
         cards: z.array(z.string().min(1)).optional(),
         /** Cards that must appear (`home:<id>`, `project:<slug>`), with or without a marker in the answer. */
         showsCards: z.array(z.string().min(1)).optional(),
+        /**
+         * The source links the answer may draw (ADR-143 section 6.5), as the addresses the server built (`/blog/<slug>`,
+         * `/faq#faq-<id>`). When given, no other source may appear; an empty list means no source at all.
+         */
+        sources: z.array(z.string().min(1)).optional(),
+        /** Source links that must appear. */
+        showsSources: z.array(z.string().min(1)).optional(),
       })
       .strict()
       .default({ mustContain: [], mustNotContain: [], mustNotMatch: [], notices: [] }),
@@ -200,6 +210,8 @@ export const evalCaseSchema = z
     compare: z.array(z.string().min(1)).max(3).default([]),
     /** Homes the signed-in customer owns. */
     ownedHomes: z.array(z.string().min(1)).default([]),
+    /** Content modules the admin has switched off in this case (ADR-143): the assistant finds nothing in them. */
+    hiddenModules: z.array(z.enum(["blog", "faq"])).default([]),
     /**
      * True when the case runs with AI place search on (ADR-142): the place-aware search tool and the place rules in
      * the prompt. A case that leaves it out runs with the tools and the prompt of the flag-off assistant.
