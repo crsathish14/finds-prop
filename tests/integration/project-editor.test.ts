@@ -414,7 +414,12 @@ describe("IT-project-editor: the project form's saves and reads against a real d
     it("puts the largest area below the smallest on the largest-area box when the database refuses it", async () => {
       const made = await makeMine("area");
       const error = await failureOf(() =>
-        asBuilder().update(made.projectId, { area_min_sqft: 2000, area_max_sqft: 1000 }),
+        // A plot, so that the area range itself is what the database refuses.
+        asBuilder().update(made.projectId, {
+          property_type: "plot",
+          area_min_sqft: 2000,
+          area_max_sqft: 1000,
+        }),
       );
       expect(error).toMatchObject({
         code: "VALIDATION",

@@ -486,7 +486,7 @@ insert into exp_write (label, who, stmt, expected) values
   ('projects: the admin edits a project', 'ad', $q$update public.projects set name = 'Matrix Edit' where id = '{pr1}'$q$, 'yes'),
   ('projects: a builder cannot delete their own', 'ba', $q$delete from public.projects where id = '{pr2}'$q$, 'no'),
   ('projects: the admin deletes a project', 'ad', $q$delete from public.projects where id = '{pr2}'$q$, 'yes'),
-  ('projects: a builder adds a project of their own', 'ba', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'yes'),
+  ('projects: a builder adds a project of their own', 'ba', $q$insert into public.projects (slug, name, locality, project_type, property_type, project_status, price, price_type, rera_not_applicable_reason) values ('matrix-new', 'Matrix New', 'Matrix', 'residential', 'apartment', 'ready_to_move', 5000000, 'basic', 'Below the size that needs registration.')$q$, 'yes'),
   ('projects: an inactive builder cannot add one', 'bc', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'no'),
   ('projects: a customer cannot add one', 'ca', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'no'),
   ('projects: a builder cannot add one for another builder', 'bb', $q$insert into public.projects (slug, name, locality, builder_id) values ('matrix-new', 'Matrix New', 'Matrix', '{BA}')$q$, 'no'),
