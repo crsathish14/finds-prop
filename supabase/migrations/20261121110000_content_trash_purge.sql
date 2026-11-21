@@ -1,4 +1,4 @@
--- ADR-147 (ADR-143 D3, ADR-124): the nightly retention job also removes content that has been in Trash for more than
+-- ADR-146 (ADR-143 D3, ADR-124): the nightly retention job also removes content that has been in Trash for more than
 -- 30 days. Blog articles and FAQ questions are soft-deleted (`deleted_at`, shown as Trash in the admin and restorable),
 -- and no client holds the DELETE privilege, so this job is the only thing that ever deletes such a row.
 -- The 30 days are one constant, `content_trash_keep`, and the tables are one list, `content_trash_tables`: another
@@ -10,7 +10,7 @@
 -- a question, an answer or any other text. Nothing is written for a table that purged nothing.
 -- A purged article's pictures are files in the `site-assets` bucket under `blog/<id>/`. Files cannot be removed by SQL
 -- (the Storage service owns them), so this migration adds `orphan_blog_files()`, which lists the files whose article no
--- longer exists, and the hourly media sweep (ADR-058) removes them through the Storage service (ADR-147).
+-- longer exists, and the hourly media sweep (ADR-058) removes them through the Storage service (ADR-146).
 -- `run_retention` is replaced whole, as the runbook says to do: everything else is copied unchanged from
 -- 20261117120100_places_usage_retention.sql. Same arguments, same grants, same schedule.
 -- Rollback note: not destructive until it runs; rows it purges are not recoverable by design. To undo, fix forward with
@@ -37,7 +37,7 @@ declare
   -- Place search usage counts (ADR-134): counts only, no personal data. Provisional until the owner confirms 24 months.
   places_usage_keep constant interval := interval '24 months';
   idempotency_keep constant interval := interval '24 hours';
-  -- Content in Trash (ADR-143 D3, ADR-147): kept this long after `deleted_at`, then purged. The tables are the ones
+  -- Content in Trash (ADR-143 D3, ADR-146): kept this long after `deleted_at`, then purged. The tables are the ones
   -- with a `deleted_at` column and an `id` column; to add one, add its name here and nowhere else.
   content_trash_keep constant interval := interval '30 days';
   content_trash_tables constant text[] := array['faqs', 'blog_posts'];
@@ -266,7 +266,7 @@ $$;
 revoke execute on function public.run_retention(integer, integer) from public, anon, authenticated;
 grant execute on function public.run_retention(integer, integer) to service_role;
 
--- The picture files of articles that no longer exist (ADR-147): old files of the public `site-assets` bucket under
+-- The picture files of articles that no longer exist (ADR-146): old files of the public `site-assets` bucket under
 -- `blog/<article id>/` where no `blog_posts` row has that id, in Trash or not. They are what a purge leaves behind (and
 -- what an upload that was never saved leaves, once it is a day old). An article in Trash keeps its pictures, so a
 -- restore loses nothing; they go only after the purge. Only names of the exact shape `blog/<uuid>/<file>` are listed, so

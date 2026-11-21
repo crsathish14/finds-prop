@@ -21,7 +21,7 @@
   | `idempotency_keys`   | 24 hours  | the table's own 24 hour sweep                                                                     |
   | `ai_usage_events`    | 12 months | AI chat usage, no text (ADR-128, AI-P4-T05)                                                       |
 
-- **Added later (ADR-147, 21 Nov 2026):** content in Trash. Blog articles and FAQ questions whose `deleted_at` is more than 30 days old are purged by the same function, from one constant and one list of tables, with a `content.purged` entry of ids and counts; the pictures of a purged article are removed by the hourly media sweep.
+- **Added later (ADR-146, 21 Nov 2026):** content in Trash. Blog articles and FAQ questions whose `deleted_at` is more than 30 days old are purged by the same function, from one constant and one list of tables, with a `content.purged` entry of ids and counts; the pictures of a purged article are removed by the hourly media sweep.
 - **Left alone, on purpose.**
   - **The audit log** is never pruned: it is append-only and holds no personal data (ADR-028, ADR-123). A rule for it needs its own decision.
   - **A submission with an uploaded file,** because the file in storage needs its own step to be deleted, and uploads are off in v1 (the owner skipped them), so none exists yet. Such rows are counted as skipped every night so they are not forgotten; the day uploads are switched on, the deleting of the files comes with that feature.

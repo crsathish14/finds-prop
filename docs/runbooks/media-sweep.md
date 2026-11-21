@@ -2,7 +2,7 @@
 
 A listing photo lands in the `listing-photos` bucket before the server has looked at it. If the upload is never finished, the owner removes the photo, or a listing is deleted, the file is left behind with no `listing_media` row. An hourly job removes such files once they are 24 hours old (ADR-058). Nothing breaks if the job is not running; unclaimed files just pile up.
 
-The same hourly job also removes the picture files of blog articles that no longer exist (ADR-147): files in the `site-assets` bucket under `blog/<article id>/` that are at least 24 hours old and whose article has no row any more, which happens after the nightly retention job purges an article that spent 30 days in Trash (`docs/runbooks/retention.md`). An article that is only in Trash keeps its files. Nothing else in that bucket is touched: only names of exactly that shape are listed.
+The same hourly job also removes the picture files of blog articles that no longer exist (ADR-146): files in the `site-assets` bucket under `blog/<article id>/` that are at least 24 hours old and whose article has no row any more, which happens after the nightly retention job purges an article that spent 30 days in Trash (`docs/runbooks/retention.md`). An article that is only in Trash keeps its files. Nothing else in that bucket is touched: only names of exactly that shape are listed.
 
 ## Arm it (once per environment, the owner)
 

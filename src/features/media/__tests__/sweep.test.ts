@@ -85,7 +85,7 @@ describe("UT-media-sweep: removing photo files nobody claimed (ADR-015 step 4)",
   });
 });
 
-describe("UT-media-sweep-blog: the picture files of purged articles (ADR-147)", () => {
+describe("UT-media-sweep-blog: the picture files of purged articles (ADR-146)", () => {
   const files = [
     "blog/00000000-0000-4000-b000-000000000001/cover.png",
     "blog/00000000-0000-4000-b000-000000000001/a1.webp",

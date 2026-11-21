@@ -7,7 +7,7 @@ import { SWEEP_AFTER_HOURS, SWEEP_BATCH } from "./constants";
  * upload the browser never finished, a photo the owner removed, or a listing that was deleted. The
  * database lists them (`orphan_listing_photos`), this deletes them through the storage service.
  *
- * It also removes the picture files of blog articles that no longer exist (ADR-147): the nightly retention job purges
+ * It also removes the picture files of blog articles that no longer exist (ADR-146): the nightly retention job purges
  * an article that has been in Trash for 30 days, and the database lists the files left under `blog/<article id>/`
  * (`orphan_blog_files`).
  *

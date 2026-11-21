@@ -1,4 +1,4 @@
--- ADR-147 (ADR-143 D3, ADR-124): the nightly retention job purges FAQ questions and blog articles that have been in
+-- ADR-146 (ADR-143 D3, ADR-124): the nightly retention job purges FAQ questions and blog articles that have been in
 -- Trash for more than 30 days, writes a `content.purged` audit entry for each table that purged something, and leaves
 -- the picture files of purged articles to be listed by orphan_blog_files(). Tests: DB-FN-run_retention-content,
 -- DB-AUDIT-content-purged, DB-FN-orphan_blog_files, DB-PRIV-retention.
