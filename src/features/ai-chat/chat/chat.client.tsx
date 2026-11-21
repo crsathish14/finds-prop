@@ -16,6 +16,7 @@ import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
+import { isSiteLinkPath } from "../site-links";
 import { Text } from "@/components/ui/text";
 import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from "@/config/ai";
 import { saveDraft } from "@/lib/form-draft";
@@ -59,6 +60,7 @@ type LiveAnswer = {
   confirm: ConfirmCard | undefined;
   notes: ChatNote[];
   references: ChatReference[];
+  links: { text: string; href: string }[];
   replaced: boolean;
   href: string | undefined;
 };
@@ -75,6 +77,7 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   confirm: undefined,
   notes: [],
   references: [],
+  links: [],
   replaced: false,
   href: undefined,
 };
@@ -105,7 +108,10 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
 
 /** The text, the cards and the notes of one answer, as the parts of a `ChatAssistantMessage`. */
 function answerParts(
-  entry: Pick<AssistantEntry, "text" | "notes" | "references" | "replaced" | "href" | "confirm">,
+  entry: Pick<
+    AssistantEntry,
+    "text" | "notes" | "references" | "links" | "replaced" | "href" | "confirm"
+  >,
   filtersLabel: string,
   streaming: boolean,
   controls: ChatCardControls,
@@ -122,6 +128,16 @@ function answerParts(
               <Link href={href}>{filtersLabel}</Link>
             </p>
           ) : null}
+          {(entry.links ?? []).map((link) => {
+            const target = safeHref(link.href);
+            return target !== undefined && isSiteLinkPath(target) ? (
+              <p key={target} className="mt-3">
+                <Link href={target} variant="arrow">
+                  {link.text}
+                </Link>
+              </p>
+            ) : null;
+          })}
         </>
       ),
     cards:
@@ -316,6 +332,10 @@ export function ChatIsland({
             if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
               answer.references.push(event.reference);
             }
+          } else if (event.type === "link") {
+            if (!answer.links.some((link) => link.href === event.href)) {
+              answer.links.push({ text: event.text, href: event.href });
+            }
           } else if (event.type === "confirm") {
             answer.confirm = event.card;
           } else if (event.type === "notice") {
@@ -332,6 +352,7 @@ export function ChatIsland({
             answer.text = event.text;
             answer.notes = [];
             answer.references = [];
+            answer.links = [];
             answer.confirm = undefined;
             answer.replaced = true;
             answer.href = event.href;
@@ -350,6 +371,7 @@ export function ChatIsland({
             text: answer.text,
             notes: answer.notes,
             references: answer.references,
+            ...(answer.links.length === 0 ? {} : { links: answer.links }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),

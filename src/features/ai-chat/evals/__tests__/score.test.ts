@@ -77,6 +77,7 @@ function seen(change: Partial<Observed> = {}): Observed {
     visibleText: answerText,
     replaced: false,
     noticeKeys: [],
+    links: [],
     cards: [],
     usage: usageRow(),
     toolCalls: [],

@@ -20,6 +20,7 @@ import {
   PROMPT_MESSAGE_KEYS,
   ROLE_SECTION,
   SCOPE_SECTION,
+  SITE_LINKS_SECTION,
 } from "./sections";
 import { SYSTEM_PROMPT_CANARY, SYSTEM_PROMPT_VERSION } from "./version";
 
@@ -54,6 +55,7 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     ADVICE_SECTION,
     LANGUAGE_SECTION,
     CARDS_SECTION,
+    SITE_LINKS_SECTION,
     ...(options.placeSearch === true ? [PLACE_SECTION] : []),
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,

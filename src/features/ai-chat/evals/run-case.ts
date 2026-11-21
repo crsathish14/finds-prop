@@ -39,6 +39,8 @@ export interface Observed {
   readonly visibleText: string;
   readonly replaced: boolean;
   readonly noticeKeys: readonly string[];
+  /** The site-link buttons drawn: label and path. */
+  readonly links: readonly { readonly text: string; readonly href: string }[];
   /** The cards drawn, as `home:<id>` and `project:<slug>`. */
   readonly cards: readonly string[];
   readonly usage: ChatUsageRecord | null;
@@ -145,14 +147,23 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
   const texts = events.flatMap((event) => (event.type === "text" ? [event.text] : []));
   const replaced = events.flatMap((event) => (event.type === "replace" ? [event.text] : []));
   const notices = events.flatMap((event) => (event.type === "notice" ? [event] : []));
+  const links = events.flatMap((event) =>
+    event.type === "link" ? [{ text: event.text, href: event.href }] : [],
+  );
   const done = events.find((event) => event.type === "done");
   const answerText = texts.join("");
   return {
     status: response.status,
     outcome: done?.type === "done" ? done.outcome : null,
     answerText,
-    visibleText: [answerText, ...replaced, ...notices.map((notice) => notice.text)].join("\n"),
+    visibleText: [
+      answerText,
+      ...replaced,
+      ...notices.map((notice) => notice.text),
+      ...links.map((link) => link.text),
+    ].join("\n"),
     replaced: replaced.length > 0,
+    links,
     noticeKeys: notices.map((notice) => notice.key),
     cards: events.flatMap((event) =>
       event.type === "card"

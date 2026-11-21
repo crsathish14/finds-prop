@@ -12,6 +12,7 @@ import {
 } from "../guards/output";
 import { SYSTEM_PROMPT_CANARY } from "../prompts/version";
 import type { ConfirmCard } from "../confirm/confirm-card";
+import { SITE_LINKS } from "../site-links";
 import type { ProposalOffer } from "../tools/proposal-offer";
 import type { AnyAiChatTool } from "../tools/types";
 import type { ChatOutcome, ChatStreamEvent } from "./events";
@@ -73,6 +74,13 @@ function toStreamEvent(event: OutputEvent, translate: Translate): ChatStreamEven
       return { type: "text", text: event.text };
     case "card":
       return { type: "card", reference: event.reference };
+    case "link":
+      return {
+        type: "link",
+        key: event.key,
+        text: translate(SITE_LINKS[event.key].labelKey),
+        href: SITE_LINKS[event.key].path,
+      };
     case "notice":
       return { type: "notice", key: event.messageKey, text: translate(event.messageKey) };
     case "replace":
