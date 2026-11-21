@@ -1,6 +1,7 @@
 import { AI_CHAT } from "./boards/ai-chat";
 import { ADMIN } from "./boards/admin";
 import { ADS } from "./boards/ads";
+import { BLOG } from "./boards/blog";
 import { COMPONENTS } from "./boards/components";
 import { CHARTS } from "./boards/charts";
 import { CRM } from "./boards/crm";
@@ -138,6 +139,14 @@ export const LAB_BOARDS: LabBoard[] = [
     summary:
       "What the AI chat assistant is drawn with (P5-T01): the thread with the visitor's bubble, the answer with cards and notes, the Searching… line and the streaming caret, the composer, the notices for an error and the two limits, the sign-in gate and the confirm card for an enquiry or a site visit, in each state. It mirrors the AI chat screens of the UX addendum.",
     entries: AI_CHAT,
+  },
+  {
+    id: "blog",
+    title: "Blog",
+    uxBoard: "admin-cms",
+    summary:
+      "What the Blog is drawn with: on the public side the article card, the article's header, body and Read next list, and the controls above the list (search box, category and tag chips and the page bar); on the admin side the block editor, the list of articles with its status tabs and the post form. The Blog has no approved design yet, so it follows the admin Site content screen and the public pages, and is drawn for the owner's approval.",
+    entries: BLOG,
   },
 ];
 
