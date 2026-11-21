@@ -242,13 +242,14 @@ export function JobDetailDemo() {
       </Text>
       <Specimen label="A full header and body">
         <div className="flex w-full max-w-3xl flex-col gap-8">
-          <JobDetailHeader job={DETAIL} />
+          <JobDetailHeader headingLevel="h2" job={DETAIL} />
           <JobDetailBody job={BODY} />
         </div>
       </Specimen>
       <Specimen label="Only the required facts, no responsibilities, and typed markup shown as text">
         <div className="flex w-full max-w-3xl flex-col gap-8">
           <JobDetailHeader
+            headingLevel="h2"
             job={{
               title: "Office Assistant",
               location: "Coimbatore",
@@ -267,6 +268,7 @@ export function JobDetailDemo() {
       <Specimen label="A very long title and unbroken words">
         <div className="w-full max-w-3xl">
           <JobDetailHeader
+            headingLevel="h2"
             job={{
               ...DETAIL,
               title:
