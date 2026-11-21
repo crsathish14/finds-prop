@@ -163,6 +163,7 @@ export function BlogArticlePartsDemo() {
       <Specimen label="Header with a category, a summary and a cover">
         <div className="w-full max-w-5xl">
           <BlogArticleHeader
+            headingLevel="h2"
             title="A first-time buyer's guide to registration charges in Chennai"
             excerpt="What you pay on top of the price of a flat, who collects it and when, with a worked example."
             category={{ name: "Buying guide", href: "#buying-guide" }}
@@ -175,7 +176,7 @@ export function BlogArticlePartsDemo() {
       </Specimen>
       <Specimen label="Header with only a title and an author: no category, summary, date or cover">
         <div className="w-full max-w-5xl">
-          <BlogArticleHeader title="Market note" authorName="Asha Rao" />
+          <BlogArticleHeader headingLevel="h2" title="Market note" authorName="Asha Rao" />
         </div>
       </Specimen>
       <Specimen label="Body: paragraphs, both heading sizes, a bulleted and a numbered list, a quote with its credit and a picture with a caption">

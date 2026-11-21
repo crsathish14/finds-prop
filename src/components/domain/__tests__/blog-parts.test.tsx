@@ -151,6 +151,14 @@ describe("BlogArticleHeader", () => {
     expect(screen.getByAltText("A bright flat")).toBeInTheDocument();
   });
 
+  it("can draw its title as a level-2 heading for a page that has its own level-1", () => {
+    renderWithMessages(
+      <BlogArticleHeader title="Market note" authorName="Asha Rao" headingLevel="h2" />,
+    );
+    expect(screen.getByRole("heading", { level: 2, name: "Market note" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+  });
+
   it("is only a title and an author when nothing else is given", () => {
     const { container } = renderWithMessages(
       <BlogArticleHeader title="Market note" authorName="Asha Rao" />,

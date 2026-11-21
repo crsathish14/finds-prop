@@ -4,8 +4,9 @@
  * Purpose: the first screen of a Blog article (ADR-143). Owner: design system. It holds no state and fetches nothing.
  * Props: title, excerpt (the summary under the title; left out when empty), category { name, href } (the name links to
  *   the Blog filtered by it; left out when none), authorName, publishedAt (an ISO date), readMinutes, cover { src,
- *   alt } (left out when none: the header then has no picture), className. The title is the page's only level-1
- *   heading.
+ *   alt } (left out when none: the header then has no picture), headingLevel ("h1" default; "h2" for a page that
+ *   already has its own level-1 heading, as a Design Lab board does), className. The title is the page's only
+ *   level-1 heading.
  * Responsive: one column about 68 characters wide, centred; the cover is the width of the page content up to 1024
  *   px, at a 16 : 9 shape, and loads first.
  * Accessibility: the title is the h1; the date is a time element; the meta line is a list of plain facts, never
@@ -32,6 +33,7 @@ type BlogArticleHeaderProps = {
   publishedAt?: string | null | undefined;
   readMinutes?: number | undefined;
   cover?: { src: string; alt: string } | null | undefined;
+  headingLevel?: "h1" | "h2";
   className?: string;
 };
 
@@ -43,6 +45,7 @@ function BlogArticleHeader({
   publishedAt,
   readMinutes,
   cover,
+  headingLevel = "h1",
   className,
 }: BlogArticleHeaderProps) {
   const translate = useTranslations();
@@ -62,7 +65,7 @@ function BlogArticleHeader({
             {category.name}
           </Link>
         ) : null}
-        <Heading as="h1" size="1" className="[overflow-wrap:anywhere]">
+        <Heading as={headingLevel} size="1" className="[overflow-wrap:anywhere]">
           {title}
         </Heading>
         {excerpt ? (
