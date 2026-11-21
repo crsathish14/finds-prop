@@ -24,6 +24,7 @@ export const BOARDS = [
   "crm",
   "charts",
   "ai-chat",
+  "careers",
 ] as const;
 
 export async function settle(page: Page) {

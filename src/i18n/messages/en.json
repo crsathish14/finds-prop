@@ -3097,6 +3097,114 @@
           "cancel": "Keep it"
         }
       }
+    },
+    "careers": {
+      "title": "Careers",
+      "intro": "Add the jobs you are hiring for. Visitors see a job while it is open.",
+      "add": "Add job",
+      "departments": "Departments",
+      "tabsLabel": "Show jobs",
+      "tabs": {
+        "all": "All",
+        "open": "Open",
+        "draft": "Drafts",
+        "closed": "Closed",
+        "trash": "Trash"
+      },
+      "departmentFilter": "Department",
+      "allDepartments": "All departments",
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search titles and text",
+      "status": {
+        "draft": "Draft",
+        "open": "Open",
+        "closed": "Closed",
+        "expired": "Expired",
+        "trash": "In the Trash"
+      },
+      "columns": {
+        "title": "Job",
+        "department": "Department",
+        "location": "Location",
+        "status": "Status",
+        "closes": "Closes",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "noClosing": "No date",
+      "edit": "Edit",
+      "step": {
+        "open": "Open",
+        "close": "Close posting",
+        "reopen": "Reopen",
+        "restore": "Restore"
+      },
+      "trashFor": "Move {title} to the Trash",
+      "empty": {
+        "title": "No jobs yet",
+        "text": "Add your first job. It stays a draft until you open it."
+      },
+      "noMatches": {
+        "title": "No jobs match",
+        "text": "Try other words, another department or another tab."
+      },
+      "close": {
+        "button": "Close posting",
+        "notOpen": "Only an open job can be closed.",
+        "title": "Close the posting for {title}?",
+        "text": "The job leaves the Careers page at once and visitors can no longer apply. You can open it again later.",
+        "confirm": "Close posting",
+        "cancel": "Keep it open"
+      },
+      "form": {
+        "counter": "{count} / {max}",
+        "basics": {
+          "title": "Basics",
+          "description": "What visitors see first: the title, the department and where the job is."
+        },
+        "titleLabel": "Job title",
+        "slug": "Address",
+        "slugHint": "The last part of the job's web address. Lower case words joined by hyphens.",
+        "slugOpenHint": "This job is open. If you change the address, its old link stops working.",
+        "noDepartment": "There is no department yet. Choose Departments on the Careers page to add one first.",
+        "department": "Department",
+        "departmentPlaceholder": "Choose a department",
+        "location": "Location",
+        "experience": "Experience",
+        "experienceHint": "For example 2 to 4 years. Leave empty if it does not matter.",
+        "workMode": "Work mode",
+        "employmentType": "Job type",
+        "about": {
+          "title": "About the job",
+          "description": "Plain text. Visitors read this on the job page."
+        },
+        "summary": "Short summary",
+        "summaryHint": "One or two lines for the job card.",
+        "descriptionLabel": "Description",
+        "descriptionHint": "A blank line starts a new paragraph.",
+        "responsibilities": "Responsibilities",
+        "requirements": "Requirements",
+        "pointsHint": "One point on each line.",
+        "apply": {
+          "title": "How to apply",
+          "description": "People apply on another site or by email. Nothing is stored here."
+        },
+        "applyKind": "Apply by",
+        "applyLink": "A link",
+        "applyEmail": "An email",
+        "applyUrl": "Apply link",
+        "applyUrlHint": "A full address that starts with https://.",
+        "applyAddress": "Apply email address",
+        "applyAddressHint": "Applications are sent to this address.",
+        "salaryNote": "Pay note",
+        "salaryNoteHint": "Optional, such as 4 to 6 lakh a year.",
+        "closing": {
+          "title": "Closing date",
+          "description": "After this moment the job leaves the site by itself."
+        },
+        "closesAt": "Last moment to apply",
+        "closesAtHint": "Leave empty to keep the job open until you close it."
+      }
     }
   },
   "builderPortal": {
@@ -3392,5 +3500,68 @@
       "link": "Contact us"
     },
     "loadingTitle": "Loading the questions"
+  },
+  "careers": {
+    "workMode": {
+      "onsite": "On site",
+      "hybrid": "Hybrid",
+      "remote": "Remote"
+    },
+    "employmentType": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "contract": "Contract",
+      "internship": "Internship"
+    },
+    "card": {
+      "location": "Location:",
+      "experience": "Experience:",
+      "applyBy": "Apply by {date}"
+    },
+    "filters": {
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search jobs, such as site engineer",
+      "submit": "Search",
+      "department": "Department",
+      "location": "Location",
+      "workMode": "Work mode",
+      "type": "Job type",
+      "allDepartments": "All departments",
+      "allLocations": "All locations",
+      "allWorkModes": "Any work mode",
+      "allTypes": "Any type",
+      "summary": "{count, plural, one {# open job} other {# open jobs}}",
+      "summaryFiltered": "{count, plural, one {# job matches} other {# jobs match}}",
+      "clear": "Clear search and filters"
+    },
+    "detail": {
+      "location": "Location",
+      "experience": "Experience",
+      "pay": "Pay",
+      "posted": "Posted",
+      "closes": "Apply by",
+      "description": "About the job",
+      "responsibilities": "What you will do",
+      "requirements": "What we are looking for"
+    },
+    "apply": {
+      "button": "Apply for this job",
+      "byEmail": "Apply by email",
+      "linkHint": "You apply on the employer's own page. It opens in a new tab.",
+      "emailHint": "This opens your email app with a message to {address}.",
+      "emailSubject": "Application: {title}",
+      "closed": "This job is no longer open",
+      "closedText": "Applications for this job have closed. See the jobs that are open now.",
+      "seeJobs": "See open jobs"
+    },
+    "empty": {
+      "title": "No open jobs right now",
+      "text": "We have no open jobs at the moment. Please check again soon."
+    },
+    "noMatches": {
+      "title": "No jobs match your search",
+      "text": "Try fewer or different words, or clear a filter.",
+      "reset": "Show all jobs"
+    }
   }
 }
