@@ -15,6 +15,8 @@ import {
   type ProjectFieldValues,
   type ProjectFieldsWords,
 } from "@/components/domain/project-fields";
+import { FormField } from "@/components/patterns/form-field";
+import { Input } from "@/components/ui/input";
 import { ProjectFormLayout } from "@/components/domain/project-form-layout";
 import { ProjectMedia, type ProjectMediaGroupName } from "@/components/domain/project-media";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
@@ -29,6 +31,13 @@ import { notify } from "@/lib/notify";
 import { publicEnv } from "@/lib/public-env";
 import type { ActionResult } from "@/types/action";
 import { MEDIA_MAX, TREND_MONTHS_MAX } from "./constants";
+import {
+  boxesFor,
+  EXTRA_VALUE_MAX,
+  missingExtras,
+  type ExtraAnswers,
+  type ExtraBox,
+} from "./extra-fields";
 import { priceTypesFor, propertyTypesFor } from "./rules";
 import {
   EMPTY_PROJECT_VALUES,
@@ -79,6 +88,8 @@ export type ProjectFormProps = {
   mediaBaseUrl?: string;
   /** The place search box of the Location section; the page gives it, because it is another feature (ADR-140). */
   placePicker?: PlacePickerComponent;
+  /** The extra boxes the super admin added to the form (ADR-168); none until some are defined. */
+  extraBoxes?: ExtraBox[];
 };
 
 type Errors = Partial<Record<ProjectErrorField, string>>;
@@ -142,6 +153,7 @@ export function ProjectForm({
   storage: givenStorage,
   mediaBaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL,
   placePicker,
+  extraBoxes = [],
 }: ProjectFormProps) {
   const translate = useTranslations("admin.projectForm");
   const everything = useTranslations() as unknown as Translator;
@@ -155,6 +167,8 @@ export function ProjectForm({
   const [values, setValues] = useState<ProjectFieldValues>(
     project ? valuesOf(project) : EMPTY_PROJECT_VALUES,
   );
+  const [extras, setExtras] = useState<ExtraAnswers>(project?.extraFields ?? {});
+  const [extraErrors, setExtraErrors] = useState<Record<string, string>>({});
   const [formId, setFormId] = useState(project?.formId ?? "");
   const [videos, setVideos] = useState<string[]>(project?.videos ?? []);
   const [media, setMedia] = useState(() => mediaOf(mediaBaseUrl, project));
@@ -304,6 +318,16 @@ export function ProjectForm({
       showErrors(found);
       return;
     }
+    const lacking = missingExtras(extraBoxes, values.propertyType, extras);
+    setExtraErrors(
+      Object.fromEntries(
+        lacking.map((id) => [id, fieldErrorText(everything, { key: "validation.required" })]),
+      ),
+    );
+    if (lacking.length > 0) {
+      document.getElementById("details")?.scrollIntoView?.({ block: "start" });
+      return;
+    }
     const trendProblemsFound = admin && projectId !== null ? trendProblems(trends) : {};
     setTrendErrors(trendProblemsFound);
     if (Object.keys(trendProblemsFound).length > 0) {
@@ -317,8 +341,9 @@ export function ProjectForm({
 
     setSaving(true);
     try {
-      const result = await save(
-        payloadOf(
+      const result = await save({
+        extraFields: extras,
+        ...payloadOf(
           {
             values,
             formId,
@@ -333,18 +358,25 @@ export function ProjectForm({
           },
           { scope, projectId },
         ),
-      );
+      });
       if (!result.ok) {
         const mapped: Errors = {};
+        const extraMapped: Record<string, string> = {};
         for (const [path, problems] of Object.entries(result.fieldErrors ?? {})) {
+          const extraId = path.startsWith("extraFields.") ? path.slice(12) : null;
+          if (extraId && problems[0])
+            extraMapped[extraId] = fieldErrorText(everything, problems[0]);
           const field = errorFieldOf(path);
           const first = problems[0];
           if (field && first && mapped[field] === undefined) {
             mapped[field] = fieldErrorText(everything, first);
           }
         }
+        setExtraErrors(extraMapped);
         if (Object.keys(mapped).length > 0) showErrors(mapped);
-        else reportFailure(result);
+        else if (Object.keys(extraMapped).length > 0) {
+          document.getElementById("details")?.scrollIntoView?.({ block: "start" });
+        } else reportFailure(result);
         return;
       }
       setErrors({});
@@ -723,6 +755,23 @@ export function ProjectForm({
           ]}
           slugLocked={slugLocked}
           disabled={saving}
+          extras={boxesFor(extraBoxes, values.propertyType).map((box) => (
+            <FormField
+              key={box.id}
+              label={box.label}
+              required={box.required}
+              optionalLabel={translate("extras.optional")}
+              {...(box.hint ? { hint: box.hint } : {})}
+              {...(extraErrors[box.id] ? { error: extraErrors[box.id] as string } : {})}
+            >
+              <Input
+                value={extras[box.id] ?? ""}
+                maxLength={EXTRA_VALUE_MAX}
+                disabled={saving}
+                onChange={(event) => setExtras({ ...extras, [box.id]: event.target.value })}
+              />
+            </FormField>
+          ))}
           {...(placePicker ? { placePicker } : {})}
           words={fieldWords()}
           media={

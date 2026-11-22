@@ -31,6 +31,7 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   offerType: null,
   plotStatus: null,
   villaType: null,
+  extraFields: {},
   price: 7_800_000,
   priceType: "basic",
   areaMinSqft: null,

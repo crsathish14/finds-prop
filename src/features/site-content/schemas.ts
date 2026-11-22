@@ -17,11 +17,12 @@ import {
   LOCALITY_LABEL_MAX,
   LOCALITY_RADIUS_MAX_KM,
   PROJECT_FIELDS_MAX,
+  PROJECT_FIELD_ID,
+  PROJECT_FIELD_PROPERTY_TYPES,
   PROJECT_FIELD_HINT_MAX,
   PROJECT_FIELD_LABEL_MAX,
   SITE_NAME_MAX,
 } from "./constants";
-import { PROJECT_FIELD_ID, PROJECT_FIELD_PROPERTY_TYPES } from "@/features/site";
 
 /**
  * What the four Site content pages send (S7-T10, FR-ADM-10). A schema message is a key under `validation.*`; the

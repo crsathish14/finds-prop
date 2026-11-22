@@ -705,6 +705,9 @@
       "bar": {
         "enquire": "Enquire about this project"
       },
+      "extras": {
+        "heading": "More details"
+      },
       "propertyType": {
         "apartment": "Apartment",
         "villa": "Villa",
@@ -2082,6 +2085,9 @@
       }
     },
     "projectForm": {
+      "extras": {
+        "optional": "(optional)"
+      },
       "metaTitleNew": "New project",
       "metaTitleEdit": "Edit project",
       "newTitle": "New project",

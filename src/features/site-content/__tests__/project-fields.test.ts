@@ -37,6 +37,8 @@ function fakeStore() {
 describe("UT-project-fields: the extra project form boxes (ADR-168)", () => {
   it("keeps the property types the box can be limited to equal to the project form's", () => {
     expect([...PROJECT_FIELD_PROPERTY_TYPES]).toEqual([...PROPERTY_TYPES]);
+    expect([...SITE_TYPES]).toEqual([...PROPERTY_TYPES]);
+    expect(SITE_FIELD_ID.source).toBe(PROJECT_FIELD_ID.source);
   });
 
   it("starts with no boxes", () => {

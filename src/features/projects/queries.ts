@@ -206,6 +206,7 @@ export async function getProject(slug: string): Promise<ProjectResult> {
       propertyType: row.property_type,
       plotStatus: row.plot_status,
       villaType: row.villa_type,
+      extraFields: row.extra_fields ?? {},
       offerType: row.offer_type,
       price: row.price,
       priceType: row.price_type,
