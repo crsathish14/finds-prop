@@ -22,7 +22,7 @@ $$;
 
 select is(
   pg_temp.who_runs('anon'),
-  'blog_body_text, listing_is_public, listing_label, project_is_live, public_project_form, search_blog_posts, '
+  'blog_body_text, city_key, listed_cities, listing_is_public, listing_label, project_is_live, public_project_form, search_blog_posts, '
   || 'search_faqs, search_job_postings, search_properties',
   'visitors can run only the public read helpers and the searches'
 );
@@ -33,9 +33,9 @@ select is(
   || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
   || 'admin_projects, '
   || 'admin_properties, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
-  || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, close_listing, current_builder_id, '
+  || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, city_key, close_listing, current_builder_id, '
   || 'has_role, '
-  || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listing_is_editable, listing_is_public, '
+  || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listed_cities, listing_is_editable, listing_is_public, '
   || 'listing_label, moderate_listing, moderate_project, my_builder, my_projects, my_properties, owns_property, '
   || 'project_is_live, project_is_mine, public_project_form, reorder_faqs, save_crm_integration, '
   || 'save_project_price_trends, search_blog_posts, search_faqs, search_job_postings, search_properties, '
