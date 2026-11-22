@@ -846,6 +846,9 @@ isOneToOne: false
 "listing_label":
 { Args: { "is_featured": boolean,"listing_kind": string,"listing_price": number }; Returns: string
                            },
+"live_project_list":
+{ Args: { "p_limit"?: number }; Returns: Json
+                           },
 "moderate_listing":
 { Args: { "p_action": string,"p_listing": string,"p_reason"?: string }; Returns: {
               "featured": boolean,"id": string,"short_id": string,"status": string
