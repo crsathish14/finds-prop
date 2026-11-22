@@ -10,12 +10,12 @@
  *   Owner: design system. It keeps the typed text and the boxes; the conversion and the saving are the page's (props).
  * Props: categories ({ id, name }), initialCategory, convert (text in, a preview out: the blocks, the title, the
  *   address, the summary, the changes and the problems; must be a stable function), onCreate (asks the page to make the
- *   draft; answers `{ ok: true }` or the problems by box name, already translated), backHref, defaultMarkdown (the paste box's first text), debounceMs (how long the
+ *   draft; answers `{ ok: true }` or the problems by box name, already translated), backHref, defaultMarkdown (the paste box's first text), headingAs (h1 by default), debounceMs (how long the
  *   preview waits after typing; 250 by default), className.
  * Responsive: one column on a phone with no sideways scroll (the paste box, the boxes, the changes, then the preview);
  *   from the large width the paste box and the preview sit side by side.
  * Accessibility: every box has a visible label tied to it; a problem is a message tied to its box with an icon, and
- *   focus goes to the first box with one; the preview is a labelled region that is read politely; the changes and the
+ *   focus goes to the first box with one; the preview is a labelled region and a short hidden status line says how many blocks, changes and problems there are; the changes and the
  *   problems are lists inside alerts; the create button says it is working while it saves.
  * States: empty (a gentle note, nothing to create), typed (the preview, the changes), with problems (the button is
  *   off and each problem says what to change), saving, a refused save (the problems under the boxes).
@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "@/components/ui/link";
 import { Select } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Textarea } from "@/components/ui/textarea";
 import type { Translator } from "@/i18n/failure-text";
 import { cn } from "@/lib/cn";
@@ -82,6 +83,8 @@ type BlogMarkdownFlowProps = {
   /** The text the paste box starts with (the Design Lab shows a pasted article). */
   defaultMarkdown?: string;
   debounceMs?: number;
+  /** The screen's title is the page's `h1`; a page that already has one (the Design Lab) says `h2`. */
+  headingAs?: "h1" | "h2";
   className?: string;
 };
 
@@ -129,6 +132,7 @@ function BlogMarkdownFlow({
   backHref,
   defaultMarkdown = "",
   debounceMs = 250,
+  headingAs = "h1",
   className,
 }: BlogMarkdownFlowProps) {
   const translate = useTranslations();
@@ -236,7 +240,7 @@ function BlogMarkdownFlow({
           <Icon icon={ArrowLeft} size="sm" />
           {translate("admin.blog.markdown.back")}
         </Link>
-        <Heading as="h1" size="1">
+        <Heading as={headingAs} size="1">
           {translate("admin.blog.markdown.title")}
         </Heading>
         <Text tone="muted" className="max-w-[70ch]">
@@ -370,6 +374,17 @@ function BlogMarkdownFlow({
           </div>
         </div>
         <div className="flex min-w-0 flex-col gap-4">
+          <VisuallyHidden>
+            <span role="status">
+              {empty
+                ? ""
+                : translate("admin.blog.markdown.preview.status", {
+                    blocks: preview.blocks.length,
+                    changes: preview.warnings.length,
+                    problems: preview.errors.length,
+                  })}
+            </span>
+          </VisuallyHidden>
           {preview.errors.length > 0 ? (
             <Alert tone="danger" title={translate("admin.blog.markdown.errors.title")}>
               <ul className="list-disc space-y-1 pl-5">
@@ -395,7 +410,6 @@ function BlogMarkdownFlow({
           ) : null}
           <section
             aria-label={translate("admin.blog.markdown.preview.label")}
-            aria-live="polite"
             aria-busy={waiting}
             data-slot="blog-markdown-preview"
             className="flex min-w-0 flex-col gap-6 rounded-xl border border-line bg-surface p-6"

@@ -3641,7 +3641,8 @@
         "preview": {
           "label": "Preview of the article",
           "note": "This is how readers will see the article. Nothing is saved until you create the draft.",
-          "empty": "Paste your article to see it here."
+          "empty": "Paste your article to see it here.",
+          "status": "{blocks, plural, one {# block} other {# blocks}} in the preview, {changes, plural, one {# change} other {# changes}}, {problems, plural, one {# problem} other {# problems}}."
         }
       }
     },

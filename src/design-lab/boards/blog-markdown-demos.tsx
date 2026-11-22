@@ -77,6 +77,7 @@ function PreFilled({
       convert={convertMarkdown}
       backHref="/design-lab"
       debounceMs={0}
+      headingAs="h2"
       defaultMarkdown={start}
       onCreate={async (input) => {
         if (refuse) {
@@ -120,6 +121,7 @@ export function BlogMarkdownFlowDemo() {
             convert={convertMarkdown}
             backHref="/design-lab"
             debounceMs={0}
+            headingAs="h2"
             defaultMarkdown={SAMPLE}
             onCreate={stay}
           />
