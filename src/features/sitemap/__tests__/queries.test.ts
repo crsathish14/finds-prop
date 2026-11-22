@@ -150,11 +150,11 @@ describe("UT-sitemap-queries: reading what the sitemap lists", () => {
       Array.from({ length: 45 }, (_, page) => ({ data: homeRows(1000, page * 1000), error: null })),
     );
     const sources = await getSitemapSources();
-    expect(sources.homes.length).toBe(SITEMAP_MAX_URLS - 3 - 3);
+    expect(sources.homes.length).toBe(SITEMAP_MAX_URLS - 1 - 3);
     const last = callsOf("homes").at(-1);
-    expect((last?.p_offset ?? 0) + (last?.p_limit ?? 0)).toBe(SITEMAP_MAX_URLS - 3 - 3);
+    expect((last?.p_offset ?? 0) + (last?.p_limit ?? 0)).toBe(SITEMAP_MAX_URLS - 1 - 3);
     expect(warn).toHaveBeenCalledWith("sitemap reached its address cap", {
-      cap: SITEMAP_MAX_URLS - 3 - 3,
+      cap: SITEMAP_MAX_URLS - 1 - 3,
     });
   });
 });

@@ -21,6 +21,12 @@ import {
   searchRadiusKm,
   wantsNearby,
 } from "@/features/search";
+import {
+  isSignedOut,
+  LoginWallScreen,
+  loginWallHref,
+  loginWallMetadata,
+} from "@/features/login-wall";
 import { pageMetadata } from "@/features/seo";
 import { getFeatureFlags, getSiteSettings, getSponsorAds, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
@@ -41,6 +47,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     getTranslate(),
     getLocale(),
   ]);
+  // A visitor who is not signed in gets one generic, unindexed title, whatever the filters say.
+  if (await isSignedOut()) return loginWallMetadata(translate);
   const params = parseSearchParams(raw, { bounds: settings.region.bounds });
   const { title, description } = resultsMeta(params, translate, locale);
   return pageMetadata({
@@ -69,6 +77,17 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   const params = parseSearchParams(raw, { bounds: settings.region.bounds });
   const canonical = canonicalRedirect(raw, params);
   if (canonical !== null) redirect(canonical);
+
+  // The list is for signed-in visitors (ADR-171): a visitor who is not signed in gets the wall and no read at
+  // all, and after the phone sign-in comes back to this same search.
+  const wallHref = await loginWallHref(canonicalSearchHref(params));
+  if (wallHref !== null) {
+    return (
+      <main id="main" className="flex-1 bg-canvas-sunken">
+        <LoginWallScreen kind="properties" signInHref={wallHref} />
+      </main>
+    );
+  }
 
   const [results, translate] = await Promise.all([getSearchResults(params), getTranslate()]);
   const flags = getFeatureFlags();
