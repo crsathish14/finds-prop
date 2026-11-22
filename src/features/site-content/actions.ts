@@ -9,7 +9,9 @@ import {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveProjectFieldsConfig,
   saveSponsorsConfig,
+  saveTopDevelopersConfig,
 } from "./action-config";
 import {
   saveContentModulesContent,
@@ -18,6 +20,8 @@ import {
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveProjectFieldsContent,
+  saveTopDevelopersContent,
 } from "./content-service";
 import { createContentStore } from "./service";
 import { saveSponsorsContent } from "./sponsor-service";
@@ -96,6 +100,28 @@ export const saveDisclaimers = defineAction({
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveDisclaimersContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the extra boxes of the builder's project form (ADR-168). */
+export const saveProjectFields = defineAction({
+  ...saveProjectFieldsConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveProjectFieldsContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key, count: input.fields.length });
+    return done;
+  },
+});
+
+/** Saves which developers the home page shows under "Top developers", and their order (at most 10). */
+export const saveTopDevelopers = defineAction({
+  ...saveTopDevelopersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveTopDevelopersContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key });
     return done;
   },

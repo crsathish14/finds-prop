@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 
 /**
  * What the site content (CMS) may hold in `site_settings` (plan 06 section 6.6, BR-80 to BR-82).
@@ -59,6 +60,8 @@ const homepageSchema = z.object({
   showWhyUs: z.boolean(),
   showCta: z.boolean(),
   localities: z.array(locality).max(30),
+  /** The order of the sections below the hero. Read leniently: `resolveHomeOrder` drops unknown keys and adds missing ones. */
+  order: z.array(z.string().max(40)).max(30).optional(),
 });
 
 const regionSchema = z.object({
@@ -100,6 +103,46 @@ const disclaimersSchema = z.object({
   aiSearch: z.string().max(DISCLAIMER_MAX).optional(),
 });
 
+/**
+ * The extra text boxes the super admin adds to the builder's project form (ADR-168). At most ten, each with a label,
+ * an optional hint, a required switch, the property types it applies to (none chosen means all) and an on switch. The
+ * id is the key the answers are stored under on each project, so it never changes once made.
+ */
+export const PROJECT_FIELDS_MAX = 10;
+export const PROJECT_FIELD_LABEL_MAX = 60;
+export const PROJECT_FIELD_HINT_MAX = 200;
+export const PROJECT_FIELD_VALUE_MAX = 500;
+export const PROJECT_FIELD_ID = /^[a-z0-9][a-z0-9-]{5,39}$/;
+/** The property types a box can be limited to (the same list as the project form's; a test keeps them equal). */
+export const PROJECT_FIELD_PROPERTY_TYPES = [
+  "apartment",
+  "villa",
+  "plot",
+  "vacant_land",
+  "flat",
+  "office",
+  "co_working",
+] as const;
+const projectFieldSchema = z.object({
+  id: z.string().regex(PROJECT_FIELD_ID),
+  label: z.string().min(1).max(PROJECT_FIELD_LABEL_MAX),
+  hint: z.string().max(PROJECT_FIELD_HINT_MAX).optional(),
+  required: z.boolean(),
+  appliesTo: z.array(z.enum(PROJECT_FIELD_PROPERTY_TYPES)).max(PROJECT_FIELD_PROPERTY_TYPES.length),
+  on: z.boolean(),
+});
+const projectFieldsSchema = z.object({
+  fields: z.array(projectFieldSchema).max(PROJECT_FIELDS_MAX),
+});
+
+/**
+ * The developers the home page's "Top developers" section shows, in order (at most 10). Empty means the section picks
+ * developers by itself, as before. An id that is no longer a developer with a public project is skipped when it is read.
+ */
+const topDevelopersSchema = z.object({
+  builderIds: z.array(z.uuid()).max(TOP_DEVELOPERS_MAX),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -109,6 +152,8 @@ export const SITE_SETTING_SCHEMAS = {
   sponsors: sponsorsSchema,
   content_modules: contentModulesSchema,
   disclaimers: disclaimersSchema,
+  project_fields: projectFieldsSchema,
+  top_developers: topDevelopersSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

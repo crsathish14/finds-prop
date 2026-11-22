@@ -142,6 +142,8 @@ type ProjectScreenProps = {
   actions?: ReactNode;
   /** The bar and sheet of a phone. */
   mobileEnquiry?: ReactNode;
+  /** The extra boxes the super admin added, with this project's answers (the page works them out, ADR-168). */
+  extras?: readonly { id: string; label: string; value: string }[];
   /** Design Lab only: several screens on one board need a lower heading level. */
   titleAs?: "h1" | "h2";
 };
@@ -161,6 +163,7 @@ export function ProjectScreen({
   enquiry,
   actions,
   mobileEnquiry,
+  extras = [],
   titleAs = "h1",
 }: ProjectScreenProps) {
   const ids = useId();
@@ -387,6 +390,22 @@ export function ProjectScreen({
                   />
                 ))}
               </div>
+            </section>
+          )}
+
+          {extras.length === 0 ? null : (
+            <section aria-labelledby={sectionId("extras")} className="flex flex-col gap-4">
+              <Heading as="h2" size="3" id={sectionId("extras")}>
+                {translate("projects.page.extras.heading")}
+              </Heading>
+              <dl className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {extras.map((row) => (
+                  <div key={row.id} className="flex flex-col gap-1 rounded-md bg-canvas-sunken p-4">
+                    <dt className="text-small text-muted">{row.label}</dt>
+                    <dd className="font-bold whitespace-pre-line text-ink">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
             </section>
           )}
 

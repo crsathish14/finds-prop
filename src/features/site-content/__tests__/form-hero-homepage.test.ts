@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SITE_DEFAULTS, resolveHomeOrder } from "@/features/site";
 import {
   heroFormOf,
   heroPayloadOf,
@@ -93,6 +94,7 @@ describe("UT-homepage-form: the Homepage page's boxes (S7-T10)", () => {
   it("starts on the saved switches, with the localities' numbers as the text a box holds", () => {
     expect(homepageFormOf(SAVED)).toEqual({
       ...SAVED,
+      order: resolveHomeOrder(),
       localities: [
         { label: "Adyar", lat: "13.0067", lng: "80.2573", radiusKm: "4" },
         { label: "Navalur", lat: "12.8458", lng: "80.2265", radiusKm: "6" },
@@ -110,6 +112,7 @@ describe("UT-homepage-form: the Homepage page's boxes (S7-T10)", () => {
       showDiscovery: true,
       showWhyUs: true,
       showCta: false,
+      order: form.order,
       localities: form.localities,
     });
   });
@@ -156,5 +159,29 @@ describe("UT-homepage-form: the Homepage page's boxes (S7-T10)", () => {
     });
     expect(picture.sections.find((section) => section.key === "discovery")?.on).toBe(false);
     expect(picture.tiles).toEqual([]);
+  });
+});
+
+describe("homepage section order (CR plan 5)", () => {
+  it("starts from the saved order, completed with any section it leaves out", () => {
+    const saved = { ...SITE_DEFAULTS.homepage, order: ["cta", "bogus", "featured"] };
+    expect(homepageFormOf(saved).order).toEqual([
+      "cta",
+      "featured",
+      "discovery",
+      "newLaunches",
+      "projectTypes",
+      "newest",
+      "whyUs",
+    ]);
+  });
+
+  it("sends the order and draws the sections with a switch in that order", () => {
+    const values = homepageFormOf({ ...SITE_DEFAULTS.homepage, order: ["cta", "whyUs"] });
+    expect(homepagePayloadOf(values).order).toEqual(values.order);
+    const keys = homepagePictureOf({ ...values, localities: [] }).sections.map(
+      (section) => section.key,
+    );
+    expect(keys).toEqual(["hero", "cta", "whyUs", "discovery", "featured", "projectTypes"]);
   });
 });

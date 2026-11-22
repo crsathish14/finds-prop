@@ -10,6 +10,8 @@ export const EDITABLE_SETTINGS = [
   "footer",
   "content_modules",
   "disclaimers",
+  "project_fields",
+  "top_developers",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
@@ -44,6 +46,21 @@ export const FOOTER_PHONE_MAX = 30;
 export const FOOTER_COPYRIGHT_MAX = 200;
 /** How long each disclaimer may be (ADR-152): the same limit the public side reads with. */
 export const DISCLAIMER_MAX = 600;
+/** The extra project form boxes (ADR-168): the same limits the public side reads with. */
+export const PROJECT_FIELDS_MAX = 10;
+export const PROJECT_FIELD_LABEL_MAX = 60;
+export const PROJECT_FIELD_HINT_MAX = 200;
+/** What a box id looks like, and the property types a box can be limited to (the site's shape repeats both; a test holds them equal). */
+export const PROJECT_FIELD_ID = /^[a-z0-9][a-z0-9-]{5,39}$/;
+export const PROJECT_FIELD_PROPERTY_TYPES = [
+  "apartment",
+  "villa",
+  "plot",
+  "vacant_land",
+  "flat",
+  "office",
+  "co_working",
+] as const;
 export const LOCALITY_LABEL_MAX = 60;
 export const LOCALITY_RADIUS_MAX_KM = 100;
 

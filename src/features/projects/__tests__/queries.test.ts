@@ -5,6 +5,7 @@ const life = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 const from = vi.fn();
+const rpc = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
 vi.mock("next/navigation", () => ({
@@ -12,7 +13,7 @@ vi.mock("next/navigation", () => ({
     if (thrown instanceof Error && thrown.message === "NEXT_REDIRECT") throw thrown;
   },
 }));
-vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from }) }));
+vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from, rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getProject, getProjects, PROJECT_LIST_LIMIT, PROJECTS_TAG } = await import("../queries");
@@ -101,31 +102,36 @@ const unitRow = (number: string, floor: number | null, status = "available") => 
 });
 
 type Parts = {
-  project?: Result;
-  units?: Result;
-  available?: Result;
-  trend?: Result;
+  project?: unknown;
+  units?: unknown[];
+  unitCount?: number;
+  availableCount?: number;
+  trend?: unknown[];
+  /** Replaces the whole answer of `public_project()`, for the failures and the missing project. */
+  answer?: { data: unknown; error: { code: string } | null };
 };
 
-/** Hands out the builders the page asks for, by table and by what it selects. */
-function arrange({ project, units, available, trend }: Parts = {}) {
-  const made = {
-    project: builder(project ?? { data: projectRow(), error: null }),
-    units: builder(units ?? { data: [unitRow("A-2", 1)], error: null, count: 1 }),
-    available: builder(available ?? { data: null, error: null, count: 1 }),
-    trend: builder(trend ?? { data: [], error: null }),
-  };
-  let unitsAsked = false;
-  from.mockImplementation((table: string) => {
-    if (table === "projects") return made.project.query;
-    if (table === "project_price_trends") return made.trend.query;
-    if (table !== "project_units") return undefined;
-    // The first call asks for the rows, the second for the count of available ones.
-    if (unitsAsked) return made.available.query;
-    unitsAsked = true;
-    return made.units.query;
-  });
-  return made;
+/** The one call the page makes: rpc("public_project"), which answers a document or null. */
+function arrange({
+  project = projectRow(),
+  units = [unitRow("A-2", 1)],
+  unitCount = 1,
+  availableCount = 1,
+  trend = [],
+  answer,
+}: Parts = {}) {
+  rpc.mockResolvedValue(
+    answer ?? {
+      data: {
+        project,
+        units,
+        unit_count: unitCount,
+        available_count: availableCount,
+        trend,
+      },
+      error: null,
+    },
+  );
 }
 
 const NOW = new Date("2026-11-13T10:12:00.000Z");
@@ -233,27 +239,21 @@ describe("UT-project-queries: the list of projects", () => {
 });
 
 describe("UT-project-queries: one project by its slug", () => {
-  it("reads the project, its first units, the counts and the trend as a visitor", async () => {
-    const made = arrange({
-      units: { data: [unitRow("A-10", 1), unitRow("A-2", 1)], error: null, count: 320 },
-      available: { data: null, error: null, count: 184 },
-      trend: {
-        data: [
-          { month: "2026-10-01", price_per_sqft: 8350 },
-          { month: "2026-09-01", price_per_sqft: 8230 },
-        ],
-        error: null,
-      },
+  it("reads the project, its first units, the counts and the trend in one call, as a visitor", async () => {
+    arrange({
+      units: [unitRow("A-10", 1), unitRow("A-2", 1)],
+      unitCount: 320,
+      availableCount: 184,
+      trend: [
+        { month: "2026-10-01", price_per_sqft: 8350 },
+        { month: "2026-09-01", price_per_sqft: 8230 },
+      ],
     });
     const result = await getProject("kadal-vista");
 
-    expect(made.project.calls.map((call) => call.method)).toEqual(["select", "eq"]);
-    expect(made.project.calls[1]?.args).toEqual(["slug", "kadal-vista"]);
-    expect(made.units.calls[0]?.args[1]).toEqual({ count: "exact" });
-    expect(made.units.calls.at(-1)).toEqual({ method: "limit", args: [20] });
-    expect(made.available.calls[0]?.args[1]).toEqual({ count: "exact", head: true });
-    expect(made.available.calls.map((call) => call.args)).toContainEqual(["status", "available"]);
-    expect(made.trend.calls.at(-1)).toEqual({ method: "limit", args: [12] });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("public_project", { p_slug: "kadal-vista" });
+    expect(from).not.toHaveBeenCalled();
     expect(tag).toHaveBeenCalledWith(PROJECTS_TAG, "project:kadal-vista");
 
     expect(result.status).toBe("found");
@@ -281,46 +281,19 @@ describe("UT-project-queries: one project by its slug", () => {
     expect(result.readAt).toBe(NOW.toISOString());
   });
 
-  it("never asks for the moderation columns, the form link or the exact location", async () => {
-    const made = arrange();
-    await getProject("kadal-vista");
-    const columns = String(made.project.calls[0]?.args[0]);
-    for (const hidden of [
-      "moderation",
-      "published",
-      "form_id",
-      "latitude",
-      "longitude",
-      "address",
-      "rejection",
-    ]) {
-      expect(columns).not.toContain(hidden);
-    }
-  });
-
   it("is missing when no approved, published project has this slug", async () => {
-    arrange({ project: { data: null, error: null } });
+    arrange({ answer: { data: null, error: null } });
     expect(await getProject("nobody-here")).toEqual({
       status: "missing",
       readAt: NOW.toISOString(),
     });
   });
 
-  it("falls back to the rows it holds when the database gives no counts", async () => {
-    arrange({
-      units: { data: [unitRow("A-1", 1), unitRow("A-2", 1)], error: null, count: null },
-      available: { data: null, error: null, count: null },
-    });
-    const result = await getProject("kadal-vista");
-    expect(
-      result.status === "found" && [result.project.unitCount, result.project.availableCount],
-    ).toEqual([2, 0]);
-  });
-
   it("skips a unit or a month that does not fit, and says so", async () => {
     arrange({
-      units: { data: [unitRow("A-1", 1, "mystery"), unitRow("A-2", 1)], error: null, count: 2 },
-      trend: { data: [{ month: "March", price_per_sqft: 1 }], error: null },
+      units: [unitRow("A-1", 1, "mystery"), unitRow("A-2", 1)],
+      unitCount: 2,
+      trend: [{ month: "March", price_per_sqft: 1 }],
     });
     const result = await getProject("kadal-vista");
     expect(result.status === "found" && result.project.units.map((unit) => unit.number)).toEqual([
@@ -331,24 +304,18 @@ describe("UT-project-queries: one project by its slug", () => {
   });
 
   it("throws, so it is never cached, when the project cannot be read", async () => {
-    arrange({ project: { data: null, error: { code: "PGRST301" } } });
+    arrange({ answer: { data: null, error: { code: "PGRST301" } } });
     await expect(getProject("kadal-vista")).rejects.toThrow("project could not be read");
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "PGRST301" });
   });
 
   it("throws, not missing, when the project row does not fit", async () => {
-    arrange({ project: { data: projectRow({ name: "" }), error: null } });
+    arrange({ project: projectRow({ name: "" }) });
     await expect(getProject("kadal-vista")).rejects.toThrow("does not fit");
   });
 
-  it("throws when the units, the count or the trend cannot be read", async () => {
-    for (const parts of [
-      { units: { data: null, error: { code: "42501" } } },
-      { available: { data: null, error: { code: "42501" } } },
-      { trend: { data: null, error: { code: "42501" } } },
-    ] satisfies Parts[]) {
-      arrange(parts);
-      await expect(getProject("kadal-vista")).rejects.toThrow("could not be read");
-    }
+  it("throws, not missing, when the answer is not the document the page expects", async () => {
+    arrange({ answer: { data: { project: projectRow() }, error: null } });
+    await expect(getProject("kadal-vista")).rejects.toThrow("does not fit");
   });
 });

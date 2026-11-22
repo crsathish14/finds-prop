@@ -46,6 +46,7 @@ const startOf = (initial: HomepageFormValues): SiteHomepageValues => ({
   showDiscovery: initial.showDiscovery,
   showWhyUs: initial.showWhyUs,
   showCta: initial.showCta,
+  order: initial.order,
   localities: localityRowsOf(initial.localities, "place"),
 });
 
@@ -96,6 +97,22 @@ export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) 
         label: translate("homepage.sections.cta.label"),
         hint: translate("homepage.sections.cta.hint"),
       },
+    },
+    order: {
+      hint: translate("homepage.order.hint"),
+      newLaunches: {
+        label: translate("homepage.order.newLaunches.label"),
+        hint: translate("homepage.order.newLaunches.hint"),
+      },
+      newest: {
+        label: translate("homepage.order.newest.label"),
+        hint: translate("homepage.order.newest.hint"),
+      },
+      rowLabels: (section) => ({
+        drag: translate("homepage.order.drag", { section }),
+        moveUp: translate("homepage.order.moveUp", { section }),
+        moveDown: translate("homepage.order.moveDown", { section }),
+      }),
     },
     localities: {
       title: translate("homepage.localities.title"),

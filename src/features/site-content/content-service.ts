@@ -4,10 +4,12 @@ import type { EditableSetting } from "./constants";
 import type {
   ContentModulesInput,
   DisclaimersInput,
+  TopDevelopersInput,
   FooterInput,
   HeaderInput,
   HeroInput,
   HomepageInput,
+  ProjectFieldsInput,
 } from "./schemas";
 
 /**
@@ -95,6 +97,22 @@ export function disclaimersValue(input: DisclaimersInput): Record<string, unknow
   return compact({ footer: input.footer, aiSearch: input.aiSearch });
 }
 
+/** The extra project form boxes in the order given; a blank hint is left out and the types are kept once each (ADR-168). */
+export function projectFieldsValue(input: ProjectFieldsInput): Record<string, unknown> {
+  return {
+    fields: input.fields.map((field) =>
+      compact({
+        id: field.id,
+        label: field.label,
+        hint: field.hint,
+        required: field.required,
+        appliesTo: [...new Set(field.appliesTo)],
+        on: field.on,
+      }),
+    ),
+  };
+}
+
 export function heroValue(input: HeroInput): Record<string, unknown> {
   return compact({
     eyebrow: input.eyebrow,
@@ -111,6 +129,7 @@ export function homepageValue(input: HomepageInput): Record<string, unknown> {
     showDiscovery: input.showDiscovery,
     showWhyUs: input.showWhyUs,
     showCta: input.showCta,
+    ...(input.order ? { order: input.order } : {}),
     localities: input.localities.map((place) => ({
       label: place.label,
       lat: place.lat,
@@ -168,6 +187,22 @@ export function saveDisclaimersContent(
   input: DisclaimersInput,
 ): Promise<ContentDone> {
   return publish(store, "disclaimers", disclaimersValue(input));
+}
+
+/** Saves the extra project form boxes (ADR-168). */
+export function saveProjectFieldsContent(
+  store: ContentStore,
+  input: ProjectFieldsInput,
+): Promise<ContentDone> {
+  return publish(store, "project_fields", projectFieldsValue(input));
+}
+
+/** Saves the chosen developers of the home page, in order. */
+export function saveTopDevelopersContent(
+  store: ContentStore,
+  input: TopDevelopersInput,
+): Promise<ContentDone> {
+  return publish(store, "top_developers", { builderIds: input.builderIds });
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

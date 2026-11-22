@@ -1,7 +1,7 @@
 -- ADR-143 phase 2 faqs. Tests: DB-RLS-faqs, DB-CON-faqs, DB-SEARCH-faqs, DB-AUDIT-content.
 -- Fictional data only. The rows a visitor may read are published, not in the trash and in an active FAQ category.
 begin;
-select plan(59);
+select plan(60);
 
 insert into auth.users (id, phone, phone_confirmed_at)
 values ('00000000-0000-4000-8000-000000000001', '919000000001', now());
@@ -34,6 +34,20 @@ insert into public.faqs (id, category_id, question, answer, sort_order, status, 
    'Contacting the team', 'Our verification team is available all week.', 4, 'published', null),
   ('00000000-0000-4000-fa00-000000000009', '00000000-0000-4000-c400-000000000002',
    'How long does a listing stay up?', 'It stays up until you close it.', 1, 'published', null);
+
+-- The same columns for a visitor and a signed-in person (ADR-017), checked here for every column of the table.
+select is(
+  (select string_agg(attribute.attname::text, ',' order by attribute.attname::text)
+   from pg_attribute as attribute
+   where attribute.attrelid = 'public.faqs'::regclass and attribute.attnum > 0
+     and not attribute.attisdropped and has_column_privilege('anon', attribute.attrelid, attribute.attname, 'select')),
+  (select string_agg(attribute.attname::text, ',' order by attribute.attname::text)
+   from pg_attribute as attribute
+   where attribute.attrelid = 'public.faqs'::regclass and attribute.attnum > 0
+     and not attribute.attisdropped
+     and has_column_privilege('authenticated', attribute.attrelid, attribute.attname, 'select')),
+  'a visitor and a signed-in person read the same columns of faqs'
+);
 
 -- A visitor reads the visible questions only, and writes nothing
 set local role anon;

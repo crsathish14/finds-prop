@@ -2,16 +2,15 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/search";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
-import type { Database } from "@/types/database.types";
 import {
+  chosenBuilders,
   developerFromProjects,
   DEVELOPER_COUNT,
-  PROJECTS_PER_DEVELOPER,
   rankBuilders,
 } from "./new-launches";
-import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "./columns";
 import { listingRowSchema, rankingRowSchema, type DeveloperRow, type ListingRow } from "./schemas";
 
 /** Cache tags the admin actions will refresh when a listing or a project is approved or changed. */
@@ -22,11 +21,10 @@ export const HOME_PROJECTS_TAG = CACHE_TAGS.homeProjects;
 export const FEATURED_COUNT = 6;
 export const NEWEST_COUNT = 8;
 
-/** How many public projects are read to rank the builders; above this the counts stop at it. */
-const RANKING_READ_LIMIT = 1000;
 const MS_PER_DAY = 86_400_000;
 
-type SearchArgs = Database["public"]["Functions"]["search_properties"]["Args"];
+/** The two fixed sections `home_properties()` answers; their sizes are fixed in the database too. */
+type HomeKind = "featured" | "newest";
 
 /** Whole days between a time and now, or null when the time is missing or not a date. */
 function ageInDays(publishedAt: string | null, now: number): number | null {
@@ -40,8 +38,8 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
  * public columns can come back (BR-90). A failed read is logged by its code only and gives no homes,
  * so the section is left out instead of the page failing. Rows that do not fit are skipped and counted.
  */
-async function readHomes(args: SearchArgs, section: string): Promise<ListingRow[]> {
-  const { data, error } = await createPublicSupabase().rpc("search_properties", args);
+async function readHomes(kind: HomeKind, section: string): Promise<ListingRow[]> {
+  const { data, error } = await createPublicSupabase().rpc("home_properties", { p_kind: kind });
   if (error) {
     logger.error("homepage homes could not be read, the section is left out", {
       errorCode: error.code,
@@ -74,7 +72,7 @@ export async function getFeaturedHomes(): Promise<ListingRow[]> {
   "use cache";
   cacheTag(HOME_LISTINGS_TAG);
   cacheLife("minutes");
-  return readHomes({ p_label: "featured", p_sort: "newest", p_limit: FEATURED_COUNT }, "featured");
+  return readHomes("featured", "featured");
 }
 
 /** The newest approved homes. */
@@ -82,59 +80,41 @@ export async function getNewestHomes(): Promise<ListingRow[]> {
   "use cache";
   cacheTag(HOME_LISTINGS_TAG);
   cacheLife("minutes");
-  return readHomes({ p_sort: "newest", p_limit: NEWEST_COUNT }, "newest");
+  return readHomes("newest", "newest");
 }
 
 /**
  * The developers for "New launches": builders that have approved, published projects, featured
  * projects first and then the newest (an inactive builder is not visible to visitors at all, BR-94,
- * so the database already leaves it out). One read ranks the builders and counts their projects; then
- * one small read for each of the first few gets the projects to show. Any failed read is logged by
- * its code only and the developer, or the whole section, is left out.
+ * so the database already leaves it out). One read of `home_developers()` gives the public projects
+ * in that order (at most 1000, each with only its cover and its builder); the builders are ranked
+ * and counted from them and each card takes its builder's first projects. A failed read is logged
+ * by its code only and the section is left out.
  */
-export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
+export async function getNewLaunchDevelopers(
+  chosenIds: readonly string[] = [],
+): Promise<DeveloperRow[]> {
   "use cache";
   cacheTag(HOME_PROJECTS_TAG);
   cacheLife("minutes");
 
-  const client = createPublicSupabase();
-  const ranking = await client
-    .from("projects")
-    .select(RANKING_COLUMNS)
-    .order("featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(RANKING_READ_LIMIT);
-  if (ranking.error) {
-    logger.error("homepage developers could not be ranked, the section is left out", {
-      errorCode: ranking.error.code,
+  const { data, error } = await createPublicSupabase().rpc("home_developers");
+  if (error) {
+    logger.error("homepage developers could not be read, the section is left out", {
+      errorCode: error.code,
     });
     return [];
   }
-  const ranked = rankBuilders(
-    (ranking.data ?? []).flatMap((row) => {
-      const parsed = rankingRowSchema.safeParse(row);
-      return parsed.success ? [parsed.data] : [];
-    }),
-    DEVELOPER_COUNT,
-  );
-
-  const developers = await Promise.all(
-    ranked.map(async ({ builderId, projectCount }) => {
-      const { data, error } = await client
-        .from("projects")
-        .select(DEVELOPER_PROJECT_COLUMNS)
-        .eq("builder_id", builderId)
-        .order("featured", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(PROJECTS_PER_DEVELOPER);
-      if (error) {
-        logger.error("homepage developer could not be read, it is left out", {
-          errorCode: error.code,
-        });
-        return null;
-      }
-      return developerFromProjects(builderId, projectCount, data ?? []);
-    }),
+  const rows: unknown[] = Array.isArray(data) ? data : [];
+  const ranking = rows.flatMap((row) => {
+    const parsed = rankingRowSchema.safeParse(row);
+    return parsed.success ? [parsed.data] : [];
+  });
+  // The super admin's choice and order win; with none (or none usable) the developers are ranked as before.
+  const chosen = chosenBuilders(ranking, chosenIds.slice(0, TOP_DEVELOPERS_MAX));
+  const ranked = chosen.length > 0 ? chosen : rankBuilders(ranking, DEVELOPER_COUNT);
+  const developers = ranked.map(({ builderId, projectCount }) =>
+    developerFromProjects(builderId, projectCount, rows),
   );
   return developers.flatMap((developer) => (developer ? [developer] : []));
 }

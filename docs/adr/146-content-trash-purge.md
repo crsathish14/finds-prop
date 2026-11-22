@@ -27,6 +27,10 @@ An article also owns picture files in the public `site-assets` bucket under `blo
 - **An article in Trash keeps its pictures.** Restoring it loses nothing: its row still exists, so its files are not orphans. They go only after the purge, which is irreversible by design.
 - **Safe by shape.** Only names matching `blog/<uuid>/<file>` are ever listed; a sponsor picture, a stray file, a placeholder or any other bucket cannot be listed, whatever is in the table. The 24-hour age rule gives an editor who is mid-upload (the file arrives before the article is saved) a margin, the same as the photo sweep.
 
+## Addition: job postings (ADR-147)
+
+Careers merged after this change, so `job_postings` joined the list in a one-line follow-up migration (`20261123150000_content_trash_purge_jobs.sql`) that replaces `run_retention` whole with `content_trash_tables` set to `faqs`, `blog_posts` and `job_postings`; nothing else in the function changed, and there is no type change. A job is purged only when its `deleted_at` is more than 30 days old; an open, draft or closed job that is not in Trash is never touched (a trashed job is always a draft or closed, so no open job can be purged). A job owns no file, so nothing is added to the media sweep. The pgTAP tests (`content_trash_purge.test.sql`, now 29 checks, and `retention.test.sql`) cover the 29 and 31 day cases, the rows that are not in Trash, the `content.purged` entry for `job_postings` and the new `retention.ran` count.
+
 ## Consequences you should know
 
 - **Purged content cannot be recovered** except from Supabase's own backups until they expire; this is the window ADR-143 D3 chose. Restore is possible for 30 days.

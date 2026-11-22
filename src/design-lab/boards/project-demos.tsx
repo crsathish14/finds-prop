@@ -85,6 +85,7 @@ const FULL: ProjectData = {
   offerType: null,
   plotStatus: null,
   villaType: null,
+  extraFields: {},
   price: 78_00_000,
   priceType: "basic",
   areaMinSqft: null,

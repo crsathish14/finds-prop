@@ -1,16 +1,18 @@
--- ADR-146 (ADR-143 D3, ADR-124): the nightly retention job purges FAQ questions and blog articles that have been in
+-- ADR-146 (ADR-143 D3, ADR-124): the nightly retention job purges FAQ questions, blog articles and job postings that have been in
 -- Trash for more than 30 days, writes a `content.purged` audit entry for each table that purged something, and leaves
 -- the picture files of purged articles to be listed by orphan_blog_files(). Tests: DB-FN-run_retention-content,
 -- DB-AUDIT-content-purged, DB-FN-orphan_blog_files, DB-PRIV-retention.
 -- Fictional content only. Faqs: f1 trashed 31 days ago, f2 trashed 45 days ago (both go), f3 trashed 29 days ago, f4
 -- published, f5 a draft that is not in Trash (all stay). Blog: b1 trashed 31 days ago (goes), b2 trashed 29 days ago, b3
--- published and old, b4 a draft, b5 archived (all stay).
+-- published and old, b4 a draft, b5 archived (all stay). Jobs: j1 trashed 31 days ago (closed, goes), j2 trashed 29 days
+-- ago, j3 open and old, j4 a draft, j5 closed (none of the last four goes; j3, j4 and j5 are not in Trash).
 begin;
-select plan(25);
+select plan(29);
 
 insert into public.content_categories (id, module, slug, name) values
   ('00000000-0000-4000-c600-000000000001', 'faq', 'buyers', 'Buyers'),
-  ('00000000-0000-4000-c600-000000000002', 'blog', 'buying', 'Buying');
+  ('00000000-0000-4000-c600-000000000002', 'blog', 'buying', 'Buying'),
+  ('00000000-0000-4000-c600-000000000003', 'department', 'engineering', 'Engineering');
 
 insert into public.faqs (id, category_id, question, answer, status, deleted_at, created_at) values
   ('00000000-0000-4000-fb00-000000000001', '00000000-0000-4000-c600-000000000001', 'Trashed 31 days ago?', 'It goes tonight.', 'draft', now() - interval '31 days', now() - interval '90 days'),
@@ -25,6 +27,16 @@ insert into public.blog_posts (id, slug, title, excerpt, body, author_name, stat
   ('00000000-0000-4000-b600-000000000003', 'old-published', 'Old published', 'Still live.', '[{"type": "paragraph", "text": "Live."}]', 'Asha Rao', 'published', now() - interval '800 days', null, now() - interval '900 days'),
   ('00000000-0000-4000-b600-000000000004', 'old-draft', 'Old draft', '', '[]', 'Asha Rao', 'draft', null, null, now() - interval '900 days'),
   ('00000000-0000-4000-b600-000000000005', 'old-archived', 'Old archived', 'Archived.', '[]', 'Asha Rao', 'archived', now() - interval '800 days', null, now() - interval '900 days');
+
+insert into public.job_postings (
+  id, slug, title, department_id, location, work_mode, employment_type, summary, description, requirements,
+  apply_url, status, posted_at, deleted_at, created_at
+) values
+  ('00000000-0000-4000-aa00-000000000001', 'job-trashed-31', 'Job trashed long ago', '00000000-0000-4000-c600-000000000003', 'Chennai', 'onsite', 'full_time', '', '', '', 'https://example.test/apply', 'closed', now() - interval '200 days', now() - interval '31 days', now() - interval '300 days'),
+  ('00000000-0000-4000-aa00-000000000002', 'job-trashed-29', 'Job trashed lately', '00000000-0000-4000-c600-000000000003', 'Chennai', 'hybrid', 'contract', '', '', '', 'https://example.test/apply', 'draft', null, now() - interval '29 days', now() - interval '300 days'),
+  ('00000000-0000-4000-aa00-000000000003', 'job-old-open', 'Old open job', '00000000-0000-4000-c600-000000000003', 'Chennai', 'remote', 'full_time', 'Still open.', 'Open for years.', 'Some skills.', 'https://example.test/apply', 'open', now() - interval '800 days', null, now() - interval '900 days'),
+  ('00000000-0000-4000-aa00-000000000004', 'job-old-draft', 'Old draft job', '00000000-0000-4000-c600-000000000003', 'Chennai', 'onsite', 'part_time', '', '', '', 'https://example.test/apply', 'draft', null, null, now() - interval '900 days'),
+  ('00000000-0000-4000-aa00-000000000005', 'job-old-closed', 'Old closed job', '00000000-0000-4000-c600-000000000003', 'Chennai', 'onsite', 'internship', '', '', '', 'https://example.test/apply', 'closed', now() - interval '800 days', null, now() - interval '900 days');
 
 -- The article pictures, as the storage service would have left them (all files are two days old unless said).
 create function pg_temp.put(object_name text, age interval default interval '2 days', bucket text default 'site-assets')
@@ -60,8 +72,19 @@ select is(
 );
 
 -- A limited run: one batch of one row for each table.
+create temp table first_run as select public.run_retention(1, 1) as answer;
 select is(
-  public.run_retention(1, 1) -> 'faqs',
+  (select answer -> 'job_postings' from first_run),
+  '1'::jsonb,
+  'the limited run also purges the job that was in Trash for 31 days'
+);
+select is(
+  (select count(*) from public.job_postings where id = '00000000-0000-4000-aa00-000000000001')::int,
+  0,
+  'and it is gone'
+);
+select is(
+  (select answer -> 'faqs' from first_run),
   '1'::jsonb,
   'a limited run purges at most one batch of old questions'
 );
@@ -85,11 +108,17 @@ select is(
   (select jsonb_build_object(
     'form_submissions', 0, 'crm_api_logs', 0, 'project_events', 0, 'enquiries', 0, 'project_leads', 0,
     'public_rate_limits', 0, 'idempotency_keys', 0, 'ai_usage_events', 0, 'places_usage_daily', 0,
-    'faqs', 0, 'blog_posts', 0)),
+    'faqs', 0, 'blog_posts', 0, 'job_postings', 0)),
   'a run with nothing left in Trash past 30 days purges nothing'
 );
 
 -- What is left
+select is(
+  (select array_agg(id::text order by id) from public.job_postings),
+  array['00000000-0000-4000-aa00-000000000002', '00000000-0000-4000-aa00-000000000003',
+        '00000000-0000-4000-aa00-000000000004', '00000000-0000-4000-aa00-000000000005'],
+  'a job trashed 29 days ago stays, and so do an open job, a draft and a closed one that are not in Trash, however old'
+);
 select is(
   (select array_agg(id::text order by id) from public.faqs),
   array['00000000-0000-4000-fb00-000000000003', '00000000-0000-4000-fb00-000000000004', '00000000-0000-4000-fb00-000000000005'],
@@ -111,7 +140,7 @@ select is(
 -- The audit entries: one for each table that purged something in a run, with names, counts and ids only.
 select is(
   (select count(*) from public.audit_log where action = 'content.purged')::int - (select purged from mark)::int,
-  3,
+  4,
   'a content.purged entry is written for each table that purged something in a run, and none for a run that purged nothing'
 );
 select results_eq(
@@ -119,6 +148,11 @@ select results_eq(
     where action = 'content.purged' and diff ->> 'table' = 'blog_posts'$$,
   $$values ('system'::text, 'content'::text, null::text)$$,
   'it is recorded as the system, about the content'
+);
+select is(
+  (select diff -> 'ids' from public.audit_log where action = 'content.purged' and diff ->> 'table' = 'job_postings'),
+  '["00000000-0000-4000-aa00-000000000001"]'::jsonb,
+  'the entry for jobs names the purged job by its id'
 );
 select is(
   (select diff -> 'ids' from public.audit_log where action = 'content.purged' and diff ->> 'table' = 'blog_posts'),
@@ -145,7 +179,7 @@ select ok(
   not exists (
     select 1 from public.audit_log
     where action = 'content.purged'
-      and (diff::text ~* '(purge me|trashed 31|trashed 45|gone tonight|goes tonight|asha)')
+      and (diff::text ~* '(purge me|trashed 31|trashed 45|gone tonight|goes tonight|asha|job trashed|chennai|example\.test)')
   ),
   'no title, question, answer or author name is ever in a purge entry'
 );
@@ -160,7 +194,7 @@ select is(
   'every run still writes its one retention.ran entry'
 );
 select ok(
-  (select diff -> 'faqs' is not null and diff -> 'blog_posts' is not null
+  (select diff -> 'faqs' is not null and diff -> 'blog_posts' is not null and diff -> 'job_postings' is not null
    from public.audit_log where action = 'retention.ran' order by id desc limit 1),
   'and that entry holds the count for each content table'
 );

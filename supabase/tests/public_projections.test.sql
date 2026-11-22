@@ -37,7 +37,8 @@ from (values
     'nearby', 'rera_applicable', 'rera_number', 'description', 'specifications', 'amenities',
     'images', 'floor_plans', 'elevations', 'plot_images', 'videos', 'brochure_path', 'seo_title',
     'seo_description', 'featured', 'created_at', 'updated_at', 'offer_type', 'price', 'price_type',
-    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason', 'plot_status', 'villa_type'
+    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason', 'plot_status', 'villa_type',
+    'extra_fields'
   ]),
   ('project_units', array[
     'id', 'project_id', 'unit_number', 'floor_number', 'bhk', 'area_sqft', 'facing', 'price',
@@ -142,8 +143,8 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('blog_body_text'), ('city_key'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties')$$,
-  'DB-RLS-column-grants: anon can run only the searches, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
+  $$values ('blog_body_text'), ('city_key'), ('home_developers'), ('home_properties'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties'), ('sitemap_entries')$$,
+  'DB-RLS-column-grants: anon can run only the searches, the one-home and one-project reads, the homepage and sitemap reads, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
 -- Data for the rounding checks: one approved home with an exact point, one live project.
