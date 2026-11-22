@@ -341,6 +341,57 @@ test.describe("@smoke results page", () => {
     await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
   });
 
+  // The card stays in view below the header and above the phone bar while only the made-up cards scroll, and it leaves
+  // with them before the footer; a short screen (a phone with the keyboard open) keeps it usable by scrolling inside it.
+  for (const route of ["/properties", "/projects", "/compare"]) {
+    test(`the card stays in view while the cards behind it scroll, on ${route}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 700 });
+      await page.goto(route);
+      const panel = page.locator('[data-slot="login-wall-panel"]');
+      await expect(panel).toBeVisible(LIST_WAIT);
+      const headerBottom = (await page.getByRole("banner").boundingBox())?.height ?? 0;
+      const barTop =
+        (await page.getByRole("navigation", { name: en.site.bottomBar.navLabel }).boundingBox())
+          ?.y ?? 700;
+      await page.evaluate(() => window.scrollTo(0, 400));
+      const box = await panel.boundingBox();
+      expect(box?.y ?? -1).toBeGreaterThanOrEqual(headerBottom - 1);
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(barTop + 1);
+    });
+  }
+
+  test("the card leaves with the cards at the end of the page and never covers the footer", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    await page.goto("/properties");
+    const panel = page.locator('[data-slot="login-wall-panel"]');
+    await expect(panel).toBeVisible(LIST_WAIT);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const footerTop = (await page.getByRole("contentinfo").boundingBox())?.y ?? 0;
+    const box = await panel.boundingBox();
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(footerTop + 1);
+  });
+
+  test("on a short screen the card is no taller than the free space and scrolls inside itself", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 420 });
+    await page.goto("/properties");
+    const panel = page.locator('[data-slot="login-wall-panel"]');
+    await expect(panel).toBeVisible(LIST_WAIT);
+    const box = await panel.boundingBox();
+    const headerBottom = (await page.getByRole("banner").boundingBox())?.height ?? 0;
+    const barHeight =
+      (await page.getByRole("navigation", { name: en.site.bottomBar.navLabel }).boundingBox())
+        ?.height ?? 0;
+    expect(box?.height ?? 9999).toBeLessThanOrEqual(420 - headerBottom - barHeight);
+    const scrollsInside = await panel.evaluate((node) => node.scrollHeight >= node.clientHeight);
+    expect(scrollsInside).toBe(true);
+  });
+
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
