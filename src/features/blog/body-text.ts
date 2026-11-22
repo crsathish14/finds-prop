@@ -1,9 +1,11 @@
+import { stripLinks } from "@/lib/inline-links";
 import type { Block } from "./schemas";
 
 /**
  * The plain text of an article body, in reading order: each block's text, a quote's credit, an image's caption and its
  * description, and each list item (ADR-144). It matches the database's `blog_body_text`, which feeds the search, so a
- * word found by the search is a word this returns. The AI assistant's article tool (a later phase) reads the same text.
+ * word found by the search is a word this returns. A link `[label](address)` in a paragraph, a list item or a quote
+ * counts as its label only (ADR-169): the address is never searched, counted, shown in a snippet or sent to the AI. The AI assistant's article tool (a later phase) reads the same text.
  * Pure: no framework, no storage.
  */
 export function blocksToPlainText(blocks: readonly Block[]): string {
@@ -11,11 +13,13 @@ export function blocksToPlainText(blocks: readonly Block[]): string {
   for (const block of blocks) {
     switch (block.type) {
       case "heading":
-      case "paragraph":
         pieces.push(block.text);
         break;
+      case "paragraph":
+        pieces.push(stripLinks(block.text));
+        break;
       case "quote":
-        pieces.push(block.text);
+        pieces.push(stripLinks(block.text));
         if (block.cite) pieces.push(block.cite);
         break;
       case "image":
@@ -23,7 +27,7 @@ export function blocksToPlainText(blocks: readonly Block[]): string {
         pieces.push(block.alt);
         break;
       case "list":
-        pieces.push(...block.items);
+        pieces.push(...block.items.map(stripLinks));
         break;
     }
   }
