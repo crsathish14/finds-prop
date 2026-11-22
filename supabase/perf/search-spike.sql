@@ -340,7 +340,7 @@ begin
         using shape.listing_type, shape.property_type, shape.bhk, shape.min_price, shape.max_price,
           nullif(btrim(shape.locality), ''), (shape.lat is not null), shape.lat, shape.lng,
           coalesce(shape.radius, 5), (shape.west is not null), shape.west, shape.south, shape.east,
-          shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size;
+          shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size, null::text;
       perform set_config('enable_seqscan', 'on', true);
       perform set_config('enable_indexscan', 'on', true);
       perform set_config('enable_indexonlyscan', 'on', true);
@@ -414,7 +414,7 @@ begin
             using shape.listing_type, shape.property_type, shape.bhk, shape.min_price, shape.max_price,
               nullif(btrim(shape.locality), ''), (shape.lat is not null), shape.lat, shape.lng,
               coalesce(shape.radius, 5), (shape.west is not null), shape.west, shape.south, shape.east,
-              shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size
+              shape.north, nullif(btrim(shape.q), ''), shape.label_filter, shape.page_size, null::text
           loop
             plan_lines := plan_lines || plan_line."QUERY PLAN" || E'\n';
           end loop;
