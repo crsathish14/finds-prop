@@ -34,7 +34,7 @@
       "viewAll": "View all"
     },
     "newLaunches": {
-      "title": "New launches from developers",
+      "title": "Top developers",
       "description": "Approved and published projects only.",
       "seeAll": "See all projects"
     },
@@ -611,6 +611,8 @@
         "heading": "Project overview",
         "price": "Starting price",
         "propertyType": "Property type",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "configuration": "Configuration",
         "area": "Area",
         "areaRange": "{min} – {max} sq ft",
@@ -710,6 +712,15 @@
         "flat": "Flat",
         "office": "Office",
         "coWorking": "Co-working space"
+      },
+      "plotStatus": {
+        "investment": "Investment",
+        "readyToBuild": "Ready to build"
+      },
+      "villaType": {
+        "duplex": "Duplex",
+        "rowHouse": "Row house",
+        "individual": "Individual"
       }
     }
   },
@@ -1488,7 +1499,40 @@
       "header": "Header",
       "hero": "Hero",
       "homepage": "Homepage",
-      "footer": "Footer"
+      "footer": "Footer",
+      "disclaimers": "Disclaimers",
+      "topDevelopers": "Top developers"
+    },
+    "topDevelopers": {
+      "metaTitle": "Top developers",
+      "title": "Top developers",
+      "description": "Choose the developers the home page shows under Top developers, and put them in order. At most {max}. A developer with no approved, published project is skipped on the home page.",
+      "chosen": {
+        "title": "{count} of {max} chosen"
+      },
+      "empty": {
+        "title": "No developer chosen",
+        "text": "The home page picks developers by itself until you choose some."
+      },
+      "full": {
+        "title": "{max} developers chosen",
+        "text": "Remove one to add another."
+      },
+      "available": {
+        "title": "Developers you can add",
+        "empty": "There is no other developer to add."
+      },
+      "unknown": "A developer that is no longer listed",
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "add": "Add {name}",
+      "addShort": "Add",
+      "remove": "Remove {name}",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "saved": {
+        "title": "Top developers saved",
+        "text": "The home page shows them in this order."
+      }
     },
     "contentModules": {
       "title": "Content modules",
@@ -2152,6 +2196,8 @@
         "projectType": "Project type",
         "propertyType": "Property type",
         "offerType": "This project is for",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "projectStatus": "Status",
         "price": "Starting price (₹)",
         "priceType": "Price type",
@@ -2205,6 +2251,15 @@
         "offerType": {
           "sale": "Sale",
           "rent": "Rent"
+        },
+        "plotStatus": {
+          "investment": "Investment",
+          "readyToBuild": "Ready to build"
+        },
+        "villaType": {
+          "duplex": "Duplex",
+          "rowHouse": "Row house",
+          "individual": "Individual"
         },
         "priceType": {
           "perSqft": "Rate per sq ft",
@@ -2296,6 +2351,8 @@
         "projectType": "Choose the project type.",
         "propertyType": "Choose the property type.",
         "offerType": "Choose whether the project is for sale or for rent.",
+        "plotStatus": "Choose the plot status.",
+        "villaType": "Choose the villa type.",
         "status": "Choose the status.",
         "possession": "Choose the possession month.",
         "price": "Enter the price.",
@@ -2386,6 +2443,27 @@
         "ctaHref": "Button link",
         "saved": {
           "title": "Header saved",
+          "text": "The change is live on the public site."
+        }
+      },
+      "disclaimers": {
+        "metaTitle": "Site content: Disclaimers",
+        "title": "Disclaimers",
+        "description": "Plain text shown in the footer of every public page and on the AI search page. Leave a box empty to show nothing.",
+        "footer": {
+          "title": "Footer disclaimer",
+          "text": "Shown at the bottom of every public page, above the copyright line.",
+          "label": "Footer disclaimer"
+        },
+        "aiSearch": {
+          "title": "AI search disclaimer",
+          "text": "Shown under the chat on the AI search page.",
+          "label": "AI search disclaimer"
+        },
+        "counter": "{used} of {max} characters",
+        "nothing": "Nothing is shown.",
+        "saved": {
+          "title": "Disclaimers saved",
           "text": "The change is live on the public site."
         }
       },

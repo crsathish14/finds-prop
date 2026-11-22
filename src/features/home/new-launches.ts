@@ -21,6 +21,26 @@ export function rankBuilders(
 }
 
 /**
+ * The developers the super admin chose, in the order chosen, each with how many public projects they have. A chosen
+ * developer with no public project (inactive, or nothing approved yet) is left out, as is a repeated id. The rows are
+ * the public projects, in any order. With no choice at all the result is empty: the caller then ranks by itself.
+ */
+export function chosenBuilders(
+  rows: readonly { builder_id: string }[],
+  chosenIds: readonly string[],
+): { builderId: string; projectCount: number }[] {
+  const counts = new Map<string, number>();
+  for (const row of rows) counts.set(row.builder_id, (counts.get(row.builder_id) ?? 0) + 1);
+  const seen = new Set<string>();
+  return chosenIds.flatMap((builderId) => {
+    const projectCount = counts.get(builderId) ?? 0;
+    if (projectCount === 0 || seen.has(builderId)) return [];
+    seen.add(builderId);
+    return [{ builderId, projectCount }];
+  });
+}
+
+/**
  * One developer card's facts from that builder's first projects (already in the section's order).
  * A row that does not fit the schema is left out; without any usable project the builder is left
  * out (the visitor sees only builders with a public project, BR-94). The first picture of a project

@@ -130,9 +130,21 @@ export function buildAdminNav(
           icon: "homepage",
         },
         {
+          key: "top-developers",
+          href: "/admin/top-developers",
+          label: translate("admin.nav.topDevelopers"),
+          icon: "builders",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),
+          icon: "footer",
+        },
+        {
+          key: "disclaimers",
+          href: "/admin/disclaimers",
+          label: translate("admin.nav.disclaimers"),
           icon: "footer",
         },
       ],

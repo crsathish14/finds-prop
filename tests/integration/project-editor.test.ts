@@ -348,6 +348,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         asBuilder(),
         input({
           propertyType: "plot",
+          plotStatus: "investment",
           priceType: "per_sqft",
           price: "2,450",
           areaMinSqft: "1200",
@@ -417,6 +418,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         // A plot, so that the area range itself is what the database refuses.
         asBuilder().update(made.projectId, {
           property_type: "plot",
+          plot_status: "investment",
           area_min_sqft: 2000,
           area_max_sqft: 1000,
         }),

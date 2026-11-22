@@ -90,6 +90,8 @@ const LABEL_OF: Record<ProjectFieldName, keyof ProjectFieldsWords> = {
   projectType: "projectType",
   propertyType: "propertyType",
   offerType: "offerType",
+  plotStatus: "plotStatus",
+  villaType: "villaType",
   projectStatus: "projectStatus",
   price: "price",
   priceType: "priceType",
@@ -408,6 +410,8 @@ export function ProjectForm({
       projectType: translate("fields.projectType"),
       propertyType: translate("fields.propertyType"),
       offerType: translate("fields.offerType"),
+      plotStatus: translate("fields.plotStatus"),
+      villaType: translate("fields.villaType"),
       projectStatus: translate("fields.projectStatus"),
       price: translate("fields.price"),
       priceType: translate("fields.priceType"),
@@ -551,6 +555,15 @@ export function ProjectForm({
     offerTypes: [
       { value: "sale", label: translate("options.offerType.sale") },
       { value: "rent", label: translate("options.offerType.rent") },
+    ],
+    plotStatuses: [
+      { value: "investment", label: translate("options.plotStatus.investment") },
+      { value: "ready_to_build", label: translate("options.plotStatus.readyToBuild") },
+    ],
+    villaTypes: [
+      { value: "duplex", label: translate("options.villaType.duplex") },
+      { value: "row_house", label: translate("options.villaType.rowHouse") },
+      { value: "individual", label: translate("options.villaType.individual") },
     ],
     priceTypes: priceTypesFor(values.projectType, values.offerType).map((type) => ({
       value: type,

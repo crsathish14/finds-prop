@@ -9,6 +9,8 @@ export const EDITABLE_SETTINGS = [
   "homepage",
   "footer",
   "content_modules",
+  "disclaimers",
+  "top_developers",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
@@ -41,6 +43,8 @@ export const FOOTER_ABOUT_MAX = 400;
 export const FOOTER_ADDRESS_MAX = 200;
 export const FOOTER_PHONE_MAX = 30;
 export const FOOTER_COPYRIGHT_MAX = 200;
+/** How long each disclaimer may be (ADR-152): the same limit the public side reads with. */
+export const DISCLAIMER_MAX = 600;
 export const LOCALITY_LABEL_MAX = 60;
 export const LOCALITY_RADIUS_MAX_KM = 100;
 

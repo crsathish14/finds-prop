@@ -3,6 +3,8 @@ import { SITE_SETTING_SCHEMAS } from "@/features/site";
 import type { EditableSetting } from "./constants";
 import type {
   ContentModulesInput,
+  DisclaimersInput,
+  TopDevelopersInput,
   FooterInput,
   HeaderInput,
   HeroInput,
@@ -89,6 +91,11 @@ export function footerValue(input: FooterInput): Record<string, unknown> {
   });
 }
 
+/** The two disclaimers: a blank one is left out, so nothing shows for it (ADR-152). */
+export function disclaimersValue(input: DisclaimersInput): Record<string, unknown> {
+  return compact({ footer: input.footer, aiSearch: input.aiSearch });
+}
+
 export function heroValue(input: HeroInput): Record<string, unknown> {
   return compact({
     eyebrow: input.eyebrow,
@@ -154,6 +161,22 @@ export function saveContentModulesContent(
   input: ContentModulesInput,
 ): Promise<ContentDone> {
   return publish(store, "content_modules", contentModulesValue(input));
+}
+
+/** Saves the footer and AI search disclaimers (ADR-152). */
+export function saveDisclaimersContent(
+  store: ContentStore,
+  input: DisclaimersInput,
+): Promise<ContentDone> {
+  return publish(store, "disclaimers", disclaimersValue(input));
+}
+
+/** Saves the chosen developers of the home page, in order. */
+export function saveTopDevelopersContent(
+  store: ContentStore,
+  input: TopDevelopersInput,
+): Promise<ContentDone> {
+  return publish(store, "top_developers", { builderIds: input.builderIds });
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

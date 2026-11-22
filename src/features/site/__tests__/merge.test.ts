@@ -39,6 +39,16 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     expect(merged.content_modules).toEqual({ blog: false, faq: true, careers: true });
   });
 
+  it("has no chosen developers by default, and reads a stored choice", () => {
+    expect(mergeSiteSettings([], log()).top_developers).toEqual({ builderIds: [] });
+    const id = "00000000-0000-4000-8000-000000000001";
+    const merged = mergeSiteSettings(
+      [{ key: "top_developers", value: { builderIds: [id] } }],
+      log(),
+    );
+    expect(merged.top_developers).toEqual({ builderIds: [id] });
+  });
+
   it("ignores a content module switch that is not a true or false", () => {
     const logger = log();
     const merged = mergeSiteSettings([{ key: "content_modules", value: { faq: "no" } }], logger);
@@ -127,5 +137,18 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     merged.homepage.localities.push({ label: "Place", lat: 1, lng: 1, radiusKm: 1 });
     expect(SITE_DEFAULTS.homepage.showCta).toBe(true);
     expect(SITE_DEFAULTS.homepage.localities).toEqual([]);
+  });
+});
+
+describe("UT-site-merge: the disclaimers (ADR-152)", () => {
+  it("shows no disclaimer when nothing is saved", () => {
+    expect(mergeSiteSettings([], log()).disclaimers).toEqual({});
+  });
+
+  it("uses a saved text and ignores a row that does not fit", () => {
+    const merged = mergeSiteSettings([{ key: "disclaimers", value: { footer: "Hello" } }], log());
+    expect(merged.disclaimers).toEqual({ footer: "Hello" });
+    const bad = mergeSiteSettings([{ key: "disclaimers", value: { footer: 5 } }], log());
+    expect(bad.disclaimers).toEqual({});
   });
 });

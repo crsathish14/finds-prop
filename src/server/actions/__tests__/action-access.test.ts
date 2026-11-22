@@ -78,6 +78,7 @@ const EXPECTED: Record<string, Level> = {
   "leads/loadMoreLeads": "super_admin",
   "leads/loadMoreSubmissions": "super_admin",
   "leads/setMyLeadStatus": "builder",
+  "legal/saveLegal": "super_admin",
   "leads/loadMoreMyLeads": "builder",
   "listings/createListingDraft": "verified-phone",
   "listings/saveListingDraft": "verified-phone",
@@ -109,6 +110,8 @@ const EXPECTED: Record<string, Level> = {
   "site-content/saveFooter": "super_admin",
   "site-content/saveSponsors": "super_admin",
   "site-content/saveContentModules": "super_admin",
+  "site-content/saveDisclaimers": "super_admin",
+  "site-content/saveTopDevelopers": "super_admin",
   "content-categories/createContentCategory": "super_admin",
   "content-categories/updateContentCategory": "super_admin",
   "content-categories/setContentCategoryActive": "super_admin",
@@ -168,17 +171,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 58 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
+  it("holds the counts by level: 61 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 58,
+      super_admin: 61,
       builder: 9,
       "verified-phone": 20,
       none: 8,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(96);
+    expect(Object.keys(table)).toHaveLength(99);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {

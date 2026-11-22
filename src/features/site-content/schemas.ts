@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
   FOOTER_ADDRESS_MAX,
+  DISCLAIMER_MAX,
   FOOTER_COPYRIGHT_MAX,
   FOOTER_LINKS_MAX,
   FOOTER_PHONE_MAX,
@@ -118,6 +120,26 @@ export const footerInputSchema = z.object({
 });
 export type FooterInput = z.infer<typeof footerInputSchema>;
 
+/**
+ * One disclaimer (ADR-152): plain text, up to a few short paragraphs. Line breaks are kept (a Windows line break counts
+ * as one), every other control character is refused, and a blank box means "no disclaimer".
+ */
+const disclaimerText = clearable(
+  z.preprocess(
+    (typed) => (typeof typed === "string" ? typed.replace(/\r\n?/g, "\n").trim() : typed),
+    z
+      .string()
+      .max(DISCLAIMER_MAX)
+      .regex(/^(?:[^\p{C}]|\n)*$/u, { error: "validation.invalid" }),
+  ),
+);
+
+export const disclaimersInputSchema = z.object({
+  footer: disclaimerText,
+  aiSearch: disclaimerText,
+});
+export type DisclaimersInput = z.infer<typeof disclaimersInputSchema>;
+
 export const heroInputSchema = z.object({
   eyebrow: optionalLine(HERO_EYEBROW_MAX),
   title: requiredLine(HERO_TITLE_MAX),
@@ -196,3 +218,12 @@ export const contentModulesInputSchema = z.object({
   careers: z.boolean({ error: "validation.invalid" }),
 });
 export type ContentModulesInput = z.infer<typeof contentModulesInputSchema>;
+
+/** The chosen developers of the home page, in order: at most 10, each once, each a real id. The whole list is sent. */
+export const topDevelopersInputSchema = z.object({
+  builderIds: z
+    .array(z.uuid({ error: "validation.invalid" }))
+    .max(TOP_DEVELOPERS_MAX, { error: "validation.invalid" })
+    .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
+});
+export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;

@@ -55,7 +55,6 @@ const SPEC_LABELS = {
 const LABEL_WORDS = {
   featured: "domain.propertyCard.label.featured",
   prime: "domain.propertyCard.label.prime",
-  budget: "domain.propertyCard.label.budget",
 } as const;
 
 const FURNISHING_WORDS = {
@@ -124,7 +123,7 @@ export function PropertyScreen({
             : "domain.propertyCard.forRent",
         )}
       </Badge>
-      {property.label === null ? null : (
+      {property.label === null || property.label === "budget" ? null : (
         <Badge tone={property.label}>{translate(LABEL_WORDS[property.label])}</Badge>
       )}
     </>

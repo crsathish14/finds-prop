@@ -15,6 +15,8 @@ export interface ProjectEditView {
   projectStatus: string | null;
   /** Sale or rent; only a commercial project has one. */
   offerType: string | null;
+  plotStatus: string | null;
+  villaType: string | null;
   price: number | null;
   priceType: string | null;
   /** The area range in square feet: a plot and every commercial project. */
@@ -78,6 +80,8 @@ export interface ProjectDbRow {
   property_type: string | null;
   project_status: string | null;
   offer_type: string | null;
+  plot_status: string | null;
+  villa_type: string | null;
   price: number | null;
   price_type: string | null;
   area_min_sqft: number | string | null;
@@ -134,6 +138,8 @@ export function toProjectEditView(
     propertyType: row.property_type,
     projectStatus: row.project_status,
     offerType: row.offer_type,
+    plotStatus: row.plot_status,
+    villaType: row.villa_type,
     price: row.price,
     priceType: row.price_type,
     areaMinSqft: asNumber(row.area_min_sqft),

@@ -3,6 +3,7 @@ import { SITE_DEFAULTS } from "@/features/site/defaults";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
   contentModulesValue,
+  disclaimersValue,
   footerValue,
   headerValue,
   heroValue,
@@ -10,19 +11,23 @@ import {
   isOutside,
   mapContentError,
   saveContentModulesContent,
+  saveDisclaimersContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveTopDevelopersContent,
   type ContentStore,
   type RegionBounds,
 } from "../content-service";
 import {
   contentModulesInputSchema,
+  disclaimersInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  topDevelopersInputSchema,
 } from "../schemas";
 
 function fakeStore(bounds: RegionBounds = SITE_DEFAULTS.region.bounds) {
@@ -217,5 +222,63 @@ describe("UT-site-content-service: the content module switches (ADR-143, FR-ADM-
     expect(
       contentModulesInputSchema.safeParse({ blog: "yes", faq: true, careers: true }).success,
     ).toBe(false);
+  });
+});
+
+describe("UT-site-content-service: the disclaimers (ADR-152)", () => {
+  it("stores the two texts as typed, leaving out a blank one", () => {
+    const input = disclaimersInputSchema.parse({
+      footer: "  Prices vary.\r\nCheck first.  ",
+      aiSearch: "   ",
+    });
+    expect(disclaimersValue(input)).toEqual({ footer: "Prices vary.\nCheck first." });
+  });
+
+  it("saves the row named disclaimers, in the shape the site reads", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveDisclaimersContent(
+      store,
+      disclaimersInputSchema.parse({ footer: "One", aiSearch: "Two" }),
+    );
+    expect(done).toEqual({ key: "disclaimers" });
+    expect(writes).toEqual([{ key: "disclaimers", value: { footer: "One", aiSearch: "Two" } }]);
+  });
+
+  it("saves an empty row when both are cleared, so nothing shows", async () => {
+    const { store, writes } = fakeStore();
+    await saveDisclaimersContent(store, disclaimersInputSchema.parse({ footer: "", aiSearch: "" }));
+    expect(writes).toEqual([{ key: "disclaimers", value: {} }]);
+  });
+
+  it("refuses a text over 600 characters and control characters, accepts exactly 600", () => {
+    expect(disclaimersInputSchema.safeParse({ footer: "a".repeat(601) }).success).toBe(false);
+    expect(disclaimersInputSchema.safeParse({ footer: "a".repeat(600) }).success).toBe(true);
+    expect(disclaimersInputSchema.safeParse({ aiSearch: "bad\u0007text" }).success).toBe(false);
+    expect(disclaimersInputSchema.safeParse({ aiSearch: "tab\there" }).success).toBe(false);
+  });
+});
+
+const ID = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`;
+
+describe("UT-top-developers: the chosen developers of the home page", () => {
+  it("writes the top_developers setting with the ids in order", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveTopDevelopersContent(store, { builderIds: [ID(2), ID(1)] });
+    expect(done).toEqual({ key: "top_developers" });
+    expect(writes).toEqual([{ key: "top_developers", value: { builderIds: [ID(2), ID(1)] } }]);
+  });
+
+  it("takes none (the home page then picks by itself) and ten, but not eleven", () => {
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [] }).success).toBe(true);
+    const ten = Array.from({ length: 10 }, (_, index) => ID(index + 1));
+    expect(topDevelopersInputSchema.safeParse({ builderIds: ten }).success).toBe(true);
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [...ten, ID(11)] }).success).toBe(
+      false,
+    );
+  });
+
+  it("refuses a repeated id and a value that is not an id", () => {
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [ID(1), ID(1)] }).success).toBe(false);
+    expect(topDevelopersInputSchema.safeParse({ builderIds: ["not-an-id"] }).success).toBe(false);
   });
 });

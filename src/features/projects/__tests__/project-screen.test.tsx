@@ -18,6 +18,8 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   status: "under_construction",
   propertyType: "apartment",
   offerType: null,
+  plotStatus: null,
+  villaType: null,
   price: 7_800_000,
   priceType: "basic",
   areaMinSqft: null,
