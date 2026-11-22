@@ -305,6 +305,7 @@
     "slugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 80 characters.",
     "slugTaken": "This page address is already used by another project.",
     "slugLocked": "The page address cannot be changed once the project is approved.",
+    "duplicate": "Another box already has this label.",
     "areaRange": "The largest area must be the same as or more than the smallest.",
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
@@ -1499,7 +1500,8 @@
       "hero": "Hero",
       "homepage": "Homepage",
       "footer": "Footer",
-      "disclaimers": "Disclaimers"
+      "disclaimers": "Disclaimers",
+      "projectFields": "Project form boxes"
     },
     "contentModules": {
       "title": "Content modules",
@@ -2323,6 +2325,39 @@
         "createdBuilder": {
           "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
+      }
+    },
+    "projectFields": {
+      "metaTitle": "Project form boxes",
+      "title": "Project form boxes",
+      "description": "Add plain text boxes to the builder's project form without a developer. You can keep up to {max} boxes. Builders type the answers and the answers show on the project page.",
+      "empty": "No extra boxes yet. Builders see only the standard project form.",
+      "row": "Box {number}",
+      "moveUp": "Move box {number} up",
+      "moveDown": "Move box {number} down",
+      "remove": "Delete box {number}",
+      "label": "Label",
+      "hint": "Help text",
+      "hintNote": "Shown under the box. Up to {max} characters.",
+      "appliesTo": "Ask for these property types",
+      "appliesToNote": "Tick none to ask for every property type.",
+      "required": "Builders must fill it in",
+      "on": "Show this box",
+      "add": "Add a box",
+      "full": "You have {max} boxes, the most allowed. Delete one to add another.",
+      "saveNote": "Turning a box off hides it; builders' answers are kept. Deleting a box removes it from every form and page.",
+      "saved": {
+        "title": "Project form boxes saved",
+        "text": "The change shows on the builder's project form now."
+      },
+      "types": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "plot": "Plot",
+        "vacantLand": "Vacant land",
+        "flat": "Flat",
+        "office": "Office",
+        "coWorking": "Co-working space"
       }
     },
     "siteContent": {

@@ -34,6 +34,7 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "/admin/listings",
       "/admin/projects",
       "/admin/units",
+      "/admin/project-fields",
       "/admin/builders",
       "/admin/leads",
       "/admin/forms",

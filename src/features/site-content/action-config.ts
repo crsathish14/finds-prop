@@ -6,6 +6,7 @@ import {
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  projectFieldsInputSchema,
 } from "./schemas";
 import { sponsorsInputSchema } from "./sponsor-schemas";
 
@@ -80,6 +81,18 @@ export const saveContentModulesConfig = {
 export const saveDisclaimersConfig = {
   name: "saveDisclaimers",
   input: disclaimersInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The extra boxes of the builder's project form (ADR-168): one row of `site_settings`, so the same limits and the same
+ * cache tag apply. The database audits the change (who and when, never the content).
+ */
+export const saveProjectFieldsConfig = {
+  name: "saveProjectFields",
+  input: projectFieldsInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

@@ -8,6 +8,7 @@ import type {
   HeaderInput,
   HeroInput,
   HomepageInput,
+  ProjectFieldsInput,
 } from "./schemas";
 
 /**
@@ -95,6 +96,22 @@ export function disclaimersValue(input: DisclaimersInput): Record<string, unknow
   return compact({ footer: input.footer, aiSearch: input.aiSearch });
 }
 
+/** The extra project form boxes in the order given; a blank hint is left out and the types are kept once each (ADR-168). */
+export function projectFieldsValue(input: ProjectFieldsInput): Record<string, unknown> {
+  return {
+    fields: input.fields.map((field) =>
+      compact({
+        id: field.id,
+        label: field.label,
+        hint: field.hint,
+        required: field.required,
+        appliesTo: [...new Set(field.appliesTo)],
+        on: field.on,
+      }),
+    ),
+  };
+}
+
 export function heroValue(input: HeroInput): Record<string, unknown> {
   return compact({
     eyebrow: input.eyebrow,
@@ -168,6 +185,14 @@ export function saveDisclaimersContent(
   input: DisclaimersInput,
 ): Promise<ContentDone> {
   return publish(store, "disclaimers", disclaimersValue(input));
+}
+
+/** Saves the extra project form boxes (ADR-168). */
+export function saveProjectFieldsContent(
+  store: ContentStore,
+  input: ProjectFieldsInput,
+): Promise<ContentDone> {
+  return publish(store, "project_fields", projectFieldsValue(input));
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

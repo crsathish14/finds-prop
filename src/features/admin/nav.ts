@@ -73,6 +73,12 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
       items: [
         { key: "units", href: "/admin/units", label: translate("admin.nav.units"), icon: "units" },
         {
+          key: "projectFields",
+          href: "/admin/project-fields",
+          label: translate("admin.nav.projectFields"),
+          icon: "projects",
+        },
+        {
           key: "builders",
           href: "/admin/builders",
           label: translate("admin.nav.builders"),

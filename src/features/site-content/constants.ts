@@ -10,6 +10,7 @@ export const EDITABLE_SETTINGS = [
   "footer",
   "content_modules",
   "disclaimers",
+  "project_fields",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
@@ -44,6 +45,10 @@ export const FOOTER_PHONE_MAX = 30;
 export const FOOTER_COPYRIGHT_MAX = 200;
 /** How long each disclaimer may be (ADR-152): the same limit the public side reads with. */
 export const DISCLAIMER_MAX = 600;
+/** The extra project form boxes (ADR-168): the same limits the public side reads with. */
+export const PROJECT_FIELDS_MAX = 10;
+export const PROJECT_FIELD_LABEL_MAX = 60;
+export const PROJECT_FIELD_HINT_MAX = 200;
 export const LOCALITY_LABEL_MAX = 60;
 export const LOCALITY_RADIUS_MAX_KM = 100;
 
