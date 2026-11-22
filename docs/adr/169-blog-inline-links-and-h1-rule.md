@@ -34,4 +34,4 @@ ADR-144 left inline links out on purpose and called them "the first thing to add
 - Authors can link inside a sentence with no markup to learn beyond the "Add link" form, but a plain `[word](thing)` they type by hand must be a real link or the article will not save.
 - A very long address cannot be stored (2,000 characters).
 - Draft wording (labels, hints and error texts under `admin.blog.editor` and `validation.blogLink*` in `en.json`) is flagged in the PR and waits for approval.
-- A future Markdown paste flow can convert `[label](url)` straight to this syntax with the same rules (`isAllowedLinkUrl`, `isAllowedLinkLabel`).
+- The Markdown paste flow (ADR-172) converts `[label](url)` straight to this syntax with the same rules (`isAllowedLinkUrl`, `isAllowedLinkLabel`).

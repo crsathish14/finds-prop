@@ -20,6 +20,7 @@ import {
   HEADING_MAX,
   LIST_ITEMS_MAX,
   LIST_ITEM_MAX,
+  MARKDOWN_MAX_CHARS,
   PARAGRAPH_MAX,
   QUOTE_CITE_MAX,
   QUOTE_MAX,
@@ -182,6 +183,12 @@ const tags = z
   .max(BLOG_TAGS_MAX, { error: "validation.invalid" })
   .transform((list) => [...new Set(list)]);
 
+/** The summary of an article: tidied, at most 320 characters, empty allowed. */
+const excerpt = z.preprocess(
+  tidy,
+  z.string({ error: "validation.invalid" }).max(BLOG_EXCERPT_MAX, { error: "validation.invalid" }),
+);
+
 /** A new article starts as a draft with an empty body: the address is made from the title unless the admin typed one. */
 export const createBlogPostSchema = z.object({
   title,
@@ -196,12 +203,7 @@ export const updateBlogPostSchema = z.object({
   postId: uuid,
   title,
   slug,
-  excerpt: z.preprocess(
-    tidy,
-    z
-      .string({ error: "validation.invalid" })
-      .max(BLOG_EXCERPT_MAX, { error: "validation.invalid" }),
-  ),
+  excerpt,
   body: bodySchema,
   categoryId: uuid.nullable(),
   tags,
@@ -210,6 +212,23 @@ export const updateBlogPostSchema = z.object({
   seoDescription: optional(BLOG_SEO_DESCRIPTION_MAX),
 });
 export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
+
+/**
+ * A draft made from pasted Markdown (ADR-172). The server converts the text itself, so the blocks are never taken from
+ * the browser; the title, address, summary, author and category are what the admin confirmed beside the preview. The
+ * text is not stored.
+ */
+export const createBlogPostFromMarkdownSchema = z.object({
+  markdown: z
+    .string({ error: "validation.required" })
+    .max(MARKDOWN_MAX_CHARS, { error: "validation.invalid" }),
+  title,
+  slug: slug.optional(),
+  excerpt,
+  authorName,
+  categoryId: uuid.nullable().default(null),
+});
+export type CreateBlogPostFromMarkdownInput = z.infer<typeof createBlogPostFromMarkdownSchema>;
 
 /** Sets the cover picture (already in the bucket under the article's folder) with its description, or removes it. */
 export const setBlogCoverSchema = z

@@ -348,7 +348,8 @@
     "projectRequired": "Choose the project this form is for.",
     "rangeOrder": "The largest value must be the same as or more than the smallest.",
     "crmUrlNotAllowed": "Must be https and a public address.",
-    "locationOutOfRegion": "That place is outside Tamil Nadu. Choose a place in Tamil Nadu."
+    "locationOutOfRegion": "That place is outside Tamil Nadu. Choose a place in Tamil Nadu.",
+    "blogMarkdownRefused": "The pasted text cannot be made into an article. Check the notes beside the preview."
   },
   "format": {
     "rupees": "₹{value}",
@@ -3574,6 +3575,76 @@
           "text": "The category is removed for good. This cannot be undone.",
           "confirm": "Delete category",
           "cancel": "Keep it"
+        }
+      },
+      "chooser": {
+        "blocks": {
+          "title": "Block editor",
+          "description": "Write the article block by block: headings, paragraphs, lists, quotes and pictures, with a preview.",
+          "action": "Open the block editor"
+        },
+        "markdown": {
+          "title": "Paste Markdown",
+          "description": "Paste an article written elsewhere. You see it drawn before anything is saved, then it opens as a draft in the block editor.",
+          "action": "Paste Markdown"
+        }
+      },
+      "markdown": {
+        "title": "New article from Markdown",
+        "intro": "Paste the article, check the preview, then create a draft. The pasted text is not kept: only the article it makes.",
+        "back": "Back to the choice",
+        "needText": "Paste some text that makes at least one block, and fix the problems listed.",
+        "paste": {
+          "label": "Markdown text",
+          "hint": "Headings, lists, quotes and links are kept. Anything else becomes plain words, and the notes beside the preview say what changed.",
+          "placeholder": "# Article title\n\nThe first paragraph of the article.\n\n## A heading\n\n- a list item"
+        },
+        "syntax": {
+          "title": "What is kept",
+          "title1": "# Title: the first one becomes the article's title.",
+          "headings": "## is a heading and ### a smaller one. A hash needs a space after it: #realestate stays as text.",
+          "lists": "- bullets and 1. numbers. A list inside a list is flattened.",
+          "quotes": "> quotes. A last line that starts with a dash becomes the credit.",
+          "links": "[words](https://example.com) or [words](/page). Other addresses are removed.",
+          "other": "Bold, italic, code, tables, pictures and HTML become plain words."
+        },
+        "create": "Create draft",
+        "creating": "Creating the draft…",
+        "errors": {
+          "title": "These must be fixed before a draft can be made"
+        },
+        "error": {
+          "headingTooLong": "Line {line}: the heading is {count} characters long. A heading can have at most {maximum}. Shorten it.",
+          "tooManyBlocks": "The article makes {count} blocks. The most is 100. Split it into two articles.",
+          "tooBig": "The article is {count} bytes once converted. The most is 100,000. Split it into two articles.",
+          "inputTooBig": "The pasted text is too long. The most is {count} characters. Split it into two articles."
+        },
+        "warnings": {
+          "title": "{count, plural, one {# change was made} other {# changes were made}}"
+        },
+        "warning": {
+          "titleLater": "Line {line}: a second # title became a heading, because an article has one title.",
+          "headingDeep": "Line {line}: a heading with {count} hashes became a small heading. Articles have two heading sizes.",
+          "headingLink": "Line {line}: a link inside a heading was removed and its words kept. Headings do not hold links.",
+          "nestedList": "Line {line}: {count, plural, one {# item inside a list was moved up} other {# items inside lists were moved up}}. Lists inside lists are not supported.",
+          "formatting": "Bold, italic, strike-through and code marks were removed in {count, plural, one {# place} other {# places}}. The words were kept.",
+          "linkDropped": "Line {line}: a link was removed and its words kept, because its address ({detail}) is not allowed. A link must start with https:// or be a page of this site starting with /.",
+          "codeBlock": "Line {line}: a code block became a plain paragraph. Its line breaks and spacing were lost.",
+          "table": "Line {line}: a table became plain paragraphs, one per row. Its columns and borders were lost.",
+          "image": "Line {line}: a picture was removed ({detail}). Add pictures in the block editor once the draft is made.",
+          "html": "Line {line}: HTML tags were removed and the words kept.",
+          "split": "Line {line}: a long piece of text was split.",
+          "splitParagraph": "Line {line}: a very long paragraph was split into {count} paragraphs.",
+          "splitQuote": "Line {line}: a very long quote was split into {count} quotes.",
+          "splitItem": "Line {line}: a very long list item was split into {count} items.",
+          "splitList": "Line {line}: a list of more than 50 items was split into {count} lists.",
+          "rule": "{count, plural, one {# horizontal line was} other {# horizontal lines were}} removed."
+        },
+        "preview": {
+          "label": "Preview of the article",
+          "note": "This is how readers will see the article. Nothing is saved until you create the draft.",
+          "empty": "Paste your article to see it here.",
+          "status": "{blocks, plural, one {# block} other {# blocks}} in the preview, {changes, plural, one {# change} other {# changes}}, {problems, plural, one {# problem} other {# problems}}."
         }
       }
     },
