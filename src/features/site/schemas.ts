@@ -60,6 +60,8 @@ const homepageSchema = z.object({
   showWhyUs: z.boolean(),
   showCta: z.boolean(),
   localities: z.array(locality).max(30),
+  /** The order of the sections below the hero. Read leniently: `resolveHomeOrder` drops unknown keys and adds missing ones. */
+  order: z.array(z.string().max(40)).max(30).optional(),
 });
 
 const regionSchema = z.object({

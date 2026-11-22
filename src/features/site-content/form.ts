@@ -1,4 +1,4 @@
-import type { SiteSettings } from "@/features/site";
+import { resolveHomeOrder, type HomeSectionKey, type SiteSettings } from "@/features/site";
 
 /**
  * What the Header and Footer pages do with the values, kept apart from the screens so they can be tested on their own
@@ -391,6 +391,8 @@ export interface LocalityRowValue extends LocalityFormRow {
 
 export type HomepageFormValues = Record<HomepageSwitch, boolean> & {
   localities: LocalityFormRow[];
+  /** The order of the sections below the hero. */
+  order: HomeSectionKey[];
 };
 
 /** Where the Homepage page's boxes start: the saved switches and localities (the defaults when nothing is saved). */
@@ -401,6 +403,7 @@ export function homepageFormOf(saved: SiteSettings["homepage"]): HomepageFormVal
     showDiscovery: saved.showDiscovery,
     showWhyUs: saved.showWhyUs,
     showCta: saved.showCta,
+    order: resolveHomeOrder(saved.order),
     localities: saved.localities.map((place) => ({
       label: place.label,
       lat: String(place.lat),
@@ -418,9 +421,13 @@ export function localityRowsOf(
 }
 
 export function homepagePayloadOf(
-  values: Record<HomepageSwitch, boolean> & { localities: readonly LocalityFormRow[] },
+  values: Record<HomepageSwitch, boolean> & {
+    localities: readonly LocalityFormRow[];
+    order?: readonly HomeSectionKey[];
+  },
 ): Record<string, unknown> {
   return {
+    ...(values.order ? { order: [...values.order] } : {}),
     showFeatured: values.showFeatured,
     showProjectTypes: values.showProjectTypes,
     showDiscovery: values.showDiscovery,
@@ -474,17 +481,20 @@ export function homepagePictureOf(values: {
   showWhyUs: boolean;
   showCta: boolean;
   localities: readonly { label: string }[];
+  order?: readonly HomeSectionKey[];
 }): HomepagePicture {
   const labels = values.localities.map((place) => place.label.trim()).filter(Boolean);
-  return {
-    sections: [
-      { key: "hero", on: true },
-      { key: "discovery", on: values.showDiscovery && labels.length > 0 },
-      { key: "featured", on: values.showFeatured },
-      { key: "projectTypes", on: values.showProjectTypes },
-      { key: "whyUs", on: values.showWhyUs },
-      { key: "cta", on: values.showCta },
-    ],
-    tiles: labels,
+  // Only the five sections with a switch are drawn (New launches and Newest show whenever they have something).
+  const state: Partial<Record<HomeSectionKey, boolean>> = {
+    discovery: values.showDiscovery && labels.length > 0,
+    featured: values.showFeatured,
+    projectTypes: values.showProjectTypes,
+    whyUs: values.showWhyUs,
+    cta: values.showCta,
   };
+  const below = resolveHomeOrder(values.order).flatMap((key) => {
+    const on = state[key];
+    return on === undefined ? [] : [{ key: key as HomepageSectionKey, on }];
+  });
+  return { sections: [{ key: "hero", on: true }, ...below], tiles: labels };
 }

@@ -31,7 +31,9 @@ import {
 } from "@/components/domain/site-localities-editor";
 import { FormSection } from "@/components/patterns/form-section";
 import { Label } from "@/components/ui/label";
+import { SortableList, SortableRow } from "@/components/patterns/sortable-list";
 import { Switch } from "@/components/ui/switch";
+import type { HomeSectionKey } from "@/lib/home-sections";
 import { cn } from "@/lib/cn";
 
 type SiteHomepageSwitch =
@@ -39,6 +41,8 @@ type SiteHomepageSwitch =
 
 type SiteHomepageValues = Record<SiteHomepageSwitch, boolean> & {
   localities: SiteLocalityRow[];
+  /** The order of the sections below the hero (CR plan 5). Left out, the switches show as a plain list (no reordering). */
+  order?: HomeSectionKey[];
 };
 
 type SiteHomepageErrors = { localities?: Record<string, SiteLocalityErrors> };
@@ -51,6 +55,16 @@ type SiteHomepageFieldsWords = {
     SwitchWords
   >;
   localities: SiteLocalitiesWords;
+  /** Words for reordering; needed when `values.order` is given. */
+  order?: {
+    /** One line under the list: the hero stays first, one order for every screen. */
+    hint: string;
+    /** The two sections that have no switch. */
+    newLaunches: SwitchWords;
+    newest: SwitchWords;
+    /** The grip and the arrows of one row, naming the section ("Move Featured listings up"). */
+    rowLabels: (section: string) => { drag: string; moveUp: string; moveDown: string };
+  };
 };
 
 type SiteHomepageFieldsProps = {
@@ -79,35 +93,56 @@ const SWITCHES = [
   word: keyof Omit<SiteHomepageFieldsWords["sections"], "title" | "description">;
 }[];
 
+/** The switch of each section, by its key in the order. */
+const SWITCH_OF: Partial<
+  Record<HomeSectionKey, { value: SiteHomepageSwitch; word: (typeof SWITCHES)[number]["word"] }>
+> = {
+  discovery: { value: "showDiscovery", word: "discovery" },
+  featured: { value: "showFeatured", word: "featured" },
+  projectTypes: { value: "showProjectTypes", word: "projectTypes" },
+  whyUs: { value: "showWhyUs", word: "whyUs" },
+  cta: { value: "showCta", word: "cta" },
+};
+
 function SwitchRow({
   checked,
   disabled,
   words,
   onChange,
+  plain = false,
 }: {
-  checked: boolean;
+  checked?: boolean;
   disabled: boolean;
   words: SwitchWords;
-  onChange: (checked: boolean) => void;
+  onChange?: (checked: boolean) => void;
+  /** In a sortable row: no divider lines. */
+  plain?: boolean;
 }) {
   const base = useId();
   const switchId = base + "-switch";
   const hintId = base + "-hint";
   return (
-    <div className="flex items-center justify-between gap-4 border-t border-line py-4 first:border-t-0 first:pt-0 last:pb-0">
+    <div
+      className={cn(
+        "flex items-center justify-between gap-4",
+        !plain && "border-t border-line py-4 first:border-t-0 first:pt-0 last:pb-0",
+      )}
+    >
       <Label htmlFor={switchId} className="flex min-w-0 flex-1 flex-col items-start gap-1">
         <span className="font-bold text-ink">{words.label}</span>
         <span id={hintId} className="text-small font-normal text-muted">
           {words.hint}
         </span>
       </Label>
-      <Switch
-        id={switchId}
-        aria-describedby={hintId}
-        checked={checked}
-        disabled={disabled}
-        onCheckedChange={onChange}
-      />
+      {onChange ? (
+        <Switch
+          id={switchId}
+          aria-describedby={hintId}
+          checked={checked ?? false}
+          disabled={disabled}
+          onCheckedChange={onChange}
+        />
+      ) : null}
     </div>
   );
 }
@@ -124,6 +159,7 @@ function SiteHomepageFields({
   words,
   className,
 }: SiteHomepageFieldsProps) {
+  const orderWords = words.order;
   return (
     <div data-slot="site-homepage-fields" className={cn("flex flex-col gap-6", className)}>
       <FormSection
@@ -131,17 +167,51 @@ function SiteHomepageFields({
         title={words.sections.title}
         description={words.sections.description}
       >
-        <div className="flex flex-col">
-          {SWITCHES.map(({ value, word }) => (
-            <SwitchRow
-              key={value}
-              checked={values[value]}
-              disabled={disabled}
-              words={words.sections[word]}
-              onChange={(checked) => onChange({ ...values, [value]: checked })}
-            />
-          ))}
-        </div>
+        {values.order && orderWords ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-small text-muted">{orderWords.hint}</p>
+            <SortableList
+              ids={values.order}
+              onReorder={(ids) => onChange({ ...values, order: ids as HomeSectionKey[] })}
+            >
+              {values.order.map((key) => {
+                const found = SWITCH_OF[key];
+                const rowWords =
+                  found === undefined
+                    ? orderWords[key as "newLaunches" | "newest"]
+                    : words.sections[found.word];
+                return (
+                  <SortableRow key={key} id={key} labels={orderWords.rowLabels(rowWords.label)}>
+                    <SwitchRow
+                      plain
+                      disabled={disabled}
+                      words={rowWords}
+                      {...(found
+                        ? {
+                            checked: values[found.value],
+                            onChange: (checked: boolean) =>
+                              onChange({ ...values, [found.value]: checked }),
+                          }
+                        : {})}
+                    />
+                  </SortableRow>
+                );
+              })}
+            </SortableList>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            {SWITCHES.map(({ value, word }) => (
+              <SwitchRow
+                key={value}
+                checked={values[value]}
+                disabled={disabled}
+                words={words.sections[word]}
+                onChange={(checked) => onChange({ ...values, [value]: checked })}
+              />
+            ))}
+          </div>
+        )}
       </FormSection>
       <SiteLocalitiesEditor
         localities={values.localities}
