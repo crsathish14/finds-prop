@@ -378,7 +378,10 @@ test.describe("@smoke property page", () => {
     await expect(page.getByText(en.property.page.notFound.body)).toBeVisible();
     await page.getByRole("link", { name: en.property.page.notFound.browse }).click();
     await expect(page).toHaveURL(/\/properties$/);
-    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
+    // The list is for signed-in visitors (ADR-171): a visitor who is not signed in lands on the wall.
+    await expect(page.getByRole("heading", { level: 1, name: en.loginWall.title })).toBeVisible(
+      LIST_WAIT,
+    );
   });
 
   test("keeps the site header and footer around the not-found screen and is kept out of search results", async ({
@@ -429,7 +432,8 @@ test.describe("@smoke project page", () => {
     await expect(page.getByText(en.projects.page.notFound.body)).toBeVisible();
     await page.getByRole("link", { name: en.projects.page.notFound.all }).click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
+    // The list is for signed-in visitors (ADR-171): a visitor who is not signed in lands on the wall.
+    await expect(page.getByRole("heading", { level: 1, name: en.loginWall.title })).toBeVisible(
       LIST_WAIT,
     );
   });
