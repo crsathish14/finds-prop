@@ -1,4 +1,5 @@
 -- Login wall, part A (additive): narrow read functions for the pages that stay public.
+-- Renamed from 20261123160000 (the same version as project_extra_fields); `create or replace` makes it safe whether or not the old version was already applied.
 -- Why: today a visitor holds the public key in every browser and can read whole lists through the table grants
 -- and through search_properties(). Before those are closed (part C), the public pages (one home, one project, the
 -- homepage sections, the sitemap) must stop depending on them. Each function below returns ONE row or a small
@@ -9,7 +10,7 @@
 
 -- One approved home by its public id: the columns a visitor may read, its photos and its label, as one document.
 -- Null when no approved home has the id.
-create function public.public_property(p_short_id text)
+create or replace function public.public_property(p_short_id text)
 returns jsonb
 language sql
 stable
@@ -45,7 +46,7 @@ $$;
 -- One live project by its slug: the public columns with its (active) builder, its first 20 units, the number of
 -- units and of those available, and the latest 12 months of its price trend. Null when no live project of an
 -- active builder has the slug.
-create function public.public_project(p_slug text)
+create or replace function public.public_project(p_slug text)
 returns jsonb
 language sql
 stable
@@ -106,7 +107,7 @@ $$;
 
 -- The homepage sections of homes: 'featured' (six) or 'newest' (eight), newest first, in the shape of
 -- search_properties(). The sizes are fixed here, so a caller cannot ask for a list.
-create function public.home_properties(p_kind text)
+create or replace function public.home_properties(p_kind text)
 returns table (
   id uuid,
   short_id text,
@@ -150,7 +151,7 @@ $$;
 
 -- The live projects that rank the homepage developers: at most 1000, featured first then newest, each with only
 -- its cover picture and its (active) builder's id, name and description.
-create function public.home_developers()
+create or replace function public.home_developers()
 returns jsonb
 language sql
 stable
@@ -181,7 +182,7 @@ $$;
 
 -- The addresses the sitemap lists, one page at a time (at most 1000 a page): 'homes' (slug, public id, change date)
 -- or 'projects' (slug, change date). Slug and date only, no other data.
-create function public.sitemap_entries(p_kind text, p_limit integer default 1000, p_offset integer default 0)
+create or replace function public.sitemap_entries(p_kind text, p_limit integer default 1000, p_offset integer default 0)
 returns table (slug text, short_id text, updated_at timestamptz)
 language plpgsql
 stable
