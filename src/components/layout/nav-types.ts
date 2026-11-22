@@ -24,4 +24,9 @@ export type MenuEntry = {
   destructive?: boolean;
 };
 
-export type MenuGroup = { label?: string; items: MenuEntry[] };
+export type MenuGroup = {
+  label?: string;
+  items: MenuEntry[];
+  /** Shown on phones only (the groups that stand in for the menu button, which phones no longer have). */
+  phoneOnly?: boolean;
+};
