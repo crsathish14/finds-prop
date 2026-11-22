@@ -341,9 +341,11 @@ test.describe("@smoke results page", () => {
     await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
   });
 
+  // (The comparison's made-up table is shorter than the card, so there is nothing behind it to scroll there: the end-of-page
+  // test below covers it.)
   // The card stays in view below the header and above the phone bar while only the made-up cards scroll, and it leaves
   // with them before the footer; a short screen (a phone with the keyboard open) keeps it usable by scrolling inside it.
-  for (const route of ["/properties", "/projects", "/compare"]) {
+  for (const route of ["/properties", "/projects"]) {
     test(`the card stays in view while the cards behind it scroll, on ${route}`, async ({
       page,
     }) => {
@@ -362,18 +364,20 @@ test.describe("@smoke results page", () => {
     });
   }
 
-  test("the card leaves with the cards at the end of the page and never covers the footer", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 700 });
-    await page.goto("/properties");
-    const panel = page.locator('[data-slot="login-wall-panel"]');
-    await expect(panel).toBeVisible(LIST_WAIT);
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const footerTop = (await page.getByRole("contentinfo").boundingBox())?.y ?? 0;
-    const box = await panel.boundingBox();
-    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(footerTop + 1);
-  });
+  for (const route of ["/properties", "/projects", "/compare"]) {
+    test(`the card leaves with the cards at the end of the page and never covers the footer, on ${route}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 700 });
+      await page.goto(route);
+      const panel = page.locator('[data-slot="login-wall-panel"]');
+      await expect(panel).toBeVisible(LIST_WAIT);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const footerTop = (await page.getByRole("contentinfo").boundingBox())?.y ?? 0;
+      const box = await panel.boundingBox();
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(footerTop + 1);
+    });
+  }
 
   test("on a short screen the card is no taller than the free space and scrolls inside itself", async ({
     page,
