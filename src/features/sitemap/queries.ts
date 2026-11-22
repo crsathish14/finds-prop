@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 import { getBlogSitemapEntries } from "@/features/blog";
-import { getJobSitemapEntries } from "@/features/careers";
+import { getJobSitemapEntries, isJobOpenAt } from "@/features/careers";
 import { getPublicFaqs } from "@/features/faq";
 import { PROJECTS_TAG } from "@/features/projects";
 import { LISTINGS_TAG } from "@/features/search";
@@ -147,10 +147,14 @@ export async function getSitemapBlog(): Promise<SitemapBlog | null> {
  * The Careers entries (ADR-143): the open jobs (not past their closing date, not in Trash: the row policy decides) with
  * the date each last changed, or null while the Careers module is switched off or no job is open, so the sitemap never
  * lists a page that answers not-found. Reads the cached list (tag `careers`), so opening, closing or trashing a job
- * refreshes it.
+ * refreshes it. The list is kept for hours, so a job whose closing date has passed since is dropped here, as the job's
+ * page does (`isJobOpenAt`), and a closed job is never listed for the rest of the hour.
  */
 export async function getSitemapCareers(): Promise<SitemapCareers | null> {
   if (!(await getContentModuleOn("careers"))) return null;
-  const jobs = await getJobSitemapEntries();
+  const now = new Date();
+  const jobs = (await getJobSitemapEntries())
+    .filter((job) => isJobOpenAt(job, now))
+    .map((job) => ({ slug: job.slug, updatedAt: job.updatedAt }));
   return jobs.length === 0 ? null : { jobs };
 }

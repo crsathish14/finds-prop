@@ -2,7 +2,7 @@
 -- Fictional articles only. Post 1 and 2 are published, 3 is a draft, 4 archived, 5 in Trash. The words "secretword",
 -- "archivedword" and "trashedword" are in the three that no visitor may find.
 begin;
-select plan(70);
+select plan(71);
 
 insert into auth.users (id, phone, phone_confirmed_at)
 values ('00000000-0000-4000-8000-000000000001', '919000000001', now());
@@ -32,6 +32,20 @@ insert into public.blog_posts (
   ('00000000-0000-4000-c500-0000000000a5', 'trashed-post', 'In the bin', '',
    '[{"type": "paragraph", "text": "trashedword was thrown away."}]',
    '{}', null, 'Asha Rao', 'draft', null, now());
+
+-- The same columns for a visitor and a signed-in person (ADR-017), checked here for every column of the table.
+select is(
+  (select string_agg(attribute.attname::text, ',' order by attribute.attname::text)
+   from pg_attribute as attribute
+   where attribute.attrelid = 'public.blog_posts'::regclass and attribute.attnum > 0
+     and not attribute.attisdropped and has_column_privilege('anon', attribute.attrelid, attribute.attname, 'select')),
+  (select string_agg(attribute.attname::text, ',' order by attribute.attname::text)
+   from pg_attribute as attribute
+   where attribute.attrelid = 'public.blog_posts'::regclass and attribute.attnum > 0
+     and not attribute.attisdropped
+     and has_column_privilege('authenticated', attribute.attrelid, attribute.attname, 'select')),
+  'a visitor and a signed-in person read the same columns of blog_posts'
+);
 
 -- DB-RLS-blog_posts: a visitor reads only what is published and not in Trash, and writes nothing
 set local role anon;

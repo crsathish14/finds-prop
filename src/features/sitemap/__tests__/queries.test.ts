@@ -25,13 +25,17 @@ const blogState = vi.hoisted(() => ({
 }));
 const careersState = vi.hoisted(() => ({
   on: true,
-  jobs: [] as { slug: string; updatedAt: string }[],
+  jobs: [] as { slug: string; updatedAt: string; closesAt: string | null }[],
 }));
 vi.mock("@/features/site", () => ({
   getContentModuleOn: async (module: string) =>
     module === "blog" ? blogState.on : module === "careers" ? careersState.on : faqState.on,
 }));
-vi.mock("@/features/careers", () => ({ getJobSitemapEntries: async () => careersState.jobs }));
+vi.mock("@/features/careers", () => ({
+  getJobSitemapEntries: async () => careersState.jobs,
+  isJobOpenAt: (job: { closesAt: string | null }, now: Date) =>
+    job.closesAt === null || new Date(job.closesAt).getTime() > now.getTime(),
+}));
 vi.mock("@/features/blog", () => ({ getBlogSitemapEntries: async () => blogState.posts }));
 vi.mock("@/features/faq", () => ({ getPublicFaqs: async () => faqState.faqs }));
 vi.mock("@/features/property", () => ({
@@ -244,13 +248,48 @@ describe("UT-sitemap-careers: the Careers entries (ADR-143)", () => {
   });
 
   it("is the open jobs the cached list gives", async () => {
-    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
-    expect(await getSitemapCareers()).toEqual({ jobs: careersState.jobs });
+    careersState.jobs = [
+      { slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
+    expect(await getSitemapCareers()).toEqual({
+      jobs: [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }],
+    });
+  });
+
+  it("drops a job whose closing date has passed since the list was cached, and keeps one that closes later", async () => {
+    careersState.jobs = [
+      {
+        slug: "closed-an-hour-ago",
+        updatedAt: "2026-11-10T08:00:00+00:00",
+        closesAt: "2020-01-01T00:00:00+00:00",
+      },
+      {
+        slug: "closes-next-decade",
+        updatedAt: "2026-11-11T08:00:00+00:00",
+        closesAt: "2099-01-01T00:00:00+00:00",
+      },
+    ];
+    expect(await getSitemapCareers()).toEqual({
+      jobs: [{ slug: "closes-next-decade", updatedAt: "2026-11-11T08:00:00+00:00" }],
+    });
+  });
+
+  it("is left out when every cached job has since closed, so the sitemap never lists an empty page", async () => {
+    careersState.jobs = [
+      {
+        slug: "gone",
+        updatedAt: "2026-11-10T08:00:00+00:00",
+        closesAt: "2020-01-01T00:00:00+00:00",
+      },
+    ];
+    expect(await getSitemapCareers()).toBeNull();
   });
 
   it("is left out while the Careers module is off, even when jobs are open", async () => {
     careersState.on = false;
-    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    careersState.jobs = [
+      { slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
     expect(await getSitemapCareers()).toBeNull();
   });
 
@@ -261,7 +300,9 @@ describe("UT-sitemap-careers: the Careers entries (ADR-143)", () => {
   it("does not depend on the Blog or FAQ switches", async () => {
     faqState.on = false;
     blogState.on = false;
-    careersState.jobs = [{ slug: "one-job", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    careersState.jobs = [
+      { slug: "one-job", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
     expect(await getSitemapCareers()).not.toBeNull();
   });
 });
