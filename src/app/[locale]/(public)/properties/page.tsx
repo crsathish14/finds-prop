@@ -21,12 +21,7 @@ import {
   searchRadiusKm,
   wantsNearby,
 } from "@/features/search";
-import {
-  isSignedOut,
-  LoginWallScreen,
-  loginWallHref,
-  loginWallMetadata,
-} from "@/features/login-wall";
+import { isSignedOut, LoginWallScreen, loginWallMetadata } from "@/features/login-wall";
 import { pageMetadata } from "@/features/seo";
 import { getFeatureFlags, getSiteSettings, getSponsorAds, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
@@ -79,12 +74,12 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   if (canonical !== null) redirect(canonical);
 
   // The list is for signed-in visitors (ADR-171): a visitor who is not signed in gets the wall and no read at
-  // all, and after the phone sign-in comes back to this same search.
-  const wallHref = await loginWallHref(canonicalSearchHref(params));
-  if (wallHref !== null) {
+  // all. The phone sign-in is inside the wall, and after the code this same page, with this same search, draws
+  // the list.
+  if (await isSignedOut()) {
     return (
       <main id="main" className="flex-1 bg-canvas-sunken">
-        <LoginWallScreen kind="properties" signInHref={wallHref} />
+        <LoginWallScreen kind="properties" siteKey={publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
       </main>
     );
   }

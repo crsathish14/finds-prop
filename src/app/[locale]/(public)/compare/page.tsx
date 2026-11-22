@@ -9,7 +9,7 @@ import {
   toCompareColumn,
 } from "@/features/compare";
 import { LISTING_BUCKET, publicStorageUrl } from "@/features/home";
-import { LoginWallScreen, loginWallHref } from "@/features/login-wall";
+import { isSignedOut, LoginWallScreen } from "@/features/login-wall";
 import { NO_INDEX } from "@/features/seo";
 import { getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
@@ -33,13 +33,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ComparePage({ searchParams }: PageProps) {
   const raw = await searchParams;
   const asked = raw["ids"];
-  // Comparing is for signed-in visitors (ADR-171): anyone else gets the wall and no read at all, and after the
-  // phone sign-in comes back to the same comparison.
-  const wallHref = await loginWallHref(compareHref(parseIdsParam(asked)));
-  if (wallHref !== null) {
+  // Comparing is for signed-in visitors (ADR-171): anyone else gets the wall and no read at all. The phone sign-in is
+  // inside the wall, and after the code this same comparison is drawn.
+  if (await isSignedOut()) {
     return (
       <main id="main" className="flex-1">
-        <LoginWallScreen kind="compare" signInHref={wallHref} />
+        <LoginWallScreen kind="compare" siteKey={publicEnv.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
       </main>
     );
   }

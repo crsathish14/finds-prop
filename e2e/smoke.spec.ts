@@ -309,19 +309,17 @@ test.describe("@smoke results page", () => {
     await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toHaveCount(0);
   });
 
-  test("the one button leads to the phone sign-in and back to this very search", async ({
+  test("the phone sign-in is inside the card: number field and Send code, and the address does not change", async ({
     page,
   }) => {
     await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
-    const button = page.getByRole("link", { name: WALL.button });
-    await expect(button).toBeVisible(LIST_WAIT);
-    const href = (await button.getAttribute("href")) ?? "";
-    expect(href.startsWith("/auth?redirect=")).toBe(true);
-    const back = decodeURIComponent(href.slice("/auth?redirect=".length));
-    expect(back).toMatch(/^\/properties\?/);
-    expect(back).toContain("bhk=3");
-    expect(back).toContain("listingType=rent");
-    expect(back).toContain("propertyType=villa");
+    const panel = page.locator('[data-slot="login-wall-panel"]');
+    await expect(panel.getByLabel(en.auth.phone.label)).toBeVisible(LIST_WAIT);
+    await expect(
+      panel.getByRole("button", { name: en.auth.phone.send, exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/properties\?bhk=3&listingType=rent&propertyType=villa$/);
+    await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
   });
 
   test("sends a hand-edited address to its canonical form before it shows the wall", async ({
@@ -339,7 +337,7 @@ test.describe("@smoke results page", () => {
     const mock = page.locator('[data-slot="login-wall-mock"]');
     await expect(mock).toHaveAttribute("aria-hidden", "true");
     await expect(mock).toHaveAttribute("inert", "");
-    await expect(page.locator("#main").getByRole("link")).toHaveCount(1);
+    await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
@@ -484,21 +482,20 @@ test.describe("@smoke compare", () => {
   }) => {
     await page.goto("/compare");
     await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
-    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
-      "href",
-      "/auth?redirect=%2Fcompare",
-    );
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible();
     await expect(page.getByRole("table")).toHaveCount(0);
   });
 
-  test("the wall keeps the homes asked for, so the sign-in leads back to the same comparison", async ({
+  test("the wall keeps the address of the comparison asked for, so the sign-in happens on the same page", async ({
     page,
   }) => {
     await page.goto("/compare?ids=k3x9a2bd,m4y8b3ce");
-    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
-      "href",
-      "/auth?redirect=" + encodeURIComponent("/compare?ids=k3x9a2bd,m4y8b3ce"),
-    );
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveURL(/\/compare\?ids=k3x9a2bd,m4y8b3ce$/);
   });
 
   test("the bar appears on a page once a home is chosen, and Compare now waits for two", async ({
@@ -584,7 +581,7 @@ test.describe("@smoke compare", () => {
 // S4-T09 and the login wall (ADR-171): the projects page. The list is for signed-in visitors and CI cannot sign
 // anyone in, so these tests look at what a visitor who is not signed in gets.
 test.describe("@smoke projects page", () => {
-  test("a visitor who is not signed in gets the wall, a generic unindexed title and a way back", async ({
+  test("a visitor who is not signed in gets the wall with the sign-in inside it, and a generic unindexed title", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -592,10 +589,10 @@ test.describe("@smoke projects page", () => {
     await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
     await expect(page).toHaveTitle(`${WALL.metaTitle} · findsprop`);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
-      "href",
-      "/auth?redirect=%2Fprojects",
-    );
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/projects$/);
     await expect(page.getByRole("region", { name: en.projects.list.listLabel })).toHaveCount(0);
   });
 

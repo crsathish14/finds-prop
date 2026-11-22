@@ -3,10 +3,9 @@ import { ProjectCard } from "@/components/domain/project-card";
 import { PropertyCard } from "@/components/domain/property-card";
 import { SectionGrid } from "@/components/domain/section-grid";
 import { Container } from "@/components/layout/container";
-import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
+import { InlinePhoneSignIn } from "@/features/auth";
 import { MOCK_HOMES, MOCK_PROJECTS } from "./mock-data";
 
 export type LoginWallKind = "properties" | "projects" | "compare";
@@ -14,18 +13,18 @@ export type LoginWallKind = "properties" | "projects" | "compare";
 type LoginWallScreenProps = {
   /** Which page the wall stands in for: it decides which made-up cards are drawn behind the message. */
   kind: LoginWallKind;
-  /** The sign-in address with the way back to this page (`/auth?redirect=…`), made by the page. */
-  signInHref: string;
+  /** The site key of the human check the number step uses, as on `/auth` (read by the page from the public environment). */
+  siteKey: string | undefined;
 };
 
 /**
  * What a visitor who is not signed in sees in place of the list of homes, the list of projects or the
  * comparison (login wall, ADR-171): made-up cards, blurred and hidden from assistive technology, with a message
- * and one button to the phone sign-in. It fetches nothing and holds no state, and it imports no server or
- * database code, so nothing real can leak through it. After sign-in the visitor comes back to the same
- * address and sees the real page.
+ * and the phone sign-in itself, number and code, inside the card: nothing navigates, and after the code the
+ * page refreshes in place, on the same address with the same filters, and draws the real list. It fetches nothing, and the made-up
+ * cards come from a module that imports nothing from the server, so nothing real can leak through it.
  */
-export function LoginWallScreen({ kind, signInHref }: LoginWallScreenProps) {
+export function LoginWallScreen({ kind, siteKey }: LoginWallScreenProps) {
   const translate = useTranslations("loginWall");
   const locality = translate("mock.locality");
   const city = translate("mock.city");
@@ -36,7 +35,7 @@ export function LoginWallScreen({ kind, signInHref }: LoginWallScreenProps) {
           <ProjectCard
             key={index}
             project={{
-              href: "/auth",
+              href: "/",
               name: translate("mock.project", { number: index + 1 }),
               developerName: developer,
               locality: locality,
@@ -55,7 +54,7 @@ export function LoginWallScreen({ kind, signInHref }: LoginWallScreenProps) {
             key={index}
             layout="grid"
             property={{
-              href: "/auth",
+              href: "/",
               title: translate("mock.home", { number: index + 1 }),
               locality: locality,
               city: city,
@@ -90,11 +89,9 @@ export function LoginWallScreen({ kind, signInHref }: LoginWallScreenProps) {
             {translate("title")}
           </Heading>
           <Text tone="muted">{translate("body")}</Text>
-          <Button asChild variant="accent" size="lg" className="w-full">
-            <Link href={signInHref} className="text-on-cta no-underline hover:text-on-cta">
-              {translate("button")}
-            </Link>
-          </Button>
+          <div className="w-full text-left" data-slot="login-wall-sign-in">
+            <InlinePhoneSignIn siteKey={siteKey} />
+          </div>
         </section>
       </div>
     </Container>

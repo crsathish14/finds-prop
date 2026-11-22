@@ -33,11 +33,18 @@ type CodeEntryProps = {
   /** Seconds before a new code may be asked for. */
   resendAfter: number;
   siteKey: string | undefined;
-  /** Where to go once signed in: an address the page has already checked (BR-06). */
-  redirectTo: string;
+  /** Where to go once signed in: an address the page has already checked (BR-06). Not used when `onSignedIn` is given. */
+  redirectTo?: string;
   onChangeNumber: () => void;
   /** A new account has no name yet: the page asks for it before going on (ADD-04). */
   onNeedsName: () => void;
+  /**
+   * The code step inside another page's card (the login wall, ADR-171): once signed in the page stays where it is and
+   * this is called instead of going to `redirectTo`; the page then draws what the visitor came for.
+   */
+  onSignedIn?: () => void;
+  /** The heading level of the step: `h2` when the step sits inside a page that has its own `h1`. */
+  headingLevel?: "h1" | "h2";
 };
 
 function minutesToWait(retryAfter: number | undefined): number {
@@ -62,9 +69,11 @@ export function CodeEntry({
   sentAt,
   resendAfter,
   siteKey,
-  redirectTo,
+  redirectTo = "/dashboard",
   onChangeNumber,
   onNeedsName,
+  onSignedIn,
+  headingLevel = "h1",
 }: CodeEntryProps) {
   const translate = useTranslations("auth.code");
   const translatePhone = useTranslations("auth.phone");
@@ -87,11 +96,17 @@ export function CodeEntry({
     return () => clearInterval(timer);
   }, []);
 
+  /** Signed in: go on to the address, or, inside another page's card, tell that page. */
+  const finish = useCallback(() => {
+    if (onSignedIn) onSignedIn();
+    else goTo(redirectTo);
+  }, [onSignedIn, redirectTo]);
+
   useEffect(() => {
     if (!done) return;
-    const timer = setTimeout(() => goTo(redirectTo), SUCCESS_PAUSE_MS);
+    const timer = setTimeout(finish, SUCCESS_PAUSE_MS);
     return () => clearTimeout(timer);
-  }, [done, redirectTo]);
+  }, [done, finish]);
 
   // After a refused code, put the cursor back in the field (it is disabled while checking).
   useEffect(() => {
@@ -174,12 +189,12 @@ export function CodeEntry({
   if (done) {
     return (
       <div className="flex flex-col gap-4">
-        <Heading as="h1" size="2">
+        <Heading as={headingLevel} size="2">
           {translate("successTitle")}
         </Heading>
         <OtpInput value={code} disabled aria-label={translate("label")} />
         <Alert tone="success">{translate("successBody")}</Alert>
-        <Button variant="accent" size="lg" className="w-full" onClick={() => goTo(redirectTo)}>
+        <Button variant="accent" size="lg" className="w-full" onClick={finish}>
           {translate("continue")}
         </Button>
       </div>
@@ -195,7 +210,7 @@ export function CodeEntry({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Heading as="h1" size="2">
+        <Heading as={headingLevel} size="2">
           {translate("title")}
         </Heading>
         <Text variant="lead" className="mt-2">
