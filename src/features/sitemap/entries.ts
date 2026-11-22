@@ -2,9 +2,8 @@ import type { MetadataRoute } from "next";
 import { blogArticlePath, BLOG_PATH } from "@/features/blog";
 import { CAREERS_PATH, jobPath } from "@/features/careers";
 import { FAQ_PATH } from "@/features/faq";
-import { projectPath, PROJECTS_PATH } from "@/features/projects";
+import { projectPath } from "@/features/projects";
 import { propertyPath } from "@/features/property";
-import { SEARCH_PATH } from "@/features/search";
 
 /**
  * A sitemap file may hold 50,000 addresses. This one stops at 45,000, so there is room to spare; a
@@ -13,8 +12,8 @@ import { SEARCH_PATH } from "@/features/search";
  */
 export const SITEMAP_MAX_URLS = 45_000;
 
-/** The pages that always exist and have no date of their own: the homepage and the two lists. */
-export const STATIC_PATHS = ["/", SEARCH_PATH, PROJECTS_PATH] as const;
+/** The pages that always exist and have no date of their own: the homepage. The lists are for signed-in visitors, so they are not here. */
+export const STATIC_PATHS = ["/"] as const;
 
 /** The most projects the sitemap reads. Homes get what is left of `SITEMAP_MAX_URLS`. */
 export const SITEMAP_PROJECTS_MAX = 5_000;

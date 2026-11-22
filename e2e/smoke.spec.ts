@@ -292,64 +292,63 @@ test.describe("@smoke site footer and bottom bar", () => {
   });
 });
 
-// S4-T04: the results page. CI has no database behind the app, so these tests look at what does not
-// depend on homes: the address rules, the heading, the filters and the bar, and (with no database) the
-// failed-load state that keeps the filters.
+// S4-T04 and the login wall (ADR-171): the results page. The list is for signed-in visitors, and CI cannot sign
+// anyone in (no code can be sent), so these tests look at what a visitor who is not signed in gets: the wall and
+// the way to sign in and come back, never a list, and the address rules that come before the wall.
+const WALL = en.loginWall;
 test.describe("@smoke results page", () => {
-  test("opens with the heading, the filters and the bar, whatever the data", async ({ page }) => {
+  test("a visitor who is not signed in gets the wall and a generic unindexed title, never the list", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/properties");
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: en.results.title.any.replace("{kind}", en.results.kind.any),
-      }),
-    ).toBeVisible();
-    await expect(page).toHaveTitle(`${en.results.metaTitle} · findsprop`);
-    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeVisible();
-    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
-    await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
-  });
-
-  test("reads the address: the heading and the chips follow it", async ({ page }) => {
     await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
-    await expect(page.getByRole("heading", { level: 1, name: "Villas for rent" })).toBeVisible();
-    await expect(
-      page.getByRole("button", {
-        name: en.domain.results.active.remove.replace("{label}", "3 BHK"),
-      }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveTitle(`${WALL.metaTitle} · findsprop`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toHaveCount(0);
+    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toHaveCount(0);
   });
 
-  test("sends a hand-edited address to its canonical form", async ({ page }) => {
+  test("the one button leads to the phone sign-in and back to this very search", async ({
+    page,
+  }) => {
+    await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
+    const button = page.getByRole("link", { name: WALL.button });
+    await expect(button).toBeVisible(LIST_WAIT);
+    const href = (await button.getAttribute("href")) ?? "";
+    expect(href.startsWith("/auth?redirect=")).toBe(true);
+    const back = decodeURIComponent(href.slice("/auth?redirect=".length));
+    expect(back).toMatch(/^\/properties\?/);
+    expect(back).toContain("bhk=3");
+    expect(back).toContain("listingType=rent");
+    expect(back).toContain("propertyType=villa");
+  });
+
+  test("sends a hand-edited address to its canonical form before it shows the wall", async ({
+    page,
+  }) => {
     await page.goto("/properties?view=grid&bhk=9&sort=newest&listingType=sale");
     await expect(page).toHaveURL(/\/properties\?listingType=sale$/);
   });
 
-  test("a choice rewrites the address and keeps the page", async ({ page }) => {
+  test("the cards behind the message are made up, hidden and cannot be reached", async ({
+    page,
+  }) => {
     await page.goto("/properties");
-    await page.getByRole("button", { name: en.domain.propertyCard.label.prime }).click();
-    await expect(page).toHaveURL(/\/properties\?label=prime$/);
-    await page.getByRole("combobox", { name: en.domain.filters.sortLabel }).click();
-    await page.locator('[role="option"][data-value="price_asc"]').click();
-    await expect(page).toHaveURL(/\/properties\?label=prime&sort=price_asc$/);
-  });
-
-  test("on a phone the filters are behind a button, not beside the results", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/properties");
-    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeHidden();
-    await page.getByRole("button", { name: en.domain.filters.button }).click();
-    await expect(page.getByRole("dialog", { name: en.domain.filters.title })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    const mock = page.locator('[data-slot="login-wall-mock"]');
+    await expect(mock).toHaveAttribute("aria-hidden", "true");
+    await expect(mock).toHaveAttribute("inert", "");
+    await expect(page.locator("#main").getByRole("link")).toHaveCount(1);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/properties?bhk=3&listingType=sale&propertyType=apartment");
-      // Wait for the page's own bar, not for a quiet network: the site's other links prefetch pages
-      // for a long while when no database answers.
-      await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -476,25 +475,29 @@ const CHOSEN = [
 ];
 
 test.describe("@smoke compare", () => {
-  test("with no homes the comparison asks for at least two and leads to the results", async ({
+  test("a visitor who is not signed in gets the wall on the comparison, never a table", async ({
     page,
   }) => {
     await page.goto("/compare");
-    await expect(page.getByRole("heading", { level: 1, name: en.compare.title })).toBeVisible();
-    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
-    await page.getByRole("link", { name: en.compare.empty.browse }).click();
-    await expect(page).toHaveURL(/\/properties$/);
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
+      "href",
+      "/auth?redirect=%2Fcompare",
+    );
+    await expect(page.getByRole("table")).toHaveCount(0);
   });
 
-  test("sends an address that asks for something that is not a home to the plain page", async ({
+  test("the wall keeps the homes asked for, so the sign-in leads back to the same comparison", async ({
     page,
   }) => {
-    await page.goto("/compare?ids=not-an-id,another-bad-one");
-    await expect(page).toHaveURL(/\/compare$/);
-    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+    await page.goto("/compare?ids=k3x9a2bd,m4y8b3ce");
+    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
+      "href",
+      "/auth?redirect=" + encodeURIComponent("/compare?ids=k3x9a2bd,m4y8b3ce"),
+    );
   });
 
-  test("the bar appears on the results once a home is chosen, and Compare now waits for two", async ({
+  test("the bar appears on a page once a home is chosen, and Compare now waits for two", async ({
     page,
   }) => {
     await page.addInitScript(
@@ -502,7 +505,7 @@ test.describe("@smoke compare", () => {
       [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
     );
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/properties");
+    await page.goto("/");
     const bar = page.getByRole("region", { name: en.compare.bar.label });
     await expect(bar).toBeVisible();
     await expect(bar.getByText("1 of 3 selected")).toBeVisible();
@@ -534,7 +537,7 @@ test.describe("@smoke compare", () => {
     );
     await page.goto("/compare");
     await expect(page.getByRole("region", { name: en.compare.bar.label })).toBeHidden();
-    await page.goto("/properties");
+    await page.goto("/");
     await page
       .getByRole("region", { name: en.compare.bar.label })
       .getByRole("button", { name: en.compare.bar.clearAll })
@@ -543,7 +546,7 @@ test.describe("@smoke compare", () => {
   });
 
   test("keeps the selection after a reload", async ({ page }) => {
-    await page.goto("/properties");
+    await page.goto("/");
     await page.evaluate(
       ([key, value]) => window.localStorage.setItem(key as string, value as string),
       [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
@@ -556,7 +559,9 @@ test.describe("@smoke compare", () => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/compare");
-      await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -572,45 +577,31 @@ test.describe("@smoke compare", () => {
   });
 });
 
-// S4-T09: the projects page. CI has no database behind the app, so these tests look at what does not
-// depend on projects: the heading, the line under it, the way back, and that one of the three states
-// (the projects, coming soon, or the failed load with Try again) is drawn.
+// S4-T09 and the login wall (ADR-171): the projects page. The list is for signed-in visitors and CI cannot sign
+// anyone in, so these tests look at what a visitor who is not signed in gets.
 test.describe("@smoke projects page", () => {
-  test("opens with the breadcrumb, the heading and its line, whatever the data", async ({
+  test("a visitor who is not signed in gets the wall, a generic unindexed title and a way back", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/projects");
-    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
-      LIST_WAIT,
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveTitle(`${WALL.metaTitle} · findsprop`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("link", { name: WALL.button })).toHaveAttribute(
+      "href",
+      "/auth?redirect=%2Fprojects",
     );
-    await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · findsprop`);
-    await expect(page.getByText(en.projects.list.overline)).toBeVisible();
-    await expect(page.getByText(en.projects.list.sub)).toBeVisible();
-    const trail = page.getByRole("navigation", { name: en.projects.list.crumb.nav });
-    await expect(trail.getByText(en.projects.list.crumb.projects)).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-  });
-
-  test("draws one of its three states: the projects, coming soon, or the failed load", async ({
-    page,
-  }) => {
-    await page.goto("/projects");
-    const projects = page.getByRole("region", { name: en.projects.list.listLabel });
-    const soon = page.getByRole("heading", { name: en.projects.list.empty.title });
-    const failed = page.getByRole("alert").filter({ hasText: en.projects.list.error.title });
-    await expect(projects.or(soon).or(failed).first()).toBeVisible(LIST_WAIT);
+    await expect(page.getByRole("region", { name: en.projects.list.listLabel })).toHaveCount(0);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/projects");
-      await expect(
-        page.getByRole("heading", { level: 1, name: en.projects.list.title }),
-      ).toBeVisible(LIST_WAIT);
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -771,15 +762,17 @@ test.describe("@smoke search engines", () => {
     );
   });
 
-  test("a results page is canonical at its filters, whatever its sort and view, and says what it shows", async ({
+  test("a results page shows a visitor who is not signed in one generic title and asks not to be indexed", async ({
     page,
   }) => {
     await page.goto("/properties?bhk=3&sort=price_asc&view=list");
-    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1, LIST_WAIT);
-    expect(pathOf(await page.locator('link[rel="canonical"]').getAttribute("href"))).toBe(
-      "/properties?bhk=3",
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex/,
+      LIST_WAIT,
     );
-    await expect(page).toHaveTitle(/3 BHK/);
+    await expect(page).toHaveTitle(`${en.loginWall.metaTitle} · findsprop`);
+    await expect(page).not.toHaveTitle(/3 BHK/);
   });
 
   test("the comparison asks not to be indexed", async ({ page }) => {

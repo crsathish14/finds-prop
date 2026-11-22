@@ -4,9 +4,9 @@ import { unstable_rethrow } from "next/navigation";
 import { CACHE_TAGS, projectTag } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
+import { createServerSupabase } from "@/server/supabase/server";
 import { z } from "zod";
 import {
-  PROJECT_LIST_COLUMNS,
   projectListRowSchema,
   projectRowSchema,
   trendRowSchema,
@@ -68,30 +68,25 @@ function toListItem(row: ProjectListRow): ProjectListItem {
 }
 
 /**
- * Reads the public projects as an anonymous visitor, so the database's own rules decide what exists:
- * only approved and published projects of active builders, only the granted columns (BR-42, BR-94).
- * Featured first, then the newest. Rows that do not fit are skipped and counted. A failed read is
- * logged by its code only and throws, so it is never cached: "Try again" asks the database again.
- * Cached for minutes under the projects tag.
+ * Reads the public projects for a signed-in visitor through `live_project_list()` (login wall: the list is
+ * for signed-in people, and the database refuses anyone else). The function gives only approved and published
+ * projects of active builders, only the visitor columns (BR-42, BR-94), featured first, then the newest, the
+ * same to everybody, whatever else their own account may read. Rows that do not fit are skipped and counted. A
+ * failed read is logged by its code only and throws: "Try again" asks the database again. Not cached: a cache
+ * is shared between visitors and this read is one visitor's.
  */
 async function readProjects(): Promise<{ projects: ProjectListItem[]; readAt: string }> {
-  "use cache";
-  cacheTag(PROJECTS_TAG);
-  cacheLife("minutes");
   const readAt = new Date().toISOString();
-  const { data, error } = await createPublicSupabase()
-    .from("projects")
-    .select(PROJECT_LIST_COLUMNS)
-    .order("featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(PROJECT_LIST_LIMIT);
+  const { data, error } = await (
+    await createServerSupabase()
+  ).rpc("live_project_list", { p_limit: PROJECT_LIST_LIMIT });
   if (error) {
     logger.error("projects could not be read", { errorCode: error.code });
     throw new Error("projects could not be read");
   }
   const projects: ProjectListItem[] = [];
   let skipped = 0;
-  for (const row of data ?? []) {
+  for (const row of Array.isArray(data) ? data : []) {
     const parsed = projectListRowSchema.safeParse(row);
     if (parsed.success) projects.push(toListItem(parsed.data));
     else skipped += 1;

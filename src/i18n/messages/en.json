@@ -1078,6 +1078,19 @@
       "sentNote": "Your draft is saved. You can close this tab and return later."
     }
   },
+  "loginWall": {
+    "metaTitle": "Sign in to browse homes and projects",
+    "title": "Sign in to see all properties",
+    "body": "Enter your phone number to browse every property and project. It takes a minute.",
+    "button": "Sign in with phone",
+    "mock": {
+      "home": "Sample home {number}",
+      "project": "Sample project {number}",
+      "locality": "Sample locality",
+      "city": "Sample city",
+      "developer": "Sample builders"
+    }
+  },
   "compare": {
     "add": "Add to compare",
     "title": "Compare homes",
