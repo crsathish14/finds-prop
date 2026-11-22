@@ -170,11 +170,11 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 59 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
+  it("holds the counts by level: 60 super_admin, 9 builder, 20 verified-phone, 8 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 59,
+      super_admin: 60,
       builder: 9,
       "verified-phone": 20,
       none: 8,
