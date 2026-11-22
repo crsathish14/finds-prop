@@ -486,7 +486,8 @@
       "menuTitle": "Menu",
       "closeMenu": "Close menu",
       "cityButton": "City: {city}. Change city",
-      "cityHeading": "Choose your city"
+      "cityHeading": "Choose your city",
+      "defaultCity": "Chennai"
     },
     "footer": {
       "exploreHeading": "Explore",

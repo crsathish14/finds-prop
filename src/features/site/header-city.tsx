@@ -1,10 +1,21 @@
-import { CityPicker, getListedCities, getSelectedCity } from "@/features/cities";
+import {
+  CityPicker,
+  DEFAULT_CITY_KEY,
+  getListedCities,
+  getSelectedCity,
+  type CityOption,
+} from "@/features/cities";
 import { getTranslate } from "./translator";
 
 /** The city selector for the header. Reads the cookie, so the header puts it inside a Suspense boundary. */
 export async function HeaderCity() {
   const translate = await getTranslate();
-  const [selected, cities] = await Promise.all([getSelectedCity(), getListedCities()]);
+  const [chosen, listed] = await Promise.all([getSelectedCity(), getListedCities()]);
+  // The default city is the site's own wording (en.json); the others are data and are shown as they are.
+  const named = (city: CityOption): CityOption =>
+    city.key === DEFAULT_CITY_KEY ? { ...city, name: translate("site.header.defaultCity") } : city;
+  const selected = named(chosen);
+  const cities = listed.map(named);
   return (
     <CityPicker
       cities={cities}
