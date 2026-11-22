@@ -1,15 +1,19 @@
 import type {
   OFFER_TYPES,
+  PLOT_STATUSES,
   PRICE_TYPES,
   PROJECT_STATUSES,
   PROPERTY_TYPES,
   UNIT_STATUSES,
+  VILLA_TYPES,
 } from "./schemas";
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export type PriceType = (typeof PRICE_TYPES)[number];
 export type OfferType = (typeof OFFER_TYPES)[number];
 export type ProjectPropertyType = (typeof PROPERTY_TYPES)[number];
+export type ProjectPlotStatus = (typeof PLOT_STATUSES)[number];
+export type ProjectVillaType = (typeof VILLA_TYPES)[number];
 export type UnitStatus = (typeof UNIT_STATUSES)[number];
 
 /** One project on the list: only what its card draws, with the names of the page (not the columns'). */
@@ -62,6 +66,8 @@ export type ProjectData = {
   developer: { id: string; name: string };
   status: ProjectStatus | null;
   propertyType: ProjectPropertyType | null;
+  plotStatus: ProjectPlotStatus | null;
+  villaType: ProjectVillaType | null;
   offerType: OfferType | null;
   price: number | null;
   priceType: PriceType | null;

@@ -60,6 +60,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       property_type: "apartment",
       project_status: "ready_to_move",
       offer_type: null,
+      plot_status: null,
+      villa_type: null,
       price: 7800000,
       price_type: "basic",
       area_min_sqft: null,
@@ -104,6 +106,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       property_type: "apartment",
       project_status: "under_construction",
       offer_type: null,
+      plot_status: null,
+      villa_type: null,
       price: 7800000,
       price_type: "basic",
       area_min_sqft: null,
@@ -133,6 +137,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       createMyProjectSchema.parse({
         ...minimal,
         propertyType: "plot",
+        plotStatus: "ready_to_build",
+        villaType: "duplex",
         price: "2,450",
         priceType: "per_sqft",
         areaMinSqft: "1200",
@@ -142,6 +148,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     );
     expect(row).toMatchObject({
       property_type: "plot",
+      plot_status: "ready_to_build",
+      villa_type: null,
       price: 2450,
       price_type: "per_sqft",
       area_min_sqft: 1200,
@@ -149,6 +157,28 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       bhk_options: [],
       offer_type: null,
     });
+  });
+
+  it("writes a villa with its type and no plot status, and a mapped refusal names the box", () => {
+    const row = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        propertyType: "villa",
+        villaType: "row_house",
+        plotStatus: "investment",
+      }),
+    );
+    expect(row).toMatchObject({
+      property_type: "villa",
+      villa_type: "row_house",
+      plot_status: null,
+    });
+    expect(
+      mapProjectError({ code: "23514", message: "projects.plot_status_required" }),
+    ).toMatchObject({ fieldErrors: { plotStatus: [{ key: "validation.required" }] } });
+    expect(
+      mapProjectError({ code: "23514", message: "projects.villa_type_required" }),
+    ).toMatchObject({ fieldErrors: { villaType: [{ key: "validation.required" }] } });
   });
 
   it("writes a commercial project for rent with its offer type, area range and no bedrooms", () => {

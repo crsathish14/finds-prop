@@ -31,6 +31,12 @@ export const PROPERTY_TYPES = [
   "co_working",
 ] as const;
 
+/** What a plot is and what kind of villa it is (ADR-160); a value this site does not know is none. */
+export const PLOT_STATUSES = ["investment", "ready_to_build"] as const;
+export const VILLA_TYPES = ["duplex", "row_house", "individual"] as const;
+const plotStatusSchema = z.enum(PLOT_STATUSES).nullable().catch(null);
+const villaTypeSchema = z.enum(VILLA_TYPES).nullable().catch(null);
+
 const priceTypeSchema = z.enum(PRICE_TYPES).nullable().catch(null);
 const offerTypeSchema = z.enum(OFFER_TYPES).nullable().catch(null);
 const propertyTypeSchema = z.enum(PROPERTY_TYPES).nullable().catch(null);
@@ -65,7 +71,7 @@ export type ProjectListRow = z.infer<typeof projectListRowSchema>;
 
 /** The columns the project page reads from `projects`. */
 export const PROJECT_COLUMNS =
-  "id, slug, name, project_status, property_type, offer_type, price, price_type, area_min_sqft, area_max_sqft, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, rera_not_applicable_reason, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
+  "id, slug, name, project_status, property_type, plot_status, villa_type, offer_type, price, price_type, area_min_sqft, area_max_sqft, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, rera_not_applicable_reason, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
 
 export const projectRowSchema = z.object({
   id: z.string().min(1),
@@ -73,6 +79,8 @@ export const projectRowSchema = z.object({
   name: z.string().min(1),
   project_status: statusSchema,
   property_type: propertyTypeSchema,
+  plot_status: plotStatusSchema,
+  villa_type: villaTypeSchema,
   offer_type: offerTypeSchema,
   price: z.number().nonnegative().nullable(),
   price_type: priceTypeSchema,

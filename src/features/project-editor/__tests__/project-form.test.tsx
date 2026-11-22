@@ -37,6 +37,8 @@ const saved: ProjectEditView = {
   projectType: "residential",
   propertyType: "apartment",
   offerType: null,
+  plotStatus: null,
+  villaType: null,
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",

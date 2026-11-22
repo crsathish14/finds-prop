@@ -295,6 +295,7 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
   const plot = {
     ...minimal,
     propertyType: "plot",
+    plotStatus: "investment",
     priceType: "per_sqft",
     price: "2450",
     areaMinSqft: "1200",
@@ -302,10 +303,10 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
   };
 
   it("accepts a residential project of each property type and a commercial one of each", () => {
-    expect(parse({ ...minimal, propertyType: "villa" })).toEqual([]);
+    expect(parse({ ...minimal, propertyType: "villa", villaType: "duplex" })).toEqual([]);
     expect(parse(plot)).toEqual([]);
     for (const propertyType of ["vacant_land", "flat", "office", "co_working", "villa"]) {
-      expect(parse({ ...commercial, propertyType })).toEqual([]);
+      expect(parse({ ...commercial, propertyType, villaType: "individual" })).toEqual([]);
     }
   });
 
@@ -316,9 +317,25 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
     expect(parse({ ...commercial, propertyType: "apartment" })).toEqual([
       "propertyType:validation.invalid",
     ]);
-    expect(parse({ ...commercial, propertyType: "plot" })).toEqual([
+    expect(parse({ ...commercial, propertyType: "plot", plotStatus: "investment" })).toEqual([
       "propertyType:validation.invalid",
     ]);
+  });
+
+  it("needs the plot status for a plot and the villa type for a villa, and ignores them elsewhere (ADR-160)", () => {
+    expect(parse({ ...plot, plotStatus: "" })).toEqual(["plotStatus:validation.required"]);
+    expect(parse({ ...plot, plotStatus: "sold" })).toEqual(["plotStatus:validation.invalid"]);
+    expect(parse({ ...plot, plotStatus: "ready_to_build" })).toEqual([]);
+    const villa = { ...minimal, propertyType: "villa" };
+    expect(parse(villa)).toEqual(["villaType:validation.required"]);
+    expect(parse({ ...villa, villaType: "bungalow" })).toEqual(["villaType:validation.invalid"]);
+    for (const villaType of ["duplex", "row_house", "individual"]) {
+      expect(parse({ ...villa, villaType })).toEqual([]);
+    }
+    expect(parse({ ...commercial, propertyType: "villa" })).toEqual([
+      "villaType:validation.required",
+    ]);
+    expect(parse({ ...minimal, plotStatus: "investment", villaType: "duplex" })).toEqual([]);
   });
 
   it("needs sale or rent for a commercial project, and ignores it for a residential one", () => {
