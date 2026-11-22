@@ -94,24 +94,24 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Admin portal
 
-| Req       | Name                             | Modules                            | Stage          | UX                               | Tests                                                                                 |
-| --------- | -------------------------------- | ---------------------------------- | -------------- | -------------------------------- | ------------------------------------------------------------------------------------- |
-| FR-ADM-01 | Overview                         | `admin-overview`                   | S7-T06         | `admin-overview`                 | chart tests, UT-overview-*, DB-FN-admin_overview, IT-admin-overview, IT-AUTHZ-admin   |
-| FR-ADM-02 | Listings moderation              | `moderation`                       | **S6-T04**     | `admin-listings`                 | DB-FN-lifecycle, E06/E08                                                              |
-| FR-ADM-03 | Projects moderation              | `moderation`, `projects`           | S7-T04         | `admin-projects`                 | DB-TRG-projects-guard, E11/E12                                                        |
-| FR-ADM-04 | Project form                     | `projects`                         | S7-T02         | `admin-project-form`             | E11                                                                                   |
-| FR-ADM-05 | Units                            | `projects`                         | S7-T07         | `admin-units`                    | E16                                                                                   |
-| FR-ADM-06 | Builders                         | `builders`                         | S7-T05         | `admin-builders`                 | IT-builder-invite, E11                                                                |
-| FR-ADM-07 | Leads                            | `projects`, `forms`                | S7-T07         | `admin-leads`                    | IT-forms, E14                                                                         |
-| FR-ADM-08 | Form builder                     | `forms`                            | S7-T08         | `admin-forms`                    | UT-dynamic-form, E14                                                                  |
-| FR-ADM-09 | CRM                              | `crm`                              | S7-T09         | `admin-crm`                      | UT-crm-url, UT-retry, UT-crm-logs-view, UT-crm-editor-draft, IT-crm, IT-crm-page, E14 |
-| FR-ADM-10 | CMS                              | `site`, `site-content`             | S7-T10         | `admin-cms`                      | IT-sponsors, E15                                                                      |
-| FR-ADM-11 | Hero layout setting and sponsors | `site`, `sponsors`, `site-content` | S7-T10, S7-T11 | `admin-cms#hero`, ADD-11         | IT-sponsors, UT-sponsors-panel, E09, E15                                              |
-| FR-ADM-12 | Banner management                | `sponsors`                         | S7-T11         | Partial (`admin-cms#hero`) + Gap | IT-sponsors, E15                                                                      |
-| FR-ADM-13 | Blog management                  | `blog`, `admin`                    | ADR-143 ph. 3  | Lab, to design                   | UT-blog-editor, IT-blog, DB-RLS-blog                                                  |
-| FR-ADM-14 | FAQ management                   | `faq`, `admin`                     | ADR-143 ph. 2  | Lab, to design                   | UT-faq-manager, IT-faq, DB-RLS-faq                                                    |
-| FR-ADM-15 | Careers management               | `careers`, `admin`                 | ADR-143 ph. 4  | Lab, to design                   | UT-jobs-manager, IT-careers, DB-RLS-careers                                           |
-| FR-ADM-16 | Content module switches          | `site-content`, `admin`            | ADR-143 ph. 1  | Overview card, design            | UT-module-switch, IT-module-switch, E-modules                                         |
+| Req       | Name                             | Modules                            | Stage           | UX                               | Tests                                                                                 |
+| --------- | -------------------------------- | ---------------------------------- | --------------- | -------------------------------- | ------------------------------------------------------------------------------------- |
+| FR-ADM-01 | Overview                         | `admin-overview`                   | S7-T06          | `admin-overview`                 | chart tests, UT-overview-*, DB-FN-admin_overview, IT-admin-overview, IT-AUTHZ-admin   |
+| FR-ADM-02 | Listings moderation              | `moderation`                       | **S6-T04**      | `admin-listings`                 | DB-FN-lifecycle, E06/E08                                                              |
+| FR-ADM-03 | Projects moderation              | `moderation`, `projects`           | S7-T04          | `admin-projects`                 | DB-TRG-projects-guard, E11/E12                                                        |
+| FR-ADM-04 | Project form                     | `projects`                         | S7-T02          | `admin-project-form`             | E11                                                                                   |
+| FR-ADM-05 | Units                            | `projects`                         | S7-T07          | `admin-units`                    | E16                                                                                   |
+| FR-ADM-06 | Builders                         | `builders`                         | S7-T05          | `admin-builders`                 | IT-builder-invite, E11                                                                |
+| FR-ADM-07 | Leads                            | `projects`, `forms`                | S7-T07          | `admin-leads`                    | IT-forms, E14                                                                         |
+| FR-ADM-08 | Form builder                     | `forms`                            | S7-T08          | `admin-forms`                    | UT-dynamic-form, E14                                                                  |
+| FR-ADM-09 | CRM                              | `crm`                              | S7-T09          | `admin-crm`                      | UT-crm-url, UT-retry, UT-crm-logs-view, UT-crm-editor-draft, IT-crm, IT-crm-page, E14 |
+| FR-ADM-10 | CMS                              | `site`, `site-content`             | S7-T10, ADR-152 | `admin-cms`                      | IT-sponsors, E15, UT-site-content-service (disclaimers)                               |
+| FR-ADM-11 | Hero layout setting and sponsors | `site`, `sponsors`, `site-content` | S7-T10, S7-T11  | `admin-cms#hero`, ADD-11         | IT-sponsors, UT-sponsors-panel, E09, E15                                              |
+| FR-ADM-12 | Banner management                | `sponsors`                         | S7-T11          | Partial (`admin-cms#hero`) + Gap | IT-sponsors, E15                                                                      |
+| FR-ADM-13 | Blog management                  | `blog`, `admin`                    | ADR-143 ph. 3   | Lab, to design                   | UT-blog-editor, IT-blog, DB-RLS-blog                                                  |
+| FR-ADM-14 | FAQ management                   | `faq`, `admin`                     | ADR-143 ph. 2   | Lab, to design                   | UT-faq-manager, IT-faq, DB-RLS-faq                                                    |
+| FR-ADM-15 | Careers management               | `careers`, `admin`                 | ADR-143 ph. 4   | Lab, to design                   | UT-jobs-manager, IT-careers, DB-RLS-careers                                           |
+| FR-ADM-16 | Content module switches          | `site-content`, `admin`            | ADR-143 ph. 1   | Overview card, design            | UT-module-switch, IT-module-switch, E-modules                                         |
 
 ### Cross-cutting and gated
 
@@ -125,7 +125,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT, DB-TRG-audit-form-crm       |
 | FR-SYS-07 | Seed data             | scripts             | S3-T13                                     | n/a                  | CI db job                             |
 | FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries      |
-| FR-SYS-09 | Legal pages           | `app`               | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
+| FR-SYS-09 | Legal pages           | `app`, `legal`      | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
 | FR-SYS-10 | Health and monitoring | `app/api`           | S1-T09, S9-T06                             | n/a                  | smoke                                 |
 | FR-PG-01  | PG and hostels        | TBD                 | Track X                                    | **Gap**              | TBD                                   |
 

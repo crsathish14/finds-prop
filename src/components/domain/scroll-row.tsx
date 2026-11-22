@@ -74,6 +74,25 @@ function ScrollRow({ title, description, as, id, label, children, className }: S
     return () => window.removeEventListener("resize", measure);
   }, [measure, cards.length]);
 
+  // The mouse wheel moves the row sideways while the pointer is over it and the row can still go that way;
+  // at an end the wheel goes on to the page. A listener of our own, because React wheel handlers are passive.
+  useEffect(() => {
+    const node = rail.current;
+    if (!node) return;
+    function onWheel(event: WheelEvent) {
+      if (!node || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const goingRight = event.deltaY > 0;
+      const room = goingRight
+        ? node.scrollLeft + node.clientWidth < node.scrollWidth - END_SLACK
+        : node.scrollLeft > END_SLACK;
+      if (!room) return;
+      event.preventDefault();
+      node.scrollLeft += event.deltaY;
+    }
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [cards.length]);
+
   function move(direction: -1 | 1) {
     const node = rail.current;
     if (!node) return;
@@ -118,7 +137,7 @@ function ScrollRow({ title, description, as, id, label, children, className }: S
         onScroll={measure}
         className={cn(
           "-mx-(--gutter) flex snap-x snap-proximity gap-4 overflow-x-auto px-gutter pt-1 pb-3",
-          "scroll-px-(--gutter) [scrollbar-width:thin]",
+          "scroll-px-(--gutter) [scrollbar-color:var(--color-primary)_var(--color-canvas-sunken)] [scrollbar-width:thin]",
         )}
       >
         {cards.map((card) => (

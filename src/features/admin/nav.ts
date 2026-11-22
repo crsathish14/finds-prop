@@ -123,6 +123,12 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
           label: translate("admin.nav.footer"),
           icon: "footer",
         },
+        {
+          key: "disclaimers",
+          href: "/admin/disclaimers",
+          label: translate("admin.nav.disclaimers"),
+          icon: "footer",
+        },
       ],
     },
   ];

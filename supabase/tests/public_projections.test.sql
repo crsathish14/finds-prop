@@ -37,7 +37,7 @@ from (values
     'nearby', 'rera_applicable', 'rera_number', 'description', 'specifications', 'amenities',
     'images', 'floor_plans', 'elevations', 'plot_images', 'videos', 'brochure_path', 'seo_title',
     'seo_description', 'featured', 'created_at', 'updated_at', 'offer_type', 'price', 'price_type',
-    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason'
+    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason', 'plot_status', 'villa_type'
   ]),
   ('project_units', array[
     'id', 'project_id', 'unit_number', 'floor_number', 'bhk', 'area_sqft', 'facing', 'price',

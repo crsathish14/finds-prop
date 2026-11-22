@@ -44,6 +44,10 @@ type ProjectFieldValues = {
   propertyType: string;
   /** "sale" or "rent"; "" for a residential project */
   offerType: string;
+  /** "investment" or "ready_to_build"; "" unless the property type is a plot */
+  plotStatus: string;
+  /** "duplex", "row_house" or "individual"; "" unless the property type is a villa */
+  villaType: string;
   projectStatus: string;
   price: string;
   priceType: string;
@@ -95,6 +99,8 @@ type ProjectFieldsWords = {
   projectType: string;
   propertyType: string;
   offerType: string;
+  plotStatus: string;
+  villaType: string;
   projectStatus: string;
   price: string;
   priceType: string;
@@ -138,11 +144,20 @@ type ProjectFieldsProps = {
     projectTypes: ProjectFieldOption[];
     propertyTypes: ProjectFieldOption[];
     offerTypes: ProjectFieldOption[];
+    plotStatuses: ProjectFieldOption[];
+    villaTypes: ProjectFieldOption[];
     priceTypes: ProjectFieldOption[];
     statuses: ProjectFieldOption[];
   };
   /** Which boxes apply to the kind of project chosen (the page works it out; the form hides the rest). */
-  applies: { offerType: boolean; bedrooms: boolean; area: boolean; possession: boolean };
+  applies: {
+    offerType: boolean;
+    plotStatus: boolean;
+    villaType: boolean;
+    bedrooms: boolean;
+    area: boolean;
+    possession: boolean;
+  };
   amenitySuggestions?: readonly string[];
   slugLocked?: boolean;
   media?: ReactNode;
@@ -248,6 +263,16 @@ function ProjectFields({
           {applies.offerType ? (
             <FormField label={words.offerType} required {...problem("offerType")}>
               <Select {...text("offerType")}>{choices(options.offerTypes)}</Select>
+            </FormField>
+          ) : null}
+          {applies.plotStatus ? (
+            <FormField label={words.plotStatus} required {...problem("plotStatus")}>
+              <Select {...text("plotStatus")}>{choices(options.plotStatuses)}</Select>
+            </FormField>
+          ) : null}
+          {applies.villaType ? (
+            <FormField label={words.villaType} required {...problem("villaType")}>
+              <Select {...text("villaType")}>{choices(options.villaTypes)}</Select>
             </FormField>
           ) : null}
           <FormField label={words.projectStatus} required {...problem("projectStatus")}>

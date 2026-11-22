@@ -73,10 +73,10 @@ describe("UT-sponsor-slot: which picture fits which slot (S7-T11, DEC-15)", () =
   });
 
   it("takes a near miss (it is shown whole on a plain background) and refuses a far one", () => {
-    // The strip's shape is 970 : 90. 1940 x 220 is about 20 % off: shown whole, not refused.
-    expect(slotFit(stripDesktop, info(1940, 220))).toBe("contain");
-    expect(slotProblem(stripDesktop, info(1940, 220), 10_000)).toBeNull();
-    expect(slotFit(stripDesktop, info(1940, 180))).toBe("cover");
+    // The strip's shape is 970 : 117. 1940 x 180 (the earlier shape) is about 30 % off: shown whole, not refused.
+    expect(slotFit(stripDesktop, info(1940, 180))).toBe("contain");
+    expect(slotProblem(stripDesktop, info(1940, 180), 10_000)).toBeNull();
+    expect(slotFit(stripDesktop, info(1940, 234))).toBe("cover");
     expect(slotFit(stripDesktop, info(1940, 400))).toBe("rejected");
     expect(slotProblem(stripDesktop, info(1940, 400), 10_000)).toBe("shape");
   });

@@ -65,14 +65,20 @@ describe("UT-header-form: the Header page (S7-T10)", () => {
     expect(screen.getByText("Leave the name empty to use Find Prop.")).toBeInTheDocument();
   });
 
-  it("shows the four tabs as links with Header as the current page", () => {
+  it("shows the five tabs as links with Header as the current page", () => {
     open();
     const nav = screen.getByRole("navigation", { name: "Site content" });
     expect(
       within(nav)
         .getAllByRole("link")
         .map((link) => link.getAttribute("href")),
-    ).toEqual(["/admin/header", "/admin/hero", "/admin/homepage", "/admin/footer"]);
+    ).toEqual([
+      "/admin/header",
+      "/admin/hero",
+      "/admin/homepage",
+      "/admin/footer",
+      "/admin/disclaimers",
+    ]);
     expect(within(nav).getByRole("link", { name: "Header" })).toHaveAttribute(
       "aria-current",
       "page",

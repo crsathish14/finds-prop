@@ -23,4 +23,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   sponsors: { ads: [] },
   // Every module is on until the admin switches it off (ADR-143); a module with no page built yet simply has nothing to show.
   content_modules: { blog: true, faq: true, careers: true },
+  // No disclaimer until the super admin writes one (ADR-152): nothing shows and no gap is left.
+  disclaimers: {},
 };

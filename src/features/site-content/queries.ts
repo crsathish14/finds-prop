@@ -100,6 +100,21 @@ export async function getFooterPage(): Promise<FooterPage> {
   return { initial: footerFormOf(settings.footer, standard), standard };
 }
 
+export interface DisclaimersPage {
+  initial: { footer: string; aiSearch: string };
+}
+
+/** What the Disclaimers page opens with: the saved texts, an empty box where none is saved (nothing shows then). */
+export async function getDisclaimersPage(): Promise<DisclaimersPage> {
+  const { settings } = await getSiteContent();
+  return {
+    initial: {
+      footer: settings.disclaimers.footer ?? "",
+      aiSearch: settings.disclaimers.aiSearch ?? "",
+    },
+  };
+}
+
 export interface HeroPage {
   initial: HeroFormValues;
   standard: StandardHero;

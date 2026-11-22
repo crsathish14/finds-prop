@@ -67,7 +67,7 @@ describe("UT-sponsor-hero-preview: the hero with the sponsor in it (S7-T11)", ()
 
   it("keeps the true shape of the strip and of the panel, on a desktop and on a phone", async () => {
     const { rerender } = render(<SponsorHeroPreview {...preview()} />);
-    expect(shape()).toHaveStyle({ aspectRatio: String(970 / 90) });
+    expect(shape()).toHaveStyle({ aspectRatio: String(970 / 117) });
     await userEvent.click(screen.getByRole("radio", { name: "Phone" }));
     expect(shape()).toHaveStyle({ aspectRatio: String(320 / 100) });
     rerender(<SponsorHeroPreview {...preview({ layout: "split" })} />);

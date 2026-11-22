@@ -2,7 +2,9 @@ import { textParagraphs } from "@/lib/text";
 import type {
   PriceType,
   ProjectData,
+  ProjectPlotStatus,
   ProjectPropertyType,
+  ProjectVillaType,
   ProjectStatus,
   ProjectUnit,
   TrendPoint,
@@ -60,6 +62,8 @@ export function areaRange(
 export type SpecItem =
   | { key: "price"; rupees: number; type: PriceType | null }
   | { key: "propertyType"; value: ProjectPropertyType }
+  | { key: "plotStatus"; value: ProjectPlotStatus }
+  | { key: "villaType"; value: ProjectVillaType }
   | { key: "configuration"; sizes: number[] }
   | { key: "area"; min: number; max: number }
   | { key: "status"; value: ProjectStatus }
@@ -74,6 +78,8 @@ type SpecSource = Pick<
   | "price"
   | "priceType"
   | "propertyType"
+  | "plotStatus"
+  | "villaType"
   | "areaMinSqft"
   | "areaMaxSqft"
   | "bhkOptions"
@@ -105,6 +111,11 @@ export function specItems(project: SpecSource): SpecItem[] {
   if (price) items.push({ key: "price", ...price });
   if (project.propertyType !== null)
     items.push({ key: "propertyType", value: project.propertyType });
+  // Only a plot has a plot status and only a villa a villa type, whatever else the row holds.
+  if (project.propertyType === "plot" && project.plotStatus !== null)
+    items.push({ key: "plotStatus", value: project.plotStatus });
+  if (project.propertyType === "villa" && project.villaType !== null)
+    items.push({ key: "villaType", value: project.villaType });
   const sizes = bhkSizes(project.bhkOptions);
   if (sizes.length > 0) items.push({ key: "configuration", sizes });
   const area = areaRange(project);

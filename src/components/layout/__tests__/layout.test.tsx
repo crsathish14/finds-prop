@@ -362,6 +362,23 @@ describe("SiteFooter", () => {
     expect(screen.getByRole("link", { name: "Privacy" })).toBeInTheDocument();
   });
 
+  it("shows the disclaimer as plain text above the legal line, and nothing when it is empty", () => {
+    const { rerender } = render(<Example />);
+    expect(document.querySelector("[data-slot='site-footer-disclaimer']")).toBeNull();
+    rerender(
+      <SiteFooter
+        logo={<Logo name="Find Prop" tone="on-dark" />}
+        navLabel="Footer"
+        columns={[]}
+        disclaimer={"Prices are <b>indicative</b>.\nCheck with the builder."}
+        legal={{ copyright: "2026 Find Prop" }}
+      />,
+    );
+    const note = document.querySelector("[data-slot='site-footer-disclaimer']");
+    expect(note?.textContent).toBe("Prices are <b>indicative</b>.\nCheck with the builder.");
+    expect(note?.querySelector("b")).toBeNull();
+  });
+
   it("opens an external link in a new tab safely", () => {
     render(<Example />);
     const link = screen.getByRole("link", { name: /Partner site/ });

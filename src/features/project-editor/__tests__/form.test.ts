@@ -35,6 +35,8 @@ const project: ProjectEditView = {
   projectType: "residential",
   propertyType: null,
   offerType: null,
+  plotStatus: null,
+  villaType: null,
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",
@@ -394,27 +396,69 @@ describe("UT-project-form-applies: which boxes the kind of project asks for (ADR
   it.each([
     [
       { projectType: "residential", propertyType: "apartment", projectStatus: "ready_to_move" },
-      { offerType: false, bedrooms: true, area: false, possession: false },
+      {
+        offerType: false,
+        plotStatus: false,
+        villaType: false,
+        bedrooms: true,
+        area: false,
+        possession: false,
+      },
     ],
     [
       { projectType: "residential", propertyType: "villa", projectStatus: "new_launch" },
-      { offerType: false, bedrooms: true, area: false, possession: true },
+      {
+        offerType: false,
+        plotStatus: false,
+        villaType: true,
+        bedrooms: true,
+        area: false,
+        possession: true,
+      },
     ],
     [
       { projectType: "residential", propertyType: "plot", projectStatus: "under_construction" },
-      { offerType: false, bedrooms: false, area: true, possession: true },
+      {
+        offerType: false,
+        plotStatus: true,
+        villaType: false,
+        bedrooms: false,
+        area: true,
+        possession: true,
+      },
     ],
     [
       { projectType: "commercial", propertyType: "office", projectStatus: "ready_to_move" },
-      { offerType: true, bedrooms: false, area: true, possession: false },
+      {
+        offerType: true,
+        plotStatus: false,
+        villaType: false,
+        bedrooms: false,
+        area: true,
+        possession: false,
+      },
     ],
     [
       { projectType: "commercial", propertyType: "villa", projectStatus: "new_launch" },
-      { offerType: true, bedrooms: false, area: true, possession: true },
+      {
+        offerType: true,
+        plotStatus: false,
+        villaType: true,
+        bedrooms: false,
+        area: true,
+        possession: true,
+      },
     ],
     [
       { projectType: "", propertyType: "", projectStatus: "" },
-      { offerType: false, bedrooms: false, area: false, possession: false },
+      {
+        offerType: false,
+        plotStatus: false,
+        villaType: false,
+        bedrooms: false,
+        area: false,
+        possession: false,
+      },
     ],
   ])("%j asks for %j", (chosen, expected) => {
     expect(appliesOf(complete(chosen))).toEqual(expected);
@@ -525,7 +569,7 @@ describe("UT-project-form-problems: what is missing before a save is sent (ADR-1
   });
 
   it("needs the area range for a plot and a commercial project, with the smallest not above the largest", () => {
-    const plot = { propertyType: "plot" };
+    const plot = { propertyType: "plot", plotStatus: "investment" };
     expect(found(plot)).toMatchObject({ areaMinSqft: "area", areaMaxSqft: "area" });
     expect(found({ ...plot, areaMinSqft: "2400", areaMaxSqft: "1200" })).toEqual({
       areaMaxSqft: "areaRange",
@@ -533,6 +577,30 @@ describe("UT-project-form-problems: what is missing before a save is sent (ADR-1
     expect(found({ ...plot, areaMinSqft: "1,200", areaMaxSqft: "1200" })).toEqual({});
     expect(found({ ...plot, areaMinSqft: "0", areaMaxSqft: "1200" }).areaMinSqft).toBe("area");
     expect(found().areaMinSqft).toBeUndefined();
+  });
+
+  it("needs the plot status for a plot and the villa type for a villa only (ADR-160)", () => {
+    expect(found({ propertyType: "plot" }).plotStatus).toBe("plotStatus");
+    expect(found({ propertyType: "plot", plotStatus: "investment" }).plotStatus).toBeUndefined();
+    expect(found({ propertyType: "villa" }).villaType).toBe("villaType");
+    expect(found({ propertyType: "villa", villaType: "duplex" }).villaType).toBeUndefined();
+    expect(found({ projectType: "commercial", propertyType: "villa" }).villaType).toBe("villaType");
+    expect(found().plotStatus).toBeUndefined();
+    expect(found().villaType).toBeUndefined();
+  });
+
+  it("clears the plot status and the villa type when the property type changes (ADR-160)", () => {
+    const base = complete({
+      propertyType: "plot",
+      plotStatus: "investment",
+      areaMinSqft: "1",
+      areaMaxSqft: "2",
+    });
+    expect(reconcile(base).plotStatus).toBe("investment");
+    expect(reconcile({ ...base, propertyType: "villa" }).plotStatus).toBe("");
+    const villa = complete({ propertyType: "villa", villaType: "duplex" });
+    expect(reconcile(villa).villaType).toBe("duplex");
+    expect(reconcile({ ...villa, propertyType: "apartment" }).villaType).toBe("");
   });
 
   it("needs the possession month while the project is still to be built, and not for a ready one", () => {

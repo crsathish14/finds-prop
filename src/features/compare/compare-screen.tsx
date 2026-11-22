@@ -26,7 +26,6 @@ const FURNISHING_WORDS = {
 const LABEL_WORDS = {
   featured: "domain.propertyCard.label.featured",
   prime: "domain.propertyCard.label.prime",
-  budget: "domain.propertyCard.label.budget",
 } as const;
 
 type CompareScreenProps = {
@@ -161,7 +160,7 @@ export function CompareScreen({
                                 : "domain.propertyCard.forRent",
                             )}
                           </Badge>
-                          {column.label === null ? null : (
+                          {column.label === null || column.label === "budget" ? null : (
                             <Badge tone={column.label}>
                               {translate(LABEL_WORDS[column.label])}
                             </Badge>

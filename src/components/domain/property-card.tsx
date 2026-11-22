@@ -70,7 +70,6 @@ type PropertyCardProps = {
 const LABEL_KEYS = {
   featured: "domain.propertyCard.label.featured",
   prime: "domain.propertyCard.label.prime",
-  budget: "domain.propertyCard.label.budget",
 } as const;
 
 const DEFAULT_SIZES = "(min-width: 1100px) 33vw, (min-width: 640px) 50vw, 100vw";
@@ -125,7 +124,7 @@ function PropertyCard({
                   : "domain.propertyCard.forRent",
               )}
             </Badge>
-            {property.label ? (
+            {property.label && property.label !== "budget" ? (
               <Badge tone={property.label}>{translate(LABEL_KEYS[property.label])}</Badge>
             ) : null}
           </div>
