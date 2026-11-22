@@ -66,7 +66,8 @@ from (values
   ('faqs', array[
     'id', 'category_id', 'question', 'answer', 'sort_order', 'status', 'deleted_at', 'created_at',
     'updated_at', 'search_vector'
-  ])
+  ]),
+  ('cities', array['key', 'name', 'state'])
 ) as expected (table_name, columns);
 
 -- 1. Every column anon can read, on every relation in the public schema
@@ -120,7 +121,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts', 'job_postings'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts', 'job_postings', 'cities'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped
@@ -142,7 +143,7 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('blog_body_text'), ('home_developers'), ('home_properties'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties'), ('sitemap_entries')$$,
+  $$values ('blog_body_text'), ('city_key'), ('home_developers'), ('home_properties'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties'), ('sitemap_entries')$$,
   'DB-RLS-column-grants: anon can run only the searches, the one-home and one-project reads, the homepage and sitemap reads, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
