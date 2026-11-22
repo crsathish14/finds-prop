@@ -877,7 +877,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "home_properties":
-{ Args: { "p_kind": string }; Returns: {
+{ Args: { "p_city"?: string,"p_kind": string }; Returns: {
               "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
             }[]
                            },

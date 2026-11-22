@@ -60,9 +60,9 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
 }));
 vi.mock("@/features/home", () => ({
   ExploreSection: () => <section data-testid="explore" />,
-  FeaturedSection: () => <section data-testid="featured" />,
+  CityFeaturedSection: () => <section data-testid="featured" />,
   NewLaunchesSection: () => <section data-testid="launches" />,
-  NewestSection: (props: { brandName: string }) => (
+  CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),
   BrowseSection: (props: { regionName?: string }) => (

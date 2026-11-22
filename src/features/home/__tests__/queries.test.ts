@@ -67,6 +67,20 @@ describe("UT-home-queries: the homes of the homepage", () => {
     expect(NEWEST_COUNT).toBe(8);
   });
 
+  it("keeps only the chosen city when one is given, for both sections", async () => {
+    rpc.mockResolvedValue({ data: [], error: null });
+    await getFeaturedHomes("coimbatore");
+    await getNewestHomes("coimbatore");
+    expect(rpc).toHaveBeenNthCalledWith(1, "home_properties", {
+      p_kind: "featured",
+      p_city: "coimbatore",
+    });
+    expect(rpc).toHaveBeenNthCalledWith(2, "home_properties", {
+      p_kind: "newest",
+      p_city: "coimbatore",
+    });
+  });
+
   it("tags the reads so approving a listing can refresh them, and keeps them for minutes", async () => {
     rpc.mockResolvedValue({ data: [], error: null });
     await getFeaturedHomes();

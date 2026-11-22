@@ -38,8 +38,11 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
  * public columns can come back (BR-90). A failed read is logged by its code only and gives no homes,
  * so the section is left out instead of the page failing. Rows that do not fit are skipped and counted.
  */
-async function readHomes(kind: HomeKind, section: string): Promise<ListingRow[]> {
-  const { data, error } = await createPublicSupabase().rpc("home_properties", { p_kind: kind });
+async function readHomes(kind: HomeKind, section: string, cityKey?: string): Promise<ListingRow[]> {
+  const { data, error } = await createPublicSupabase().rpc(
+    "home_properties",
+    cityKey ? { p_kind: kind, p_city: cityKey } : { p_kind: kind },
+  );
   if (error) {
     logger.error("homepage homes could not be read, the section is left out", {
       errorCode: error.code,
@@ -68,19 +71,19 @@ async function readHomes(kind: HomeKind, section: string): Promise<ListingRow[]>
 }
 
 /** The featured homes, newest first (the Featured label is the owner's to give: BR-92). */
-export async function getFeaturedHomes(): Promise<ListingRow[]> {
+export async function getFeaturedHomes(cityKey?: string): Promise<ListingRow[]> {
   "use cache";
   cacheTag(HOME_LISTINGS_TAG);
   cacheLife("minutes");
-  return readHomes("featured", "featured");
+  return readHomes("featured", "featured", cityKey);
 }
 
-/** The newest approved homes. */
-export async function getNewestHomes(): Promise<ListingRow[]> {
+/** The newest approved homes of a city (all cities without one). */
+export async function getNewestHomes(cityKey?: string): Promise<ListingRow[]> {
   "use cache";
   cacheTag(HOME_LISTINGS_TAG);
   cacheLife("minutes");
-  return readHomes("newest", "newest");
+  return readHomes("newest", "newest", cityKey);
 }
 
 /**
