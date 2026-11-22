@@ -6,6 +6,7 @@ const warn = vi.fn();
 const error = vi.fn();
 const from = vi.fn();
 const rpc = vi.fn();
+const listRpc = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
 vi.mock("next/navigation", () => ({
@@ -13,31 +14,13 @@ vi.mock("next/navigation", () => ({
     if (thrown instanceof Error && thrown.message === "NEXT_REDIRECT") throw thrown;
   },
 }));
+vi.mock("@/server/supabase/server", () => ({
+  createServerSupabase: async () => ({ rpc: listRpc }),
+}));
 vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from, rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getProject, getProjects, PROJECT_LIST_LIMIT, PROJECTS_TAG } = await import("../queries");
-
-type Result = { data: unknown; error: { code: string } | null; count?: number | null };
-
-/**
- * A query builder that remembers every call made on it and can be awaited, or ended with
- * `maybeSingle()`, like the one the Supabase client gives.
- */
-function builder(result: Result) {
-  const calls: { method: string; args: unknown[] }[] = [];
-  const query: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "limit"]) {
-    query[method] = (...args: unknown[]) => {
-      calls.push({ method, args });
-      return query;
-    };
-  }
-  query.maybeSingle = () => Promise.resolve(result);
-  query.then = (resolve: (value: Result) => unknown, reject: (reason: unknown) => unknown) =>
-    Promise.resolve(result).then(resolve, reject);
-  return { query, calls };
-}
 
 const listRow = (overrides: Record<string, unknown> = {}) => ({
   slug: "kadal-vista",
@@ -143,21 +126,21 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
+/** The list is read with the signed-in visitor's own session: `live_project_list()`, never a table. */
+const answer = (data: unknown, failure: { code: string } | null = null) =>
+  listRpc.mockResolvedValue({ data, error: failure });
+
 describe("UT-project-queries: the list of projects", () => {
-  it("reads the public columns as a visitor, featured first and then newest, with a limit", async () => {
-    const list = builder({ data: [listRow()], error: null });
-    from.mockReturnValue(list.query);
+  it("reads the live projects through the sign-in-only function, with a limit", async () => {
+    answer([listRow()]);
     const result = await getProjects();
-    expect(from).toHaveBeenCalledWith("projects");
-    const methods = list.calls.map((call) => call.method);
-    expect(methods).toEqual(["select", "order", "order", "limit"]);
-    expect(list.calls[0]?.args[0]).toContain("builders!inner(id, name)");
-    expect(list.calls[0]?.args[0]).not.toMatch(/moderation|form_id|published|rejection/);
-    expect(list.calls[1]?.args).toEqual(["featured", { ascending: false }]);
-    expect(list.calls[2]?.args).toEqual(["created_at", { ascending: false }]);
-    expect(list.calls[3]?.args).toEqual([PROJECT_LIST_LIMIT]);
-    expect(tag).toHaveBeenCalledWith(PROJECTS_TAG);
-    expect(life).toHaveBeenCalledWith("minutes");
+    expect(listRpc).toHaveBeenCalledTimes(1);
+    expect(listRpc).toHaveBeenCalledWith("live_project_list", { p_limit: PROJECT_LIST_LIMIT });
+    // Nothing shared between visitors: no cache tag, no cache life, no table, no anonymous client.
+    expect(tag).not.toHaveBeenCalled();
+    expect(life).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
     expect(result).toEqual({
       status: "ok",
       readAt: NOW.toISOString(),
@@ -180,31 +163,24 @@ describe("UT-project-queries: the list of projects", () => {
   });
 
   it("gives an empty list, not a failure, when there are no projects", async () => {
-    from.mockReturnValue(builder({ data: [], error: null }).query);
+    answer([]);
     expect(await getProjects()).toEqual({ status: "ok", projects: [], readAt: NOW.toISOString() });
   });
 
   it("has no cover for a project with no pictures", async () => {
-    from.mockReturnValue(builder({ data: [listRow({ images: [] })], error: null }).query);
+    answer([listRow({ images: [] })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]?.coverPath).toBeNull();
   });
 
   it("treats a status this site does not know as no status", async () => {
-    from.mockReturnValue(
-      builder({ data: [listRow({ project_status: "dreaming" })], error: null }).query,
-    );
+    answer([listRow({ project_status: "dreaming" })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]?.status).toBeNull();
   });
 
   it("treats a price type or a sale or rent choice this site does not know as none", async () => {
-    from.mockReturnValue(
-      builder({
-        data: [listRow({ price_type: "weekly", offer_type: "lease" })],
-        error: null,
-      }).query,
-    );
+    answer([listRow({ price_type: "weekly", offer_type: "lease" })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]).toMatchObject({
       price: 7_800_000,
@@ -214,9 +190,7 @@ describe("UT-project-queries: the list of projects", () => {
   });
 
   it("skips a row that does not fit and says how many, without the row", async () => {
-    from.mockReturnValue(
-      builder({ data: [listRow({ slug: "" }), listRow({ slug: "ok-one" })], error: null }).query,
-    );
+    answer([listRow({ slug: "" }), listRow({ slug: "ok-one" })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects.map((project) => project.slug)).toEqual([
       "ok-one",
@@ -225,13 +199,13 @@ describe("UT-project-queries: the list of projects", () => {
   });
 
   it("reports a failed read as failed, logging only the code", async () => {
-    from.mockReturnValue(builder({ data: null, error: { code: "PGRST301" } }).query);
+    answer(null, { code: "PGRST301" });
     expect(await getProjects()).toEqual({ status: "failed" });
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "PGRST301" });
   });
 
   it("lets a redirect or a prerender signal through instead of calling it a failure", async () => {
-    from.mockImplementation(() => {
+    listRpc.mockImplementation(() => {
       throw new Error("NEXT_REDIRECT");
     });
     await expect(getProjects()).rejects.toThrow("NEXT_REDIRECT");

@@ -3,13 +3,10 @@ import { parseSearchParams } from "../params";
 import { toSearchRpcArgs } from "../rpc-args";
 
 const rpc = vi.fn();
-const tag = vi.fn();
-const life = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 
-vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
-vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ rpc }) }));
+vi.mock("@/server/supabase/server", () => ({ createServerSupabase: async () => ({ rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getSearchResults } = await import("../results");
@@ -108,7 +105,7 @@ describe("UT-search-results: reading one page of results", () => {
     rpc.mockResolvedValue({ data: [home(), home({ short_id: "m4y8b3ce" })], error: null });
     const result = await getSearchResults(none);
     expect(rpc).toHaveBeenCalledWith("search_properties", { p_sort: "newest", p_limit: 12 });
-    expect(tag).toHaveBeenCalledWith("home-listings");
+    // The visitor's own session reads it, and nothing is shared between visitors.
     expect(result).toMatchObject({ status: "ok", total: 48 });
     expect(result.status === "ok" && result.homes).toHaveLength(2);
   });
