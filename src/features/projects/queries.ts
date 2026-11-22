@@ -4,19 +4,30 @@ import { unstable_rethrow } from "next/navigation";
 import { CACHE_TAGS, projectTag } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
+import { z } from "zod";
 import {
-  PROJECT_COLUMNS,
   PROJECT_LIST_COLUMNS,
   projectListRowSchema,
   projectRowSchema,
-  TREND_COLUMNS,
   trendRowSchema,
-  UNIT_COLUMNS,
   unitRowSchema,
   type ProjectListRow,
 } from "./schemas";
 import type { ProjectData, ProjectListItem, ProjectUnit, TrendPoint } from "./types";
-import { orderUnits, trendSeries, TREND_MONTHS, UNITS_SHOWN } from "./view";
+import { orderUnits, trendSeries } from "./view";
+
+/**
+ * What `public_project()` answers: the project with its builder, its first units, the counts and the
+ * latest months of the price trend, as one document. The units and the trend points are checked one by
+ * one below, so one that does not fit is skipped, not an error.
+ */
+const documentSchema = z.object({
+  project: z.unknown(),
+  units: z.array(z.unknown()),
+  unit_count: z.number().int().nonnegative(),
+  available_count: z.number().int().nonnegative(),
+  trend: z.array(z.unknown()),
+});
 
 /** The cache tag the admin actions refresh when a project is approved, published or changed. */
 export const PROJECTS_TAG = CACHE_TAGS.projects;
@@ -103,7 +114,8 @@ export async function getProjects(): Promise<ProjectList> {
 }
 
 /**
- * Reads one project by its slug, as an anonymous visitor, with its first units, the number of units
+ * Reads one project by its slug through `public_project()`, as an anonymous visitor (the function answers
+ * one project or nothing, never a list), with its first units, the number of units
  * and of those available, and the latest months of its price trend. No project is `missing`, which
  * covers one that was never listed, one waiting for review, one not published and one whose builder
  * is not active. Anything else that goes wrong throws (and so is never cached): a failed read must not
@@ -117,53 +129,30 @@ export async function getProject(slug: string): Promise<ProjectResult> {
   const client = createPublicSupabase();
   const readAt = new Date().toISOString();
 
-  const found = await client
-    .from("projects")
-    .select(PROJECT_COLUMNS)
-    .eq("slug", slug)
-    .maybeSingle();
+  const found = await client.rpc("public_project", { p_slug: slug });
   if (found.error) {
     logger.error("project could not be read", { errorCode: found.error.code });
     throw new Error("project could not be read");
   }
   if (found.data === null) return { status: "missing", readAt };
-  const parsed = projectRowSchema.safeParse(found.data);
+  const document = documentSchema.safeParse(found.data);
+  if (!document.success) {
+    logger.error("project row does not fit the expected shape", {});
+    throw new Error("project row does not fit the expected shape");
+  }
+  const parsed = projectRowSchema.safeParse(document.data.project);
   if (!parsed.success) {
     logger.error("project row does not fit the expected shape", {});
     throw new Error("project row does not fit the expected shape");
   }
   const row = parsed.data;
-
-  const [units, available, trend] = await Promise.all([
-    client
-      .from("project_units")
-      .select(UNIT_COLUMNS, { count: "exact" })
-      .eq("project_id", row.id)
-      .order("floor_number", { ascending: true, nullsFirst: false })
-      .order("unit_number", { ascending: true })
-      .limit(UNITS_SHOWN),
-    client
-      .from("project_units")
-      .select("id", { count: "exact", head: true })
-      .eq("project_id", row.id)
-      .eq("status", "available"),
-    client
-      .from("project_price_trends")
-      .select(TREND_COLUMNS)
-      .eq("project_id", row.id)
-      .order("month", { ascending: false })
-      .limit(TREND_MONTHS),
-  ]);
-  if (units.error || available.error || trend.error) {
-    logger.error("project units or price trend could not be read", {
-      errorCode: units.error?.code ?? available.error?.code ?? trend.error?.code ?? "",
-    });
-    throw new Error("project units or price trend could not be read");
-  }
+  const units = { data: document.data.units, count: document.data.unit_count };
+  const available = { count: document.data.available_count };
+  const trend = { data: document.data.trend };
 
   const unitRows: ProjectUnit[] = [];
   let skipped = 0;
-  for (const item of units.data ?? []) {
+  for (const item of units.data) {
     const unit = unitRowSchema.safeParse(item);
     if (!unit.success) {
       skipped += 1;
@@ -181,7 +170,7 @@ export async function getProject(slug: string): Promise<ProjectResult> {
     });
   }
   const points: TrendPoint[] = [];
-  for (const item of trend.data ?? []) {
+  for (const item of trend.data) {
     const point = trendRowSchema.safeParse(item);
     if (!point.success) {
       skipped += 1;
@@ -233,8 +222,8 @@ export async function getProject(slug: string): Promise<ProjectResult> {
       seoDescription: row.seo_description,
       featured: row.featured,
       units: orderUnits(unitRows),
-      unitCount: units.count ?? unitRows.length,
-      availableCount: available.count ?? 0,
+      unitCount: units.count,
+      availableCount: available.count,
       trend: trendSeries(points),
     },
     readAt,

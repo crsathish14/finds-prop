@@ -50,25 +50,20 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("UT-home-queries: the homes of the homepage", () => {
-  it("reads the featured homes through the search function, newest first, six of them", async () => {
+  it("reads the featured homes through the home function, which fixes the size at six", async () => {
     rpc.mockResolvedValue({ data: [home()], error: null });
     const homes = await getFeaturedHomes();
-    expect(rpc).toHaveBeenCalledWith("search_properties", {
-      p_label: "featured",
-      p_sort: "newest",
-      p_limit: FEATURED_COUNT,
-    });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("home_properties", { p_kind: "featured" });
     expect(FEATURED_COUNT).toBe(6);
     expect(homes).toHaveLength(1);
   });
 
-  it("reads the eight newest homes with no label filter", async () => {
+  it("reads the newest homes through the home function, which fixes the size at eight", async () => {
     rpc.mockResolvedValue({ data: [], error: null });
     await getNewestHomes();
-    expect(rpc).toHaveBeenCalledWith("search_properties", {
-      p_sort: "newest",
-      p_limit: NEWEST_COUNT,
-    });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("home_properties", { p_kind: "newest" });
     expect(NEWEST_COUNT).toBe(8);
   });
 
@@ -115,22 +110,6 @@ describe("UT-home-queries: the homes of the homepage", () => {
   });
 });
 
-/** A stand-in for the query builder: every step returns itself and awaiting it gives the result. */
-function builder(result: unknown) {
-  const steps: Record<string, unknown> = {};
-  const self = new Proxy(steps, {
-    get(_target, property) {
-      if (property === "then") return (resolve: (value: unknown) => void) => resolve(result);
-      return (...args: unknown[]) => {
-        calls.push([String(property), args]);
-        return self;
-      };
-    },
-  });
-  return self;
-}
-let calls: [string, unknown[]][] = [];
-
 const project = (builderId: string, slug: string, overrides: Record<string, unknown> = {}) => ({
   slug,
   name: slug.toUpperCase(),
@@ -141,84 +120,54 @@ const project = (builderId: string, slug: string, overrides: Record<string, unkn
 });
 
 describe("UT-home-new-launches: the developers of the homepage", () => {
-  beforeEach(() => {
-    calls = [];
-  });
-
-  it("ranks the builders, then reads the first two projects of each of the first three", async () => {
-    from
-      .mockReturnValueOnce(
-        builder({
-          data: [
-            { builder_id: "b1" },
-            { builder_id: "b2" },
-            { builder_id: "b1" },
-            { builder_id: "b3" },
-            { builder_id: "b4" },
-          ],
-          error: null,
-        }),
-      )
-      .mockReturnValueOnce(
-        builder({ data: [project("b1", "p1"), project("b1", "p2")], error: null }),
-      )
-      .mockReturnValueOnce(builder({ data: [project("b2", "p3")], error: null }))
-      .mockReturnValueOnce(builder({ data: [project("b3", "p4")], error: null }));
+  it("reads once, ranks the builders, then gives the first two projects of each of the first three", async () => {
+    rpc.mockResolvedValue({
+      data: [
+        project("b1", "p1"),
+        project("b2", "p3"),
+        project("b1", "p2"),
+        project("b3", "p4"),
+        project("b4", "p5"),
+        project("b1", "p6"),
+      ],
+      error: null,
+    });
     const developers = await getNewLaunchDevelopers();
-    expect(from).toHaveBeenCalledTimes(4);
-    expect(from).toHaveBeenCalledWith("projects");
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("home_developers");
     expect(developers.map((developer) => [developer.builderId, developer.projectCount])).toEqual([
-      ["b1", 2],
+      ["b1", 3],
       ["b2", 1],
       ["b3", 1],
     ]);
-    expect(developers[0]?.projects).toHaveLength(2);
+    expect(developers[0]?.projects.map((entry) => entry.slug)).toEqual(["p1", "p2"]);
     expect(tag).toHaveBeenCalledWith(HOME_PROJECTS_TAG);
   });
 
-  it("asks for featured projects first, then the newest, and only two of each builder", async () => {
-    from
-      .mockReturnValueOnce(builder({ data: [{ builder_id: "b1" }], error: null }))
-      .mockReturnValueOnce(builder({ data: [project("b1", "p1")], error: null }));
+  it("reads through the function only, never a table", async () => {
+    rpc.mockResolvedValue({ data: [project("b1", "p1")], error: null });
     await getNewLaunchDevelopers();
-    const names = calls.map(([name]) => name);
-    expect(names).toContain("eq");
-    expect(calls.filter(([name]) => name === "order").map(([, args]) => args[0])).toEqual([
-      "featured",
-      "created_at",
-      "featured",
-      "created_at",
-    ]);
-    expect(calls.filter(([name]) => name === "limit").map(([, args]) => args[0])).toEqual([
-      1000, 2,
-    ]);
+    expect(from).not.toHaveBeenCalled();
   });
 
-  it("leaves out a developer whose read fails, and keeps the others", async () => {
-    from
-      .mockReturnValueOnce(
-        builder({ data: [{ builder_id: "b1" }, { builder_id: "b2" }], error: null }),
-      )
-      .mockReturnValueOnce(
-        builder({ data: null, error: { code: "42501", message: "private detail" } }),
-      )
-      .mockReturnValueOnce(builder({ data: [project("b2", "p2")], error: null }));
+  it("leaves out a developer whose projects do not fit, and keeps the others", async () => {
+    rpc.mockResolvedValue({
+      data: [project("b1", "p1", { name: "" }), project("b2", "p2")],
+      error: null,
+    });
     const developers = await getNewLaunchDevelopers();
     expect(developers.map((developer) => developer.builderId)).toEqual(["b2"]);
-    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "42501" });
+  });
+
+  it("leaves the section out and logs only the error code when the read fails", async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: "57P01", message: "private detail" } });
+    expect(await getNewLaunchDevelopers()).toEqual([]);
+    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "57P01" });
     expect(JSON.stringify(error.mock.calls)).not.toContain("private detail");
   });
 
-  it("leaves the section out when the ranking read fails", async () => {
-    from.mockReturnValueOnce(builder({ data: null, error: { code: "57P01", message: "x" } }));
-    expect(await getNewLaunchDevelopers()).toEqual([]);
-    expect(from).toHaveBeenCalledTimes(1);
-    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "57P01" });
-  });
-
   it("gives nothing when there are no public projects", async () => {
-    from.mockReturnValueOnce(builder({ data: [], error: null }));
+    rpc.mockResolvedValue({ data: [], error: null });
     expect(await getNewLaunchDevelopers()).toEqual([]);
-    expect(from).toHaveBeenCalledTimes(1);
   });
 });
