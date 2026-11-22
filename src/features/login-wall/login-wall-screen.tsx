@@ -21,7 +21,7 @@ type LoginWallScreenProps = {
  * What a visitor who is not signed in sees in place of the list of homes, the list of projects or the
  * comparison (login wall, ADR-171): made-up cards, blurred and hidden from assistive technology, with a message
  * and the phone sign-in itself, number and code, inside the card: nothing navigates, and after the code the
- * page refreshes in place, on the same address with the same filters, and draws the real list. It fetches nothing, and the made-up
+ * page refreshes in place, on the same address with the same filters, and draws the real list. The card is sticky below the header and above the phone bar, so it stays in view while only the made-up cards scroll behind it, and it leaves with them before the footer; where the screen is too short (a phone with the keyboard open) it scrolls inside itself. It fetches nothing, and the made-up
  * cards come from a module that imports nothing from the server, so nothing real can leak through it.
  */
 export function LoginWallScreen({ kind, siteKey }: LoginWallScreenProps) {
@@ -70,29 +70,36 @@ export function LoginWallScreen({ kind, siteKey }: LoginWallScreenProps) {
         ));
 
   return (
-    <Container className="relative py-6 md:py-8">
-      <div
-        inert
-        aria-hidden="true"
-        data-slot="login-wall-mock"
-        className="pointer-events-none select-none blur-md"
-      >
-        <SectionGrid variant="cards">{cards}</SectionGrid>
-      </div>
-      <div className="absolute inset-x-0 top-12 px-gutter">
-        <section
-          aria-labelledby="login-wall-title"
-          data-slot="login-wall-panel"
-          className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-md border border-line bg-surface p-6 text-center"
+    <Container className="py-6 md:py-8">
+      {/* One grid cell holds both layers, so the card's sticky range is the height of the made-up cards: it stays in view
+          while they scroll, and leaves with them before the footer. */}
+      <div className="grid" data-slot="login-wall-stage">
+        <div
+          inert
+          aria-hidden="true"
+          data-slot="login-wall-mock"
+          className="pointer-events-none col-start-1 row-start-1 select-none blur-md"
         >
-          <Heading as="h1" size="2" id="login-wall-title" tabIndex={-1}>
-            {translate("title")}
-          </Heading>
-          <Text tone="muted">{translate("body")}</Text>
-          <div className="w-full text-left" data-slot="login-wall-sign-in">
-            <InlinePhoneSignIn siteKey={siteKey} />
-          </div>
-        </section>
+          <SectionGrid variant="cards">{cards}</SectionGrid>
+        </div>
+        <div
+          data-slot="login-wall-sticky"
+          className="sticky top-(--wall-card-top) col-start-1 row-start-1 mt-4 self-start md:mt-10"
+        >
+          <section
+            aria-labelledby="login-wall-title"
+            data-slot="login-wall-panel"
+            className="mx-auto flex max-h-(--wall-card-max-h) max-w-md flex-col items-center gap-4 overflow-y-auto overscroll-contain rounded-md border border-line bg-surface p-6 text-center"
+          >
+            <Heading as="h1" size="2" id="login-wall-title" tabIndex={-1}>
+              {translate("title")}
+            </Heading>
+            <Text tone="muted">{translate("body")}</Text>
+            <div className="w-full text-left" data-slot="login-wall-sign-in">
+              <InlinePhoneSignIn siteKey={siteKey} />
+            </div>
+          </section>
+        </div>
       </div>
     </Container>
   );
