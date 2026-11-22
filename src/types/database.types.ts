@@ -85,6 +85,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"builder_feedback": {
+                  Row: {
+                    "builder_id": string,"created_at": string,"id": string,"message": string,"reviewed_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "builder_id": string,"created_at"?: string,"id"?: string,"message": string,"reviewed_at"?: string | null
+                  }
+                  Update: {
+                    "builder_id"?: string,"created_at"?: string,"id"?: string,"message"?: string,"reviewed_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "builder_feedback_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"builders": {
                   Row: {
                     "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"kind": string,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
@@ -595,6 +615,16 @@ isOneToOne: false
               "active": boolean,"base_url": string,"body_mapping": Json,"created_at": string,"endpoint": string,"forms": number,"has_access_token": boolean,"has_api_key": boolean,"has_api_secret": boolean,"headers": Json,"id": string,"lead_id_path": string,"lead_source": string,"method": string,"name": string,"project_codes": Json,"updated_at": string
             }[]
                            },
+"admin_feedback_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "not_reviewed": number,"total": number
+            }[]
+                           },
+"admin_feedback_list":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_state"?: string }; Returns: {
+              "builder_id": string,"builder_kind": string,"builder_name": string,"created_at": string,"id": string,"message": string,"reviewed_at": string,"total_count": number
+            }[]
+                           },
 "admin_forms":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,
@@ -739,6 +769,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_set_feedback_reviewed":
+{ Args: { "p_id": string,"p_reviewed": boolean }; Returns: boolean
+                           },
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -1057,6 +1090,9 @@ isOneToOne: false
                            },
 "storage_project_path_ok":
 { Args: { "object_name": string }; Returns: boolean
+                           },
+"submit_builder_feedback":
+{ Args: { "p_message": string }; Returns: string
                            },
 "submit_enquiry":
 { Args: { "p_email"?: string,"p_message"?: string,"p_name": string,"p_phone": string,"p_short_id": string,"p_user_id": string }; Returns: string

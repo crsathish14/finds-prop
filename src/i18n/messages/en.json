@@ -1479,6 +1479,7 @@
       "leads": "Leads",
       "forms": "Forms",
       "crm": "CRM",
+      "feedback": "Feedback",
       "content": "Content",
       "blog": "Blog",
       "faq": "FAQ",
@@ -1981,6 +1982,45 @@
         "minutes": "{count, plural, one {# minute} other {# minutes}}",
         "hours": "{count, plural, one {# hour} other {# hours}}",
         "days": "{count, plural, one {# day} other {# days}}"
+      }
+    },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Messages from builders and agents. Mark each one reviewed when you have read it.",
+      "filterLabel": "Filter feedback",
+      "filter": {
+        "open": "Not reviewed ({count})",
+        "reviewed": "Reviewed ({count})",
+        "all": "All ({count})"
+      },
+      "role": {
+        "builder": "Builder",
+        "agent": "Agent"
+      },
+      "state": {
+        "open": "Not reviewed",
+        "reviewed": "Reviewed"
+      },
+      "markReviewed": "Mark as reviewed",
+      "markNotReviewed": "Mark as not reviewed",
+      "toast": {
+        "reviewed": "Marked as reviewed.",
+        "unreviewed": "Marked as not reviewed."
+      },
+      "empty": {
+        "open": {
+          "title": "Nothing waiting",
+          "description": "Every message has been reviewed."
+        },
+        "reviewed": {
+          "title": "No reviewed messages yet",
+          "description": "Messages you mark as reviewed appear here."
+        },
+        "all": {
+          "title": "No feedback yet",
+          "description": "When a builder or an agent sends feedback, it appears here."
+        }
       }
     },
     "projects": {
@@ -3574,6 +3614,7 @@
       "units": "Units",
       "leads": "Leads",
       "insights": "Insights",
+      "feedback": "Feedback",
       "profile": "Profile"
     },
     "projects": {
@@ -3648,6 +3689,21 @@
       },
       "toast": {
         "title": "Profile saved"
+      }
+    },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Tell us what works and what does not. Your message goes to the findsprop team.",
+      "formTitle": "Send a message",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Write your feedback here",
+      "counter": "{count} / {maximum}",
+      "send": "Send feedback",
+      "sending": "Sending",
+      "note": "We read every message but may not reply to each one.",
+      "toast": {
+        "title": "Thank you. Your feedback was sent."
       }
     },
     "insights": {

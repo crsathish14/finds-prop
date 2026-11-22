@@ -38,6 +38,7 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "/admin/leads",
       "/admin/forms",
       "/admin/crm",
+      "/admin/feedback",
       "/admin/blog",
       "/admin/faq",
       "/admin/careers",
@@ -57,6 +58,13 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
     expect(
       items.filter((item) => item.count !== undefined).map((item) => [item.key, item.count]),
     ).toEqual([["listings", 14]]);
+  });
+
+  it("shows the number of feedback messages not reviewed beside Feedback", () => {
+    const items = buildAdminNav(translate, 0, 3).flatMap((group) => group.items);
+    expect(
+      items.filter((item) => item.count !== undefined).map((item) => [item.key, item.count]),
+    ).toEqual([["feedback", 3]]);
   });
 
   it("shows no number when nothing is pending", () => {

@@ -14,6 +14,7 @@ import {
   CircleQuestionMark,
   LayoutDashboard,
   ListChecks,
+  MessageSquareText,
   Newspaper,
   PanelBottom,
   PanelTop,
@@ -45,6 +46,7 @@ const ICONS: Record<AdminIconName, LucideIcon> = {
   careers: BriefcaseBusiness,
   insights: ChartColumn,
   profile: UserRound,
+  feedback: MessageSquareText,
 };
 
 type AdminShellProps = {
