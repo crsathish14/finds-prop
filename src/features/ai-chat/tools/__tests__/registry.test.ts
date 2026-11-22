@@ -621,8 +621,9 @@ describe("UT-ai-tools-registry: no tool takes a person as input (ADR-128 section
     ]);
   });
 
-  it("gives a tool nothing that names a person when it runs: only the words and the language", () => {
-    expect(Object.keys(TOOL_CONTEXT).sort()).toEqual(["locale", "translate"]);
+  it("gives a tool nothing that names a person when it runs: only the words, the language and whether they are signed in", () => {
+    // `signedIn` is one yes or no (login wall, ADR-171), not a person.
+    expect(Object.keys(TOOL_CONTEXT).sort()).toEqual(["locale", "signedIn", "translate"]);
   });
 });
 

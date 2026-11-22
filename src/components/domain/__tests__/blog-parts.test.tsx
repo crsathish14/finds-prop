@@ -69,6 +69,68 @@ describe("BlogBlocks: the body of an article (ADR-144)", () => {
     expect(screen.getByText("<img src=x onerror=alert(1)>")).toBeInTheDocument();
   });
 
+  it("draws an https link as a safe anchor that opens in a new tab and says so", () => {
+    renderWithMessages(
+      <BlogBlocks
+        imageUrl={imageUrl}
+        blocks={[
+          {
+            type: "paragraph",
+            text: "Read [the RERA site](https://rera.example.test/a?b=1) first.",
+          },
+        ]}
+      />,
+    );
+    const anchor = screen.getByRole("link", { name: /the RERA site/ });
+    expect(anchor).toHaveAttribute("href", "https://rera.example.test/a?b=1");
+    expect(anchor).toHaveAttribute("target", "_blank");
+    expect(anchor).toHaveAttribute("rel", "noopener noreferrer nofollow ugc");
+    expect(anchor).toHaveTextContent("the RERA site (opens in a new tab)");
+    expect(screen.getByText(/Read/).textContent).toContain("first.");
+  });
+
+  it("draws a path of the site as the site's own link, in the same tab, in a list item and a quote too", () => {
+    renderWithMessages(
+      <BlogBlocks
+        imageUrl={imageUrl}
+        blocks={[
+          { type: "list", ordered: false, items: ["See [all homes](/properties)"] },
+          { type: "quote", text: "Start at [the blog](/blog)." },
+        ]}
+      />,
+    );
+    for (const [name, href] of [
+      ["all homes", "/properties"],
+      ["the blog", "/blog"],
+    ] as const) {
+      const anchor = screen.getByRole("link", { name });
+      expect(anchor).toHaveAttribute("href", href);
+      expect(anchor).not.toHaveAttribute("target");
+      expect(anchor).not.toHaveAttribute("rel", expect.stringContaining("nofollow"));
+    }
+  });
+
+  it("keeps a refused address, a heading's link-shaped text and a credit as plain text", () => {
+    const { container } = renderWithMessages(
+      <BlogBlocks
+        imageUrl={imageUrl}
+        blocks={[
+          { type: "heading", level: 2, text: "[Heading](https://example.test)" },
+          {
+            type: "paragraph",
+            text: "[a](javascript:alert(1)) [b](http://example.test) [c](//evil.test) [d](below)",
+          },
+          { type: "quote", text: "Words.", cite: "[Name](https://example.test)" },
+        ]}
+      />,
+    );
+    expect(container.querySelector("a")).toBeNull();
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+      "[Heading](https://example.test)",
+    );
+    expect(screen.getByText(/javascript:alert\(1\)/)).toBeInTheDocument();
+  });
+
   it("leaves out a block of a kind it does not know, and draws nothing for an empty body", () => {
     const { container } = renderWithMessages(
       <BlogBlocks

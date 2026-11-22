@@ -55,7 +55,8 @@
       "visible": {
         "cards": ["home:k3x9a2bd"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-02",
@@ -111,7 +112,8 @@
       "visible": {
         "cards": ["home:p6a2d5ek"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-03",
@@ -165,7 +167,8 @@
       "visible": {
         "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-04",
@@ -221,7 +224,8 @@
       "visible": {
         "cards": ["home:n5z7c4dh"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-05",
@@ -275,7 +279,8 @@
       "visible": {
         "cards": ["home:t2e6h9jq"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-06",
@@ -329,7 +334,8 @@
       "visible": {
         "cards": ["home:u3f7j2kr"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-07",
@@ -379,7 +385,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-08",
@@ -484,7 +491,8 @@
       "visible": {
         "cards": ["home:k3x9a2bd"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-10",
@@ -534,7 +542,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-11",
@@ -582,7 +591,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-12",
@@ -631,7 +641,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-13",
@@ -685,7 +696,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-14",
@@ -735,7 +747,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-15",
@@ -785,7 +798,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-property-01",
@@ -1502,7 +1516,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-builder-04",
@@ -1688,7 +1703,8 @@
       "visible": {
         "cards": ["project:velan-gardens"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-02",
@@ -1800,7 +1816,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-04",
@@ -1844,7 +1861,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-05",
@@ -1994,7 +2012,8 @@
         "mustNotCall": [],
         "none": false
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-emi-01",
@@ -2411,7 +2430,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-followup-02",
@@ -2470,7 +2490,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-propose-01",
@@ -2803,7 +2824,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-near-04",
@@ -3255,7 +3277,8 @@
         "mustNotMatch": ["https?:", "/properties/"],
         "mustNotContain": ["[[home:"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-cards-02",
@@ -3318,7 +3341,8 @@
         "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-compare-selected-01",
@@ -3465,7 +3489,8 @@
         "mustContain": [["further out", "farther"]]
       },
       "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-place-02",
@@ -3525,7 +3550,8 @@
         "mustContain": [["no homes within", "none within"]]
       },
       "modelNeverSaw": ["13.1167", "80.2564", "fake-vyasarpadi", "Vyasarpadi"]
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-place-03",
@@ -3591,7 +3617,8 @@
         "showsCards": ["home:k3x9a2bd", "home:x6j2n5pu"]
       },
       "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-place-04",
@@ -3899,7 +3926,8 @@
         "showsCards": ["home:v4g8k3ls"],
         "mustContain": [["further out", "farther"]]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-place-10",
@@ -3951,7 +3979,8 @@
       "visible": {
         "showsCards": ["home:k3x9a2bd"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-sitelink-01",
@@ -4617,7 +4646,8 @@
         "sources": ["/blog/stamp-duty-and-registration-charges"],
         "showsSources": ["/blog/stamp-duty-and-registration-charges"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-content-07",

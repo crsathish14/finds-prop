@@ -2,35 +2,12 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 import { PROJECT_STATUSES, PROJECTS_TAG, type ProjectStatus } from "@/features/projects";
-import { LISTINGS_TAG } from "@/features/search";
 import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import { createServerSupabase } from "@/server/supabase/server";
-import {
-  BUILDER_COLUMNS,
-  BUILDER_DIRECTORY_COLUMNS,
-  BUILDER_FIRST_PROJECT_COLUMNS,
-  BUILDER_PROJECT_COLUMNS,
-  LOCALITY_HOME_COLUMNS,
-  LOCALITY_PROJECT_COLUMNS,
-} from "./columns";
+import { BUILDER_COLUMNS, BUILDER_DIRECTORY_COLUMNS } from "./columns";
 import { countLocalities, type LocalityCount } from "./localities";
-
-/** PostgREST answers at most this many rows at a time (`max_rows` in the project), so the reads page. */
-const PAGE_SIZE = 1000;
-
-/**
- * The most homes and projects whose locality is counted. Above this the counts stop growing and the result
- * says it is not complete. Ten pages of names is the size the search was measured at (S4-SPK-01); a count in
- * the database would need a migration, which this read avoids.
- */
-const HOMES_COUNTED_MAX = 10_000;
-const PROJECTS_COUNTED_MAX = 1000;
-
-const rowSchema = z.object({ locality: z.string().nullable() });
-
-type Page = { data: unknown; error: { code: string } | null };
 
 /** The localities visitors can find something in, and how true the counts are. */
 export type LocalityCounts = {
@@ -38,74 +15,40 @@ export type LocalityCounts = {
   localities: LocalityCount[];
   /** False when there were more homes or projects than the read counts: the counts are then "at least". */
   complete: boolean;
-  /** When the database was read (an ISO date and time). The list is cached for minutes after that. */
+  /** When the database was read (an ISO date and time). */
   readAt: string;
 };
 
-/** Every locality name the pages give, read a page at a time up to `limit` rows. */
-async function readNames(
-  readPage: (from: number, to: number) => PromiseLike<Page>,
-  limit: number,
-  source: "homes" | "projects",
-): Promise<{ names: string[]; complete: boolean }> {
-  const names: string[] = [];
-  for (let from = 0; from < limit; from += PAGE_SIZE) {
-    const to = Math.min(from + PAGE_SIZE, limit) - 1;
-    const { data, error } = await readPage(from, to);
-    if (error) {
-      logger.error("localities could not be read", { errorCode: error.code, source });
-      throw new Error("localities could not be read");
-    }
-    const rows = z.array(rowSchema).safeParse(data);
-    if (!rows.success) {
-      logger.error("locality rows do not fit the expected shape", { source });
-      throw new Error("locality rows do not fit the expected shape");
-    }
-    for (const row of rows.data) {
-      if (row.locality !== null) names.push(row.locality);
-    }
-    if (rows.data.length < to - from + 1) return { names, complete: true };
-  }
-  return { names, complete: false };
-}
+/** What `live_locality_names()` answers: the locality names, and whether each read stopped at its cap. */
+const localityDocumentSchema = z.object({
+  homes: z.array(z.string()),
+  homes_complete: z.boolean(),
+  projects: z.array(z.string()),
+  projects_complete: z.boolean(),
+});
 
 /**
  * The localities of every approved home and every live project of an active builder, with how many of each,
- * for the assistant's `list_localities` tool (ADR-128 section 5.1). Read as an anonymous visitor, so the
- * database's own rules decide what exists (BR-90, BR-94), and only the locality is asked for: never an
- * address, a point or an owner. A failed or malformed read throws, so it is never cached. Cached for minutes
- * under the homes tag and the projects tag, so an approval, a sale or a builder change refreshes it.
+ * for the assistant's `list_localities` tool (ADR-128 section 5.1). Read through `live_locality_names()`, which
+ * only a signed-in customer may run (login wall, ADR-171), with the customer's own session and so no shared cache:
+ * the function gives only the locality of approved homes and live projects (BR-90, BR-94), never an address, a
+ * point or an owner. A failed or malformed read throws. The names are counted here; above the caps (10,000 homes,
+ * 1,000 projects) the counts stop growing and the result says it is not complete.
  */
 export async function getLocalityCounts(): Promise<LocalityCounts> {
-  "use cache";
-  cacheTag(LISTINGS_TAG, PROJECTS_TAG);
-  cacheLife("minutes");
-  const client = createPublicSupabase();
-  const [homes, projects] = await Promise.all([
-    readNames(
-      (from, to) =>
-        client
-          .from("properties")
-          .select(LOCALITY_HOME_COLUMNS)
-          .order("short_id", { ascending: true })
-          .range(from, to),
-      HOMES_COUNTED_MAX,
-      "homes",
-    ),
-    readNames(
-      (from, to) =>
-        client
-          .from("projects")
-          .select(LOCALITY_PROJECT_COLUMNS)
-          .order("slug", { ascending: true })
-          .range(from, to),
-      PROJECTS_COUNTED_MAX,
-      "projects",
-    ),
-  ]);
+  const { data, error } = await (await createServerSupabase()).rpc("live_locality_names");
+  if (error) {
+    logger.error("localities could not be read", { errorCode: error.code });
+    throw new Error("localities could not be read");
+  }
+  const document = localityDocumentSchema.safeParse(data);
+  if (!document.success) {
+    logger.error("locality rows do not fit the expected shape", {});
+    throw new Error("locality rows do not fit the expected shape");
+  }
   return {
-    localities: countLocalities(homes.names, projects.names),
-    complete: homes.complete && projects.complete,
+    localities: countLocalities(document.data.homes, document.data.projects),
+    complete: document.data.homes_complete && document.data.projects_complete,
     readAt: new Date().toISOString(),
   };
 }
@@ -167,8 +110,6 @@ const builderProjectRowSchema = z.object({
   created_at: z.string().min(1),
 });
 
-const firstProjectRowSchema = z.object({ created_at: z.string().min(1) });
-
 /** One live project of a builder, with the names of the page and nothing computed for display. */
 export type BuilderProject = {
   slug: string;
@@ -200,20 +141,37 @@ export type BuilderProfile =
     }
   | { status: "missing"; readAt: string };
 
+/** What `live_builder_projects()` answers. */
+const builderProjectsDocumentSchema = z.object({
+  projects: z.array(builderProjectRowSchema),
+  project_count: z.number().int().nonnegative(),
+  first_project_at: z.string().nullable(),
+});
+
 /**
- * A builder's public profile and live projects, read as an anonymous visitor: the five granted builder columns
- * (three are used) and the project columns above, so the database's own rules decide what exists (approved and
- * published projects of an active builder only, BR-42, BR-94). A failed or malformed read throws, so it is never
- * cached. Cached for minutes per builder under the projects tag.
+ * A builder's public profile and live projects: the builder's three public columns, and the projects through
+ * `live_builder_projects()`, which only a signed-in customer may run (login wall, ADR-171) and which gives only
+ * approved, published projects of an active builder (BR-42, BR-94). The customer's own session reads it, so there is no
+ * shared cache. A builder who is not active is "missing". A failed or malformed read throws.
  */
 export async function getBuilderProfile(builderId: string): Promise<BuilderProfile> {
-  "use cache";
-  cacheTag(PROJECTS_TAG);
-  cacheLife("minutes");
-  const client = createPublicSupabase();
   const readAt = new Date().toISOString();
 
-  const found = await client
+  const live = await (
+    await createServerSupabase()
+  ).rpc("live_builder_projects", { p_builder: builderId, p_limit: MAX_TOOL_RESULT_ITEMS });
+  if (live.error) {
+    logger.error("builder projects could not be read", { errorCode: live.error.code });
+    throw new Error("builder projects could not be read");
+  }
+  if (live.data === null) return { status: "missing", readAt };
+  const document = builderProjectsDocumentSchema.safeParse(live.data);
+  if (!document.success) {
+    logger.error("builder project rows do not fit the expected shape", {});
+    throw new Error("builder project rows do not fit the expected shape");
+  }
+
+  const found = await createPublicSupabase()
     .from("builders")
     .select(BUILDER_COLUMNS)
     .eq("id", builderId)
@@ -229,33 +187,7 @@ export async function getBuilderProfile(builderId: string): Promise<BuilderProfi
     throw new Error("builder row does not fit the expected shape");
   }
 
-  const [newest, earliest] = await Promise.all([
-    client
-      .from("projects")
-      .select(BUILDER_PROJECT_COLUMNS, { count: "exact" })
-      .eq("builder_id", builderId)
-      .order("created_at", { ascending: false })
-      .limit(MAX_TOOL_RESULT_ITEMS),
-    client
-      .from("projects")
-      .select(BUILDER_FIRST_PROJECT_COLUMNS)
-      .eq("builder_id", builderId)
-      .order("created_at", { ascending: true })
-      .limit(1),
-  ]);
-  if (newest.error || earliest.error) {
-    logger.error("builder projects could not be read", {
-      errorCode: newest.error?.code ?? earliest.error?.code ?? "",
-    });
-    throw new Error("builder projects could not be read");
-  }
-  const projectRows = z.array(builderProjectRowSchema).safeParse(newest.data);
-  const firstRows = z.array(firstProjectRowSchema).safeParse(earliest.data);
-  if (!projectRows.success || !firstRows.success) {
-    logger.error("builder project rows do not fit the expected shape", {});
-    throw new Error("builder project rows do not fit the expected shape");
-  }
-  const projects = projectRows.data.map((row): BuilderProject => ({
+  const projects = document.data.projects.map((row): BuilderProject => ({
     slug: row.slug,
     name: row.name,
     status: row.project_status,
@@ -268,8 +200,8 @@ export async function getBuilderProfile(builderId: string): Promise<BuilderProfi
     status: "found",
     builder: builder.data,
     projects,
-    projectCount: newest.count ?? projects.length,
-    firstProjectAt: firstRows.data[0]?.created_at.slice(0, 10) ?? null,
+    projectCount: document.data.project_count,
+    firstProjectAt: document.data.first_project_at?.slice(0, 10) ?? null,
     readAt,
   };
 }

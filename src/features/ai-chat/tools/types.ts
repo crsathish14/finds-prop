@@ -16,6 +16,12 @@ import type { Translate } from "@/lib/format";
  * principle 5, and section 6.4.3).
  */
 export interface ToolContext {
+  /**
+   * Whether the customer is signed in. The tools that list homes, projects, localities or a builder's projects are for
+   * signed-in customers (login wall, ADR-171) and refuse with `sign_in_required` otherwise. It is one yes or no, not a
+   * person: no id, phone or session reaches a tool.
+   */
+  readonly signedIn: boolean;
   /** The translator for the words around numbers (₹, L, Cr, /mo, sq.ft), which live in en.json. */
   readonly translate: Translate;
   /** The language the numbers and dates are written in. */
@@ -140,6 +146,8 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `unknown_tool`: no tool has that name.
  * - `invalid_input`: the input does not fit the tool's schema; `fields` names what to correct.
  * - `unavailable`: the read failed or its result did not fit. "That information isn't available right now."
+ * - `sign_in_required`: the tool lists homes, projects, localities or a builder's projects, and the customer is not
+ *   signed in (login wall, ADR-171). The model tells them to sign in, with the sign-in button, and does not list from memory.
  *
  * The propose tools (ADR-128 section 5.3) refuse with three more, thrown as a `ToolRefusal`. Each is one code for
  * every reason behind it on purpose, so a refusal tells the model what to say and nothing about why:
@@ -159,6 +167,7 @@ export const TOOL_ERROR_CODES = [
   "unknown_tool",
   "invalid_input",
   "unavailable",
+  "sign_in_required",
   "not_available",
   "own_home",
   "date_out_of_range",
@@ -175,6 +184,8 @@ export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
  * model, never shown to a customer, and holds no data. The older codes need none: their meaning is plain.
  */
 export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
+  sign_in_required:
+    "Searching homes, projects, places and builders is for signed-in customers. Tell the customer to sign in with their phone number to search, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any home, project, place or builder from memory.",
   not_available:
     "That home or project is not open for requests. Do not try another id; tell the customer it is not available.",
   own_home: "The customer owns this home, so they cannot enquire about it. Tell them so.",
