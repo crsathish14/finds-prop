@@ -305,6 +305,7 @@
     "slugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 80 characters.",
     "slugTaken": "This page address is already used by another project.",
     "slugLocked": "The page address cannot be changed once the project is approved.",
+    "duplicate": "Another box already has this label.",
     "areaRange": "The largest area must be the same as or more than the smallest.",
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
@@ -486,7 +487,10 @@
       "yourAccount": "Your account",
       "openMenu": "Open menu",
       "menuTitle": "Menu",
-      "closeMenu": "Close menu"
+      "closeMenu": "Close menu",
+      "cityButton": "City: {city}. Change city",
+      "cityHeading": "Choose your city",
+      "defaultCity": "Chennai"
     },
     "footer": {
       "exploreHeading": "Explore",
@@ -706,6 +710,9 @@
       },
       "bar": {
         "enquire": "Enquire about this project"
+      },
+      "extras": {
+        "heading": "More details"
       },
       "propertyType": {
         "apartment": "Apartment",
@@ -1075,6 +1082,19 @@
       "sentLead": "We sent a link to {email}. Open it, then come back here to keep going.",
       "sentInfo": "This page updates by itself once the email is verified.",
       "sentNote": "Your draft is saved. You can close this tab and return later."
+    }
+  },
+  "loginWall": {
+    "metaTitle": "Sign in to browse homes and projects",
+    "title": "Sign in to see all properties",
+    "body": "Enter your phone number to browse every property and project. It takes a minute.",
+    "button": "Sign in with phone",
+    "mock": {
+      "home": "Sample home {number}",
+      "project": "Sample project {number}",
+      "locality": "Sample locality",
+      "city": "Sample city",
+      "developer": "Sample builders"
     }
   },
   "compare": {
@@ -1493,6 +1513,7 @@
       "leads": "Leads",
       "forms": "Forms",
       "crm": "CRM",
+      "feedback": "Feedback",
       "content": "Content",
       "blog": "Blog",
       "faq": "FAQ",
@@ -1503,6 +1524,7 @@
       "homepage": "Homepage",
       "footer": "Footer",
       "disclaimers": "Disclaimers",
+      "projectFields": "Project form boxes",
       "topDevelopers": "Top developers"
     },
     "topDevelopers": {
@@ -2030,6 +2052,45 @@
         "days": "{count, plural, one {# day} other {# days}}"
       }
     },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Messages from builders and agents. Mark each one reviewed when you have read it.",
+      "filterLabel": "Filter feedback",
+      "filter": {
+        "open": "Not reviewed ({count})",
+        "reviewed": "Reviewed ({count})",
+        "all": "All ({count})"
+      },
+      "role": {
+        "builder": "Builder",
+        "agent": "Agent"
+      },
+      "state": {
+        "open": "Not reviewed",
+        "reviewed": "Reviewed"
+      },
+      "markReviewed": "Mark as reviewed",
+      "markNotReviewed": "Mark as not reviewed",
+      "toast": {
+        "reviewed": "Marked as reviewed.",
+        "unreviewed": "Marked as not reviewed."
+      },
+      "empty": {
+        "open": {
+          "title": "Nothing waiting",
+          "description": "Every message has been reviewed."
+        },
+        "reviewed": {
+          "title": "No reviewed messages yet",
+          "description": "Messages you mark as reviewed appear here."
+        },
+        "all": {
+          "title": "No feedback yet",
+          "description": "When a builder or an agent sends feedback, it appears here."
+        }
+      }
+    },
     "projects": {
       "metaTitle": "Projects",
       "title": "Projects",
@@ -2115,6 +2176,9 @@
       }
     },
     "projectForm": {
+      "extras": {
+        "optional": "(optional)"
+      },
       "metaTitleNew": "New project",
       "metaTitleEdit": "Edit project",
       "newTitle": "New project",
@@ -2358,6 +2422,39 @@
         "createdBuilder": {
           "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
+      }
+    },
+    "projectFields": {
+      "metaTitle": "Project form boxes",
+      "title": "Project form boxes",
+      "description": "Add plain text boxes to the builder's project form without a developer. You can keep up to {max} boxes. Builders type the answers and the answers show on the project page.",
+      "empty": "No extra boxes yet. Builders see only the standard project form.",
+      "row": "Box {number}",
+      "moveUp": "Move box {number} up",
+      "moveDown": "Move box {number} down",
+      "remove": "Delete box {number}",
+      "label": "Label",
+      "hint": "Help text",
+      "hintNote": "Shown under the box. Up to {max} characters.",
+      "appliesTo": "Ask for these property types",
+      "appliesToNote": "Tick none to ask for every property type.",
+      "required": "Builders must fill it in",
+      "on": "Show this box",
+      "add": "Add a box",
+      "full": "You have {max} boxes, the most allowed. Delete one to add another.",
+      "saveNote": "Turning a box off hides it; builders' answers are kept. Deleting a box removes it from every form and page.",
+      "saved": {
+        "title": "Project form boxes saved",
+        "text": "The change shows on the builder's project form now."
+      },
+      "types": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "plot": "Plot",
+        "vacantLand": "Vacant land",
+        "flat": "Flat",
+        "office": "Office",
+        "coWorking": "Co-working space"
       }
     },
     "siteContent": {
@@ -2609,7 +2706,7 @@
         "description": "Choose which sections appear below the hero, and which localities are featured.",
         "sections": {
           "title": "Sections",
-          "description": "Turn sections on or off. A hidden section is not rendered at all.",
+          "description": "Turn sections on or off and set the order they appear in. A hidden section is not rendered at all.",
           "featured": {
             "label": "Featured listings",
             "hint": "Up to six featured homes."
@@ -2630,6 +2727,20 @@
             "label": "Post-property call to action",
             "hint": "The closing banner."
           }
+        },
+        "order": {
+          "hint": "The hero and search always come first. Drag a section, or use its arrows, to change the order. The same order is used on phones and computers.",
+          "newLaunches": {
+            "label": "New launches",
+            "hint": "Shown when there are new projects. Has no switch."
+          },
+          "newest": {
+            "label": "Newest listings",
+            "hint": "Shown when there are new listings. Has no switch."
+          },
+          "drag": "Drag {section}",
+          "moveUp": "Move {section} up",
+          "moveDown": "Move {section} down"
         },
         "localities": {
           "title": "Explore by locality",
@@ -3667,6 +3778,7 @@
       "units": "Units",
       "leads": "Leads",
       "insights": "Insights",
+      "feedback": "Feedback",
       "profile": "Profile"
     },
     "projects": {
@@ -3741,6 +3853,21 @@
       },
       "toast": {
         "title": "Profile saved"
+      }
+    },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Tell us what works and what does not. Your message goes to the findsprop team.",
+      "formTitle": "Send a message",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Write your feedback here",
+      "counter": "{count} / {maximum}",
+      "send": "Send feedback",
+      "sending": "Sending",
+      "note": "We read every message but may not reply to each one.",
+      "toast": {
+        "title": "Thank you. Your feedback was sent."
       }
     },
     "insights": {

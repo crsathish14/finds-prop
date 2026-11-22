@@ -4,10 +4,10 @@ const tag = vi.fn();
 const life = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
-const from = vi.fn();
+const rpc = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
-vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from }) }));
+vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 vi.mock("@/features/search", () => ({ LISTINGS_TAG: "home-listings", SEARCH_PATH: "/properties" }));
 vi.mock("@/features/projects", () => ({
@@ -25,13 +25,17 @@ const blogState = vi.hoisted(() => ({
 }));
 const careersState = vi.hoisted(() => ({
   on: true,
-  jobs: [] as { slug: string; updatedAt: string }[],
+  jobs: [] as { slug: string; updatedAt: string; closesAt: string | null }[],
 }));
 vi.mock("@/features/site", () => ({
   getContentModuleOn: async (module: string) =>
     module === "blog" ? blogState.on : module === "careers" ? careersState.on : faqState.on,
 }));
-vi.mock("@/features/careers", () => ({ getJobSitemapEntries: async () => careersState.jobs }));
+vi.mock("@/features/careers", () => ({
+  getJobSitemapEntries: async () => careersState.jobs,
+  isJobOpenAt: (job: { closesAt: string | null }, now: Date) =>
+    job.closesAt === null || new Date(job.closesAt).getTime() > now.getTime(),
+}));
 vi.mock("@/features/blog", () => ({ getBlogSitemapEntries: async () => blogState.posts }));
 vi.mock("@/features/faq", () => ({ getPublicFaqs: async () => faqState.faqs }));
 vi.mock("@/features/property", () => ({
@@ -44,27 +48,24 @@ const { SITEMAP_MAX_URLS } = await import("../entries");
 
 type Result = { data: unknown; error: { code: string } | null };
 
-/** A query builder that remembers its calls; each `range` answers with the next result in line. */
-function table(results: Result[]) {
-  const calls: { method: string; args: unknown[] }[] = [];
-  let next = 0;
-  const query: Record<string, unknown> = {};
-  for (const method of ["select", "order"]) {
-    query[method] = (...args: unknown[]) => {
-      calls.push({ method, args });
-      return query;
-    };
-  }
-  // Like the database, never answer with more rows than the range asked for.
-  query.range = (...args: unknown[]) => {
-    calls.push({ method: "range", args });
-    const [start, end] = args as [number, number];
-    const result = results[next++] ?? { data: [], error: null };
-    const rows = Array.isArray(result.data) ? result.data.slice(0, end - start + 1) : result.data;
-    return Promise.resolve({ ...result, data: rows });
-  };
-  return { query, calls };
+/**
+ * `sitemap_entries()` stand-in: each kind has its own list of answers, one per call. Like the database, it
+ * never answers with more rows than the page asked for.
+ */
+function arrange(projects: Result[], homes: Result[]) {
+  const answers = { projects: [...projects], homes: [...homes] };
+  rpc.mockImplementation(
+    (name: string, args: { p_kind: "homes" | "projects"; p_limit: number }) => {
+      expect(name).toBe("sitemap_entries");
+      const result = answers[args.p_kind].shift() ?? { data: [], error: null };
+      const rows = Array.isArray(result.data) ? result.data.slice(0, args.p_limit) : result.data;
+      return Promise.resolve({ ...result, data: rows });
+    },
+  );
 }
+
+const callsOf = (kind: "homes" | "projects") =>
+  rpc.mock.calls.filter((call) => call[1].p_kind === kind).map((call) => call[1]);
 
 const homeRows = (count: number, start = 0) =>
   Array.from({ length: count }, (_, index) => ({
@@ -75,29 +76,17 @@ const homeRows = (count: number, start = 0) =>
 const projectRows = (count: number) =>
   Array.from({ length: count }, (_, index) => ({
     slug: `project-${index}`,
+    short_id: null,
     updated_at: "2026-11-03T08:00:00+00:00",
-    builders: { id: "b1" },
   }));
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-function arrange(projects: Result[], homes: Result[]) {
-  const projectTable = table(projects);
-  const homeTable = table(homes);
-  from.mockImplementation((name: string) =>
-    name === "projects" ? projectTable.query : homeTable.query,
-  );
-  return { projectTable, homeTable };
-}
-
 describe("UT-sitemap-queries: reading what the sitemap lists", () => {
-  it("reads live projects and approved homes as an anonymous visitor, with only the granted columns", async () => {
-    const { projectTable, homeTable } = arrange(
-      [{ data: projectRows(2), error: null }],
-      [{ data: homeRows(3), error: null }],
-    );
+  it("reads live projects and approved homes as an anonymous visitor, only through the sitemap function", async () => {
+    arrange([{ data: projectRows(2), error: null }], [{ data: homeRows(3), error: null }]);
     const sources = await getSitemapSources();
     expect(sources.projects).toEqual([
       { slug: "project-0", updatedAt: "2026-11-03T08:00:00+00:00" },
@@ -109,22 +98,12 @@ describe("UT-sitemap-queries: reading what the sitemap lists", () => {
       shortId: "00000000",
       updatedAt: "2026-11-02T10:30:00+00:00",
     });
-    expect(from).toHaveBeenCalledWith("properties");
-    expect(from).toHaveBeenCalledWith("projects");
-    const selected = [...projectTable.calls, ...homeTable.calls]
-      .filter((call) => call.method === "select")
-      .map((call) => String(call.args[0]));
-    expect(selected).toEqual([
-      "slug, updated_at, builders!inner(id)",
-      "slug, short_id, updated_at",
-    ]);
-    for (const private_ of ["owner_id", "address", "location", "status", "phone"]) {
-      expect(selected.join(","), private_).not.toMatch(new RegExp(`\\b${private_}\\b`));
-    }
+    // Every read goes through the function (it answers a slug and a date, no other data), never a table.
+    expect(new Set(rpc.mock.calls.map((call) => call[0]))).toEqual(new Set(["sitemap_entries"]));
   });
 
   it("pages through a thousand rows at a time until a short page ends the list", async () => {
-    const { homeTable } = arrange(
+    arrange(
       [{ data: [], error: null }],
       [
         { data: homeRows(1000), error: null },
@@ -134,13 +113,10 @@ describe("UT-sitemap-queries: reading what the sitemap lists", () => {
     );
     const sources = await getSitemapSources();
     expect(sources.homes).toHaveLength(2250);
-    const ranges = homeTable.calls
-      .filter((call) => call.method === "range")
-      .map((call) => call.args);
-    expect(ranges).toEqual([
-      [0, 999],
-      [1000, 1999],
-      [2000, 2999],
+    expect(callsOf("homes").map((args) => [args.p_offset, args.p_limit])).toEqual([
+      [0, 1000],
+      [1000, 1000],
+      [2000, 1000],
     ]);
   });
 
@@ -169,16 +145,16 @@ describe("UT-sitemap-queries: reading what the sitemap lists", () => {
   });
 
   it("asks for no more homes than the cap leaves room for, and says when the cap is reached", async () => {
-    const { homeTable } = arrange(
+    arrange(
       [{ data: projectRows(3), error: null }],
       Array.from({ length: 45 }, (_, page) => ({ data: homeRows(1000, page * 1000), error: null })),
     );
     const sources = await getSitemapSources();
-    expect(sources.homes.length).toBe(SITEMAP_MAX_URLS - 3 - 3);
-    const last = homeTable.calls.filter((call) => call.method === "range").at(-1)?.args;
-    expect(last?.[1]).toBe(SITEMAP_MAX_URLS - 3 - 3 - 1);
+    expect(sources.homes.length).toBe(SITEMAP_MAX_URLS - 1 - 3);
+    const last = callsOf("homes").at(-1);
+    expect((last?.p_offset ?? 0) + (last?.p_limit ?? 0)).toBe(SITEMAP_MAX_URLS - 1 - 3);
     expect(warn).toHaveBeenCalledWith("sitemap reached its address cap", {
-      cap: SITEMAP_MAX_URLS - 3 - 3,
+      cap: SITEMAP_MAX_URLS - 1 - 3,
     });
   });
 });
@@ -244,13 +220,48 @@ describe("UT-sitemap-careers: the Careers entries (ADR-143)", () => {
   });
 
   it("is the open jobs the cached list gives", async () => {
-    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
-    expect(await getSitemapCareers()).toEqual({ jobs: careersState.jobs });
+    careersState.jobs = [
+      { slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
+    expect(await getSitemapCareers()).toEqual({
+      jobs: [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }],
+    });
+  });
+
+  it("drops a job whose closing date has passed since the list was cached, and keeps one that closes later", async () => {
+    careersState.jobs = [
+      {
+        slug: "closed-an-hour-ago",
+        updatedAt: "2026-11-10T08:00:00+00:00",
+        closesAt: "2020-01-01T00:00:00+00:00",
+      },
+      {
+        slug: "closes-next-decade",
+        updatedAt: "2026-11-11T08:00:00+00:00",
+        closesAt: "2099-01-01T00:00:00+00:00",
+      },
+    ];
+    expect(await getSitemapCareers()).toEqual({
+      jobs: [{ slug: "closes-next-decade", updatedAt: "2026-11-11T08:00:00+00:00" }],
+    });
+  });
+
+  it("is left out when every cached job has since closed, so the sitemap never lists an empty page", async () => {
+    careersState.jobs = [
+      {
+        slug: "gone",
+        updatedAt: "2026-11-10T08:00:00+00:00",
+        closesAt: "2020-01-01T00:00:00+00:00",
+      },
+    ];
+    expect(await getSitemapCareers()).toBeNull();
   });
 
   it("is left out while the Careers module is off, even when jobs are open", async () => {
     careersState.on = false;
-    careersState.jobs = [{ slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    careersState.jobs = [
+      { slug: "site-engineer", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
     expect(await getSitemapCareers()).toBeNull();
   });
 
@@ -261,7 +272,9 @@ describe("UT-sitemap-careers: the Careers entries (ADR-143)", () => {
   it("does not depend on the Blog or FAQ switches", async () => {
     faqState.on = false;
     blogState.on = false;
-    careersState.jobs = [{ slug: "one-job", updatedAt: "2026-11-10T08:00:00+00:00" }];
+    careersState.jobs = [
+      { slug: "one-job", updatedAt: "2026-11-10T08:00:00+00:00", closesAt: null },
+    ];
     expect(await getSitemapCareers()).not.toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   getProjectForEdit,
+  getExtraBoxes,
   ProjectForm,
   projectIdSchema,
   updateMyProject,
@@ -31,6 +32,7 @@ export default async function EditBuilderProjectPage({ params }: PageProps) {
   if (!project) notFound();
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="builder"
       project={project}
       save={updateMyProject}

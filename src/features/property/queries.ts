@@ -4,17 +4,21 @@ import { LISTINGS_TAG } from "@/features/search";
 import { propertyTag } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
-import {
-  labelSchema,
-  photoRowSchema,
-  PHOTO_COLUMNS,
-  propertyRowSchema,
-  PROPERTY_COLUMNS,
-  type PhotoRow,
-} from "./schemas";
+import { z } from "zod";
+import { labelSchema, photoRowSchema, propertyRowSchema, type PhotoRow } from "./schemas";
 import type { PropertyData } from "./types";
 
 const MS_PER_DAY = 86_400_000;
+
+/**
+ * What `public_property()` answers: the home's visitor columns, its photos and its label as one document.
+ * Each part is checked on its own below, so one photo that does not fit is skipped, not an error.
+ */
+const documentSchema = z.object({
+  property: z.unknown(),
+  photos: z.array(z.unknown()),
+  label: z.unknown(),
+});
 
 /**
  * One home as a visitor may see it, or "missing": no approved home has this id. `readAt` is when the
@@ -40,8 +44,9 @@ function inShowingOrder(photos: PhotoRow[]): PhotoRow[] {
 }
 
 /**
- * Reads one home by its public id, as an anonymous visitor, so the database's own rules decide what
- * exists: only approved listings, only the granted columns (BR-90). No home is `missing`, which
+ * Reads one home by its public id through `public_property()`, as an anonymous visitor, so the database
+ * decides what exists: only approved listings, only the visitor columns (BR-90). Nothing here can list
+ * homes: the function answers one home or nothing. No home is `missing`, which
  * covers one that was never listed, one that is waiting for review and one that was sold or rented.
  * Anything else that goes wrong throws (and so is never cached): a failed read must not look like a
  * home that is gone. Errors are logged by their code only. Cached for minutes under the homes tag and the home's own tag,
@@ -54,45 +59,27 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
   const client = createPublicSupabase();
   const readAt = new Date().toISOString();
 
-  const found = await client
-    .from("properties")
-    .select(PROPERTY_COLUMNS)
-    .eq("short_id", shortId)
-    .maybeSingle();
+  const found = await client.rpc("public_property", { p_short_id: shortId });
   if (found.error) {
     logger.error("property could not be read", { errorCode: found.error.code });
     throw new Error("property could not be read");
   }
   if (found.data === null) return { status: "missing", readAt };
-  const parsed = propertyRowSchema.safeParse(found.data);
+  const document = documentSchema.safeParse(found.data);
+  if (!document.success) {
+    logger.error("property row does not fit the expected shape", {});
+    throw new Error("property row does not fit the expected shape");
+  }
+  const parsed = propertyRowSchema.safeParse(document.data.property);
   if (!parsed.success) {
     logger.error("property row does not fit the expected shape", {});
     throw new Error("property row does not fit the expected shape");
   }
   const row = parsed.data;
 
-  const [media, label] = await Promise.all([
-    client
-      .from("listing_media")
-      .select(PHOTO_COLUMNS)
-      .eq("listing_id", row.id)
-      .order("position", { ascending: true }),
-    client.rpc("listing_label", {
-      listing_price: row.price,
-      listing_kind: row.listing_type,
-      is_featured: row.featured,
-    }),
-  ]);
-  if (media.error || label.error) {
-    logger.error("property photos or label could not be read", {
-      errorCode: media.error?.code ?? label.error?.code ?? "",
-    });
-    throw new Error("property photos or label could not be read");
-  }
-
   const photos: PhotoRow[] = [];
   let skipped = 0;
-  for (const item of media.data ?? []) {
+  for (const item of document.data.photos) {
     const photo = photoRowSchema.safeParse(item);
     if (photo.success) photos.push(photo.data);
     else skipped += 1;
@@ -123,7 +110,7 @@ export async function getProperty(shortId: string): Promise<PropertyResult> {
       city: row.city,
       state: row.state,
       featured: row.featured,
-      label: labelSchema.parse(label.data),
+      label: labelSchema.parse(document.data.label),
       ageDays: ageInDays(row.published_at, Date.now()),
       publishedAt: row.published_at,
       photos: inShowingOrder(photos).map((photo) => ({

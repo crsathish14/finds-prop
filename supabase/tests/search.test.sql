@@ -100,7 +100,7 @@ select ok(
   'search_properties has no owner, address, exact location, description, pincode, status or vector column'
 );
 select ok(
-  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
+  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
   'visitors may run the search'
 );
 select is(

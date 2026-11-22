@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Link } from "@/components/ui/link";
 import { Logo } from "@/components/ui/logo";
 import { AccountMenu, getAccountSummary } from "@/features/auth";
+import { getFeedbackCounts } from "@/features/feedback";
 import { getQueueCounts } from "@/features/moderation";
 import { getSiteSettings, getTranslate, initialsFrom, resolveBrandName } from "@/features/site";
 import { getSessionView } from "@/server/auth/get-session-view";
@@ -26,6 +27,17 @@ async function readPending(): Promise<number> {
   }
 }
 
+/** How many feedback messages are not reviewed, for the number beside Feedback; a failed read shows no number. */
+async function readFeedbackOpen(): Promise<number> {
+  try {
+    return (await getFeedbackCounts()).notReviewed;
+  } catch (error) {
+    unstable_rethrow(error);
+    logger.warn("the admin sidebar could not read the feedback count, showing no number");
+    return 0;
+  }
+}
+
 /**
  * The frame around every admin page (S6-T04, FR-ADM-02): the sidebar, the top bar with the account menu and its
  * Sign out, and the page. The role gate is the layout's job (`PageGate`, around this); this only needs to know who
@@ -34,9 +46,10 @@ async function readPending(): Promise<number> {
 export async function AdminFrame({ children }: { children: ReactNode }) {
   const translate = await getTranslate();
   const session = await getSessionView();
-  const [settings, pending, summary] = await Promise.all([
+  const [settings, pending, feedbackOpen, summary] = await Promise.all([
     getSiteSettings(),
     readPending(),
+    readFeedbackOpen(),
     session ? getAccountSummary(session.userId) : Promise.resolve(null),
   ]);
   const brandName = resolveBrandName(settings.header, translate);
@@ -60,7 +73,7 @@ export async function AdminFrame({ children }: { children: ReactNode }) {
   );
   return (
     <AdminShell
-      groups={buildAdminNav(translate, pending)}
+      groups={buildAdminNav(translate, pending, feedbackOpen)}
       viewSite={{ label: translate("admin.shell.viewSite"), href: "/" }}
       labels={{
         nav: translate("admin.shell.navLabel"),

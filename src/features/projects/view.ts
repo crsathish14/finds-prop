@@ -135,6 +135,40 @@ export function specItems(project: SpecSource): SpecItem[] {
   return items;
 }
 
+/** One extra box with its answer, as the project page shows it (ADR-168). */
+export type ExtraRow = { id: string; label: string; value: string };
+
+/** The box definitions the page needs: nothing about who may edit them. */
+export type ExtraBoxDefinition = {
+  id: string;
+  label: string;
+  appliesTo: readonly string[];
+  on: boolean;
+};
+
+/**
+ * The extra rows of the project page, in the super admin's order: a box that is on, asked for this property type and
+ * answered. An answer whose box is off, not asked for this type or deleted is not shown; the text is shown as text.
+ */
+export function extraRows(
+  boxes: readonly ExtraBoxDefinition[],
+  propertyType: string | null,
+  answers: Readonly<Record<string, string>>,
+): ExtraRow[] {
+  const rows: ExtraRow[] = [];
+  for (const box of boxes) {
+    if (!box.on) continue;
+    if (
+      box.appliesTo.length > 0 &&
+      (propertyType === null || !box.appliesTo.includes(propertyType))
+    )
+      continue;
+    const value = (answers[box.id] ?? "").trim();
+    if (value !== "") rows.push({ id: box.id, label: box.label, value });
+  }
+  return rows;
+}
+
 /**
  * The RERA tag under the title: null for a project that is not under RERA, and for one that is, its
  * number when there is one (the tag then reads "RERA applicable" alone).

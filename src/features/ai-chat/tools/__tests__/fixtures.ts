@@ -12,6 +12,7 @@ import type { ToolContext } from "../types";
 export const TOOL_CONTEXT: ToolContext = {
   translate: createTranslator({ locale: "en", messages }) as unknown as Translate,
   locale: "en",
+  signedIn: true,
 };
 
 /** When the stand-in reads say they read the database, and how the tools write it (India time). */
@@ -126,6 +127,7 @@ export function projectData(overrides: Partial<ProjectData> = {}): ProjectData {
     offerType: null,
     plotStatus: null,
     villaType: null,
+    extraFields: {},
     price: 7_800_000,
     priceType: "basic",
     areaMinSqft: null,

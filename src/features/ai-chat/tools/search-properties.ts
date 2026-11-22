@@ -31,6 +31,7 @@ import {
 import type { PlaceLookup, PlaceLookupResult } from "./place-lookup";
 import type { AiChatTool, ToolContext, ToolRun } from "./types";
 import { cleanOptionalLine, cleanThirdPartyLine } from "./untrusted";
+import { requireSignIn } from "./require-sign-in";
 
 /**
  * `search_properties` (ADR-128 section 5.1): the homes that match what the customer asked for, through the
@@ -303,6 +304,7 @@ export const searchPropertiesTool: AiChatTool<SearchPropertiesInput, SearchPrope
   input: searchPropertiesInputSchema,
   output: searchPropertiesOutputSchema,
   async run(input, context) {
+    requireSignIn(context);
     const results = await getSearchResults(toSearchParams(input));
     if (results.status === "failed") throw new Error("search results could not be read");
     const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
@@ -420,6 +422,7 @@ export function createSearchPropertiesTool(
     input: placeSearchPropertiesInputSchema,
     output: placeSearchPropertiesOutputSchema,
     async run(input, context) {
+      requireSignIn(context);
       const place = given(input.place);
       if (place === null) {
         const results = await getSearchResults(toSearchParams(input));

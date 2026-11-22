@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { Fragment, type ReactNode } from "react";
 import { HomeHero } from "@/components/domain/home-hero";
 import { HomeSearchBar } from "@/components/domain/home-search-bar.client";
 import {
   BrowseSection,
   CtaSection,
   ExploreSection,
-  FeaturedSection,
-  NewestSection,
+  CityFeaturedSection,
+  CityNewestSection,
   NewLaunchesSection,
   WhySection,
 } from "@/features/home";
@@ -23,6 +24,8 @@ import {
   getTranslate,
   isRouteEnabled,
   resolveBrandName,
+  resolveHomeOrder,
+  type HomeSectionKey,
 } from "@/features/site";
 
 /** The homepage says what the site is, under the name alone, with its own canonical address (FR-PUB-14). */
@@ -40,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const POST_PROPERTY_PATH = "/post-property";
 
 /**
- * The homepage: the hero, then the sections in the order of the UX. The site content can switch each
+ * The homepage: the hero, then the sections in the order the super admin chose (the order of the UX until they do). The site content can switch each
  * of Explore by locality, Featured homes, Browse by what matters, Why Find Prop and the banner off;
  * New launches and Newest have no switch and appear when there is something to show.
  * The words and settings come from the cached site content with the message catalogue as the
@@ -61,6 +64,16 @@ export default async function HomePage() {
   const { homepage, region } = settings;
   const showCta = homepage.showCta && isRouteEnabled(POST_PROPERTY_PATH, flags);
   const brandName = resolveBrandName(settings.header, translate);
+  // Each section below the hero; the super admin chooses their order (CR plan 5), one order for desktop and mobile.
+  const sections: Record<HomeSectionKey, ReactNode> = {
+    discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
+    featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
+    newLaunches: <NewLaunchesSection />,
+    projectTypes: homepage.showProjectTypes ? <BrowseSection regionName={region.name} /> : null,
+    newest: <CityNewestSection brandName={brandName} />,
+    whyUs: homepage.showWhyUs ? <WhySection brandName={brandName} /> : null,
+    cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,
+  };
 
   return (
     <main id="main" className="flex-1">
@@ -88,13 +101,9 @@ export default async function HomePage() {
         {/* One search bar (ADR-150): the AI search while it is on, a keyword search of the results otherwise. */}
         {flags.aiSearch ? <HomeAiSearch /> : <HomeSearchBar mode="keyword" action={SEARCH_PATH} />}
       </HomeHero>
-      {homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null}
-      {homepage.showFeatured ? <FeaturedSection /> : null}
-      <NewLaunchesSection />
-      {homepage.showProjectTypes ? <BrowseSection regionName={region.name} /> : null}
-      <NewestSection brandName={brandName} />
-      {homepage.showWhyUs ? <WhySection brandName={brandName} /> : null}
-      {showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null}
+      {resolveHomeOrder(homepage.order).map((key) => (
+        <Fragment key={key}>{sections[key]}</Fragment>
+      ))}
     </main>
   );
 }

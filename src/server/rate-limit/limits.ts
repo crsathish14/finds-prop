@@ -79,6 +79,8 @@ export const RATE_LIMITS = {
   admin_edit: [{ who: "user", windowSeconds: HOUR, max: 600 }],
   /** 300 edits per builder per hour: their units, a lead's state and their profile (S7-T03). */
   builder_edit: [{ who: "user", windowSeconds: HOUR, max: 300 }],
+  /** 5 feedback messages per builder or agent per hour (change request, plan 6). */
+  builder_feedback: [{ who: "user", windowSeconds: HOUR, max: 5 }],
   /** 60 project saves per user per hour: the admin's and a builder's project form (S7-T02). */
   project_save: [{ who: "user", windowSeconds: HOUR, max: 60 }],
   /**

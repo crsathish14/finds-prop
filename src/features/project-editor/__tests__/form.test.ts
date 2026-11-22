@@ -37,6 +37,7 @@ const project: ProjectEditView = {
   offerType: null,
   plotStatus: null,
   villaType: null,
+  extraFields: {},
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",

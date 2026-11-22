@@ -3,6 +3,7 @@ import {
   createProject,
   getBuilderOptions,
   getFormOptions,
+  getExtraBoxes,
   ProjectForm,
 } from "@/features/project-editor";
 import { AdminPlacePicker } from "@/features/search";
@@ -24,6 +25,7 @@ export default async function NewProjectPage() {
   const [builders, forms] = await Promise.all([getBuilderOptions(), getFormOptions()]);
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="admin"
       project={null}
       builders={builders}

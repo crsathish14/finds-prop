@@ -42,6 +42,8 @@ export interface TurnInput {
   readonly messages: readonly AiMessage[];
   /** The customer's new message as the model sees it: figures the customer wrote may be said back. */
   readonly customerMessage: string;
+  /** Whether the customer is signed in: the tools that list homes and projects refuse otherwise (ADR-171). */
+  readonly signedIn: boolean;
   /** The hard stop (the customer left or the function is about to be cut off). */
   readonly signal: AbortSignal;
   /** The time limit for the whole message. */
@@ -146,7 +148,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     tools: input.tools,
     system: input.system,
     messages: input.messages,
-    context: { translate, locale: "en" },
+    context: { translate, locale: "en", signedIn: input.signedIn },
     signal: input.signal,
     timeLimit: input.timeLimit,
   })) {

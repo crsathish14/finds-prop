@@ -45,8 +45,8 @@ const PROJECTS_PATH = "/projects";
  * is featured, or the read failed) the section is not drawn, so no gap is left (FR-PUB-05). The cards
  * have no Save or Compare yet (S5-T01, S4-T02).
  */
-export async function FeaturedSection() {
-  const homes = await getFeaturedHomes();
+export async function FeaturedSection({ cityKey }: { cityKey?: string } = {}) {
+  const homes = await getFeaturedHomes(cityKey);
   if (homes.length === 0) return null;
   const translate = await getTranslate();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };
@@ -107,8 +107,14 @@ export async function NewLaunchesSection() {
  * "Newest on Find Prop": the newest approved homes in a row that scrolls sideways. It has no switch
  * of its own: it appears when there is a home to show.
  */
-export async function NewestSection({ brandName }: { brandName: string }) {
-  const homes = await getNewestHomes();
+export async function NewestSection({
+  brandName,
+  cityKey,
+}: {
+  brandName: string;
+  cityKey?: string;
+}) {
+  const homes = await getNewestHomes(cityKey);
   if (homes.length === 0) return null;
   const translate = await getTranslate();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };

@@ -4,6 +4,7 @@ import {
   getBuilderOptions,
   getFormOptions,
   getProjectForEdit,
+  getExtraBoxes,
   ProjectForm,
   projectIdSchema,
   updateProject,
@@ -37,6 +38,7 @@ export default async function EditProjectPage({ params }: PageProps) {
   if (!project) notFound();
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="admin"
       project={project}
       builders={builders}

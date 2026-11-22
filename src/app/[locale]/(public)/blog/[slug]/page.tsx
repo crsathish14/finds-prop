@@ -9,7 +9,7 @@ import {
   parseBlogSlug,
 } from "@/features/blog";
 import { siteOrigin } from "@/features/seo";
-import { getTranslate, requireContentModule } from "@/features/site";
+import { getContentModuleOn, getTranslate, requireContentModule } from "@/features/site";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -17,8 +17,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const translate = await getTranslate();
   const parsed = parseBlogSlug(slug);
-  const article = parsed === null ? null : await getBlogArticle(parsed);
   // A hidden module, a draft and a wrong address all read the same: a title and no index (the page itself answers 404).
+  // The module is asked first, so a hidden article's title, summary and picture never reach the head of the 404 answer.
+  const article =
+    parsed === null || !(await getContentModuleOn("blog")) ? null : await getBlogArticle(parsed);
   if (article === null) return { title: translate("notFound.title") };
   return blogArticleMetadata(translate, article);
 }

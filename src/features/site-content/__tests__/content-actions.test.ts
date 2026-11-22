@@ -10,6 +10,7 @@ import {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveProjectFieldsConfig,
   saveSponsorsConfig,
 } from "../action-config";
 
@@ -66,6 +67,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     sponsors: define({ ...saveSponsorsConfig, handler }),
     modules: define({ ...saveContentModulesConfig, handler }),
     disclaimers: define({ ...saveDisclaimersConfig, handler }),
+    projectFields: define({ ...saveProjectFieldsConfig, handler }),
   };
 }
 
@@ -82,11 +84,13 @@ const validHomepage = {
 const validFooter = { links: [] };
 const validSponsors = { sponsors: [] };
 const validDisclaimers = { footer: "Prices are indicative.", aiSearch: "" };
+const validProjectFields = { fields: [] };
 const validModules = { blog: true, faq: false, careers: true };
 
 describe("UT-site-content-actions: who may edit the site content, and what it refreshes (S7-T10)", () => {
-  it("lets a super admin save any of the seven: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
-    const { header, hero, homepage, footer, sponsors, modules, disclaimers, calls } = harness();
+  it("lets a super admin save any of the eight: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
+    const { header, hero, homepage, footer, sponsors, modules, disclaimers, projectFields, calls } =
+      harness();
     expect((await header(validHeader)).ok).toBe(true);
     expect((await hero(validHero)).ok).toBe(true);
     expect((await homepage(validHomepage)).ok).toBe(true);
@@ -94,8 +98,9 @@ describe("UT-site-content-actions: who may edit the site content, and what it re
     expect((await sponsors(validSponsors)).ok).toBe(true);
     expect((await modules(validModules)).ok).toBe(true);
     expect((await disclaimers(validDisclaimers)).ok).toBe(true);
+    expect((await projectFields(validProjectFields)).ok).toBe(true);
     const one = ["rateLimit:admin_edit", "handler", "invalidate:site-settings"];
-    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one, ...one, ...one]);
+    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one, ...one, ...one, ...one]);
   });
 
   it.each([

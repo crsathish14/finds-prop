@@ -305,6 +305,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       system: input.system,
       messages: input.conversation,
       customerMessage: latest.text,
+      signedIn: input.session !== null,
       signal,
       timeLimit,
       ...(deps.confirmCard === undefined

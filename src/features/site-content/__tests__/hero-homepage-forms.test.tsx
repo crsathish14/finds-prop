@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { resolveHomeOrder } from "@/features/site";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -158,6 +159,7 @@ describe("UT-hero-page: the Hero page (S7-T10)", () => {
 });
 
 const HOMEPAGE: HomepageFormValues = {
+  order: resolveHomeOrder(),
   showFeatured: true,
   showProjectTypes: true,
   showDiscovery: true,
@@ -208,6 +210,20 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
     expect(home()).toContain("Section hidden");
   });
 
+  it("moves a section with its arrows, draws the new order and sends it", async () => {
+    const save = open();
+    const home = () => picture("site-homepage-preview")?.textContent ?? "";
+    expect(home().indexOf("Explore by localityOn")).toBeLessThan(home().indexOf("Featured homes"));
+    await userEvent.click(screen.getByRole("button", { name: "Move Explore by locality down" }));
+    expect(home().indexOf("Featured homes")).toBeLessThan(home().indexOf("Explore by localityOn"));
+    expect(screen.getByRole("button", { name: "Move Explore by locality up" })).toBeEnabled();
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save.mock.calls[0]?.[0]).toMatchObject({
+      order: ["featured", "discovery", "newLaunches", "projectTypes", "newest", "whyUs", "cta"],
+    });
+  });
+
   it("sends the switches and the localities as typed, then says so", async () => {
     const save = open();
     await userEvent.click(screen.getByRole("switch", { name: /Post-property call to action/ }));
@@ -219,6 +235,7 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
       showDiscovery: true,
       showWhyUs: false,
       showCta: false,
+      order: HOMEPAGE.order,
       localities: HOMEPAGE.localities,
     });
     await waitFor(() =>

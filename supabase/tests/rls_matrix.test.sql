@@ -201,6 +201,8 @@ insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe'
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
 insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
 insert into public.places_usage_daily (day, api, caller, outcome, calls) values (current_date, 'matrix_probe', 'search_box', 'ok', 1);
+insert into public.cities (key, name) values ('matrixprobe', 'Matrix Probe');
+insert into public.builder_feedback (builder_id, message) values ('00000000-0000-4000-b000-000000000001', 'matrix probe');
 
 -- Layer 1: the privileges each role holds on each table (S select, I insert, U update, D delete, T truncate; select,
 -- insert and update count when held on any column, as the column grants are).
@@ -210,7 +212,9 @@ insert into exp_grants values
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
   ('blog_posts', 'S', 'S,I,U', 'S,I,U,D,T'),
+  ('builder_feedback', '', '', 'S,I,U,D,T'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
+  ('cities', 'S', 'S', 'S,I,U,D,T'),
   ('content_categories', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('crm_api_logs', '', 'S', 'S,I,U,D,T'),
   ('crm_integration_secrets', '', '', 'S,I,U,D,T'),
@@ -283,7 +287,9 @@ insert into probe values
   ('app_config', 'x1', 'key = ''matrix.probe'''), ('internal_cron_tokens', 'x1', 'name = ''matrix_probe'''),
   ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
   ('ai_usage_events', 'x1', 'request_id = ''matrix_probe'''),
-  ('places_usage_daily', 'x1', 'api = ''matrix_probe''');
+  ('places_usage_daily', 'x1', 'api = ''matrix_probe'''),
+  ('builder_feedback', 'x1', 'message = ''matrix probe'''),
+  ('cities', 'x1', 'key = ''matrixprobe''');
 
 create function pg_temp.sees(who text, tbl text) returns text
 language plpgsql
@@ -342,7 +348,9 @@ from (values
   ('idempotency_keys', array['', '', '', '', '', '', '']),
   ('public_rate_limits', array['', '', '', '', '', '', '']),
   ('ai_usage_events', array['', '', '', '', '', '', '']),
-  ('places_usage_daily', array['', '', '', '', '', '', ''])
+  ('places_usage_daily', array['', '', '', '', '', '', '']),
+  ('builder_feedback', array['', '', '', '', '', '', '']),
+  ('cities', array['x1', 'x1', 'x1', 'x1', 'x1', 'x1', 'x1'])
 ) as x(t, by_who)
 cross join unnest(array['anon', 'ca', 'cb', 'ba', 'bb', 'bc', 'ad']) with ordinality as r(who, n);
 

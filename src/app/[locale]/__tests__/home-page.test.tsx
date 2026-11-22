@@ -10,6 +10,7 @@ const state = vi.hoisted(() => ({
     showWhyUs: true,
     showCta: true,
     localities: [] as unknown[],
+    order: undefined as string[] | undefined,
   },
   region: {} as { name?: string },
   header: {} as { name?: string },
@@ -20,7 +21,7 @@ const state = vi.hoisted(() => ({
   ads: [] as unknown[],
 }));
 
-vi.mock("@/features/site", () => ({
+vi.mock("@/features/site", async () => ({
   getTranslate: async () => (key: string) => key,
   getSiteSettings: async () => ({
     homepage: state.homepage,
@@ -33,6 +34,11 @@ vi.mock("@/features/site", () => ({
   buildHero: () => ({ title: "Headline", subtitle: "Line" }),
   isRouteEnabled: () => state.postEnabled,
   resolveBrandName: () => "Find Prop",
+  resolveHomeOrder: (
+    (await vi.importActual("@/features/site/home-order")) as {
+      resolveHomeOrder: (saved?: string[]) => string[];
+    }
+  ).resolveHomeOrder,
 }));
 vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
 vi.mock("@/features/ai-chat", () => ({
@@ -54,9 +60,9 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
 }));
 vi.mock("@/features/home", () => ({
   ExploreSection: () => <section data-testid="explore" />,
-  FeaturedSection: () => <section data-testid="featured" />,
+  CityFeaturedSection: () => <section data-testid="featured" />,
   NewLaunchesSection: () => <section data-testid="launches" />,
-  NewestSection: (props: { brandName: string }) => (
+  CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),
   BrowseSection: (props: { regionName?: string }) => (
@@ -84,6 +90,7 @@ beforeEach(() => {
     showWhyUs: true,
     showCta: true,
     localities: [],
+    order: undefined,
   };
   state.region = {};
   state.header = {};
@@ -123,6 +130,7 @@ describe("the homepage (S4-T06)", () => {
         showWhyUs: true,
         showCta: true,
         localities: [],
+        order: undefined,
       };
       return shown;
     };
@@ -179,6 +187,16 @@ describe("the homepage (S4-T06)", () => {
     };
     render(await HomePage());
     expect(sections()).toEqual(["launches", "newest"]);
+  });
+
+  it("shows the sections in the order the super admin chose, once for every screen width, and hidden ones stay hidden", async () => {
+    state.homepage = {
+      ...state.homepage,
+      showFeatured: false,
+      order: ["cta", "whyUs", "bogus", "cta", "newest"],
+    };
+    render(await HomePage());
+    expect(sections()).toEqual(["cta", "why", "newest", "explore", "launches", "browse"]);
   });
 
   it("leaves out the banner when its route is switched off", async () => {
