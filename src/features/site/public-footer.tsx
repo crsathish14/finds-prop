@@ -48,6 +48,7 @@ export async function PublicFooter() {
         text: contact.text,
         ...(contact.href ? { href: contact.href } : {}),
       }))}
+      {...(settings.disclaimers.footer ? { disclaimer: settings.disclaimers.footer } : {})}
       legal={{ copyright: footer.copyright, links: footer.legalLinks }}
     />
   );

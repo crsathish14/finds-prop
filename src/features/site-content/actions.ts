@@ -4,6 +4,7 @@ import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
   saveContentModulesConfig,
+  saveDisclaimersConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
@@ -12,6 +13,7 @@ import {
 } from "./action-config";
 import {
   saveContentModulesContent,
+  saveDisclaimersContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
@@ -83,6 +85,17 @@ export const saveContentModules = defineAction({
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveContentModulesContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the disclaimers shown in the footer and on the AI search page (ADR-152). */
+export const saveDisclaimers = defineAction({
+  ...saveDisclaimersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveDisclaimersContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key });
     return done;
   },

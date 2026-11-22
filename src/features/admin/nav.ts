@@ -20,6 +20,7 @@ export type AdminIconName =
   | "hero"
   | "homepage"
   | "footer"
+  | "disclaimers"
   | "blog"
   | "faq"
   | "careers"
@@ -121,6 +122,12 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),
+          icon: "footer",
+        },
+        {
+          key: "disclaimers",
+          href: "/admin/disclaimers",
+          label: translate("admin.nav.disclaimers"),
           icon: "footer",
         },
       ],

@@ -4,7 +4,8 @@
  *   the admin footer settings, so the caller passes everything in.
  * Props: logo (a Link around Logo with tone "on-dark"), about (the short description), columns
  *   ({ heading, links: { label, href, external? }[] }), contacts ({ icon, text, href? }[], the
- *   address, phone and email lines), legal ({ copyright, links }), navLabel (required, already-
+ *   address, phone and email lines), disclaimer (plain text the super admin writes, shown above the legal line; none
+ *   when empty), legal ({ copyright, links }), navLabel (required, already-
  *   translated, names the link columns), className.
  * Responsive: one column on phones with the link columns two across; four columns from 768 px.
  * Accessibility: a contentinfo landmark; the link columns are in a labelled nav; every link is at
@@ -28,6 +29,7 @@ type SiteFooterProps = {
   navLabel: string;
   columns: FooterColumn[];
   contacts?: FooterContact[];
+  disclaimer?: string;
   legal: { copyright: string; links?: FooterLink[] };
   className?: string;
 };
@@ -53,6 +55,7 @@ function SiteFooter({
   navLabel,
   columns,
   contacts = [],
+  disclaimer,
   legal,
   className,
 }: SiteFooterProps) {
@@ -108,7 +111,20 @@ function SiteFooter({
             </ul>
           ) : null}
         </div>
-        <div className="mt-10 flex flex-wrap justify-between gap-x-6 gap-y-3 border-t border-dark-line pt-5 text-small text-on-dark-muted">
+        {disclaimer ? (
+          <p
+            data-slot="site-footer-disclaimer"
+            className="mt-10 max-w-[90ch] text-small whitespace-pre-line text-on-dark-muted"
+          >
+            {disclaimer}
+          </p>
+        ) : null}
+        <div
+          className={cn(
+            "flex flex-wrap justify-between gap-x-6 gap-y-3 border-t border-dark-line pt-5 text-small text-on-dark-muted",
+            disclaimer ? "mt-5" : "mt-10",
+          )}
+        >
           <p>{legal.copyright}</p>
           {legal.links && legal.links.length > 0 ? (
             <ul className="flex flex-wrap gap-x-6 gap-y-1">

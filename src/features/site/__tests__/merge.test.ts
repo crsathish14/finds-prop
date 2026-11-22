@@ -129,3 +129,16 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     expect(SITE_DEFAULTS.homepage.localities).toEqual([]);
   });
 });
+
+describe("UT-site-merge: the disclaimers (ADR-152)", () => {
+  it("shows no disclaimer when nothing is saved", () => {
+    expect(mergeSiteSettings([], log()).disclaimers).toEqual({});
+  });
+
+  it("uses a saved text and ignores a row that does not fit", () => {
+    const merged = mergeSiteSettings([{ key: "disclaimers", value: { footer: "Hello" } }], log());
+    expect(merged.disclaimers).toEqual({ footer: "Hello" });
+    const bad = mergeSiteSettings([{ key: "disclaimers", value: { footer: 5 } }], log());
+    expect(bad.disclaimers).toEqual({});
+  });
+});

@@ -1,5 +1,6 @@
 export {
   saveContentModules,
+  saveDisclaimers,
   saveFooter,
   saveHeader,
   saveHero,
@@ -8,6 +9,7 @@ export {
 } from "./actions";
 export {
   saveContentModulesConfig,
+  saveDisclaimersConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
@@ -15,6 +17,7 @@ export {
   saveSponsorsConfig,
 } from "./action-config";
 export {
+  getDisclaimersPage,
   getFooterPage,
   getHeaderPage,
   getHeroPage,
@@ -23,6 +26,7 @@ export {
   getSponsorsPage,
 } from "./queries";
 export type {
+  DisclaimersPage,
   FooterPage,
   HeaderPage,
   HeroPage,
@@ -34,6 +38,8 @@ export { HeroForm } from "./hero-form.client";
 export type { HeroFormProps } from "./hero-form.client";
 export { HomepageForm } from "./homepage-form.client";
 export type { HomepageFormProps } from "./homepage-form.client";
+export { DisclaimersForm } from "./disclaimers-form.client";
+export type { DisclaimersFormProps } from "./disclaimers-form.client";
 export { FooterForm } from "./footer-form.client";
 export type { FooterFormProps } from "./footer-form.client";
 export { HeaderForm } from "./header-form.client";
@@ -50,6 +56,7 @@ export {
 export type { EditableSetting, HeroLayout } from "./constants";
 export {
   contentModulesInputSchema,
+  disclaimersInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
@@ -57,6 +64,7 @@ export {
 } from "./schemas";
 export type {
   ContentModulesInput,
+  DisclaimersInput,
   FooterInput,
   HeaderInput,
   HeroInput,
@@ -81,4 +89,5 @@ export type {
   SponsorSlot,
 } from "./sponsor-rules";
 export type { SponsorCreativesView, SponsorEditView, SponsorPictureView } from "./sponsor-view";
+export { DISCLAIMER_MAX } from "./constants";
 export { SPONSORS_MAX, SPONSOR_IMAGE_MAX_BYTES, SPONSOR_IMAGE_MAX_KB } from "./constants";
