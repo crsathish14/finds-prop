@@ -58,6 +58,7 @@ type ProjectFieldValues = {
   /** yyyy-mm, or "" */
   possessionDate: string;
   contactPhone: string;
+  city: string;
   locality: string;
   address: string;
   latitude: string;
@@ -110,6 +111,7 @@ type ProjectFieldsWords = {
   landArea: string;
   possession: string;
   contactPhone: string;
+  city: string;
   locality: string;
   address: string;
   latitude: string;
@@ -174,6 +176,7 @@ const BHK_CHOICES = [1, 2, 3, 4, 5];
 
 const LIMITS = {
   name: 140,
+  city: 80,
   locality: 80,
   address: 300,
   rera: 60,
@@ -345,6 +348,9 @@ function ProjectFields({
         description={words.location.description}
       >
         <div className="grid gap-5 md:grid-cols-2">
+          <FormField label={words.city} required {...problem("city")}>
+            <Input {...text("city")} maxLength={LIMITS.city} autoComplete="off" />
+          </FormField>
           <FormField label={words.locality} required {...problem("locality")}>
             <Input {...text("locality")} maxLength={LIMITS.locality} autoComplete="off" />
           </FormField>
@@ -359,6 +365,7 @@ function ProjectFields({
                 onPick={(pick) => {
                   onChange("latitude", formatCoordinate(pick.lat));
                   onChange("longitude", formatCoordinate(pick.lng));
+                  if (pick.city) onChange("city", pick.city.slice(0, LIMITS.city));
                 }}
               />
             </div>

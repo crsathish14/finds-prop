@@ -74,6 +74,7 @@ export const EMPTY_PROJECT_VALUES: ProjectFieldValues = {
   landAreaAcres: "",
   possessionDate: "",
   contactPhone: "",
+  city: "",
   locality: "",
   address: "",
   latitude: "",
@@ -113,6 +114,7 @@ export function valuesOf(project: ProjectEditView): ProjectFieldValues {
     // The month box holds "yyyy-mm"; the project keeps the first day of that month.
     possessionDate: text(project.possessionDate).slice(0, 7),
     contactPhone: text(project.contactPhone),
+    city: project.city,
     locality: project.locality,
     address: text(project.address),
     latitude: text(project.latitude),
@@ -189,6 +191,7 @@ export function reconcile(values: ProjectFieldValues): ProjectFieldValues {
 export type ProjectProblem =
   | "name"
   | "builder"
+  | "city"
   | "locality"
   | "projectType"
   | "propertyType"
@@ -246,6 +249,7 @@ export function projectProblems(
   } else if (blank(values.reraNotApplicableReason)) {
     found.reraNotApplicableReason = "reraReason";
   }
+  if (blank(values.city)) found.city = "city";
   if (blank(values.locality)) found.locality = "locality";
   return found;
 }
@@ -268,6 +272,7 @@ export const SECTION_OF: Record<ProjectFieldName, ProjectSectionId> = {
   landAreaAcres: "basics",
   possessionDate: "basics",
   contactPhone: "basics",
+  city: "location",
   locality: "location",
   address: "location",
   latitude: "location",
@@ -325,7 +330,7 @@ export function sectionStatesOf(input: {
   const filled = (value: string) => value.trim() !== "";
   const complete: Record<ProjectSectionId, boolean> = {
     basics: filled(values.name) && (!needsBuilder || filled(values.builderId)),
-    location: filled(values.locality),
+    location: filled(values.locality) && filled(values.city),
     rera: values.reraApplicable
       ? filled(values.reraNumber)
       : filled(values.reraNotApplicableReason),

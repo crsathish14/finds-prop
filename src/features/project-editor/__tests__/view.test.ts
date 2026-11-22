@@ -20,6 +20,7 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   land_area_acres: "4.50",
   possession_date: "2027-06-01",
   contact_phone: "+919841055512",
+  city: "Chennai",
   locality: "OMR Navalur",
   address: "Navalur, Chennai",
   latitude: "12.840000",

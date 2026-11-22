@@ -75,11 +75,16 @@ function toListItem(row: ProjectListRow): ProjectListItem {
  * failed read is logged by its code only and throws: "Try again" asks the database again. Not cached: a cache
  * is shared between visitors and this read is one visitor's.
  */
-async function readProjects(): Promise<{ projects: ProjectListItem[]; readAt: string }> {
+async function readProjects(
+  cityKey?: string,
+): Promise<{ projects: ProjectListItem[]; readAt: string }> {
   const readAt = new Date().toISOString();
   const { data, error } = await (
     await createServerSupabase()
-  ).rpc("live_project_list", { p_limit: PROJECT_LIST_LIMIT });
+  ).rpc(
+    "live_project_list",
+    cityKey ? { p_limit: PROJECT_LIST_LIMIT, p_city: cityKey } : { p_limit: PROJECT_LIST_LIMIT },
+  );
   if (error) {
     logger.error("projects could not be read", { errorCode: error.code });
     throw new Error("projects could not be read");
@@ -97,10 +102,10 @@ async function readProjects(): Promise<{ projects: ProjectListItem[]; readAt: st
   return { projects, readAt };
 }
 
-/** The public projects, or a failure with no detail (the page offers Try again). */
-export async function getProjects(): Promise<ProjectList> {
+/** The public projects (of one city when a key is given), or a failure with no detail (the page offers Try again). */
+export async function getProjects(cityKey?: string): Promise<ProjectList> {
   try {
-    return { status: "ok", ...(await readProjects()) };
+    return { status: "ok", ...(await readProjects(cityKey)) };
   } catch (error) {
     // The prerender signal and redirects are Next.js control flow, not failures of the read.
     unstable_rethrow(error);

@@ -148,7 +148,7 @@ describe("UT-home-new-launches: the developers of the homepage", () => {
     });
     const developers = await getNewLaunchDevelopers();
     expect(rpc).toHaveBeenCalledTimes(1);
-    expect(rpc).toHaveBeenCalledWith("home_developers");
+    expect(rpc).toHaveBeenCalledWith("home_developers", {});
     expect(developers.map((developer) => [developer.builderId, developer.projectCount])).toEqual([
       ["b1", 3],
       ["b2", 1],
@@ -156,6 +156,12 @@ describe("UT-home-new-launches: the developers of the homepage", () => {
     ]);
     expect(developers[0]?.projects.map((entry) => entry.slug)).toEqual(["p1", "p2"]);
     expect(tag).toHaveBeenCalledWith(HOME_PROJECTS_TAG);
+  });
+
+  it("limits the developers to the chosen city when one is given", async () => {
+    rpc.mockResolvedValue({ data: [], error: null });
+    await getNewLaunchDevelopers([], "madurai");
+    expect(rpc).toHaveBeenCalledWith("home_developers", { p_city: "madurai" });
   });
 
   it("reads through the function only, never a table", async () => {

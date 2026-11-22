@@ -29,6 +29,7 @@ export interface ProjectEditView {
   /** yyyy-mm-dd, the first day of the month */
   possessionDate: string | null;
   contactPhone: string | null;
+  city: string;
   locality: string;
   address: string | null;
   latitude: number | null;
@@ -93,6 +94,7 @@ export interface ProjectDbRow {
   land_area_acres: number | string | null;
   possession_date: string | null;
   contact_phone: string | null;
+  city: string;
   locality: string;
   address: string | null;
   latitude: number | string | null;
@@ -162,6 +164,7 @@ export function toProjectEditView(
     landAreaAcres: asNumber(row.land_area_acres),
     possessionDate: row.possession_date,
     contactPhone: row.contact_phone,
+    city: row.city,
     locality: row.locality,
     address: row.address,
     latitude: asNumber(row.latitude),

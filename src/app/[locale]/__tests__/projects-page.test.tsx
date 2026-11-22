@@ -24,6 +24,9 @@ vi.mock("@/features/login-wall", () => ({
 }));
 
 vi.mock("next/server", () => ({ connection: state.connection }));
+vi.mock("@/features/cities", () => ({
+  getSelectedCity: async () => ({ key: "chennai", name: "Chennai", count: 0 }),
+}));
 vi.mock("@/features/site", () => ({
   getTranslate: async () => (key: string) => key,
   getSiteSettings: async () => ({ region: state.region }),

@@ -61,7 +61,7 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
 vi.mock("@/features/home", () => ({
   ExploreSection: () => <section data-testid="explore" />,
   CityFeaturedSection: () => <section data-testid="featured" />,
-  NewLaunchesSection: () => <section data-testid="launches" />,
+  CityNewLaunchesSection: () => <section data-testid="launches" />,
   CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),

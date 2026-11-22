@@ -35,8 +35,8 @@ import { FormField } from "@/components/patterns/form-field";
 import type { Translate } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
-/** What a chosen suggestion gives a form: the name of the place and its point. */
-type PlacePick = { label: string; lat: number; lng: number };
+/** What a chosen suggestion gives a form: the name of the place and its point, and its city when the address names one. */
+type PlacePick = { label: string; lat: number; lng: number; city?: string };
 
 /** What a form passes to the picker it was given. */
 type PlacePickerFieldProps = {

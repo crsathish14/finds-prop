@@ -75,9 +75,9 @@ export async function FeaturedSection({ cityKey }: { cityKey?: string } = {}) {
  * picked by the site, each with approved, published projects, on the darker band. It has no switch of its own:
  * it appears when there is a developer to show (BR-42, BR-94).
  */
-export async function NewLaunchesSection() {
+export async function NewLaunchesSection({ cityKey }: { cityKey?: string } = {}) {
   const [settings, translate] = await Promise.all([getSiteSettings(), getTranslate()]);
-  const developers = await getNewLaunchDevelopers(settings.top_developers.builderIds);
+  const developers = await getNewLaunchDevelopers(settings.top_developers.builderIds, cityKey);
   if (developers.length === 0) return null;
   return (
     <HomeSection labelledBy={NEW_LAUNCHES_TITLE} tone="band">
