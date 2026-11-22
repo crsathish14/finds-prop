@@ -21,7 +21,7 @@ ADR-144 left inline links out on purpose and called them "the first thing to add
 
 ## The migration
 
-`20261124100000_blog_inline_links.sql` replaces two functions (`create or replace`, same signatures, so no grant or type changes): `blog_body_text` and `blog_block_is_valid`. It then writes again, in place and without touching `updated_at`, the stored articles that hold the characters `](`, so the generated search vector and reading time come from the new function. Rows without those characters are identical under the old and new function. A stored row that holds link-shaped text from before is not refused (a body is checked when written); it is refused the next time it is saved, until the author fixes it.
+`20261124150000_blog_inline_links.sql` replaces two functions (`create or replace`, same signatures, so no grant or type changes): `blog_body_text` and `blog_block_is_valid`. It then writes again, in place and without touching `updated_at`, the stored articles that hold the characters `](`, so the generated search vector and reading time come from the new function. Rows without those characters are identical under the old and new function. A stored row that holds link-shaped text from before is not refused (a body is checked when written); it is refused the next time it is saved, until the author fixes it.
 
 ## Alternatives not taken
 
