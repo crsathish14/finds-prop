@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/search";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import type { Database } from "@/types/database.types";
@@ -9,6 +10,7 @@ import {
   developerFromProjects,
   DEVELOPER_COUNT,
   PROJECTS_PER_DEVELOPER,
+  chosenBuilders,
   rankBuilders,
 } from "./new-launches";
 import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "./columns";
@@ -92,7 +94,9 @@ export async function getNewestHomes(): Promise<ListingRow[]> {
  * one small read for each of the first few gets the projects to show. Any failed read is logged by
  * its code only and the developer, or the whole section, is left out.
  */
-export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
+export async function getNewLaunchDevelopers(
+  chosenIds: readonly string[] = [],
+): Promise<DeveloperRow[]> {
   "use cache";
   cacheTag(HOME_PROJECTS_TAG);
   cacheLife("minutes");
@@ -110,13 +114,13 @@ export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
     });
     return [];
   }
-  const ranked = rankBuilders(
-    (ranking.data ?? []).flatMap((row) => {
-      const parsed = rankingRowSchema.safeParse(row);
-      return parsed.success ? [parsed.data] : [];
-    }),
-    DEVELOPER_COUNT,
-  );
+  const rows = (ranking.data ?? []).flatMap((row) => {
+    const parsed = rankingRowSchema.safeParse(row);
+    return parsed.success ? [parsed.data] : [];
+  });
+  // The super admin's choice and order win; with none (or none usable) the developers are ranked as before.
+  const chosen = chosenBuilders(rows, chosenIds.slice(0, TOP_DEVELOPERS_MAX));
+  const ranked = chosen.length > 0 ? chosen : rankBuilders(rows, DEVELOPER_COUNT);
 
   const developers = await Promise.all(
     ranked.map(async ({ builderId, projectCount }) => {

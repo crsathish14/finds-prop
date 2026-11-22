@@ -7,6 +7,7 @@ import {
   heroInputSchema,
   homepageInputSchema,
   projectFieldsInputSchema,
+  topDevelopersInputSchema,
 } from "./schemas";
 import { sponsorsInputSchema } from "./sponsor-schemas";
 
@@ -93,6 +94,15 @@ export const saveDisclaimersConfig = {
 export const saveProjectFieldsConfig = {
   name: "saveProjectFields",
   input: projectFieldsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/** The developers the home page shows under "Top developers", in order (at most 10). Same limits and cache tag as the other settings. */
+export const saveTopDevelopersConfig = {
+  name: "saveTopDevelopers",
+  input: topDevelopersInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

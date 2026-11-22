@@ -11,6 +11,7 @@ import {
   saveHomepageConfig,
   saveProjectFieldsConfig,
   saveSponsorsConfig,
+  saveTopDevelopersConfig,
 } from "./action-config";
 import {
   saveContentModulesContent,
@@ -20,6 +21,7 @@ import {
   saveHeroContent,
   saveHomepageContent,
   saveProjectFieldsContent,
+  saveTopDevelopersContent,
 } from "./content-service";
 import { createContentStore } from "./service";
 import { saveSponsorsContent } from "./sponsor-service";
@@ -110,6 +112,17 @@ export const saveProjectFields = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveProjectFieldsContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key, count: input.fields.length });
+    return done;
+  },
+});
+
+/** Saves which developers the home page shows under "Top developers", and their order (at most 10). */
+export const saveTopDevelopers = defineAction({
+  ...saveTopDevelopersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveTopDevelopersContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
     return done;
   },
 });

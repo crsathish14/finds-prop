@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { PROPERTY_TYPES } from "@/features/project-editor/constants";
-import { PROJECT_FIELD_PROPERTY_TYPES, SITE_SETTING_SCHEMAS } from "@/features/site/schemas";
+import {
+  PROJECT_FIELD_ID as SITE_FIELD_ID,
+  PROJECT_FIELD_PROPERTY_TYPES as SITE_TYPES,
+  SITE_SETTING_SCHEMAS,
+} from "@/features/site/schemas";
+import { PROJECT_FIELD_ID, PROJECT_FIELD_PROPERTY_TYPES } from "../constants";
 import { SITE_DEFAULTS } from "@/features/site/defaults";
 import { mergeSiteSettings } from "@/features/site/merge";
 import { createLogger } from "@/server/logger";

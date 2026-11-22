@@ -27,4 +27,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   disclaimers: {},
   // No extra project form boxes until the super admin adds some (ADR-168).
   project_fields: { fields: [] },
+  // No chosen developers: the home page picks them by itself.
+  top_developers: { builderIds: [] },
 };

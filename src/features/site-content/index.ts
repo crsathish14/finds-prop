@@ -7,6 +7,7 @@ export {
   saveHomepage,
   saveProjectFields,
   saveSponsors,
+  saveTopDevelopers,
 } from "./actions";
 export {
   saveContentModulesConfig,
@@ -17,6 +18,7 @@ export {
   saveHomepageConfig,
   saveProjectFieldsConfig,
   saveSponsorsConfig,
+  saveTopDevelopersConfig,
 } from "./action-config";
 export {
   getDisclaimersPage,
@@ -40,6 +42,8 @@ export type {
 } from "./queries";
 export { HeroForm } from "./hero-form.client";
 export type { HeroFormProps } from "./hero-form.client";
+export { TopDevelopersForm } from "./top-developers-form.client";
+export type { TopDeveloperOption, TopDevelopersFormProps } from "./top-developers-form.client";
 export { HomepageForm } from "./homepage-form.client";
 export type { HomepageFormProps } from "./homepage-form.client";
 export { ProjectFieldsForm } from "./project-fields-form.client";
@@ -68,6 +72,7 @@ export {
   heroInputSchema,
   homepageInputSchema,
   projectFieldsInputSchema,
+  topDevelopersInputSchema,
 } from "./schemas";
 export type {
   ContentModulesInput,
@@ -77,6 +82,7 @@ export type {
   HeroInput,
   HomepageInput,
   ProjectFieldsInput,
+  TopDevelopersInput,
 } from "./schemas";
 export { sponsorsInputSchema } from "./sponsor-schemas";
 export type { SponsorsInput } from "./sponsor-schemas";

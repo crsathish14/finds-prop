@@ -23,6 +23,7 @@ vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example-project.supabase.co" },
 }));
 vi.mock("@/features/site", () => ({
+  getSiteSettings: async () => ({ top_developers: { builderIds: [] } }),
   getTranslate: async () => (key: string, values?: Record<string, string | number>) => {
     let node: unknown = messages;
     for (const part of key.split(".")) node = (node as Record<string, unknown>)[part];

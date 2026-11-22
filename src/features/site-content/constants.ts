@@ -11,6 +11,7 @@ export const EDITABLE_SETTINGS = [
   "content_modules",
   "disclaimers",
   "project_fields",
+  "top_developers",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
