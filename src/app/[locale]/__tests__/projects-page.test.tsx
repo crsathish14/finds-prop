@@ -13,13 +13,12 @@ const state = vi.hoisted(() => ({
 
 vi.mock("@/features/login-wall", () => ({
   isSignedOut: async () => state.wallHref !== null,
-  loginWallHref: async () => state.wallHref,
   loginWallMetadata: () => ({
     title: "loginWall.metaTitle",
     robots: { index: false, follow: false },
   }),
-  LoginWallScreen: (props: { kind: string; signInHref: string }) => (
-    <div data-testid="wall" data-kind={props.kind} data-href={props.signInHref} />
+  LoginWallScreen: (props: { kind: string; siteKey?: string }) => (
+    <div data-testid="wall" data-kind={props.kind} data-site-key={props.siteKey ?? ""} />
   ),
 }));
 
@@ -78,17 +77,16 @@ beforeEach(() => {
 });
 
 describe("the projects page for a visitor who is not signed in (login wall)", () => {
-  it("draws the wall with the way back to this page and reads no project", async () => {
-    state.wallHref = "/auth?redirect=%2Fprojects";
+  it("draws the wall, with the sign-in inside it, and reads no project", async () => {
+    state.wallHref = "signed-out";
     render(await ProjectsPage());
     expect(screen.getByTestId("wall")).toHaveAttribute("data-kind", "projects");
-    expect(screen.getByTestId("wall")).toHaveAttribute("data-href", "/auth?redirect=%2Fprojects");
     expect(screen.queryByTestId("screen")).toBeNull();
     expect(state.reads).not.toHaveBeenCalled();
   });
 
   it("has one generic title and is not indexed", async () => {
-    state.wallHref = "/auth?redirect=%2Fprojects";
+    state.wallHref = "signed-out";
     const metadata = await generateMetadata();
     expect(metadata.title).toBe("loginWall.metaTitle");
     expect(metadata.robots).toEqual({ index: false, follow: false });
