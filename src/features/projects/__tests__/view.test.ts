@@ -29,6 +29,8 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   status: "under_construction",
   propertyType: "apartment",
   offerType: null,
+  plotStatus: null,
+  villaType: null,
   price: 7_800_000,
   priceType: "basic",
   areaMinSqft: null,
@@ -122,6 +124,19 @@ describe("UT-project-view: what the project pages show", () => {
         "availableUnits",
         "rera",
       ]);
+    });
+
+    it("adds the plot status to a plot and the villa type to a villa, and to nothing else (ADR-160)", () => {
+      const keys = (overrides: Partial<ProjectData>) =>
+        specItems(project(overrides)).map((item) => item.key);
+      const plot = { propertyType: "plot", plotStatus: "investment" } as const;
+      expect(keys(plot)).toEqual(expect.arrayContaining(["propertyType", "plotStatus"]));
+      expect(specItems(project(plot))).toContainEqual({ key: "plotStatus", value: "investment" });
+      const villa = { propertyType: "villa", villaType: "row_house" } as const;
+      expect(specItems(project(villa))).toContainEqual({ key: "villaType", value: "row_house" });
+      expect(keys({ ...plot, propertyType: "apartment" })).not.toContain("plotStatus");
+      expect(keys({ ...villa, propertyType: "plot" })).not.toContain("villaType");
+      expect(keys({ propertyType: "plot", plotStatus: null })).not.toContain("plotStatus");
     });
 
     it("carries each fact's value", () => {

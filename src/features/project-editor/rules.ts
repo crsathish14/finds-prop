@@ -42,6 +42,16 @@ export function bedroomsApply(projectType: string, propertyType: string): boolea
   );
 }
 
+/** A plot says whether it is an investment plot or ready to build (ADR-160). */
+export function plotStatusApplies(propertyType: string): boolean {
+  return propertyType === "plot";
+}
+
+/** A villa says what kind of villa it is (ADR-160), residential or commercial. */
+export function villaTypeApplies(propertyType: string): boolean {
+  return propertyType === "villa";
+}
+
 /** A smallest and largest area are asked for a plot and for every commercial project. */
 export function areaApplies(projectType: string, propertyType: string): boolean {
   return propertyType === "plot" || projectType === "commercial";

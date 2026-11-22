@@ -182,6 +182,8 @@ const FIELD_WORDS: ProjectFieldsWords = {
   projectType: "Project type",
   propertyType: "Property type",
   offerType: "This project is for",
+  plotStatus: "Plot status",
+  villaType: "Villa type",
   projectStatus: "Status",
   price: "Starting price",
   priceType: "Price type",
@@ -217,6 +219,8 @@ const OPTIONS = {
   projectTypes: [{ value: "residential", label: "Residential" }],
   propertyTypes: [{ value: "apartment", label: "Apartment" }],
   offerTypes: [{ value: "sale", label: "Sale" }],
+  plotStatuses: [],
+  villaTypes: [],
   priceTypes: [{ value: "basic", label: "Basic price" }],
   statuses: [{ value: "new_launch", label: "New launch" }],
 };
@@ -227,6 +231,8 @@ const VALUES: ProjectFieldValues = {
   projectType: "",
   propertyType: "",
   offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "",
   price: "",
   priceType: "",
@@ -253,7 +259,14 @@ const VALUES: ProjectFieldValues = {
   seoDescription: "",
 };
 
-const APPLIES = { offerType: false, bedrooms: true, area: false, possession: true };
+const APPLIES = {
+  offerType: false,
+  plotStatus: false,
+  villaType: false,
+  bedrooms: true,
+  area: false,
+  possession: true,
+};
 
 /** The fields with their own state, as a page keeps it; the spy sees every change. */
 function Live({
@@ -325,7 +338,16 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
     expect(screen.queryByLabelText(/Minimum area/)).toBeNull();
     expect(screen.queryByLabelText(/Maximum area/)).toBeNull();
     rerender(
-      <Live applies={{ offerType: true, bedrooms: false, area: true, possession: false }} />,
+      <Live
+        applies={{
+          offerType: true,
+          plotStatus: false,
+          villaType: false,
+          bedrooms: false,
+          area: true,
+          possession: false,
+        }}
+      />,
     );
     expect(screen.queryByRole("group", { name: /BHK options/ })).toBeNull();
     expect(screen.queryByLabelText(/Possession/)).toBeNull();
