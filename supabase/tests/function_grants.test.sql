@@ -30,7 +30,7 @@ select is(
 select is(
   pg_temp.who_runs('authenticated'),
   'admin_builder_overview, admin_builders, admin_crm_integrations, admin_feedback_counts, '
-  || 'admin_feedback_list, admin_forms,admin_listing_counts, '
+  || 'admin_feedback_list, admin_forms, admin_listing_counts, '
   || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
   || 'admin_projects, '
   || 'admin_properties, admin_set_feedback_reviewed, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
