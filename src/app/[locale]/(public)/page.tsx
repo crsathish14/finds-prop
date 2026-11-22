@@ -6,8 +6,8 @@ import {
   BrowseSection,
   CtaSection,
   ExploreSection,
-  FeaturedSection,
-  NewestSection,
+  CityFeaturedSection,
+  CityNewestSection,
   NewLaunchesSection,
   WhySection,
 } from "@/features/home";
@@ -67,10 +67,10 @@ export default async function HomePage() {
   // Each section below the hero; the super admin chooses their order (CR plan 5), one order for desktop and mobile.
   const sections: Record<HomeSectionKey, ReactNode> = {
     discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
-    featured: homepage.showFeatured ? <FeaturedSection /> : null,
+    featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
     newLaunches: <NewLaunchesSection />,
     projectTypes: homepage.showProjectTypes ? <BrowseSection regionName={region.name} /> : null,
-    newest: <NewestSection brandName={brandName} />,
+    newest: <CityNewestSection brandName={brandName} />,
     whyUs: homepage.showWhyUs ? <WhySection brandName={brandName} /> : null,
     cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,
   };

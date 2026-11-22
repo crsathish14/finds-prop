@@ -1,7 +1,7 @@
 -- Header city selector, part 1: the cities table, its trigger, listed_cities() and the p_city filter.
 -- Tests: DB-FN-cities (BR-90, BR-91). Fictional listings only.
 begin;
-select plan(16);
+select plan(18);
 
 insert into auth.users (id, phone, phone_confirmed_at)
 values ('00000000-0000-4000-8000-0000000000c1', '919100000011', now());
@@ -70,6 +70,16 @@ select is(
 );
 select throws_ok(
   $$select * from public.search_properties(p_city => '!!')$$, '22023', 'search.invalid_city', 'a city with no letters is refused'
+);
+select is(
+  (select count(*) from public.home_properties('newest', 'coimbatore')),
+  2::bigint,
+  'the homepage newest section keeps only the chosen city'
+);
+select is(
+  (select count(*) from public.home_properties('newest', 'coimbatore') where public.city_key(city) is distinct from 'coimbatore'),
+  0::bigint,
+  'no home of another city comes back'
 );
 select throws_ok($$insert into public.cities (key, name) values ('hack', 'Hack')$$, '42501', null, 'a visitor cannot write a city');
 

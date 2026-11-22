@@ -484,7 +484,10 @@
       "yourAccount": "Your account",
       "openMenu": "Open menu",
       "menuTitle": "Menu",
-      "closeMenu": "Close menu"
+      "closeMenu": "Close menu",
+      "cityButton": "City: {city}. Change city",
+      "cityHeading": "Choose your city",
+      "defaultCity": "Chennai"
     },
     "footer": {
       "exploreHeading": "Explore",
