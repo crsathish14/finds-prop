@@ -15,7 +15,7 @@ export function SignInLink({ label, className }: { label: string; className?: st
     <Link
       href={pathname === undefined ? "/auth" : signInHref(pathname)}
       variant="nav"
-      className={cn("px-3 py-3 text-primary no-underline", className)}
+      className={cn("px-3 py-3 whitespace-nowrap text-primary no-underline", className)}
     >
       {label}
     </Link>
