@@ -171,3 +171,15 @@ describe("UT-home-new-launches: the developers of the homepage", () => {
     expect(await getNewLaunchDevelopers()).toEqual([]);
   });
 });
+
+describe("UT-home-new-launches: the super admin's choice of developers", () => {
+  it("shows the chosen developers in the chosen order, from the same single read", async () => {
+    rpc.mockResolvedValue({
+      data: [project("b1", "p1"), project("b2", "p2"), project("b3", "p3")],
+      error: null,
+    });
+    const developers = await getNewLaunchDevelopers(["b3", "b1", "nobody"]);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(developers.map((developer) => developer.builderId)).toEqual(["b3", "b1"]);
+  });
+});

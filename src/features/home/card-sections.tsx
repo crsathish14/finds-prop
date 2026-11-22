@@ -8,7 +8,7 @@ import { Link } from "@/components/ui/link";
 import { buildSearchHref } from "@/features/search";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
-import { getTranslate } from "@/features/site";
+import { getSiteSettings, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 import { toDeveloperCard, toPropertyCard, type CardContext } from "./cards";
 import type { ListingRow } from "./schemas";
@@ -71,13 +71,14 @@ export async function FeaturedSection() {
 }
 
 /**
- * "New launches from developers": three developers with approved, published projects, on the darker
- * band. It has no switch of its own: it appears when there is a developer to show (BR-42, BR-94).
+ * "Top developers": up to ten developers the super admin chose (in that order), or, until one is chosen, three
+ * picked by the site, each with approved, published projects, on the darker band. It has no switch of its own:
+ * it appears when there is a developer to show (BR-42, BR-94).
  */
 export async function NewLaunchesSection() {
-  const developers = await getNewLaunchDevelopers();
+  const [settings, translate] = await Promise.all([getSiteSettings(), getTranslate()]);
+  const developers = await getNewLaunchDevelopers(settings.top_developers.builderIds);
   if (developers.length === 0) return null;
-  const translate = await getTranslate();
   return (
     <HomeSection labelledBy={NEW_LAUNCHES_TITLE} tone="band">
       <SectionHead

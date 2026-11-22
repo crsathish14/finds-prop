@@ -7,7 +7,7 @@ const error = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: vi.fn() }));
 vi.mock("@/server/supabase/public", () => ({
-  createPublicSupabase: () => ({ from: () => ({ select }) }),
+  createPublicSupabase: () => ({ from: () => ({ select: () => ({ in: select }) }) }),
 }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 

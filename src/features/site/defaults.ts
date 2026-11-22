@@ -25,4 +25,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   content_modules: { blog: true, faq: true, careers: true },
   // No disclaimer until the super admin writes one (ADR-152): nothing shows and no gap is left.
   disclaimers: {},
+  // No chosen developers: the home page picks them by itself.
+  top_developers: { builderIds: [] },
 };

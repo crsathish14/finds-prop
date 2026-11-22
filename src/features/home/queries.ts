@@ -2,9 +2,15 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { LISTINGS_TAG } from "@/features/search";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
-import { developerFromProjects, DEVELOPER_COUNT, rankBuilders } from "./new-launches";
+import {
+  chosenBuilders,
+  developerFromProjects,
+  DEVELOPER_COUNT,
+  rankBuilders,
+} from "./new-launches";
 import { listingRowSchema, rankingRowSchema, type DeveloperRow, type ListingRow } from "./schemas";
 
 /** Cache tags the admin actions will refresh when a listing or a project is approved or changed. */
@@ -85,7 +91,9 @@ export async function getNewestHomes(): Promise<ListingRow[]> {
  * and counted from them and each card takes its builder's first projects. A failed read is logged
  * by its code only and the section is left out.
  */
-export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
+export async function getNewLaunchDevelopers(
+  chosenIds: readonly string[] = [],
+): Promise<DeveloperRow[]> {
   "use cache";
   cacheTag(HOME_PROJECTS_TAG);
   cacheLife("minutes");
@@ -98,13 +106,13 @@ export async function getNewLaunchDevelopers(): Promise<DeveloperRow[]> {
     return [];
   }
   const rows: unknown[] = Array.isArray(data) ? data : [];
-  const ranked = rankBuilders(
-    rows.flatMap((row) => {
-      const parsed = rankingRowSchema.safeParse(row);
-      return parsed.success ? [parsed.data] : [];
-    }),
-    DEVELOPER_COUNT,
-  );
+  const ranking = rows.flatMap((row) => {
+    const parsed = rankingRowSchema.safeParse(row);
+    return parsed.success ? [parsed.data] : [];
+  });
+  // The super admin's choice and order win; with none (or none usable) the developers are ranked as before.
+  const chosen = chosenBuilders(ranking, chosenIds.slice(0, TOP_DEVELOPERS_MAX));
+  const ranked = chosen.length > 0 ? chosen : rankBuilders(ranking, DEVELOPER_COUNT);
   const developers = ranked.map(({ builderId, projectCount }) =>
     developerFromProjects(builderId, projectCount, rows),
   );

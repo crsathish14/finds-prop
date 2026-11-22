@@ -1,0 +1,23 @@
+# ADR-151 · The Privacy Policy and Terms of Use are edited by the admin
+
+- Status: Accepted for part A (server). Parts B (Lab parts), C (the admin screen) and D (public pages read the saved text) follow in their own pull requests. Plan approved by the owner on 22 Nov 2026 ("approve the plan").
+- Date: 2026-11-22
+- Related: ADR-053 (legal page shells, text in typed files), ADR-089 and ADR-090 (site content settings), DEC-25 (the owner writes the final text), FR-SYS-09, FR-ADM-10
+- Class: C2 (legal text, a new saved shape)
+
+## Decision
+
+- **Who edits:** only a super admin, with the same limits as the other site content (`admin_edit`). The page text is public once published, so it follows the rule that `site_settings` holds nothing private.
+- **Where it is stored:** two rows of the existing `site_settings` table, `legal_privacy` and `legal_terms`. No migration: the key rule already allows these names, and the existing policies and the audit trigger (`cms.changed`: which page, who, never its text) apply unchanged.
+- **Two copies per page, one row:** `{ published, working }`. Visitors read `published`. The editor opens on `working`, or on `published` when there is no working copy. **Save draft** writes `working` and never changes what visitors read. **Publish** writes `published` with `draft: false`, today's date in India as "Last updated" and the next version (1, 2, 3 …), and removes the working copy.
+- **The text in code stays as the fallback.** A page with no published row shows the placeholder from `content/privacy.ts` or `content/terms.ts` with its draft notice and `noindex`, exactly as ADR-053 describes. A row that does not match its shape is ignored (and for the editor counts as empty), so a page can never come up empty.
+- **The Cookie information page stays in code.** Its table must list what the code really stores (ADR-053), so an editor could make it say something untrue. It can be added later if the owner wants it.
+- **Shape and limits:** the same blocks the pages already use (paragraph, list, table), plain text only (no markup, no control characters), at most 30 sections of 40 blocks, unique section anchors, table rows as wide as their header. Limits are in `src/features/legal/constants.ts`.
+- **Public reads of site settings** now ask only for the keys the site knows (`.in("key", …)`), so a long legal row is not fetched with the header and footer on every page.
+
+## Consequences
+
+- Part A has no visible change: the pages still read the text in code until part D.
+- Publishing is a deliberate act that raises the version; the screen (part C) disables the button while a save is pending, because a repeated publish would raise the version twice.
+- **All words of the editor are unapproved** until the owner reviews them (part C). The legal text itself is still the owner's or counsel's (DEC-25): this tool does not write or check it.
+- There is no version history: only the live version and one working copy are kept.
