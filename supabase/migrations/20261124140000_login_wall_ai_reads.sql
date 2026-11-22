@@ -1,4 +1,5 @@
 -- Login wall, AI tools change: the two reads the assistant's list tools still made on the tables.
+-- Renamed from 20261124130000 (the same version as home_properties_city); `create or replace` makes it safe whether or not the old version was already applied.
 -- Why: with the lists behind sign-in, the assistant's `list_localities` and `get_builder` tools may only read for a
 -- signed-in customer, and part C closes the table grants to visitors who are not signed in. Both functions run with
 -- the owner's rights, repeat the public row rule (approved homes; approved, published projects of active builders:
@@ -7,7 +8,7 @@
 
 -- The locality of every approved home (up to 10,000) and of every live project of an active builder (up to 1,000), as
 -- plain names, for the assistant to count; the flags say a read stopped at its cap.
-create function public.live_locality_names()
+create or replace function public.live_locality_names()
 returns jsonb
 language sql
 stable
@@ -39,7 +40,7 @@ $$;
 
 -- One active builder's newest live projects (at most p_limit, 1 to 50), how many live projects they have in all,
 -- and the day the earliest was created. Null when no active builder has the id.
-create function public.live_builder_projects(p_builder uuid, p_limit integer default 10)
+create or replace function public.live_builder_projects(p_builder uuid, p_limit integer default 10)
 returns jsonb
 language sql
 stable
