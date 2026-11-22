@@ -8,7 +8,7 @@
 -- tests/integration/public-queries.test.ts (IT-queries) checks them again through the real client.
 -- Fictional data only.
 begin;
-select plan(7);
+select plan(8);
 
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
@@ -83,8 +83,28 @@ select set_eq(
       and not attribute.attisdropped
       and has_column_privilege('anon', class.oid, attribute.attname, 'SELECT')
   $$,
-  $$select table_name, column_name from expected_public_columns$$,
+  $
+    select table_name, column_name from expected_public_columns
+    where table_name not in ('properties', 'listing_media', 'projects', 'project_units', 'project_price_trends')
+  $,
   'DB-RLS-column-grants: anon can read exactly the agreed columns, and nothing in any other table'
+);
+
+-- 1b. Login wall: the lists of homes and projects are for signed-in people. Visitors who are not signed in read one
+-- home or one project, the homepage and the sitemap through the narrow functions, and no column of these five tables.
+select is_empty(
+  $
+    select class.relname::text, attribute.attname::text
+    from pg_class as class
+    join pg_namespace as space on space.oid = class.relnamespace
+    join pg_attribute as attribute on attribute.attrelid = class.oid
+    where space.nspname = 'public'
+      and class.relname in ('properties', 'listing_media', 'projects', 'project_units', 'project_price_trends')
+      and attribute.attnum > 0
+      and not attribute.attisdropped
+      and has_column_privilege('anon', class.oid, attribute.attname, 'SELECT')
+  $,
+  'DB-RLS-login-wall: anon can read no column of homes, photos, projects, units or price trends'
 );
 
 -- 2. The same list, with names: the columns that must never reach a visitor
@@ -143,8 +163,8 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('blog_body_text'), ('city_key'), ('home_developers'), ('home_properties'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties'), ('sitemap_entries')$$,
-  'DB-RLS-column-grants: anon can run only the searches, the one-home and one-project reads, the homepage and sitemap reads, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
+  $$values ('blog_body_text'), ('city_key'), ('home_developers'), ('home_properties'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('sitemap_entries')$$,
+  'DB-RLS-column-grants: anon can run only the content searches, the one-home and one-project reads, the homepage and sitemap reads, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
 -- Data for the rounding checks: one approved home with an exact point, one live project.

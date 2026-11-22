@@ -24,7 +24,7 @@ select is(
   pg_temp.who_runs('anon'),
   'blog_body_text, city_key, home_developers, home_properties, listed_cities, listing_is_public, listing_label, project_is_live, '
   || 'public_project, public_project_form, public_property, search_blog_posts, '
-  || 'search_faqs, search_job_postings, search_properties, sitemap_entries',
+  || 'search_faqs, search_job_postings, sitemap_entries',
   'visitors can run only the public read helpers and the searches'
 );
 
