@@ -101,7 +101,7 @@ test.describe("@smoke content security policy", () => {
     await collectViolations(page);
     await page.goto("/");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: en.site.header.openMenu }).click();
+    await page.getByRole("button", { name: en.site.header.guestMenu }).click();
     await page.waitForLoadState("networkidle");
     expect(await violationsOn(page)).toEqual([]);
   });

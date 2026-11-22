@@ -37,6 +37,8 @@ export function AccountDrawer({ labels, links, groups, actions, trailing }: Acco
   }));
   return (
     <MobileDrawer
+      // Phones have no menu button: their links are in the person menu (see HeaderAccountActions).
+      className="hidden md:inline-grid"
       triggerLabel={labels.trigger}
       title={labels.title}
       closeLabel={labels.close}

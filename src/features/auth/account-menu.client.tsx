@@ -16,7 +16,12 @@ export type AccountMenuProps = {
   roleLabel?: string;
   roleTone?: "default" | "admin";
   /** The workspace and account links, built by the caller; each carries its own icon. */
-  groups: { label?: string; entries: { label: string; href: string; icon: ReactNode }[] }[];
+  groups: {
+    label?: string;
+    entries: { label: string; href: string; icon?: ReactNode }[];
+    /** Shown on phones only. */
+    phoneOnly?: boolean;
+  }[];
   signOut: {
     label: string;
     /** Shown in a toast if the server could not end the session. */
@@ -42,6 +47,7 @@ export function AccountMenu({ groups, signOut: signOutText, ...person }: Account
   const menuGroups: MenuGroup[] = [
     ...groups.map((group) => ({
       ...(group.label ? { label: group.label } : {}),
+      ...(group.phoneOnly ? { phoneOnly: true } : {}),
       items: group.entries,
     })),
     {

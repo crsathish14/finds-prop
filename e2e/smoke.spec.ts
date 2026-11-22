@@ -145,19 +145,20 @@ test.describe("@smoke site header", () => {
     expect(problems).toEqual([]);
   });
 
-  test("opens the menu drawer on a phone, with the main links and the sign-in actions", async ({
+  test("a phone has no menu button: the person menu holds the main links and the sign-in actions", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await expect(page.getByRole("navigation", { name: en.site.header.navLabel })).toBeHidden();
-    await page.getByRole("button", { name: en.site.header.openMenu }).click();
-    const drawer = page.getByRole("dialog", { name: en.site.header.menuTitle });
-    await expect(drawer.getByRole("link", { name: nav.buy })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: en.site.header.signIn })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: en.site.header.postProperty })).toBeVisible();
+    await expect(page.getByRole("button", { name: en.site.header.openMenu })).toBeHidden();
+    await page.getByRole("button", { name: en.site.header.guestMenu }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByRole("menuitem", { name: nav.buy })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: en.site.header.signIn })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: en.site.header.postProperty })).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(drawer).toBeHidden();
+    await expect(menu).toBeHidden();
   });
 
   test("the header itself has no serious accessibility violation, on a page with and without the hero", async ({

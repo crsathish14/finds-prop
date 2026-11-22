@@ -487,6 +487,8 @@
       "accountMenu": "Account menu",
       "yourAccount": "Your account",
       "openMenu": "Open menu",
+      "exploreHeading": "Explore",
+      "guestMenu": "Menu",
       "menuTitle": "Menu",
       "closeMenu": "Close menu",
       "cityButton": "City: {city}. Change city",

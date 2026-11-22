@@ -41,7 +41,7 @@ export function CityPicker({ cities, selectedKey, labels }: CityPickerProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={labels.button}
-        className="inline-flex h-(--size-icon-btn) max-w-32 items-center gap-1 rounded-pill px-2 text-body font-semibold text-primary hover:bg-canvas-sunken md:max-w-48 md:px-3"
+        className="inline-flex h-(--size-icon-btn) max-w-32 min-w-0 items-center gap-1 rounded-pill px-2 text-body font-semibold text-primary hover:bg-canvas-sunken md:max-w-48 md:px-3"
       >
         <Icon icon={MapPin} size="sm" />
         <span className="truncate">{selected.name}</span>

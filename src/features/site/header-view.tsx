@@ -42,7 +42,7 @@ export function HeaderView({
   return (
     <SiteHeader
       logo={
-        <Link href="/" aria-label={labels.home} className="no-underline">
+        <Link href="/" aria-label={labels.home} className="shrink-0 no-underline">
           <Logo name={header.brandName} />
         </Link>
       }

@@ -39,7 +39,7 @@ export async function PublicHeader() {
     ),
     accountSlot: (
       <Suspense fallback={<Skeleton shape="circle" className="size-10" />}>
-        <HeaderAccountActions />
+        <HeaderAccountActions links={header.links} cta={header.cta} />
       </Suspense>
     ),
     menuSlot: (
