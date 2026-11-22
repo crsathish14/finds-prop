@@ -1,4 +1,5 @@
-import { resolveHomeOrder, type HomeSectionKey, type SiteSettings } from "@/features/site";
+import type { SiteSettings } from "@/features/site";
+import { resolveHomeOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 /**
  * What the Header and Footer pages do with the values, kept apart from the screens so they can be tested on their own
