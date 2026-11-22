@@ -48,7 +48,7 @@ function view(id: string, name: string, format: "strip" | "panel" | null = "stri
   };
   if (format === "strip") {
     sponsor.strip = {
-      desktop: picture(`sponsors/${id}/sd.webp`, 1940, 180),
+      desktop: picture(`sponsors/${id}/sd.webp`, 1940, 234),
       compact: picture(`sponsors/${id}/sp.webp`, 640, 200),
     };
   }
@@ -138,7 +138,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     const { saveSponsors, upload, remove, saveHero } = setup([view("a", "Alpha")]);
     await userEvent.click(addButton());
     await fillBoxes();
-    await choose("Strip · desktop", png(1940, 180, 90_000));
+    await choose("Strip · desktop", png(1940, 234, 90_000));
     await choose("Strip · phone", png(640, 200, 40_000));
     expect(await within(drawer()).findAllByText("Fills the slot")).toHaveLength(2);
     await saveDrawer();
@@ -181,7 +181,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     const { saveSponsors } = setup();
     await userEvent.click(addButton());
     await fillBoxes();
-    await choose("Strip · desktop", png(1940, 180));
+    await choose("Strip · desktop", png(1940, 234));
     await saveDrawer();
     expect(await within(drawer()).findByText(words.slot.neededTitle)).toBeInTheDocument();
     expect(saveSponsors).not.toHaveBeenCalled();
@@ -196,7 +196,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     const { remove, saveSponsors } = setup([], vi.fn<SaveSponsors>().mockResolvedValue(refusal));
     await userEvent.click(addButton());
     await fillBoxes();
-    await choose("Strip · desktop", png(1940, 180));
+    await choose("Strip · desktop", png(1940, 234));
     await choose("Strip · phone", png(640, 200));
     await saveDrawer();
     await waitFor(() => expect(saveSponsors).toHaveBeenCalled());
@@ -212,7 +212,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     upload.mockResolvedValue(false);
     await userEvent.click(addButton());
     await fillBoxes();
-    await choose("Strip · desktop", png(1940, 180));
+    await choose("Strip · desktop", png(1940, 234));
     await choose("Strip · phone", png(640, 200));
     await saveDrawer();
     expect(await within(drawer()).findByText(words.slot.uploadTitle)).toBeInTheDocument();
@@ -245,7 +245,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
   it("leaves nothing in the bucket when the drawer is cancelled", async () => {
     const { upload, saveSponsors } = setup();
     await userEvent.click(addButton());
-    await choose("Strip · desktop", png(1940, 180));
+    await choose("Strip · desktop", png(1940, 234));
     await userEvent.click(within(drawer()).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(upload).not.toHaveBeenCalled();

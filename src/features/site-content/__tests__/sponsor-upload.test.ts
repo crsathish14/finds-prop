@@ -16,14 +16,14 @@ const fileOf = (bytes: Uint8Array, name = "banner", type = "image/png"): File =>
 describe("UT-sponsor-upload: checking a picture and sending it (S7-T11)", () => {
   describe("checkPicture", () => {
     it("takes a picture at twice the slot, filling it", async () => {
-      const check = await checkPicture(fileOf(webpLossy(1940, 180, 90_000)), "strip-desktop");
+      const check = await checkPicture(fileOf(webpLossy(1940, 234, 90_000)), "strip-desktop");
       expect(check).toMatchObject({ ok: true, fit: "cover", bytes: 90_000 });
-      expect(check.ok && check.info).toEqual({ type: "image/webp", width: 1940, height: 180 });
+      expect(check.ok && check.info).toEqual({ type: "image/webp", width: 1940, height: 234 });
     });
 
     it("takes a near miss and says it will be shown whole", async () => {
-      // 1940 x 240 is about 20% too tall for the desktop strip: inside 30%, outside 8%.
-      const check = await checkPicture(fileOf(png(1940, 240)), "strip-desktop");
+      // 1940 x 300 is about 22% too tall for the desktop strip: inside 30%, outside 8%.
+      const check = await checkPicture(fileOf(png(1940, 300)), "strip-desktop");
       expect(check).toMatchObject({ ok: true, fit: "contain" });
     });
 
