@@ -24,7 +24,8 @@ export type AdminIconName =
   | "faq"
   | "careers"
   | "insights"
-  | "profile";
+  | "profile"
+  | "feedback";
 
 export type AdminNavItem = {
   key: string;
@@ -38,7 +39,11 @@ export type AdminNavItem = {
 export type AdminNavGroup = { label?: string; items: AdminNavItem[] };
 
 /** The groups in the order of the approved navigation. Literal message keys, so the messages check sees them. */
-export function buildAdminNav(translate: Translate, pendingListings: number): AdminNavGroup[] {
+export function buildAdminNav(
+  translate: Translate,
+  pendingListings: number,
+  feedbackNotReviewed = 0,
+): AdminNavGroup[] {
   return [
     {
       items: [
@@ -92,6 +97,13 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
         { key: "leads", href: "/admin/leads", label: translate("admin.nav.leads"), icon: "leads" },
         { key: "forms", href: "/admin/forms", label: translate("admin.nav.forms"), icon: "forms" },
         { key: "crm", href: "/admin/crm", label: translate("admin.nav.crm"), icon: "crm" },
+        {
+          key: "feedback",
+          href: "/admin/feedback",
+          label: translate("admin.nav.feedback"),
+          icon: "feedback",
+          ...(feedbackNotReviewed > 0 ? { count: feedbackNotReviewed } : {}),
+        },
       ],
     },
     {

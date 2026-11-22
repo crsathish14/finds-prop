@@ -18,6 +18,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "admin_decision",
         "admin_edit",
         "builder_edit",
+        "builder_feedback",
         "email_link",
         "enquiry",
         "form_submit",
@@ -46,6 +47,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["admin_decision", [{ who: "user", windowSeconds: 3600, max: 120 }]],
     ["admin_edit", [{ who: "user", windowSeconds: 3600, max: 600 }]],
     ["project_save", [{ who: "user", windowSeconds: 3600, max: 60 }]],
+    ["builder_feedback", [{ who: "user", windowSeconds: 3600, max: 5 }]],
     [
       "places",
       [
