@@ -367,9 +367,6 @@ export function heroPictureOf(values: HeroFormValues, standard: StandardHero): H
 
 // --- homepage ----------------------------------------------------------------------------------------------------
 
-/** How many curated localities become Popular chips in the search card (the same count the search feature uses, ADD-11). */
-export const POPULAR_CHIPS = 4;
-
 export const HOMEPAGE_SWITCHES = [
   "showFeatured",
   "showProjectTypes",
@@ -462,13 +459,12 @@ export type HomepageSectionKey =
 
 export interface HomepagePicture {
   sections: { key: HomepageSectionKey; on: boolean }[];
-  popular: string[];
   tiles: string[];
 }
 
 /**
- * The small picture of the home page: the sections in the order of the page with their state, the Popular chips (the
- * first four localities) and the locality tiles. A locality section with no localities is drawn Off, as the public page
+ * The small picture of the home page: the sections in the order of the page with their state and the locality tiles
+ * (the home page's search bar has no locality chips since ADR-150). A locality section with no localities is drawn Off, as the public page
  * leaves out a section with nothing to show (FR-PUB-05).
  */
 export function homepagePictureOf(values: {
@@ -489,7 +485,6 @@ export function homepagePictureOf(values: {
       { key: "whyUs", on: values.showWhyUs },
       { key: "cta", on: values.showCta },
     ],
-    popular: labels.slice(0, POPULAR_CHIPS),
     tiles: labels,
   };
 }

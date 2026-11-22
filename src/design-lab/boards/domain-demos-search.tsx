@@ -1,130 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import {
-  SearchCard,
-  type SearchCardProps,
-  type SearchValues,
-} from "@/components/domain/search-card";
+import { HomeSearchBar, type HomeSearchBarProps } from "@/components/domain/home-search-bar.client";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
 
-/** The twelve Chennai localities of the approved UX, which the page would normally supply. */
-const LOCALITIES = [
-  "OMR Sholinganallur",
-  "OMR Navalur",
-  "OMR Siruseri",
-  "Perungudi",
-  "Velachery",
-  "Adyar",
-  "Besant Nagar",
-  "Anna Nagar",
-  "T Nagar",
-  "Porur",
-  "Guindy",
-  "Medavakkam",
-];
+type HostProps = Partial<Omit<HomeSearchBarProps, "action">>;
 
-const POPULAR = [
-  { label: "Adyar", href: "#adyar" },
-  { label: "Anna Nagar", href: "#anna-nagar" },
-  { label: "OMR Sholinganallur", href: "#omr-sholinganallur" },
-  { label: "Porur", href: "#porur" },
-];
-
-const QUICK_PICKS = { bedrooms: "#three-bhk", budget: "#budget-homes" };
-
-type DemoProps = Partial<Omit<SearchCardProps, "onSearch" | "localityOptions">> & {
-  onSearch?: (values: SearchValues) => void;
-};
-
-/** A card with a locality list that filters the twelve names as the visitor types. */
-export function SearchCardHost({ onSearch, ...rest }: DemoProps) {
-  const [query, setQuery] = useState("");
-  const needle = query.trim().toLowerCase();
-  const options = LOCALITIES.filter((name) => name.toLowerCase().includes(needle)).map((name) => ({
-    value: name.toLowerCase().replaceAll(" ", "-"),
-    label: name,
-    hint: "Chennai",
-  }));
+/** The home page's search bar as the page draws it while AI search is on; pressing the button goes nowhere here. */
+export function HomeSearchBarHost({ mode = "ai", onSearch, ...rest }: HostProps) {
   return (
-    <SearchCard
-      projectsHref="#projects"
-      aiSearchHref="#ai-search"
-      popular={POPULAR}
-      quickPickHrefs={QUICK_PICKS}
-      localityMinChars={1}
+    <HomeSearchBar
+      mode={mode}
+      action="#search"
+      maxLength={1000}
       {...rest}
       onSearch={onSearch ?? (() => undefined)}
-      localityOptions={options}
-      onLocalityQueryChange={setQuery}
     />
   );
 }
 
 const FRAME = "w-full max-w-(--w-search-card)";
 
-export function SearchCardDemo() {
-  const [last, setLast] = useState<SearchValues | null>(null);
+export function HomeSearchBarDemo() {
+  const [last, setLast] = useState<string | null>(null);
   return (
     <div className="flex flex-col gap-10">
-      <Specimen label="Wide: one joined bar from about 930 px of card width, two rows below that">
+      <Specimen label="AI search on: one box and the Search with AI button (the button sits under the box below 576 px of bar width)">
         <div className={FRAME}>
-          <SearchCardHost layout="wide" onSearch={setLast} />
+          <HomeSearchBarHost onSearch={setLast} />
         </div>
         <Text variant="caption" tone="muted">
-          {last
-            ? `Search pressed with: ${JSON.stringify(last)}`
-            : "Press Search to see the values it hands to the page."}
+          {last === null
+            ? "Press Search with AI to see the words it hands to the chat."
+            : `Search with AI pressed with: ${JSON.stringify(last)}`}
         </Text>
       </Specimen>
-      <Specimen label="Stacked, with values chosen (Buy, locality, Apartment, 3 BHK, up to ₹1.5 Cr)">
+      <Specimen label="Filled: the words stay on one line and are cut at the end of the box">
         <div className="w-full max-w-2xl">
-          <SearchCardHost
-            layout="stacked"
-            defaultValues={{
-              intent: "buy",
-              locality: "Velachery",
-              propertyType: "apartment",
-              bedrooms: 3,
-              maxBudget: 1_50_00_000,
-            }}
-          />
+          <HomeSearchBarHost defaultValue="A 3 BHK apartment near Velachery or Adyar, under ₹90 lakh, ready to move in, close to a school" />
         </div>
       </Specimen>
-      <Specimen label="Rent: the budget list is monthly rents">
+      <Specimen label="AI search off: the keyword search of the results page">
         <div className={FRAME}>
-          <SearchCardHost
-            layout="wide"
-            defaultValues={{ intent: "rent", locality: "Adyar", maxBudget: 25_000 }}
-          />
-        </div>
-      </Specimen>
-      <Specimen label="No AI link and no Popular or Quick picks (AI search off, no localities curated)">
-        <div className="w-full max-w-2xl">
-          <SearchCardHost
-            layout="stacked"
-            aiSearchHref={undefined}
-            popular={[]}
-            quickPickHrefs={undefined}
-          />
-        </div>
-      </Specimen>
-      <Specimen label="Long locality text (it is cut inside the box, the box never grows)">
-        <div className="w-full max-w-2xl">
-          <SearchCardHost
-            layout="stacked"
-            defaultValues={{
-              locality: "OMR Sholinganallur, beside the Old Mahabalipuram Road IT corridor",
-              propertyType: "plot",
-            }}
-          />
+          <HomeSearchBarHost mode="keyword" />
         </div>
       </Specimen>
       <Text tone="muted">
-        Hover and keyboard focus draw a ring around the whole field, not only the text. Type in
-        Locality to see the suggestions; arrow keys move, Enter picks, Escape closes. The Search
-        button is never disabled: an empty search shows everything.
+        Hover and keyboard focus draw a ring around the box. On the site, Search with AI opens the
+        chat and sends the words as its first message; an empty box opens the chat with the cursor
+        in it. The keyword search goes to the results page.
       </Text>
     </div>
   );

@@ -64,7 +64,7 @@ Recorded in the component's Design Lab page and in a short header comment. The h
 
 - **Button.** Exactly **one `accent` (action teal; "copper" before ADR-149) button per view** (UX rule); portals use `primary`. Dev-mode warning if two `accent` buttons mount in one `main` (cheap `data-attr` count check in the Design Lab and E2E, not production).
 - **FormField.** Error messages are linked via `aria-describedby`; long forms render an error summary and move focus to the first error; never lose typed values on failure.
-- **SearchCard.** Fields in fixed order (Locality, Property type, Bedrooms, Max budget); Bedrooms single value; Max budget only (BR rules); sale vs rent budget steps swap on Buy/Rent; "New projects" is a link-tab; "Describe it in words" only when `FLAG_AI_SEARCH` is on; Search always enabled (empty search allowed).
+- **HomeSearchBar.** One box and one button (ADR-150): "Search with AI" while `FLAG_AI_SEARCH` is on (the words go to the chat through `sessionStorage`, never the address), a keyword search of the results otherwise; the button is never disabled (an empty box opens the chat or all results).
 - **PropertyCard.** The whole card is one link target (title link stretched) with separate focusable heart and Compare controls; compare toggles disable at 3 with the "You can compare up to 3 homes" message; image uses `next/image` with `sizes` per grid column.
 - **PropertyGallery.** Thumbnails are buttons named "Photo 3: Kitchen" (uses `alt_text`); missing image falls back to the illustrated placeholder tile; single photo hides strip and arrows.
 - **ResponsiveTable.** One data definition renders both table and card layouts; row menus portal above scroll containers; actions always have text labels or `aria-label`.

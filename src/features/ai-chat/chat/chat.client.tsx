@@ -47,6 +47,7 @@ import {
 } from "./chat-model";
 import { readChatEvents, readChatFailure } from "./chat-stream";
 import { ChatConfirm } from "./confirm-card.client";
+import { takeHomeQuestion } from "./home-question";
 
 /** Where the sign-in gate leads: the phone sign-in, asked to come back to this page (ADR-128 section 10). */
 const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
@@ -244,6 +245,10 @@ export function ChatIsland({
     document.getElementById(fieldId)?.focus();
   }, [fieldId]);
 
+  // The home page's question, taken from this tab in the restore effect and sent by the effect after `run`. It is
+  // held in a ref so React's development double run of effects can neither lose it nor send it twice.
+  const homeQuestion = useRef<{ text: string; before: readonly ChatEntry[] } | null>(null);
+
   // Restore the conversation, the draft and the gate from this tab, once, after the first render (so the page and
   // its first hydration agree). A visitor who was shown the gate and is now signed in has come back from signing in.
   useEffect(() => {
@@ -262,6 +267,13 @@ export function ChatIsland({
       setGate(false);
     } else {
       setGate(stored.gate);
+    }
+    // The question written on the home page's search bar (ADR-150). While the sign-in gate is up it would only be
+    // refused, so it waits in the box; otherwise it is sent once the conversation is back (the effect below).
+    const question = takeHomeQuestion(storage);
+    if (question !== null) {
+      if (question !== "" && stored.gate && !signedIn) setDraft(question);
+      else homeQuestion.current = { text: question, before: stored.entries };
     }
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -440,6 +452,27 @@ export function ChatIsland({
     },
     [context],
   );
+
+  // Send the home page's question as the next message of the conversation in this tab (ADR-150); an empty one only
+  // puts the cursor in the box. The short timer is cancelled by the development double run, so it fires once.
+  useEffect(() => {
+    if (!ready || homeQuestion.current === null) return;
+    const timer = window.setTimeout(() => {
+      const question = homeQuestion.current;
+      homeQuestion.current = null;
+      if (question === null) return;
+      focusComposer();
+      if (question.text === "") return;
+      const userId = newId();
+      setEntries([
+        ...question.before,
+        { id: userId, role: "user", text: question.text, masked: false },
+      ]);
+      setReturned(false);
+      void run(question.text, question.before, userId);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, run, focusComposer]);
 
   function send() {
     const text = draft.trim();

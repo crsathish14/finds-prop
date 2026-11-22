@@ -190,7 +190,9 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
         name: "Homepage",
       }),
     ).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText(/The first 4 also appear as Popular chips/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Tiles shown under the search. Visitors who click one/),
+    ).toBeInTheDocument();
   });
 
   it("draws the sections and the localities as the boxes are changed", async () => {

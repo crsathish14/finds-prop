@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HomeHero } from "@/components/domain/home-hero";
+import { HomeSearchBar } from "@/components/domain/home-search-bar.client";
 import {
   BrowseSection,
   CtaSection,
@@ -10,7 +11,8 @@ import {
   WhySection,
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
-import { HomeSearch } from "@/features/search";
+import { HomeAiSearch } from "@/features/ai-chat";
+import { SEARCH_PATH } from "@/features/search";
 import { pageMetadata } from "@/features/seo";
 import { resolveHero } from "@/lib/sponsors";
 import {
@@ -83,12 +85,8 @@ export default async function HomePage() {
           ) : undefined
         }
       >
-        <HomeSearch
-          layout={split ? "stacked" : "wide"}
-          localities={homepage.localities}
-          projectsHref="/projects"
-          aiSearchHref={flags.aiSearch ? "/ai-search" : undefined}
-        />
+        {/* One search bar (ADR-150): the AI search while it is on, a keyword search of the results otherwise. */}
+        {flags.aiSearch ? <HomeAiSearch /> : <HomeSearchBar mode="keyword" action={SEARCH_PATH} />}
       </HomeHero>
       {homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null}
       {homepage.showFeatured ? <FeaturedSection /> : null}

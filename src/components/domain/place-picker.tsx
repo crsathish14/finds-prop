@@ -5,7 +5,7 @@
  * Purpose: the admin and a builder no longer have to look up coordinates and type them: they search for an area
  *   and choose it, and the host writes the point into its two boxes. The boxes stay editable and stay the source of
  *   truth; the picker only writes into them. Owner: design system. It fetches nothing and keeps no suggestions: the
- *   host (a feature's client island) asks our place route and gives this the answer, as the search card's host does.
+ *   host (a feature's client island) asks our place route and gives this the answer, as the results filter's host does.
  * Props: value and onValueChange (the text in the box), onQueryChange (after three characters and a 300 ms pause:
  *   the host asks for suggestions here), options (place rows: { value, label, description }), state (the panel's
  *   state: "ready", "loading", "empty", "unavailable" or "limited", as usePlacePanel takes it), onSelect (the option

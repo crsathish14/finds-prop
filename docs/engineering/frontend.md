@@ -42,7 +42,7 @@ Scope: pages, features, client islands, forms, URL state, styling use. Component
 | `features/*/components`                 | Feature UI                                              | client/server components using `components/*` | direct Supabase access                         |
 | `components/ui`                         | Atoms: tokens + behaviour                               | shadcn base, custom atoms                     | domain concepts, data fetching                 |
 | `components/patterns`                   | Molecules                                               | field wrappers, price display, pagination     | feature imports                                |
-| `components/layout`, `domain`, `charts` | Organisms shared by several features                    | header, PropertyCard, Gallery, SearchCard     | feature-specific rules                         |
+| `components/layout`, `domain`, `charts` | Organisms shared by several features                    | header, PropertyCard, Gallery, HomeSearchBar  | feature-specific rules                         |
 | `features/*/queries.ts`                 | Typed reads with explicit columns                       | `server-only` Supabase calls                  | writes                                         |
 | `features/*/service.ts`                 | Business rules + writes                                 | call RPCs, enforce rules, audit               | UI, request objects                            |
 | `features/*/actions.ts`                 | Entry points for the UI                                 | `defineAction()` only                         | logic beyond orchestration                     |

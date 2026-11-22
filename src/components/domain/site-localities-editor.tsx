@@ -3,9 +3,8 @@
 /**
  * SiteLocalitiesEditor: the list of curated localities of the admin's Homepage page: for each one a label, a latitude
  * and a longitude, and how far a search reaches from it.
- * Purpose: the places the home page shows as "Explore by locality" tiles and, for the first four, as Popular chips in
- *   the search card (S7-T10, FR-ADM-10, ADD-11, DEC-13). Owner: design system. It holds no list of its own: the page
- *   keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
+ * Purpose: the places the home page shows as "Explore by locality" tiles (S7-T10, FR-ADM-10, ADD-11, DEC-13).
+ *   Owner: design system. It holds no list of its own: the page keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
  *   Coordinates are typed, or filled by the place picker the page gives (ADR-140): choosing a place writes the same two
  *   boxes (and the label, only while it is empty); the boxes stay editable.
  * Props: localities ({ id, label, lat, lng, radiusKm }[], all text as typed; an id is kept by the page and never

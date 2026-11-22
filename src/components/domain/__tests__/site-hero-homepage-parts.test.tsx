@@ -377,7 +377,7 @@ describe("UT-site-homepage-fields: the Homepage page's boxes (S7-T10)", () => {
 });
 
 describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () => {
-  const words = { popular: "Popular chips", explore: "Explore tiles", on: "On", off: "Off" };
+  const words = { explore: "Explore tiles", on: "On", off: "Off" };
   const hiddenNote = { title: "Section hidden", text: "No localities." };
   const sections = [
     { label: "Hero", on: true },
@@ -386,29 +386,21 @@ describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () =
 
   it("says On or Off in words for each section, not by colour alone", () => {
     const { container } = render(
-      <SiteHomepagePreview
-        sections={sections}
-        popular={[]}
-        tiles={[]}
-        hiddenNote={hiddenNote}
-        words={words}
-      />,
+      <SiteHomepagePreview sections={sections} tiles={[]} hiddenNote={hiddenNote} words={words} />,
     );
     expect(container.textContent).toContain("HeroOn");
     expect(container.textContent).toContain("Why usOff");
   });
 
-  it("draws the chips and the tiles when there are localities", () => {
+  it("draws the tiles when there are localities", () => {
     const { container } = render(
       <SiteHomepagePreview
         sections={sections}
-        popular={["Adyar", "Velachery"]}
         tiles={["Adyar", "Velachery", "Navalur"]}
         hiddenNote={hiddenNote}
         words={words}
       />,
     );
-    expect(container.textContent).toContain("Popular chips");
     expect(container.textContent).toContain("Explore tiles");
     expect(container.textContent).toContain("Navalur");
     expect(container.textContent).not.toContain("Section hidden");
@@ -416,19 +408,13 @@ describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () =
 
   it("draws the note instead when there are no localities, hidden from a screen reader", () => {
     const { container } = render(
-      <SiteHomepagePreview
-        sections={sections}
-        popular={[]}
-        tiles={[]}
-        hiddenNote={hiddenNote}
-        words={words}
-      />,
+      <SiteHomepagePreview sections={sections} tiles={[]} hiddenNote={hiddenNote} words={words} />,
     );
     expect(container.querySelector("[data-slot='site-homepage-preview']")).toHaveAttribute(
       "aria-hidden",
       "true",
     );
     expect(container.textContent).toContain("Section hidden");
-    expect(container.textContent).not.toContain("Popular chips");
+    expect(container.textContent).not.toContain("Explore tiles");
   });
 });

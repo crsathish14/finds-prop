@@ -2,9 +2,8 @@
 
 /**
  * usePlacePanel and PlaceAttribution: the words around a place combobox (ADR-131, UX addendum ADD-07).
- * Purpose: one place for what the suggestion panel says in each of its states, so the search card, the
- *   results filter and the post form cannot drift apart. Owner: design system. They hold no state and
- *   fetch nothing: the host knows whether the lookup is idle, loading, answered, empty, unavailable or
+ * Purpose: one place for what the suggestion panel says in each of its states, so the results filter and the
+ *   post form cannot drift apart. Owner: design system. They hold no state and fetch nothing: the host knows whether the lookup is idle, loading, answered, empty, unavailable or
  *   limited, and asks for the panel props of that state.
  * Props: usePlacePanel(state, query): state is "ready" (suggestions are listed or there is nothing to
  *   say), "loading", "empty" (the provider found nothing), "unavailable" (it could not answer) or

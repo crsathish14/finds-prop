@@ -133,7 +133,7 @@ describe("UT-homepage-form: the Homepage page's boxes (S7-T10)", () => {
     });
   });
 
-  it("draws the sections in the page's order, the first four localities as chips and all as tiles", () => {
+  it("draws the sections in the page's order, and every locality as a tile", () => {
     const picture = homepagePictureOf({
       ...homepageFormOf(SAVED),
       localities: ["A", "B", "C", "D", "E"].map((label) => ({ label })),
@@ -146,7 +146,6 @@ describe("UT-homepage-form: the Homepage page's boxes (S7-T10)", () => {
       { key: "whyUs", on: true },
       { key: "cta", on: false },
     ]);
-    expect(picture.popular).toEqual(["A", "B", "C", "D"]);
     expect(picture.tiles).toEqual(["A", "B", "C", "D", "E"]);
   });
 
