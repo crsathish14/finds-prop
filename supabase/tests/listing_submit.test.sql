@@ -378,7 +378,7 @@ select is(
 -- listing 3 on, since a user can no longer submit it)
 update public.properties set status = 'pending' where id = '00000000-0000-4000-9000-000000000003';
 update public.properties set status = 'approved' where id = '00000000-0000-4000-9000-000000000003';
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select count(*)::int from public.search_properties(p_q => 'apartment') where latitude is null),
   1,

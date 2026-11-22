@@ -138,7 +138,7 @@ select is(
 );
 
 -- Visitors
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select count(*) from public.listing_media where listing_id = '00000000-0000-4000-9000-000000000006')::int,
   2,

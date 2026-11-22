@@ -3,7 +3,7 @@
 -- They run with the owner's rights, so each repeats the row rule of the policy it replaces; these tests run as a
 -- visitor (anon) and prove the same rows come back as before, and no private column. Fictional data only.
 begin;
-select plan(24);
+select plan(25);
 
 insert into auth.users (id, phone, phone_confirmed_at)
 values ('00000000-0000-4000-8000-0000000000a1', '919100000001', now());
@@ -66,6 +66,8 @@ insert into public.project_price_trends (project_id, month, price_per_sqft) valu
   ('00000000-0000-4000-c000-000000000001', '2026-09-01', 8230),
   ('00000000-0000-4000-c000-000000000001', '2026-10-01', 8350);
 
+update public.projects set extra_fields = '{"Gate": "Yes"}'::jsonb where slug = 'kadal-vista';
+
 set local role anon;
 
 -- public_property --------------------------------------------------------------------------------------------
@@ -116,6 +118,11 @@ select is(
   (select jsonb_agg(point ->> 'month') from jsonb_array_elements(public.public_project('kadal-vista') -> 'trend') as point),
   '["2026-10-01", "2026-09-01"]'::jsonb,
   'public_project gives the price trend, latest month first'
+);
+select is(
+  public.public_project('kadal-vista') -> 'project' -> 'extra_fields',
+  '{"Gate": "Yes"}'::jsonb,
+  'public_project gives the project''s extra fields (Plan 8)'
 );
 select ok(
   not (public.public_project('kadal-vista') -> 'project') ?| array['moderation', 'published', 'form_id', 'latitude', 'longitude', 'address', 'rejection_reason'],

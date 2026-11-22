@@ -74,11 +74,11 @@ select is(
   0, 'no approved listing kept the submitted time the review trigger gave it'
 );
 
--- What a visitor sees
-set local role anon;
+-- What a signed-in person sees (the tables are closed to visitors who are not signed in)
+set local role authenticated;
 select is(
   (select count(*) from public.listing_media)::int,
-  126, 'a visitor sees the photos of the 42 approved listings only'
+  126, 'a signed-in person sees the photos of the 42 approved listings only'
 );
 reset role;
 
