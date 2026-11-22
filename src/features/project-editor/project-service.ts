@@ -41,6 +41,7 @@ export interface ProjectRow {
   land_area_acres?: number | null;
   possession_date?: string | null;
   contact_phone?: string | null;
+  city?: string;
   locality?: string;
   address?: string | null;
   latitude?: number | null;
@@ -86,7 +87,7 @@ export interface ProjectDone {
 export interface ProjectStore {
   /** Adds a project; a builder's own id is the database's default. Throws the database's failure through `mapProjectError`. */
   insert(
-    row: ProjectRow & { name: string; slug: string; locality: string },
+    row: ProjectRow & { name: string; slug: string; city: string; locality: string },
     builderId?: string,
   ): Promise<ProjectDone>;
   /** Saves a project; null when there is no such project (or it is not theirs). */
@@ -202,10 +203,11 @@ function put<Key extends keyof ProjectRow>(
  */
 export function projectRowFrom(
   input: Fields,
-): ProjectRow & { name: string; slug: string; locality: string } {
-  const row: ProjectRow & { name: string; slug: string; locality: string } = {
+): ProjectRow & { name: string; slug: string; city: string; locality: string } {
+  const row: ProjectRow & { name: string; slug: string; city: string; locality: string } = {
     name: input.name,
     slug: input.slug,
+    city: input.city,
     locality: input.locality,
     rera_applicable: input.reraApplicable,
     project_type: input.projectType,

@@ -2234,6 +2234,7 @@
         "landArea": "Land area (acres)",
         "possession": "Possession (month and year)",
         "contactPhone": "Contact phone",
+        "city": "City",
         "locality": "Locality",
         "address": "Address",
         "latitude": "Latitude",
@@ -2386,6 +2387,7 @@
         "priceType": "Choose a price type.",
         "area": "Enter the minimum and maximum area.",
         "areaRange": "The maximum area must be the same as or more than the minimum.",
+        "city": "Enter the city.",
         "locality": "Enter the locality.",
         "reraNumber": "Enter the RERA number.",
         "reraReason": "Tell us why RERA is not applicable."

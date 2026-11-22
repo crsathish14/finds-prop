@@ -92,16 +92,20 @@ export async function getNewestHomes(cityKey?: string): Promise<ListingRow[]> {
  * so the database already leaves it out). One read of `home_developers()` gives the public projects
  * in that order (at most 1000, each with only its cover and its builder); the builders are ranked
  * and counted from them and each card takes its builder's first projects. A failed read is logged
- * by its code only and the section is left out.
+ * by its code only and the section is left out. With a city key only the projects of that city count.
  */
 export async function getNewLaunchDevelopers(
   chosenIds: readonly string[] = [],
+  cityKey?: string,
 ): Promise<DeveloperRow[]> {
   "use cache";
   cacheTag(HOME_PROJECTS_TAG);
   cacheLife("minutes");
 
-  const { data, error } = await createPublicSupabase().rpc("home_developers");
+  const { data, error } = await createPublicSupabase().rpc(
+    "home_developers",
+    cityKey ? { p_city: cityKey } : {},
+  );
   if (error) {
     logger.error("homepage developers could not be read, the section is left out", {
       errorCode: error.code,

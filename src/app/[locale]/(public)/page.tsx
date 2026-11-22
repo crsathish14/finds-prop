@@ -8,7 +8,7 @@ import {
   ExploreSection,
   CityFeaturedSection,
   CityNewestSection,
-  NewLaunchesSection,
+  CityNewLaunchesSection,
   WhySection,
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
@@ -68,7 +68,7 @@ export default async function HomePage() {
   const sections: Record<HomeSectionKey, ReactNode> = {
     discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
     featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
-    newLaunches: <NewLaunchesSection />,
+    newLaunches: <CityNewLaunchesSection />,
     projectTypes: homepage.showProjectTypes ? <BrowseSection regionName={region.name} /> : null,
     newest: <CityNewestSection brandName={brandName} />,
     whyUs: homepage.showWhyUs ? <WhySection brandName={brandName} /> : null,

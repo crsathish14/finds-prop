@@ -195,6 +195,15 @@ const slug = z.preprocess(
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, { error: "validation.slugInvalid" }),
 );
 
+const city = z.preprocess(
+  tidy,
+  z
+    .string({ error: "validation.required" })
+    .min(2, { error: "validation.required" })
+    .max(80, { error: "validation.invalid" })
+    .regex(/^[^\p{C}]*$/u, { error: "validation.invalid" }),
+);
+
 const locality = z.preprocess(
   tidy,
   z
@@ -273,6 +282,7 @@ const fieldShape = {
   landAreaAcres: decimal(0, ACRES_MAX, 2),
   possessionDate: calendarMonth,
   contactPhone,
+  city,
   locality,
   address: line(ADDRESS_MAX),
   latitude: decimal(-90, 90, 6),

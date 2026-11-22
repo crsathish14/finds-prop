@@ -31,6 +31,7 @@ const WORDS: ProjectFieldsWords = {
   landArea: "Land area",
   possession: "Possession",
   contactPhone: "Contact phone",
+  city: "City",
   locality: "Locality",
   address: "Address",
   latitude: "Latitude",
@@ -86,6 +87,7 @@ const VALUES: ProjectFieldValues = {
   landAreaAcres: "",
   possessionDate: "",
   contactPhone: "",
+  city: "Chennai",
   locality: "OMR",
   address: "Old Mahabalipuram Road",
   latitude: "",
@@ -122,6 +124,20 @@ function FakePicker({ id, disabled, onPick }: PlacePickerFieldProps) {
         onClick={() => onPick({ label: "Navalur", lat: 12.84701234, lng: 80.2271 })}
       >
         Pick place
+      </button>
+    </span>
+  );
+}
+
+/** The same, for a place whose address names a city. */
+function FakeCityPicker({ id, onPick }: PlacePickerFieldProps) {
+  return (
+    <span id={id}>
+      <button
+        type="button"
+        onClick={() => onPick({ label: "Kadaikulam", lat: 9.9252, lng: 78.1198, city: "Madurai" })}
+      >
+        Pick city place
       </button>
     </span>
   );
@@ -168,6 +184,15 @@ describe("UT-project-fields with a place picker (ADR-140)", () => {
     expect(spy).toHaveBeenCalledTimes(2);
     expect(screen.getByLabelText(/Locality/)).toHaveValue("OMR");
     expect(screen.getByLabelText(/Address/)).toHaveValue("Old Mahabalipuram Road");
+  });
+
+  it("writes the city too when the chosen place names one", async () => {
+    const spy = vi.fn();
+    render(<Live spy={spy} placePicker={FakeCityPicker} />);
+    await userEvent.click(screen.getByRole("button", { name: "Pick city place" }));
+    expect(spy).toHaveBeenCalledWith("city", "Madurai");
+    expect(screen.getByLabelText(/City/)).toHaveValue("Madurai");
+    expect(screen.getByLabelText(/Locality/)).toHaveValue("OMR");
   });
 
   it("leaves the typed boxes working after a pick", async () => {

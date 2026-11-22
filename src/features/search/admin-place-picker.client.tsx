@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PlacePicker, type PlacePickerFieldProps } from "@/components/domain/place-picker";
+import { cityFromPlaceDetail } from "@/lib/place-city";
 import { usePlaceSuggestions } from "./use-place-suggestions.client";
 
 /**
@@ -29,7 +30,13 @@ export function AdminPlacePicker({ id, suffix, disabled, onPick }: PlacePickerFi
       onSelect={(option) => {
         const choice = places.pick(option);
         if (choice === null) return;
-        onPick({ label: choice.label, lat: choice.lat, lng: choice.lng });
+        const city = cityFromPlaceDetail(choice.detail);
+        onPick({
+          label: choice.label,
+          lat: choice.lat,
+          lng: choice.lng,
+          ...(city === null ? {} : { city }),
+        });
       }}
     />
   );

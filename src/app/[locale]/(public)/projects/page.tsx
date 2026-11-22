@@ -8,6 +8,7 @@ import {
   loginWallMetadata,
 } from "@/features/login-wall";
 import { getProjects, PROJECTS_PATH, ProjectsScreen, toProjectCard } from "@/features/projects";
+import { getSelectedCity } from "@/features/cities";
 import { pageMetadata } from "@/features/seo";
 import { getSiteSettings, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
@@ -42,7 +43,8 @@ export default async function ProjectsPage() {
       </main>
     );
   }
-  const [list, settings] = await Promise.all([getProjects(), getSiteSettings()]);
+  const city = await getSelectedCity();
+  const [list, settings] = await Promise.all([getProjects(city.key), getSiteSettings()]);
   const projects = list.status === "ok" ? list.projects : [];
   return (
     <main id="main" className="flex-1">

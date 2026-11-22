@@ -23,6 +23,7 @@ const FORM = "00000000-0000-4000-9000-000000000001";
 const minimal = {
   name: "Kadal Vista",
   slug: "kadal-vista",
+  city: "Chennai",
   locality: "OMR Navalur",
   projectType: "residential",
   propertyType: "apartment",
@@ -55,6 +56,7 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     expect(projectRowFrom(createMyProjectSchema.parse(minimal))).toEqual({
       name: "Kadal Vista",
       slug: "kadal-vista",
+      city: "Chennai",
       locality: "OMR Navalur",
       project_type: "residential",
       property_type: "apartment",
@@ -101,6 +103,7 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     expect(row).toEqual({
       name: "Kadal Vista",
       slug: "kadal-vista",
+      city: "Chennai",
       locality: "OMR Navalur",
       project_type: "residential",
       property_type: "apartment",

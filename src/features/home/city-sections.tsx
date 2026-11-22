@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getSelectedCity } from "@/features/cities";
-import { FeaturedSection, NewestSection } from "./card-sections";
+import { FeaturedSection, NewestSection, NewLaunchesSection } from "./card-sections";
 
 /** Holds the place of a section while the visitor's city is read, so the page below does not jump. */
 function SectionPlaceholder() {
@@ -10,6 +10,11 @@ function SectionPlaceholder() {
 async function FeaturedForCity() {
   const city = await getSelectedCity();
   return <FeaturedSection cityKey={city.key} />;
+}
+
+async function NewLaunchesForCity() {
+  const city = await getSelectedCity();
+  return <NewLaunchesSection cityKey={city.key} />;
 }
 
 async function NewestForCity({ brandName }: { brandName: string }) {
@@ -25,6 +30,15 @@ export function CityFeaturedSection() {
   return (
     <Suspense fallback={<SectionPlaceholder />}>
       <FeaturedForCity />
+    </Suspense>
+  );
+}
+
+/** "Top developers" with the projects of the city in the header (see CityFeaturedSection). */
+export function CityNewLaunchesSection() {
+  return (
+    <Suspense fallback={<SectionPlaceholder />}>
+      <NewLaunchesForCity />
     </Suspense>
   );
 }

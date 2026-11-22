@@ -131,6 +131,15 @@ const answer = (data: unknown, failure: { code: string } | null = null) =>
   listRpc.mockResolvedValue({ data, error: failure });
 
 describe("UT-project-queries: the list of projects", () => {
+  it("asks for one city only when a city key is given", async () => {
+    answer([]);
+    await getProjects("madurai");
+    expect(listRpc).toHaveBeenCalledWith("live_project_list", {
+      p_limit: PROJECT_LIST_LIMIT,
+      p_city: "madurai",
+    });
+  });
+
   it("reads the live projects through the sign-in-only function, with a limit", async () => {
     answer([listRow()]);
     const result = await getProjects();

@@ -14,6 +14,7 @@ const FORM = "00000000-0000-4000-9000-000000000001";
 const minimal = {
   name: "Kadal Vista",
   slug: "kadal-vista",
+  city: "Chennai",
   locality: "OMR Navalur",
   projectType: "residential",
   propertyType: "apartment",
@@ -52,6 +53,7 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
 
   it.each([
     ["name", { ...minimal, name: "K" }, "name:validation.required"],
+    ["city", { ...minimal, city: " " }, "city:validation.required"],
     ["locality", { ...minimal, locality: " " }, "locality:validation.required"],
     ["slug with spaces", { ...minimal, slug: "kadal vista" }, "slug:validation.slugInvalid"],
     [
