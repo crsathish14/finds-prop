@@ -90,6 +90,16 @@ const contentModulesSchema = z.object({
   careers: z.boolean(),
 });
 
+/**
+ * The two disclaimers the super admin writes (ADR-152): one in the footer of every public page, one on the AI search
+ * page. Plain text; a missing or empty one means nothing is shown (there is no built-in wording).
+ */
+export const DISCLAIMER_MAX = 600;
+const disclaimersSchema = z.object({
+  footer: z.string().max(DISCLAIMER_MAX).optional(),
+  aiSearch: z.string().max(DISCLAIMER_MAX).optional(),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -98,6 +108,7 @@ export const SITE_SETTING_SCHEMAS = {
   region: regionSchema,
   sponsors: sponsorsSchema,
   content_modules: contentModulesSchema,
+  disclaimers: disclaimersSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

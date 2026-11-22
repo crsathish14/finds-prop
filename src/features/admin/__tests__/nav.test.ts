@@ -45,6 +45,7 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "/admin/hero",
       "/admin/homepage",
       "/admin/footer",
+      "/admin/disclaimers",
     ]);
     expect(new Set(links).size).toBe(links.length);
     expect(groups.flatMap((group) => group.items).every((item) => item.label.length > 1)).toBe(

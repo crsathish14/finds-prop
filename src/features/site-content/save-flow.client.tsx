@@ -17,7 +17,13 @@ import type { Problems } from "./form";
 
 export type SaveContent = (input: Record<string, unknown>) => Promise<ActionResult<unknown>>;
 
-const TABS = ["header", "hero", "homepage", "footer"] as const satisfies readonly EditableSetting[];
+const TABS = [
+  "header",
+  "hero",
+  "homepage",
+  "footer",
+  "disclaimers",
+] as const satisfies readonly EditableSetting[];
 
 /** The four page tabs (links to the four routes, the current one marked) and the words the frame and the save bar need. */
 export function useSiteContentFrame(current: EditableSetting) {

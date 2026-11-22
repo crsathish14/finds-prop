@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   FOOTER_ABOUT_MAX,
   FOOTER_ADDRESS_MAX,
+  DISCLAIMER_MAX,
   FOOTER_COPYRIGHT_MAX,
   FOOTER_LINKS_MAX,
   FOOTER_PHONE_MAX,
@@ -117,6 +118,26 @@ export const footerInputSchema = z.object({
   copyright: optionalLine(FOOTER_COPYRIGHT_MAX),
 });
 export type FooterInput = z.infer<typeof footerInputSchema>;
+
+/**
+ * One disclaimer (ADR-152): plain text, up to a few short paragraphs. Line breaks are kept (a Windows line break counts
+ * as one), every other control character is refused, and a blank box means "no disclaimer".
+ */
+const disclaimerText = clearable(
+  z.preprocess(
+    (typed) => (typeof typed === "string" ? typed.replace(/\r\n?/g, "\n").trim() : typed),
+    z
+      .string()
+      .max(DISCLAIMER_MAX)
+      .regex(/^(?:[^\p{C}]|\n)*$/u, { error: "validation.invalid" }),
+  ),
+);
+
+export const disclaimersInputSchema = z.object({
+  footer: disclaimerText,
+  aiSearch: disclaimerText,
+});
+export type DisclaimersInput = z.infer<typeof disclaimersInputSchema>;
 
 export const heroInputSchema = z.object({
   eyebrow: optionalLine(HERO_EYEBROW_MAX),

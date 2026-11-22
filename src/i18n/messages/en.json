@@ -1487,7 +1487,8 @@
       "header": "Header",
       "hero": "Hero",
       "homepage": "Homepage",
-      "footer": "Footer"
+      "footer": "Footer",
+      "disclaimers": "Disclaimers"
     },
     "contentModules": {
       "title": "Content modules",
@@ -2346,6 +2347,27 @@
         "ctaHref": "Button link",
         "saved": {
           "title": "Header saved",
+          "text": "The change is live on the public site."
+        }
+      },
+      "disclaimers": {
+        "metaTitle": "Site content: Disclaimers",
+        "title": "Disclaimers",
+        "description": "Plain text shown in the footer of every public page and on the AI search page. Leave a box empty to show nothing.",
+        "footer": {
+          "title": "Footer disclaimer",
+          "text": "Shown at the bottom of every public page, above the copyright line.",
+          "label": "Footer disclaimer"
+        },
+        "aiSearch": {
+          "title": "AI search disclaimer",
+          "text": "Shown under the chat on the AI search page.",
+          "label": "AI search disclaimer"
+        },
+        "counter": "{used} of {max} characters",
+        "nothing": "Nothing is shown.",
+        "saved": {
+          "title": "Disclaimers saved",
           "text": "The change is live on the public site."
         }
       },

@@ -1,6 +1,7 @@
 import { tagsAfterSiteSettingsChange } from "@/lib/cache-tags";
 import {
   contentModulesInputSchema,
+  disclaimersInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
@@ -67,6 +68,18 @@ export const saveSponsorsConfig = {
 export const saveContentModulesConfig = {
   name: "saveContentModules",
   input: contentModulesInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The footer and AI search disclaimers (ADR-152): one row of `site_settings`, so the same limits and the same cache tag
+ * apply. The change shows in the footer of every public page and on the AI search page at once.
+ */
+export const saveDisclaimersConfig = {
+  name: "saveDisclaimers",
+  input: disclaimersInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

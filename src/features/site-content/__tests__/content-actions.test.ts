@@ -5,6 +5,7 @@ import type { SessionView } from "@/server/auth/session";
 import { createLogger } from "@/server/logger";
 import {
   saveContentModulesConfig,
+  saveDisclaimersConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
@@ -64,6 +65,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     footer: define({ ...saveFooterConfig, handler }),
     sponsors: define({ ...saveSponsorsConfig, handler }),
     modules: define({ ...saveContentModulesConfig, handler }),
+    disclaimers: define({ ...saveDisclaimersConfig, handler }),
   };
 }
 
@@ -79,19 +81,21 @@ const validHomepage = {
 };
 const validFooter = { links: [] };
 const validSponsors = { sponsors: [] };
+const validDisclaimers = { footer: "Prices are indicative.", aiSearch: "" };
 const validModules = { blog: true, faq: false, careers: true };
 
 describe("UT-site-content-actions: who may edit the site content, and what it refreshes (S7-T10)", () => {
-  it("lets a super admin save any of the six: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
-    const { header, hero, homepage, footer, sponsors, modules, calls } = harness();
+  it("lets a super admin save any of the seven: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
+    const { header, hero, homepage, footer, sponsors, modules, disclaimers, calls } = harness();
     expect((await header(validHeader)).ok).toBe(true);
     expect((await hero(validHero)).ok).toBe(true);
     expect((await homepage(validHomepage)).ok).toBe(true);
     expect((await footer(validFooter)).ok).toBe(true);
     expect((await sponsors(validSponsors)).ok).toBe(true);
     expect((await modules(validModules)).ok).toBe(true);
+    expect((await disclaimers(validDisclaimers)).ok).toBe(true);
     const one = ["rateLimit:admin_edit", "handler", "invalidate:site-settings"];
-    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one, ...one]);
+    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one, ...one, ...one]);
   });
 
   it.each([

@@ -3,6 +3,7 @@ import { SITE_DEFAULTS } from "@/features/site/defaults";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
   contentModulesValue,
+  disclaimersValue,
   footerValue,
   headerValue,
   heroValue,
@@ -10,6 +11,7 @@ import {
   isOutside,
   mapContentError,
   saveContentModulesContent,
+  saveDisclaimersContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
@@ -19,6 +21,7 @@ import {
 } from "../content-service";
 import {
   contentModulesInputSchema,
+  disclaimersInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
@@ -217,5 +220,38 @@ describe("UT-site-content-service: the content module switches (ADR-143, FR-ADM-
     expect(
       contentModulesInputSchema.safeParse({ blog: "yes", faq: true, careers: true }).success,
     ).toBe(false);
+  });
+});
+
+describe("UT-site-content-service: the disclaimers (ADR-152)", () => {
+  it("stores the two texts as typed, leaving out a blank one", () => {
+    const input = disclaimersInputSchema.parse({
+      footer: "  Prices vary.\r\nCheck first.  ",
+      aiSearch: "   ",
+    });
+    expect(disclaimersValue(input)).toEqual({ footer: "Prices vary.\nCheck first." });
+  });
+
+  it("saves the row named disclaimers, in the shape the site reads", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveDisclaimersContent(
+      store,
+      disclaimersInputSchema.parse({ footer: "One", aiSearch: "Two" }),
+    );
+    expect(done).toEqual({ key: "disclaimers" });
+    expect(writes).toEqual([{ key: "disclaimers", value: { footer: "One", aiSearch: "Two" } }]);
+  });
+
+  it("saves an empty row when both are cleared, so nothing shows", async () => {
+    const { store, writes } = fakeStore();
+    await saveDisclaimersContent(store, disclaimersInputSchema.parse({ footer: "", aiSearch: "" }));
+    expect(writes).toEqual([{ key: "disclaimers", value: {} }]);
+  });
+
+  it("refuses a text over 600 characters and control characters, accepts exactly 600", () => {
+    expect(disclaimersInputSchema.safeParse({ footer: "a".repeat(601) }).success).toBe(false);
+    expect(disclaimersInputSchema.safeParse({ footer: "a".repeat(600) }).success).toBe(true);
+    expect(disclaimersInputSchema.safeParse({ aiSearch: "bad\u0007text" }).success).toBe(false);
+    expect(disclaimersInputSchema.safeParse({ aiSearch: "tab\there" }).success).toBe(false);
   });
 });
