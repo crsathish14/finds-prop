@@ -161,6 +161,8 @@ type ProjectFieldsProps = {
   amenitySuggestions?: readonly string[];
   slugLocked?: boolean;
   media?: ReactNode;
+  /** The extra boxes the super admin added (ADR-168); drawn at the end of the Details section. */
+  extras?: ReactNode;
   placePicker?: PlacePickerComponent;
   disabled?: boolean;
   words: ProjectFieldsWords;
@@ -193,6 +195,7 @@ function ProjectFields({
   amenitySuggestions = [],
   slugLocked = false,
   media,
+  extras,
   placePicker: PlacePicker,
   disabled = false,
   words,
@@ -443,6 +446,7 @@ function ProjectFields({
             words={words.tags}
             {...problem("amenities")}
           />
+          {extras}
         </div>
       </FormSection>
 

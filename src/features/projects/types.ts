@@ -68,6 +68,8 @@ export type ProjectData = {
   propertyType: ProjectPropertyType | null;
   plotStatus: ProjectPlotStatus | null;
   villaType: ProjectVillaType | null;
+  /** The answers to the extra boxes the super admin defines, by box id (ADR-168). */
+  extraFields: Record<string, string>;
   offerType: OfferType | null;
   price: number | null;
   priceType: PriceType | null;

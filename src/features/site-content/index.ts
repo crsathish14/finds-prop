@@ -5,6 +5,7 @@ export {
   saveHeader,
   saveHero,
   saveHomepage,
+  saveProjectFields,
   saveSponsors,
   saveTopDevelopers,
 } from "./actions";
@@ -15,6 +16,7 @@ export {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveProjectFieldsConfig,
   saveSponsorsConfig,
   saveTopDevelopersConfig,
 } from "./action-config";
@@ -23,6 +25,7 @@ export {
   getFooterPage,
   getHeaderPage,
   getHeroPage,
+  getProjectFieldsPage,
   getHomepagePage,
   getSiteContent,
   getSponsorsPage,
@@ -32,6 +35,7 @@ export type {
   FooterPage,
   HeaderPage,
   HeroPage,
+  ProjectFieldsPage,
   HomepagePage,
   SiteContent,
   SponsorsPage,
@@ -42,6 +46,8 @@ export { TopDevelopersForm } from "./top-developers-form.client";
 export type { TopDeveloperOption, TopDevelopersFormProps } from "./top-developers-form.client";
 export { HomepageForm } from "./homepage-form.client";
 export type { HomepageFormProps } from "./homepage-form.client";
+export { ProjectFieldsForm } from "./project-fields-form.client";
+export type { ProjectFieldsFormProps } from "./project-fields-form.client";
 export { DisclaimersForm } from "./disclaimers-form.client";
 export type { DisclaimersFormProps } from "./disclaimers-form.client";
 export { FooterForm } from "./footer-form.client";
@@ -65,6 +71,7 @@ export {
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  projectFieldsInputSchema,
   topDevelopersInputSchema,
 } from "./schemas";
 export type {
@@ -74,6 +81,7 @@ export type {
   HeaderInput,
   HeroInput,
   HomepageInput,
+  ProjectFieldsInput,
   TopDevelopersInput,
 } from "./schemas";
 export { sponsorsInputSchema } from "./sponsor-schemas";

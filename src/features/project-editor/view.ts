@@ -17,6 +17,8 @@ export interface ProjectEditView {
   offerType: string | null;
   plotStatus: string | null;
   villaType: string | null;
+  /** The answers to the extra boxes, by box id (ADR-168). */
+  extraFields: Record<string, string>;
   price: number | null;
   priceType: string | null;
   /** The area range in square feet: a plot and every commercial project. */
@@ -82,6 +84,7 @@ export interface ProjectDbRow {
   offer_type: string | null;
   plot_status: string | null;
   villa_type: string | null;
+  extra_fields?: unknown;
   price: number | null;
   price_type: string | null;
   area_min_sqft: number | string | null;
@@ -117,6 +120,16 @@ export interface ProjectDbRow {
   rejection_reason: string | null;
 }
 
+/** The stored answers to the extra boxes: only text values count, anything else is ignored (ADR-168). */
+export function extraFieldsOf(value: unknown): Record<string, string> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  const answers: Record<string, string> = {};
+  for (const [id, typed] of Object.entries(value)) {
+    if (typeof typed === "string") answers[id] = typed;
+  }
+  return answers;
+}
+
 /** A numeric column may arrive as text; a value that is not a number is none. */
 const asNumber = (value: number | string | null): number | null => {
   if (value === null) return null;
@@ -140,6 +153,7 @@ export function toProjectEditView(
     offerType: row.offer_type,
     plotStatus: row.plot_status,
     villaType: row.villa_type,
+    extraFields: extraFieldsOf(row.extra_fields),
     price: row.price,
     priceType: row.price_type,
     areaMinSqft: asNumber(row.area_min_sqft),

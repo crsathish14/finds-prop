@@ -62,6 +62,7 @@ export interface ProjectRow {
   videos?: string[];
   brochure_path?: string | null;
   form_id?: string | null;
+  extra_fields?: Record<string, string>;
 }
 
 /** A month of the price trends as the database function takes it. */
@@ -239,6 +240,7 @@ export function projectRowFrom(
   put(row, "amenities", input.amenities);
   put(row, "seo_title", input.seoTitle);
   put(row, "seo_description", input.seoDescription);
+  put(row, "extra_fields", input.extraFields);
   if ("images" in input) {
     put(row, "images", input.images);
     put(row, "floor_plans", input.floorPlans);

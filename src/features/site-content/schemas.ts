@@ -17,6 +17,11 @@ import {
   LOCALITIES_MAX,
   LOCALITY_LABEL_MAX,
   LOCALITY_RADIUS_MAX_KM,
+  PROJECT_FIELDS_MAX,
+  PROJECT_FIELD_ID,
+  PROJECT_FIELD_PROPERTY_TYPES,
+  PROJECT_FIELD_HINT_MAX,
+  PROJECT_FIELD_LABEL_MAX,
   SITE_NAME_MAX,
 } from "./constants";
 
@@ -139,6 +144,47 @@ export const disclaimersInputSchema = z.object({
   aiSearch: disclaimerText,
 });
 export type DisclaimersInput = z.infer<typeof disclaimersInputSchema>;
+
+/**
+ * The extra project form boxes (ADR-168). The whole list is saved at once, in the order the builder sees it. A label is
+ * needed, a hint is optional, two boxes may not share a label (a builder could not tell them apart) or an id (the
+ * answers are stored under it), and no more than ten are kept, on or off.
+ */
+const projectFieldInput = z.object({
+  id: z.string().regex(PROJECT_FIELD_ID, { error: "validation.invalid" }),
+  label: requiredLine(PROJECT_FIELD_LABEL_MAX),
+  hint: optionalLine(PROJECT_FIELD_HINT_MAX),
+  required: z.boolean(),
+  appliesTo: z.array(z.enum(PROJECT_FIELD_PROPERTY_TYPES)),
+  on: z.boolean(),
+});
+
+export const projectFieldsInputSchema = z
+  .object({ fields: z.array(projectFieldInput).max(PROJECT_FIELDS_MAX) })
+  .superRefine((value, context) => {
+    const ids = new Set<string>();
+    const labels = new Set<string>();
+    value.fields.forEach((field, index) => {
+      if (ids.has(field.id)) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "label"],
+          message: "validation.invalid",
+        });
+      }
+      ids.add(field.id);
+      const same = field.label.toLowerCase();
+      if (labels.has(same)) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "label"],
+          message: "validation.duplicate",
+        });
+      }
+      labels.add(same);
+    });
+  });
+export type ProjectFieldsInput = z.infer<typeof projectFieldsInputSchema>;
 
 export const heroInputSchema = z.object({
   eyebrow: optionalLine(HERO_EYEBROW_MAX),

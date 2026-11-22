@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createMyProject, ProjectForm } from "@/features/project-editor";
+import { createMyProject, getExtraBoxes, ProjectForm } from "@/features/project-editor";
 import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
@@ -14,9 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
  * on top and no admin boxes. Saving creates the project for the builder themselves (in review) and opens its edit page,
  * where images, floor plans and the brochure can be added.
  */
-export default function NewBuilderProjectPage() {
+export default async function NewBuilderProjectPage() {
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="builder"
       project={null}
       save={createMyProject}
