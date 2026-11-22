@@ -125,7 +125,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT, DB-TRG-audit-form-crm       |
 | FR-SYS-07 | Seed data             | scripts             | S3-T13                                     | n/a                  | CI db job                             |
 | FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries      |
-| FR-SYS-09 | Legal pages           | `app`               | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
+| FR-SYS-09 | Legal pages           | `app`, `legal`      | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
 | FR-SYS-10 | Health and monitoring | `app/api`           | S1-T09, S9-T06                             | n/a                  | smoke                                 |
 | FR-PG-01  | PG and hostels        | TBD                 | Track X                                    | **Gap**              | TBD                                   |
 
