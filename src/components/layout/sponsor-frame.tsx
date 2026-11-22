@@ -12,7 +12,7 @@
  *   "About this ad" open, for the Design Lab), className. The first picture loads at once (it is
  *   above the fold); the others load straight after at low priority, so a banner is never empty
  *   when it slides in.
- * Responsive: the strip is 970 x 90 from 1024 px and a 16:5 compact banner below; the panel is a
+ * Responsive: the strip is 970 x 117 from 1024 px and a 16:5 compact banner below; the panel is a
  *   540 x 510 frame from 1024 px and a 2:1 banner below. Every slide has the same fixed aspect
  *   ratio, so the page does not jump when a picture loads or the slides move.
  * Accessibility: the area is a carousel region; each slide is a group named "Banner 2 of 3". Only
@@ -61,7 +61,7 @@ const AREA_STYLES = {
 } as const satisfies Record<SponsorFormat, string>;
 
 const FRAME_STYLES = {
-  strip: "aspect-16/5 rounded-lg lg:aspect-[970/90] lg:rounded-md",
+  strip: "aspect-16/5 rounded-lg lg:aspect-[970/117] lg:rounded-md",
   panel: "aspect-2/1 rounded-lg lg:aspect-[540/510] lg:rounded-xl lg:p-2 lg:shadow-hover",
 } as const satisfies Record<SponsorFormat, string>;
 

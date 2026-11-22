@@ -36,7 +36,7 @@ export const SLOT_SIZES: Record<
 > = {
   strip: {
     desktop: {
-      shown: { width: 970, height: 90 },
+      shown: { width: 970, height: 117 },
       minimum: { width: 1940, height: 180 },
     },
     compact: {

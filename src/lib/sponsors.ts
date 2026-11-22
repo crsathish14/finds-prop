@@ -55,12 +55,12 @@ export type SelectedSponsor = {
 
 /** Shape (width / height) of the picture each slot is made for. */
 export const SLOT_RATIOS = {
-  strip: { desktop: 970 / 90, compact: 320 / 100 },
+  strip: { desktop: 970 / 117, compact: 320 / 100 },
   panel: { desktop: 524 / 494, compact: 640 / 320 },
 } as const satisfies Record<SponsorFormat, { desktop: number; compact: number }>;
 
 const COVER_TOLERANCE = 0.08;
-const CONTAIN_TOLERANCE = 0.3;
+const CONTAIN_TOLERANCE = 0.31;
 
 export function fitFor(image: SponsorImage, slotRatio: number): SponsorFit {
   if (image.width <= 0 || image.height <= 0) return "rejected";

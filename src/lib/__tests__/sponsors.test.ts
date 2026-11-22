@@ -29,13 +29,14 @@ describe("UT-sponsors: fit rule (within 8% cover, within 30% contain, beyond rej
   const make = (width: number, height: number) => ({ src: "/x.png", width, height });
 
   it("fills the slot when the picture is the right shape", () => {
-    expect(fitFor(make(970, 90), stripDesktop)).toBe("cover");
-    expect(fitFor(make(1940, 180), stripDesktop)).toBe("cover");
-    expect(fitFor(make(1000, 90), stripDesktop)).toBe("cover");
+    expect(fitFor(make(970, 117), stripDesktop)).toBe("cover");
+    expect(fitFor(make(1940, 234), stripDesktop)).toBe("cover");
+    expect(fitFor(make(1000, 117), stripDesktop)).toBe("cover");
   });
 
   it("shows the picture whole when it is a little off", () => {
-    expect(fitFor(make(970, 120), stripDesktop)).toBe("contain");
+    expect(fitFor(make(970, 90), stripDesktop)).toBe("contain");
+    expect(fitFor(make(1940, 180), stripDesktop)).toBe("contain");
     expect(fitFor(make(524, 600), SLOT_RATIOS.panel.desktop)).toBe("contain");
   });
 

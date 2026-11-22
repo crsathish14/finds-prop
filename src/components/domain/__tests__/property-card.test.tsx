@@ -41,6 +41,12 @@ describe("PropertyCard: one home in a grid or a list (S4-T01)", () => {
     expect(screen.getByText("Apartment")).toBeInTheDocument();
   });
 
+  it("shows no Budget tag, though the home carries that label", () => {
+    renderWithMessages(<PropertyCard property={{ ...home, label: "budget" }} />);
+    expect(screen.queryByText(words.label.budget)).not.toBeInTheDocument();
+    expect(screen.getByText(words.forSale)).toBeInTheDocument();
+  });
+
   it("is one link target: the title link goes to the home, and the picture has its alt text", () => {
     renderWithMessages(<PropertyCard property={home} />);
     const link = screen.getByRole("link", { name: home.title });

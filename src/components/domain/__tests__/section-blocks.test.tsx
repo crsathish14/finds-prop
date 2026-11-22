@@ -210,6 +210,28 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
   });
 
+  it("scrolls sideways with the mouse wheel while there is room, and lets the page scroll at the end", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    const list = screen.getByRole("list", { name: "Newest homes" });
+    measureRow(list, { client: 500, scroll: 2000, left: 0 });
+    const down = new WheelEvent("wheel", { deltaY: 100, cancelable: true, bubbles: true });
+    list.dispatchEvent(down);
+    expect(down.defaultPrevented).toBe(true);
+    expect(list.scrollLeft).toBe(100);
+    const up = new WheelEvent("wheel", { deltaY: -100, cancelable: true, bubbles: true });
+    list.scrollLeft = 0;
+    list.dispatchEvent(up);
+    expect(up.defaultPrevented).toBe(false);
+    measureRow(list, { client: 500, scroll: 2000, left: 1500 });
+    const end = new WheelEvent("wheel", { deltaY: 100, cancelable: true, bubbles: true });
+    list.dispatchEvent(end);
+    expect(end.defaultPrevented).toBe(false);
+  });
+
   it("moves the row by most of what is showing when Next is pressed", () => {
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
