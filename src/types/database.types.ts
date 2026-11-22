@@ -119,6 +119,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"cities": {
+                  Row: {
+                    "created_at": string,"id": string,"key": string,"name": string,"state": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"key": string,"name": string,"state"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"key"?: string,"name"?: string,"state"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"content_categories": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"module": string,"name": string,"slug": string,"sort_order": number,"updated_at": string
@@ -825,6 +839,12 @@ isOneToOne: false
 "changed_columns":
 { Args: { "new_row": Json,"old_row": Json }; Returns: Json
                            },
+"city_display_name":
+{ Args: { "city": string }; Returns: string
+                           },
+"city_key":
+{ Args: { "city": string }; Returns: string
+                           },
 "claim_crm_deliveries":
 { Args: { "p_limit"?: number,"p_submission"?: string }; Returns: {
               "attempt": number,"created_at": string,"data": Json,"email": string,"form_name": string,"integration_id": string,"mobile": string,"name": string,"project_id": string,"project_name": string,"project_slug": string,"source": string,"submission_id": string
@@ -869,6 +889,11 @@ isOneToOne: false
                            },
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"listed_cities":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "key": string,"listing_count": number,"name": string
+            }[]
                            },
 "listing_is_editable":
 { Args: { "target_property": string }; Returns: boolean
@@ -1098,7 +1123,7 @@ isOneToOne: false
             }[]
                            },
 "search_properties":
-{ Args: { "p_bhk"?: number,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
+{ Args: { "p_bhk"?: number,"p_city"?: string,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
               "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
             }[]
                            },

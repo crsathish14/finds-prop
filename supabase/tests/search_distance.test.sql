@@ -87,15 +87,15 @@ select ok(
   'search_properties still has no owner, address, exact location, description, pincode, status or vector column'
 );
 select ok(
-  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
-  'visitors may run the search (same 17 arguments as before)'
+  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
+  'visitors may run the search (17 arguments and the new city one)'
 );
 select ok(
-  has_function_privilege('authenticated', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
+  has_function_privilege('authenticated', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
   'signed-in people may run the search'
 );
 select ok(
-  has_function_privilege('service_role', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
+  has_function_privilege('service_role', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
   'the service role may run the search'
 );
 select ok(
