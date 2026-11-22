@@ -56,7 +56,7 @@ select throws_ok(
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000ad", "role": "authenticated"}', true);
 select results_eq(
   $$select builder_name, builder_kind, message, reviewed_at is null, total_count::int
-    from public.admin_feedback_list('all') order by builder_name desc$,
+    from public.admin_feedback_list('all') order by builder_name desc$$,
   $$values ('Nila Habitats'::text, 'agent'::text, 'Please add a filter.'::text, true, 2),
            ('Kadal Homes'::text, 'builder'::text, 'The unit table is slow to load.'::text, true, 2)$$,
   'the super admin sees both messages with the sender and their role'
