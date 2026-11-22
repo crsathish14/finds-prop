@@ -85,7 +85,7 @@ describe("UT-blog-links: inline links in the block format (ADR-169)", () => {
 
 describe("UT-blog-links-migration-parity: the database reads links the way the code does", () => {
   const SQL = readFileSync(
-    join(process.cwd(), "supabase/migrations/20261124150000_blog_inline_links.sql"),
+    join(process.cwd(), "supabase/migrations/20261124180000_blog_inline_links.sql"),
     "utf8",
   );
 
