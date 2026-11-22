@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { developerFromProjects, rankBuilders } from "../new-launches";
+import { chosenBuilders, developerFromProjects, rankBuilders } from "../new-launches";
 
 const rows = (...ids: string[]) => ids.map((builder_id) => ({ builder_id }));
 
@@ -19,6 +19,26 @@ describe("UT-home-rank-builders: which builders the section shows (BR-94)", () =
 
   it("gives nothing for no projects", () => {
     expect(rankBuilders([])).toEqual([]);
+  });
+});
+
+describe("UT-home-chosen-builders: the developers the super admin chose", () => {
+  it("keeps the chosen order and counts each developer's public projects", () => {
+    expect(chosenBuilders(rows("a", "b", "b", "c"), ["c", "b", "a"])).toEqual([
+      { builderId: "c", projectCount: 1 },
+      { builderId: "b", projectCount: 2 },
+      { builderId: "a", projectCount: 1 },
+    ]);
+  });
+
+  it("leaves out a chosen developer with no public project, and a repeated id", () => {
+    expect(chosenBuilders(rows("a"), ["x", "a", "a"])).toEqual([
+      { builderId: "a", projectCount: 1 },
+    ]);
+  });
+
+  it("gives nothing when nothing is chosen", () => {
+    expect(chosenBuilders(rows("a", "b"), [])).toEqual([]);
   });
 });
 

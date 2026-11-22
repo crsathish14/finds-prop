@@ -16,6 +16,7 @@ import {
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveTopDevelopersContent,
   type ContentStore,
   type RegionBounds,
 } from "../content-service";
@@ -26,6 +27,7 @@ import {
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  topDevelopersInputSchema,
 } from "../schemas";
 
 function fakeStore(bounds: RegionBounds = SITE_DEFAULTS.region.bounds) {
@@ -253,5 +255,30 @@ describe("UT-site-content-service: the disclaimers (ADR-152)", () => {
     expect(disclaimersInputSchema.safeParse({ footer: "a".repeat(600) }).success).toBe(true);
     expect(disclaimersInputSchema.safeParse({ aiSearch: "bad\u0007text" }).success).toBe(false);
     expect(disclaimersInputSchema.safeParse({ aiSearch: "tab\there" }).success).toBe(false);
+  });
+});
+
+const ID = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`;
+
+describe("UT-top-developers: the chosen developers of the home page", () => {
+  it("writes the top_developers setting with the ids in order", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveTopDevelopersContent(store, { builderIds: [ID(2), ID(1)] });
+    expect(done).toEqual({ key: "top_developers" });
+    expect(writes).toEqual([{ key: "top_developers", value: { builderIds: [ID(2), ID(1)] } }]);
+  });
+
+  it("takes none (the home page then picks by itself) and ten, but not eleven", () => {
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [] }).success).toBe(true);
+    const ten = Array.from({ length: 10 }, (_, index) => ID(index + 1));
+    expect(topDevelopersInputSchema.safeParse({ builderIds: ten }).success).toBe(true);
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [...ten, ID(11)] }).success).toBe(
+      false,
+    );
+  });
+
+  it("refuses a repeated id and a value that is not an id", () => {
+    expect(topDevelopersInputSchema.safeParse({ builderIds: [ID(1), ID(1)] }).success).toBe(false);
+    expect(topDevelopersInputSchema.safeParse({ builderIds: ["not-an-id"] }).success).toBe(false);
   });
 });

@@ -10,6 +10,7 @@ export const EDITABLE_SETTINGS = [
   "footer",
   "content_modules",
   "disclaimers",
+  "top_developers",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 

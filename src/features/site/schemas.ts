@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 
 /**
  * What the site content (CMS) may hold in `site_settings` (plan 06 section 6.6, BR-80 to BR-82).
@@ -100,6 +101,14 @@ const disclaimersSchema = z.object({
   aiSearch: z.string().max(DISCLAIMER_MAX).optional(),
 });
 
+/**
+ * The developers the home page's "Top developers" section shows, in order (at most 10). Empty means the section picks
+ * developers by itself, as before. An id that is no longer a developer with a public project is skipped when it is read.
+ */
+const topDevelopersSchema = z.object({
+  builderIds: z.array(z.uuid()).max(TOP_DEVELOPERS_MAX),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -109,6 +118,7 @@ export const SITE_SETTING_SCHEMAS = {
   sponsors: sponsorsSchema,
   content_modules: contentModulesSchema,
   disclaimers: disclaimersSchema,
+  top_developers: topDevelopersSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

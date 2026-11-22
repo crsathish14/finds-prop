@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
   FOOTER_ADDRESS_MAX,
@@ -217,3 +218,12 @@ export const contentModulesInputSchema = z.object({
   careers: z.boolean({ error: "validation.invalid" }),
 });
 export type ContentModulesInput = z.infer<typeof contentModulesInputSchema>;
+
+/** The chosen developers of the home page, in order: at most 10, each once, each a real id. The whole list is sent. */
+export const topDevelopersInputSchema = z.object({
+  builderIds: z
+    .array(z.uuid({ error: "validation.invalid" }))
+    .max(TOP_DEVELOPERS_MAX, { error: "validation.invalid" })
+    .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
+});
+export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;
