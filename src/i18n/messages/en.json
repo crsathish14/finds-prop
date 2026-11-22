@@ -611,6 +611,8 @@
         "heading": "Project overview",
         "price": "Starting price",
         "propertyType": "Property type",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "configuration": "Configuration",
         "area": "Area",
         "areaRange": "{min} – {max} sq ft",
@@ -710,6 +712,15 @@
         "flat": "Flat",
         "office": "Office",
         "coWorking": "Co-working space"
+      },
+      "plotStatus": {
+        "investment": "Investment",
+        "readyToBuild": "Ready to build"
+      },
+      "villaType": {
+        "duplex": "Duplex",
+        "rowHouse": "Row house",
+        "individual": "Individual"
       }
     }
   },
@@ -2145,6 +2156,8 @@
         "projectType": "Project type",
         "propertyType": "Property type",
         "offerType": "This project is for",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "projectStatus": "Status",
         "price": "Starting price (₹)",
         "priceType": "Price type",
@@ -2198,6 +2211,15 @@
         "offerType": {
           "sale": "Sale",
           "rent": "Rent"
+        },
+        "plotStatus": {
+          "investment": "Investment",
+          "readyToBuild": "Ready to build"
+        },
+        "villaType": {
+          "duplex": "Duplex",
+          "rowHouse": "Row house",
+          "individual": "Individual"
         },
         "priceType": {
           "perSqft": "Rate per sq ft",
@@ -2289,6 +2311,8 @@
         "projectType": "Choose the project type.",
         "propertyType": "Choose the property type.",
         "offerType": "Choose whether the project is for sale or for rent.",
+        "plotStatus": "Choose the plot status.",
+        "villaType": "Choose the villa type.",
         "status": "Choose the status.",
         "possession": "Choose the possession month.",
         "price": "Enter the price.",

@@ -20,6 +20,8 @@ const WORDS: ProjectFieldsWords = {
   projectType: "Project type",
   propertyType: "Property type",
   offerType: "This project is for",
+  plotStatus: "Plot status",
+  villaType: "Villa type",
   projectStatus: "Status",
   price: "Starting price",
   priceType: "Price type",
@@ -61,6 +63,8 @@ const OPTIONS = {
   projectTypes: [{ value: "residential", label: "Residential" }],
   propertyTypes: [{ value: "apartment", label: "Apartment" }],
   offerTypes: [{ value: "sale", label: "Sale" }],
+  plotStatuses: [],
+  villaTypes: [],
   priceTypes: [{ value: "basic", label: "Basic price" }],
   statuses: [{ value: "new_launch", label: "New launch" }],
 };
@@ -71,6 +75,8 @@ const VALUES: ProjectFieldValues = {
   projectType: "",
   propertyType: "",
   offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "",
   price: "",
   priceType: "",
@@ -97,7 +103,14 @@ const VALUES: ProjectFieldValues = {
   seoDescription: "",
 };
 
-const APPLIES = { offerType: false, bedrooms: true, area: false, possession: true };
+const APPLIES = {
+  offerType: false,
+  plotStatus: false,
+  villaType: false,
+  bedrooms: true,
+  area: false,
+  possession: true,
+};
 
 /** A stand-in for the page's place picker: one button that reports a fixed place, so no network is involved. */
 function FakePicker({ id, disabled, onPick }: PlacePickerFieldProps) {

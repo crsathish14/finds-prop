@@ -53,6 +53,8 @@ const WORDS: ProjectFieldsWords = {
   projectType: "Project type",
   propertyType: "Property type",
   offerType: "This project is for",
+  plotStatus: "Plot status",
+  villaType: "Villa type",
   projectStatus: "Status",
   price: "Starting price (₹)",
   priceType: "Price type",
@@ -131,6 +133,15 @@ function optionsFor(values: ProjectFieldValues, builder: boolean) {
       { value: "sale", label: "Sale" },
       { value: "rent", label: "Rent" },
     ],
+    plotStatuses: [
+      { value: "investment", label: "Investment" },
+      { value: "ready_to_build", label: "Ready to build" },
+    ],
+    villaTypes: [
+      { value: "duplex", label: "Duplex" },
+      { value: "row_house", label: "Row house" },
+      { value: "individual", label: "Individual" },
+    ],
     priceTypes: (rent
       ? ["rent_per_month", "rent_per_sqft_month"]
       : ["per_sqft", "basic", "all_inclusive"]
@@ -147,6 +158,8 @@ function appliesTo(values: ProjectFieldValues) {
   const commercial = values.projectType === "commercial";
   return {
     offerType: commercial,
+    plotStatus: values.propertyType === "plot",
+    villaType: values.propertyType === "villa",
     bedrooms:
       values.projectType === "residential" &&
       (values.propertyType === "apartment" || values.propertyType === "villa"),
@@ -164,6 +177,8 @@ const EMPTY: ProjectFieldValues = {
   projectType: "",
   propertyType: "",
   offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "",
   price: "",
   priceType: "",
@@ -196,6 +211,8 @@ const FILLED: ProjectFieldValues = {
   projectType: "residential",
   propertyType: "apartment",
   offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "under_construction",
   price: "78,00,000",
   priceType: "basic",

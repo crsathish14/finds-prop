@@ -11,6 +11,8 @@ import {
   areaApplies,
   bedroomsApply,
   offerTypeApplies,
+  plotStatusApplies,
+  villaTypeApplies,
   possessionApplies,
   priceTypesFor,
   propertyTypeFits,
@@ -61,6 +63,8 @@ export const EMPTY_PROJECT_VALUES: ProjectFieldValues = {
   projectType: "",
   propertyType: "",
   offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "",
   price: "",
   priceType: "",
@@ -97,6 +101,8 @@ export function valuesOf(project: ProjectEditView): ProjectFieldValues {
     projectType: text(project.projectType),
     propertyType: text(project.propertyType),
     offerType: text(project.offerType),
+    plotStatus: text(project.plotStatus),
+    villaType: text(project.villaType),
     projectStatus: text(project.projectStatus),
     price: text(project.price),
     priceType: text(project.priceType),
@@ -140,12 +146,16 @@ export function slugFromName(name: string): string {
 /** Which of the boxes that depend on the kind of project show (ADR-148). */
 export function appliesOf(values: ProjectFieldValues): {
   offerType: boolean;
+  plotStatus: boolean;
+  villaType: boolean;
   bedrooms: boolean;
   area: boolean;
   possession: boolean;
 } {
   return {
     offerType: offerTypeApplies(values.projectType),
+    plotStatus: plotStatusApplies(values.propertyType),
+    villaType: villaTypeApplies(values.propertyType),
     bedrooms: bedroomsApply(values.projectType, values.propertyType),
     area: areaApplies(values.projectType, values.propertyType),
     possession: possessionApplies(values.projectStatus),
@@ -162,6 +172,8 @@ export function reconcile(values: ProjectFieldValues): ProjectFieldValues {
   const next = { ...values };
   if (!propertyTypeFits(next.projectType, next.propertyType)) next.propertyType = "";
   if (!offerTypeApplies(next.projectType)) next.offerType = "";
+  if (!plotStatusApplies(next.propertyType)) next.plotStatus = "";
+  if (!villaTypeApplies(next.propertyType)) next.villaType = "";
   if (!priceTypesFor(next.projectType, next.offerType).includes(next.priceType))
     next.priceType = "";
   if (!areaApplies(next.projectType, next.propertyType)) {
@@ -181,6 +193,8 @@ export type ProjectProblem =
   | "projectType"
   | "propertyType"
   | "offerType"
+  | "plotStatus"
+  | "villaType"
   | "status"
   | "possession"
   | "price"
@@ -210,6 +224,8 @@ export function projectProblems(
   if (blank(values.projectType)) found.projectType = "projectType";
   if (blank(values.propertyType)) found.propertyType = "propertyType";
   if (applies.offerType && blank(values.offerType)) found.offerType = "offerType";
+  if (applies.plotStatus && blank(values.plotStatus)) found.plotStatus = "plotStatus";
+  if (applies.villaType && blank(values.villaType)) found.villaType = "villaType";
   if (blank(values.projectStatus)) found.projectStatus = "status";
   if (applies.possession && blank(values.possessionDate)) found.possessionDate = "possession";
   const price = numberOf(values.price);
@@ -241,6 +257,8 @@ export const SECTION_OF: Record<ProjectFieldName, ProjectSectionId> = {
   projectType: "basics",
   propertyType: "basics",
   offerType: "basics",
+  plotStatus: "basics",
+  villaType: "basics",
   projectStatus: "basics",
   price: "basics",
   priceType: "basics",

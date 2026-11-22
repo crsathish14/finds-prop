@@ -1,5 +1,12 @@
 import { ActionError } from "@/server/actions/normalise-error";
-import { areaApplies, bedroomsApply, offerTypeApplies, possessionApplies } from "./rules";
+import {
+  areaApplies,
+  bedroomsApply,
+  offerTypeApplies,
+  plotStatusApplies,
+  possessionApplies,
+  villaTypeApplies,
+} from "./rules";
 import type {
   CreateMyProjectInput,
   CreateProjectInput,
@@ -24,6 +31,8 @@ export interface ProjectRow {
   property_type?: string | null;
   project_status?: string | null;
   offer_type?: string | null;
+  plot_status?: string | null;
+  villa_type?: string | null;
   price?: number | null;
   price_type?: string | null;
   area_min_sqft?: number | null;
@@ -121,6 +130,12 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
       "The reason RERA does not apply is required",
     );
   }
+  if (says(failure, "projects.plot_status_required")) {
+    return onBox("plotStatus", "validation.required", "The plot status is required");
+  }
+  if (says(failure, "projects.villa_type_required")) {
+    return onBox("villaType", "validation.required", "The villa type is required");
+  }
   if (says(failure, "projects_possession_for_status")) {
     return onBox(
       "possessionDate",
@@ -196,6 +211,8 @@ export function projectRowFrom(
     property_type: input.propertyType,
     project_status: input.projectStatus,
     offer_type: offerTypeApplies(input.projectType) ? (input.offerType ?? null) : null,
+    plot_status: plotStatusApplies(input.propertyType) ? (input.plotStatus ?? null) : null,
+    villa_type: villaTypeApplies(input.propertyType) ? (input.villaType ?? null) : null,
     price: input.price,
     price_type: input.priceType,
     bhk_options: bedroomsApply(input.projectType, input.propertyType)

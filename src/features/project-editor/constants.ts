@@ -24,6 +24,14 @@ export const PROPERTY_TYPES_BY_PROJECT_TYPE: Record<ProjectType, readonly Proper
 export const OFFER_TYPES = ["sale", "rent"] as const;
 export type OfferType = (typeof OFFER_TYPES)[number];
 
+/** What state a plot is sold in, as `projects.plot_status` holds it (ADR-160): asked for a plot only. */
+export const PLOT_STATUSES = ["investment", "ready_to_build"] as const;
+export type PlotStatus = (typeof PLOT_STATUSES)[number];
+
+/** What kind of villa it is, as `projects.villa_type` holds it (ADR-160): asked for a villa only. */
+export const VILLA_TYPES = ["duplex", "row_house", "individual"] as const;
+export type VillaType = (typeof VILLA_TYPES)[number];
+
 /** What the one price means, as `projects.price_type` holds it. */
 export const SALE_PRICE_TYPES = ["per_sqft", "basic", "all_inclusive"] as const;
 export const RENT_PRICE_TYPES = ["rent_per_month", "rent_per_sqft_month"] as const;

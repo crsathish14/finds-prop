@@ -19,6 +19,7 @@ import {
   PRICE_MAX,
   PRICE_TYPES,
   PROJECT_STATUSES,
+  PLOT_STATUSES,
   PROJECT_TYPES,
   PROPERTY_TYPES,
   RERA_NUMBER_MAX,
@@ -33,10 +34,13 @@ import {
   TREND_PRICE_MAX,
   TREND_PRICE_MIN,
   VIDEOS_MAX,
+  VILLA_TYPES,
 } from "./constants";
 import {
   areaApplies,
   offerTypeApplies,
+  plotStatusApplies,
+  villaTypeApplies,
   possessionApplies,
   priceTypesFor,
   propertyTypeFits,
@@ -247,6 +251,10 @@ const priceType = z.preprocess(blankToMissing, z.enum(PRICE_TYPES, { error: choi
 /** Sale or rent: asked of a commercial project only; the rule that it is given is below. */
 const offerType = clearable(z.enum(OFFER_TYPES, { error: "validation.invalid" }));
 
+/** What a plot or a villa is (ADR-160): asked for that property type only; the rule that it is given is below. */
+const plotStatus = clearable(z.enum(PLOT_STATUSES, { error: "validation.invalid" }));
+const villaType = clearable(z.enum(VILLA_TYPES, { error: "validation.invalid" }));
+
 /** The boxes of the form that both the admin and a builder fill in. */
 const fieldShape = {
   name,
@@ -254,6 +262,8 @@ const fieldShape = {
   projectType,
   propertyType,
   offerType,
+  plotStatus,
+  villaType,
   projectStatus,
   price: requiredWholeNumber(1, PRICE_MAX),
   priceType,
@@ -283,6 +293,8 @@ type RuleInput = {
   projectType: string;
   propertyType: string;
   offerType?: string | null | undefined;
+  plotStatus?: string | null | undefined;
+  villaType?: string | null | undefined;
   projectStatus: string;
   priceType: string;
   areaMinSqft?: number | null | undefined;
@@ -308,6 +320,8 @@ function crossRules(value: RuleInput, problems: z.RefinementCtx): void {
     problems.addIssue({ code: "custom", path: ["propertyType"], message: "validation.invalid" });
   }
   if (offerTypeApplies(value.projectType) && value.offerType == null) missing("offerType");
+  if (plotStatusApplies(value.propertyType) && value.plotStatus == null) missing("plotStatus");
+  if (villaTypeApplies(value.propertyType) && value.villaType == null) missing("villaType");
   if (!priceTypesFor(value.projectType, value.offerType ?? "").includes(value.priceType)) {
     problems.addIssue({ code: "custom", path: ["priceType"], message: "validation.invalid" });
   }

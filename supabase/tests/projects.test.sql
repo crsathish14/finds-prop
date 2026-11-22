@@ -1,7 +1,7 @@
 -- F04 projects, units and price trends. Tests: DB-CON-projects, DB-RLS-projects-*,
 -- DB-TRG-projects-guard, DB-TRG-units-project-lock, DB-RLS-units, DB-RLS-price_trends.
 begin;
-select plan(84);
+select plan(89);
 
 -- b1 and b2 are builders (records B1 and B2), c1 is a customer, ad is the reserved admin.
 insert into auth.users (id, email, email_confirmed_at) values
@@ -301,6 +301,56 @@ select throws_ok(
 select throws_ok(
   $$update public.projects set price_type = 'basic' where id = '00000000-0000-4000-c000-000000000001'$$,
   '23514', 'projects.form_incomplete', 'a change to the form''s own columns is asked for the whole form'
+);
+select throws_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, project_status, price, price_type,
+      area_min_sqft, area_max_sqft, rera_not_applicable_reason
+    ) values (
+      'b1-plot-nostatus', 'B1 Plot', 'Adyar', 'residential', 'plot', 'ready_to_move', 5000000, 'per_sqft',
+      1200, 2400, 'Below the size that needs registration.'
+    )$$,
+  '23514', 'projects.plot_status_required', 'a builder must say whether a plot is an investment or ready to build'
+);
+select lives_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, plot_status, project_status, price, price_type,
+      area_min_sqft, area_max_sqft, rera_not_applicable_reason
+    ) values (
+      'b1-plot', 'B1 Plot Ok', 'Adyar', 'residential', 'plot', 'ready_to_build', 'ready_to_move', 5000000,
+      'per_sqft', 1200, 2400, 'Below the size that needs registration.'
+    )$$,
+  'a builder can create a plot with its status'
+);
+select throws_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, project_status, price, price_type,
+      rera_not_applicable_reason
+    ) values (
+      'b1-villa-notype', 'B1 Villa', 'Adyar', 'residential', 'villa', 'ready_to_move', 5000000, 'basic',
+      'Below the size that needs registration.'
+    )$$,
+  '23514', 'projects.villa_type_required', 'a builder must say what kind of villa it is'
+);
+select lives_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, villa_type, project_status, price, price_type,
+      rera_not_applicable_reason
+    ) values (
+      'b1-villa', 'B1 Villa Ok', 'Adyar', 'residential', 'villa', 'row_house', 'ready_to_move', 5000000, 'basic',
+      'Below the size that needs registration.'
+    )$$,
+  'a builder can create a villa with its type'
+);
+select throws_ok(
+  $$insert into public.projects (
+      slug, name, locality, project_type, property_type, villa_type, project_status, price, price_type,
+      rera_not_applicable_reason
+    ) values (
+      'b1-apt-villa', 'B1 Apt', 'Adyar', 'residential', 'apartment', 'duplex', 'ready_to_move', 5000000, 'basic',
+      'Below the size that needs registration.'
+    )$$,
+  '23514', null, 'a villa type goes only with a villa'
 );
 select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality)

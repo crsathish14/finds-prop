@@ -35,7 +35,14 @@ import { formatAcres, formatMonth, formatPrice, type Translate } from "@/lib/for
 import { textParagraphs, uniqueTexts } from "@/lib/text";
 import { PROJECTS_PATH } from "./address";
 import { PriceTrend } from "./price-trend";
-import type { PriceType, ProjectData, ProjectPropertyType, ProjectStatus } from "./types";
+import type {
+  PriceType,
+  ProjectData,
+  ProjectPlotStatus,
+  ProjectPropertyType,
+  ProjectStatus,
+  ProjectVillaType,
+} from "./types";
 import { UnitsTable } from "./units-table";
 import {
   bhkSizes,
@@ -54,6 +61,8 @@ import {
 const SPEC_ICONS: Record<SpecItem["key"], LucideIcon> = {
   price: Tag,
   propertyType: House,
+  plotStatus: House,
+  villaType: House,
   configuration: BedDouble,
   area: Maximize2,
   status: Building2,
@@ -67,6 +76,8 @@ const SPEC_ICONS: Record<SpecItem["key"], LucideIcon> = {
 const SPEC_LABELS = {
   price: "projects.page.overview.price",
   propertyType: "projects.page.overview.propertyType",
+  plotStatus: "projects.page.overview.plotStatus",
+  villaType: "projects.page.overview.villaType",
   configuration: "projects.page.overview.configuration",
   area: "projects.page.overview.area",
   status: "projects.page.overview.status",
@@ -94,6 +105,17 @@ const PROPERTY_TYPE_WORDS = {
   office: "projects.page.propertyType.office",
   co_working: "projects.page.propertyType.coWorking",
 } as const satisfies Record<ProjectPropertyType, string>;
+
+const PLOT_STATUS_WORDS = {
+  investment: "projects.page.plotStatus.investment",
+  ready_to_build: "projects.page.plotStatus.readyToBuild",
+} as const satisfies Record<ProjectPlotStatus, string>;
+
+const VILLA_TYPE_WORDS = {
+  duplex: "projects.page.villaType.duplex",
+  row_house: "projects.page.villaType.rowHouse",
+  individual: "projects.page.villaType.individual",
+} as const satisfies Record<ProjectVillaType, string>;
 
 const OFFER_WORDS = {
   sale: "domain.projectCard.offer.sale",
@@ -191,6 +213,10 @@ export function ProjectScreen({
         return priceWords(item.rupees, item.type);
       case "propertyType":
         return translate(PROPERTY_TYPE_WORDS[item.value]);
+      case "plotStatus":
+        return translate(PLOT_STATUS_WORDS[item.value]);
+      case "villaType":
+        return translate(VILLA_TYPE_WORDS[item.value]);
       case "area": {
         const number = new Intl.NumberFormat(locale);
         return translate("projects.page.overview.areaRange", {
