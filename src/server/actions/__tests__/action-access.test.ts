@@ -180,7 +180,7 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
       none: 8,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(97);
+    expect(Object.keys(table)).toHaveLength(98);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {
