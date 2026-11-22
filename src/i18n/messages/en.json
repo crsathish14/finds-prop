@@ -1488,7 +1488,39 @@
       "hero": "Hero",
       "homepage": "Homepage",
       "footer": "Footer",
-      "disclaimers": "Disclaimers"
+      "disclaimers": "Disclaimers",
+      "topDevelopers": "Top developers"
+    },
+    "topDevelopers": {
+      "metaTitle": "Top developers",
+      "title": "Top developers",
+      "description": "Choose the developers the home page shows under Top developers, and put them in order. At most {max}. A developer with no approved, published project is skipped on the home page.",
+      "chosen": {
+        "title": "{count} of {max} chosen"
+      },
+      "empty": {
+        "title": "No developer chosen",
+        "text": "The home page picks developers by itself until you choose some."
+      },
+      "full": {
+        "title": "{max} developers chosen",
+        "text": "Remove one to add another."
+      },
+      "available": {
+        "title": "Developers you can add",
+        "empty": "There is no other developer to add."
+      },
+      "unknown": "A developer that is no longer listed",
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "add": "Add {name}",
+      "addShort": "Add",
+      "remove": "Remove {name}",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "saved": {
+        "title": "Top developers saved",
+        "text": "The home page shows them in this order."
+      }
     },
     "contentModules": {
       "title": "Content modules",

@@ -118,6 +118,12 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
           icon: "homepage",
         },
         {
+          key: "top-developers",
+          href: "/admin/top-developers",
+          label: translate("admin.nav.topDevelopers"),
+          icon: "builders",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),

@@ -4,6 +4,7 @@ import type { EditableSetting } from "./constants";
 import type {
   ContentModulesInput,
   DisclaimersInput,
+  TopDevelopersInput,
   FooterInput,
   HeaderInput,
   HeroInput,
@@ -168,6 +169,14 @@ export function saveDisclaimersContent(
   input: DisclaimersInput,
 ): Promise<ContentDone> {
   return publish(store, "disclaimers", disclaimersValue(input));
+}
+
+/** Saves the chosen developers of the home page, in order. */
+export function saveTopDevelopersContent(
+  store: ContentStore,
+  input: TopDevelopersInput,
+): Promise<ContentDone> {
+  return publish(store, "top_developers", { builderIds: input.builderIds });
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {
