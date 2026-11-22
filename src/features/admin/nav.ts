@@ -20,7 +20,6 @@ export type AdminIconName =
   | "hero"
   | "homepage"
   | "footer"
-  | "disclaimers"
   | "blog"
   | "faq"
   | "careers"
