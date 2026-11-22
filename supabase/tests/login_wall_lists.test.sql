@@ -81,7 +81,7 @@ select is(
 set local role anon;
 
 select throws_ok(
-  $select public.live_locality_names()$,
+  $$select public.live_locality_names()$$,
   '42501',
   null,
   'live_locality_names refuses a visitor who is not signed in'
