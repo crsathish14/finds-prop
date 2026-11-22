@@ -2,6 +2,7 @@ import { tagsAfterBlogChange } from "@/lib/cache-tags";
 import type { PostDone } from "./post-service";
 import {
   blogPostIdSchema,
+  createBlogPostFromMarkdownSchema,
   createBlogPostSchema,
   setBlogCoverSchema,
   updateBlogPostSchema,
@@ -23,6 +24,14 @@ const refresh = (done: PostDone): string[] => [
 export const createBlogPostConfig = {
   name: "createBlogPost",
   input: createBlogPostSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: refresh,
+};
+
+export const createBlogPostFromMarkdownConfig = {
+  name: "createBlogPostFromMarkdown",
+  input: createBlogPostFromMarkdownSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: refresh,

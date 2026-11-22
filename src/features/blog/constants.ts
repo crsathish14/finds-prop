@@ -24,6 +24,9 @@ export const BLOG_SEO_DESCRIPTION_MAX = 170;
 export const BLOG_ALT_MAX = 200;
 export const BLOG_CAPTION_MAX = 200;
 
+/** The longest Markdown text the paste flow reads (ADR-172); a full article is far smaller. */
+export const MARKDOWN_MAX_CHARS = 400_000;
+
 export const BLOCKS_MAX = 100;
 export const BLOCKS_BYTES_MAX = 100_000;
 export const HEADING_MAX = 160;
