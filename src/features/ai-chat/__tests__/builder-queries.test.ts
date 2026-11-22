@@ -8,9 +8,9 @@ import {
   BUILDER_PROJECT_COLUMNS,
 } from "../columns";
 
-// UT-ai-builder-read (ADR-128 section 5.1, R-BE-06, R-BE-11): the cached reads behind `get_builder`. They ask
-// a visitor's client for the public builder columns and the live projects' own columns only, stamp the time
-// inside the cache, and never cache a failure. The database is a stand-in here; the integration test runs the
+// UT-ai-builder-read (ADR-128 section 5.1, R-BE-06, R-BE-11, ADR-171): the reads behind `get_builder`. The
+// directory is a cached read of the public builder columns; a profile reads the builder's public columns and,
+// with the customer's own session, the live projects through `live_builder_projects()`. The database is a stand-in here; the integration test runs the
 // same reads against the real one.
 
 type Result = { data: unknown; error: { code: string } | null; count?: number | null };
@@ -21,6 +21,7 @@ const results: Record<string, Result[]> = {};
 const tag = vi.fn();
 const life = vi.fn();
 const error = vi.fn();
+const liveRpc = vi.fn();
 
 /** A query that records every call made on it and can be awaited, or ended with `maybeSingle()`. */
 function query(table: string) {
@@ -42,6 +43,9 @@ function query(table: string) {
 }
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
+vi.mock("@/server/supabase/server", () => ({
+  createServerSupabase: async () => ({ rpc: liveRpc }),
+}));
 vi.mock("@/server/supabase/public", () => ({
   createPublicSupabase: () => ({ from: (table: string) => query(table) }),
 }));
@@ -137,33 +141,31 @@ describe("UT-ai-builder-read: the builder directory", () => {
   });
 });
 
-describe("UT-ai-builder-read: one builder's profile", () => {
-  it("reads the builder, their newest projects with a count, and their earliest project", async () => {
+describe("UT-ai-builder-read: one builder's profile (ADR-171)", () => {
+  /** The answer of `live_builder_projects()`. */
+  const live = (
+    projects: unknown[] = [projectRow()],
+    count = projects.length,
+    first: string | null = null,
+  ) => ({
+    data: { projects, project_count: count, first_project_at: first },
+    error: null,
+  });
+
+  it("reads the projects through the sign-in-only function as the customer, and the builder's public columns", async () => {
+    liveRpc.mockResolvedValue(live([projectRow()], 3, "2025-11-02T06:30:00+00:00"));
     results.builders = [{ data: builderRow, error: null }];
-    results.projects = [
-      { data: [projectRow()], error: null, count: 3 },
-      { data: [{ created_at: "2025-11-02T06:30:00+00:00" }], error: null },
-    ];
     const profile = await getBuilderProfile(BUILDER_ID);
+    expect(liveRpc).toHaveBeenCalledWith("live_builder_projects", {
+      p_builder: BUILDER_ID,
+      p_limit: MAX_TOOL_RESULT_ITEMS,
+    });
     expect(callsTo("builders")).toEqual([
       { table: "builders", method: "select", args: [BUILDER_COLUMNS] },
       { table: "builders", method: "eq", args: ["id", BUILDER_ID] },
       { table: "builders", method: "maybeSingle", args: [] },
     ]);
-    expect(callsTo("projects")).toEqual([
-      {
-        table: "projects",
-        method: "select",
-        args: [BUILDER_PROJECT_COLUMNS, { count: "exact" }],
-      },
-      { table: "projects", method: "eq", args: ["builder_id", BUILDER_ID] },
-      { table: "projects", method: "order", args: ["created_at", { ascending: false }] },
-      { table: "projects", method: "limit", args: [MAX_TOOL_RESULT_ITEMS] },
-      { table: "projects", method: "select", args: [BUILDER_FIRST_PROJECT_COLUMNS] },
-      { table: "projects", method: "eq", args: ["builder_id", BUILDER_ID] },
-      { table: "projects", method: "order", args: ["created_at", { ascending: true }] },
-      { table: "projects", method: "limit", args: [1] },
-    ]);
+    expect(callsTo("projects")).toEqual([]);
     expect(profile).toEqual({
       status: "found",
       builder: builderRow,
@@ -184,26 +186,36 @@ describe("UT-ai-builder-read: one builder's profile", () => {
     });
   });
 
-  it("is cached for minutes under the projects tag", async () => {
+  it("is not cached: a cache is shared between visitors and this read is one customer's", async () => {
+    liveRpc.mockResolvedValue(live());
     results.builders = [{ data: builderRow, error: null }];
     await getBuilderProfile(BUILDER_ID);
-    expect(tag).toHaveBeenCalledWith("projects");
-    expect(life).toHaveBeenCalledWith("minutes");
+    expect(tag).not.toHaveBeenCalled();
+    expect(life).not.toHaveBeenCalled();
   });
 
-  it("is missing, and reads no project, when no active builder has the id", async () => {
+  it("is missing when the function finds no active builder, and reads no builder row", async () => {
+    liveRpc.mockResolvedValue({ data: null, error: null });
+    expect(await getBuilderProfile(BUILDER_ID)).toEqual({
+      status: "missing",
+      readAt: NOW.toISOString(),
+    });
+    expect(callsTo("builders")).toEqual([]);
+  });
+
+  it("is missing when the builder row is not there", async () => {
+    liveRpc.mockResolvedValue(live());
     results.builders = [{ data: null, error: null }];
     expect(await getBuilderProfile(BUILDER_ID)).toEqual({
       status: "missing",
       readAt: NOW.toISOString(),
     });
-    expect(callsTo("projects")).toEqual([]);
   });
 
   it("has no first project, and a count of what it holds, for a builder with no live project", async () => {
+    liveRpc.mockResolvedValue(live([], 0, null));
     results.builders = [{ data: builderRow, error: null }];
-    const profile = await getBuilderProfile(BUILDER_ID);
-    expect(profile).toMatchObject({
+    expect(await getBuilderProfile(BUILDER_ID)).toMatchObject({
       status: "found",
       projects: [],
       projectCount: 0,
@@ -212,39 +224,32 @@ describe("UT-ai-builder-read: one builder's profile", () => {
   });
 
   it("reads a status this site does not know as no status", async () => {
+    liveRpc.mockResolvedValue(live([projectRow({ project_status: "sold_out" })]));
     results.builders = [{ data: builderRow, error: null }];
-    results.projects = [
-      { data: [projectRow({ project_status: "sold_out" })], error: null, count: 1 },
-      { data: [], error: null },
-    ];
     const profile = await getBuilderProfile(BUILDER_ID);
     expect(profile.status === "found" && profile.projects[0]?.status).toBeNull();
   });
 
-  it("throws, and logs the code only, when the builder cannot be read", async () => {
+  it("throws, and logs the code only, when the projects cannot be read", async () => {
+    liveRpc.mockResolvedValue({ data: null, error: { code: "42501", message: "private detail" } });
+    await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow("projects could not be read");
+    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "42501" });
+    expect(JSON.stringify(error.mock.calls)).not.toContain("private detail");
+  });
+
+  it("throws when the builder cannot be read, even if the projects can", async () => {
+    liveRpc.mockResolvedValue(live());
     results.builders = [{ data: null, error: { code: "PGRST301" } }];
     await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow("builder could not be read");
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "PGRST301" });
   });
 
-  it("throws when the projects cannot be read, even if the builder can", async () => {
-    results.builders = [{ data: builderRow, error: null }];
-    results.projects = [
-      { data: null, error: { code: "57014" } },
-      { data: [], error: null },
-    ];
-    await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow("projects could not be read");
-    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "57014" });
-  });
-
   it("throws on rows that are not what was asked for", async () => {
-    results.builders = [{ data: { id: BUILDER_ID }, error: null }];
-    await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow(/not fit/);
+    liveRpc.mockResolvedValue(live([{ slug: "x" }]));
     results.builders = [{ data: builderRow, error: null }];
-    results.projects = [
-      { data: [{ slug: "x" }], error: null },
-      { data: [], error: null },
-    ];
+    await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow(/not fit/);
+    liveRpc.mockResolvedValue(live());
+    results.builders = [{ data: { id: BUILDER_ID }, error: null }];
     await expect(getBuilderProfile(BUILDER_ID)).rejects.toThrow(/not fit/);
   });
 });

@@ -14,6 +14,7 @@ import { asOfText } from "./as-of";
 import { monthText } from "./project-facts";
 import { publicWebsite } from "./public-contacts";
 import type { AiChatTool, ToolContext, ToolReference, ToolRun } from "./types";
+import { requireSignIn } from "./require-sign-in";
 import { cleanOptionalLine, cleanThirdPartyLine, cleanThirdPartyText } from "./untrusted";
 
 /**
@@ -202,6 +203,7 @@ export const getBuilderTool: AiChatTool<GetBuilderInput, GetBuilderOutput> = {
   input: getBuilderInputSchema,
   output: getBuilderOutputSchema,
   async run(input, context) {
+    requireSignIn(context);
     const builderId = given(input.builderId);
     const name = given(input.name);
     let id: string;

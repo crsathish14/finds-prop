@@ -10,7 +10,8 @@
  *   onChooseImage (called with the block's place when the person asks to choose or replace its picture; the page then
  *   sets the block's `path`), errors (a message for a block by its place, already translated), max (how many blocks
  *   the article may hold, default 100), disabled, className. A heading is level 2 or 3, a list is bulleted or numbered
- *   and takes one item a line, a quote may have a credit, a picture has a required description and an optional caption.
+ *   and takes one item a line, a quote may have a credit, a paragraph, a list and a quote have an "Add link" control
+ *   (ADR-169), a heading says the article's title is already the page's main heading, a picture has a required description and an optional caption.
  * Responsive: one column of cards at every width; the Add buttons wrap; the move and delete buttons keep 44 px targets.
  * Accessibility: each block is a group named by its kind and place ("Block 2: Paragraph"); every button says which block
  *   it acts on ("Move block 2 up"); the first block's Up and the last block's Down are disabled; a block that is
@@ -18,7 +19,7 @@
  *   so in words and turns the Add buttons off.
  * States: empty, each kind of block, a picture not chosen yet, a picture chosen, an error on a block, first, last, full,
  *   disabled (while saving).
- * Dependencies: FormField, Input, Textarea, Button, IconButton, SegmentedControl, CardCover, Icon, next-intl.
+ * Dependencies: BlogLinkTextField, FormField, Input, Button, IconButton, SegmentedControl, CardCover, Icon, next-intl.
  * Tests: blog-editor.test.tsx; Design Lab "Blog block editor" (ADR-143).
  * UX reference: none yet; drawn for the owner's approval (the Blog editor, ADR-143 section 5).
  */
@@ -40,9 +41,9 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
 import type { BlogBlock } from "./blog-blocks";
+import { BlogLinkTextField } from "./blog-link-text-field";
 import { CardCover } from "./property-card-controls.client";
 
 type BlockKind = BlogBlock["type"];
@@ -254,7 +255,11 @@ function BlockFields({
             { value: "3", label: translate("admin.blog.editor.level3") },
           ]}
         />
-        <FormField label={translate("admin.blog.editor.headingText")} {...problem}>
+        <FormField
+          label={translate("admin.blog.editor.headingText")}
+          hint={translate("admin.blog.editor.headingHint")}
+          {...problem}
+        >
           <Input
             value={block.text}
             disabled={disabled}
@@ -268,15 +273,16 @@ function BlockFields({
 
   if (block.type === "paragraph") {
     return (
-      <FormField label={translate("admin.blog.editor.paragraphText")} {...problem}>
-        <Textarea
-          value={block.text}
-          disabled={disabled}
-          maxLength={5000}
-          rows={5}
-          onChange={(event) => onChange({ ...block, text: event.target.value })}
-        />
-      </FormField>
+      <BlogLinkTextField
+        label={translate("admin.blog.editor.paragraphText")}
+        hint={translate("admin.blog.editor.linkHint")}
+        value={block.text}
+        disabled={disabled}
+        maxLength={5000}
+        place={place}
+        error={error}
+        onValueChange={(text) => onChange({ ...block, text })}
+      />
     );
   }
 
@@ -293,18 +299,15 @@ function BlockFields({
             { value: "numbered", label: translate("admin.blog.editor.numbered") },
           ]}
         />
-        <FormField
+        <BlogLinkTextField
           label={translate("admin.blog.editor.listItems")}
           hint={translate("admin.blog.editor.listHint")}
-          {...problem}
-        >
-          <Textarea
-            value={block.items.join("\n")}
-            disabled={disabled}
-            rows={5}
-            onChange={(event) => onChange({ ...block, items: event.target.value.split("\n") })}
-          />
-        </FormField>
+          value={block.items.join("\n")}
+          disabled={disabled}
+          place={place}
+          error={error}
+          onValueChange={(text) => onChange({ ...block, items: text.split("\n") })}
+        />
       </div>
     );
   }
@@ -312,15 +315,16 @@ function BlockFields({
   if (block.type === "quote") {
     return (
       <div className="flex flex-col gap-4">
-        <FormField label={translate("admin.blog.editor.quoteText")} {...problem}>
-          <Textarea
-            value={block.text}
-            disabled={disabled}
-            maxLength={1000}
-            rows={3}
-            onChange={(event) => onChange({ ...block, text: event.target.value })}
-          />
-        </FormField>
+        <BlogLinkTextField
+          label={translate("admin.blog.editor.quoteText")}
+          value={block.text}
+          disabled={disabled}
+          maxLength={1000}
+          rows={3}
+          place={place}
+          error={error}
+          onValueChange={(text) => onChange({ ...block, text })}
+        />
         <FormField
           label={translate("admin.blog.editor.quoteCite")}
           optionalLabel={translate("admin.blog.editor.optional")}

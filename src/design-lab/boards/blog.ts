@@ -42,9 +42,10 @@ export const BLOG: LabEntry[] = [
     id: "blog-block-editor",
     name: "Blog block editor",
     description:
-      "The editor of an article's body (ADR-143, ADR-144): a card for each block with its kind, Move up, Move down and Delete, and the fields of the kind (a heading's size and text, a paragraph, a list's style and one item a line, a quote and who said it, a picture with a preview, Choose or Replace picture, a required description and an optional caption); and Add buttons for each kind with the count of blocks used. Shown with every kind (try it), empty, with problems on two blocks and a picture not chosen, full (the Add buttons are off and say why) and while saving.",
+      "The editor of an article's body (ADR-143, ADR-144): a card for each block with its kind, Move up, Move down and Delete, and the fields of the kind (a heading's size and text, a paragraph, a list's style and one item a line, a quote and who said it, a picture with a preview, Choose or Replace picture, a required description and an optional caption); and Add buttons for each kind with the count of blocks used. An 'Add link' control under a paragraph, a list and a quote opens a small form (the words, the address) with its errors (ADR-169), and a heading says the article title is the page heading. Shown with every kind (try it), empty, with problems on two blocks and a picture not chosen, full (the Add buttons are off and say why) and while saving.",
     sources: [
       "domain/blog-block-editor.tsx",
+      "domain/blog-link-text-field.tsx",
       "patterns/form-field.tsx",
       "ui/segmented-control.tsx",
     ],

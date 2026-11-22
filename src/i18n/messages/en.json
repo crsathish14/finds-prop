@@ -328,6 +328,9 @@
     "blogImageSize": "This picture is too heavy. The limit is {maximum} KB.",
     "blogImageTooLarge": "This picture is too large. Use one no more than {maximum} pixels on its longest side.",
     "blogImagePlace": "This picture is not stored with this article. Add it again.",
+    "blogLinkLabel": "The words of a link must be 1 to 160 characters, with no [ ] ( ) in them.",
+    "blogLinkAddress": "A link must go to an address that starts with https:// or to a page of this site that starts with a single /. Spaces, ( ) and other brackets are not allowed in the address.",
+    "blogLinkTooLong": "This link address is too long. The most is 2,000 characters.",
     "jobSlugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 120 characters.",
     "jobSlugTaken": "This address is already used by another job.",
     "jobApplyUrlInvalid": "Enter a full link that starts with https://.",
@@ -3376,7 +3379,9 @@
         "level2": "Section heading",
         "level3": "Sub-heading",
         "headingText": "Heading",
+        "headingHint": "The article's title is already the main heading of the page, so start with a section heading (size 2) and use sub-headings (size 3) under it.",
         "paragraphText": "Text",
+        "linkHint": "To make a link, press Add link below. A link is written as [words](address).",
         "listKind": "List style of block {place}",
         "bulleted": "Bullets",
         "numbered": "Numbers",
@@ -3390,7 +3395,17 @@
         "pictureRules": "A JPG, PNG or WEBP picture, up to 500 KB.",
         "imageAlt": "Describe the picture",
         "imageAltHint": "Said aloud to people who cannot see it. Required.",
-        "imageCaption": "Caption"
+        "imageCaption": "Caption",
+        "link": {
+          "add": "Add a link to block {place}",
+          "groupLabel": "New link for block {place}",
+          "label": "Words to show",
+          "labelHint": "What readers see and click, such as the name of the page.",
+          "address": "Address",
+          "addressHint": "Start with https:// for another website, or with / for a page of this site, such as /properties.",
+          "insert": "Insert link",
+          "cancel": "Cancel"
+        }
       },
       "list": {
         "tabsLabel": "Show articles by status",

@@ -19,7 +19,7 @@ For the super admin and whoever supports the site. Design and decisions: ADR-143
 ## What is purged, and when
 
 - Blog articles and FAQ questions whose Trash date is more than 30 days old are removed by the nightly retention job, with a `content.purged` audit entry (ids and counts, never text). The pictures of a purged article are removed by the hourly media sweep. How to check both: `docs/runbooks/retention.md` ("Content in Trash") and `docs/runbooks/media-sweep.md`.
-- **Job postings in Trash are not purged yet.** They stay in Trash until someone restores them; they never reach visitors. Adding them is one table name in `content_trash_tables` in a new migration (ADR-146).
+- **Job postings in Trash are purged after 30 days**, like FAQs and articles (`content_trash_tables`, ADR-146).
 
 ## What the AI assistant reads
 
