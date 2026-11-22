@@ -34,9 +34,13 @@ vi.mock("@/features/site", () => ({
   isRouteEnabled: () => state.postEnabled,
   resolveBrandName: () => "Find Prop",
 }));
-vi.mock("@/features/search", () => ({
-  HomeSearch: (props: { aiSearchHref?: string; layout?: string }) => (
-    <div data-testid="search" data-ai={props.aiSearchHref ?? ""} data-layout={props.layout ?? ""} />
+vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
+vi.mock("@/features/ai-chat", () => ({
+  HomeAiSearch: () => <div data-testid="search" data-mode="ai" />,
+}));
+vi.mock("@/components/domain/home-search-bar.client", () => ({
+  HomeSearchBar: (props: { mode: string; action: string }) => (
+    <div data-testid="search" data-mode={props.mode} data-action={props.action} />
   ),
 }));
 vi.mock("@/components/layout/sponsor-slot", () => ({
@@ -193,13 +197,15 @@ describe("the homepage (S4-T06)", () => {
     expect(screen.getByTestId("cta")).toHaveAttribute("data-href", "/post-property");
   });
 
-  it("gives the search the AI address only when AI search is on", async () => {
+  it("draws the AI search bar while AI search is on, and a keyword search of the results otherwise (ADR-150)", async () => {
     const view = render(await HomePage());
-    expect(screen.getByTestId("search")).toHaveAttribute("data-ai", "");
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "keyword");
+    expect(screen.getByTestId("search")).toHaveAttribute("data-action", "/properties");
     view.unmount();
     state.aiSearch = true;
     render(await HomePage());
-    expect(screen.getByTestId("search")).toHaveAttribute("data-ai", "/ai-search");
+    expect(screen.getAllByTestId("search")).toHaveLength(1);
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "ai");
   });
 });
 
@@ -207,28 +213,28 @@ describe("the homepage banner area (S4-T07)", () => {
   it("shows no banner and leaves no gap when no banner is stored", async () => {
     render(await HomePage());
     expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute(
       "data-layout",
       "search_desk",
     );
   });
 
-  it("puts the strip under the wide search card in Search Desk when a banner qualifies", async () => {
+  it("puts the strip under the search bar in Search Desk when a banner qualifies", async () => {
     state.ads = [SAMPLE_AD_A];
     render(await HomePage());
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "search_desk");
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-placement", "hero");
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
   });
 
-  it("is Split, with the stacked card, the panel, the trust lines and the eyebrow, when Split is chosen and a panel banner qualifies", async () => {
+  it("is Split, with the search bar, the panel, the trust lines and the eyebrow, when Split is chosen and a panel banner qualifies", async () => {
     state.layout = "split";
     state.eyebrow = "  Chennai · Homes, plots & new projects  ";
     state.ads = [SAMPLE_AD_A];
     render(await HomePage());
     expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute("data-layout", "split");
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "stacked");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "split");
     expect(screen.getByText("Chennai · Homes, plots & new projects")).toBeInTheDocument();
     expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
@@ -244,7 +250,7 @@ describe("the homepage banner area (S4-T07)", () => {
       "search_desk",
     );
     expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     // the eyebrow and the trust lines belong to Split only
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
     expect(screen.queryByText("home.hero.trust.compare")).not.toBeInTheDocument();

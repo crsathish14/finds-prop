@@ -23,7 +23,7 @@ import { Text } from "@/components/ui/text";
 import { resolveHero, type HeroLayout, type SponsorAd } from "@/lib/sponsors";
 import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "@/lib/sponsors.fixtures";
 import { AdminListingsPreview, AdminRejectPreview, AdminReviewPreview } from "./boards/admin-pages";
-import { SearchCardHost } from "./boards/domain-demos-search";
+import { HomeSearchBarHost } from "./boards/domain-demos-search";
 import { BasicsStep, FailedAlert, ReviewStep, SampleWizard } from "./boards/seller-parts";
 import type { PreviewName } from "./preview-names";
 import {
@@ -302,7 +302,7 @@ function HeroPage({ ads, layout }: { ads: SponsorAd[]; layout: HeroLayout }) {
           <Heading as="h1" size={split ? "1" : "display"} className={split ? "" : "text-center"}>
             Find the place that fits your life
           </Heading>
-          <SearchCardHost layout={split ? "stacked" : "wide"} />
+          <HomeSearchBarHost />
           {split ? null : <SponsorSlot ads={ads} placement="hero" layout={layout} />}
         </div>
         {split ? <SponsorSlot ads={ads} placement="hero" layout={layout} /> : null}

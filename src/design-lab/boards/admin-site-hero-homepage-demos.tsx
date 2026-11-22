@@ -147,14 +147,13 @@ export function SiteHeroDemo() {
 
 const LOCALITIES_WORDS: SiteLocalitiesWords = {
   title: "Explore by locality",
-  description:
-    "Tiles shown under the search. The first 4 also appear as Popular chips in the search card. Visitors who click one see homes within the radius.",
+  description: "Tiles shown under the search. Visitors who click one see homes within the radius.",
   add: "Add locality",
   limitTitle: "You've reached the limit of 8 localities",
   limitText: "Remove one to add another.",
   emptyTitle: "No localities yet",
   emptyText:
-    'The "Explore by locality" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.',
+    'The "Explore by locality" section is hidden on the homepage until you add one. No empty space is shown.',
   orderHint:
     "Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches.",
   row: "Locality",
@@ -235,14 +234,12 @@ function homepagePreview(values: SiteHomepageValues): ReactNode {
         section("Why findsprop", values.showWhyUs),
         section("Call to action", values.showCta),
       ]}
-      popular={labels.slice(0, 4)}
       tiles={labels}
       hiddenNote={{
         title: "Section hidden",
-        text: "With no localities, visitors see the search card followed directly by Featured homes.",
+        text: "With no localities, visitors see the search bar followed directly by Featured homes.",
       }}
       words={{
-        popular: "Popular chips in the search card",
         explore: "Explore by locality",
         on: "On",
         off: "Off",

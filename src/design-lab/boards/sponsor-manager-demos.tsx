@@ -221,7 +221,7 @@ const PREVIEW_WORDS: SponsorHeroPreviewProps["words"] = {
   reasons: { no_sponsors: "No sponsors", none_eligible: "Split → Search Desk" },
   none: {
     title: "No banner is shown",
-    text: "Visitors see the search card and then the next section. No frame, label or gap.",
+    text: "Visitors see the search bar and then the next section. No frame, label or gap.",
   },
   phoneNote: "The phone image is used below 1024 px. Nothing is stretched.",
 };

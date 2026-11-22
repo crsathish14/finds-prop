@@ -14,7 +14,6 @@ import { SiteHomepagePreview } from "@/components/domain/site-homepage-preview";
 import { Alert } from "@/components/patterns/alert";
 import { DEFAULT_LOCALITY_RADIUS_KM, LOCALITIES_MAX, LOCALITY_RADII_KM } from "./constants";
 import {
-  POPULAR_CHIPS,
   homepagePayloadOf,
   homepagePictureOf,
   localityProblemsOf,
@@ -100,7 +99,7 @@ export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) 
     },
     localities: {
       title: translate("homepage.localities.title"),
-      description: translate("homepage.localities.description", { popular: POPULAR_CHIPS }),
+      description: translate("homepage.localities.description"),
       add: translate("homepage.localities.add"),
       limitTitle: translate("homepage.localities.limitTitle", { max: LOCALITIES_MAX }),
       limitText: translate("homepage.localities.limitText"),
@@ -146,14 +145,12 @@ export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) 
               label: sectionLabels[section.key],
               on: section.on,
             }))}
-            popular={picture.popular}
             tiles={picture.tiles}
             hiddenNote={{
               title: translate("homepage.preview.hiddenTitle"),
               text: translate("homepage.preview.hiddenText"),
             }}
             words={{
-              popular: translate("homepage.preview.popular"),
               explore: translate("homepage.preview.explore"),
               on: translate("homepage.preview.on"),
               off: translate("homepage.preview.off"),

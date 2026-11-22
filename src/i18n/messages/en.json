@@ -1201,24 +1201,15 @@
       }
     },
     "searchCard": {
-      "label": "Property search",
       "intentLabel": "Looking to",
       "buy": "Buy",
       "rent": "Rent",
-      "newProjects": "New projects",
-      "describeInWords": "Describe it in words",
-      "aiBadge": "AI",
       "locality": {
         "label": "Locality",
-        "placeholder": "Search a locality",
-        "clear": "Clear locality",
-        "loading": "Looking for localities",
-        "noResults": "No localities found",
-        "resultCount": "{count, plural, one {# locality found} other {# localities found}}"
+        "placeholder": "Search a locality"
       },
       "propertyType": {
         "label": "Property type",
-        "shortLabel": "Type",
         "any": "Any type",
         "apartment": "Apartment",
         "villa": "Villa",
@@ -1226,21 +1217,24 @@
         "plot": "Plot / Land",
         "commercial": "Commercial"
       },
-      "bedrooms": {
-        "label": "Bedrooms",
-        "any": "Any BHK"
-      },
       "budget": {
         "label": "Max budget",
-        "shortLabel": "Budget",
         "any": "Any budget",
         "upTo": "Up to {amount}"
+      }
+    },
+    "homeSearchBar": {
+      "label": "Property search",
+      "ai": {
+        "fieldLabel": "Describe the home you want",
+        "placeholder": "Describe the home you want, e.g. 3 BHK near Velachery under ₹90 lakh",
+        "button": "Search with AI"
       },
-      "search": "Search",
-      "popular": "Popular",
-      "quickPicks": "Quick picks",
-      "quickPickBedrooms": "3 BHK",
-      "quickPickBudget": "Budget homes"
+      "keyword": {
+        "fieldLabel": "Search homes",
+        "placeholder": "Search by locality, project or keyword",
+        "button": "Search"
+      }
     },
     "filters": {
       "title": "Filters",
@@ -2513,7 +2507,7 @@
           "noSponsors": "No sponsors",
           "noneEligible": "Split → Search Desk",
           "noneTitle": "No banner is shown",
-          "noneText": "Visitors see the search card and then the next section. No frame, label or gap.",
+          "noneText": "Visitors see the search bar and then the next section. No frame, label or gap.",
           "phoneNote": "The phone image is used below 1024 px. Nothing is stretched.",
           "caption": "{name} · first of {count} active"
         },
@@ -2558,12 +2552,12 @@
         },
         "localities": {
           "title": "Explore by locality",
-          "description": "Tiles shown under the search. The first {popular} also appear as Popular chips in the search card. Visitors who click one see homes within the radius.",
+          "description": "Tiles shown under the search. Visitors who click one see homes within the radius.",
           "add": "Add locality",
           "limitTitle": "You've reached the limit of {max} localities",
           "limitText": "Remove one to add another.",
           "emptyTitle": "No localities yet",
-          "emptyText": "The \"Explore by locality\" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.",
+          "emptyText": "The \"Explore by locality\" section is hidden on the homepage until you add one. No empty space is shown.",
           "orderHint": "Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches.",
           "row": "Locality",
           "label": "Label",
@@ -2577,12 +2571,11 @@
           "moveDown": "Move down"
         },
         "preview": {
-          "popular": "Popular chips in the search card",
           "explore": "Explore by locality",
           "on": "On",
           "off": "Off",
           "hiddenTitle": "Section hidden",
-          "hiddenText": "With no localities, visitors see the search card followed directly by Featured homes.",
+          "hiddenText": "With no localities, visitors see the search bar followed directly by Featured homes.",
           "sections": {
             "hero": "Hero and search",
             "discovery": "Explore by locality",
