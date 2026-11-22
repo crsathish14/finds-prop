@@ -671,7 +671,8 @@ isOneToOne: false
 "name": string,
 "nearby": (string)[],
 "offer_type": string | null,
-"plot_images": (string)[],"plot_status": string | null,
+"plot_images": (string)[],
+"plot_status": string | null,
 "possession_date": string | null,
 "price": number | null,
 "price_type": string | null,
@@ -689,7 +690,8 @@ isOneToOne: false
 "specifications": string | null,
 "total_units": number | null,
 "updated_at": string,
-"videos": (string)[],"villa_type": string | null
+"videos": (string)[],
+"villa_type": string | null
             }[]
                           SetofOptions: {
         from: "*"
@@ -899,7 +901,8 @@ isOneToOne: false
 "name": string,
 "nearby": (string)[],
 "offer_type": string | null,
-"plot_images": (string)[],"plot_status": string | null,
+"plot_images": (string)[],
+"plot_status": string | null,
 "possession_date": string | null,
 "price": number | null,
 "price_type": string | null,
@@ -917,7 +920,8 @@ isOneToOne: false
 "specifications": string | null,
 "total_units": number | null,
 "updated_at": string,
-"videos": (string)[],"villa_type": string | null
+"videos": (string)[],
+"villa_type": string | null
             }[]
                           SetofOptions: {
         from: "*"
