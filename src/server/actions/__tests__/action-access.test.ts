@@ -78,6 +78,7 @@ const EXPECTED: Record<string, Level> = {
   "leads/loadMoreLeads": "super_admin",
   "leads/loadMoreSubmissions": "super_admin",
   "leads/setMyLeadStatus": "builder",
+  "legal/saveLegal": "super_admin",
   "leads/loadMoreMyLeads": "builder",
   "listings/createListingDraft": "verified-phone",
   "listings/saveListingDraft": "verified-phone",
