@@ -3,6 +3,10 @@
  * Purpose: ADR-143 and ADR-144 store an article as a list of blocks (heading, paragraph, list, quote, image) and never as
  *   HTML. This draws them as the page's own elements, so the text is always React text and nothing the admin typed
  *   can become markup (R-SEC-10). Owner: design system. It holds no state and fetches nothing.
+ * Links: a piece of text in a paragraph, a list item or a quote may hold `[label](address)` (ADR-169). It is drawn as
+ *   an anchor built by React (never HTML): an address of this site as the site's own Link, an `https://` address in a new
+ *   tab with rel="noopener noreferrer nofollow ugc" and a screen-reader notice "(opens in a new tab)". Anything that is
+ *   not an allowed link stays text. Headings never hold links.
  * Props: blocks (the article's blocks; the shapes are the ones in features/blog), imageUrl (turns a stored picture path
  *   into the address it is shown from), sizes (next/image `sizes` for a picture; the default fits the article column),
  *   priorityImage (the first picture is the first thing seen: load it early), className. A block of a kind it does
@@ -16,7 +20,10 @@
  * Dependencies: CardCover, cn. Tests: blog-parts.test.tsx; Design Lab "Blog article parts" (ADR-143).
  * UX reference: none yet; drawn for the owner's approval (the Blog article page, ADR-143 section 4).
  */
+import { useTranslations } from "next-intl";
+import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
+import { parseInline } from "@/lib/inline-links";
 import { CardCover } from "./property-card-controls.client";
 
 type BlogBlock =
@@ -35,6 +42,35 @@ type BlogBlocksProps = {
 };
 
 const DEFAULT_SIZES = "(min-width: 1024px) 720px, 100vw";
+
+/** A piece of article text: its words, and each `[label](address)` as a link (ADR-169). */
+function InlineText({ text }: { text: string }) {
+  const translate = useTranslations();
+  const nodes = parseInline(text);
+  if (nodes.every((node) => node.kind === "text")) return <>{text}</>;
+  return (
+    <>
+      {nodes.map((node, index) => {
+        if (node.kind === "text") return node.text;
+        return node.external ? (
+          <Link
+            key={index}
+            href={node.href}
+            external
+            ugc
+            newTabLabel={translate("common.opensInNewTab")}
+          >
+            {node.label}
+          </Link>
+        ) : (
+          <Link key={index} href={node.href}>
+            {node.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
 
 function BlogBlocks({
   blocks,
@@ -69,7 +105,7 @@ function BlogBlocks({
           case "paragraph":
             return (
               <p key={key} className="text-body whitespace-pre-line [overflow-wrap:anywhere]">
-                {block.text}
+                <InlineText text={block.text} />
               </p>
             );
           case "list": {
@@ -84,7 +120,7 @@ function BlogBlocks({
               >
                 {block.items.map((item, itemIndex) => (
                   <li key={`${key}-${itemIndex}`} className="[overflow-wrap:anywhere]">
-                    {item}
+                    <InlineText text={item} />
                   </li>
                 ))}
               </List>
@@ -97,7 +133,7 @@ function BlogBlocks({
                 className="flex flex-col gap-2 border-l-4 border-cta bg-canvas-sunken px-5 py-4"
               >
                 <p className="text-lead whitespace-pre-line [overflow-wrap:anywhere]">
-                  {block.text}
+                  <InlineText text={block.text} />
                 </p>
                 {block.cite ? (
                   <cite className="text-small text-muted not-italic">{block.cite}</cite>

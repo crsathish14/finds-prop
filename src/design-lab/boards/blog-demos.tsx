@@ -102,7 +102,7 @@ export function BlogArticleCardDemo() {
 const BODY: BlogBlock[] = [
   {
     type: "paragraph",
-    text: "Buying a flat is mostly paperwork. Most of the money goes to the seller; a smaller part goes to the state, and that part is easy to forget.",
+    text: "Buying a flat is mostly paperwork. Most of the money goes to the seller; a smaller part goes to the state, and that part is easy to forget. Read [the state's registration guide](https://example.com/registration) and [our search](/properties).",
   },
   { type: "heading", level: 2, text: "What you pay besides the price" },
   {
@@ -179,7 +179,7 @@ export function BlogArticlePartsDemo() {
           <BlogArticleHeader headingLevel="h2" title="Market note" authorName="Asha Rao" />
         </div>
       </Specimen>
-      <Specimen label="Body: paragraphs, both heading sizes, a bulleted and a numbered list, a quote with its credit and a picture with a caption">
+      <Specimen label="Body: paragraphs, both heading sizes, a bulleted and a numbered list, a quote with its credit, a picture with a caption, and a paragraph with an outside link and a link inside the site">
         <div className="w-full max-w-5xl">
           <BlogBlocks blocks={BODY} imageUrl={BLOG_IMAGE_URL} />
         </div>
