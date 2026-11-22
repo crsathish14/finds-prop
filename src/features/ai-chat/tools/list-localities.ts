@@ -5,6 +5,7 @@ import { findLocalities } from "../localities";
 import { getLocalityCounts } from "../queries";
 import { asOfText } from "./as-of";
 import type { AiChatTool } from "./types";
+import { requireSignIn } from "./require-sign-in";
 import { cleanThirdPartyLine } from "./untrusted";
 
 /**
@@ -60,6 +61,7 @@ export const listLocalitiesTool: AiChatTool<ListLocalitiesInput, ListLocalitiesO
   input: listLocalitiesInputSchema,
   output: listLocalitiesOutputSchema,
   async run(input, context) {
+    requireSignIn(context);
     const counts = await getLocalityCounts();
     const found = findLocalities(counts.localities, input.search, MAX_TOOL_RESULT_ITEMS);
     const localities = found.flatMap((locality) => {
