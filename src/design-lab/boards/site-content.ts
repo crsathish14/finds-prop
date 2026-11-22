@@ -1,4 +1,5 @@
 import type { LabEntry } from "../types";
+import { LegalDocumentFieldsDemo } from "./admin-legal-demos";
 import {
   LinkListFieldDemo,
   SiteContentFrameDemo,
@@ -65,6 +66,14 @@ export const SITE_CONTENT: LabEntry[] = [
       "domain/site-content-layout.tsx",
     ],
     Demo: SiteHeroDemo,
+  },
+  {
+    id: "legal-document-fields",
+    name: "Legal document fields",
+    description:
+      "The boxes of the admin's legal editor for the Privacy Policy and the Terms of Use (ADR-151): the summary, and the sections in order, each with a heading and its paragraphs, lists (one item a line) and tables (a caption, column headings and rows of cells, with Add and Remove for rows and columns). Sections move by dragging or with the arrows; blocks move with the arrows; Add section is off at the limit and a section says when it is full. Shown filled, with no sections, with problems on the summary, a heading, a paragraph and a table, at the limits and off while saving. The anchor of a section is made from its heading by the page and is never typed. Every word is unapproved.",
+    sources: ["domain/legal-document-fields.tsx", "domain/legal-table-editor.tsx"],
+    Demo: LegalDocumentFieldsDemo,
   },
   {
     id: "site-homepage-page",
