@@ -41,6 +41,12 @@ export function buildBuilderNav(translate: Translate): AdminNavGroup[] {
           icon: "insights",
         },
         {
+          key: "feedback",
+          href: "/builder/feedback",
+          label: translate("builderPortal.nav.feedback"),
+          icon: "feedback",
+        },
+        {
           key: "profile",
           href: "/builder/profile",
           label: translate("builderPortal.nav.profile"),
