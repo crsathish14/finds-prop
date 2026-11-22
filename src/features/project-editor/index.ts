@@ -5,6 +5,8 @@ export {
   updateMyProjectConfig,
   updateProjectConfig,
 } from "./action-config";
+export { getExtraBoxes } from "./extra-fields.server";
+export type { ExtraBox } from "./extra-fields";
 export { getBuilderOptions, getFormOptions, getMyProjectList, getProjectForEdit } from "./queries";
 export {
   ADVANTAGES_MAX,

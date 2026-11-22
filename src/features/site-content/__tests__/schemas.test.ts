@@ -165,3 +165,21 @@ describe("UT-schemas-site-content: homepage (S7-T10)", () => {
     ).toBe(false);
   });
 });
+
+describe("UT-schemas-site-content: homepage section order (CR plan 5)", () => {
+  const all = ["cta", "whyUs", "newest", "projectTypes", "newLaunches", "featured", "discovery"];
+  const ok = (order: unknown) =>
+    homepageInputSchema.safeParse({ ...switches, localities: [], order }).success;
+
+  it("accepts every section exactly once, in any order, and no order at all", () => {
+    expect(ok(all)).toBe(true);
+    expect(ok(undefined)).toBe(true);
+  });
+
+  it("refuses a missing, repeated or unknown section", () => {
+    expect(ok(all.slice(1))).toBe(false);
+    expect(ok([...all.slice(1), "whyUs"])).toBe(false);
+    expect(ok([...all.slice(1), "hero"])).toBe(false);
+    expect(ok("cta")).toBe(false);
+  });
+});

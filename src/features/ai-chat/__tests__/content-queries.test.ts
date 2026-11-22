@@ -343,6 +343,18 @@ describe("UT-ai-content-queries: the open jobs (ADR-143 section 6)", () => {
     expect(hit?.passage.length).toBeLessThanOrEqual(CONTENT_SNIPPET_CHARACTERS);
   });
 
+  it("leaves out a job whose closing date passed since the list was cached, and keeps one that closes later", async () => {
+    getJobList.mockResolvedValue({
+      items: [
+        job(0, { closesAt: "2020-01-01T00:00:00.000Z" }),
+        job(1, { closesAt: "2099-01-01T00:00:00.000Z" }),
+        job(2),
+      ],
+    });
+    const hits = await searchJobs(JOB_REQUEST);
+    expect(hits.map((hit) => hit.slug)).toEqual(["site-engineer-1", "site-engineer-2"]);
+  });
+
   it("returns no more than the limit it was asked for", async () => {
     getJobList.mockResolvedValue({ items: [job(0), job(1), job(2)] });
     expect(await searchJobs({ ...JOB_REQUEST, limit: 2 })).toHaveLength(2);

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   require: vi.fn(),
+  moduleOn: vi.fn(),
   article: vi.fn(),
   related: vi.fn(),
   metadata: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
 vi.mock("@/features/site", () => ({
   requireContentModule: mocks.require,
+  getContentModuleOn: mocks.moduleOn,
   getTranslate: async () => (key: string) => key,
 }));
 vi.mock("@/features/seo", () => ({ siteOrigin: () => "https://findsprop.test" }));
@@ -34,6 +36,7 @@ const ARTICLE = { slug: "stamp-duty", title: "Stamp duty" };
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.require.mockResolvedValue(undefined);
+  mocks.moduleOn.mockResolvedValue(true);
   mocks.article.mockResolvedValue(ARTICLE);
   mocks.related.mockResolvedValue([{ slug: "other" }]);
 });
@@ -76,5 +79,13 @@ describe("the public /blog/[slug] page (ADR-143, ADR-144)", () => {
     mocks.article.mockResolvedValue(null);
     expect(await generateMetadata(params("gone"))).toEqual({ title: "notFound.title" });
     expect(await generateMetadata(params("Not A Slug!"))).toEqual({ title: "notFound.title" });
+  });
+
+  it("gives a hidden Blog module's article no metadata of its own, and does not even read it", async () => {
+    mocks.moduleOn.mockResolvedValue(false);
+    expect(await generateMetadata(params("stamp-duty"))).toEqual({ title: "notFound.title" });
+    expect(mocks.moduleOn).toHaveBeenCalledWith("blog");
+    expect(mocks.article).not.toHaveBeenCalled();
+    expect(mocks.metadata).not.toHaveBeenCalled();
   });
 });

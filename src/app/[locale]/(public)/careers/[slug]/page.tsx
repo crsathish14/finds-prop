@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JobScreen, getJob, isJobOpenAt, jobMetadata, parseJobSlug } from "@/features/careers";
 import { siteOrigin } from "@/features/seo";
-import { getTranslate, requireContentModule } from "@/features/site";
+import { getContentModuleOn, getTranslate, requireContentModule } from "@/features/site";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -10,9 +10,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const translate = await getTranslate();
   const parsed = parseJobSlug(slug);
-  const job = parsed === null ? null : await getJob(parsed);
   // A hidden module, a draft, a closed job and a wrong address all read the same: a title and no index (the page itself
-  // answers 404).
+  // answers 404). The module is asked first, so a hidden job's title and summary never reach the head of the 404 answer.
+  const job =
+    parsed === null || !(await getContentModuleOn("careers")) ? null : await getJob(parsed);
   if (job === null) return { title: translate("notFound.title") };
   return jobMetadata(translate, job);
 }

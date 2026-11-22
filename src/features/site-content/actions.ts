@@ -9,6 +9,7 @@ import {
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveProjectFieldsConfig,
   saveSponsorsConfig,
   saveTopDevelopersConfig,
 } from "./action-config";
@@ -19,6 +20,7 @@ import {
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveProjectFieldsContent,
   saveTopDevelopersContent,
 } from "./content-service";
 import { createContentStore } from "./service";
@@ -99,6 +101,17 @@ export const saveDisclaimers = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveDisclaimersContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the extra boxes of the builder's project form (ADR-168). */
+export const saveProjectFields = defineAction({
+  ...saveProjectFieldsConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveProjectFieldsContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key, count: input.fields.length });
     return done;
   },
 });

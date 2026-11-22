@@ -2,14 +2,13 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 import { getBlogSitemapEntries } from "@/features/blog";
-import { getJobSitemapEntries } from "@/features/careers";
+import { getJobSitemapEntries, isJobOpenAt } from "@/features/careers";
 import { getPublicFaqs } from "@/features/faq";
 import { PROJECTS_TAG } from "@/features/projects";
 import { LISTINGS_TAG } from "@/features/search";
 import { getContentModuleOn } from "@/features/site";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
-import { SITEMAP_HOME_COLUMNS, SITEMAP_PROJECT_COLUMNS } from "./columns";
 import {
   homesRoom,
   SITEMAP_PROJECTS_MAX,
@@ -20,7 +19,7 @@ import {
   type SitemapProject,
 } from "./entries";
 
-/** PostgREST answers at most this many rows at a time (`max_rows` in the project), so the reads page. */
+/** The most addresses `sitemap_entries()` answers at a time (the function's own limit, and PostgREST's `max_rows`). */
 const PAGE_SIZE = 1000;
 
 const homeRowSchema = z.object({
@@ -31,10 +30,10 @@ const homeRowSchema = z.object({
 const projectRowSchema = z.object({ slug: z.string().min(1), updated_at: z.string().min(1) });
 
 /**
- * Every approved home (up to `limit`), newest change first, as an anonymous visitor: the database's
- * own rules decide what exists, and only the granted columns are asked for. A failed or malformed read
- * throws, so it is never cached and the sitemap answers an error rather than a partial list. Cached
- * for minutes under the homes tag, so an approval refreshes it.
+ * Every approved home (up to `limit`), newest change first, as an anonymous visitor, through
+ * `sitemap_entries()`: it answers only the slug, the public id and the change date, a page at a time. A
+ * failed or malformed read throws, so it is never cached and the sitemap answers an error rather than a
+ * partial list. Cached for minutes under the homes tag, so an approval refreshes it.
  */
 async function readHomes(limit: number): Promise<SitemapHome[]> {
   "use cache";
@@ -44,12 +43,11 @@ async function readHomes(limit: number): Promise<SitemapHome[]> {
   const homes: SitemapHome[] = [];
   for (let from = 0; from < limit; from += PAGE_SIZE) {
     const to = Math.min(from + PAGE_SIZE, limit) - 1;
-    const { data, error } = await client
-      .from("properties")
-      .select(SITEMAP_HOME_COLUMNS)
-      .order("updated_at", { ascending: false })
-      .order("short_id", { ascending: true })
-      .range(from, to);
+    const { data, error } = await client.rpc("sitemap_entries", {
+      p_kind: "homes",
+      p_limit: to - from + 1,
+      p_offset: from,
+    });
     if (error) {
       logger.error("sitemap homes could not be read", { errorCode: error.code });
       throw new Error("sitemap homes could not be read");
@@ -80,12 +78,11 @@ async function readProjects(): Promise<SitemapProject[]> {
   const projects: SitemapProject[] = [];
   for (let from = 0; from < SITEMAP_PROJECTS_MAX; from += PAGE_SIZE) {
     const to = Math.min(from + PAGE_SIZE, SITEMAP_PROJECTS_MAX) - 1;
-    const { data, error } = await client
-      .from("projects")
-      .select(SITEMAP_PROJECT_COLUMNS)
-      .order("updated_at", { ascending: false })
-      .order("slug", { ascending: true })
-      .range(from, to);
+    const { data, error } = await client.rpc("sitemap_entries", {
+      p_kind: "projects",
+      p_limit: to - from + 1,
+      p_offset: from,
+    });
     if (error) {
       logger.error("sitemap projects could not be read", { errorCode: error.code });
       throw new Error("sitemap projects could not be read");
@@ -147,10 +144,14 @@ export async function getSitemapBlog(): Promise<SitemapBlog | null> {
  * The Careers entries (ADR-143): the open jobs (not past their closing date, not in Trash: the row policy decides) with
  * the date each last changed, or null while the Careers module is switched off or no job is open, so the sitemap never
  * lists a page that answers not-found. Reads the cached list (tag `careers`), so opening, closing or trashing a job
- * refreshes it.
+ * refreshes it. The list is kept for hours, so a job whose closing date has passed since is dropped here, as the job's
+ * page does (`isJobOpenAt`), and a closed job is never listed for the rest of the hour.
  */
 export async function getSitemapCareers(): Promise<SitemapCareers | null> {
   if (!(await getContentModuleOn("careers"))) return null;
-  const jobs = await getJobSitemapEntries();
+  const now = new Date();
+  const jobs = (await getJobSitemapEntries())
+    .filter((job) => isJobOpenAt(job, now))
+    .map((job) => ({ slug: job.slug, updatedAt: job.updatedAt }));
   return jobs.length === 0 ? null : { jobs };
 }

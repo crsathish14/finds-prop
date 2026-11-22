@@ -287,6 +287,8 @@ const fieldShape = {
   amenities: tags(AMENITIES_MAX),
   seoTitle: line(SEO_TITLE_MAX),
   seoDescription: paragraph(SEO_DESCRIPTION_MAX),
+  /** The answers to the extra boxes the super admin defines (ADR-168), by box id; checked against the boxes on save. */
+  extraFields: z.record(z.string().max(40), z.string().max(2000)).optional(),
 };
 
 type RuleInput = {
