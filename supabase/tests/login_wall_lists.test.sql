@@ -3,7 +3,7 @@
 -- visitor gets exactly the live projects of active builders; a visitor who is not signed in is refused.
 -- Fictional data only.
 begin;
-select plan(6);
+select plan(12);
 
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-4000-8000-0000000000b1', 'builder1@example.test', now()),
@@ -51,7 +51,41 @@ select is(
   'the number asked for is kept'
 );
 
+select is(
+  public.live_locality_names() -> 'projects',
+  '["Adyar", "OMR Navalur"]'::jsonb,
+  'live_locality_names gives the localities of live projects of active builders only'
+);
+select is(
+  public.live_locality_names() ->> 'projects_complete',
+  'true',
+  'live_locality_names says when a read is complete'
+);
+select is(
+  (public.live_builder_projects('00000000-0000-4000-b000-000000000001') ->> 'project_count')::int,
+  2,
+  'live_builder_projects counts only the live projects of the builder'
+);
+select is(
+  (select jsonb_agg(entry ->> 'slug' order by entry ->> 'slug')
+   from jsonb_array_elements(public.live_builder_projects('00000000-0000-4000-b000-000000000001') -> 'projects') as entry),
+  '["featured-vista", "kadal-vista"]'::jsonb,
+  'live_builder_projects gives no project that is not published'
+);
+select is(
+  public.live_builder_projects('00000000-0000-4000-b000-000000000002'),
+  null,
+  'live_builder_projects gives nothing for an inactive builder'
+);
+
 set local role anon;
+
+select throws_ok(
+  $select public.live_locality_names()$,
+  '42501',
+  null,
+  'live_locality_names refuses a visitor who is not signed in'
+);
 
 select throws_ok(
   $$select public.live_project_list()$$,

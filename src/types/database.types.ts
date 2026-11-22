@@ -879,6 +879,12 @@ isOneToOne: false
 "listing_label":
 { Args: { "is_featured": boolean,"listing_kind": string,"listing_price": number }; Returns: string
                            },
+"live_builder_projects":
+{ Args: { "p_builder": string,"p_limit"?: number }; Returns: Json
+                           },
+"live_locality_names":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "live_project_list":
 { Args: { "p_limit"?: number }; Returns: Json
                            },

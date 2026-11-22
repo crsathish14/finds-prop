@@ -39,7 +39,7 @@ select is(
   || 'has_role, '
   || 'has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, '
   || 'listing_is_editable, listing_is_public, '
-  || 'listing_label, live_project_list, moderate_listing, moderate_project, my_builder, my_projects, my_properties, '
+  || 'listing_label, live_builder_projects, live_locality_names, live_project_list, moderate_listing, moderate_project, my_builder, my_projects, my_properties, '
   || 'owns_property, '
   || 'project_is_live, project_is_mine, public_project, public_project_form, public_property, reorder_faqs, '
   || 'save_crm_integration, '
