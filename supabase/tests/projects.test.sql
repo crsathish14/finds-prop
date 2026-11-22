@@ -236,6 +236,8 @@ select throws_ok($$select form_id from public.projects$$, '42501', null, 'anon c
 select throws_ok($$select * from public.projects$$, '42501', null, 'anon cannot select every column');
 select is((select count(*) from public.project_units)::int, 1, 'anon sees units of live projects only');
 select is((select count(*) from public.project_price_trends)::int, 1, 'anon sees price trends of live projects only');
+reset role;
+set local role anon;
 select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality)
     values ('anon-project', 'Anon Project', '00000000-0000-4000-b000-000000000001', 'Adyar')$$,

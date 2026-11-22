@@ -250,6 +250,7 @@ select is(
 );
 reset role;
 set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
+select set_config('request.jwt.claims', '{"role": "authenticated"}', true);
 select is(
   (select count(*) from public.properties where id in (
     '00000000-0000-4000-9000-000000000001', '00000000-0000-4000-9000-000000000002'))::int,
