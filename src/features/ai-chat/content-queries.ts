@@ -182,6 +182,7 @@ export async function searchContent(request: ContentSearchRequest): Promise<Cont
  */
 export async function searchJobs(request: JobSearchRequest): Promise<JobHit[]> {
   if (!(await getContentModuleOn("careers"))) return [];
+  const now = new Date();
   const list = await getJobList({
     query: request.query,
     department: request.departmentSlug,
@@ -190,23 +191,27 @@ export async function searchJobs(request: JobSearchRequest): Promise<JobHit[]> {
     type: request.type,
     page: 1,
   });
-  return list.items.slice(0, request.limit).map((job) => ({
-    id: job.id,
-    slug: job.slug,
-    title: job.title,
-    departmentName: job.department?.name ?? null,
-    departmentSlug: job.department?.slug ?? null,
-    location: job.location,
-    workMode: job.workMode,
-    employmentType: job.employmentType,
-    experience: job.experience,
-    salaryNote: job.salaryNote,
-    closesAt: job.closesAt,
-    passage: cutAtWord(
-      oneLine(job.snippet === null ? job.summary : withoutMatchMarks(job.snippet)),
-      CONTENT_SNIPPET_CHARACTERS,
-    ),
-  }));
+  // A list kept for a few minutes may still hold a job whose closing date has just passed; the assistant never offers it.
+  return list.items
+    .filter((job) => isJobOpenAt(job, now))
+    .slice(0, request.limit)
+    .map((job) => ({
+      id: job.id,
+      slug: job.slug,
+      title: job.title,
+      departmentName: job.department?.name ?? null,
+      departmentSlug: job.department?.slug ?? null,
+      location: job.location,
+      workMode: job.workMode,
+      employmentType: job.employmentType,
+      experience: job.experience,
+      salaryNote: job.salaryNote,
+      closesAt: job.closesAt,
+      passage: cutAtWord(
+        oneLine(job.snippet === null ? job.summary : withoutMatchMarks(job.snippet)),
+        CONTENT_SNIPPET_CHARACTERS,
+      ),
+    }));
 }
 
 /** The sections of an article: a heading starts one, and what comes before the first heading is the first. */
