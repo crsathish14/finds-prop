@@ -300,8 +300,8 @@ begin
       format('p_limit => %s', shape.page_size)
     ) || ')';
 
-    -- Time and plan as a visitor (anon): Row Level Security and the cover-photo policy are part of the cost.
-    execute 'set local role anon';
+    -- Time and plan as a signed-in person with no user (login wall: anon cannot search): Row Level Security and the cover-photo policy are part of the cost.
+    execute 'set local role authenticated';
     execute stmt into matches; -- one call first, to warm the caches
     sample_ms := '{}';
     for i in 1..runs loop
@@ -394,7 +394,7 @@ begin
       diag_plans := '';
       for who in 1..2 loop
         if who = 1 then
-          execute 'set local role anon';
+          execute 'set local role authenticated';
         else
           execute 'reset role';
         end if;

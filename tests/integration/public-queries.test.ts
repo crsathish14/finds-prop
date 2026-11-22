@@ -333,7 +333,10 @@ describe("IT-queries: what a visitor reads (S4-T13)", () => {
         (row) => row.slug.includes(RUN),
       );
       expect(rows.map((row) => row.slug)).toEqual([slugs.live]);
-      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(PROJECT_LIST_COLUMNS));
+      // The list function also gives the project's city (Plan 2), which the page does not ask for yet.
+      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(
+        [...topLevelKeys(PROJECT_LIST_COLUMNS), "city"].sort(),
+      );
       expect(Object.keys((rows[0]?.["builders"] as object) ?? {}).sort()).toEqual(["id", "name"]);
     });
 
