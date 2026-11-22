@@ -47,7 +47,7 @@ select is(
 );
 
 -- Visitors: the dropdown list and the filter
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select array_agg(key order by key) from public.listed_cities() where key in ('coimbatore', 'madurei', 'chennai')),
   array['chennai', 'coimbatore'],

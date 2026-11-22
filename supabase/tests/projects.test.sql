@@ -219,7 +219,7 @@ select ok(
 );
 
 -- Visitors
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is((select count(*) from public.projects)::int, 3, 'BR-42: anon sees only approved and published projects');
 select lives_ok(
   $$select slug, name, latitude, longitude, location, rera_number from public.projects$$,
