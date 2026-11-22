@@ -26,6 +26,7 @@ export { PublicHeader } from "./public-header";
 export { getCurrentYear } from "./current-year";
 export { getFeatureFlags, type FeatureFlags } from "./flags";
 export { buildHero, type HeroText } from "./home";
+export { HOME_SECTION_KEYS, resolveHomeOrder, type HomeSectionKey } from "./home-order";
 export { getTranslate } from "./translator";
 export { getSiteSettings, SITE_SETTINGS_TAG } from "./queries";
 export { CONTENT_MODULES, isContentModuleOn } from "./modules";

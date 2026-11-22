@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HOME_SECTION_KEYS } from "@/lib/home-sections";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
@@ -228,12 +229,19 @@ const localityRow = z.object({
   ),
 });
 
+/** The section order: every home section exactly once (a save always sends the whole list). */
+const sectionOrder = z
+  .array(z.enum(HOME_SECTION_KEYS, { error: "validation.invalid" }))
+  .length(HOME_SECTION_KEYS.length, { error: "validation.invalid" })
+  .refine((keys) => new Set(keys).size === keys.length, { error: "validation.invalid" });
+
 export const homepageInputSchema = z.object({
   showFeatured: z.boolean({ error: "validation.invalid" }),
   showProjectTypes: z.boolean({ error: "validation.invalid" }),
   showDiscovery: z.boolean({ error: "validation.invalid" }),
   showWhyUs: z.boolean({ error: "validation.invalid" }),
   showCta: z.boolean({ error: "validation.invalid" }),
+  order: sectionOrder.optional(),
   localities: z
     .array(localityRow)
     .max(LOCALITIES_MAX)

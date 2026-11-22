@@ -2647,7 +2647,7 @@
         "description": "Choose which sections appear below the hero, and which localities are featured.",
         "sections": {
           "title": "Sections",
-          "description": "Turn sections on or off. A hidden section is not rendered at all.",
+          "description": "Turn sections on or off and set the order they appear in. A hidden section is not rendered at all.",
           "featured": {
             "label": "Featured listings",
             "hint": "Up to six featured homes."
@@ -2668,6 +2668,20 @@
             "label": "Post-property call to action",
             "hint": "The closing banner."
           }
+        },
+        "order": {
+          "hint": "The hero and search always come first. Drag a section, or use its arrows, to change the order. The same order is used on phones and computers.",
+          "newLaunches": {
+            "label": "New launches",
+            "hint": "Shown when there are new projects. Has no switch."
+          },
+          "newest": {
+            "label": "Newest listings",
+            "hint": "Shown when there are new listings. Has no switch."
+          },
+          "drag": "Drag {section}",
+          "moveUp": "Move {section} up",
+          "moveDown": "Move {section} down"
         },
         "localities": {
           "title": "Explore by locality",

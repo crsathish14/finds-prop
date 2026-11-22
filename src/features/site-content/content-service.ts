@@ -129,6 +129,7 @@ export function homepageValue(input: HomepageInput): Record<string, unknown> {
     showDiscovery: input.showDiscovery,
     showWhyUs: input.showWhyUs,
     showCta: input.showCta,
+    ...(input.order ? { order: input.order } : {}),
     localities: input.localities.map((place) => ({
       label: place.label,
       lat: place.lat,
