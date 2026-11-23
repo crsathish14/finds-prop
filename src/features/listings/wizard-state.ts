@@ -73,7 +73,7 @@ export const EMPTY_VALUES: WizardValues = {
   propertyType: "apartment",
   address: "",
   locality: "",
-  city: "Chennai",
+  city: "",
   pincode: "",
   bhk: "",
   bathrooms: "",
@@ -123,7 +123,7 @@ export function valuesFromDraft(draft: DraftView): WizardValues {
     propertyType: draft.propertyType ?? EMPTY_VALUES.propertyType,
     address: text(draft.address),
     locality: text(draft.locality),
-    city: draft.city ?? EMPTY_VALUES.city,
+    city: text(draft.city),
     pincode: text(draft.pincode),
     bhk: text(draft.bhk),
     bathrooms: text(draft.bathrooms),
@@ -277,10 +277,14 @@ export function pickedPlace(values: WizardValues): ListingLocationHeld | null {
   };
 }
 
-/** Takes the place off the boxes (Change was pressed). The address, locality, city and pincode stay as they are. */
+/**
+ * Takes the place off the boxes (Change was pressed). The address, locality and pincode stay as they are. The city
+ * goes with the place, since the place may have given it; the wizard keeps a typed one.
+ */
 export function clearPlace(values: WizardValues): WizardValues {
   return {
     ...values,
+    city: "",
     locationLat: "",
     locationLng: "",
     locationKind: "",
@@ -301,18 +305,22 @@ export function locationProblem(values: WizardValues, held: boolean): StepErrors
 
 const PINCODE_IN_TEXT = /(?<![0-9])[56][0-9]{5}(?![0-9])/;
 
-/** The first part of "Chennai, Tamil Nadu, India" that names a city: not the state, the country or a number. */
+/**
+ * The city of a place's address ("Velachery, Chennai, Tamil Nadu 600042, India" is Chennai): the part just before
+ * the state. When the state is not named, the first part that is not the country or a number.
+ */
 function cityOf(detail: string): string | null {
   const state = STATE_NAME.toLowerCase();
-  for (const part of detail.split(",")) {
-    const name = part.trim();
-    const lower = name.toLowerCase();
-    if (name === "" || lower.startsWith(state) || lower === "india" || /^[0-9 ]+$/.test(name)) {
-      continue;
-    }
-    return name;
-  }
-  return null;
+  const parts = detail.split(",").map((part) => part.trim());
+  const isCity = (name: string) =>
+    name !== "" &&
+    !name.toLowerCase().startsWith(state) &&
+    name.toLowerCase() !== "india" &&
+    !/^[0-9 ]+$/.test(name);
+  const stateIndex = parts.findIndex((name) => name.toLowerCase().startsWith(state));
+  const before = stateIndex > 0 ? parts[stateIndex - 1] : undefined;
+  if (before !== undefined && isCity(before)) return before;
+  return parts.find(isCity) ?? null;
 }
 
 /** The first six-digit number of a Tamil Nadu address (a pincode starts with 5 or 6) in the text, or null. */
@@ -326,18 +334,13 @@ const isBlank = (value: string) => value.trim() === "";
 export interface PickOptions {
   /** The place is the middle of an area: the listing will show as approximate. */
   approximate: boolean;
-  /**
-   * The City box still holds the starting value the wizard gave it and nobody has typed in it, so it counts as
-   * empty (the box starts as "Chennai"; it is not the owner's answer). Anything else in the box is left alone.
-   */
-  cityUntouched?: boolean;
 }
 
 /**
- * A place chosen from the suggestions (or from the area chooser's own suggestions). Keeps the point, and fills a
- * box only while it is EMPTY, never over what the owner typed: the address with the name and the rest of the
- * address, the locality with the name when the place is an area, the city with the first part of the address
- * that is not the state, and the pincode with the first six-digit number in it that starts with 5 or 6.
+ * A place chosen from the suggestions (or from the area chooser's own suggestions). Keeps the point, and sets the
+ * city from the place every time (empty when the place names none; the wizard then leaves the City to be typed). Fills the other boxes only while they are EMPTY, never over what the owner typed: the
+ * address with the name and the rest of the address, the locality with the name when the place is an area, and the
+ * pincode with the first six-digit number in it that starts with 5 or 6.
  */
 export function applySuggestion(
   values: WizardValues,
@@ -359,10 +362,7 @@ export function applySuggestion(
   if (isBlank(values.locality) && suggestion.kind === "area") {
     next.locality = suggestion.label.slice(0, LOCALITY_MAX).trim();
   }
-  if (isBlank(values.city) || options.cityUntouched === true) {
-    const city = cityOf(suggestion.detail);
-    if (city !== null) next.city = city.slice(0, CITY_MAX);
-  }
+  next.city = (cityOf(suggestion.detail) ?? "").slice(0, CITY_MAX);
   if (isBlank(values.pincode)) {
     const pincode = pincodeOf(suggestion.detail);
     if (pincode !== null) next.pincode = pincode;
@@ -373,7 +373,8 @@ export function applySuggestion(
 /**
  * An area chosen from the site's curated localities, the way to place a listing when suggestions cannot be
  * fetched (so posting never stops). The point is the middle of the area and shows as approximate. The locality
- * is filled with the area's name while it is empty; the address, city and pincode are the owner's.
+ * is filled with the area's name while it is empty; the address and pincode are the owner's. A curated area names no
+ * city, so the city is whatever the place held before (empty until a suggestion is picked).
  */
 export function applyArea(values: WizardValues, area: LocationArea): WizardValues {
   const next: WizardValues = {

@@ -190,7 +190,6 @@ export function PostingWizard(props: PostingWizardProps) {
       {...props}
       values={start}
       baseline={props.values ?? EMPTY_VALUES}
-      startsFromDefaults={merged === EMPTY_VALUES}
     />
   );
 }
@@ -207,12 +206,9 @@ function WizardBody({
   locationField,
   areas = [],
   locationHeld = false,
-  startsFromDefaults,
 }: PostingWizardProps & {
   values: WizardValues;
   baseline: WizardValues;
-  /** Nothing opened or kept before signing in: the boxes hold the starting values. */
-  startsFromDefaults: boolean;
 }) {
   const words = useTranslations("postProperty");
   const translate = useTranslations() as unknown as Translator;
@@ -239,11 +235,13 @@ function WizardBody({
   const placeRequired = !edit || edit.state === "rejected";
   // The listing holds a place the owner has not changed in this sitting (its point is not known here).
   const [placeHeld, setPlaceHeld] = useState(locationHeld);
+  // The City box is the place's own while the place named a city (it cannot be typed in then). When the place names
+  // none, or no place is held yet, the owner types it. A held place with a saved city counts as having named it.
+  const [cityLocked, setCityLocked] = useState(
+    initialValues.city !== "" && (locationHeld || pointOf(initialValues) !== null),
+  );
   // The point last stored for this listing, so the same point is not written twice. Never shown or logged.
   const written = useRef<string | null>(null);
-  // The City box starts as "Chennai"; until somebody types in it (or a draft or the kept answers fill it), a place
-  // may replace that starting value.
-  const cityTouched = useRef(!startsFromDefaults);
   const [createKey] = useState(() => crypto.randomUUID());
   const [submitKey] = useState(() => crypto.randomUUID());
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -272,7 +270,6 @@ function WizardBody({
   const onStatus = useCallback((status: PhotoUploaderStatus) => setPhotoStatus(status), []);
 
   const change = <Field extends keyof WizardValues>(field: Field, value: WizardValues[Field]) => {
-    if (field === "city") cityTouched.current = true;
     setValues((now) => ({ ...now, [field]: value }));
     setErrors((now) =>
       now[field] ? Object.fromEntries(Object.entries(now).filter(([name]) => name !== field)) : now,
@@ -295,10 +292,13 @@ function WizardBody({
   /** A suggestion was chosen: keep its point and fill the boxes that are still empty. */
   function pickSuggestion(suggestion: PlaceAutocompleteSuggestion) {
     clearNotices();
-    const after = applySuggestion(values, suggestion, {
+    const picked = applySuggestion(values, suggestion, {
       approximate: suggestion.kind === "area",
-      cityUntouched: !cityTouched.current && values.city === EMPTY_VALUES.city,
     });
+    // A place with no city in it leaves a typed city alone, and takes away one an earlier place had given.
+    const named = picked.city !== "";
+    const after = named || cityLocked ? picked : { ...picked, city: values.city };
+    setCityLocked(named);
     forgetErrorsFilled(values, after);
     setValues(after);
   }
@@ -306,15 +306,24 @@ function WizardBody({
   /** An area of the curated list was chosen (suggestions cannot be fetched): the middle of it, approximate. */
   function pickArea(area: LocationArea) {
     clearNotices();
-    const after = applyArea(values, area);
+    // A curated area names no city: the city an earlier place gave goes, and the owner types it.
+    const placed = applyArea(values, area);
+    const after = cityLocked ? { ...placed, city: "" } : placed;
+    setCityLocked(false);
     forgetErrorsFilled(values, after);
     setValues(after);
+  }
+
+  /** Lets go of the place; the city goes with it only when the place gave it (a typed one stays). */
+  function letGoOfPlace() {
+    setValues((now) => (cityLocked ? clearPlace(now) : { ...clearPlace(now), city: now.city }));
+    setCityLocked(false);
   }
 
   /** Change was pressed: let go of the place (the other boxes stay). A new one is asked for before Continue. */
   function changePlace() {
     clearNotices();
-    setValues(clearPlace);
+    letGoOfPlace();
     setPlaceHeld(false);
   }
 
@@ -382,7 +391,7 @@ function WizardBody({
     const result = await actions.setLocation({ listingId: id, lat: point.lat, lng: point.lng });
     if (!result.ok) {
       showFailure(result);
-      if (result.fieldErrors?.["location"]) setValues(clearPlace);
+      if (result.fieldErrors?.["location"]) letGoOfPlace();
       return { saved: false, wentBackToReview: false };
     }
     written.current = key;
@@ -653,6 +662,7 @@ function WizardBody({
     body = (
       <BasicsStep
         {...bodyProps}
+        cityLocked={cityLocked}
         location={{
           Field: locationField,
           props: {

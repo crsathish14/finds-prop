@@ -1007,6 +1007,8 @@
       "addressHint": "Shown to people viewing your listing. Up to 300 characters.",
       "locality": "Locality",
       "city": "City",
+      "cityHint": "Filled in from the place you choose above.",
+      "cityTypeHint": "Filled in from the place you choose above. If the place has no city, type it in.",
       "state": "State",
       "stateHint": "Tamil Nadu only for now.",
       "pincode": "Pincode"
