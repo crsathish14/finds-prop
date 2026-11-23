@@ -12,6 +12,7 @@ import { createPublicSupabase } from "@/server/supabase/public";
 import { createServerSupabase } from "@/server/supabase/server";
 import { MAIL_TEMPLATE_KEY_LIST, MAIL_TEMPLATE_SETTING_KEYS } from "./constants";
 import { rowOf, sendingTemplate } from "./save-service";
+import type { MailTemplateEditPage } from "./types";
 
 interface SettingRow {
   key: string;
@@ -53,17 +54,6 @@ export async function getMailTemplates(): Promise<Record<MailTemplateKind, MailT
       "enquiry_sender",
     ),
   };
-}
-
-/** What the editor opens on for one mail. */
-export interface MailTemplateEditPage {
-  kind: MailTemplateKind;
-  /** The wording to edit: the working copy if there is one, else the published wording, else the wording in code. */
-  template: MailTemplate;
-  /** True when a working copy exists: it has been saved but not published. */
-  hasUnpublishedChanges: boolean;
-  /** The live version's day, or null when the mail still uses the wording in code. */
-  published: { updated: string | null } | null;
 }
 
 /**
