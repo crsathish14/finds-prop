@@ -110,6 +110,25 @@ describe("the chat page's first screen (AI-P5-T02)", () => {
   });
 });
 
+describe("the assistant's questions are drawn in bold (ADR-184)", () => {
+  it("puts the question sentence in bold and leaves the rest as plain text, with the words unchanged", async () => {
+    fetchMock.mockResolvedValueOnce(
+      answered("I found one home for ₹1.29 Cr. Shall I prepare an enquiry for it? Tell me if not."),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("homes in Velachery");
+    await user.click(sendButton());
+    const bold = await screen.findByText("Shall I prepare an enquiry for it?");
+    expect(bold.tagName).toBe("STRONG");
+    const paragraph = bold.closest("p");
+    expect(paragraph?.textContent).toBe(
+      "I found one home for ₹1.29 Cr. Shall I prepare an enquiry for it? Tell me if not.",
+    );
+    expect(paragraph?.querySelectorAll("strong")).toHaveLength(1);
+  });
+});
+
 describe("the reply buttons under an answer (ADR-175)", () => {
   const withReplies = (text: string): Response =>
     answered(text, [

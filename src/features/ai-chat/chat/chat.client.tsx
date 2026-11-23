@@ -35,6 +35,7 @@ import {
   EMPTY_CHAT,
   buildHistory,
   contextField,
+  sentenceParts,
   shownRecords,
   loadChat,
   MASKED_NOTICE_KEY,
@@ -115,7 +116,15 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
     <>
       {parts.map((paragraph, index) => (
         <p key={index} className="whitespace-pre-line">
-          {paragraph.trim()}
+          {sentenceParts(paragraph.trim()).map((part, position) =>
+            part.question ? (
+              <strong key={position} className="font-bold">
+                {part.text}
+              </strong>
+            ) : (
+              part.text
+            ),
+          )}
           {caret && index === parts.length - 1 ? <ChatStreamCaret /> : null}
         </p>
       ))}
