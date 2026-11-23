@@ -20,12 +20,18 @@ function filled(value: string | undefined): string | undefined {
  * Without one, the headline is the message catalogue's, which names the region (in copper) when the
  * settings have one, and stays region-neutral when they do not (DEC-14). The line under it is the
  * settings' or the catalogue's.
+ * `cityName` is the city the visitor chose in the header (owner, 24 Nov): it names the region in
+ * place of the site's region, but never replaces a headline the content team wrote.
  */
-export function buildHero(settings: SiteSettings, translate: Translate): HeroText {
+export function buildHero(
+  settings: SiteSettings,
+  translate: Translate,
+  cityName?: string | undefined,
+): HeroText {
   const subtitle = filled(settings.hero.subtitle) ?? translate("home.hero.subtitle");
   const custom = filled(settings.hero.title);
   if (custom) return { title: custom, subtitle };
-  const region = filled(settings.region.name);
+  const region = filled(cityName) ?? filled(settings.region.name);
   if (region) {
     return {
       title: translate("home.hero.titleInRegion", { region }),
