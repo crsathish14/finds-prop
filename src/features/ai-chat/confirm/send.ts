@@ -45,9 +45,9 @@ export interface SendDeps {
   }): Promise<ActionResult<{ received: true }>>;
   submitProjectLead(input: {
     slug: string;
-    kind: "site_visit";
+    kind: "enquiry" | "site_visit";
     name: string;
-    visitDate: string;
+    visitDate?: string;
     message: string;
     idempotencyKey: string;
   }): Promise<ActionResult<{ received: true }>>;
@@ -91,6 +91,10 @@ export async function sendConfirmedProposal(
     if (!(await deps.homeIsOpen(proposal.homeId))) {
       throw new ActionError("NOT_FOUND", "The home is not open for enquiries");
     }
+  } else if (proposal.kind === "project_enquiry") {
+    if (!(await deps.projectIsOpen(proposal.slug))) {
+      throw new ActionError("NOT_FOUND", "The project is not open for requests");
+    }
   } else {
     if (visitDateProblem(proposal.visitDate, now) !== null) {
       throw new ActionError("VALIDATION", "The visit day is outside the allowed days", {
@@ -118,14 +122,22 @@ export async function sendConfirmedProposal(
           message: proposal.message,
           idempotencyKey: proposal.id,
         })
-      : await deps.submitProjectLead({
-          slug: proposal.slug,
-          kind: "site_visit",
-          name: contact.name,
-          visitDate: proposal.visitDate,
-          message: proposal.message,
-          idempotencyKey: proposal.id,
-        });
+      : proposal.kind === "project_enquiry"
+        ? await deps.submitProjectLead({
+            slug: proposal.slug,
+            kind: "enquiry",
+            name: contact.name,
+            message: proposal.message,
+            idempotencyKey: proposal.id,
+          })
+        : await deps.submitProjectLead({
+            slug: proposal.slug,
+            kind: "site_visit",
+            name: contact.name,
+            visitDate: proposal.visitDate,
+            message: proposal.message,
+            idempotencyKey: proposal.id,
+          });
   if (!result.ok) refuse(result);
   return { received: true };
 }

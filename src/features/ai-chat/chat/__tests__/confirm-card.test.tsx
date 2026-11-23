@@ -36,6 +36,11 @@ const READY_VISIT: ConfirmCard = {
   visitDate: "5 Dec 2026",
   builderName: "Kadal Homes",
 };
+const READY_PROJECT_ENQUIRY: ConfirmCard = {
+  ...READY,
+  about: "project",
+  target: { title: "Kadal Vista", meta: "Adyar · Kadal Homes" },
+};
 const SIGNED_OUT: ConfirmCard = {
   state: "signed_out",
   kind: "enquiry",
@@ -110,6 +115,17 @@ describe("UT-ai-confirm-card-ui: the click", () => {
     );
   });
 
+  it("sends a plain project enquiry the same way, and does not point to a list of home enquiries it is not in (ADR-176)", async () => {
+    const user = userEvent.setup();
+    draw(READY_PROJECT_ENQUIRY);
+    expect(screen.getByText("Kadal Vista")).toBeVisible();
+    expect(screen.queryByText("5 Dec 2026")).toBeNull();
+    await user.click(sendButton());
+    expect(send).toHaveBeenCalledOnce();
+    expect(await screen.findByRole("heading", { name: enquiry.sent.title })).toBeVisible();
+    expect(screen.queryByRole("link", { name: enquiry.sent.viewEnquiries })).toBeNull();
+  });
+
   it("sends a site visit the same way and shows the project page's own thank-you", async () => {
     const user = userEvent.setup();
     draw(READY_VISIT);
@@ -168,6 +184,15 @@ describe("UT-ai-confirm-card-ui: the click", () => {
     draw(READY_VISIT);
     await user.click(sendButton(words.requestVisit));
     expect(await screen.findByText(lead.rateLimit.title)).toBeVisible();
+  });
+
+  it("never says 'already contacted' for a project enquiry: a conflict there is a plain failure", async () => {
+    send.mockResolvedValueOnce(failure("CONFLICT"));
+    const user = userEvent.setup();
+    draw(READY_PROJECT_ENQUIRY);
+    await user.click(sendButton());
+    expect(await screen.findByText(enquiry.failed.title)).toBeVisible();
+    expect(screen.queryByText(enquiry.already.title)).toBeNull();
   });
 
   it("shows 'already contacted' when an enquiry about this home was sent in the last day", async () => {

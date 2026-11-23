@@ -66,6 +66,10 @@ const visitToken = (userId = CUSTOMER_ID) =>
     NOW,
   ).token;
 
+const projectEnquiryToken = (userId = CUSTOMER_ID) =>
+  signProposal(userId, { kind: "project_enquiry", slug: "kadal-vista", message: MESSAGE }, NOW)
+    .token;
+
 beforeEach(() => {
   vi.clearAllMocks();
   settings.env.RATE_LIMIT_HMAC_SECRET = "a-made-up-secret-of-thirty-two-chars!";
@@ -111,6 +115,37 @@ describe("UT-ai-confirm-card: a card for a customer who can send", () => {
       target: { title: "Kadal Vista", meta: "Adyar · Kadal Homes" },
       visitDate: "5 Dec 2026",
       builderName: "Kadal Homes",
+      message: MESSAGE,
+    });
+  });
+
+  it("shows a plain project enquiry as an enquiry card about a project, with no day and no developer line (ADR-176)", async () => {
+    const token = projectEnquiryToken();
+    const card = await buildConfirmCard({ state: "ready", proposal: token }, CUSTOMER, deps());
+    expect(card).toEqual({
+      state: "ready",
+      kind: "enquiry",
+      about: "project",
+      proposal: token,
+      target: { title: "Kadal Vista", meta: "Adyar · Kadal Homes" },
+      name: "Priya Raman",
+      phone: "+91 98400 12345",
+      message: MESSAGE,
+    });
+    expect(confirmCardSchema.safeParse(card).success).toBe(true);
+  });
+
+  it("gives a visitor the sign-in prompt for a project enquiry, quoting the words and carrying no proposal", async () => {
+    const card = await buildConfirmCard(
+      { state: "sign_in_required", kind: "project_enquiry", slug: "kadal-vista", message: MESSAGE },
+      null,
+      deps(),
+    );
+    expect(card).toEqual({
+      state: "signed_out",
+      kind: "enquiry",
+      about: "project",
+      target: { title: "Kadal Vista", meta: "Adyar · Kadal Homes" },
       message: MESSAGE,
     });
   });
