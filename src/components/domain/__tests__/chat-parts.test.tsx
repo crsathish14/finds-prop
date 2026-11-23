@@ -39,6 +39,21 @@ describe("the chat thread, the bubble and the assistant's message (AI-P5-T01)", 
     expect(screen.getByText(words.assistantName)).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("shows when the message was sent, small, under the bubble, as a time element", () => {
+    renderWithMessages(
+      <ChatThread>
+        <ChatUserBubble time={{ label: "7:49 pm", dateTime: "2026-11-23T14:19:00.000Z" }}>
+          compare these 3 for me
+        </ChatUserBubble>
+        <ChatUserBubble>no time here</ChatUserBubble>
+      </ChatThread>,
+    );
+    const time = screen.getByText("7:49 pm");
+    expect(time.tagName).toBe("TIME");
+    expect(time).toHaveAttribute("datetime", "2026-11-23T14:19:00.000Z");
+    expect(document.querySelectorAll("time")).toHaveLength(1);
+  });
+
   it("shows the visitor's text as text, never as markup", () => {
     renderWithMessages(
       <ChatThread>

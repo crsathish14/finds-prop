@@ -13,6 +13,7 @@ import {
   STORAGE_KEY,
   type ChatEntry,
   contextField,
+  messageTime,
   sentenceParts,
   shownRecords,
 } from "../chat-model";
@@ -199,6 +200,38 @@ describe("a link the server offers (AI-P5-T02)", () => {
     // A tab or a line break inside the address is dropped by browsers: "/" + tab + "/host" would read as "//host".
     expect(safeHref("/\t/example.com")).toBeUndefined();
     expect(safeHref("/\n/example.com")).toBeUndefined();
+  });
+});
+
+describe("UT-ai-chat-message-time: the time beside the visitor's message (ADR-185)", () => {
+  const today = new Date(2026, 10, 23, 19, 49).getTime();
+
+  it("writes today's message as the clock time only, with the machine date", () => {
+    const { label, dateTime } = messageTime(today, new Date(2026, 10, 23, 21, 0).getTime());
+    expect(label).toMatch(/^7:49\s?pm$/iu);
+    expect(dateTime).toBe(new Date(today).toISOString());
+  });
+
+  it("adds the day for a message of another day", () => {
+    expect(messageTime(today, new Date(2026, 10, 25, 9, 0).getTime()).label).toMatch(
+      /^23 Nov, 7:49\s?pm$/iu,
+    );
+  });
+
+  it("keeps the time of a message through the tab's storage, and reads an older kept message with none", () => {
+    const entry = { ...user("u1", "hello"), at: today } as ChatEntry;
+    const kept = JSON.stringify({
+      version: 1,
+      entries: [entry, user("u0", "older")],
+      draft: "",
+      gate: false,
+      account: false,
+    });
+    const loaded = loadChat({ getItem: () => kept });
+    expect(loaded.entries.map((item) => (item.role === "user" ? item.at : "x"))).toEqual([
+      today,
+      undefined,
+    ]);
   });
 });
 

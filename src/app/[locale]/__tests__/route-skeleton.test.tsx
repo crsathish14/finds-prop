@@ -40,8 +40,9 @@ function layoutsAbove(page: string): string[] {
   return found;
 }
 
-// The home page is in the (public) group, so it gets the public header (S4-T06).
-const OPEN_GROUP = /^(\(public\)|\(auth\)|\(quiet\)|page\.tsx$)/;
+// The home page is in the (public) group, so it gets the public header (S4-T06). (chat) is the AI search page, open to
+// guests like the rest of (public) but without the footer (ADR-185).
+const OPEN_GROUP = /^(\(public\)|\(chat\)|\(auth\)|\(quiet\)|page\.tsx$)/;
 const AREA_GATE: [RegExp, string][] = [
   [/^\(account\)/, 'area="customer"'],
   [/^\(portal\)[\\/]admin/, 'area="admin"'],
@@ -90,7 +91,7 @@ describe("UT-route-skeleton: no page is left unguarded (S3-T11)", () => {
 describe("UT-route-skeleton: error pages keep the site header and footer (S4-T06)", () => {
   // not-found and error pages in a group render inside its layout, so they sit between its header
   // and footer. The portals have their own shell (S7) and use the language-level pages.
-  for (const group of ["(public)", "(account)", "(auth)", "(quiet)"]) {
+  for (const group of ["(public)", "(chat)", "(account)", "(auth)", "(quiet)"]) {
     it(`${group} has not-found and error pages that reuse the site ones`, () => {
       const notFound = readFileSync(join(appRoot, group, "not-found.tsx"), "utf8");
       const error = readFileSync(join(appRoot, group, "error.tsx"), "utf8");
@@ -114,7 +115,7 @@ describe("UT-route-skeleton: behaviour of the special routes", () => {
   });
 
   it("hides /ai-search while the flag is off and shows it when on", async () => {
-    const page = (await import("../(public)/ai-search/page")).default;
+    const page = (await import("../(chat)/ai-search/page")).default;
     const searchParams = Promise.resolve({});
     expect(() => page({ searchParams })).toThrow("NOT_FOUND");
     flags.aiSearch = true;

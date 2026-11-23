@@ -40,6 +40,8 @@ const userEntrySchema = z.object({
   role: z.literal("user"),
   text: z.string().min(1).max(MAX_INPUT_CHARACTERS),
   masked: z.boolean(),
+  /** When the visitor sent it, in milliseconds since 1970 (the browser's clock); older kept chats have none. */
+  at: z.number().int().positive().optional(),
 });
 
 const assistantEntrySchema = z.object({
@@ -254,6 +256,30 @@ export function sentenceParts(paragraph: string): { text: string; question: bool
   }
   push(paragraph.length);
   return parts;
+}
+
+/**
+ * The time a message was sent, written for reading and shown beside the visitor's message (ADR-185): "7:49 pm" for
+ * today, "23 Nov, 7:49 pm" for another day. It uses the visitor's own clock and zone. The answer itself never
+ * carries a time.
+ */
+export function messageTime(
+  at: number,
+  now: number = Date.now(),
+): { label: string; dateTime: string } {
+  const sent = new Date(at);
+  const clock = new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(sent);
+  const today = new Date(now);
+  const sameDay =
+    sent.getFullYear() === today.getFullYear() &&
+    sent.getMonth() === today.getMonth() &&
+    sent.getDate() === today.getDate();
+  const day = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(sent);
+  return { label: sameDay ? clock : `${day}, ${clock}`, dateTime: sent.toISOString() };
 }
 
 /** A link the server offered is drawn only if it is a path on this site. */
