@@ -57,6 +57,9 @@ const FILTERS_HREF = "/properties";
 
 const COMPOSER_ID = "ai-chat-message";
 
+/** The space kept between the newest words and the composer when the page scrolls to them, in pixels. */
+const NEWEST_BREATHING_ROOM = 16;
+
 /** The name the unsent message of a confirm card is kept under while the customer signs in (the way forms keep theirs). */
 const CONFIRM_DRAFT_NAME = "ai-chat-confirm";
 
@@ -238,6 +241,7 @@ export function ChatIsland({
   const abort = useRef<AbortController | null>(null);
   const problemRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const composerId = useId();
   const fieldId = `${COMPOSER_ID}-${composerId.replaceAll(":", "")}`;
 
@@ -304,10 +308,39 @@ export function ChatIsland({
 
   useEffect(() => () => abort.current?.abort(), []);
 
-  // Keep the newest words in view above the composer.
+  // Keep the newest words in view above the composer. The page scrolls (the composer is sticky), so the end of the
+  // conversation is brought up to just above the composer, not to the bottom edge where the composer would cover it.
+  const scrollToNewest = useCallback((smooth: boolean) => {
+    const end = endRef.current;
+    const root = rootRef.current;
+    if (!end || !root) return;
+    const composer = root.querySelector('[data-slot="chat-composer"]');
+    const limit = composer ? composer.getBoundingClientRect().top : window.innerHeight;
+    const distance = end.getBoundingClientRect().bottom - (limit - NEWEST_BREATHING_ROOM);
+    if (distance <= 0) return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    document.documentElement.scrollBy?.({
+      top: distance,
+      behavior: smooth && !reduced ? "smooth" : "auto",
+    });
+  }, []);
+
+  // A new message (the visitor's or the finished answer) glides into view. The first run only restores a
+  // conversation kept in this tab, which is shown in place, and an empty chat never scrolls the page.
+  const shownCount = useRef<number | null>(null);
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: "nearest" });
-  }, [entries.length, live?.text, live?.references.length]);
+    if (!ready) return;
+    const previous = shownCount.current;
+    shownCount.current = entries.length;
+    if (entries.length === 0) return;
+    scrollToNewest(previous !== null);
+  }, [ready, entries.length, scrollToNewest]);
+
+  // While an answer is being written, follow it without a glide (a glide restarted on every word would lag behind).
+  useEffect(() => {
+    if (live === null) return;
+    scrollToNewest(false);
+  }, [live, scrollToNewest]);
 
   // The short wait: the composer is off until it is over, then it works again.
   const waitSeconds = problem?.kind === "too_many_messages" ? problem.seconds : null;
@@ -523,7 +556,10 @@ export function ChatIsland({
     : undefined;
 
   return (
-    <div className="mx-auto flex w-full max-w-205 flex-1 flex-col gap-6 px-gutter py-6 md:py-10">
+    <div
+      ref={rootRef}
+      className="mx-auto flex w-full max-w-205 flex-1 flex-col gap-6 px-gutter py-6 md:py-10"
+    >
       {ready && hasMessages ? (
         <div className="flex items-center gap-3 border-b border-line pb-4">
           <span
@@ -626,6 +662,9 @@ export function ChatIsland({
       ) : null}
 
       <div ref={endRef} />
+
+      {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
+      <div aria-hidden="true" className="flex-1" />
 
       {problem?.kind === "error" ? (
         <div ref={problemRef} tabIndex={-1} className="outline-none">
