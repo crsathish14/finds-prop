@@ -60,6 +60,9 @@ const COMPOSER_ID = "ai-chat-message";
 /** The space kept between the newest words and the composer when the page scrolls to them, in pixels. */
 const NEWEST_BREATHING_ROOM = 16;
 
+/** How much of the first card shows under the words of the newest answer, so the visitor knows cards wait below, in pixels. */
+const CARD_PEEK = 72;
+
 /** The name the unsent message of a confirm card is kept under while the customer signs in (the way forms keep theirs). */
 const CONFIRM_DRAFT_NAME = "ai-chat-confirm";
 
@@ -310,13 +313,36 @@ export function ChatIsland({
 
   // Keep the newest words in view above the composer. The page scrolls (the composer is sticky), so the end of the
   // conversation is brought up to just above the composer, not to the bottom edge where the composer would cover it.
+  // When the newest answer ends in cards, the words come first: the page stops where only the top of the first card
+  // shows, so the visitor reads the whole text and sees that cards wait below. It never scrolls the start of that
+  // answer under the site header.
   const scrollToNewest = useCallback((smooth: boolean) => {
     const end = endRef.current;
     const root = rootRef.current;
     if (!end || !root) return;
     const composer = root.querySelector('[data-slot="chat-composer"]');
-    const limit = composer ? composer.getBoundingClientRect().top : window.innerHeight;
-    const distance = end.getBoundingClientRect().bottom - (limit - NEWEST_BREATHING_ROOM);
+    const limit =
+      (composer ? composer.getBoundingClientRect().top : window.innerHeight) -
+      NEWEST_BREATHING_ROOM;
+    let bottom = end.getBoundingClientRect().bottom;
+    let allowed = Number.POSITIVE_INFINITY;
+    const messages = root.querySelectorAll('[data-slot="chat-assistant-message"]');
+    const newest = messages.item(messages.length - 1);
+    const cards =
+      newest !== null && newest.nextElementSibling === null
+        ? newest.querySelector('[data-slot="chat-assistant-cards"]')
+        : null;
+    if (newest !== null && cards !== null) {
+      bottom = cards.getBoundingClientRect().top + CARD_PEEK;
+      const header = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
+      );
+      allowed =
+        newest.getBoundingClientRect().top -
+        (Number.isNaN(header) ? 0 : header) -
+        NEWEST_BREATHING_ROOM;
+    }
+    const distance = Math.min(bottom - limit, allowed);
     if (distance <= 0) return;
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     document.documentElement.scrollBy?.({

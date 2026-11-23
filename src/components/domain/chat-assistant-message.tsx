@@ -79,7 +79,7 @@ function ChatAssistantMessage({
         </div>
       ) : null}
       {cards ? (
-        <div className="@container mt-1">
+        <div data-slot="chat-assistant-cards" className="@container mt-1">
           <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">{cards}</div>
         </div>
       ) : null}
