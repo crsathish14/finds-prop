@@ -140,12 +140,15 @@ describe("UT-ai-tool-search-place: without a place", () => {
   it("searches as before, looks nothing up, and says no place was asked for", async () => {
     const outcome = await search({ ...NOTHING, locality: "Adyar", radiusKm: 10 });
     expect(placeLookup).not.toHaveBeenCalled();
-    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith({
-      sort: "newest",
-      show: 10,
-      view: "grid",
-      locality: "Adyar",
-    });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      {
+        sort: "newest",
+        show: 10,
+        view: "grid",
+        locality: "Adyar",
+      },
+      { guest: false },
+    );
     const result = output(outcome);
     expect(result.place).toEqual({
       status: "not_asked",

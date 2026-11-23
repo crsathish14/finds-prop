@@ -49,20 +49,21 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 
 ### 4.3 Service-role allow-list (lint-enforced)
 
-| Module / handler                                                       | Why RLS is deliberately bypassed                                            |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `features/forms/service` (`submitForm`, `requestUploadUrl`)            | Anonymous visitors submit forms and files; no anon INSERT grants            |
-| `features/projects/service` (`trackProjectEvent`, `submitProjectLead`) | Same, with rate limits and view de-dupe                                     |
-| `features/enquiries/service` (`sendEnquiry`)                           | No client insert; `submit_enquiry` is server-only (rate limit, 24 h rule)   |
-| `features/builders/service` (invite, resend, activate)                 | Auth admin API (create/confirm user), role grant                            |
-| `features/crm/service` (+ `/api/internal/crm-retry`)                   | Reads `crm_integration_secrets` (service-role only) and calls external CRMs |
-| `features/media/service` (`finalize`, sweep)                           | Reads object bytes/metadata; deletes orphan objects                         |
-| `server/rate-limit`                                                    | Writes `public_rate_limits` (revoked from users)                            |
-| `server/idempotency`                                                   | Claims and stores `idempotency_keys` (closed to users)                      |
-| `server/audit`                                                         | Calls the service-only `audit_record()` for events a trigger cannot see     |
-| `server/audit` (`ai-usage.ts`, `writeAiUsage`)                         | Writes `ai_usage_events` (AI chat usage metadata, no text; closed to users) |
-| `/api/auth/hooks/send-sms`                                             | Needs no database; no service role                                          |
-| Seed script (local/dev only)                                           | Creates test users                                                          |
+| Module / handler                                                       | Why RLS is deliberately bypassed                                                                                                        |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `features/forms/service` (`submitForm`, `requestUploadUrl`)            | Anonymous visitors submit forms and files; no anon INSERT grants                                                                        |
+| `features/projects/service` (`trackProjectEvent`, `submitProjectLead`) | Same, with rate limits and view de-dupe                                                                                                 |
+| `features/enquiries/service` (`sendEnquiry`)                           | No client insert; `submit_enquiry` is server-only (rate limit, 24 h rule)                                                               |
+| `features/builders/service` (invite, resend, activate)                 | Auth admin API (create/confirm user), role grant                                                                                        |
+| `features/crm/service` (+ `/api/internal/crm-retry`)                   | Reads `crm_integration_secrets` (service-role only) and calls external CRMs                                                             |
+| `features/media/service` (`finalize`, sweep)                           | Reads object bytes/metadata; deletes orphan objects                                                                                     |
+| `server/rate-limit`                                                    | Writes `public_rate_limits` (revoked from users)                                                                                        |
+| `server/idempotency`                                                   | Claims and stores `idempotency_keys` (closed to users)                                                                                  |
+| `server/audit`                                                         | Calls the service-only `audit_record()` for events a trigger cannot see                                                                 |
+| `server/audit` (`ai-usage.ts`, `writeAiUsage`)                         | Writes `ai_usage_events` (AI chat usage metadata, no text; closed to users)                                                             |
+| `server/ai` (`guest-home-search.ts`, `guestSearchHomes`)               | Runs the service-only `guest_search_properties()` for a guest's assistant search: 10 homes at most, card columns, no projects (ADR-171) |
+| `/api/auth/hooks/send-sms`                                             | Needs no database; no service role                                                                                                      |
+| Seed script (local/dev only)                                           | Creates test users                                                                                                                      |
 
 Anything else importing `admin.server.ts` fails lint and code review.
 

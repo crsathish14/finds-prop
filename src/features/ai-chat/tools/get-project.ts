@@ -16,6 +16,7 @@ import { asOfText } from "./as-of";
 import { countedBedrooms } from "./home-facts";
 import { publicPhone } from "./public-contacts";
 import { monthText, projectPrices, projectPriceShape } from "./project-facts";
+import { requireSignIn } from "./require-sign-in";
 import type { AiChatTool, ToolContext } from "./types";
 import { cleanOptionalLine, cleanThirdPartyLine, cleanThirdPartyText } from "./untrusted";
 
@@ -226,6 +227,7 @@ export const getProjectTool: AiChatTool<GetProjectInput, GetProjectOutput> = {
   input: getProjectInputSchema,
   output: getProjectOutputSchema,
   async run(input, context) {
+    requireSignIn(context);
     const result = await getProject(tidySlug(input.slug));
     const asOf = asOfText(result.readAt, context);
     if (result.status === "missing") {

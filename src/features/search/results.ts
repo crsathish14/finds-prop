@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { logger } from "@/server/logger";
+import { guestSearchHomes } from "@/server/ai/guest-home-search";
 import { createServerSupabase } from "@/server/supabase/server";
 import { listingRowSchema, type ListingRow } from "./listing-row";
 import { toSearchRpcArgs } from "./rpc-args";
@@ -45,10 +46,13 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
  */
 async function readResults(
   params: SearchParams,
+  guest: boolean,
 ): Promise<Extract<SearchResults, { status: "ok" }>> {
-  const { data, error } = await (
-    await createServerSupabase()
-  ).rpc("search_properties", toSearchRpcArgs(params));
+  // A guest (the assistant's visitor who is not signed in) gets at most ten homes through the server-only function; a
+  // signed-in visitor reads with their own session. The pages never ask for a guest read.
+  const { data, error } = guest
+    ? await guestSearchHomes(toSearchRpcArgs(params))
+    : await (await createServerSupabase()).rpc("search_properties", toSearchRpcArgs(params));
   if (error) {
     logger.error("search results could not be read", { errorCode: error.code });
     throw new Error("search results could not be read");
@@ -76,9 +80,12 @@ async function readResults(
 }
 
 /** One page of results, or a failure with no detail (the page offers Try again with the filters kept). */
-export async function getSearchResults(params: SearchParams): Promise<SearchResults> {
+export async function getSearchResults(
+  params: SearchParams,
+  options: { guest?: boolean } = {},
+): Promise<SearchResults> {
   try {
-    return await readResults(params);
+    return await readResults(params, options.guest === true);
   } catch (error) {
     // The prerender signal and redirects are Next.js control flow, not failures of the read.
     unstable_rethrow(error);
