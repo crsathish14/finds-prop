@@ -216,6 +216,46 @@ export function buildHistory(
   return turns.slice(-AI_MAX_HISTORY_MESSAGES);
 }
 
+/**
+ * One paragraph of an answer cut into sentences, each marked as a question or not, with the spaces between them kept
+ * as pieces of their own, so the pieces put back together are the paragraph exactly (ADR-184). A sentence ends at
+ * `.`, `!` or `?` (or a run of them) that is followed by a space or the end, so a price such as 1.29 Cr or a
+ * figure such as 1,420 does not end one. A question is a sentence that ends with `?`; the page draws it in bold, so
+ * the customer sees at once what the assistant is asking. The model is not asked to write any mark-up for this.
+ */
+export function sentenceParts(paragraph: string): { text: string; question: boolean }[] {
+  const parts: { text: string; question: boolean }[] = [];
+  let start = 0;
+  let index = 0;
+  const push = (end: number) => {
+    if (end <= start) return;
+    const text = paragraph.slice(start, end);
+    const blank = text.trim() === "";
+    parts.push({ text, question: !blank && text.trimEnd().endsWith("?") });
+    start = end;
+  };
+  while (index < paragraph.length) {
+    const character = paragraph.charAt(index);
+    if (character === "." || character === "!" || character === "?") {
+      let end = index + 1;
+      while (end < paragraph.length && ".!?".includes(paragraph.charAt(end))) end += 1;
+      const next = paragraph.charAt(end);
+      if (end >= paragraph.length || /\s/u.test(next)) {
+        push(end);
+        // The spaces after the sentence are a piece of their own.
+        let spaceEnd = end;
+        while (spaceEnd < paragraph.length && /\s/u.test(paragraph.charAt(spaceEnd))) spaceEnd += 1;
+        push(spaceEnd);
+      }
+      index = Math.max(end, index + 1);
+    } else {
+      index += 1;
+    }
+  }
+  push(paragraph.length);
+  return parts;
+}
+
 /** A link the server offered is drawn only if it is a path on this site. */
 export function safeHref(href: string | undefined): string | undefined {
   if (href === undefined) return undefined;

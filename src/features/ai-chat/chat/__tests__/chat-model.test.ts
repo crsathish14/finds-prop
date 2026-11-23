@@ -13,6 +13,7 @@ import {
   STORAGE_KEY,
   type ChatEntry,
   contextField,
+  sentenceParts,
   shownRecords,
 } from "../chat-model";
 
@@ -198,6 +199,54 @@ describe("a link the server offers (AI-P5-T02)", () => {
     // A tab or a line break inside the address is dropped by browsers: "/" + tab + "/host" would read as "//host".
     expect(safeHref("/\t/example.com")).toBeUndefined();
     expect(safeHref("/\n/example.com")).toBeUndefined();
+  });
+});
+
+describe("UT-ai-chat-bold-questions: the sentences that are questions (ADR-184)", () => {
+  const questions = (text: string) =>
+    sentenceParts(text)
+      .filter((part) => part.question)
+      .map((part) => part.text);
+
+  it("marks a question and nothing else, and the pieces put back together are the text exactly", () => {
+    const text =
+      "I found two homes in Velachery. Would you like me to prepare an enquiry about one of them?";
+    expect(questions(text)).toEqual(["Would you like me to prepare an enquiry about one of them?"]);
+    expect(
+      sentenceParts(text)
+        .map((part) => part.text)
+        .join(""),
+    ).toBe(text);
+  });
+
+  it("does not end a sentence at a price or an area: 1.29 Cr and 1,420 sq ft stay inside their sentence", () => {
+    const text =
+      "The flat is ₹1.29 Cr for 1,420 sq ft. Is that within your budget? The gap is ₹67.4 L.";
+    expect(questions(text)).toEqual(["Is that within your budget?"]);
+    expect(
+      sentenceParts(text)
+        .map((part) => part.text)
+        .join(""),
+    ).toBe(text);
+  });
+
+  it("takes each question of several, and a question at the very end", () => {
+    expect(questions("Which area? What is your budget? Buy or rent?")).toEqual([
+      "Which area?",
+      "What is your budget?",
+      "Buy or rent?",
+    ]);
+  });
+
+  it("marks a question in Tamil and in Tanglish, which end with the same mark", () => {
+    expect(questions("உங்கள் பட்ஜெட் என்ன? நன்றி.")).toEqual(["உங்கள் பட்ஜெட் என்ன?"]);
+    expect(questions("Budget evvalavu? Sari.")).toEqual(["Budget evvalavu?"]);
+  });
+
+  it("marks nothing in a text with no question, in an empty text, or when a question mark is not at a sentence end", () => {
+    expect(questions("Here you go.")).toEqual([]);
+    expect(sentenceParts("")).toEqual([]);
+    expect(questions("Is this 2?5 BHK a typo and fine")).toEqual([]);
   });
 });
 
