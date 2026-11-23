@@ -1159,6 +1159,9 @@ isOneToOne: false
 "slugify":
 { Args: { "input": string }; Returns: string
                            },
+"storage_builder_logo_path_ok":
+{ Args: { "object_name": string }; Returns: boolean
+                           },
 "storage_listing_path_ok":
 { Args: { "object_name": string }; Returns: boolean
                            },
