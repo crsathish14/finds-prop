@@ -29,8 +29,8 @@ export const LOCALITIES_MAX = 8;
 export const LOCALITY_RADII_KM = [2, 3, 4, 5, 6] as const;
 export const DEFAULT_LOCALITY_RADIUS_KM = 3;
 
-/** The two hero arrangements (FR-ADM-11): the same words and search, with the banner under or beside the search. */
-export const HERO_LAYOUTS = ["search_desk", "split"] as const;
+/** The hero arrangements (FR-ADM-11, ADR-177): the same words and search, with the banner under or beside the search; Conversational is a centred joined search bar with sample requests and a banner strip. */
+export const HERO_LAYOUTS = ["search_desk", "split", "conversational"] as const;
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];
 
 /** Text limits, the same as the shapes the public side reads (`features/site/schemas.ts`). */

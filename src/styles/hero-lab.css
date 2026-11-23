@@ -1,13 +1,14 @@
-/* Hero lab: the motion of the two experimental homepage heroes (C conversational, D layered) in
-   src/features/hero-lab. They are shown only where the Design Lab is on and never in production;
-   the live heroes (A search desk, B split) use none of this.
+/* Hero lab: the motion of the Conversational homepage hero (C, live since ADR-177, in
+   src/components/domain/conversational-hero.tsx) and of the experimental Layered hero (D, in
+   src/features/hero-lab, shown only where the Design Lab is on and never in production). The Search
+   Desk and Split heroes use none of this.
 
    Rules the motion keeps:
    - Only transform and opacity animate. The one exception is the arcs drawing on in D, which moves
      an SVG stroke-dashoffset (no layout, painted once).
    - The entrance is one short, staggered rise (--hl-step apart, --hl-dur each, eased out).
-   - Loops (the arcs' drift, the floating cards' bob) stop while the tab is hidden
-     ([data-hl-paused], set by <HeroLab>), and are not run on phones.
+   - Loops (the running light, the arcs' drift, the floating cards' bob) stop while the tab is
+     hidden ([data-hl-paused], set by <PauseWhenHidden> and by <HeroLab>), and D's are not run on phones.
    - With prefers-reduced-motion everything is shown in place: no delay, no rise, no loop, no
      parallax (globals.css shortens what is left).
 

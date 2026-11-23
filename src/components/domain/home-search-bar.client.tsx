@@ -9,7 +9,7 @@
  *   keyword mode always: a GET to this address), name (the address name of the text in keyword mode; "q" by default;
  *   AI mode sends no name, so the words never go in the address), onSearch (AI mode: called with the trimmed text,
  *   empty included, instead of the GET), maxLength, defaultValue, className, and two optional extras used by the
- *   experimental "conversational" hero (src/features/hero-lab): examples (sample requests the hint types out one
+ *   Conversational hero (ADR-177, src/components/domain/conversational-hero.tsx): examples (sample requests the hint types out one
  *   after another while the box is empty and not focused) and suggestions (short requests shown as chips under the
  *   box; a chip puts its words in the box and moves focus there, it does not search). Without them nothing changes.
  *   appearance: "card" (default: the box and the button on a white card) | "joined" (the conversational hero: no

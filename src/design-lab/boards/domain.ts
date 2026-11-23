@@ -9,7 +9,12 @@ import {
 } from "./domain-demos-enquiry";
 import { FilterRailDemo, FilterSheetDemo } from "./domain-demos-filters";
 import { PropertyGalleryDemo } from "./domain-demos-gallery";
-import { HomeCardSectionsDemo, HomeHeroDemo, HomeSectionsDemo } from "./domain-demos-home";
+import {
+  ConversationalHeroDemo,
+  HomeCardSectionsDemo,
+  HomeHeroDemo,
+  HomeSectionsDemo,
+} from "./domain-demos-home";
 import { ResultsBarDemo, ResultsBodyDemo, ResultsScreenDemo } from "./domain-demos-results";
 import { PhotoUploaderDemo } from "./photo-uploader-demos";
 import { PropertyPageDemo } from "./domain-demos-property";
@@ -156,6 +161,14 @@ export const DOMAIN: LabEntry[] = [
       "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search bar, on faint green arches. With and without the copper word and the line, and a long headline.",
     sources: ["domain/home-hero.tsx"],
     Demo: HomeHeroDemo,
+  },
+  {
+    id: "conversational-hero",
+    name: "Conversational hero",
+    description:
+      "The Conversational homepage hero the super admin can choose (ADR-177): a prompt pill, the headline, a centred joined search bar with a running teal light, typed sample requests and suggestion chips, three trust lines and the sponsored strip rising in last. With everything, and bare.",
+    sources: ["domain/conversational-hero.tsx"],
+    Demo: ConversationalHeroDemo,
   },
   {
     id: "home-sections",

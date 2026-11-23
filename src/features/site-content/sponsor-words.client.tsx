@@ -88,6 +88,7 @@ export function useSponsorWords() {
     layouts: {
       search_desk: hero("layout.searchDesk.label"),
       split: hero("layout.split.label"),
+      conversational: hero("layout.conversational.label"),
     },
     reasons: {
       no_sponsors: translate("preview.noSponsors"),

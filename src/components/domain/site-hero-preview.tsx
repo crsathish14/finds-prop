@@ -7,7 +7,7 @@
  *   rules the home page uses (the standard headline when none is saved) and passes them in. The banner is drawn as a
  *   plain stand-in: which sponsor shows is chosen elsewhere.
  * Props: title, subtitle (left out when empty), eyebrow (left out when empty; shown in the Split layout only, as on the
- *   home page), layout ("search_desk" | "split"), banner (what sits where the sponsored banner goes: left out, a plain
+ *   home page), layout ("search_desk" | "split" | "conversational"), banner (what sits where the sponsored banner goes: left out, a plain
  *   stand-in is drawn; null, nothing is drawn, as when no sponsor can be shown; or a node, such as a picture; S7-T11),
  *   stacked (the Split layout drawn with the banner under the text, as on a phone), className.
  * Responsive: fills the preview column; the Split drawing keeps the text on the left and the banner on the right
@@ -24,7 +24,7 @@ type SiteHeroPreviewProps = {
   title: string;
   subtitle?: string;
   eyebrow?: string;
-  layout: "search_desk" | "split";
+  layout: "search_desk" | "split" | "conversational";
   banner?: ReactNode | null;
   stacked?: boolean;
   className?: string;
@@ -42,7 +42,12 @@ function SiteHeroPreview({
   const split = layout === "split";
   const beside = split && !stacked;
   const search = (
-    <span className="mt-1 block h-10 w-full rounded-md border border-line-input bg-surface" />
+    <span
+      className={cn(
+        "mt-1 block h-10 w-full border border-line-input bg-surface",
+        layout === "conversational" ? "rounded-pill" : "rounded-md",
+      )}
+    />
   );
   return (
     <div

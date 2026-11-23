@@ -217,7 +217,7 @@ const PREVIEW_WORDS: SponsorHeroPreviewProps["words"] = {
   desktop: "Desktop",
   phone: "Phone",
   sponsored: "Sponsored",
-  layouts: { search_desk: "Search Desk", split: "Split" },
+  layouts: { search_desk: "Search Desk", split: "Split", conversational: "Conversational" },
   reasons: { no_sponsors: "No sponsors", none_eligible: "Split → Search Desk" },
   none: {
     title: "No banner is shown",
@@ -247,6 +247,7 @@ function previewProps(
 const LAYOUT_NAME: Record<SponsorHeroLayout, string> = {
   search_desk: "Search Desk",
   split: "Split",
+  conversational: "Conversational",
 };
 
 function PreviewCell({
@@ -280,6 +281,15 @@ export function SponsorHeroPreviewDemo() {
           <PreviewCell layout="search_desk" samples={THREE} />
           <PreviewCell layout="search_desk" samples={THREE} defaultDevice="phone" />
         </div>
+      </Specimen>
+      <Specimen label="Conversational with the first sponsor that has a strip: the banner under the search, as in Search Desk">
+        <div className="flex flex-wrap items-start gap-6">
+          <PreviewCell layout="conversational" samples={THREE} />
+          <PreviewCell layout="conversational" samples={THREE} defaultDevice="phone" />
+        </div>
+      </Specimen>
+      <Specimen label="Conversational, but no active sponsor has a strip: no banner (panel banners are not used)">
+        <PreviewCell layout="conversational" samples={[BUILDER, FINANCE]} />
       </Specimen>
       <Specimen label="Split with the first sponsor that has a panel: the banner beside the search on a desktop, under it on a phone">
         <div className="flex flex-wrap items-start gap-6">

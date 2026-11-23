@@ -96,6 +96,10 @@ export function HeroForm({
         label: translate("hero.layout.split.label"),
         hint: translate("hero.layout.split.hint"),
       },
+      conversational: {
+        label: translate("hero.layout.conversational.label"),
+        hint: translate("hero.layout.conversational.hint"),
+      },
     },
     eyebrow: translate("hero.eyebrow"),
     eyebrowHint: translate("hero.eyebrowHint"),
@@ -109,10 +113,7 @@ export function HeroForm({
   const sponsorWords = sponsorState.words;
   const hero = heroViewOf(sponsorState.drafts, values.layout);
   const warning = layoutWarningOf(hero.coverage);
-  const layoutName =
-    values.layout === "split"
-      ? sponsorWords.preview.layouts.split
-      : sponsorWords.preview.layouts.search_desk;
+  const layoutName = sponsorWords.preview.layouts[values.layout];
   const say = sponsorWords.say;
 
   return (

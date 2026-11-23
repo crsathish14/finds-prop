@@ -1,19 +1,19 @@
 /**
  * SiteHeroFields: the boxes of the admin's Hero page: the eyebrow, the headline and the line under it, and the choice
- * of layout (Search Desk or Split).
+ * of layout (Search Desk, Split or Conversational).
  * Purpose: what the admin types to change the first thing visitors see on the home page, and how it is arranged
  *   (S7-T10, FR-ADM-10, FR-ADM-11). Owner: design system. It holds no state: the page keeps the values and the errors
  *   and passes the words, already translated. An empty eyebrow or subtitle means "use the standard one" (BR-81); the
  *   headline is needed.
  * Props: values ({ eyebrow, title, subtitle, layout }), errors (the message of each box with a problem, by box),
- *   onChange (the new values), layoutNote (what the page shows under the two layout cards, such as which layout is live
- *   and a warning about the sponsors; optional, S7-T11), disabled (while saving), words (the headings, labels, hints and the two layouts'
+ *   onChange (the new values), layoutNote (what the page shows under the layout cards, such as which layout is live
+ *   and a warning about the sponsors; optional, S7-T11), disabled (while saving), words (the headings, labels, hints and the layouts'
  *   names and lines), className.
- * Responsive: two cards stacked one above the other; the two layout cards sit side by side from 768 px.
+ * Responsive: two cards stacked one above the other; the layout cards sit side by side from 768 px.
  * Accessibility: every box has a visible label tied to it; the layout is a radio group (one tab stop, arrow keys
  *   choose) named by the card's heading; each card's small drawing is hidden from screen readers and the chosen card
  *   also shows a tick, so the choice is not shown by colour alone.
- * States: standard (empty optional boxes), filled, with errors, one layout chosen or the other, saving (all disabled).
+ * States: standard (empty optional boxes), filled, with errors, one of the three layouts chosen, saving (all disabled).
  * Dependencies: FormSection, FormField, ChoiceCards, Input, cn. Tests: site-content-parts.test.tsx; Design Lab
  *   "Site content" (S7-T10).
  * UX reference: admin-cms screen (#hero: Text, Layout). The "Background image" card is left out: neither approved
@@ -26,7 +26,7 @@ import { FormSection } from "@/components/patterns/form-section";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 
-type SiteHeroLayout = "search_desk" | "split";
+type SiteHeroLayout = "search_desk" | "split" | "conversational";
 
 type SiteHeroValues = {
   eyebrow: string;
@@ -46,6 +46,7 @@ type SiteHeroFieldsWords = {
     description: string;
     searchDesk: { label: string; hint: string };
     split: { label: string; hint: string };
+    conversational: { label: string; hint: string };
   };
   eyebrow: string;
   eyebrowHint: string;
@@ -69,27 +70,36 @@ const LIMITS = { eyebrow: 80, title: 120, subtitle: 240 };
 
 /** A small drawing of where the search and the banner sit in a layout. */
 function LayoutDrawing({ layout }: { layout: SiteHeroLayout }) {
+  const split = layout === "split";
+  const talk = layout === "conversational";
   return (
     <span
       className={cn(
         "flex h-20 w-full rounded-md border border-line bg-canvas p-2",
-        layout === "split" ? "items-center gap-2" : "flex-col items-center justify-center gap-2",
+        split ? "items-center gap-2" : "flex-col items-center justify-center gap-2",
       )}
     >
       <span
         className={cn(
-          "block rounded-sm border border-line-input bg-surface",
-          layout === "split" ? "h-8 w-1/2" : "h-6 w-3/5",
+          "block border border-line-input bg-surface",
+          split ? "h-8 w-1/2 rounded-sm" : talk ? "h-6 w-4/5 rounded-pill" : "h-6 w-3/5 rounded-sm",
         )}
       />
-      <span
-        className={cn(
-          "block rounded-sm bg-cta-tint",
-          layout === "split" ? "h-full w-2/5" : "h-2 w-3/5",
-        )}
-      />
+      {talk ? (
+        <span className="flex w-4/5 justify-center gap-1">
+          <span className="block h-2 w-1/4 rounded-pill bg-primary-tint" />
+          <span className="block h-2 w-1/4 rounded-pill bg-primary-tint" />
+          <span className="block h-2 w-1/4 rounded-pill bg-primary-tint" />
+        </span>
+      ) : null}
+      <span className={cn("block rounded-sm bg-cta-tint", split ? "h-full w-2/5" : "h-2 w-3/5")} />
     </span>
   );
+}
+
+/** The layout a card value stands for; anything unknown is the standard Search Desk. */
+function parseLayout(value: string): SiteHeroLayout {
+  return value === "split" || value === "conversational" ? value : "search_desk";
 }
 
 function SiteHeroFields({
@@ -155,7 +165,7 @@ function SiteHeroFields({
           name="hero-layout"
           value={values.layout}
           disabled={disabled}
-          onChange={(layout) => set({ layout: layout === "split" ? "split" : "search_desk" })}
+          onChange={(layout) => set({ layout: parseLayout(layout) })}
           options={[
             {
               value: "search_desk",
@@ -168,6 +178,12 @@ function SiteHeroFields({
               label: words.layout.split.label,
               hint: words.layout.split.hint,
               visual: <LayoutDrawing layout="split" />,
+            },
+            {
+              value: "conversational",
+              label: words.layout.conversational.label,
+              hint: words.layout.conversational.hint,
+              visual: <LayoutDrawing layout="conversational" />,
             },
           ]}
         />

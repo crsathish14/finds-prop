@@ -43,7 +43,7 @@ const heroSchema = z.object({
   eyebrow: z.string().max(80).optional(),
   title: z.string().min(1).max(120).optional(),
   subtitle: z.string().max(240).optional(),
-  layout: z.enum(["search_desk", "split"]),
+  layout: z.enum(["search_desk", "split", "conversational"]),
 });
 
 const locality = z.object({

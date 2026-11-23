@@ -5,45 +5,15 @@ import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { HomeAiSearch } from "@/features/ai-chat";
 import { SEARCH_PATH, type CuratedLocality } from "@/features/search";
 import { getTranslate } from "@/features/site";
-import type { Translate } from "@/lib/format";
 import { selectSponsors, type SponsorAd } from "@/lib/sponsors";
-import { ConversationalHero } from "./conversational-hero";
+import { ConversationalLive } from "./conversational-live";
 import { HeroLab } from "./hero-lab.client";
 import { LayeredHero } from "./layered-hero";
 import type { HeroLabLayout } from "./layouts";
 
-/** How many sample requests the conversational hero types, and how many it offers as chips. */
-const SUGGESTION_COUNT = 3;
-
-/**
- * The sample requests of the conversational hero. They name the super admin's curated localities
- * when there are some (so they follow the city), and name no place otherwise.
- */
-function sampleRequests(translate: Translate, localities: readonly CuratedLocality[]): string[] {
-  // "Adyar, Chennai" reads as "Adyar": the city is already on the page.
-  const places = localities
-    .map((place) => (place.label.split(",")[0] ?? "").trim())
-    .filter(Boolean);
-  if (places.length === 0) {
-    return [
-      translate("heroLab.plainExamples.budget"),
-      translate("heroLab.plainExamples.rent"),
-      translate("heroLab.plainExamples.ready"),
-      translate("heroLab.plainExamples.family"),
-    ];
-  }
-  const place = (index: number) => places[index % places.length] ?? "";
-  return [
-    translate("heroLab.examples.budget", { place: place(0) }),
-    translate("heroLab.examples.rent", { place: place(1) }),
-    translate("heroLab.examples.ready", { place: place(2) }),
-    translate("heroLab.examples.family", { place: place(3) }),
-  ];
-}
-
 type HeroLabPreviewProps = {
   /** The layout the super admin chose, and that hero exactly as the live page renders it. */
-  live: "desk" | "split";
+  live: "desk" | "split" | "conversational";
   liveHero: ReactNode;
   title: string;
   emphasis?: string | undefined;
@@ -56,8 +26,8 @@ type HeroLabPreviewProps = {
 };
 
 /**
- * The homepage hero inside the hero lab: renders the live layout, the other live layout (when an ad
- * fits it) and the three experiments on the server, and hands them to the switch. Only the page's
+ * The homepage hero inside the hero lab: renders the live layout, the other live layouts (when an ad
+ * fits them) and the experimental Layered one on the server, and hands them to the switch. Only the page's
  * Design Lab branch uses this; production renders the live hero alone.
  * Every hero uses the page's own search (same submit, same chat hand-over) and the same sponsored
  * ads through SponsorSlot (same rules, label, "About this ad" and carousel).
@@ -74,28 +44,12 @@ export async function HeroLabPreview({
   localities,
 }: HeroLabPreviewProps) {
   const translate = await getTranslate();
-  const requests = sampleRequests(translate, localities);
   const search = aiSearch ? (
     <HomeAiSearch />
   ) : (
     <HomeSearchBar mode="keyword" action={SEARCH_PATH} />
   );
-  const conversationalSearch = aiSearch ? (
-    <HomeAiSearch
-      examples={requests}
-      suggestions={requests.slice(0, SUGGESTION_COUNT)}
-      appearance="joined"
-    />
-  ) : (
-    <HomeSearchBar
-      mode="keyword"
-      action={SEARCH_PATH}
-      examples={requests}
-      suggestions={requests.slice(0, SUGGESTION_COUNT)}
-      appearance="joined"
-    />
-  );
-  // D: the same joined bar as C, without the typed hint and the chips.
+  // D: the same joined bar as C (ConversationalLive), without the typed hint and the chips.
   const layeredSearch = aiSearch ? (
     <HomeAiSearch appearance="joined" />
   ) : (
@@ -145,7 +99,19 @@ export async function HeroLabPreview({
   const heroes: Partial<Record<HeroLabLayout, ReactNode>> = {
     desk: heroA,
     split: heroB,
-    conversational: <ConversationalHero {...shared} search={conversationalSearch} />,
+    conversational:
+      live === "conversational" ? (
+        liveHero
+      ) : (
+        <ConversationalLive
+          title={title}
+          emphasis={emphasis}
+          subtitle={subtitle}
+          aiSearch={aiSearch}
+          localities={localities}
+          sponsor={strip}
+        />
+      ),
     layered: <LayeredHero {...shared} search={layeredSearch} />,
   };
 

@@ -8,11 +8,11 @@
  *   hero: nothing in it can be clicked, and the drawing is hidden from screen readers (the boxes and the list beside
  *   it say the same things). The page works out which sponsor shows (the first active one with the format the layout
  *   needs) and passes it in; this part keeps only which size is drawn.
- * Props: layout ("search_desk" | "split"), title, subtitle and eyebrow (as in SiteHeroPreview), banner ({ desktop,
+ * Props: layout ("search_desk" | "split" | "conversational"), title, subtitle and eyebrow (as in SiteHeroPreview), banner ({ desktop,
  *   phone, alt }: the addresses of the two pictures of the format the layout needs, or null when no sponsor can
  *   be shown), reason ("no_sponsors" | "none_eligible", used when the banner is null), caption (the line next to the
  *   layout's name, such as "Sample Developer · first of 2 active"), defaultDevice ("desktop" default | "phone"),
- *   words ({ device (names the switch), desktop, phone, sponsored, layouts: { search_desk, split }, reasons: {
+ *   words ({ device (names the switch), desktop, phone, sponsored, layouts: { search_desk, split, conversational }, reasons: {
  *   no_sponsors, none_eligible } (the badge), none: { title, text } (the note under the drawing), phoneNote (the
  *   line under the phone drawing) }), className.
  * Responsive: fills the preview column; the phone drawing is a narrow frame in its middle, with the banner under the
@@ -37,7 +37,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/cn";
 import { SLOT_RATIOS } from "@/lib/sponsors";
 
-type SponsorHeroLayout = "search_desk" | "split";
+type SponsorHeroLayout = "search_desk" | "split" | "conversational";
 type SponsorHeroDevice = "desktop" | "phone";
 type SponsorHeroReason = "no_sponsors" | "none_eligible";
 
@@ -65,10 +65,11 @@ type SponsorHeroPreviewProps = {
   className?: string;
 };
 
-/** The shape of the banner in each layout: a strip in Search Desk, a panel in Split (the public site's own slot shapes). */
+/** The shape of the banner in each layout: a strip in Search Desk and Conversational, a panel in Split (the public site's own slot shapes). */
 const FORMAT_OF: Record<SponsorHeroLayout, "strip" | "panel"> = {
   search_desk: "strip",
   split: "panel",
+  conversational: "strip",
 };
 
 function SponsorHeroPreview({

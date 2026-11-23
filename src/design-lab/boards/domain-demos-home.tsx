@@ -4,6 +4,7 @@ import { Building2, Columns2, MapPin, MessageCircle, ShieldCheck, Star, Tag } fr
 import { CategoryCard } from "@/components/domain/category-card";
 import { DeveloperCard } from "@/components/domain/developer-card";
 import { PropertyCard } from "@/components/domain/property-card";
+import { ConversationalHero } from "@/components/domain/conversational-hero";
 import { CtaBand } from "@/components/domain/cta-band";
 import { HomeHero } from "@/components/domain/home-hero";
 import { HomeSection } from "@/components/domain/home-section";
@@ -77,6 +78,66 @@ export function HomeHeroDemo() {
         step (S4-T07); without one the section simply ends below the bar.
       </Text>
     </div>
+  );
+}
+
+/** The Conversational hero (ADR-177) in its states: with the typed hint, chips, trust lines and a strip; and bare. */
+export function ConversationalHeroDemo() {
+  const requests = [
+    "3 BHK under 90 lakh near Adyar",
+    "2 BHK to rent near Velachery",
+    "Ready to move in near Porur",
+  ];
+  return (
+    <div className="flex flex-col gap-10">
+      <Specimen
+        label="Typed sample requests, suggestion chips, trust lines and a sponsored strip (the strip comes from the page)"
+        className="w-full"
+      >
+        <ConversationalHero
+          titleAs="h3"
+          id="lab-conv-1"
+          className="w-full"
+          title="Find the place that fits your life in Chennai."
+          emphasis="Chennai"
+          subtitle="Shortlist, compare and enquire directly."
+          prompt="Ask in your own words"
+          trust={["Approved listings only", "Enquire directly", "Compare up to 3 homes"]}
+          sponsor={<StripSample />}
+        >
+          <HomeSearchBarHost appearance="joined" examples={requests} suggestions={requests} />
+        </ConversationalHero>
+      </Specimen>
+      <Specimen
+        label="Bare: no line under the headline, no trust lines and no strip (no gap is left)"
+        className="w-full"
+      >
+        <ConversationalHero
+          titleAs="h3"
+          id="lab-conv-2"
+          className="w-full"
+          title="Homes, plots and new projects across Tamil Nadu"
+          prompt="Ask in your own words"
+        >
+          <HomeSearchBarHost appearance="joined" />
+        </ConversationalHero>
+      </Specimen>
+      <Text tone="muted">
+        The light running round the search bar and the entrance stop for people who prefer reduced
+        motion, and pause while the tab is hidden.
+      </Text>
+    </div>
+  );
+}
+
+function StripSample() {
+  return (
+    <aside
+      aria-label="Sponsored strip"
+      className="flex h-16 items-center justify-center rounded-md bg-cta-tint text-caption text-muted"
+    >
+      Sponsored strip
+    </aside>
   );
 }
 

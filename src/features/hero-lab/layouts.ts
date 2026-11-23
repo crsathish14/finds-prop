@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
 
 /**
- * The homepage hero layouts the hero lab can show. A "desk" (Search desk) and B "split" are the live
- * ones, chosen by the super admin; C "conversational" and D "layered" are experiments
- * shown only where the Design Lab is on, never in production.
+ * The homepage hero layouts the hero lab can show. A "desk" (Search desk), B "split" and C
+ * "conversational" are the live ones, chosen by the super admin (ADR-177); D "layered" is an
+ * experiment shown only where the Design Lab is on, never in production.
  */
 export const HERO_LAB_LAYOUTS = ["desk", "split", "conversational", "layered"] as const;
 export type HeroLabLayout = (typeof HERO_LAB_LAYOUTS)[number];
@@ -41,9 +41,7 @@ export function isExperiment(layout: HeroLabLayout | null): boolean {
 type MotionVariables = CSSProperties & Record<`--hl-${string}`, string | number>;
 
 /** The place of an item in the entrance (src/styles/hero-lab.css, .hl-in and .hl-pop). */
-export function entranceOrder(index: number): MotionVariables {
-  return { "--hl-i": index };
-}
+export { entranceOrder } from "@/components/domain/conversational-hero";
 
 /** How far a layer of the layered hero moves with the pointer and the scroll (.hl-layer). */
 export function layerDepth(depth: number): MotionVariables {

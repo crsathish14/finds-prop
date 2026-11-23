@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
@@ -16,7 +17,7 @@ const state = vi.hoisted(() => ({
   header: {} as { name?: string },
   aiSearch: false,
   postEnabled: true,
-  layout: "search_desk" as "search_desk" | "split",
+  layout: "search_desk" as "search_desk" | "split" | "conversational",
   eyebrow: undefined as string | undefined,
   ads: [] as unknown[],
 }));
@@ -56,6 +57,19 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
       data-layout={props.layout ?? ""}
       data-placement={props.placement}
     />
+  ),
+}));
+// ConversationalLive is an async server component (its own test renders it); here it is a stand-in
+// that shows what the page hands it.
+vi.mock("@/features/hero-lab", () => ({
+  HeroLabPreview: () => null,
+  HeroLabSections: () => null,
+  ConversationalLive: (props: { aiSearch: boolean; sponsor?: ReactNode; subtitle?: string }) => (
+    <section data-slot="home-hero" data-layout="conversational">
+      <div data-testid="search" data-mode={props.aiSearch ? "ai" : "keyword"} />
+      <p>home.hero.trust.compare</p>
+      {props.sponsor}
+    </section>
   ),
 }));
 vi.mock("@/features/home", () => ({
@@ -272,6 +286,43 @@ describe("the homepage banner area (S4-T07)", () => {
     // the eyebrow and the trust lines belong to Split only
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
     expect(screen.queryByText("home.hero.trust.compare")).not.toBeInTheDocument();
+  });
+});
+
+describe("the Conversational hero on the live homepage (ADR-177)", () => {
+  it("is shown to everyone when it is chosen: the joined keyword bar, the trust lines and the strip", async () => {
+    state.layout = "conversational";
+    state.eyebrow = "Chennai · Homes, plots & new projects";
+    state.ads = [SAMPLE_AD_A];
+    render(await HomePage());
+    expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute(
+      "data-layout",
+      "conversational",
+    );
+    expect(screen.getAllByTestId("search")).toHaveLength(1);
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "keyword");
+    expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "conversational");
+    expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
+    // the admin's eyebrow belongs to Split; the prompt pill leads here
+    expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("hero-lab")).not.toBeInTheDocument();
+  });
+
+  it("uses the AI search while FLAG_AI_SEARCH is on", async () => {
+    state.layout = "conversational";
+    state.aiSearch = true;
+    render(await HomePage());
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "ai");
+  });
+
+  it("leaves no ad and no gap when no strip ad qualifies, and does not fall back to Search Desk", async () => {
+    state.layout = "conversational";
+    state.ads = [];
+    render(await HomePage());
+    expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
+    const hero = document.querySelector("[data-slot=home-hero]");
+    expect(hero).toHaveAttribute("data-layout", "conversational");
+    expect(hero?.querySelectorAll("aside")).toHaveLength(0);
   });
 });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { ConversationalHero } from "@/components/domain/conversational-hero";
 import { HomeHero } from "@/components/domain/home-hero";
 import { ResultsGrid } from "@/components/domain/results-list";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
@@ -20,10 +21,10 @@ const TRUST = ["Approved listings only", "Enquire directly", "Compare up to 3 ho
 
 /**
  * The real homepage hero (S4-T07) with the banner area: Search Desk with the strip under the card, Split
- * with the panel, and Split without a panel banner, which falls back to Search Desk with no gap.
+ * with the panel, Split without a panel banner, which falls back to Search Desk with no gap, and Conversational
+ * (ADR-177) with the strip under the trust lines and with no strip.
  */
 export function HeroAsBuiltDemo() {
-  const split = resolveHero([SAMPLE_AD_A], "split");
   const fallback = resolveHero([], "split");
   return (
     <div className="flex flex-col gap-14">
@@ -49,7 +50,7 @@ export function HeroAsBuiltDemo() {
           <HomeHero
             titleAs="h2"
             id="lab-hero-split"
-            layout={split.arrangement}
+            layout="split"
             title="Find the place that fits your life in Chennai."
             emphasis="Chennai"
             subtitle="Shortlist, compare and enquire directly."
@@ -62,6 +63,25 @@ export function HeroAsBuiltDemo() {
         </div>
       </Specimen>
       <Specimen
+        label="Conversational: the strip rises in last, under the trust lines (panel banners are not used here)"
+        className="w-full"
+      >
+        <div className={FRAME}>
+          <ConversationalHero
+            titleAs="h2"
+            id="lab-hero-conversational"
+            title="Find the place that fits your life in Chennai."
+            emphasis="Chennai"
+            subtitle="Shortlist, compare and enquire directly."
+            prompt="Ask in your own words"
+            trust={TRUST}
+            sponsor={<SponsorSlot ads={[SAMPLE_AD_A]} placement="hero" layout="conversational" />}
+          >
+            <HomeSearchBarHost appearance="joined" />
+          </ConversationalHero>
+        </div>
+      </Specimen>
+      <Specimen
         label="Split chosen but no panel banner qualifies: the page is Search Desk with nothing in the banner position"
         className="w-full"
       >
@@ -69,7 +89,7 @@ export function HeroAsBuiltDemo() {
           <HomeHero
             titleAs="h2"
             id="lab-hero-fallback"
-            layout={fallback.arrangement}
+            layout={fallback.arrangement === "split" ? "split" : "search_desk"}
             title="Find the place that fits your life."
             subtitle="Shortlist, compare and enquire directly."
           >
