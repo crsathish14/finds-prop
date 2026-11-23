@@ -69,6 +69,12 @@ export const RATE_LIMITS = {
   ],
   /** 10 enquiries per user per day (DEC-26). */
   enquiry: [{ who: "user", windowSeconds: DAY, max: 10 }],
+  /**
+   * 20 enquiry mail notifications per poster per day (ADR-188). The key is the poster's id (the home's owner or the
+   * project's builder), counted by the mail code after an enquiry is stored; past it the mails are skipped and the
+   * enquiry itself is untouched.
+   */
+  enquiry_mail: [{ who: "key", windowSeconds: DAY, max: 20 }],
   /** 10 listings created per user per day (DEC-26). */
   listing_create: [{ who: "user", windowSeconds: DAY, max: 10 }],
   /** 30 upload addresses per user per hour. */

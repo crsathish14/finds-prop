@@ -47,14 +47,16 @@ describe("UT-mail: the mail adapter hook points (S6-T07, DEC-27, R-BE-09)", () =
     expect(MAIL_TIMEOUT_MS).toBe(3000);
   });
 
-  it("names the three events with ids only, and a silent notifier that accepts every one", async () => {
+  it("names the four events with ids only, and a silent notifier that accepts every one", async () => {
     expect([...NOTIFICATION_KINDS]).toEqual([
       "enquiry.received",
+      "project_lead.received",
       "listing.approved",
       "listing.rejected",
     ]);
     const events: NotificationEvent[] = [
-      { kind: "enquiry.received", enquiryId: "e1", listingId: "l1" },
+      { kind: "enquiry.received", enquiryId: "e1" },
+      { kind: "project_lead.received", leadId: "p1" },
       { kind: "listing.approved", listingId: "l1", shortId: "abcd2345" },
       { kind: "listing.rejected", listingId: "l1", shortId: "abcd2345" },
     ];
