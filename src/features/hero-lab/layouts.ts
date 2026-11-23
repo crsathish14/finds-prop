@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 /**
  * The homepage hero layouts the hero lab can show. A "desk" (Search desk), B "split" and C
- * "conversational" are the live ones, chosen by the super admin (ADR-176); D "layered" is an
+ * "conversational" are the live ones, chosen by the super admin (ADR-177); D "layered" is an
  * experiment shown only where the Design Lab is on, never in production.
  */
 export const HERO_LAB_LAYOUTS = ["desk", "split", "conversational", "layered"] as const;

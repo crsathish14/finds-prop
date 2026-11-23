@@ -81,7 +81,7 @@ export function HomeHeroDemo() {
   );
 }
 
-/** The Conversational hero (ADR-176) in its states: with the typed hint, chips, trust lines and a strip; and bare. */
+/** The Conversational hero (ADR-177) in its states: with the typed hint, chips, trust lines and a strip; and bare. */
 export function ConversationalHeroDemo() {
   const requests = [
     "3 BHK under 90 lakh near Adyar",

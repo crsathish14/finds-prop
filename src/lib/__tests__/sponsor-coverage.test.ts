@@ -18,7 +18,7 @@ describe("UT-sponsor-coverage: which sponsors can show in the hero (S7-T11, FR-A
     expect(heroCoverage([SAMPLE_AD_A], "split").format).toBe("panel");
   });
 
-  it("Conversational needs the strip too, and a panel-only sponsor is missing from it (ADR-176)", () => {
+  it("Conversational needs the strip too, and a panel-only sponsor is missing from it (ADR-177)", () => {
     expect(heroCoverage([SAMPLE_AD_A], "conversational").format).toBe("strip");
     const panelOnly: SponsorAd = { ...SAMPLE_AD_A };
     delete panelOnly.strip;

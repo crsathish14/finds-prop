@@ -82,7 +82,7 @@ export default async function HomePage() {
     arrangement.sponsors.length > 0 ? (
       <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
     ) : undefined;
-  // Conversational (ADR-176): the centred joined search bar with sample requests, trust lines and the strip.
+  // Conversational (ADR-177): the centred joined search bar with sample requests, trust lines and the strip.
   const liveHero = conversational ? (
     <ConversationalLive
       title={hero.title}

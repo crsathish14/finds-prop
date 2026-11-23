@@ -52,7 +52,7 @@ type ConversationalLiveProps = {
 };
 
 /**
- * The Conversational hero as the live homepage and the hero lab render it (ADR-176): the shared
+ * The Conversational hero as the live homepage and the hero lab render it (ADR-177): the shared
  * ConversationalHero with the joined search bar (typed sample requests and "Try" chips), the
  * three trust lines, and the loops paused while the tab is hidden. One place, so the lab's C and
  * the live page cannot drift apart.

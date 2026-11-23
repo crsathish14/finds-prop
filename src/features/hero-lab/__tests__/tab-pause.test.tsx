@@ -10,7 +10,7 @@ function setVisibility(state: "visible" | "hidden") {
 
 afterEach(() => setVisibility("visible"));
 
-describe("UT-pause-when-hidden: the hero's loops stop in a background tab (ADR-176)", () => {
+describe("UT-pause-when-hidden: the hero's loops stop in a background tab (ADR-177)", () => {
   it("adds no box of its own and is not paused while the tab is shown", () => {
     render(
       <PauseWhenHidden>

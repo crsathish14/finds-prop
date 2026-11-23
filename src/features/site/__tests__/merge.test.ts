@@ -19,7 +19,7 @@ describe("UT-site-merge: stored site content over the built-in defaults (BR-81)"
     expect(merged.homepage).toEqual(SITE_DEFAULTS.homepage);
   });
 
-  it("accepts the Conversational layout (ADR-176)", () => {
+  it("accepts the Conversational layout (ADR-177)", () => {
     const merged = mergeSiteSettings(
       [{ key: "hero", value: { title: "A title", layout: "conversational" } }],
       log(),

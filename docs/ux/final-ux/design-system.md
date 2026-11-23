@@ -202,7 +202,7 @@ Public header, avatar menu, mobile drawer, bottom bar, breadcrumbs, portal sideb
 
 A neutral frame, the “Sponsored” label, “About this ad”, an optional pager, and the advertiser's image. Strip, panel and in-results formats.
 
-### Homepage hero: Conversational (ADR-176, a deviation from the approved UX)
+### Homepage hero: Conversational (ADR-177, a deviation from the approved UX)
 
 A third hero layout the super admin can choose besides Search Desk and Split: a prompt pill, the headline, a centred joined search bar (one pill, a running teal light on its border, no focus box), typed sample requests and "Try" chips, three trust lines and the sponsored strip last. It uses the strip format like Search Desk. Motion is transform and opacity only, static under reduced motion, paused in a hidden tab. Component: `components/domain/conversational-hero.tsx`.
 

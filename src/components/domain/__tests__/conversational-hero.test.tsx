@@ -16,7 +16,7 @@ const hero = (over: Partial<React.ComponentProps<typeof ConversationalHero>> = {
   </ConversationalHero>
 );
 
-describe("UT-conversational-hero: the Conversational homepage hero (ADR-176)", () => {
+describe("UT-conversational-hero: the Conversational homepage hero (ADR-177)", () => {
   it("is a region named by its headline, marked as the conversational layout", () => {
     renderWithMessages(hero());
     const section = screen.getByRole("region", { name: "Find the place that fits your life." });

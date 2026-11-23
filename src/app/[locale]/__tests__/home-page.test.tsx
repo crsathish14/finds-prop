@@ -289,7 +289,7 @@ describe("the homepage banner area (S4-T07)", () => {
   });
 });
 
-describe("the Conversational hero on the live homepage (ADR-176)", () => {
+describe("the Conversational hero on the live homepage (ADR-177)", () => {
   it("is shown to everyone when it is chosen: the joined keyword bar, the trust lines and the strip", async () => {
     state.layout = "conversational";
     state.eyebrow = "Chennai · Homes, plots & new projects";

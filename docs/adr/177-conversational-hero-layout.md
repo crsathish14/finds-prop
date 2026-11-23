@@ -1,4 +1,4 @@
-# ADR-176 · Conversational homepage hero as a third admin layout
+# ADR-177 · Conversational homepage hero as a third admin layout
 
 - Status: Accepted (the owner approved the plan on 23 Nov 2026 with the proposed defaults). The admin label and hint for the new choice, "Ask in your own words", the sample requests and "Try" are the owner's approved wording for production.
 - Date: 2026-11-23

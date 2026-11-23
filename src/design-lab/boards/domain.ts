@@ -166,7 +166,7 @@ export const DOMAIN: LabEntry[] = [
     id: "conversational-hero",
     name: "Conversational hero",
     description:
-      "The Conversational homepage hero the super admin can choose (ADR-176): a prompt pill, the headline, a centred joined search bar with a running teal light, typed sample requests and suggestion chips, three trust lines and the sponsored strip rising in last. With everything, and bare.",
+      "The Conversational homepage hero the super admin can choose (ADR-177): a prompt pill, the headline, a centred joined search bar with a running teal light, typed sample requests and suggestion chips, three trust lines and the sponsored strip rising in last. With everything, and bare.",
     sources: ["domain/conversational-hero.tsx"],
     Demo: ConversationalHeroDemo,
   },

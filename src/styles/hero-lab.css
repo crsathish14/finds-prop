@@ -1,4 +1,4 @@
-/* Hero lab: the motion of the Conversational homepage hero (C, live since ADR-176, in
+/* Hero lab: the motion of the Conversational homepage hero (C, live since ADR-177, in
    src/components/domain/conversational-hero.tsx) and of the experimental Layered hero (D, in
    src/features/hero-lab, shown only where the Design Lab is on and never in production). The Search
    Desk and Split heroes use none of this.

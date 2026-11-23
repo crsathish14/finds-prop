@@ -66,7 +66,7 @@ describe("UT-sample-requests: the typed hint of the Conversational hero", () => 
   });
 });
 
-describe("UT-conversational-live: the hero as the live page and the hero lab render it (ADR-176)", () => {
+describe("UT-conversational-live: the hero as the live page and the hero lab render it (ADR-177)", () => {
   it("renders the shared hero with the joined keyword bar, three chips and the trust lines while AI search is off", async () => {
     render(
       await ConversationalLive({

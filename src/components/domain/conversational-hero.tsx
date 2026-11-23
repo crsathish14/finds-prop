@@ -1,5 +1,5 @@
 /**
- * ConversationalHero: the "Conversational" homepage hero (ADR-176): the search bar is the hero.
+ * ConversationalHero: the "Conversational" homepage hero (ADR-177): the search bar is the hero.
  * Purpose: a short prompt and a modest headline lead the eye to a wide, centred search bar; the three promises sit
  *   quietly under it, and the sponsored strip rises in last. Owner: design system. It holds no state and fetches
  *   nothing: the page passes the words (already translated) and the search bar as `children`.
@@ -16,7 +16,7 @@
  * States: with and without the line under the headline, the copper word, the trust lines and the strip.
  * Dependencies: Container, Heading (TitleWithEmphasis), Icon, cn.
  * Tests: conversational-hero.test.tsx; Design Lab "Domain" (Conversational hero).
- * UX reference: none; the owner's hero lab of 23 Nov 2026 (layout C), a deviation from the approved UX (ADR-176).
+ * UX reference: none; the owner's hero lab of 23 Nov 2026 (layout C), a deviation from the approved UX (ADR-177).
  */
 import { Columns2, MessageCircle, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";

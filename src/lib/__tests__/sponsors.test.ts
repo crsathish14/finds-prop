@@ -23,7 +23,7 @@ describe("UT-sponsors: which format a page needs", () => {
     expect(formatFor("results", "search_desk")).toBe("strip");
   });
 
-  it("uses the strip for the Conversational hero, like Search Desk (ADR-176)", () => {
+  it("uses the strip for the Conversational hero, like Search Desk (ADR-177)", () => {
     expect(formatFor("hero", "conversational")).toBe("strip");
     expect(formatFor("results", "conversational")).toBe("strip");
   });
@@ -143,7 +143,7 @@ describe("UT-sponsors: the hero falls back to Search Desk without a banner", () 
     expect(resolveHero([], "split").arrangement).toBe("search_desk");
   });
 
-  it("keeps Conversational with its strip ad, and never falls back to Search Desk (ADR-176)", () => {
+  it("keeps Conversational with its strip ad, and never falls back to Search Desk (ADR-177)", () => {
     const hero = resolveHero([SAMPLE_AD_A], "conversational");
     expect(hero.arrangement).toBe("conversational");
     expect(hero.format).toBe("strip");

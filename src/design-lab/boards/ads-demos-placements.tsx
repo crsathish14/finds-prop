@@ -22,7 +22,7 @@ const TRUST = ["Approved listings only", "Enquire directly", "Compare up to 3 ho
 /**
  * The real homepage hero (S4-T07) with the banner area: Search Desk with the strip under the card, Split
  * with the panel, Split without a panel banner, which falls back to Search Desk with no gap, and Conversational
- * (ADR-176) with the strip under the trust lines and with no strip.
+ * (ADR-177) with the strip under the trust lines and with no strip.
  */
 export function HeroAsBuiltDemo() {
   const fallback = resolveHero([], "split");
