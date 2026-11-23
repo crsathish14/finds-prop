@@ -7,12 +7,19 @@ import {
   createDraftConfig,
   deleteDraftConfig,
   deleteListingConfig,
+  saveContactEmailConfig,
   saveDraftConfig,
   saveListingChangesConfig,
   setListingLocationConfig,
   submitListingConfig,
 } from "./action-config";
-import { discardDraft, keepDraft, sendForReview, startDraft } from "./listing-service";
+import {
+  discardDraft,
+  keepDraft,
+  saveOwnContactEmail,
+  sendForReview,
+  startDraft,
+} from "./listing-service";
 import { setOwnLocation } from "./location-service";
 import { createListingLocationStore } from "./location-store";
 import { closeOwnListing, deleteOwnListing, saveOwnChanges } from "./my-listings-service";
@@ -121,6 +128,20 @@ export const setListingLocation = defineAction({
       status: done.status,
       wentBackToReview: done.wentBackToReview,
     });
+    return done;
+  },
+});
+
+/**
+ * Sets the email enquiries about the caller's homes are mailed to (ADR-186). The account is the session. The address
+ * is private and unconfirmed: the answer holds it for the screen, and no log line does.
+ */
+export const saveContactEmail = defineAction({
+  ...saveContactEmailConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveOwnContactEmail(await createListingCallerStore(), input);
+    log.info("contact email saved");
     return done;
   },
 });

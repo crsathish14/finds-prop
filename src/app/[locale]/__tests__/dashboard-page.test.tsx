@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const visitor = vi.hoisted(() => ({
@@ -7,6 +7,9 @@ const visitor = vi.hoisted(() => ({
   email: { kind: "none" } as { kind: string; email?: string },
   signedIn: true,
   received: { total: 4, fresh: 1 },
+  homes: 5,
+  contact: null as string | null,
+  contactReads: 0,
 }));
 
 vi.mock("@/features/site", () => ({
@@ -28,7 +31,12 @@ vi.mock("@/features/listings", () => ({
   MyListingsTab: (props: { fallback: React.ReactNode }) => (
     <div data-testid="my-listings-tab">{props.fallback}</div>
   ),
-  countMyListings: async () => 5,
+  countMyListings: async () => visitor.homes,
+  getMyContactEmail: async () => {
+    visitor.contactReads += 1;
+    return visitor.contact;
+  },
+  saveContactEmail: vi.fn(),
 }));
 vi.mock("@/server/auth/get-session-view", () => ({
   getSessionView: async () => (visitor.signedIn ? { userId: "user-1" } : null),
@@ -75,6 +83,9 @@ vi.mock("@/features/account", async () => {
         {props.children}
       </div>
     ),
+    ContactEmail: (props: { email: string | null }) => (
+      <p data-testid="contact-email">{props.email ?? "none"}</p>
+    ),
     EmailPrompt: (props: { state: { kind: string } }) => (
       <p data-testid="prompt">{props.state.kind}</p>
     ),
@@ -95,6 +106,9 @@ beforeEach(() => {
   visitor.email = { kind: "none" };
   visitor.signedIn = true;
   visitor.received = { total: 4, fresh: 1 };
+  visitor.homes = 5;
+  visitor.contact = null;
+  visitor.contactReads = 0;
 });
 
 describe("the dashboard page (S5-T04)", () => {
@@ -205,6 +219,30 @@ describe("the My listings and Enquiries received tabs (S6-T03)", () => {
   it("gives each tab its empty state as the fallback", async () => {
     await open({ tab: "listings" });
     expect(screen.getByTestId("empty")).toHaveTextContent("listings /properties /post-property");
+  });
+});
+
+describe("the email for enquiries (ADR-186)", () => {
+  it("offers it to an owner who has homes and none saved, and shows the saved one with Change", async () => {
+    await open();
+    expect(screen.getByTestId("contact-email")).toHaveTextContent("none");
+    cleanup();
+    visitor.contact = "owner@example.test";
+    await open();
+    expect(screen.getByTestId("contact-email")).toHaveTextContent("owner@example.test");
+  });
+
+  it("does not ask someone with no homes, and does not even read the address for them", async () => {
+    visitor.homes = 0;
+    await open();
+    expect(screen.queryByTestId("contact-email")).toBeNull();
+    expect(visitor.contactReads).toBe(0);
+  });
+
+  it("sits beside the sign-in email prompt, not instead of it", async () => {
+    await open();
+    expect(screen.getByTestId("prompt")).toBeInTheDocument();
+    expect(screen.getByTestId("contact-email")).toBeInTheDocument();
   });
 });
 

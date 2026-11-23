@@ -9,6 +9,7 @@ import {
   WizardFooterDemo,
   WizardShellDemo,
 } from "./seller-demos";
+import { ContactEmailCardDemo } from "./seller-contact-email-demos";
 import { ListingEditDemo } from "./seller-edit-demos";
 import { LocationFieldDemo } from "./seller-location-demos";
 
@@ -101,5 +102,13 @@ export const SELLER: LabEntry[] = [
       "Where the property is, in the post form, with no map (ADR-131): the address box with place suggestions, the line about Ola Maps and the Privacy Policy, the area chooser, the Location found card (exact and approximate) with Change, suggestions unavailable, the error when Continue is pressed with no location, and the note on My listings for listings that have none.",
     sources: ["domain/location-field.tsx", "domain/location-prompt.tsx"],
     Demo: LocationFieldDemo,
+  },
+  {
+    id: "contact-email-card",
+    name: "Contact email card",
+    description:
+      "The dashboard card where an owner adds or changes the email enquiries about their homes are mailed to (ADR-186): the prompt for an owner with homes and no address, a problem with the address, saving, a failed save, the saved address with Change (and a very long one), and changing it with Cancel. Try the first one. The wording is for approval.",
+    sources: ["domain/contact-email-card.tsx"],
+    Demo: ContactEmailCardDemo,
   },
 ];

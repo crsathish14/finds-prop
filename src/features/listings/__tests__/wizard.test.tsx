@@ -62,6 +62,7 @@ function open(fake: Actions, props: Partial<React.ComponentProps<typeof PostingW
       uploader={UploaderStub as never}
       doneHref="/dashboard?tab=listings"
       locationField={LocationFieldStub}
+      contactEmail="owner@example.test"
       {...props}
     />,
   );
@@ -253,6 +254,7 @@ describe("PostingWizard: the five steps, connected (S6-T02, FR-ACC-06)", () => {
         locationKind: "",
         locationLabel: "",
         locationDetail: "",
+        contactEmail: "",
       },
       // The draft already holds a place (only that is known), so Continue is not held back for one.
       locationHeld: true,

@@ -24,7 +24,7 @@ import {
 } from "./actions";
 import { YourDrafts, type DraftRowView } from "./drafts.client";
 import { PostingGate } from "./posting-gate.client";
-import { isSignedIn, listMyDrafts } from "./queries";
+import { getMyContactEmail, isSignedIn, listMyDrafts } from "./queries";
 import type { DraftView } from "./view";
 import { PostingWizard, type WizardActions, type WizardEdit } from "./wizard.client";
 import { valuesFromDraft } from "./wizard-state";
@@ -86,7 +86,11 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
     );
   }
 
-  const [translate, settings] = await Promise.all([getTranslate(), getSiteSettings()]);
+  const [translate, settings, contactEmail] = await Promise.all([
+    getTranslate(),
+    getSiteSettings(),
+    getMyContactEmail(),
+  ]);
   // The site's curated localities are how an owner places a listing when suggestions cannot be fetched (ADR-141).
   const areas = settings.homepage.localities.map(({ label, lat, lng }) => ({ label, lat, lng }));
   const drafts: DraftRowView[] = draft
@@ -121,6 +125,7 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
         uploader={PhotoUploaderConnected}
         locationField={ListingLocationField}
         areas={areas}
+        {...(contactEmail ? { contactEmail } : {})}
         doneHref={MY_LISTINGS_HREF}
         {...(editing ? { edit: editing } : {})}
       />

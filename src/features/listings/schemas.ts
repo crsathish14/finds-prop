@@ -6,6 +6,7 @@ import {
   BATHROOMS_MAX,
   BHK_MAX,
   CITY_MAX,
+  CONTACT_EMAIL_MAX,
   DESCRIPTION_MAX,
   FURNISHINGS,
   LISTING_TYPES,
@@ -50,6 +51,25 @@ const wrongKind = (missing: string) => (issue: { code: string; input?: unknown }
       ? missing
       : "validation.invalid"
     : undefined;
+
+/**
+ * The address enquiries about a home are mailed to (ADR-186). It is kept on the account, not in the listing, so it is
+ * not one of the draft's fields: a draft saves without it and sending the listing needs it. It is trimmed and
+ * lower-cased, then checked for the shape the database check also holds (something, an @, something, a dot,
+ * something, no spaces). The address is not confirmed to be the person's own: nothing is sent to it to check.
+ */
+const EMAIL_SHAPE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const contactEmail = z.preprocess(
+  (typed) => (typeof typed === "string" ? typed.trim().toLowerCase() : typed),
+  z
+    .string({ error: wrongKind("validation.contactEmailRequired") })
+    .min(1, { error: "validation.contactEmailRequired" })
+    .max(CONTACT_EMAIL_MAX, { error: "validation.emailInvalid" })
+    // An empty box is already told it is required; the shape is only checked for what was typed.
+    .refine((address) => address === "" || EMAIL_SHAPE.test(address), {
+      error: "validation.emailInvalid",
+    }),
+);
 
 const listingType = z.enum(LISTING_TYPES, { error: "validation.required" });
 const propertyType = z.enum(PROPERTY_TYPES, { error: "validation.required" });
@@ -209,12 +229,24 @@ export type SaveDraftInput = z.infer<typeof saveDraftSchema>;
 export const deleteDraftSchema = z.object({ listingId: uuid });
 export type DeleteDraftInput = z.infer<typeof deleteDraftSchema>;
 
-/** Submit for review. The key stops a double click from running twice. */
+/**
+ * Submit for review. The key stops a double click from running twice. The email for enquiries comes with it when the
+ * person typed or changed one in the wizard (it is saved to their account first); without it the account must
+ * already hold one, or the listing is refused with a problem on that field (ADR-186).
+ */
 export const submitListingSchema = z.object({
   listingId: uuid,
   idempotencyKey: z.uuid({ error: "validation.invalid" }),
+  contactEmail: contactEmail.optional(),
 });
 export type SubmitListingInput = z.infer<typeof submitListingSchema>;
+
+/** Set the account's email for enquiries from the dashboard (ADR-186). */
+export const saveContactEmailSchema = z.object({ email: contactEmail });
+export type SaveContactEmailInput = z.infer<typeof saveContactEmailSchema>;
+
+/** The email box of the wizard, checked on its own before Submit (the same rule the server applies). */
+export const contactEmailSchema = z.object({ contactEmail });
 
 /**
  * Mark a Live listing as sold or rented (S6-T03, FR-ACC-10). The outcome has to fit the listing (sold for a sale

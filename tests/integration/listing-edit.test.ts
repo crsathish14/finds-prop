@@ -2,7 +2,12 @@ import { randomInt, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { SaveListingChangesInput } from "@/features/listings";
 import { adminClient, visitorClient, type TestClient } from "./support/clients";
-import { removeTestUser, signInTestCustomer, type TestUser } from "./support/users";
+import {
+  giveContactEmail,
+  removeTestUser,
+  signInTestCustomer,
+  type TestUser,
+} from "./support/users";
 
 // Outside a request there is no cookie or header store; the stores below take their clients directly.
 vi.mock("next/headers", () => ({
@@ -106,6 +111,8 @@ describe("IT-listing-edit: saving changes to a listing against a real database (
 
   beforeAll(async () => {
     owner = await signInTestCustomer();
+    // Sending a rejected listing again needs the email for enquiries (ADR-186).
+    await giveContactEmail(owner.userId);
     const email = `it-listing-edit-other-${RUN}@example.test`;
     const created = await admin.auth.admin.createUser({ email, email_confirm: true });
     if (created.error || !created.data.user) throw new Error("Could not create the other owner");

@@ -1,3 +1,4 @@
+export { ContactEmail } from "./contact-email.client";
 export { DashboardScreen } from "./dashboard-screen";
 export { DashboardSkeleton } from "./dashboard-skeleton";
 export { EmailPrompt } from "./email-prompt.client";

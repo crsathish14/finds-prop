@@ -48,6 +48,7 @@ const VALUES: WizardValues = {
   locationKind: "",
   locationLabel: "",
   locationDetail: "",
+  contactEmail: "",
 };
 
 const PHOTO = [{ id: "p1", name: "Photo 1", previewUrl: "http://example.test/a.jpg" }];
@@ -82,6 +83,7 @@ function open(
       uploader={UploaderStub as never}
       doneHref="/dashboard?tab=listings"
       edit={edit}
+      contactEmail="owner@example.test"
       locationField={LocationFieldStub}
       locationHeld
       {...props}
@@ -312,6 +314,30 @@ describe("PostingWizard editing a listing that was not approved (S6-T05, FR-ACC-
       expect(toast.success).toHaveBeenCalledWith(en.postProperty.notices.submitted),
     );
     expect(router.push).toHaveBeenCalledWith("/dashboard?tab=listings");
+  });
+
+  it("asks for the email for enquiries when sending it again, and sends it with the submit (ADR-186)", async () => {
+    const fake = actions();
+    open(fake, rejected, { contactEmail: "" });
+    await toReview();
+    await heading(words.reviewResubmit);
+    press(words.resubmit);
+    expect(await screen.findByText(en.validation.contactEmailRequired)).toBeVisible();
+    expect(fake.saveChanges).not.toHaveBeenCalled();
+    expect(fake.submit).not.toHaveBeenCalled();
+    type(/^Email for enquiries/, "owner@example.test");
+    press(words.resubmit);
+    await waitFor(() => expect(fake.submit).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(fake.submit).mock.calls[0]?.[0]).toMatchObject({
+      contactEmail: "owner@example.test",
+    });
+  });
+
+  it("does not ask for it when a listing in review or Live is only edited (ADR-186)", async () => {
+    open(actions(), { state: "approved", reason: null }, { contactEmail: "" });
+    await toReview();
+    await heading(words.reviewSave);
+    expect(screen.queryByLabelText(/^Email for enquiries/)).toBeNull();
   });
 
   it("does not resubmit when the changes could not be saved", async () => {

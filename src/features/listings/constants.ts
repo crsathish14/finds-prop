@@ -56,3 +56,6 @@ export const OPEN_LISTING_LIMIT = 5;
 
 /** The most drafts the "Your drafts" list reads. */
 export const DRAFTS_LIMIT = 10;
+
+/** The longest email address there is (RFC 5321); the database check on `profiles.contact_email` says the same. */
+export const CONTACT_EMAIL_MAX = 254;

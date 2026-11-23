@@ -50,6 +50,7 @@ import {
   pointOf,
   stepOfField,
   stepsWithErrors,
+  validateContactEmail,
   validateStep,
   type StepErrors,
   type WizardStep,
@@ -69,6 +70,8 @@ export type WizardActions = {
   submit: (input: {
     listingId: string;
     idempotencyKey: string;
+    /** The email enquiries are mailed to, saved to the account with the submit (ADR-186). */
+    contactEmail?: string;
   }) => Promise<ActionResult<{ listingId: string; shortId: string }>>;
   /** Saves the changes to a listing that is already sent (S6-T05); only used when the wizard edits one. */
   saveChanges: (input: { listingId: string; fields: Record<string, unknown> }) => Promise<
@@ -123,6 +126,11 @@ export type PostingWizardProps = {
    * is private and never sent to the browser (ADR-141).
    */
   locationHeld?: boolean;
+  /**
+   * The email the account already holds for enquiries (ADR-186), to start the box on the last step with. Empty or
+   * missing when there is none. It is private: only the signed-in person's own is ever given.
+   */
+  contactEmail?: string;
 };
 
 const FORM_NAME = "post-property";
@@ -134,8 +142,9 @@ function fieldOfServerPath(path: string): string {
   return path.startsWith("fields.") ? path.slice("fields.".length) : path;
 }
 
+/** What is kept in the browser for the way back in: everything but the account's private email. */
 function toDraftValues(values: WizardValues): DraftValues {
-  return { ...values };
+  return Object.fromEntries(Object.entries(values).filter(([field]) => field !== "contactEmail"));
 }
 
 /** The answers kept before signing in again, laid over the defaults; anything that is not a known box is ignored. */
@@ -172,13 +181,16 @@ export function PostingWizard(props: PostingWizardProps) {
   const restored = useRestoredDraft(FORM_NAME);
   const words = useTranslations("postProperty");
   useRestoredNotice(FORM_NAME, restored, words("notices.restored"));
-  const start = mergeRestored(props.values ?? EMPTY_VALUES, restored);
+  // The account's own address always comes from the page, never from what was kept in the browser.
+  const merged = mergeRestored(props.values ?? EMPTY_VALUES, restored);
+  const start: WizardValues = { ...merged, contactEmail: props.contactEmail ?? "" };
   return (
     <WizardBody
       key={restored ? "restored" : "fresh"}
       {...props}
       values={start}
       baseline={props.values ?? EMPTY_VALUES}
+      startsFromDefaults={merged === EMPTY_VALUES}
     />
   );
 }
@@ -195,7 +207,13 @@ function WizardBody({
   locationField,
   areas = [],
   locationHeld = false,
-}: PostingWizardProps & { values: WizardValues; baseline: WizardValues }) {
+  startsFromDefaults,
+}: PostingWizardProps & {
+  values: WizardValues;
+  baseline: WizardValues;
+  /** Nothing opened or kept before signing in: the boxes hold the starting values. */
+  startsFromDefaults: boolean;
+}) {
   const words = useTranslations("postProperty");
   const translate = useTranslations() as unknown as Translator;
   const router = useRouter();
@@ -225,7 +243,7 @@ function WizardBody({
   const written = useRef<string | null>(null);
   // The City box starts as "Chennai"; until somebody types in it (or a draft or the kept answers fill it), a place
   // may replace that starting value.
-  const cityTouched = useRef(initialValues !== EMPTY_VALUES);
+  const cityTouched = useRef(!startsFromDefaults);
   const [createKey] = useState(() => crypto.randomUUID());
   const [submitKey] = useState(() => crypto.randomUUID());
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -476,10 +494,18 @@ function WizardBody({
   function submit() {
     clearNotices();
     if (!listingId) return;
+    // The email for enquiries is on this step: a missing or mistyped one is shown next to the box.
+    const missing = validateContactEmail(values);
+    if (Object.keys(missing).length > 0) return refuse(missing);
+    setErrors({});
     setBusyAction("submit");
     startTransition(async () => {
       try {
-        const result = await actions.submit({ listingId, idempotencyKey: submitKey });
+        const result = await actions.submit({
+          listingId,
+          idempotencyKey: submitKey,
+          contactEmail: values.contactEmail,
+        });
         if (result.ok) {
           dropDraft(FORM_NAME, window.location.pathname);
           notify.success(words("notices.submitted"));
@@ -512,6 +538,8 @@ function WizardBody({
       ...validateStep(1, values),
       ...validateStep(2, values),
       ...validateStep(4, values),
+      // A listing sent again needs the email too (ADR-186); one that is only edited does not ask.
+      ...(edit.state === "rejected" ? validateContactEmail(values) : {}),
     };
     if (Object.keys(found).length > 0) {
       const first = stepsWithErrors(found)[0] ?? step;
@@ -554,7 +582,11 @@ function WizardBody({
         if (!place.saved) return;
         const wentBackToReview = saved.data.wentBackToReview || place.wentBackToReview;
         if (edit.state === "rejected") {
-          const sent = await actions.submit({ listingId, idempotencyKey: submitKey });
+          const sent = await actions.submit({
+            listingId,
+            idempotencyKey: submitKey,
+            contactEmail: values.contactEmail,
+          });
           if (!sent.ok) {
             showFailure(sent);
             return;
@@ -654,6 +686,16 @@ function WizardBody({
         values={values}
         photoCount={photoStatus.count}
         headingRef={headingRef}
+        {...(!edit || edit.state === "rejected"
+          ? {
+              email: {
+                value: values.contactEmail,
+                error: errors["contactEmail"],
+                disabled: working,
+                onChange: (value: string) => change("contactEmail", value),
+              },
+            }
+          : {})}
         {...(edit
           ? {
               copy: {

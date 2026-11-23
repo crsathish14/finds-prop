@@ -54,5 +54,23 @@ export function listingCallerStore(supabase: SupabaseClient<Database>): ListingC
       if (error || typeof data !== "string") throw mapListingError(error ?? {});
       return data;
     },
+    async contactEmail() {
+      // Only the caller's own row, whoever the caller is: the admin could read every row, so the id is asked for.
+      const { data: claims } = await supabase.auth.getClaims();
+      const userId = claims?.claims.sub;
+      if (typeof userId !== "string") throw mapListingError({ code: "42501" });
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("contact_email")
+        .eq("id", userId)
+        .maybeSingle();
+      if (error) throw mapListingError(error);
+      return data?.contact_email ?? null;
+    },
+    async setContactEmail(email) {
+      const { data, error } = await supabase.rpc("set_contact_email", { p_email: email });
+      if (error) throw mapListingError(error);
+      return typeof data === "string" ? data : null;
+    },
   };
 }
