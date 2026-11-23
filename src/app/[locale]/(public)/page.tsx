@@ -13,7 +13,7 @@ import {
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { HomeAiSearch } from "@/features/ai-chat";
-import { HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
+import { ConversationalLive, HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
 import { SEARCH_PATH } from "@/features/search";
 import { pageMetadata } from "@/features/seo";
 import { resolveHero } from "@/lib/sponsors";
@@ -61,6 +61,7 @@ export default async function HomePage() {
   const ads = await getSponsorAds();
   const arrangement = resolveHero(ads, settings.hero.layout);
   const split = arrangement.arrangement === "split";
+  const conversational = arrangement.arrangement === "conversational";
   const eyebrow = settings.hero.eyebrow?.trim();
   const flags = getFeatureFlags();
   const { homepage, region } = settings;
@@ -77,12 +78,26 @@ export default async function HomePage() {
     cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,
   };
 
-  const liveHero = (
+  const stripSponsor =
+    arrangement.sponsors.length > 0 ? (
+      <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
+    ) : undefined;
+  // Conversational (ADR-176): the centred joined search bar with sample requests, trust lines and the strip.
+  const liveHero = conversational ? (
+    <ConversationalLive
+      title={hero.title}
+      emphasis={hero.emphasis}
+      subtitle={hero.subtitle}
+      aiSearch={flags.aiSearch}
+      localities={homepage.localities}
+      sponsor={stripSponsor}
+    />
+  ) : (
     <HomeHero
       title={hero.title}
       emphasis={hero.emphasis}
       subtitle={hero.subtitle}
-      layout={arrangement.arrangement}
+      layout={split ? "split" : "search_desk"}
       eyebrow={split && eyebrow ? eyebrow : undefined}
       trust={
         split
@@ -93,11 +108,7 @@ export default async function HomePage() {
             ]
           : undefined
       }
-      sponsor={
-        arrangement.sponsors.length > 0 ? (
-          <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
-        ) : undefined
-      }
+      sponsor={stripSponsor}
     >
       {/* One search bar (ADR-150): the AI search while it is on, a keyword search of the results otherwise. */}
       {flags.aiSearch ? <HomeAiSearch /> : <HomeSearchBar mode="keyword" action={SEARCH_PATH} />}
@@ -105,13 +116,13 @@ export default async function HomePage() {
   );
   const order = resolveHomeOrder(homepage.order);
 
-  // The hero lab (preview only, never in production): the live hero plus experimental layouts C
-  // and D, compared with a floating switch or ?layout=a|b|c|d. The live hero is shown until one is picked.
+  // The hero lab (preview only, never in production): the live hero plus the other layouts and the
+  // experimental D, compared with a floating switch or ?layout=a|b|c|d. The live hero is shown until one is picked.
   if (designLabEnabled) {
     return (
       <main id="main" className="flex-1">
         <HeroLabPreview
-          live={split ? "split" : "desk"}
+          live={split ? "split" : conversational ? "conversational" : "desk"}
           liveHero={liveHero}
           title={hero.title}
           emphasis={hero.emphasis}

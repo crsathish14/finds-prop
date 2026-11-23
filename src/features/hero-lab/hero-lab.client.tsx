@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { useTabHidden } from "./tab-pause.client";
 import {
   HERO_LAB_LAYOUTS,
   HERO_LAB_PARAM,
@@ -39,20 +40,6 @@ function chooseLayout(layout: HeroLabLayout) {
   address.searchParams.set(HERO_LAB_PARAM, heroLabLetter(layout));
   window.history.replaceState(window.history.state, "", address);
   window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-function subscribeToVisibility(onChange: () => void) {
-  document.addEventListener("visibilitychange", onChange);
-  return () => document.removeEventListener("visibilitychange", onChange);
-}
-
-/** True while the tab is in the background: the heroes' loops pause ([data-hl-paused]). */
-function useTabHidden(): boolean {
-  return useSyncExternalStore(
-    subscribeToVisibility,
-    () => document.visibilityState === "hidden",
-    () => false,
-  );
 }
 
 type HeroLabProps = {

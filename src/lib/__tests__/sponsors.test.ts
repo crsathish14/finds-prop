@@ -11,7 +11,7 @@ import {
 
 const ids = (
   ads: SponsorAd[],
-  layout: "search_desk" | "split",
+  layout: "search_desk" | "split" | "conversational",
   placement: "hero" | "results" = "hero",
 ) => selectSponsors({ ads, placement, layout }).sponsors.map((sponsor) => sponsor.id);
 
@@ -21,6 +21,11 @@ describe("UT-sponsors: which format a page needs", () => {
     expect(formatFor("hero", "split")).toBe("panel");
     expect(formatFor("results", "split")).toBe("strip");
     expect(formatFor("results", "search_desk")).toBe("strip");
+  });
+
+  it("uses the strip for the Conversational hero, like Search Desk (ADR-176)", () => {
+    expect(formatFor("hero", "conversational")).toBe("strip");
+    expect(formatFor("results", "conversational")).toBe("strip");
   });
 });
 
@@ -136,6 +141,22 @@ describe("UT-sponsors: the hero falls back to Search Desk without a banner", () 
       sponsors: [],
     });
     expect(resolveHero([], "split").arrangement).toBe("search_desk");
+  });
+
+  it("keeps Conversational with its strip ad, and never falls back to Search Desk (ADR-176)", () => {
+    const hero = resolveHero([SAMPLE_AD_A], "conversational");
+    expect(hero.arrangement).toBe("conversational");
+    expect(hero.format).toBe("strip");
+    expect(hero.sponsors).toHaveLength(1);
+    const empty = resolveHero([], "conversational");
+    expect(empty).toEqual({ arrangement: "conversational", format: "strip", sponsors: [] });
+  });
+
+  it("shows no ad in Conversational when only panel ads exist, and leaves no gap", () => {
+    const panelOnly: SponsorAd = { ...SAMPLE_AD_A };
+    delete panelOnly.strip;
+    expect(ids([panelOnly], "conversational")).toEqual([]);
+    expect(resolveHero([panelOnly], "conversational").sponsors).toEqual([]);
   });
 
   it("keeps Search Desk and shows nothing when no strip ad qualifies", () => {

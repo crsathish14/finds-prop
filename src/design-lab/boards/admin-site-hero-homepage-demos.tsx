@@ -41,11 +41,15 @@ export const HERO_WORDS: SiteHeroFieldsWords = {
   layout: {
     title: "Layout",
     description:
-      "Both layouts use the same text, search and header. If no sponsor is booked, the page shows Search Desk without a banner.",
+      "All layouts use the same text, search and header. If no sponsor is booked, the page shows Search Desk without a banner.",
     searchDesk: { label: "Search Desk", hint: "Centred search with a banner strip underneath." },
     split: {
       label: "Split",
       hint: "Search on the left and a larger sponsored image on the right.",
+    },
+    conversational: {
+      label: "Conversational",
+      hint: "A centred search bar with sample requests and quick suggestions. The sponsored banner shows as a strip under it.",
     },
   },
   eyebrow: "Eyebrow",

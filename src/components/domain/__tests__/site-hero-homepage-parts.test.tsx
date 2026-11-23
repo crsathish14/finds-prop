@@ -26,6 +26,7 @@ const HERO_WORDS: SiteHeroFieldsWords = {
     description: "Both layouts use the same text.",
     searchDesk: { label: "Search Desk", hint: "Centred search." },
     split: { label: "Split", hint: "Search on the left." },
+    conversational: { label: "Conversational", hint: "Centred bar with suggestions." },
   },
   eyebrow: "Eyebrow",
   eyebrowHint: "A small line above the headline.",
@@ -97,11 +98,19 @@ describe("UT-site-hero-fields: the Hero page's boxes (S7-T10)", () => {
     expect(onChange).toHaveBeenLastCalledWith({ ...HERO, title: "Find the place!" });
   });
 
-  it("offers the two layouts as one radio group, with the current one chosen", () => {
+  it("offers the three layouts as one radio group, with the current one chosen", () => {
     setup();
     const group = screen.getByRole("group", { name: "Layout" });
+    expect(within(group).getAllByRole("radio")).toHaveLength(3);
     expect(within(group).getByRole("radio", { name: /Search Desk/ })).toBeChecked();
     expect(within(group).getByRole("radio", { name: /Split/ })).not.toBeChecked();
+    expect(within(group).getByRole("radio", { name: /Conversational/ })).not.toBeChecked();
+  });
+
+  it("passes up the Conversational layout when it is chosen", async () => {
+    const onChange = setup();
+    await userEvent.click(screen.getByRole("radio", { name: /Conversational/ }));
+    expect(onChange).toHaveBeenCalledWith({ ...HERO, layout: "conversational" });
   });
 
   it("passes up the chosen layout", async () => {

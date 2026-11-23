@@ -297,7 +297,7 @@ export interface StandardHero {
   subtitle: string;
 }
 
-export type HeroLayoutValue = "search_desk" | "split";
+export type HeroLayoutValue = "search_desk" | "split" | "conversational";
 
 export interface HeroFormValues {
   eyebrow: string;

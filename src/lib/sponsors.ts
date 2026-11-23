@@ -19,7 +19,7 @@ export const RESULTS_SPONSOR_AFTER = 6;
 
 export type SponsorFormat = "strip" | "panel";
 export type SponsorPlacement = "hero" | "results";
-export type HeroLayout = "search_desk" | "split";
+export type HeroLayout = "search_desk" | "split" | "conversational";
 
 export type SponsorImage = {
   src: string;
@@ -70,7 +70,7 @@ export function fitFor(image: SponsorImage, slotRatio: number): SponsorFit {
   return "rejected";
 }
 
-/** The format a placement needs. Results lists always use the strip; the hero follows its layout. */
+/** The format a placement needs. Results lists always use the strip; the hero follows its layout (only Split uses the panel; Conversational uses the strip like Search Desk). */
 export function formatFor(placement: SponsorPlacement, layout: HeroLayout): SponsorFormat {
   if (placement === "results") return "strip";
   return layout === "split" ? "panel" : "strip";
