@@ -153,6 +153,18 @@ export function buildAdminNav(
           label: translate("admin.nav.disclaimers"),
           icon: "footer",
         },
+        {
+          key: "privacy",
+          href: "/admin/privacy",
+          label: translate("admin.nav.privacy"),
+          icon: "footer",
+        },
+        {
+          key: "terms",
+          href: "/admin/terms",
+          label: translate("admin.nav.terms"),
+          icon: "footer",
+        },
       ],
     },
   ];

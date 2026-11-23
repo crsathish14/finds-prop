@@ -8,6 +8,7 @@ import {
   type LegalDocumentValues,
   type LegalDocumentWords,
 } from "@/components/domain/legal-document-fields";
+import { LegalSaveBar } from "@/components/domain/legal-save-bar";
 import { Specimen } from "../frame";
 
 /**
@@ -126,9 +127,53 @@ function Editor({
   );
 }
 
+const SAVE_NOTE =
+  "Save draft keeps your changes private. Publish makes this text live and raises the version.";
+const SAVE_WORDS = {
+  discard: "Discard",
+  saveDraft: "Save draft",
+  publish: "Publish",
+  saving: "Saving",
+};
+
 export function LegalDocumentFieldsDemo() {
   return (
     <div className="flex flex-col gap-10">
+      <Specimen label="The save bar: Discard, Save draft and Publish (a phone puts the note above the buttons)">
+        <div className="w-full max-w-4xl">
+          <LegalSaveBar
+            note={SAVE_NOTE}
+            words={SAVE_WORDS}
+            sticky={false}
+            onDiscard={() => undefined}
+            onPublish={() => undefined}
+          />
+        </div>
+      </Specimen>
+      <Specimen label="The save bar while a draft is being saved: Publish is off">
+        <div className="w-full max-w-4xl">
+          <LegalSaveBar
+            note={SAVE_NOTE}
+            words={SAVE_WORDS}
+            saving="draft"
+            sticky={false}
+            onDiscard={() => undefined}
+            onPublish={() => undefined}
+          />
+        </div>
+      </Specimen>
+      <Specimen label="The save bar while publishing: Save draft is off">
+        <div className="w-full max-w-4xl">
+          <LegalSaveBar
+            note={SAVE_NOTE}
+            words={SAVE_WORDS}
+            saving="publish"
+            sticky={false}
+            onDiscard={() => undefined}
+            onPublish={() => undefined}
+          />
+        </div>
+      </Specimen>
       <Specimen label="A page filled: a paragraph, a list and a table (type in a box, add and move things)">
         <Editor initial={FILLED} />
       </Specimen>

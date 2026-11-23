@@ -1,6 +1,6 @@
 # ADR-151 · The Privacy Policy and Terms of Use are edited by the admin
 
-- Status: Accepted for part A (server). Parts B (Lab parts), C (the admin screen) and D (public pages read the saved text) follow in their own pull requests. Plan approved by the owner on 22 Nov 2026 ("approve the plan").
+- Status: Accepted for parts A (server), B (Lab parts) and C (the admin screens). Part D (public pages read the saved text) follows in its own pull request. Plan approved by the owner on 22 Nov 2026 ("approve the plan").
 - Date: 2026-11-22
 - Related: ADR-053 (legal page shells, text in typed files), ADR-089 and ADR-090 (site content settings), DEC-25 (the owner writes the final text), FR-SYS-09, FR-ADM-10
 - Class: C2 (legal text, a new saved shape)
@@ -31,3 +31,16 @@
 - The save bar for this page needs two buttons (Save draft and Publish); it comes with part C.
 
 Words to confirm (part B): Summary; Sections; Heading; Add section; Remove section; Paragraph; List ("One item on each line."); Table; Add paragraph, Add list, Add table; Table caption; Column; Cell; Add row, Remove row; Add column, Remove column; "No sections yet. Add one to start the page."; "The page is full."; "This section is full."
+
+## Part C: the admin screens
+
+- **Two pages, two tabs.** `/admin/privacy` and `/admin/terms` are two more tabs of Site content, with a sidebar entry each ("Privacy Policy", "Terms of Use"), in the same frame as Header, Hero, Homepage, Footer and Disclaimers. The pages open on what `getLegalEditPage` reads as the signed-in admin and never cache: the working copy, else the live text, else the text in code. The form is keyed on what was read, so it always opens on what is really saved.
+- **Where the code lives.** The form and its pure logic (`legal-form.client.tsx`, `legal-form.ts`) sit in the `site-content` feature, because they share its tabs and save flow, and a feature may import another only through its `index.ts` (which pulls server code into a client file). They therefore keep their own copies of the few legal limits, and a test keeps those equal to the legal feature's.
+- **Two buttons.** `LegalSaveBar` has **Discard**, **Save draft** and **Publish**. Save draft is the form's submit button, so pressing Enter in a box saves a draft and can never publish. Publish is its own button. While either is working, the other is off and the working one says "Saving": a repeated Publish would raise the version twice. The note beside them says what each does.
+- **The anchors are made at save time** from the headings by `anchorOf` (lower case words joined by hyphens, accents dropped, starting with a letter, never the same as another section's, at most 60 characters). A heading with no Latin letters becomes `section-<place>`.
+- **A list is one box with one item a line**; blank lines are dropped on save.
+- **Problems are put on the boxes** they belong to: the server names a section and a block by their place in the list (`sections.1.blocks.0.items`), and the page turns the place into the editor's own ids when the answer arrives. A problem with no box of its own (no sections, a section with no blocks) shows above the sections.
+- **What the page says about itself:** a note above the boxes says whether visitors see the placeholder text, the live version and its date, or that a saved draft is waiting to be published.
+- **The preview** beside the boxes is the summary and the headings in order, not the real page: the real reading layout is part D's.
+
+Words to confirm (part C): Privacy Policy; Terms of Use; the two page descriptions; "Visitors see the placeholder text with a draft notice. Publish to replace it."; "Live now: version {version}, last updated {updated}."; "You have saved changes that visitors cannot see yet. Publish to make them live."; "Save draft keeps your changes private. Publish makes this text live and raises the version."; Discard; Save draft; Publish; Saving; "Draft saved" / "Visitors still read the live version."; "Published" / "The new text is live on the public site."; the preview's "No summary yet.", "No sections yet." and "Section without a heading". (The editor's own box words are listed under part B.)

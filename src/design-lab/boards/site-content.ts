@@ -71,8 +71,12 @@ export const SITE_CONTENT: LabEntry[] = [
     id: "legal-document-fields",
     name: "Legal document fields",
     description:
-      "The boxes of the admin's legal editor for the Privacy Policy and the Terms of Use (ADR-151): the summary, and the sections in order, each with a heading and its paragraphs, lists (one item a line) and tables (a caption, column headings and rows of cells, with Add and Remove for rows and columns). Sections move by dragging or with the arrows; blocks move with the arrows; Add section is off at the limit and a section says when it is full. Shown filled, with no sections, with problems on the summary, a heading, a paragraph and a table, at the limits and off while saving. The anchor of a section is made from its heading by the page and is never typed. Every word is unapproved.",
-    sources: ["domain/legal-document-fields.tsx", "domain/legal-table-editor.tsx"],
+      "The boxes of the admin's legal editor for the Privacy Policy and the Terms of Use (ADR-151): the summary, and the sections in order, each with a heading and its paragraphs, lists (one item a line) and tables (a caption, column headings and rows of cells, with Add and Remove for rows and columns). Sections move by dragging or with the arrows; blocks move with the arrows; Add section is off at the limit and a section says when it is full. Shown filled, with no sections, with problems on the summary, a heading, a paragraph and a table, at the limits and off while saving. The anchor of a section is made from its heading by the page and is never typed. Under the boxes, the editor's save bar has Discard, Save draft (the form's submit, so Enter saves a draft and never publishes) and Publish; while one is working the other is off, so a repeated Publish cannot raise the version twice. Every word is unapproved.",
+    sources: [
+      "domain/legal-document-fields.tsx",
+      "domain/legal-table-editor.tsx",
+      "domain/legal-save-bar.tsx",
+    ],
     Demo: LegalDocumentFieldsDemo,
   },
   {
