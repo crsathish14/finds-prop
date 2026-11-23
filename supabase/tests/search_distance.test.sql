@@ -87,15 +87,15 @@ select ok(
   'search_properties still has no owner, address, exact location, description, pincode, status or vector column'
 );
 select ok(
-  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
-  'visitors may run the search (same 17 arguments as before)'
+  not has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
+  'visitors who are not signed in may not run the search (login wall; 17 arguments and the new city one)'
 );
 select ok(
-  has_function_privilege('authenticated', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
+  has_function_privilege('authenticated', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
   'signed-in people may run the search'
 );
 select ok(
-  has_function_privilege('service_role', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
+  has_function_privilege('service_role', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
   'the service role may run the search'
 );
 select ok(
@@ -109,7 +109,7 @@ select ok(
 );
 
 -- A visitor: the four older sorts return what they returned before
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 
 select is(
   (select array_agg(right(id::text, 2)::int) from public.search_properties(p_sort => 'newest', p_limit => 120)),
@@ -159,7 +159,7 @@ reset role;
 select pg_temp.add_listing(13, lng => null, lat => null, listing_title => 'Listing without a map point');
 select pg_temp.add_listing(14, place => 'Red Hills', lng => 80.2710, lat => 13.1830, listing_title => 'North house');
 
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 
 -- The distance sort (approved listings with a location within 50 km: 1, 3, 6, 11 and 12 at distance 0)
 select is(
@@ -301,7 +301,7 @@ reset role;
 -- is the picked point itself (0.0 km).
 select pg_temp.add_listing(15, lng => 80.2714, lat => 13.0834, listing_title => 'Almost on the point');
 
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 
 select is(
   (select distance_km
@@ -319,7 +319,7 @@ update public.properties
 set location = extensions.st_setsrid(extensions.st_makepoint(76.9558, 11.0168), 4326)::extensions.geography
 where id = '00000000-0000-4000-9000-000000000015';
 
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 
 select is(
   (select count(*)::int

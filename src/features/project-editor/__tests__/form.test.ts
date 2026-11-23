@@ -37,6 +37,7 @@ const project: ProjectEditView = {
   offerType: null,
   plotStatus: null,
   villaType: null,
+  extraFields: {},
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",
@@ -46,6 +47,7 @@ const project: ProjectEditView = {
   landAreaAcres: 4.2,
   possessionDate: "2028-12-01",
   contactPhone: null,
+  city: "Chennai",
   locality: "OMR Navalur",
   address: null,
   latitude: 12.8451,
@@ -177,7 +179,13 @@ describe("UT-section-states: what the section list shows (S7-T02)", () => {
     const result = states({
       needsBuilder: true,
       hasMedia: true,
-      values: { name: "Kadal Vista", builderId: "b", locality: "Navalur", slug: "kadal-vista" },
+      values: {
+        name: "Kadal Vista",
+        builderId: "b",
+        city: "Chennai",
+        locality: "Navalur",
+        slug: "kadal-vista",
+      },
     });
     expect(result.basics).toBe("done");
     expect(result.location).toBe("done");
@@ -387,6 +395,7 @@ const complete = (overrides: Partial<ProjectFieldValues> = {}): ProjectFieldValu
   projectStatus: "ready_to_move",
   price: "78,00,000",
   priceType: "basic",
+  city: "Chennai",
   locality: "Navalur",
   reraNotApplicableReason: "Below the size that needs registration.",
   ...overrides,
@@ -544,6 +553,7 @@ describe("UT-project-form-problems: what is missing before a save is sent (ADR-1
       price: "price",
       priceType: "priceType",
       reraNotApplicableReason: "reraReason",
+      city: "city",
       locality: "locality",
     });
   });

@@ -178,15 +178,20 @@ export async function getJobFilters(): Promise<JobFilters> {
   return toJobFilters(data, await getPublicCategories("department"));
 }
 
-/** The addresses of the open jobs, for the sitemap. Public data under the Careers tag. */
-export async function getJobSitemapEntries(): Promise<{ slug: string; updatedAt: string }[]> {
+/**
+ * The addresses of the open jobs, with their closing dates, for the sitemap. Public data under the Careers tag. The list
+ * is kept for hours, so a job that closed since is left out by the caller with `isJobOpenAt`.
+ */
+export async function getJobSitemapEntries(): Promise<
+  { slug: string; updatedAt: string; closesAt: string | null }[]
+> {
   "use cache";
   cacheTag(CACHE_TAGS.careers);
   cacheLife("hours");
 
   const { data, error } = await createPublicSupabase()
     .from("job_postings")
-    .select("slug, updated_at")
+    .select("slug, updated_at, closes_at")
     .eq("status", "open")
     .order("posted_at", { ascending: false })
     .limit(5000);
@@ -194,7 +199,11 @@ export async function getJobSitemapEntries(): Promise<{ slug: string; updatedAt:
     logger.error("the job sitemap entries could not be read", { errorCode: error.code });
     return [];
   }
-  return data.map((row) => ({ slug: row.slug, updatedAt: row.updated_at }));
+  return data.map((row) => ({
+    slug: row.slug,
+    updatedAt: row.updated_at,
+    closesAt: row.closes_at,
+  }));
 }
 
 /** What the admin's list is asked: a status (or Trash), a department, free words and a page number (from 1). */

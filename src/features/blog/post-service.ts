@@ -8,11 +8,14 @@ import {
   type BlogStatus,
 } from "./constants";
 import { imagePathsOf } from "./body-text";
-import type {
-  BlogPostIdInput,
-  CreateBlogPostInput,
-  SetBlogCoverInput,
-  UpdateBlogPostInput,
+import { convertMarkdown } from "./markdown/convert";
+import {
+  updateBlogPostSchema,
+  type BlogPostIdInput,
+  type CreateBlogPostFromMarkdownInput,
+  type CreateBlogPostInput,
+  type SetBlogCoverInput,
+  type UpdateBlogPostInput,
 } from "./schemas";
 import { slugFromTitle, slugWithSuffix, slugWithTail } from "./slug";
 import { parseBody } from "./view";
@@ -181,6 +184,52 @@ export async function createPost(
     }
   }
   throw lastFailure;
+}
+
+/**
+ * Makes a draft from pasted Markdown (ADR-172): the text is converted here, again (the browser's preview is only a
+ * preview), refused when the converter reports an error, and the blocks are checked by the same schema as any save before
+ * anything is made. The draft is made and saved with the same two steps the editor uses, so it has the same rules: the
+ * address, the author, the category, and the body's limits. The text itself is never stored.
+ */
+export async function createPostFromMarkdown(
+  store: BlogStore,
+  input: CreateBlogPostFromMarkdownInput,
+  log?: Logger,
+): Promise<PostDone> {
+  const converted = convertMarkdown(input.markdown);
+  const refused = () =>
+    new ActionError("VALIDATION", "The pasted text could not be turned into an article", {
+      fieldErrors: { markdown: [{ key: "validation.blogMarkdownRefused" }] },
+    });
+  if (converted.errors.length > 0) throw refused();
+  // The body is checked before anything is made, so a refused text leaves no empty draft behind.
+  const checked = updateBlogPostSchema.safeParse({
+    postId: "00000000-0000-4000-8000-000000000000",
+    title: input.title,
+    slug: input.slug ?? (slugFromTitle(input.title) || "article"),
+    excerpt: input.excerpt,
+    body: converted.blocks,
+    categoryId: input.categoryId,
+    tags: [],
+    authorName: input.authorName,
+    seoTitle: null,
+    seoDescription: null,
+  });
+  if (!checked.success) throw refused();
+
+  const made = await createPost(store, {
+    title: input.title,
+    authorName: input.authorName,
+    ...(input.slug === undefined ? {} : { slug: input.slug }),
+    categoryId: input.categoryId,
+  });
+  const saved = await savePost(
+    store,
+    { ...checked.data, postId: made.postId, slug: made.slug },
+    log,
+  );
+  return { ...saved, slugs: [...new Set([...made.slugs, ...saved.slugs])] };
 }
 
 type ImageProblem = { key: string; values?: Record<string, number> };

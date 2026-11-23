@@ -5,6 +5,7 @@ import { ActionError } from "@/server/actions/normalise-error";
 import {
   archiveBlogPostConfig,
   createBlogPostConfig,
+  createBlogPostFromMarkdownConfig,
   publishBlogPostConfig,
   restoreBlogPostConfig,
   setBlogCoverConfig,
@@ -15,6 +16,7 @@ import {
 import {
   archivePost,
   createPost,
+  createPostFromMarkdown,
   publishPost,
   restorePost,
   saveCover,
@@ -36,6 +38,17 @@ export const createBlogPost = defineAction({
     assertSession(session);
     const done = await createPost(await createBlogStore(), input);
     log.info("blog post created", { postId: done.postId });
+    return done;
+  },
+});
+
+/** Makes a draft from pasted Markdown, converted on the server (ADR-172). Answers its id, address and status. */
+export const createBlogPostFromMarkdown = defineAction({
+  ...createBlogPostFromMarkdownConfig,
+  handler: async ({ input, session, log }) => {
+    assertSession(session);
+    const done = await createPostFromMarkdown(await createBlogStore(), input, log);
+    log.info("blog post created from markdown", { postId: done.postId });
     return done;
   },
 });

@@ -32,11 +32,15 @@ vi.mock("@/features/content-categories", () => ({
 vi.mock("@/features/blog", () => ({
   BlogAdminBoard: () => null,
   BlogEditor: () => null,
+  BlogMarkdownScreen: () => null,
+  ADMIN_BLOG_NEW_PATH: "/admin/blog/new",
+  ADMIN_BLOG_PATH: "/admin/blog",
   getAdminBlogList: mocks.list,
   getAdminBlogCounts: mocks.counts,
   getBlogCategoryUsage: mocks.usage,
   getAdminBlogPost: mocks.one,
   createBlogPost: "create post",
+  createBlogPostFromMarkdown: "create from markdown",
   updateBlogPost: "update post",
   setBlogCover: "set cover",
   publishBlogPost: "publish post",
@@ -135,10 +139,10 @@ describe("the admin Blog list page (ADR-143)", () => {
   });
 });
 
-describe("the admin new article page (ADR-143)", () => {
+describe("the admin new article page: the block editor (ADR-143, ADR-172)", () => {
   it("offers the Blog's categories, marking a hidden one, and starts in the category the list was narrowed to", async () => {
     const element = (await NewPage({
-      searchParams: Promise.resolve({ category: "c2" }),
+      searchParams: Promise.resolve({ method: "blocks", category: "c2" }),
     })) as unknown as Child;
     expect(mocks.categories).toHaveBeenCalledWith("blog");
     expect(element.props["post"]).toBeNull();
@@ -156,9 +160,56 @@ describe("the admin new article page (ADR-143)", () => {
 
   it("ignores a category that is not one of the Blog's", async () => {
     const element = (await NewPage({
-      searchParams: Promise.resolve({ category: "elsewhere" }),
+      searchParams: Promise.resolve({ method: "blocks", category: "elsewhere" }),
     })) as unknown as Child;
     expect(element.props).not.toHaveProperty("initialCategory");
+  });
+});
+
+describe("the admin new article page: choosing how to start (ADR-172)", () => {
+  type Tree = { type: unknown; props: Record<string, unknown> };
+  const chooserOf = (element: Tree): Tree => {
+    const children = element.props["children"] as Tree[];
+    return children[children.length - 1] as Tree;
+  };
+
+  it("asks first when no way is chosen, and the cards go to the two ways", async () => {
+    const element = (await NewPage({ searchParams: Promise.resolve({}) })) as unknown as Tree;
+    expect(element.type).toBe("div");
+    const chooser = chooserOf(element);
+    expect(chooser.props["blocksHref"]).toBe("/admin/blog/new?method=blocks");
+    expect(chooser.props["markdownHref"]).toBe("/admin/blog/new?method=markdown");
+  });
+
+  it("keeps the category the list was narrowed to in both cards, and drops one that is not the Blog's", async () => {
+    const narrowed = chooserOf(
+      (await NewPage({ searchParams: Promise.resolve({ category: "c1" }) })) as unknown as Tree,
+    );
+    expect(narrowed.props["blocksHref"]).toBe("/admin/blog/new?method=blocks&category=c1");
+    expect(narrowed.props["markdownHref"]).toBe("/admin/blog/new?method=markdown&category=c1");
+    const other = chooserOf(
+      (await NewPage({ searchParams: Promise.resolve({ category: "x" }) })) as unknown as Tree,
+    );
+    expect(other.props["blocksHref"]).toBe("/admin/blog/new?method=blocks");
+  });
+
+  it("asks again for a way it does not know", async () => {
+    const element = (await NewPage({
+      searchParams: Promise.resolve({ method: "html" }),
+    })) as unknown as Tree;
+    expect(element.type).toBe("div");
+  });
+
+  it("opens the paste flow with the categories and the Markdown action only", async () => {
+    const element = (await NewPage({
+      searchParams: Promise.resolve({ method: "markdown", category: "c2" }),
+    })) as unknown as Tree;
+    expect(element.props["categories"]).toEqual([
+      { id: "c1", name: "Guides" },
+      { id: "c2", name: "admin.blog.category.hidden" },
+    ]);
+    expect(element.props["initialCategory"]).toBe("c2");
+    expect(element.props["actions"]).toEqual({ create: "create from markdown" });
   });
 });
 

@@ -6,6 +6,8 @@ import {
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  projectFieldsInputSchema,
+  topDevelopersInputSchema,
 } from "./schemas";
 import { sponsorsInputSchema } from "./sponsor-schemas";
 
@@ -80,6 +82,27 @@ export const saveContentModulesConfig = {
 export const saveDisclaimersConfig = {
   name: "saveDisclaimers",
   input: disclaimersInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The extra boxes of the builder's project form (ADR-168): one row of `site_settings`, so the same limits and the same
+ * cache tag apply. The database audits the change (who and when, never the content).
+ */
+export const saveProjectFieldsConfig = {
+  name: "saveProjectFields",
+  input: projectFieldsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/** The developers the home page shows under "Top developers", in order (at most 10). Same limits and cache tag as the other settings. */
+export const saveTopDevelopersConfig = {
+  name: "saveTopDevelopers",
+  input: topDevelopersInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

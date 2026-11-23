@@ -152,10 +152,10 @@ select is(
   8, 'eight homepage localities'
 );
 
--- What a visitor sees (RLS on the seeded rows)
-set local role anon;
-select is((select count(*) from public.properties)::int, 42, 'a visitor sees the 42 approved listings');
-select is((select count(*) from public.projects)::int, 9, 'a visitor sees the 9 live projects');
+-- What a signed-in person sees (RLS on the seeded rows; the tables are closed to visitors who are not signed in)
+set local role authenticated;
+select is((select count(*) from public.properties)::int, 42, 'a signed-in person sees the 42 approved listings');
+select is((select count(*) from public.projects)::int, 9, 'a signed-in person sees the 9 live projects');
 reset role;
 
 -- Taking the seed out again (supabase/seed-remove.sql): the same statements, run against the seed and the

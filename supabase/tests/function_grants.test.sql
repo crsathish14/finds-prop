@@ -22,25 +22,31 @@ $$;
 
 select is(
   pg_temp.who_runs('anon'),
-  'blog_body_text, listing_is_public, listing_label, project_is_live, public_project_form, search_blog_posts, '
-  || 'search_faqs, search_job_postings, search_properties',
+  'blog_body_text, city_key, home_developers, home_properties, listed_cities, listing_is_public, listing_label, project_is_live, '
+  || 'public_project, public_project_form, public_property, search_blog_posts, '
+  || 'search_faqs, search_job_postings, sitemap_entries',
   'visitors can run only the public read helpers and the searches'
 );
 
 select is(
   pg_temp.who_runs('authenticated'),
-  'admin_builder_overview, admin_builders, admin_crm_integrations, admin_forms, admin_listing_counts, '
+  'admin_builder_overview, admin_builders, admin_crm_integrations, admin_feedback_counts, '
+  || 'admin_feedback_list, admin_forms, admin_listing_counts, '
   || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
   || 'admin_projects, '
-  || 'admin_properties, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
-  || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, close_listing, current_builder_id, '
+  || 'admin_properties, admin_set_feedback_reviewed, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
+  || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, city_key, close_listing, current_builder_id, '
   || 'has_role, '
-  || 'has_verified_phone, is_reserved_admin_email, is_super_admin, listing_is_editable, listing_is_public, '
-  || 'listing_label, moderate_listing, moderate_project, my_builder, my_projects, my_properties, owns_property, '
-  || 'project_is_live, project_is_mine, public_project_form, reorder_faqs, save_crm_integration, '
+  || 'has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, listed_cities, '
+  || 'listing_is_editable, listing_is_public, '
+  || 'listing_label, live_builder_projects, live_locality_names, live_project_list, moderate_listing, moderate_project, my_builder, my_projects, my_properties, '
+  || 'owns_property, '
+  || 'project_is_live, project_is_mine, public_project, public_project_form, public_property, reorder_faqs, '
+  || 'save_crm_integration, '
   || 'save_project_price_trends, search_blog_posts, search_faqs, search_job_postings, search_properties, '
-  || 'set_listing_location, '
-  || 'storage_listing_path_ok, storage_project_path_ok, submit_listing',
+  || 'set_listing_location, sitemap_entries, '
+  || 'storage_listing_path_ok, storage_project_path_ok, submit_builder_feedback, '
+  || 'submit_listing',
   'signed-in people can run the visitors'' list and the helpers and portal functions that check the caller themselves'
 );
 

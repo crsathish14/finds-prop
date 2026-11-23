@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { BlogBlockEditorDemo, BlogPostFormDemo, BlogPostRowsDemo } from "./admin-blog-demos";
+import { BlogMarkdownFlowDemo, BlogMethodChooserDemo } from "./blog-markdown-demos";
 import { BlogArticleCardDemo, BlogArticlePartsDemo, BlogListControlsDemo } from "./blog-demos";
 
 /**
@@ -42,9 +43,10 @@ export const BLOG: LabEntry[] = [
     id: "blog-block-editor",
     name: "Blog block editor",
     description:
-      "The editor of an article's body (ADR-143, ADR-144): a card for each block with its kind, Move up, Move down and Delete, and the fields of the kind (a heading's size and text, a paragraph, a list's style and one item a line, a quote and who said it, a picture with a preview, Choose or Replace picture, a required description and an optional caption); and Add buttons for each kind with the count of blocks used. Shown with every kind (try it), empty, with problems on two blocks and a picture not chosen, full (the Add buttons are off and say why) and while saving.",
+      "The editor of an article's body (ADR-143, ADR-144): a card for each block with its kind, Move up, Move down and Delete, and the fields of the kind (a heading's size and text, a paragraph, a list's style and one item a line, a quote and who said it, a picture with a preview, Choose or Replace picture, a required description and an optional caption); and Add buttons for each kind with the count of blocks used. An 'Add link' control under a paragraph, a list and a quote opens a small form (the words, the address) with its errors (ADR-169), and a heading says the article title is the page heading. Shown with every kind (try it), empty, with problems on two blocks and a picture not chosen, full (the Add buttons are off and say why) and while saving.",
     sources: [
       "domain/blog-block-editor.tsx",
+      "domain/blog-link-text-field.tsx",
       "patterns/form-field.tsx",
       "ui/segmented-control.tsx",
     ],
@@ -57,6 +59,28 @@ export const BLOG: LabEntry[] = [
       "The admin's list of articles (ADR-143 section 5): tabs by status with counts, a search box and a category filter (a form, so a filtered list has its own address) and a row for each article with its status as a word, its address, category, author and last change, and the buttons that fit: Edit, Publish or Unpublish, Archive and Move to Trash, or Restore in Trash. Shown with a try-it list (each button works for a moment), the Trash tab with a very long title, a search with no match, no articles yet and a failed action.",
     sources: ["domain/blog-post-rows.tsx", "ui/select.tsx", "patterns/empty-state.tsx"],
     Demo: BlogPostRowsDemo,
+  },
+  {
+    id: "blog-method-chooser",
+    name: "Blog: choose how to start",
+    description:
+      "The first step of a new article (ADR-172): two cards, 'Block editor' (the form with blocks, ADR-144) and 'Paste Markdown', each with a short line about what it does and its own link. Both ways stay while the owner tries them and one will be removed. Shown with the two cards.",
+    sources: ["domain/blog-markdown-flow-chooser.tsx"],
+    Demo: BlogMethodChooserDemo,
+  },
+  {
+    id: "blog-markdown-flow",
+    name: "Blog: paste Markdown",
+    description:
+      "The Markdown way to a new article (ADR-172): a big paste box with the supported syntax listed, the title, address, summary, author and category (the first three are filled from the text until the admin types their own), a live preview drawn by the same renderer readers see, a list of every change the conversion made (each names its line) and the problems that stop a draft, and Create draft. The pasted text is not stored. Shown empty, with a pasted article, with a heading over 160 characters, with a refused address and while saving.",
+    sources: [
+      "domain/blog-markdown-flow.tsx",
+      "patterns/alert.tsx",
+      "patterns/form-field.tsx",
+      "ui/select.tsx",
+      "ui/textarea.tsx",
+    ],
+    Demo: BlogMarkdownFlowDemo,
   },
   {
     id: "blog-post-form",

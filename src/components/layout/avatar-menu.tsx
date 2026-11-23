@@ -37,13 +37,16 @@ import type { MenuGroup } from "./nav-types";
 
 type AvatarMenuProps = {
   triggerLabel: string;
-  name: string;
+  /** Left out for a visitor who is not signed in: the menu then has no name block and shows a person icon. */
+  name?: string;
   email?: string;
   initials: string;
   roleLabel?: string;
   roleTone?: "default" | "admin";
   imageSrc?: string;
   groups: MenuGroup[];
+  /** Extra classes for the button, e.g. to show it on phones only. */
+  triggerClassName?: string;
 };
 
 function AvatarMenu({
@@ -55,6 +58,7 @@ function AvatarMenu({
   roleTone = "default",
   imageSrc,
   groups,
+  triggerClassName,
 }: AvatarMenuProps) {
   return (
     <DropdownMenu>
@@ -64,6 +68,7 @@ function AvatarMenu({
           "inline-flex items-center gap-2 rounded-pill transition-colors duration-(--dur-fast)",
           "md:border-[length:var(--bw-field)] md:border-line-strong md:bg-surface md:py-1 md:pr-3 md:pl-1",
           "hover:border-primary aria-expanded:border-primary",
+          triggerClassName,
         )}
       >
         <Avatar className="size-10 md:size-9.5">
@@ -84,32 +89,42 @@ function AvatarMenu({
         <Icon icon={ChevronDown} className="hidden text-muted md:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <div className="flex items-center gap-3 px-3 pt-3 pb-3">
-          <Avatar className="size-12">
-            {imageSrc ? <AvatarImage src={imageSrc} alt="" /> : null}
-            <AvatarFallback className="bg-primary text-on-primary">
-              {initials || <Icon icon={User} />}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-title-sm text-ink">{name}</p>
-            {email ? <p className="text-caption break-all text-muted">{email}</p> : null}
-            {roleLabel ? (
-              <span
-                className={cn(
-                  "mt-1 inline-flex rounded-pill px-2 py-1 text-overline",
-                  roleTone === "admin" ? "bg-ink text-on-primary" : "bg-primary-tint text-primary",
-                )}
-              >
-                {roleLabel}
-              </span>
-            ) : null}
+        {name ? (
+          <div className="flex items-center gap-3 px-3 pt-3 pb-3">
+            <Avatar className="size-12">
+              {imageSrc ? <AvatarImage src={imageSrc} alt="" /> : null}
+              <AvatarFallback className="bg-primary text-on-primary">
+                {initials || <Icon icon={User} />}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-title-sm text-ink">{name}</p>
+              {email ? <p className="text-caption break-all text-muted">{email}</p> : null}
+              {roleLabel ? (
+                <span
+                  className={cn(
+                    "mt-1 inline-flex rounded-pill px-2 py-1 text-overline",
+                    roleTone === "admin"
+                      ? "bg-ink text-on-primary"
+                      : "bg-primary-tint text-primary",
+                  )}
+                >
+                  {roleLabel}
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
+        ) : null}
         {groups.map((group, groupIndex) => (
           <Fragment key={groupIndex}>
-            <DropdownMenuSeparator />
-            {group.label ? <DropdownMenuLabel>{group.label}</DropdownMenuLabel> : null}
+            {name || groupIndex > 0 ? (
+              <DropdownMenuSeparator className={group.phoneOnly ? "md:hidden" : undefined} />
+            ) : null}
+            {group.label ? (
+              <DropdownMenuLabel className={group.phoneOnly ? "md:hidden" : undefined}>
+                {group.label}
+              </DropdownMenuLabel>
+            ) : null}
             {group.items.map((entry) => (
               <DropdownMenuItem
                 key={entry.label}
@@ -119,7 +134,7 @@ function AvatarMenu({
                 destructive={entry.destructive}
                 onSelect={entry.onSelect}
                 asChild={Boolean(entry.href)}
-                className={entry.current ? "bg-primary-tint" : undefined}
+                className={cn(entry.current && "bg-primary-tint", group.phoneOnly && "md:hidden")}
               >
                 {entry.href ? (
                   <Link

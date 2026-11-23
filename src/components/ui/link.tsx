@@ -4,9 +4,9 @@
  *   rule are the same everywhere. Owner: design system. (When a second language is added, switch
  *   internal links to the language-aware Link from next-intl; see the add-a-language playbook.)
  * Props: variant ("default" underlined | "arrow" with a moving arrow | "nav" | "on-dark"), current
- *   (marks the page the reader is on), external (opens in a new tab with rel="noopener"; then
- *   newTabLabel is required, already-translated, e.g. "(opens in a new tab)"), sponsored (adds
- *   rel="sponsored noopener"; https links only, anything else renders as plain text).
+ *   (marks the page the reader is on), external (opens in a new tab with XX is required, already-translated, e.g. "(opens in a new tab)"), sponsored (adds
+ *   rel="sponsored noopener"; https links only, anything else renders as plain text), ugc (for a link someone typed into
+ *   an article: an external link then gets rel="noopener noreferrer nofollow ugc").
  * Responsive: the arrow variant keeps a 44 px target.
  * Accessibility: visible focus ring; aria-current="page" on the current link; the new-tab notice
  *   is read by screen readers.
@@ -41,6 +41,7 @@ type LinkProps = Omit<ComponentProps<"a">, "ref" | "href" | "target" | "rel"> &
     href: string;
     current?: boolean | undefined;
     sponsored?: boolean | undefined;
+    ugc?: boolean | undefined;
   } & ({ external?: false; newTabLabel?: never } | { external: true; newTabLabel: string });
 
 function Link({
@@ -50,6 +51,7 @@ function Link({
   external,
   newTabLabel,
   sponsored = false,
+  ugc = false,
   className,
   children,
   ...props
@@ -76,7 +78,9 @@ function Link({
       <a
         href={href}
         target="_blank"
-        rel={sponsored ? "sponsored noopener" : "noopener"}
+        rel={
+          sponsored ? "sponsored noopener" : ugc ? "noopener noreferrer nofollow ugc" : "noopener"
+        }
         aria-current={current ? "page" : undefined}
         className={classes}
         {...props}

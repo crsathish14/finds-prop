@@ -4,6 +4,7 @@ import { buildHeader } from "./chrome";
 import { getFeatureFlags } from "./flags";
 import { HeaderAccountActions, HeaderAccountDrawer } from "./header-account";
 import { HeaderFrame } from "./header-frame.client";
+import { HeaderCity } from "./header-city";
 import { HeaderView } from "./header-view";
 import { getSiteSettings } from "./queries";
 import { getTranslate } from "./translator";
@@ -31,9 +32,14 @@ export async function PublicHeader() {
       nav: translate("site.header.navLabel"),
       home: translate("site.header.homeLabel", { brandName: header.brandName }),
     },
+    citySlot: (
+      <Suspense fallback={<Skeleton className="h-(--size-icon-btn) w-24" />}>
+        <HeaderCity />
+      </Suspense>
+    ),
     accountSlot: (
       <Suspense fallback={<Skeleton shape="circle" className="size-10" />}>
-        <HeaderAccountActions />
+        <HeaderAccountActions links={header.links} cta={header.cta} />
       </Suspense>
     ),
     menuSlot: (

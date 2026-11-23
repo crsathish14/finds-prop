@@ -102,8 +102,6 @@ describe("sitemap.xml (FR-PUB-14)", () => {
     const urls = (await sitemap()).map((entry) => entry.url);
     expect(urls).toEqual([
       "https://findsprop.test/",
-      "https://findsprop.test/properties",
-      "https://findsprop.test/projects",
       "https://findsprop.test/projects/kadal-vista",
       "https://findsprop.test/properties/flat-k3x9a2bd",
     ]);

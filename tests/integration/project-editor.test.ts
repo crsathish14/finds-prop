@@ -30,6 +30,7 @@ const slug = (name: string) => `it-editor-${RUN}-${name}`;
 
 /** What every save needs (ADR-148): a residential apartment, ready to move, with a price and no RERA (so its reason). */
 const COMPLETE = {
+  city: "Chennai",
   projectType: "residential",
   propertyType: "apartment",
   projectStatus: "ready_to_move",

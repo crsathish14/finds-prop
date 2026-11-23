@@ -1,6 +1,6 @@
 import type { Json } from "@/types/database.types";
 import type { BlogStatus } from "./constants";
-import { bodySchema, type Block } from "./schemas";
+import { storedBodySchema, type Block } from "./schemas";
 
 /**
  * The shapes the Blog's pages and admin draw, and the functions that turn rows into them (R-BE-06: a read names its
@@ -136,7 +136,7 @@ function statusOf(value: string): BlogStatus {
  * not (a row edited outside the app) reads as an empty body instead of breaking the page.
  */
 export function parseBody(stored: Json): Block[] {
-  const parsed = bodySchema.safeParse(stored);
+  const parsed = storedBodySchema.safeParse(stored);
   return parsed.success ? parsed.data : [];
 }
 

@@ -26,6 +26,13 @@ vi.mock("@/components/layout/sponsor-slot", () => ({ SponsorSlot: () => null }))
 vi.mock("@/features/compare", () => ({ CompareCardToggle: () => null }));
 vi.mock("@/features/home", () => ({ toPropertyCard: () => ({}) }));
 
+const wall = vi.hoisted(() => ({ href: null as string | null }));
+vi.mock("@/features/login-wall", () => ({
+  isSignedOut: async () => wall.href !== null,
+  loginWallMetadata: () => ({ title: "wall title", robots: { index: false, follow: false } }),
+  LoginWallScreen: () => null,
+}));
+
 const searchResults = vi.hoisted(() => vi.fn());
 const screenProps = vi.hoisted(() => vi.fn());
 vi.mock("@/features/search", async () => {
@@ -54,6 +61,28 @@ const { default: PropertiesPage, generateMetadata } = await import("../(public)/
 
 const search = (raw: Record<string, string | string[] | undefined>) => ({
   searchParams: Promise.resolve(raw),
+});
+
+beforeEach(() => {
+  wall.href = null;
+});
+
+describe("the results page for a visitor who is not signed in (login wall)", () => {
+  it("reads no home, and returns the wall, which holds the sign-in", async () => {
+    wall.href = "signed-out";
+    searchResults.mockClear();
+    const element = await PropertiesPage(search({ bhk: "3" }));
+    expect(searchResults).not.toHaveBeenCalled();
+    expect(JSON.stringify(element)).toContain('"kind":"properties"');
+  });
+
+  it("has one generic title, whatever the filters, and is not indexed", async () => {
+    wall.href = "signed-out";
+    const metadata = await generateMetadata(search({ bhk: "3", listingType: "rent" }));
+    expect(metadata.title).toBe("wall title");
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+    expect(metadata.alternates).toBeUndefined();
+  });
 });
 
 describe("the results page's metadata (FR-PUB-14)", () => {

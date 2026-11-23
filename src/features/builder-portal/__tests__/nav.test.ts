@@ -30,6 +30,7 @@ describe("UT-builder-nav: the builder's sidebar as data (S7-T03)", () => {
       ["/builder/units", "Units", "units"],
       ["/builder/leads", "Leads", "leads"],
       ["/builder/insights", "Insights", "insights"],
+      ["/builder/feedback", "Feedback", "feedback"],
       ["/builder/profile", "Profile", "profile"],
     ]);
     expect(new Set(items.map((item) => item.key)).size).toBe(items.length);

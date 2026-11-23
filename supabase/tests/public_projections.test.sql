@@ -8,7 +8,7 @@
 -- tests/integration/public-queries.test.ts (IT-queries) checks them again through the real client.
 -- Fictional data only.
 begin;
-select plan(7);
+select plan(8);
 
 -- The agreed public columns, one row per table and column. A column that is public by design is
 -- listed here on purpose: project contact phone, RERA number, address and coordinates (projects keep
@@ -37,7 +37,8 @@ from (values
     'nearby', 'rera_applicable', 'rera_number', 'description', 'specifications', 'amenities',
     'images', 'floor_plans', 'elevations', 'plot_images', 'videos', 'brochure_path', 'seo_title',
     'seo_description', 'featured', 'created_at', 'updated_at', 'offer_type', 'price', 'price_type',
-    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason', 'plot_status', 'villa_type'
+    'area_min_sqft', 'area_max_sqft', 'rera_not_applicable_reason', 'plot_status', 'villa_type',
+    'extra_fields', 'city'
   ]),
   ('project_units', array[
     'id', 'project_id', 'unit_number', 'floor_number', 'bhk', 'area_sqft', 'facing', 'price',
@@ -65,7 +66,8 @@ from (values
   ('faqs', array[
     'id', 'category_id', 'question', 'answer', 'sort_order', 'status', 'deleted_at', 'created_at',
     'updated_at', 'search_vector'
-  ])
+  ]),
+  ('cities', array['key', 'name', 'state'])
 ) as expected (table_name, columns);
 
 -- 1. Every column anon can read, on every relation in the public schema
@@ -81,8 +83,28 @@ select set_eq(
       and not attribute.attisdropped
       and has_column_privilege('anon', class.oid, attribute.attname, 'SELECT')
   $$,
-  $$select table_name, column_name from expected_public_columns$$,
+  $$
+    select table_name, column_name from expected_public_columns
+    where table_name not in ('properties', 'listing_media', 'projects', 'project_units', 'project_price_trends')
+  $$,
   'DB-RLS-column-grants: anon can read exactly the agreed columns, and nothing in any other table'
+);
+
+-- 1b. Login wall: the lists of homes and projects are for signed-in people. Visitors who are not signed in read one
+-- home or one project, the homepage and the sitemap through the narrow functions, and no column of these five tables.
+select is_empty(
+  $$
+    select class.relname::text, attribute.attname::text
+    from pg_class as class
+    join pg_namespace as space on space.oid = class.relnamespace
+    join pg_attribute as attribute on attribute.attrelid = class.oid
+    where space.nspname = 'public'
+      and class.relname in ('properties', 'listing_media', 'projects', 'project_units', 'project_price_trends')
+      and attribute.attnum > 0
+      and not attribute.attisdropped
+      and has_column_privilege('anon', class.oid, attribute.attname, 'SELECT')
+  $$,
+  'DB-RLS-login-wall: anon can read no column of homes, photos, projects, units or price trends'
 );
 
 -- 2. The same list, with names: the columns that must never reach a visitor
@@ -119,7 +141,7 @@ select set_eq(
     where space.nspname = 'public'
       and class.relname in (
         'properties', 'listing_media', 'builders', 'projects', 'project_units',
-        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts', 'job_postings'
+        'project_price_trends', 'forms', 'site_settings', 'content_categories', 'faqs', 'blog_posts', 'job_postings', 'cities'
       )
       and attribute.attnum > 0
       and not attribute.attisdropped
@@ -141,8 +163,8 @@ select set_eq(
     where space.nspname = 'public'
       and has_function_privilege('anon', proc.oid, 'EXECUTE')
   $$,
-  $$values ('blog_body_text'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project_form'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('search_properties')$$,
-  'DB-RLS-column-grants: anon can run only the searches, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
+  $$values ('blog_body_text'), ('city_key'), ('home_developers'), ('home_properties'), ('listed_cities'), ('listing_is_public'), ('listing_label'), ('project_is_live'), ('public_project'), ('public_project_form'), ('public_property'), ('search_blog_posts'), ('search_faqs'), ('search_job_postings'), ('sitemap_entries')$$,
+  'DB-RLS-column-grants: anon can run only the content searches, the one-home and one-project reads, the homepage and sitemap reads, the label, the project form lookup, the article text helper and the two row-policy helpers in the public schema'
 );
 
 -- Data for the rounding checks: one approved home with an exact point, one live project.
@@ -171,14 +193,14 @@ insert into public.projects (
   80.270741
 );
 
-set local role anon;
+set local role authenticated; -- login wall: only signed-in people read these tables (no user: approved rows only)
 
 -- 5. DEC-35: a home's public point is the exact one rounded to the 0.001 degree grid
 select ok(
   (select abs(extensions.st_x(public_location::extensions.geometry) - 80.271) < 0.0000001
       and abs(extensions.st_y(public_location::extensions.geometry) - 13.083) < 0.0000001
    from public.properties where id = '00000000-0000-4000-9000-000000000001'),
-  'DEC-35: a visitor gets the home''s point rounded to 80.271, 13.083, not the exact 80.27074, 13.08274'
+  'DEC-35: a signed-in visitor gets the home''s point rounded to 80.271, 13.083, not the exact 80.27074, 13.08274'
 );
 
 -- 6. ... while a project keeps its exact point, as a pair and as a point
@@ -187,7 +209,7 @@ select ok(
       and abs(extensions.st_x(location::extensions.geometry) - 80.270741) < 0.0000001
       and abs(extensions.st_y(location::extensions.geometry) - 13.082741) < 0.0000001
    from public.projects where id = '00000000-0000-4000-c000-000000000001'),
-  'DEC-35: a project keeps its exact coordinates for a visitor'
+  'DEC-35: a project keeps its exact coordinates for a signed-in visitor'
 );
 
 -- 7. A visitor still cannot ask for the exact point by any route

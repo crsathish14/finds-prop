@@ -312,7 +312,7 @@ select throws_ok(
   '42501', 'listing.not_allowed', 'a session with no person in it is refused'
 );
 reset role;
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select throws_ok(
   $$select public.set_listing_location('00000000-0000-4000-9000-000000000007', 13.0, 80.0)$$,
   '42501', null, 'a visitor cannot call set_listing_location'
@@ -355,7 +355,7 @@ select is(
 reset role;
 
 -- A live listing without a location is not broken by the migration (ADR-060: old listings stay valid)
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select count(*)::int from public.search_properties()
    where id = '00000000-0000-4000-9000-000000000010' and latitude is null and longitude is null),

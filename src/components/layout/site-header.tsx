@@ -25,6 +25,8 @@ import type { NavItem } from "./nav-types";
 
 type SiteHeaderProps = {
   logo: ReactNode;
+  /** The city selector, beside the logo (left out when absent). */
+  city?: ReactNode;
   navLabel: string;
   nav: NavItem[];
   actions?: ReactNode;
@@ -35,6 +37,7 @@ type SiteHeaderProps = {
 
 function SiteHeader({
   logo,
+  city,
   navLabel,
   nav,
   actions,
@@ -53,6 +56,7 @@ function SiteHeader({
     >
       <Container className="flex h-full items-center gap-3 lg:gap-10">
         {logo}
+        {city}
         <nav aria-label={navLabel} className="hidden lg:block">
           <ul className="flex gap-6 xl:gap-8">
             {nav.map((item) => {

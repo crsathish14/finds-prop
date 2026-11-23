@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   require: vi.fn(),
+  moduleOn: vi.fn(),
   job: vi.fn(),
   isOpen: vi.fn(),
   metadata: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
 vi.mock("@/features/site", () => ({
   requireContentModule: mocks.require,
+  getContentModuleOn: mocks.moduleOn,
   getTranslate: async () => (key: string) => key,
 }));
 vi.mock("@/features/seo", () => ({ siteOrigin: () => "https://findsprop.test" }));
@@ -33,6 +35,7 @@ const JOB = { id: "j", slug: "site-engineer", title: "Site engineer", closesAt: 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.require.mockResolvedValue(undefined);
+  mocks.moduleOn.mockResolvedValue(true);
   mocks.job.mockResolvedValue(JOB);
   mocks.isOpen.mockReturnValue(true);
 });
@@ -71,5 +74,13 @@ describe("the public /careers/[slug] page (ADR-143, ADR-147)", () => {
     mocks.job.mockResolvedValue(null);
     expect(await generateMetadata(params("gone"))).toEqual({ title: "notFound.title" });
     expect(await generateMetadata(params("Not A Slug"))).toEqual({ title: "notFound.title" });
+  });
+
+  it("gives a hidden Careers module's job no metadata of its own, and does not even read it", async () => {
+    mocks.moduleOn.mockResolvedValue(false);
+    expect(await generateMetadata(params("site-engineer"))).toEqual({ title: "notFound.title" });
+    expect(mocks.moduleOn).toHaveBeenCalledWith("careers");
+    expect(mocks.job).not.toHaveBeenCalled();
+    expect(mocks.metadata).not.toHaveBeenCalled();
   });
 });

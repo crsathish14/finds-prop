@@ -20,10 +20,12 @@ import {
   HEADING_MAX,
   LIST_ITEMS_MAX,
   LIST_ITEM_MAX,
+  MARKDOWN_MAX_CHARS,
   PARAGRAPH_MAX,
   QUOTE_CITE_MAX,
   QUOTE_MAX,
 } from "./constants";
+import { findLinkProblem } from "@/lib/inline-links";
 import { tagFromText } from "./slug";
 
 /**
@@ -48,6 +50,22 @@ const plain = (min: number, max: number) =>
       .max(max, { error: "validation.invalid" }),
   );
 
+/**
+ * Text that may hold `[label](address)` links (ADR-169): a link-shaped piece that is not an allowed link (an address that
+ * is not https or a path of this site, a label with brackets, an address over 2,000 characters) is refused with words
+ * that say which, instead of being saved as text that looks like a link and is not one.
+ */
+const LINK_MESSAGES = {
+  label: "validation.blogLinkLabel",
+  address: "validation.blogLinkAddress",
+  tooLong: "validation.blogLinkTooLong",
+} as const;
+const linked = (min: number, max: number) =>
+  plain(min, max).superRefine((text, context) => {
+    const problem = findLinkProblem(text);
+    if (problem !== null) context.addIssue({ code: "custom", message: LINK_MESSAGES[problem] });
+  });
+
 /** An optional piece of a block (a quote's credit, a caption): empty means "none". */
 const optionalPart = (max: number) =>
   z.preprocess(
@@ -69,57 +87,74 @@ const optional = (max: number) =>
     z.string({ error: "validation.invalid" }).max(max, { error: "validation.invalid" }).nullable(),
   );
 
-/** The blocks of an article body. Each has exactly the keys of its type: an unknown key or type is refused. */
-export const headingBlockSchema = z.strictObject({
-  type: z.literal("heading"),
-  level: z.union([z.literal(2), z.literal(3)], { error: "validation.invalid" }),
-  text: plain(1, HEADING_MAX),
-});
-export const paragraphBlockSchema = z.strictObject({
-  type: z.literal("paragraph"),
-  text: plain(1, PARAGRAPH_MAX),
-});
-export const listBlockSchema = z.strictObject({
-  type: z.literal("list"),
-  ordered: z.boolean({ error: "validation.invalid" }),
-  items: z
-    .array(plain(1, LIST_ITEM_MAX), { error: "validation.invalid" })
-    .min(1, { error: "validation.required" })
-    .max(LIST_ITEMS_MAX, { error: "validation.invalid" }),
-});
-export const quoteBlockSchema = z.strictObject({
-  type: z.literal("quote"),
-  text: plain(1, QUOTE_MAX),
-  cite: optionalPart(QUOTE_CITE_MAX),
-});
-export const imageBlockSchema = z.strictObject({
-  type: z.literal("image"),
-  path: z
-    .string({ error: "validation.invalid" })
-    .regex(BLOG_IMAGE_PATH, { error: "validation.invalid" }),
-  alt: plain(1, BLOG_ALT_MAX),
-  caption: optionalPart(BLOG_CAPTION_MAX),
-});
+/**
+ * The blocks of an article body. Each has exactly the keys of its type: an unknown key or type is refused. Made twice from
+ * one description: with `linked` text for what the admin saves (a link-shaped piece that is not allowed is refused), and
+ * with plain text for what is read back, so an article saved before links existed that happens to hold something like
+ * `[note](below)` still opens and draws as it always did.
+ */
+function buildBlocks(text: typeof plain) {
+  const heading = z.strictObject({
+    type: z.literal("heading"),
+    level: z.union([z.literal(2), z.literal(3)], { error: "validation.invalid" }),
+    text: plain(1, HEADING_MAX),
+  });
+  const paragraph = z.strictObject({
+    type: z.literal("paragraph"),
+    text: text(1, PARAGRAPH_MAX),
+  });
+  const list = z.strictObject({
+    type: z.literal("list"),
+    ordered: z.boolean({ error: "validation.invalid" }),
+    items: z
+      .array(text(1, LIST_ITEM_MAX), { error: "validation.invalid" })
+      .min(1, { error: "validation.required" })
+      .max(LIST_ITEMS_MAX, { error: "validation.invalid" }),
+  });
+  const quote = z.strictObject({
+    type: z.literal("quote"),
+    text: text(1, QUOTE_MAX),
+    cite: optionalPart(QUOTE_CITE_MAX),
+  });
+  const image = z.strictObject({
+    type: z.literal("image"),
+    path: z
+      .string({ error: "validation.invalid" })
+      .regex(BLOG_IMAGE_PATH, { error: "validation.invalid" }),
+    alt: plain(1, BLOG_ALT_MAX),
+    caption: optionalPart(BLOG_CAPTION_MAX),
+  });
+  const block = z.discriminatedUnion("type", [heading, paragraph, list, quote, image], {
+    error: "validation.invalid",
+  });
+  /** The whole body: at most 100 blocks and 100,000 bytes once stored as JSON. */
+  const body = z
+    .array(block, { error: "validation.invalid" })
+    .max(BLOCKS_MAX, { error: "validation.invalid" })
+    .refine(
+      (blocks) => new TextEncoder().encode(JSON.stringify(blocks)).length <= BLOCKS_BYTES_MAX,
+      { error: "validation.invalid" },
+    );
+  return { heading, paragraph, list, quote, image, block, body };
+}
 
-export const blockSchema = z.discriminatedUnion(
-  "type",
-  [headingBlockSchema, paragraphBlockSchema, listBlockSchema, quoteBlockSchema, imageBlockSchema],
-  { error: "validation.invalid" },
-);
+const saved = buildBlocks(linked);
+export const headingBlockSchema = saved.heading;
+export const paragraphBlockSchema = saved.paragraph;
+export const listBlockSchema = saved.list;
+export const quoteBlockSchema = saved.quote;
+export const imageBlockSchema = saved.image;
+export const blockSchema = saved.block;
+export const bodySchema = saved.body;
+/** For reading a stored body back: the same shapes, without refusing link-shaped text (ADR-169). */
+export const storedBodySchema = buildBlocks(plain).body;
+
 export type Block = z.infer<typeof blockSchema>;
 export type HeadingBlock = z.infer<typeof headingBlockSchema>;
 export type ParagraphBlock = z.infer<typeof paragraphBlockSchema>;
 export type ListBlock = z.infer<typeof listBlockSchema>;
 export type QuoteBlock = z.infer<typeof quoteBlockSchema>;
 export type ImageBlock = z.infer<typeof imageBlockSchema>;
-
-/** The whole body: at most 100 blocks and 100,000 bytes once stored as JSON. */
-export const bodySchema = z
-  .array(blockSchema, { error: "validation.invalid" })
-  .max(BLOCKS_MAX, { error: "validation.invalid" })
-  .refine((blocks) => new TextEncoder().encode(JSON.stringify(blocks)).length <= BLOCKS_BYTES_MAX, {
-    error: "validation.invalid",
-  });
 
 const slug = z
   .string({ error: "validation.blogSlugInvalid" })
@@ -148,6 +183,12 @@ const tags = z
   .max(BLOG_TAGS_MAX, { error: "validation.invalid" })
   .transform((list) => [...new Set(list)]);
 
+/** The summary of an article: tidied, at most 320 characters, empty allowed. */
+const excerpt = z.preprocess(
+  tidy,
+  z.string({ error: "validation.invalid" }).max(BLOG_EXCERPT_MAX, { error: "validation.invalid" }),
+);
+
 /** A new article starts as a draft with an empty body: the address is made from the title unless the admin typed one. */
 export const createBlogPostSchema = z.object({
   title,
@@ -162,12 +203,7 @@ export const updateBlogPostSchema = z.object({
   postId: uuid,
   title,
   slug,
-  excerpt: z.preprocess(
-    tidy,
-    z
-      .string({ error: "validation.invalid" })
-      .max(BLOG_EXCERPT_MAX, { error: "validation.invalid" }),
-  ),
+  excerpt,
   body: bodySchema,
   categoryId: uuid.nullable(),
   tags,
@@ -176,6 +212,23 @@ export const updateBlogPostSchema = z.object({
   seoDescription: optional(BLOG_SEO_DESCRIPTION_MAX),
 });
 export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
+
+/**
+ * A draft made from pasted Markdown (ADR-172). The server converts the text itself, so the blocks are never taken from
+ * the browser; the title, address, summary, author and category are what the admin confirmed beside the preview. The
+ * text is not stored.
+ */
+export const createBlogPostFromMarkdownSchema = z.object({
+  markdown: z
+    .string({ error: "validation.required" })
+    .max(MARKDOWN_MAX_CHARS, { error: "validation.invalid" }),
+  title,
+  slug: slug.optional(),
+  excerpt,
+  authorName,
+  categoryId: uuid.nullable().default(null),
+});
+export type CreateBlogPostFromMarkdownInput = z.infer<typeof createBlogPostFromMarkdownSchema>;
 
 /** Sets the cover picture (already in the bucket under the article's folder) with its description, or removes it. */
 export const setBlogCoverSchema = z

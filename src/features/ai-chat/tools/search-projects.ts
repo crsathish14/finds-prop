@@ -13,6 +13,7 @@ import { localityKey } from "../localities";
 import { asOfText } from "./as-of";
 import { isTotalPrice, projectPrices, projectPriceShape } from "./project-facts";
 import type { AiChatTool, ToolContext } from "./types";
+import { requireSignIn } from "./require-sign-in";
 import { cleanThirdPartyLine } from "./untrusted";
 
 /**
@@ -136,6 +137,7 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
   input: searchProjectsInputSchema,
   output: searchProjectsOutputSchema,
   async run(input, context) {
+    requireSignIn(context);
     const list = await getProjects();
     if (list.status === "failed") throw new Error("projects could not be read");
     const typed = input.locality?.trim() ?? "";

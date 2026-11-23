@@ -71,7 +71,12 @@ describe("UT-admin-place-picker: the place search box of the admin forms (ADR-14
     expect(screen.getByText(places.attribution.poweredBy)).toBeInTheDocument();
     await userEvent.click(row);
     expect(onPick).toHaveBeenCalledTimes(1);
-    expect(onPick).toHaveBeenCalledWith({ label: "KK Nagar East", lat: 13.0402, lng: 80.2399 });
+    expect(onPick).toHaveBeenCalledWith({
+      label: "KK Nagar East",
+      lat: 13.0402,
+      lng: 80.2399,
+      city: "Chennai",
+    });
     expect(box()).toHaveValue("KK Nagar East");
     expect(screen.getByText(words.picked.replace("{place}", "KK Nagar East"))).toBeInTheDocument();
   });
@@ -88,7 +93,12 @@ describe("UT-admin-place-picker: the place search box of the admin forms (ADR-14
     await userEvent.type(screen.getByRole("combobox"), "kk n");
     await screen.findByRole("option", { name: /KK Nagar East/ }, { timeout: 2000 });
     await userEvent.keyboard("{ArrowDown}{Enter}");
-    expect(onPick).toHaveBeenCalledWith({ label: "KK Nagar East", lat: 13.0402, lng: 80.2399 });
+    expect(onPick).toHaveBeenCalledWith({
+      label: "KK Nagar East",
+      lat: 13.0402,
+      lng: 80.2399,
+      city: "Chennai",
+    });
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

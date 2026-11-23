@@ -13,6 +13,8 @@ export type HeaderViewProps = {
   pathname?: string | undefined;
   /** The right side after Post property: Sign in, or the saved link and the account menu. */
   accountSlot: ReactNode;
+  /** The city selector, beside the logo. */
+  citySlot?: ReactNode;
   /** The menu button and drawer, which need to know who is signed in. */
   menuSlot: ReactNode;
 };
@@ -21,7 +23,14 @@ export type HeaderViewProps = {
  * The public header laid out from its data (S4-T06). It holds no hooks, so the page can render it
  * once without a path (the loading look) and the client frame can render it again with the path.
  */
-export function HeaderView({ header, labels, pathname, accountSlot, menuSlot }: HeaderViewProps) {
+export function HeaderView({
+  header,
+  labels,
+  pathname,
+  accountSlot,
+  citySlot,
+  menuSlot,
+}: HeaderViewProps) {
   const links: (NavLink & { current?: boolean })[] =
     pathname === undefined ? header.links : markCurrent(header.links, pathname);
   const nav = links.map((link) => ({
@@ -33,10 +42,11 @@ export function HeaderView({ header, labels, pathname, accountSlot, menuSlot }: 
   return (
     <SiteHeader
       logo={
-        <Link href="/" aria-label={labels.home} className="no-underline">
+        <Link href="/" aria-label={labels.home} className="shrink-0 no-underline">
           <Logo name={header.brandName} />
         </Link>
       }
+      city={citySlot}
       navLabel={labels.nav}
       nav={nav}
       bordered={pathname !== undefined && pathname !== "/"}

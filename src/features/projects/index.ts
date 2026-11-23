@@ -33,6 +33,7 @@ export {
   developerInitials,
   areaRange,
   orderUnits,
+  extraRows,
   priceOf,
   projectMetaDescription,
   reraReason,

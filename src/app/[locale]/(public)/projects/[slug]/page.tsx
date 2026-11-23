@@ -7,6 +7,7 @@ import { PROJECT_BUCKET, publicStorageUrl } from "@/features/home";
 import {
   canonicalProjectPath,
   contactLinks,
+  extraRows,
   getProject,
   parseProjectSlug,
   ProjectEnquirySlot,
@@ -20,7 +21,7 @@ import {
 } from "@/features/projects";
 import { enquiryLinks } from "@/features/property";
 import { absoluteUrl, breadcrumbList, JsonLd, pageMetadata } from "@/features/seo";
-import { getTranslate } from "@/features/site";
+import { getSiteSettings, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -72,6 +73,7 @@ export default async function ProjectPage({ params }: PageProps) {
   if (canonical !== null) permanentRedirect(canonical);
 
   const translate = await getTranslate();
+  const settings = await getSiteSettings();
   const source = (path: string) =>
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PROJECT_BUCKET, path);
   const imageSources = project.images.map(source);
@@ -106,6 +108,11 @@ export default async function ProjectPage({ params }: PageProps) {
             />
           </Suspense>
         }
+        extras={extraRows(
+          settings.project_fields.fields,
+          project.propertyType,
+          project.extraFields,
+        )}
         mobileEnquiry={<ProjectMobileBar contact={contactLinks(project.contactPhone)} />}
       />
     </main>

@@ -39,6 +39,7 @@ const saved: ProjectEditView = {
   offerType: null,
   plotStatus: null,
   villaType: null,
+  extraFields: {},
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",
@@ -48,6 +49,7 @@ const saved: ProjectEditView = {
   landAreaAcres: 4.2,
   possessionDate: "2028-12-01",
   contactPhone: null,
+  city: "Chennai",
   locality: "OMR Navalur",
   address: null,
   latitude: null,
@@ -137,6 +139,7 @@ async function fillRequired({ admin }: { admin: boolean }) {
   await userEvent.type(box(words.fields.price), "78,00,000");
   await changeField(select(words.fields.priceType), "basic");
   await userEvent.type(box(words.fields.reraReason), "Below the size that needs registration.");
+  await userEvent.type(box(words.fields.city), "Chennai");
   await userEvent.type(box(words.fields.locality), "OMR Navalur");
 }
 const fileInput = (group: string) =>
@@ -184,7 +187,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
     const { save } = open();
     await userEvent.click(saveButton());
     expect(save).not.toHaveBeenCalled();
-    expect(await screen.findByText("9 things need attention")).toBeVisible();
+    expect(await screen.findByText("10 things need attention")).toBeVisible();
     for (const problem of [
       "name",
       "builder",
@@ -194,6 +197,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
       "price",
       "priceType",
       "reraReason",
+      "city",
       "locality",
     ] as const) {
       expect(screen.getByText(words.problems[problem])).toBeVisible();
@@ -208,6 +212,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
       words.fields.price,
       words.fields.priceType,
       words.fields.reraReason,
+      words.fields.city,
       words.fields.locality,
     ].join(", ");
     expect(screen.getByText(`Check ${named} before saving.`)).toBeVisible();

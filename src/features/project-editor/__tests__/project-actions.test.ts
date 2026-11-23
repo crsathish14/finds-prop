@@ -81,6 +81,7 @@ function harness(
 const minimal = {
   name: "Kadal Vista",
   slug: "kadal-vista",
+  city: "Chennai",
   locality: "OMR Navalur",
   projectType: "residential",
   propertyType: "apartment",

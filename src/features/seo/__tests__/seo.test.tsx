@@ -107,6 +107,15 @@ describe("UT-seo: robots.txt", () => {
     }
   });
 
+  it("leaves the Blog, FAQ and Careers pages open to crawlers (ADR-143: the sitemap lists them)", () => {
+    for (const path of ["/blog", "/blog/a-guide", "/faq", "/careers", "/careers/site-engineer"]) {
+      expect(
+        DISALLOWED_PATHS.some((blocked) => path === blocked || path.startsWith(`${blocked}/`)),
+        path,
+      ).toBe(false);
+    }
+  });
+
   it("shuts the share image's path to no one", () => {
     expect(DISALLOWED_PATHS.some((path) => SHARE_IMAGE_PATH.startsWith(path))).toBe(false);
   });
