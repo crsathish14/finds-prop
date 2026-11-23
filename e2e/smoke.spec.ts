@@ -268,8 +268,9 @@ test.describe("@smoke site footer and bottom bar", () => {
   test("a missing page keeps the header and footer around the not-found message", async ({
     page,
   }) => {
-    // A home address that is no address makes the property page call notFound(), inside the public group.
-    const response = await page.goto("/properties/not-a-home");
+    // An article address that is no slug makes the blog page call notFound() (as does a switched-off blog), inside
+    // the public group. (The property page draws its own not-found message with a 200, so it cannot serve here.)
+    const response = await page.goto("/blog/Not_A_Slug");
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
     await expect(page.getByRole("banner")).toBeVisible();
