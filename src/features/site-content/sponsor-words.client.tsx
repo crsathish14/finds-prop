@@ -1,11 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { SponsorAdFieldsWords } from "@/components/domain/sponsor-ad-fields";
 import type { SponsorFieldsWords } from "@/components/domain/sponsor-fields";
 import type { SponsorImageSlotWords } from "@/components/domain/sponsor-image-slot";
 import type { SponsorHeroPreviewProps } from "@/components/domain/sponsor-hero-preview";
 import type { SponsorsManagerWords } from "@/components/domain/sponsors-manager";
-import { SPONSORS_MAX, SPONSOR_IMAGE_MAX_KB } from "./constants";
+import { SPONSORS_MAX, SPONSOR_IMAGE_MAX_KB, SPONSOR_PHOTO_MAX_KB } from "./constants";
+import { PHOTO_RULE } from "./sponsor-rules";
 
 /**
  * Every word of the sponsor manager on the Hero page (S7-T11), read from `admin.siteContent.sponsors` (ADR-035) and given
@@ -53,12 +55,93 @@ export function useSponsorWords() {
     href: translate("fields.href"),
     hrefPlaceholder: translate("fields.hrefPlaceholder"),
     hrefHint: translate("fields.hrefHint"),
+    link: {
+      label: translate("fields.linkLabel"),
+      project: translate("fields.linkProject"),
+      url: translate("fields.linkUrl"),
+    },
+    project: translate("fields.project"),
+    projectPlaceholder: translate("fields.projectPlaceholder"),
+    projectHint: translate("fields.projectHint"),
+    projectsNone: translate("fields.projectsNone"),
     active: { label: translate("fields.activeLabel"), hint: translate("fields.activeHint") },
     images: {
       title: translate("fields.imagesTitle"),
       text: translate("fields.imagesText", { maximum: SPONSOR_IMAGE_MAX_KB }),
       closing: translate("fields.imagesClosing"),
     },
+  };
+
+  const ad: SponsorAdFieldsWords = {
+    title: translate("ad.title"),
+    text: translate("ad.text"),
+    brand: translate("ad.brand"),
+    brandHint: translate("ad.brandHint"),
+    optional: translate("ad.optional"),
+    shownNow: translate("ad.shownNow"),
+    showcase: {
+      title: translate("ad.showcase.title"),
+      text: translate("ad.showcase.text"),
+      boxes: {
+        project: { label: translate("ad.showcase.project") },
+        locality: {
+          label: translate("ad.showcase.locality"),
+          placeholder: translate("ad.showcase.localityPlaceholder"),
+        },
+        homes: {
+          label: translate("ad.showcase.homes"),
+          placeholder: translate("ad.showcase.homesPlaceholder"),
+        },
+        price: {
+          label: translate("ad.showcase.price"),
+          placeholder: translate("ad.showcase.pricePlaceholder"),
+        },
+        size: {
+          label: translate("ad.showcase.size"),
+          placeholder: translate("ad.showcase.sizePlaceholder"),
+        },
+        possession: {
+          label: translate("ad.showcase.possession"),
+          placeholder: translate("ad.showcase.possessionPlaceholder"),
+        },
+        rera: { label: translate("ad.showcase.rera") },
+      },
+    },
+    cinematic: {
+      title: translate("ad.cinematic.title"),
+      text: translate("ad.cinematic.text"),
+      boxes: {
+        headline: { label: translate("ad.cinematic.headline") },
+        button: {
+          label: translate("ad.cinematic.button"),
+          placeholder: translate("ad.cinematic.buttonPlaceholder"),
+        },
+        eyebrow: {
+          label: translate("ad.cinematic.eyebrow"),
+          placeholder: translate("ad.cinematic.eyebrowPlaceholder"),
+        },
+        line: { label: translate("ad.cinematic.line") },
+      },
+    },
+  };
+
+  /** The photo slot of the hero ad (ADR-189). */
+  const photo = {
+    title: translate("ad.photoTitle"),
+    note: translate("ad.photoNote", {
+      width: PHOTO_RULE.minimum.width,
+      height: PHOTO_RULE.minimum.height,
+      maximum: SPONSOR_PHOTO_MAX_KB,
+    }),
+    sizeText: translate("slot.photoSizeText", { maximum: SPONSOR_PHOTO_MAX_KB }),
+  };
+
+  /** The hero ad style switch above the list (ADR-189). */
+  const style = {
+    label: translate("style.label"),
+    showcase: translate("style.showcase"),
+    cinematic: translate("style.cinematic"),
+    hint: translate("style.hint"),
   };
 
   const slotWords: SponsorImageSlotWords = {
@@ -178,6 +261,9 @@ export function useSponsorWords() {
   return {
     manager,
     fields,
+    ad,
+    photo,
+    style,
     slotWords,
     slotTitles,
     preview,

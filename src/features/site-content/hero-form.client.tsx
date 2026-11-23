@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { SponsorStyle } from "@/lib/sponsors";
 import { useState, type FormEvent } from "react";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { SiteContentLayout } from "@/components/domain/site-content-layout";
@@ -22,7 +23,12 @@ import {
 import { heroViewOf, layoutWarningOf } from "./sponsor-draft";
 import type { SponsorStorage } from "./sponsor-storage";
 import type { SponsorEditView } from "./sponsor-view";
-import { SponsorsPanel, useSponsors, type SaveSponsors } from "./sponsors-panel.client";
+import {
+  SponsorsPanel,
+  useSponsors,
+  type SaveSponsors,
+  type SponsorProjectOption,
+} from "./sponsors-panel.client";
 import {
   useSaveFlow,
   useScrollToProblems,
@@ -39,6 +45,10 @@ export type HeroFormProps = {
   save: SaveContent;
   /** The sponsors as saved, in their order (S7-T11). */
   sponsors: readonly SponsorEditView[];
+  /** The hero ad style as saved (ADR-182); the Showcase when none is. */
+  sponsorStyle?: SponsorStyle;
+  /** The live projects a sponsor can link to (ADR-189). */
+  projects?: readonly SponsorProjectOption[];
   /** The action that saves the sponsor list: every sponsor change goes through it at once. */
   saveSponsors: SaveSponsors;
   /** Where sponsor pictures are sent; the real bucket unless a test gives its own. */
@@ -59,6 +69,8 @@ export function HeroForm({
   standard,
   save,
   sponsors,
+  sponsorStyle = "showcase",
+  projects = [],
   saveSponsors,
   storage,
 }: HeroFormProps) {
@@ -72,6 +84,8 @@ export function HeroForm({
   const [problems, setProblems] = useState<Problems>(NO_PROBLEMS);
   const sponsorState = useSponsors({
     sponsors,
+    style: sponsorStyle,
+    projects,
     save: saveSponsors,
     ...(storage ? { storage } : {}),
   });

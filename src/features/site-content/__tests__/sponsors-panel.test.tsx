@@ -68,6 +68,7 @@ const file = (bytes: Uint8Array, name = "banner.png") =>
 function setup(
   sponsors: SponsorEditView[] = [],
   saveSponsors: Mock<SaveSponsors> = vi.fn<SaveSponsors>().mockResolvedValue(ok),
+  more: { sponsorStyle?: "showcase" | "cinematic" } = {},
 ) {
   const upload = vi.fn<SponsorStorage["upload"]>().mockResolvedValue(true);
   const remove = vi.fn<SponsorStorage["remove"]>().mockResolvedValue(undefined);
@@ -81,6 +82,10 @@ function setup(
       sponsors={sponsors}
       saveSponsors={saveSponsors}
       storage={storage}
+      projects={[
+        { slug: "lakeview-residences", name: "Lakeview Residences", developer: "Sample Homes" },
+      ]}
+      {...more}
     />,
   );
   return { upload, remove, saveHero, saveSponsors };
@@ -330,5 +335,43 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     await userEvent.click(screen.getByRole("button", { name: "Move Beta up" }));
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(screen.getByRole("textbox", { name: /Eyebrow/ })).toHaveValue("Tamil Nadu");
+  });
+});
+
+describe("UT-sponsors-panel: the hero ad style and fields (ADR-189)", () => {
+  it("saves the whole list with the new style as soon as the style is switched", async () => {
+    const { saveSponsors } = setup([view("a", "Alpha")]);
+    const style = screen.getByRole("radiogroup", { name: words.style.label });
+    expect(within(style).getByRole("radio", { name: words.style.showcase })).toBeChecked();
+    await userEvent.click(within(style).getByRole("radio", { name: words.style.cinematic }));
+    await waitFor(() => expect(saveSponsors).toHaveBeenCalledTimes(1));
+    expect(saveSponsors.mock.calls[0]?.[0]).toMatchObject({
+      style: "cinematic",
+      sponsors: [{ id: "a" }],
+    });
+    expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("puts the style back and says so when the save is refused", async () => {
+    const refused = vi.fn<SaveSponsors>().mockResolvedValue({
+      ok: false,
+      code: "INTERNAL",
+    });
+    setup([view("a", "Alpha")], refused, { sponsorStyle: "cinematic" });
+    const style = screen.getByRole("radiogroup", { name: words.style.label });
+    await userEvent.click(within(style).getByRole("radio", { name: words.style.showcase }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(within(style).getByRole("radio", { name: words.style.cinematic })).toBeChecked();
+  });
+
+  it("links a new sponsor to one of our projects instead of a website", async () => {
+    setup();
+    await userEvent.click(addButton());
+    const link = within(drawer()).getByRole("radiogroup", { name: words.fields.linkLabel });
+    await userEvent.click(within(link).getByRole("radio", { name: words.fields.linkProject }));
+    expect(within(drawer()).queryByRole("textbox", { name: /Destination link/ })).toBeNull();
+    expect(within(drawer()).getByText(words.fields.projectHint)).toBeInTheDocument();
+    expect(within(drawer()).getByRole("heading", { name: words.ad.title })).toBeInTheDocument();
+    expect(within(drawer()).getByText(words.ad.photoTitle)).toBeInTheDocument();
   });
 });

@@ -15,6 +15,7 @@ import {
   serverProblemsOf,
   slotOf,
   statusOf,
+  styleReady,
   withSponsorActive,
   withSponsorAdded,
   withSponsorMoved,
@@ -110,18 +111,33 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
       id: "x",
       advertiser: "",
       alt: "",
+      link: "url",
       href: "",
+      projectSlug: "",
       active: true,
+      brand: "",
+      showcase: {
+        project: "",
+        locality: "",
+        homes: "",
+        size: "",
+        possession: "",
+        price: "",
+        rera: "",
+      },
+      cinematic: { eyebrow: "", headline: "", line: "", button: "" },
       pictures: {},
     });
   });
 
   it("says needs images until a format has both pictures, and shows the switch after that", () => {
-    expect(statusOf(sponsor("a"))).toBe("needs_images");
+    expect(statusOf(sponsor("a"), "showcase")).toBe("needs_images");
     const half = sponsor("a", { pictures: justOne("strip-desktop", withStrip("a")) });
-    expect(statusOf(half)).toBe("needs_images");
-    expect(statusOf(sponsor("a", { pictures: withStrip("a") }))).toBe("active");
-    expect(statusOf(sponsor("a", { pictures: withPanel("a"), active: false }))).toBe("inactive");
+    expect(statusOf(half, "showcase")).toBe("needs_images");
+    expect(statusOf(sponsor("a", { pictures: withStrip("a") }), "showcase")).toBe("active");
+    expect(statusOf(sponsor("a", { pictures: withPanel("a"), active: false }), "showcase")).toBe(
+      "inactive",
+    );
   });
 
   it("counts sponsors and active sponsors", () => {
@@ -224,8 +240,21 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
         id: "a",
         advertiser: "Advertiser a",
         alt: "Banner of a",
+        link: "url",
         href: "https://a.example",
+        projectSlug: "",
         active: true,
+        brand: "",
+        showcase: {
+          project: "",
+          locality: "",
+          homes: "",
+          size: "",
+          possession: "",
+          price: "",
+          rera: "",
+        },
+        cinematic: { eyebrow: "", headline: "", line: "", button: "" },
         strip: { desktop: "sponsors/a/sd.webp", compact: "sponsors/a/sp.webp" },
         panel: { desktop: "sponsors/a/pd.webp", compact: "sponsors/a/pp.webp" },
       });
@@ -317,6 +346,71 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
       expect(
         layoutWarningOf(heroViewOf([sponsor("a", { active: false })], "split").coverage),
       ).toBeNull();
+    });
+  });
+});
+
+describe("UT-sponsor-draft: the hero ad fields (ADR-189)", () => {
+  const ready = (extra: Partial<SponsorDraft> = {}) =>
+    sponsor("a", {
+      brand: "Sample Homes",
+      showcase: {
+        project: "Lakeview",
+        locality: "OMR",
+        homes: "2 BHK",
+        size: "",
+        possession: "",
+        price: "₹78 L",
+        rera: "",
+      },
+      cinematic: { eyebrow: "", headline: "Homes by the lake", line: "", button: "Explore" },
+      pictures: { photo: stored("sponsors/a/photo.jpg", 2000, 1125) },
+      ...extra,
+    });
+
+  it("links to one of our projects with no address, and asks for the project", () => {
+    const linked = ready({ link: "project", projectSlug: "lakeview", href: "" });
+    expect(draftProblems(linked).boxes).toEqual({});
+    expect(draftProblems(ready({ link: "project", projectSlug: "" })).boxes.projectSlug).toBe(
+      "validation.required",
+    );
+    const payload = payloadOf([linked], "cinematic");
+    expect(payload.style).toBe("cinematic");
+    expect(payload.sponsors[0]).toMatchObject({
+      link: "project",
+      projectSlug: "lakeview",
+      href: "",
+      brand: "Sample Homes",
+      photo: "sponsors/a/photo.jpg",
+    });
+  });
+
+  it("refuses a line that is too long, and nothing else in the hero ad boxes", () => {
+    const long = ready({
+      cinematic: { eyebrow: "", headline: "a".repeat(41), line: "", button: "" },
+    });
+    expect(draftProblems(long).boxes).toEqual({ "cinematic.headline": "validation.invalid" });
+  });
+
+  it("says a sponsor is ready for a style once the photo, the brand and that style's words are there", () => {
+    expect(styleReady(ready(), "showcase")).toBe(true);
+    expect(styleReady(ready(), "cinematic")).toBe(true);
+    expect(styleReady(ready({ brand: "" }), "showcase")).toBe(false);
+    expect(styleReady(ready({ pictures: {} }), "cinematic")).toBe(false);
+    // Ready for the style, with no banner pair: it still shows (in the hero), so it is active.
+    expect(statusOf(ready(), "showcase")).toBe("active");
+    expect(statusOf(ready({ pictures: {} }), "showcase")).toBe("needs_images");
+  });
+
+  it("puts the server's problems on the hero ad boxes and the photo", () => {
+    const found = serverProblemsOf([ready()], {
+      "sponsors.0.projectSlug": "Choose a project",
+      "sponsors.0.showcase.price": "Too long",
+      "sponsors.0.photo": "Too small",
+    });
+    expect(found.a).toEqual({
+      boxes: { projectSlug: "Choose a project", "showcase.price": "Too long" },
+      slots: { photo: "Too small" },
     });
   });
 });
