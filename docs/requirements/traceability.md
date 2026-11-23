@@ -116,19 +116,20 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 
 ### Cross-cutting and gated
 
-| Req       | Name                  | Modules             | Stage                                      | UX                   | Tests                                 |
-| --------- | --------------------- | ------------------- | ------------------------------------------ | -------------------- | ------------------------------------- |
-| FR-SYS-01 | Rate limiting         | `server/rate-limit` | S3-T12                                     | rate-limited states  | DB-FN-rate_limit_hit, UT-visitor-hash |
-| FR-SYS-02 | CRM retry cron        | `crm`, DB           | S7-T09                                     | `admin-crm#logs`     | IT-crm                                |
-| FR-SYS-03 | Event tracking        | `projects`          | S4-T09 (views, ADR-046); S5-T05 (the rest) | n/a                  | DB-FN-track_project_event             |
-| FR-SYS-04 | Form pipeline         | `forms`             | S5-T05                                     | `contact`, `project` | IT-forms                              |
-| FR-SYS-05 | Buckets with limits   | DB                  | S3-T05                                     | n/a                  | DB-STO-*                              |
-| FR-SYS-06 | Audit log             | DB, `server/audit`  | S3-T05, S7-T12                             | n/a                  | DB-AUDIT, DB-TRG-audit-form-crm       |
-| FR-SYS-07 | Seed data             | scripts             | S3-T13                                     | n/a                  | CI db job                             |
-| FR-SYS-08 | Public projections    | DB, `queries`       | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries      |
-| FR-SYS-09 | Legal pages           | `app`, `legal`      | S5-T06, S9-T05                             | Gap                  | E01 (links present)                   |
-| FR-SYS-10 | Health and monitoring | `app/api`           | S1-T09, S9-T06                             | n/a                  | smoke                                 |
-| FR-PG-01  | PG and hostels        | TBD                 | Track X                                    | **Gap**              | TBD                                   |
+| Req       | Name                  | Modules                       | Stage                                      | UX                   | Tests                                  |
+| --------- | --------------------- | ----------------------------- | ------------------------------------------ | -------------------- | -------------------------------------- |
+| FR-SYS-01 | Rate limiting         | `server/rate-limit`           | S3-T12                                     | rate-limited states  | DB-FN-rate_limit_hit, UT-visitor-hash  |
+| FR-SYS-02 | CRM retry cron        | `crm`, DB                     | S7-T09                                     | `admin-crm#logs`     | IT-crm                                 |
+| FR-SYS-03 | Event tracking        | `projects`                    | S4-T09 (views, ADR-046); S5-T05 (the rest) | n/a                  | DB-FN-track_project_event              |
+| FR-SYS-04 | Form pipeline         | `forms`                       | S5-T05                                     | `contact`, `project` | IT-forms                               |
+| FR-SYS-05 | Buckets with limits   | DB                            | S3-T05                                     | n/a                  | DB-STO-*                               |
+| FR-SYS-06 | Audit log             | DB, `server/audit`            | S3-T05, S7-T12                             | n/a                  | DB-AUDIT, DB-TRG-audit-form-crm        |
+| FR-SYS-07 | Seed data             | scripts                       | S3-T13                                     | n/a                  | CI db job                              |
+| FR-SYS-08 | Public projections    | DB, `queries`                 | S3-T03, S4-T13                             | n/a                  | DB-RLS-column-grants, IT-queries       |
+| FR-SYS-09 | Legal pages           | `app`, `legal`                | S5-T06, S9-T05                             | Gap                  | E01 (links present)                    |
+| FR-SYS-10 | Health and monitoring | `app/api`                     | S1-T09, S9-T06                             | n/a                  | smoke                                  |
+| FR-SYS-11 | Enquiry mail          | `enquiry-mail`, `server/mail` | ADR-181, ADR-188                           | n/a                  | UT-enquiry-mail-*, UT-lead-mail-finder |
+| FR-PG-01  | PG and hostels        | TBD                           | Track X                                    | **Gap**              | TBD                                    |
 
 ---
 

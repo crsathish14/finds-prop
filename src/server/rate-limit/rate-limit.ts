@@ -5,7 +5,12 @@ import { ActionError } from "../actions/normalise-error";
 import type { SessionView } from "../auth/session";
 import { createAdminSupabase } from "../supabase/admin.server";
 import { ensureAnonymousId, readAnonymousId, type AnonymousIdCookieJar } from "./anonymous-id";
-import { enforceRateLimit, type RateLimitCaller, type RateLimitCounter } from "./enforce";
+import {
+  enforceRateLimit,
+  RateLimitedError,
+  type RateLimitCaller,
+  type RateLimitCounter,
+} from "./enforce";
 import { AI_CHAT_RATE_LIMIT_SCOPES, type RateLimitScope } from "./limits";
 
 import { clientIp, hashValue, networkAddress, visitorHash } from "./visitor-hash";
@@ -78,6 +83,31 @@ export async function enforceActionRateLimit(parameters: {
     }),
     ...(parameters.key !== undefined ? { key: parameters.key } : {}),
   });
+}
+
+/**
+ * Counts one attempt against a scope whose rule counts by a key the code names, for work that runs after a request
+ * has been answered (the enquiry mails, ADR-188): there is no caller to count, only the key, which is hashed before
+ * it is stored. Answers true when the attempt is within the limit and false when the limit is used up. A counter or a
+ * secret that fails throws (fail closed), so the caller decides what to do; the mail code skips the mail.
+ */
+export async function hitKeyedRateLimit(parameters: {
+  scope: RateLimitScope;
+  key: string;
+  requestId: string;
+}): Promise<boolean> {
+  try {
+    await enforceRateLimit({
+      counter: createRateLimitCounter(parameters.requestId),
+      scope: parameters.scope,
+      caller: callerFor({ session: null, address: "", userAgent: "", anonymousId: null }),
+      key: parameters.key,
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof RateLimitedError) return false;
+    throw error;
+  }
 }
 
 /**

@@ -65,10 +65,19 @@ export function mapProjectWriteError(failure: DatabaseFailure): ActionError {
   return new ActionError("INTERNAL", "The project write failed");
 }
 
-/** Stores a lead for the signed-in visitor. The phone and the visitor come from the server, never from the form. */
+/**
+ * Stores a lead for the signed-in visitor. The phone and the visitor come from the server, never from the form.
+ * `onStored` is told the new lead's id, only once the lead is stored (a project nobody can see or a refused value
+ * throws before it, so nobody is mailed about them, ADR-188). A hook that throws is ignored.
+ */
 export async function submitLead(
   store: ProjectWriteStore,
-  parameters: { input: SubmitProjectLeadInput; phone: string; visitor: string },
+  parameters: {
+    input: SubmitProjectLeadInput;
+    phone: string;
+    visitor: string;
+    onStored?: (leadId: string) => void;
+  },
 ): Promise<{ leadId: string }> {
   const { input } = parameters;
   const leadId = await store.insertLead({
@@ -81,6 +90,11 @@ export async function submitLead(
     visitDate: input.kind === "site_visit" ? (input.visitDate ?? null) : null,
     visitor: parameters.visitor,
   });
+  try {
+    parameters.onStored?.(leadId);
+  } catch {
+    // The lead is stored; the mail about it is best effort.
+  }
   return { leadId };
 }
 

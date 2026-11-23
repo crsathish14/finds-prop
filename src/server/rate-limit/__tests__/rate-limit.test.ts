@@ -343,3 +343,61 @@ describe("UT-ai-usage-visitor-hash: requestVisitorHash", () => {
     expect(requestVisitorHash(new Headers())).toBeNull();
   });
 });
+
+describe("UT-rate-limit: counting by a key after the request has ended (ADR-188)", () => {
+  beforeEach(() => {
+    rpc.mockReset();
+    createAdminSupabase.mockReset().mockReturnValue({ rpc });
+    environment.RATE_LIMIT_HMAC_SECRET = "a-test-secret-that-is-at-least-32-characters-long";
+  });
+
+  it("counts under the scope's own database scope with the key hashed, and says yes within the limit", async () => {
+    rpc.mockResolvedValue({ data: [{ allowed: true, retry_after: 0 }], error: null });
+    const { hitKeyedRateLimit } = await load();
+    expect(
+      await hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-1" }),
+    ).toBe(true);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    const call = rpc.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(call).toMatchObject({
+      limit_scope: "enquiry_mail_key",
+      window_seconds: 86400,
+      max_hits: 20,
+    });
+    expect(call.limit_subject).toMatch(/^[0-9a-f]{40}$/);
+    expect(call.limit_subject).not.toContain("poster-1");
+  });
+
+  it("counts the same poster under the same subject every time, and a different poster under another", async () => {
+    rpc.mockResolvedValue({ data: [{ allowed: true, retry_after: 0 }], error: null });
+    const { hitKeyedRateLimit } = await load();
+    await hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-1" });
+    await hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-2" });
+    await hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-2", requestId: "req-3" });
+    const subjects = rpc.mock.calls.map(
+      (call) => (call[1] as { limit_subject: string }).limit_subject,
+    );
+    expect(subjects[0]).toBe(subjects[1]);
+    expect(subjects[2]).not.toBe(subjects[0]);
+  });
+
+  it("says no, without throwing, once the limit is used up", async () => {
+    rpc.mockResolvedValue({ data: [{ allowed: false, retry_after: 600 }], error: null });
+    const { hitKeyedRateLimit } = await load();
+    expect(
+      await hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-1" }),
+    ).toBe(false);
+  });
+
+  it("throws when the counter or the secret fails, so the caller can decide (fail closed)", async () => {
+    const { hitKeyedRateLimit } = await load();
+    rpc.mockResolvedValue({ data: null, error: { message: "down" } });
+    await expect(
+      hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-1" }),
+    ).rejects.toMatchObject({ code: "INTERNAL" });
+    delete environment.RATE_LIMIT_HMAC_SECRET;
+    await expect(
+      hitKeyedRateLimit({ scope: "enquiry_mail", key: "poster-1", requestId: "req-1" }),
+    ).rejects.toBeDefined();
+  });
+});

@@ -143,3 +143,51 @@ describe("UT-project-write-error: what the database says becomes a closed error"
     }
   });
 });
+
+describe("UT-project-lead-service: telling the mail about a stored lead (ADR-188)", () => {
+  it("hands the new lead's id to onStored, once, after the lead is stored", async () => {
+    const { store, leads } = fakeStore();
+    const told: string[] = [];
+    await submitLead(store, {
+      input: input(),
+      phone: "919840012345",
+      visitor: VISITOR,
+      onStored: (leadId) => {
+        expect(leads).toHaveLength(1);
+        told.push(leadId);
+      },
+    });
+    expect(told).toEqual(["lead-1"]);
+  });
+
+  it("does not tell the mail when the database refuses the lead", async () => {
+    const told: string[] = [];
+    const store: ProjectWriteStore = {
+      insertLead: () => Promise.reject(new ActionError("NOT_FOUND", "The project is not open")),
+      recordEvent: () => Promise.resolve(true),
+    };
+    await expect(
+      submitLead(store, {
+        input: input(),
+        phone: "919840012345",
+        visitor: VISITOR,
+        onStored: (leadId) => told.push(leadId),
+      }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(told).toEqual([]);
+  });
+
+  it("still returns the lead when onStored throws", async () => {
+    const { store } = fakeStore();
+    await expect(
+      submitLead(store, {
+        input: input(),
+        phone: "919840012345",
+        visitor: VISITOR,
+        onStored: () => {
+          throw new Error("after() is not available");
+        },
+      }),
+    ).resolves.toEqual({ leadId: "lead-1" });
+  });
+});

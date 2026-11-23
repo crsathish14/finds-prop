@@ -1,5 +1,8 @@
 import "server-only";
 import { headers } from "next/headers";
+import { z } from "zod";
+import type { EnquiryMailFinder } from "@/features/enquiry-mail";
+import { ActionError } from "@/server/actions/normalise-error";
 import { env } from "@/server/env";
 import { clientIp, visitorHash } from "@/server/rate-limit/visitor-hash";
 import { createAdminSupabase } from "@/server/supabase/admin.server";
@@ -62,3 +65,49 @@ export async function currentVisitor(): Promise<string> {
 }
 
 export { verifiedPhoneDigits } from "@/server/auth/verified-phone";
+
+const leadMailRowSchema = z.object({
+  name: z.string(),
+  email: z.string().nullable(),
+  projects: z
+    .object({
+      name: z.string(),
+      slug: z.string(),
+      builder_id: z.string(),
+      builders: z.object({ email: z.string() }).nullable(),
+    })
+    .nullable(),
+});
+
+/**
+ * Reads what the mail about a stored lead needs (ADR-188), with the service role because a builder's address is
+ * not public and this runs after the visitor's request has ended. It is the same allow-listed module as the writes
+ * above, and the only caller is the lead action's `after()`. The event holds the lead's id; the name, the optional
+ * email, the project and the builder's email are read here. The phone, the message and the visit date are not
+ * selected at all. Answers null for an event of another kind and for a lead or project that is gone; throws when
+ * the database cannot be read (the notifier logs the code and goes on).
+ */
+export function createLeadMailFinder(requestId: string): EnquiryMailFinder {
+  const client = createAdminSupabase(requestId);
+  return async (event) => {
+    if (event.kind !== "project_lead.received") return null;
+    const { data, error } = await client
+      .from("project_leads")
+      .select("name, email, projects(name, slug, builder_id, builders(email))")
+      .eq("id", event.leadId)
+      .maybeSingle();
+    if (error) throw new ActionError("INTERNAL", "The lead could not be read for its mail");
+    const row = leadMailRowSchema.safeParse(data);
+    if (!row.success || !row.data.projects) return null;
+    const project = row.data.projects;
+    return {
+      posterId: project.builder_id,
+      posterEmail: project.builders?.email ?? null,
+      enquirerName: row.data.name,
+      enquirerEmail: row.data.email,
+      title: project.name,
+      pagePath: `/projects/${project.slug}`,
+      dashboardPath: "/builder/leads",
+    };
+  };
+}

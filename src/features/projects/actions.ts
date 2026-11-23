@@ -1,14 +1,23 @@
 "use server";
 
+import { after } from "next/server";
+import { notifyEnquiryMail } from "@/features/enquiry-mail";
 import { defineAction } from "@/server/actions/define-action";
 import { submitProjectLeadConfig, trackProjectEventConfig } from "./action-config";
 import { recordProjectEvent, submitLead } from "./lead-service";
-import { createProjectWriteStore, currentVisitor, verifiedPhoneDigits } from "./service";
+import {
+  createLeadMailFinder,
+  createProjectWriteStore,
+  currentVisitor,
+  verifiedPhoneDigits,
+} from "./service";
 
 /**
  * Sends a lead for a project: an enquiry or a request for a site visit. The caller is a signed-in
  * visitor with a verified phone; the number stored is the account's own, and nothing in the form says
- * who the visitor is (R-BE-03). It answers only that the request was received.
+ * who the visitor is (R-BE-03). It answers only that the request was received. Once the lead is stored, the mails
+ * about it (to the builder, and a confirmation to the visitor who typed an email) are handed over after the answer,
+ * by id only (ADR-188); a failure there is logged and never changes the answer.
  */
 export const submitProjectLead = defineAction({
   ...submitProjectLeadConfig,
@@ -17,6 +26,14 @@ export const submitProjectLead = defineAction({
       input,
       phone: await verifiedPhoneDigits(),
       visitor: await currentVisitor(),
+      onStored: (storedId) =>
+        after(() =>
+          notifyEnquiryMail(
+            { kind: "project_lead.received", leadId: storedId },
+            createLeadMailFinder(requestId),
+            requestId,
+          ),
+        ),
     });
     log.info("project lead stored", { leadId });
     return { received: true as const };
