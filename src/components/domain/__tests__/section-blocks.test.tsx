@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, within } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import { MapPin, ShieldCheck } from "lucide-react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Link } from "@/components/ui/link";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { CategoryCard } from "../category-card";
@@ -9,6 +9,72 @@ import { CtaBand } from "../cta-band";
 import { ScrollRow } from "../scroll-row";
 import { SectionHead } from "../section-head";
 import { ValueCard } from "../value-card";
+
+/**
+ * jsdom lays nothing out, so Embla is replaced by a stand-in the tests can drive: how many stops it
+ * has, how far along it is, and the calls the row makes on it (the buttons and the wheel).
+ */
+const embla = vi.hoisted(() => {
+  const handlers = new Map<string, Set<() => void>>();
+  const state = {
+    stops: 4,
+    progress: 0,
+    target: 0,
+    root: null as HTMLElement | null,
+    options: null as Record<string, unknown> | null,
+  };
+  const scrollNext = vi.fn();
+  const scrollPrev = vi.fn();
+  const distance = vi.fn();
+  const api = {
+    on(event: string, handler: () => void) {
+      handlers.set(event, (handlers.get(event) ?? new Set()).add(handler));
+      return api;
+    },
+    off(event: string, handler: () => void) {
+      handlers.get(event)?.delete(handler);
+      return api;
+    },
+    scrollSnapList: () => Array.from({ length: state.stops }, (_, index) => -300 * index),
+    scrollProgress: () => state.progress,
+    rootNode: () => state.root as HTMLElement,
+    internalEngine: () => ({
+      scrollSnaps: Array.from({ length: state.stops }, (_, index) => -300 * index),
+      target: { get: () => state.target },
+      scrollTo: { distance },
+    }),
+    scrollNext,
+    scrollPrev,
+  };
+  return {
+    api,
+    state,
+    scrollNext,
+    scrollPrev,
+    distance,
+    emit(event: string) {
+      handlers.get(event)?.forEach((handler) => handler());
+    },
+    reset() {
+      handlers.clear();
+      state.stops = 4;
+      state.progress = 0;
+      state.target = 0;
+      state.options = null;
+      state.root = document.createElement("div");
+      scrollNext.mockClear();
+      scrollPrev.mockClear();
+      distance.mockClear();
+    },
+  };
+});
+
+vi.mock("embla-carousel-react", () => ({
+  default: (options: Record<string, unknown>) => {
+    embla.state.options = options;
+    return [() => {}, embla.api];
+  },
+}));
 
 describe("SectionHead: the title row of a homepage section (S4-T06)", () => {
   it("is a level 2 heading by default and a level 3 on request", () => {
@@ -158,6 +224,7 @@ describe("CtaBand: the banner that invites a visitor to post a property (S4-T06)
 });
 
 describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () => {
+  beforeEach(() => embla.reset());
   afterEach(() => vi.restoreAllMocks());
 
   function cards(count: number) {
@@ -168,12 +235,27 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
     ));
   }
 
-  /** jsdom lays nothing out, so the row's sizes are set by hand before the first scroll event. */
-  function measureRow(list: HTMLElement, sizes: { client: number; scroll: number; left: number }) {
-    Object.defineProperty(list, "clientWidth", { configurable: true, value: sizes.client });
-    Object.defineProperty(list, "scrollWidth", { configurable: true, value: sizes.scroll });
-    list.scrollLeft = sizes.left;
-    fireEvent.scroll(list);
+  /** Moves the stand-in carousel to a share of the way (0 start, 1 end) and lets the row hear it. */
+  function moveTo(progress: number) {
+    act(() => {
+      embla.state.progress = progress;
+      embla.emit("scroll");
+    });
+  }
+
+  /** A sideways wheel turn over the row; returns whether the row took it from the page. */
+  function turnWheel(init: WheelEventInit) {
+    const event = new WheelEvent("wheel", { bubbles: true, cancelable: true, ...init });
+    act(() => {
+      embla.state.root?.dispatchEvent(event);
+    });
+    return event.defaultPrevented;
+  }
+
+  function fillWidth() {
+    return (
+      document.querySelector<HTMLElement>("[data-slot='scroll-row-progress-fill']") as HTMLElement
+    ).style.width;
   }
 
   it("is a list named by its label, with one item for each card, under a level 2 title", () => {
@@ -204,8 +286,7 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    measureRow(list, { client: 500, scroll: 2000, left: 0 });
+    moveTo(0);
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
   });
@@ -216,54 +297,56 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    measureRow(list, { client: 500, scroll: 2000, left: 0 });
-    const down = new WheelEvent("wheel", { deltaY: 100, cancelable: true, bubbles: true });
-    list.dispatchEvent(down);
-    expect(down.defaultPrevented).toBe(true);
-    expect(list.scrollLeft).toBe(100);
-    const up = new WheelEvent("wheel", { deltaY: -100, cancelable: true, bubbles: true });
-    list.scrollLeft = 0;
-    list.dispatchEvent(up);
-    expect(up.defaultPrevented).toBe(false);
-    measureRow(list, { client: 500, scroll: 2000, left: 1500 });
-    const end = new WheelEvent("wheel", { deltaY: 100, cancelable: true, bubbles: true });
-    list.dispatchEvent(end);
-    expect(end.defaultPrevented).toBe(false);
+    // At the start, an up-down wheel turned down moves the row to the right.
+    expect(turnWheel({ deltaY: 100 })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(-100, false);
+    // At the start, turned up, there is nowhere to go: the page scrolls.
+    embla.distance.mockClear();
+    expect(turnWheel({ deltaY: -100 })).toBe(false);
+    // At the end, turned down, the page scrolls.
+    embla.state.target = -900;
+    expect(turnWheel({ deltaY: 100 })).toBe(false);
+    expect(embla.distance).not.toHaveBeenCalled();
   });
 
-  it("moves the row by most of what is showing when Next is pressed", () => {
+  it("moves the carousel one screenful when Next or Previous is pressed", () => {
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    const scrollBy = vi.fn();
-    list.scrollBy = scrollBy;
-    measureRow(list, { client: 500, scroll: 2000, left: 0 });
+    moveTo(0);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(scrollBy).toHaveBeenCalledWith({ left: 400, behavior: "smooth" });
-    measureRow(list, { client: 500, scroll: 2000, left: 400 });
+    expect(embla.scrollNext).toHaveBeenCalledTimes(1);
+    moveTo(0.4);
     fireEvent.click(screen.getByRole("button", { name: "Previous" }));
-    expect(scrollBy).toHaveBeenLastCalledWith({ left: -400, behavior: "smooth" });
+    expect(embla.scrollPrev).toHaveBeenCalledTimes(1);
   });
 
-  it("scrolls without animation when the visitor asks for less motion", () => {
+  it("is an Embla carousel that glides, and moves without animation when the visitor asks for less motion", () => {
+    const view = renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    expect(embla.state.options).toMatchObject({ dragFree: true, align: "start", duration: 25 });
+    view.unmount();
+
     vi.spyOn(window, "matchMedia").mockImplementation(
-      (query) => ({ matches: true, media: query }) as MediaQueryList,
+      (query) =>
+        ({
+          matches: true,
+          media: query,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+        }) as unknown as MediaQueryList,
     );
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    const scrollBy = vi.fn();
-    list.scrollBy = scrollBy;
-    measureRow(list, { client: 500, scroll: 2000, left: 0 });
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(scrollBy).toHaveBeenCalledWith({ left: 400, behavior: "auto" });
+    expect(embla.state.options).toMatchObject({ duration: 0 });
   });
 
   it("disables Next at the end and enables Previous", () => {
@@ -272,32 +355,102 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    measureRow(list, { client: 500, scroll: 2000, left: 1500 });
+    moveTo(1);
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Previous" })).toBeEnabled();
   });
 
-  it("treats a fraction of a pixel from the end as the end (zoomed screens)", () => {
+  it("treats a hair from the end as the end (zoomed screens)", () => {
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
         {cards(6)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    measureRow(list, { client: 500, scroll: 2000, left: 1499 });
+    moveTo(0.998);
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
   });
 
-  it("disables both buttons when everything fits", () => {
+  it("disables both buttons and hides the bar when everything fits", () => {
+    embla.state.stops = 1;
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
         {cards(1)}
       </ScrollRow>,
     );
-    const list = screen.getByRole("list", { name: "Newest homes" });
-    measureRow(list, { client: 500, scroll: 316, left: 0 });
+    moveTo(0);
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(document.querySelector("[data-slot='scroll-row-progress']")).toHaveClass("invisible");
+  });
+
+  it("shows a progress bar instead of a scrollbar: partly full at the start, full at the end", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    const track = document.querySelector("[data-slot='scroll-row-progress']");
+    expect(track).toHaveAttribute("aria-hidden", "true");
+    moveTo(0);
+    expect(track).not.toHaveClass("invisible");
+    expect(fillWidth()).toBe("15%");
+    moveTo(0.5);
+    expect(Number.parseFloat(fillWidth())).toBeCloseTo(57.5, 5);
+    moveTo(1);
+    expect(fillWidth()).toBe("100%");
+    // The list keeps no native scrollbar of its own: the viewport clips, Embla moves.
+    expect(screen.getByRole("list", { name: "Newest homes" }).parentElement).toHaveClass(
+      "overflow-hidden",
+    );
+  });
+
+  it("follows a sideways wheel turn and takes it from the page", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    expect(turnWheel({ deltaX: 120, deltaY: 0 })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(-120, false);
+    embla.state.target = -600;
+    expect(turnWheel({ deltaX: -80, deltaY: 5 })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(80, false);
+  });
+
+  it("moves on Shift + wheel, and reads a wheel that counts lines as lines", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    expect(turnWheel({ deltaY: 100, shiftKey: true })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(-100, false);
+    expect(turnWheel({ deltaX: 3, deltaMode: 1 })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(-48, false);
+  });
+
+  it("leaves a sideways turn to the page at the row's ends", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    // At the start, a turn to the left has nowhere to go.
+    expect(turnWheel({ deltaX: -100 })).toBe(false);
+    embla.state.target = -900;
+    // At the end, a turn to the right has nowhere to go.
+    expect(turnWheel({ deltaX: 100 })).toBe(false);
+    expect(embla.distance).not.toHaveBeenCalled();
+  });
+
+  it("does not move further than the last stop", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    embla.state.target = -850;
+    turnWheel({ deltaX: 500 });
+    expect(embla.distance).toHaveBeenLastCalledWith(-50, false);
   });
 });
