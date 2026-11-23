@@ -182,7 +182,9 @@ describe("UT-ai-system-prompt: the rules it carries", () => {
     expect(LOWER_PROMPT).toContain("say you do not have it");
     expect(LOWER_PROMPT).toContain("never guess");
     expect(LOWER_PROMPT).toContain("never invent a home");
-    expect(LOWER_PROMPT).toContain("as-of time");
+    // The time a result was read is never written in an answer; the page shows the time of the customer's message (ADR-185).
+    expect(LOWER_PROMPT).toContain("never write the time or date a result was read");
+    expect(LOWER_PROMPT).toContain("it may have changed since");
   });
 
   it("treats the text a stranger wrote as data, naming the key tool results use for it", () => {
