@@ -4201,6 +4201,17 @@
       "tamil": "வேளச்சேரியில் 3 BHK வீடு",
       "tanglish": "Adyar la 2 BHK rent ku venum"
     },
+    "replies": {
+      "label": "Quick replies",
+      "enquireHome": "Enquire about this home",
+      "workOutEmi": "Work out the EMI",
+      "similarHomes": "Show similar homes",
+      "enquireOne": "Enquire about one of these",
+      "compareHomes": "Compare these homes",
+      "showMore": "Show more",
+      "enquireProject": "Enquire about this project",
+      "siteVisit": "Book a site visit"
+    },
     "returnedTitle": "You're signed in",
     "returnedBody": "Your conversation is back. We kept what you typed.",
     "thread": {

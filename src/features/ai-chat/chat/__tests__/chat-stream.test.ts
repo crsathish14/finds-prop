@@ -24,6 +24,26 @@ async function collect(body: ReadableStream<Uint8Array>): Promise<ChatEvent[]> {
 const translate = ((key: string, values?: Record<string, unknown>) =>
   `${key}${values ? JSON.stringify(values) : ""}`) as never;
 
+describe("reading the reply buttons of the stream (ADR-175)", () => {
+  it("reads the buttons and ignores a list that is too long or holds something that is not a button", async () => {
+    const good: ChatStreamEvent = {
+      type: "replies",
+      items: [
+        { key: "enquireHome", text: "Enquire about this home" },
+        { key: "workOutEmi", text: "Work out the EMI" },
+      ],
+    };
+    const bytes = [...encodeChatEvent(good)];
+    const tooMany = JSON.stringify({
+      type: "replies",
+      items: ["a", "b", "c", "d"].map((name) => ({ key: name, text: "x" })),
+    });
+    const notButtons = JSON.stringify({ type: "replies", items: [{ key: 1 }] });
+    expect(await collect(streamOf(new Uint8Array(bytes)))).toEqual([good]);
+    expect(await collect(streamOf(`${tooMany}\n${notButtons}\n`))).toEqual([]);
+  });
+});
+
 describe("reading the confirm card of the stream (AI-P6-T02)", () => {
   const target = { title: "3 BHK apartment", meta: "Velachery" };
 

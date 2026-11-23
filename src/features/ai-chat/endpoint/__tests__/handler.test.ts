@@ -64,14 +64,31 @@ describe("UT-ai-endpoint: a normal message", () => {
     expect(response.headers.get("x-request-id")).toBe("request-id-12345");
 
     const events = await readEvents(response);
-    expect(eventTypes(events)).toEqual(["start", "status", "text", "text", "card", "done"]);
+    expect(eventTypes(events)).toEqual([
+      "start",
+      "status",
+      "text",
+      "text",
+      "card",
+      "replies",
+      "done",
+    ]);
     expect(events[0]).toEqual({ type: "start", requestId: "request-id-12345" });
     expect(events[1]).toEqual({ type: "status", text: words("ai.searching") });
     expect(textOf(events)).toContain("I found a flat for you.");
     expect(textOf(events)).not.toContain("[[home");
-    expect(events.at(-2)).toEqual({
+    expect(events.at(-3)).toEqual({
       type: "card",
       reference: { kind: "home", homeId: HOME_ID, slug: "test-flat" },
+    });
+    // One home was shown, so the server offers the three fixed buttons for one home (ADR-175).
+    expect(events.at(-2)).toEqual({
+      type: "replies",
+      items: [
+        { key: "enquireHome", text: words("ai.replies.enquireHome") },
+        { key: "workOutEmi", text: words("ai.replies.workOutEmi") },
+        { key: "similarHomes", text: words("ai.replies.similarHomes") },
+      ],
     });
     expect(events.at(-1)).toEqual({ type: "done", outcome: "answered" });
 

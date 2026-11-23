@@ -5,7 +5,7 @@ import type { CardReference, SourceReference } from "../tools/types";
  * What the endpoint streams (ADR-128 section 4, "stream: text deltas, cards, ..."). The body is newline-delimited
  * JSON (`application/x-ndjson`): one event per line, each a complete JSON object, in this order:
  *
- *   start, then any of status / notice / text / card / source / link / confirm, then exactly one done.
+ *   start, then any of status / notice / text / card / source / link / confirm / replies, then exactly one done.
  *
  * `replace` swaps the whole message for a fixed line (a blocked answer, or a turn that could not finish); nothing
  * but `done` follows it. Every sentence is fixed wording from `en.json` that the server has already turned into
@@ -36,6 +36,14 @@ export type ChatStreamEvent =
   | { readonly type: "link"; readonly key: string; readonly text: string; readonly href: string }
   /** The confirm card for an enquiry or a site visit: `ready` to send, or the sign-in prompt. */
   | { readonly type: "confirm"; readonly card: ConfirmCard }
+  /**
+   * The reply buttons under the answer (ADR-175): fixed wording the server picked from what the turn returned. A click
+   * sends the same words as the customer's next message.
+   */
+  | {
+      readonly type: "replies";
+      readonly items: readonly { readonly key: string; readonly text: string }[];
+    }
   /** A fixed note beside the answer: "I removed personal details", the cap note, the disclaimer. */
   | { readonly type: "notice"; readonly key: string; readonly text: string }
   /** Swap the message for this line. `href` is a link built by code (the fixed fallback offers the search page). */

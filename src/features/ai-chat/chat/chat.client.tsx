@@ -73,6 +73,8 @@ type LiveAnswer = {
   references: ChatReference[];
   links: { text: string; href: string }[];
   sources: ChatSource[];
+  /** The reply buttons the server offered under this answer. */
+  replies: { key: string; text: string }[];
   replaced: boolean;
   href: string | undefined;
 };
@@ -91,6 +93,7 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   references: [],
   links: [],
   sources: [],
+  replies: [],
   replaced: false,
   href: undefined,
 };
@@ -375,6 +378,7 @@ export function ChatIsland({
         notes: [],
         references: [],
         sources: [],
+        replies: [],
       };
       setLive({ ...answer });
       setProblem(null);
@@ -434,6 +438,8 @@ export function ChatIsland({
             ) {
               answer.sources.push({ kind: event.kind, title: event.title, href: event.href });
             }
+          } else if (event.type === "replies") {
+            answer.replies = event.items.slice(0, 3);
           } else if (event.type === "confirm") {
             answer.confirm = event.card;
           } else if (event.type === "notice") {
@@ -452,6 +458,7 @@ export function ChatIsland({
             answer.references = [];
             answer.links = [];
             answer.sources = [];
+            answer.replies = [];
             answer.confirm = undefined;
             answer.replaced = true;
             answer.href = event.href;
@@ -472,6 +479,7 @@ export function ChatIsland({
             references: answer.references,
             ...(answer.links.length === 0 ? {} : { links: answer.links }),
             ...(answer.sources.length === 0 ? {} : { sources: answer.sources }),
+            ...(answer.replies.length === 0 ? {} : { replies: answer.replies }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),
@@ -507,17 +515,21 @@ export function ChatIsland({
     return () => window.clearTimeout(timer);
   }, [ready, run, focusComposer]);
 
-  function send() {
-    const text = draft.trim();
+  /** Sends a message: the box's own words, or the words of a reply button (which are the same as typing them). */
+  function sendText(text: string, keepDraft = false) {
     if (text === "" || busy || limited || gate) return;
     const userId = newId();
     const before = entries;
     setEntries([...before, { id: userId, role: "user", text, masked: false }]);
-    setDraft("");
+    if (!keepDraft) setDraft("");
     setReturned(false);
     // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
     focusComposer();
     void run(text, before, userId);
+  }
+
+  function send() {
+    sendText(draft.trim());
   }
 
   /** The customer is leaving to sign in with a card open: keep its message for the way back (never sent by itself). */
@@ -548,6 +560,10 @@ export function ChatIsland({
     translate("examples.tanglish"),
   ];
   const hasMessages = entries.length > 0 || live !== null;
+  // The reply buttons of the newest answer only, and only while nothing else is going on.
+  const newest = entries.at(-1);
+  const replies =
+    newest?.role === "assistant" && !busy && !gate && !limited ? (newest.replies ?? []) : [];
   const composerOff = gate || limited;
   const offReason = limited
     ? draft === ""
@@ -659,6 +675,26 @@ export function ChatIsland({
               : []),
           ]}
         </ChatThread>
+      ) : null}
+
+      {replies.length > 0 ? (
+        <ul
+          aria-label={translate("replies.label")}
+          className="flex flex-wrap gap-2"
+          data-slot="chat-replies"
+        >
+          {replies.map((reply) => (
+            <li key={reply.key}>
+              <Chip
+                type="button"
+                className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
+                onClick={() => sendText(reply.text, true)}
+              >
+                {reply.text}
+              </Chip>
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       <div ref={endRef} />
