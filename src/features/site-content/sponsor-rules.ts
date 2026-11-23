@@ -1,5 +1,5 @@
 import { SLOT_RATIOS, fitFor, type SponsorFit } from "@/lib/sponsors";
-import { SPONSOR_IMAGE_MAX_BYTES } from "./constants";
+import { SPONSOR_IMAGE_MAX_BYTES, SPONSOR_PHOTO_MAX_BYTES } from "./constants";
 
 /**
  * What makes a sponsor's picture acceptable (S7-T11, FR-ADM-11, DEC-15): the four slots a sponsor can fill, the types, the
@@ -196,4 +196,30 @@ export function slotFit(slot: SponsorSlot, info: Pick<ImageInfo, "width" | "heig
     { src: "", width: info.width, height: info.height },
     SLOT_RATIOS[slot.format][slot.device],
   );
+}
+
+/**
+ * The one landscape photo the Showcase card and the Cinematic banner crop from (ADR-182). Both crop it to different
+ * shapes on desktop and phone, so it must be large and landscape: at least 1600 × 900, between 4:3 and 21:9.
+ */
+export const PHOTO_RULE = {
+  minimum: { width: 1600, height: 900 },
+  ratio: { min: 4 / 3, max: 21 / 9 },
+} as const;
+
+/** Why a photo cannot be used, or `null` when it can: the same problems, in the same order, as a banner picture. */
+export function photoProblem(info: ImageInfo | null, bytes: number): SlotProblem | null {
+  if (!info) return "type";
+  if (bytes > SPONSOR_PHOTO_MAX_BYTES) return "size";
+  if (
+    info.width < PHOTO_RULE.minimum.width ||
+    info.height < PHOTO_RULE.minimum.height ||
+    info.width > SPONSOR_IMAGE_MAX_SIDE ||
+    info.height > SPONSOR_IMAGE_MAX_SIDE
+  ) {
+    return "small";
+  }
+  const ratio = info.width / info.height;
+  if (ratio < PHOTO_RULE.ratio.min - 0.01 || ratio > PHOTO_RULE.ratio.max + 0.01) return "shape";
+  return null;
 }

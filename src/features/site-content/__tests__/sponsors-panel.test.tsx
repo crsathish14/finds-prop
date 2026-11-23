@@ -44,6 +44,7 @@ function view(id: string, name: string, format: "strip" | "panel" | null = "stri
     advertiser: name,
     active: true,
     alt: `${name} banner`,
+    link: "url",
     href: `https://${id}.example`,
   };
   if (format === "strip") {

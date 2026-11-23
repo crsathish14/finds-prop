@@ -31,16 +31,78 @@ export type SponsorImage = {
 
 export type SponsorCreatives = { desktop: SponsorImage; compact: SponsorImage };
 
+/**
+ * How the hero ad under the search bar is drawn (sponsor ads plan, ADR-182): a Showcase card (A) or a Cinematic banner
+ * (B). The admin chooses one for the whole site. The Split layout keeps its picture panel whatever is chosen.
+ */
+export const SPONSOR_STYLES = ["showcase", "cinematic"] as const;
+export type SponsorStyle = (typeof SPONSOR_STYLES)[number];
+export const DEFAULT_SPONSOR_STYLE: SponsorStyle = "showcase";
+
+/** The Showcase card's facts about the project, as the admin typed them. */
+export type SponsorShowcase = {
+  project: string;
+  locality: string;
+  /** The homes on offer, such as "2 & 3 BHK". */
+  homes: string;
+  /** The price line, such as "₹78 L onwards". */
+  price: string;
+  size?: string;
+  possession?: string;
+  rera?: string;
+};
+
+/** The Cinematic banner's words, laid on the photo. */
+export type SponsorCinematic = {
+  eyebrow?: string;
+  headline: string;
+  line?: string;
+  /** The button's words. */
+  button: string;
+};
+
 export type SponsorAd = {
   id: string;
   active: boolean;
   placements: SponsorPlacement[];
   /** Required: the picture's description, which is also the link's name. */
   alt: string;
+  /** Where a click goes: an https address of another site, or one of our project pages (`/projects/<slug>`). */
   href: string;
+  /** False for one of our project pages; missing or true for another site's address (it opens in a new tab). */
+  external?: boolean;
+  /** The project a "project" link goes to, so its enquiry form can be opened. */
+  projectSlug?: string;
   strip?: SponsorCreatives;
   panel?: SponsorCreatives;
+  /** The developer or brand shown on the Showcase and Cinematic ads. */
+  brand?: string;
+  /** The one landscape photo both styles crop from. */
+  photo?: SponsorImage;
+  showcase?: SponsorShowcase;
+  cinematic?: SponsorCinematic;
 };
+
+/** True when an ad has everything the chosen style draws: the photo, the brand and that style's words. */
+export function readyFor(ad: SponsorAd, style: SponsorStyle): boolean {
+  if (!ad.photo || !ad.brand?.trim()) return false;
+  if (style === "showcase") {
+    const facts = ad.showcase;
+    return Boolean(
+      facts?.project.trim() && facts.locality.trim() && facts.homes.trim() && facts.price.trim(),
+    );
+  }
+  const words = ad.cinematic;
+  return Boolean(words?.headline.trim() && words.button.trim());
+}
+
+/**
+ * The hero ads to show in the chosen style, in the admin's order: active, meant for the hero and ready for the style.
+ * An ad saved before the styles existed (pictures only) is left out until the admin completes it.
+ */
+export function selectStyled(ads: readonly SponsorAd[], style: SponsorStyle): SponsorAd[] {
+  return ads.filter((ad) => ad.active && ad.placements.includes("hero") && readyFor(ad, style));
+}
 
 export type SponsorFit = "cover" | "contain" | "rejected";
 

@@ -80,6 +80,8 @@ const regionSchema = z.object({
  * (`toSponsorAds`), so one unusable banner never takes the others down: here it only has to be a list.
  */
 const sponsorsSchema = z.object({
+  /** The hero ad style (ADR-182); read tolerantly by `toSponsorStyle`, so an unknown value falls back to the Showcase. */
+  style: z.string().max(20).optional(),
   ads: z.array(z.unknown()).max(30),
 });
 

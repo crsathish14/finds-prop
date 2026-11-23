@@ -11,17 +11,27 @@ const path = (name: string, id = ID) => `sponsors/${id}/${name}`;
 function standIn(options: {
   files?: Record<string, Uint8Array>;
   stored?: unknown[];
+  style?: unknown;
+  liveProjects?: string[];
   removeFails?: boolean;
 }) {
-  const calls = { fetched: [] as string[], written: [] as unknown[][], removed: [] as string[][] };
+  const calls = {
+    fetched: [] as string[],
+    written: [] as unknown[][],
+    styles: [] as string[],
+    removed: [] as string[][],
+  };
   const store: SponsorStore = {
     readAds: () => Promise.resolve(options.stored ?? []),
+    readStyle: () => Promise.resolve(options.style),
+    isLiveProject: (slug) => Promise.resolve((options.liveProjects ?? []).includes(slug)),
     fetchImage: (file) => {
       calls.fetched.push(file);
       return Promise.resolve(options.files?.[file] ?? null);
     },
-    write: (ads) => {
+    write: (ads, style) => {
       calls.written.push(ads);
+      calls.styles.push(style);
       return Promise.resolve();
     },
     removeFiles: (files) => {
@@ -82,6 +92,7 @@ describe("UT-sponsors-save: the rules of saving the sponsors (S7-T11)", () => {
         active: true,
         placements: ["hero", "results"],
         alt: "Sample Developer: new launch apartments.",
+        link: "url",
         href: "https://sampledeveloper.example",
         strip: {
           desktop: { path: path("sd.png"), width: 1940, height: 180, bytes: 90_000 },
@@ -299,5 +310,105 @@ describe("UT-sponsors-save: the rules of saving the sponsors (S7-T11)", () => {
     await saveSponsorsContent(store, input([base()]));
     expect(calls.written).toHaveLength(1);
     expect(calls.removed).toEqual([]);
+  });
+});
+
+describe("UT-sponsors-save: the Showcase and Cinematic fields (ADR-182)", () => {
+  const SHOWCASE = {
+    project: "Aranya Heights",
+    locality: "Sholinganallur, OMR",
+    homes: "2 & 3 BHK",
+    price: "₹78 L onwards",
+  };
+
+  it("checks the photo by its own rule and stores the brand, the photo and the filled lines", async () => {
+    const { store, calls } = standIn({ files: { [path("photo.jpg")]: jpeg(2000, 1125, 300_000) } });
+    await saveSponsorsContent(
+      store,
+      input([
+        base({
+          brand: "Meridian Homes",
+          photo: path("photo.jpg"),
+          showcase: { ...SHOWCASE, size: "", rera: " " },
+          cinematic: { headline: "Homes that open onto the lake", button: "" },
+        }),
+      ]),
+    );
+    expect(calls.written[0]?.[0]).toMatchObject({
+      brand: "Meridian Homes",
+      photo: { path: path("photo.jpg"), width: 2000, height: 1125, bytes: 300_000 },
+      showcase: SHOWCASE,
+      cinematic: { headline: "Homes that open onto the lake" },
+    });
+  });
+
+  it("refuses a photo that is too small, too heavy or the wrong shape, naming the photo", async () => {
+    const cases: [Uint8Array, string][] = [
+      [jpeg(1200, 700, 1000), "validation.sponsorImageSmall"],
+      [jpeg(2000, 1125, 490 * 1024), "validation.sponsorImageSize"],
+      [jpeg(2000, 2000, 1000), "validation.sponsorImageShape"],
+    ];
+    for (const [file, key] of cases) {
+      const { store, calls } = standIn({ files: { [path("photo.jpg")]: file } });
+      await expect(
+        saveSponsorsContent(store, input([base({ photo: path("photo.jpg") })])),
+      ).rejects.toMatchObject({
+        fieldErrors: { "sponsors.0.photo": [expect.objectContaining({ key })] },
+      });
+      expect(calls.written).toEqual([]);
+    }
+  });
+
+  it("links to a live project by its slug, and refuses one buyers cannot see", async () => {
+    const live = standIn({ liveProjects: ["aranya-heights"] });
+    await saveSponsorsContent(
+      live.store,
+      input([base({ link: "project", projectSlug: "aranya-heights", href: "" })]),
+    );
+    expect(live.calls.written[0]?.[0]).toMatchObject({
+      link: "project",
+      projectSlug: "aranya-heights",
+    });
+    expect(live.calls.written[0]?.[0]).not.toHaveProperty("href");
+
+    const hidden = standIn({ liveProjects: [] });
+    await expect(
+      saveSponsorsContent(
+        hidden.store,
+        input([base({ link: "project", projectSlug: "draft-project" })]),
+      ),
+    ).rejects.toMatchObject({
+      fieldErrors: { "sponsors.0.projectSlug": [{ key: "validation.sponsorProjectMissing" }] },
+    });
+    expect(hidden.calls.written).toEqual([]);
+  });
+
+  it("writes the chosen style, and keeps the stored one when none is sent", async () => {
+    const chosen = standIn({ style: "showcase" });
+    await saveSponsorsContent(
+      chosen.store,
+      sponsorsInputSchema.parse({ style: "cinematic", sponsors: [base()] }),
+    );
+    expect(chosen.calls.styles).toEqual(["cinematic"]);
+
+    const kept = standIn({ style: "cinematic" });
+    await saveSponsorsContent(kept.store, input([base()]));
+    expect(kept.calls.styles).toEqual(["cinematic"]);
+
+    const unknown = standIn({ style: "something" });
+    await saveSponsorsContent(unknown.store, input([base()]));
+    expect(unknown.calls.styles).toEqual(["showcase"]);
+  });
+
+  it("takes a replaced photo out of the bucket after the save", async () => {
+    const stored = [
+      { ...base(), photo: { path: path("old.jpg"), width: 2000, height: 1125, bytes: 1 } },
+    ];
+    const { store, calls } = standIn({
+      stored,
+      files: { [path("new.jpg")]: jpeg(2000, 1125, 1000) },
+    });
+    await saveSponsorsContent(store, input([base({ photo: path("new.jpg") })]));
+    expect(calls.removed).toEqual([[path("old.jpg")]]);
   });
 });

@@ -1,9 +1,9 @@
 import "server-only";
-import type { SponsorAd } from "@/lib/sponsors";
+import type { SponsorAd, SponsorStyle } from "@/lib/sponsors";
 import { publicEnv } from "@/lib/public-env";
 import { logger } from "@/server/logger";
 import { getSiteSettings } from "./queries";
-import { toSponsorAds } from "./sponsors";
+import { toSponsorAds, toSponsorStyle } from "./sponsors";
 
 /**
  * The sponsored banners to offer a page: the site content's list (cached with the rest of it), each
@@ -13,4 +13,10 @@ import { toSponsorAds } from "./sponsors";
 export async function getSponsorAds(): Promise<SponsorAd[]> {
   const settings = await getSiteSettings();
   return toSponsorAds(settings.sponsors.ads, publicEnv.NEXT_PUBLIC_SUPABASE_URL, logger);
+}
+
+/** The hero ad style the admin chose (ADR-182): the Showcase unless the Cinematic banner was chosen. */
+export async function getSponsorStyle(): Promise<SponsorStyle> {
+  const settings = await getSiteSettings();
+  return toSponsorStyle(settings.sponsors.style);
 }
