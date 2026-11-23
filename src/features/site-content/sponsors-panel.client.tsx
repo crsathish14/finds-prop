@@ -4,14 +4,17 @@ import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { SponsorAdFields } from "@/components/domain/sponsor-ad-fields";
 import { SponsorFields } from "@/components/domain/sponsor-fields";
 import type { SponsorImageSlotProps } from "@/components/domain/sponsor-image-slot";
 import { SponsorsManager, type SponsorRow } from "@/components/domain/sponsors-manager";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { ManagerDrawer } from "@/components/patterns/manager-drawer";
 import { Icon } from "@/components/ui/icon";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { notify } from "@/lib/notify";
+import type { SponsorStyle } from "@/lib/sponsors";
 import type { ActionResult } from "@/types/action";
 import {
   SLOT_KEYS,
@@ -27,15 +30,17 @@ import {
   serverProblemsOf,
   slotOf,
   statusOf,
+  styleReady,
   withSponsorAdded,
   withSponsorMoved,
   withSponsorRemoved,
   withSponsorReplaced,
   type DraftBox,
-  type SlotKey,
+  type PictureKey,
   type SponsorDraft,
 } from "./sponsor-draft";
 import {
+  PHOTO_RULE,
   SLOT_SIZES,
   SPONSOR_IMAGE_MAX_SIDE,
   slotFit,
@@ -61,7 +66,10 @@ type Panel = { kind: "add" } | { kind: "edit"; id: string } | null;
 
 /** A line under a slot: what is wrong, already in words. */
 type Note = { title: string; text: string };
-type Problems = { boxes: Partial<Record<DraftBox, string>>; slots: Partial<Record<SlotKey, Note>> };
+type Problems = {
+  boxes: Partial<Record<DraftBox, string>>;
+  slots: Partial<Record<PictureKey, Note>>;
+};
 const NO_PROBLEMS: Problems = { boxes: {}, slots: {} };
 
 /** A file the browser refused for its slot, and what to say about it. */
@@ -81,21 +89,29 @@ const revokeUrl: Revoke = (url) => {
 
 /** The same record without one slot's entry. */
 function without<Value>(
-  record: Partial<Record<SlotKey, Value>>,
-  key: SlotKey,
-): Partial<Record<SlotKey, Value>> {
+  record: Partial<Record<PictureKey, Value>>,
+  key: PictureKey,
+): Partial<Record<PictureKey, Value>> {
   return Object.fromEntries(Object.entries(record).filter(([name]) => name !== key));
 }
 
 const typeLabel = (type: string): string => (type.split("/")[1] ?? type).toUpperCase();
 const kilobytes = (bytes: number): number => Math.max(1, Math.round(bytes / 1024));
 
+/** A live project the admin can link a sponsor to (ADR-188). */
+export type SponsorProjectOption = { slug: string; name: string; developer: string };
+
 export function useSponsors({
   sponsors,
+  style: savedStyle,
+  projects = [],
   save,
   storage,
 }: {
   sponsors: readonly SponsorEditView[];
+  /** The hero ad style as saved (ADR-182). */
+  style: SponsorStyle;
+  projects?: readonly SponsorProjectOption[];
   save: SaveSponsors;
   storage?: SponsorStorage;
 }) {
@@ -108,17 +124,19 @@ export function useSponsors({
   // The list opens on what is saved and starts over from it whenever the page is read again.
   const [seen, setSeen] = useState(sponsors);
   const [drafts, setDrafts] = useState(() => draftsOf(sponsors));
+  const [style, setStyle] = useState<SponsorStyle>(savedStyle);
   if (sponsors !== seen) {
     setSeen(sponsors);
     setDrafts(draftsOf(sponsors));
+    setStyle(savedStyle);
   }
 
   const [saving, setSaving] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [work, setWork] = useState<SponsorDraft | null>(null);
   const [problems, setProblems] = useState<Problems>(NO_PROBLEMS);
-  const [rejections, setRejections] = useState<Partial<Record<SlotKey, Rejection>>>({});
-  const [checking, setChecking] = useState<readonly SlotKey[]>([]);
+  const [rejections, setRejections] = useState<Partial<Record<PictureKey, Rejection>>>({});
+  const [checking, setChecking] = useState<readonly PictureKey[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   /* ---- sending ---- */
@@ -132,9 +150,9 @@ export function useSponsors({
     return found;
   };
 
-  const send = async (next: readonly SponsorDraft[]) => {
+  const send = async (next: readonly SponsorDraft[], chosenStyle: SponsorStyle = style) => {
     try {
-      const result = await save(payloadOf(next));
+      const result = await save(payloadOf(next, chosenStyle));
       if (result.ok) return { ok: true as const };
       return {
         ok: false as const,
@@ -195,7 +213,7 @@ export function useSponsors({
       boxes[box as DraftBox] = fieldErrorText(everything, { key });
     }
     const slots: Problems["slots"] = {};
-    for (const key of Object.keys(found.slots) as SlotKey[]) {
+    for (const key of Object.keys(found.slots) as PictureKey[]) {
       slots[key] = { title: words.slotStatus.neededTitle, text: words.slotStatus.neededText };
     }
     return { boxes, slots };
@@ -204,7 +222,7 @@ export function useSponsors({
   const serverNotes = (mine: ReturnType<typeof serverProblemsOf>[string] | undefined): Problems => {
     const slots: Problems["slots"] = {};
     for (const [key, text] of Object.entries(mine?.slots ?? {})) {
-      slots[key as SlotKey] = { title: words.slotStatus.otherTitle, text };
+      slots[key as PictureKey] = { title: words.slotStatus.otherTitle, text };
     }
     return { boxes: { ...mine?.boxes }, slots };
   };
@@ -287,6 +305,25 @@ export function useSponsors({
   const move = (id: string, direction: "up" | "down") =>
     void change(withSponsorMoved(drafts, id, direction));
 
+  /** Changes the hero ad style for every sponsor and saves it at once with the list (ADR-188). */
+  const chooseStyle = async (next: SponsorStyle) => {
+    if (saving || next === style) return;
+    const before = style;
+    setStyle(next);
+    setSaving(true);
+    try {
+      const sent = await send(drafts, next);
+      if (sent.ok) {
+        succeeded(drafts);
+        return;
+      }
+      setStyle(before);
+      notify.error(sent.text);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const confirmDelete = () => {
     const id = deleting;
     setDeleting(null);
@@ -295,7 +332,7 @@ export function useSponsors({
 
   /* ---- the pictures ---- */
 
-  const dropPicture = (key: SlotKey) =>
+  const dropPicture = (key: PictureKey) =>
     setWork((previous) => {
       if (!previous) return previous;
       const gone = previous.pictures[key];
@@ -303,7 +340,7 @@ export function useSponsors({
       return { ...previous, pictures: without(previous.pictures, key) };
     });
 
-  const clearNote = (key: SlotKey) => {
+  const clearNote = (key: PictureKey) => {
     setRejections((previous) => {
       const gone = previous[key];
       if (gone?.url) revokeUrl(gone.url);
@@ -315,7 +352,7 @@ export function useSponsors({
     });
   };
 
-  const pick = async (key: SlotKey, file: File) => {
+  const pick = async (key: PictureKey, file: File) => {
     setChecking((previous) => [...previous, key]);
     try {
       const check = await checkPicture(file, key);
@@ -345,15 +382,22 @@ export function useSponsors({
     }
   };
 
-  const rejectionNote = (key: SlotKey, rejection: Rejection): Note => {
+  const rejectionNote = (key: PictureKey, rejection: Rejection): Note => {
     const status = words.slotStatus;
-    const { shown, minimum } = SLOT_SIZES[slotOf(key).format][slotOf(key).device];
+    // The photo has its own rule (ADR-182): its shape is a range, shown here as its widest landscape shape.
+    const { shown, minimum } =
+      key === "photo"
+        ? { shown: { width: 16, height: 9 }, minimum: PHOTO_RULE.minimum }
+        : SLOT_SIZES[slotOf(key).format][slotOf(key).device];
     const info = rejection.info;
     switch (rejection.problem) {
       case "type":
         return { title: status.typeTitle, text: status.typeText };
       case "size":
-        return { title: status.sizeTitle(kilobytes(rejection.bytes)), text: status.sizeText };
+        return {
+          title: status.sizeTitle(kilobytes(rejection.bytes)),
+          text: key === "photo" ? words.photo.sizeText : status.sizeText,
+        };
       case "small":
         if (info && (info.width > SPONSOR_IMAGE_MAX_SIDE || info.height > SPONSOR_IMAGE_MAX_SIDE)) {
           return {
@@ -441,13 +485,73 @@ export function useSponsors({
     return { ...base, state: "empty" as const };
   });
 
+  /** The photo slot of the hero ad (ADR-188): shown at 16:9, the shape both styles crop from. */
+  const photoSlot = ((): SponsorImageSlotProps => {
+    const key = "photo" as const;
+    const picture = work?.pictures.photo;
+    const rejection = rejections.photo;
+    const note = problems.slots.photo;
+    const base = {
+      title: words.photo.title,
+      note: words.photo.note,
+      ratio: { width: 16, height: 9 },
+      words: words.slotWords,
+      onFile: (file: File) => void pick(key, file),
+    };
+    if (checking.includes(key)) return { ...base, state: "checking" };
+    if (rejection) {
+      return {
+        ...base,
+        state: "rejected",
+        fileName: rejection.fileName,
+        ...(rejection.url ? { image: { src: rejection.url } } : {}),
+        status: rejectionNote(key, rejection),
+      };
+    }
+    if (note) {
+      return {
+        ...base,
+        state: "rejected",
+        ...(picture ? { image: { src: picture.url } } : {}),
+        status: note,
+      };
+    }
+    if (picture) {
+      return {
+        ...base,
+        state: "filled",
+        image: { src: picture.url },
+        status: {
+          title: words.slotStatus.fills,
+          text: words.say.details(
+            picture.width,
+            picture.height,
+            typeLabel(picture.type),
+            picture.bytes === null ? null : kilobytes(picture.bytes),
+          ),
+        },
+        onRemove: () => {
+          clearNote(key);
+          dropPicture(key);
+        },
+      };
+    }
+    return { ...base, state: "empty" };
+  })();
+
+  const projectOptions = projects.map((project) => ({
+    slug: project.slug,
+    label: project.developer ? `${project.name} · ${project.developer}` : project.name,
+  }));
+
   const rows: SponsorRow[] = drafts.map((draft) => {
     const label = draft.advertiser.trim() || words.manager.words.unnamed;
     return {
       id: draft.id,
       advertiser: draft.advertiser.trim(),
-      status: statusOf(draft),
-      strip: formatReady(draft, "strip"),
+      status: statusOf(draft, style),
+      // The first readiness column is the hero ad in the chosen style (ADR-188).
+      strip: styleReady(draft, style),
       panel: formatReady(draft, "panel"),
       moveUpLabel: words.say.moveUp(label),
       moveDownLabel: words.say.moveDown(label),
@@ -464,6 +568,10 @@ export function useSponsors({
 
   return {
     drafts,
+    style,
+    chooseStyle,
+    photoSlot,
+    projectOptions,
     saving,
     rows,
     full: !canAddSponsor(drafts),
@@ -493,7 +601,23 @@ export function SponsorsPanel({ state }: { state: SponsorsState }) {
   const note = state.full ? `${words.manager.note} ${words.manager.full}` : words.manager.note;
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-4">
+        <p className="font-bold text-ink">{words.style.label}</p>
+        <SegmentedControl
+          aria-label={words.style.label}
+          size="sm"
+          value={state.style}
+          onValueChange={(next) =>
+            void state.chooseStyle(next === "cinematic" ? "cinematic" : "showcase")
+          }
+          options={[
+            { value: "showcase", label: words.style.showcase },
+            { value: "cinematic", label: words.style.cinematic },
+          ]}
+        />
+        <p className="text-small text-muted">{words.style.hint}</p>
+      </div>
       <SponsorsManager
         title={words.manager.title}
         intro={words.manager.intro}
@@ -537,11 +661,25 @@ export function SponsorsPanel({ state }: { state: SponsorsState }) {
               values={{
                 advertiser: work.advertiser,
                 alt: work.alt,
+                link: work.link,
                 href: work.href,
+                projectSlug: work.projectSlug,
                 active: work.active,
               }}
               errors={state.problems.boxes}
               onChange={(values) => state.setWork({ ...work, ...values })}
+              projects={state.projectOptions}
+              adFields={
+                <SponsorAdFields
+                  values={{ brand: work.brand, showcase: work.showcase, cinematic: work.cinematic }}
+                  errors={state.problems.boxes}
+                  onChange={(values) => state.setWork({ ...work, ...values })}
+                  photo={state.photoSlot}
+                  style={state.style}
+                  disabled={state.saving}
+                  words={words.ad}
+                />
+              }
               slots={state.slots}
               disabled={state.saving}
               words={words.fields}

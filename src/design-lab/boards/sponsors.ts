@@ -5,6 +5,7 @@ import {
   SponsorsManagerDemo,
 } from "./sponsor-manager-demos";
 import { SponsorFormDemo, SponsorSlotDemo } from "./sponsors-demos";
+import { SponsorAdFieldsDemo } from "./sponsor-ad-fields-demos";
 
 /**
  * What the admin uses to manage the sponsored banners (S7-T11, FR-ADM-11): the picture slot with every state a chosen
@@ -26,9 +27,17 @@ export const SPONSORS: LabEntry[] = [
     id: "sponsor-form",
     name: "Sponsor form",
     description:
-      "The body of the Add sponsor and Edit sponsor drawer: the advertiser's name (shown to staff only), the alt text, the destination link, the Active switch and the four picture slots with their notes. Shown empty for a new sponsor, filled with all four pictures ready, with a near-miss phone picture, with problems on the boxes and refused pictures, and while saving.",
+      "The body of the Add sponsor and Edit sponsor drawer: the advertiser's name (shown to staff only), the alt text, where a click goes (one of our projects or another website), the Active switch and the four picture slots with their notes. Shown empty for a new sponsor, filled with all four pictures ready, with a near-miss phone picture, with problems on the boxes and refused pictures, and while saving.",
     sources: ["domain/sponsor-fields.tsx", "domain/sponsor-image-slot.tsx"],
     Demo: SponsorFormDemo,
+  },
+  {
+    id: "sponsor-ad-fields",
+    name: "Hero ad fields",
+    description:
+      "The hero ad's part of the sponsor form (ADR-188): the developer or brand, the one photo both styles crop from, and the words of the Showcase card and the Cinematic banner, the style the site shows now marked Shown now. Shown empty for a new sponsor, filled with the photo, with a problem on a box, and while saving.",
+    sources: ["domain/sponsor-ad-fields.tsx"],
+    Demo: SponsorAdFieldsDemo,
   },
   {
     id: "sponsors-manager",

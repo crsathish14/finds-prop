@@ -1,5 +1,6 @@
 import {
   EXTENSION_OF,
+  photoProblem,
   readImageInfo,
   slotFit,
   slotProblem,
@@ -7,10 +8,10 @@ import {
   type SlotProblem,
 } from "./sponsor-rules";
 import {
-  SLOT_KEYS,
+  PICTURE_KEYS,
   slotOf,
   type ChosenDraftPicture,
-  type SlotKey,
+  type PictureKey,
   type SponsorDraft,
   type StoredDraftPicture,
 } from "./sponsor-draft";
@@ -36,9 +37,16 @@ export type PictureCheck =
  * nothing), no heavier than the limit, at least twice the slot and close enough to its shape. Reads only the start of
  * the file.
  */
-export async function checkPicture(file: File, key: SlotKey): Promise<PictureCheck> {
+export async function checkPicture(file: File, key: PictureKey): Promise<PictureCheck> {
   const head = new Uint8Array(await file.slice(0, HEADER_BYTES).arrayBuffer());
   const info = readImageInfo(head);
+  // The Showcase and Cinematic photo has its own rule (ADR-182): large and landscape; the styles crop it, so it fills.
+  if (key === "photo") {
+    const problem = photoProblem(info, file.size);
+    if (problem !== null || !info)
+      return { ok: false, problem: problem ?? "type", info, bytes: file.size };
+    return { ok: true, info, bytes: file.size, fit: "cover" };
+  }
   const problem = slotProblem(slotOf(key), info, file.size);
   if (problem !== null || !info)
     return { ok: false, problem: problem ?? "type", info, bytes: file.size };
@@ -81,7 +89,7 @@ export type UploadResult =
   /** Every chosen picture is in the bucket: the draft now holds only stored ones. `uploaded` lists the new files. */
   | { ok: true; draft: SponsorDraft; uploaded: string[] }
   /** One picture could not be sent. `uploaded` lists what already was, for the page to take away again. */
-  | { ok: false; slot: SlotKey; uploaded: string[] };
+  | { ok: false; slot: PictureKey; uploaded: string[] };
 
 /**
  * Puts the sponsor's chosen pictures in the bucket under `sponsors/<its id>/`, one after another, and gives back the
@@ -95,7 +103,7 @@ export async function uploadChosen(
 ): Promise<UploadResult> {
   const uploaded: string[] = [];
   const pictures: SponsorDraft["pictures"] = { ...draft.pictures };
-  for (const key of SLOT_KEYS) {
+  for (const key of PICTURE_KEYS) {
     const picture = draft.pictures[key];
     if (picture?.kind !== "chosen") continue;
     const path = `sponsors/${draft.id}/${token()}.${EXTENSION_OF[picture.type]}`;

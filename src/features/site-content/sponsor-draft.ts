@@ -1,5 +1,5 @@
 import { heroCoverage, type HeroCoverage } from "@/lib/sponsor-coverage";
-import type { SponsorAd, SponsorFit } from "@/lib/sponsors";
+import { readyFor, type SponsorAd, type SponsorFit, type SponsorStyle } from "@/lib/sponsors";
 import {
   SPONSORS_MAX,
   SPONSOR_ADVERTISER_MAX,
@@ -21,6 +21,29 @@ import type { SponsorEditView, SponsorPictureView } from "./sponsor-view";
 /** The four slots by the names the form uses ("phone" is the stored "compact"). */
 export const SLOT_KEYS = ["strip-desktop", "strip-phone", "panel-desktop", "panel-phone"] as const;
 export type SlotKey = (typeof SLOT_KEYS)[number];
+
+/** Every picture of a sponsor: the four banner slots and the one photo of the Showcase and Cinematic styles (ADR-188). */
+export const PICTURE_KEYS = [...SLOT_KEYS, "photo"] as const;
+export type PictureKey = (typeof PICTURE_KEYS)[number];
+
+/** The Showcase boxes (ADR-182) and their limits, in the order of the form. */
+export const SHOWCASE_BOXES = {
+  project: 60,
+  locality: 60,
+  homes: 40,
+  size: 40,
+  possession: 40,
+  price: 40,
+  rera: 60,
+} as const;
+export type ShowcaseBox = keyof typeof SHOWCASE_BOXES;
+
+/** The Cinematic boxes (ADR-182) and their limits, in the order of the form. */
+export const CINEMATIC_BOXES = { eyebrow: 30, headline: 40, line: 90, button: 24 } as const;
+export type CinematicBox = keyof typeof CINEMATIC_BOXES;
+
+/** The brand's limit (ADR-182). */
+export const BRAND_MAX = 60;
 
 /** The format and the stored device name of a slot key. */
 export function slotOf(key: SlotKey): { format: SponsorFormat; device: "desktop" | "compact" } {
@@ -61,10 +84,20 @@ export interface SponsorDraft {
   id: string;
   advertiser: string;
   alt: string;
+  /** Where a click goes (ADR-182): another site's address, or one of our live projects. */
+  link: "url" | "project";
   href: string;
+  projectSlug: string;
   active: boolean;
-  pictures: Partial<Record<SlotKey, DraftPicture>>;
+  /** The developer or brand shown on the Showcase and Cinematic ads. */
+  brand: string;
+  showcase: Record<ShowcaseBox, string>;
+  cinematic: Record<CinematicBox, string>;
+  pictures: Partial<Record<PictureKey, DraftPicture>>;
 }
+
+const emptyLines = <Key extends string>(limits: Record<Key, number>): Record<Key, string> =>
+  Object.fromEntries(Object.keys(limits).map((key) => [key, ""])) as Record<Key, string>;
 
 function storedOf(view: SponsorPictureView): StoredDraftPicture {
   return { kind: "stored", ...view };
@@ -80,12 +113,18 @@ export function draftsOf(views: readonly SponsorEditView[]): SponsorDraft[] {
       pictures[`${format}-desktop`] = storedOf(pair.desktop);
       pictures[`${format}-phone`] = storedOf(pair.compact);
     }
+    if (view.photo) pictures.photo = storedOf(view.photo);
     return {
       id: view.id,
       advertiser: view.advertiser,
       alt: view.alt,
+      link: view.link,
       href: view.href,
+      projectSlug: view.projectSlug ?? "",
       active: view.active,
+      brand: view.brand ?? "",
+      showcase: { ...emptyLines(SHOWCASE_BOXES), ...view.showcase },
+      cinematic: { ...emptyLines(CINEMATIC_BOXES), ...view.cinematic },
       pictures,
     };
   });
@@ -93,7 +132,20 @@ export function draftsOf(views: readonly SponsorEditView[]): SponsorDraft[] {
 
 /** A sponsor that has nothing yet (Active starts on). */
 export function emptyDraft(id: string): SponsorDraft {
-  return { id, advertiser: "", alt: "", href: "", active: true, pictures: {} };
+  return {
+    id,
+    advertiser: "",
+    alt: "",
+    // Another website, as before the styles; the admin can switch to one of our projects.
+    link: "url",
+    href: "",
+    projectSlug: "",
+    active: true,
+    brand: "",
+    showcase: emptyLines(SHOWCASE_BOXES),
+    cinematic: emptyLines(CINEMATIC_BOXES),
+    pictures: {},
+  };
 }
 
 /** A format is ready when both its pictures, desktop and phone, are there. */
@@ -104,11 +156,25 @@ export function formatReady(draft: SponsorDraft, format: SponsorFormat): boolean
   );
 }
 
+/**
+ * Whether a sponsor has everything the chosen hero style draws (ADR-182): the photo, the brand and that style's
+ * words. The public side's own rule (`readyFor`), read from the draft.
+ */
+export function styleReady(draft: SponsorDraft, style: SponsorStyle): boolean {
+  const [ad] = adsOf([draft]);
+  return ad ? readyFor(ad, style) : false;
+}
+
 export type SponsorStatus = "active" | "inactive" | "needs_images";
 
-/** A sponsor with no ready format is never shown, whatever its switch says. */
-export function statusOf(draft: SponsorDraft): SponsorStatus {
-  if (!formatReady(draft, "strip") && !formatReady(draft, "panel")) return "needs_images";
+/**
+ * A sponsor that can show nowhere (not ready for the hero style, and no banner pair for Split or the results) is never
+ * shown, whatever its switch says.
+ */
+export function statusOf(draft: SponsorDraft, style: SponsorStyle): SponsorStatus {
+  if (!styleReady(draft, style) && !formatReady(draft, "strip") && !formatReady(draft, "panel")) {
+    return "needs_images";
+  }
   return draft.active ? "active" : "inactive";
 }
 
@@ -170,12 +236,19 @@ export function withSponsorActive(
 
 /* ---- what is checked before anything is sent ---- */
 
-export type DraftBox = "advertiser" | "alt" | "href";
+export type DraftBox =
+  | "advertiser"
+  | "alt"
+  | "href"
+  | "projectSlug"
+  | "brand"
+  | `showcase.${ShowcaseBox}`
+  | `cinematic.${CinematicBox}`;
 export interface DraftProblems {
   /** A message key under `validation.*`, by box. */
   boxes: Partial<Record<DraftBox, string>>;
   /** The slots a format is missing its other half in. */
-  slots: Partial<Record<SlotKey, string>>;
+  slots: Partial<Record<PictureKey, string>>;
 }
 
 function isSecureLink(text: string): boolean {
@@ -203,10 +276,24 @@ export function draftProblems(draft: SponsorDraft): DraftProblems {
   if (advertiser) boxes.advertiser = advertiser;
   const alt = line(draft.alt, SPONSOR_ALT_MAX);
   if (alt) boxes.alt = alt;
-  const href = draft.href.trim();
-  if (href === "") boxes.href = "validation.required";
-  else if (href.length > SPONSOR_HREF_MAX || !isSecureLink(href))
-    boxes.href = "validation.linkInvalid";
+  if (draft.link === "project") {
+    if (draft.projectSlug.trim() === "") boxes.projectSlug = "validation.required";
+  } else {
+    const href = draft.href.trim();
+    if (href === "") boxes.href = "validation.required";
+    else if (href.length > SPONSOR_HREF_MAX || !isSecureLink(href))
+      boxes.href = "validation.linkInvalid";
+  }
+  // The Showcase and Cinematic boxes are all optional here (the ad shows once its style's ones are filled); only a line
+  // that is too long is refused.
+  const tooLong = (typed: string, limit: number) => Array.from(typed.trim()).length > limit;
+  if (tooLong(draft.brand, BRAND_MAX)) boxes.brand = "validation.invalid";
+  for (const [box, limit] of Object.entries(SHOWCASE_BOXES) as [ShowcaseBox, number][]) {
+    if (tooLong(draft.showcase[box], limit)) boxes[`showcase.${box}`] = "validation.invalid";
+  }
+  for (const [box, limit] of Object.entries(CINEMATIC_BOXES) as [CinematicBox, number][]) {
+    if (tooLong(draft.cinematic[box], limit)) boxes[`cinematic.${box}`] = "validation.invalid";
+  }
   for (const format of ["strip", "panel"] as const) {
     const desktop = `${format}-desktop` as const;
     const phone = `${format}-phone` as const;
@@ -224,12 +311,19 @@ export const hasProblems = (problems: DraftProblems): boolean =>
 /* ---- what is sent ---- */
 
 export type SponsorPayload = {
+  style?: SponsorStyle;
   sponsors: {
     id: string;
     advertiser: string;
     alt: string;
+    link: "url" | "project";
     href: string;
+    projectSlug: string;
     active: boolean;
+    brand: string;
+    photo?: string;
+    showcase: Record<ShowcaseBox, string>;
+    cinematic: Record<CinematicBox, string>;
     strip?: { desktop?: string; compact?: string };
     panel?: { desktop?: string; compact?: string };
   }[];
@@ -240,16 +334,24 @@ export type SponsorPayload = {
  * and swapped for a stored one first). A format with neither picture is left out; the text is sent as typed and the
  * server tidies it.
  */
-export function payloadOf(drafts: readonly SponsorDraft[]): SponsorPayload {
+export function payloadOf(drafts: readonly SponsorDraft[], style?: SponsorStyle): SponsorPayload {
   return {
+    ...(style ? { style } : {}),
     sponsors: drafts.map((draft) => {
       const entry: SponsorPayload["sponsors"][number] = {
         id: draft.id,
         advertiser: draft.advertiser,
         alt: draft.alt,
-        href: draft.href,
+        link: draft.link,
+        href: draft.link === "url" ? draft.href : "",
+        projectSlug: draft.link === "project" ? draft.projectSlug : "",
         active: draft.active,
+        brand: draft.brand,
+        showcase: { ...draft.showcase },
+        cinematic: { ...draft.cinematic },
       };
+      const photo = draft.pictures.photo;
+      if (photo?.kind === "stored") entry.photo = photo.path;
       for (const format of ["strip", "panel"] as const) {
         const desktop = draft.pictures[`${format}-desktop`];
         const compact = draft.pictures[`${format}-phone`];
@@ -272,7 +374,7 @@ export function serverProblemsOf(
   string,
   {
     boxes: Partial<Record<DraftBox, string>>;
-    slots: Partial<Record<SlotKey, string>>;
+    slots: Partial<Record<PictureKey, string>>;
     list?: string;
   }
 > {
@@ -280,7 +382,7 @@ export function serverProblemsOf(
     string,
     {
       boxes: Partial<Record<DraftBox, string>>;
-      slots: Partial<Record<SlotKey, string>>;
+      slots: Partial<Record<PictureKey, string>>;
       list?: string;
     }
   > = {};
@@ -291,8 +393,20 @@ export function serverProblemsOf(
     if (!draft) continue;
     const entry = (found[draft.id] ??= { boxes: {}, slots: {} });
     const [, , first, second] = parts;
-    if (first === "advertiser" || first === "alt" || first === "href") {
+    if (
+      first === "advertiser" ||
+      first === "alt" ||
+      first === "href" ||
+      first === "projectSlug" ||
+      first === "brand"
+    ) {
       entry.boxes[first] = message;
+    } else if (first === "photo") {
+      entry.slots.photo = message;
+    } else if (first === "showcase" && second !== undefined && second in SHOWCASE_BOXES) {
+      entry.boxes[`showcase.${second as ShowcaseBox}`] = message;
+    } else if (first === "cinematic" && second !== undefined && second in CINEMATIC_BOXES) {
+      entry.boxes[`cinematic.${second as CinematicBox}`] = message;
     } else if (
       (first === "strip" || first === "panel") &&
       (second === "desktop" || second === "compact")
@@ -310,13 +424,40 @@ export function serverProblemsOf(
 /** The sponsors as the public side's selection rules read them, with the addresses the page shows the pictures from. */
 export function adsOf(drafts: readonly SponsorDraft[]): SponsorAd[] {
   return drafts.map((draft) => {
+    const project = draft.link === "project" && draft.projectSlug.trim() !== "";
     const ad: SponsorAd = {
       id: draft.id,
       active: draft.active,
       placements: ["hero", "results"],
       alt: draft.alt,
-      href: draft.href,
+      href: project ? `/projects/${draft.projectSlug.trim()}` : draft.href,
+      external: !project,
+      ...(project ? { projectSlug: draft.projectSlug.trim() } : {}),
     };
+    const brand = draft.brand.trim();
+    if (brand) ad.brand = brand;
+    const photo = draft.pictures.photo;
+    if (photo) ad.photo = { src: photo.url, width: photo.width, height: photo.height };
+    const lines = <Key extends string>(source: Record<Key, string>) =>
+      Object.fromEntries(
+        Object.entries(source)
+          .map(([key, value]) => [key, (value as string).trim()])
+          .filter(([, value]) => value !== ""),
+      ) as Partial<Record<Key, string>>;
+    const facts = lines(draft.showcase);
+    if (facts.project && facts.locality && facts.homes && facts.price) {
+      ad.showcase = {
+        ...facts,
+        project: facts.project,
+        locality: facts.locality,
+        homes: facts.homes,
+        price: facts.price,
+      };
+    }
+    const words = lines(draft.cinematic);
+    if (words.headline && words.button) {
+      ad.cinematic = { ...words, headline: words.headline, button: words.button };
+    }
     for (const format of ["strip", "panel"] as const) {
       const desktop = draft.pictures[`${format}-desktop`];
       const compact = draft.pictures[`${format}-phone`];

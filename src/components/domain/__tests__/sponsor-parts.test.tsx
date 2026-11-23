@@ -202,6 +202,11 @@ const FIELD_WORDS: SponsorFieldsWords = {
   href: "Destination link",
   hrefPlaceholder: "https://",
   hrefHint: "Opens in a new tab. Must start with https://.",
+  link: { label: "Where a click goes", project: "Our project", url: "Another website" },
+  project: "Project",
+  projectPlaceholder: "Choose a project",
+  projectHint: "Only projects buyers can see are listed. A click opens its page on findsprop.",
+  projectsNone: "No project is live yet. Choose Another website, or publish a project first.",
   active: { label: "Active", hint: "Inactive sponsors are never shown." },
   images: { title: "Banner images", text: "Finished images.", closing: "Both make it ready." },
 };
@@ -209,8 +214,10 @@ const FIELD_WORDS: SponsorFieldsWords = {
 const VALUES = {
   advertiser: "Sample Developer",
   alt: "Sample banner",
+  link: "url" as const,
   href: "https://sample.example",
   active: true,
+  projectSlug: "",
 };
 
 const SLOTS = ["Strip · desktop", "Strip · phone", "Panel · desktop", "Panel · phone"].map(

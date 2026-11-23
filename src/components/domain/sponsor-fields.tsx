@@ -1,26 +1,28 @@
 "use client";
 
 /**
- * SponsorFields: the body of the admin's Add sponsor and Edit sponsor form: the advertiser's name, the alt text, the
- * destination link, the Active switch and the four banner picture slots.
+ * SponsorFields: the body of the admin's Add sponsor and Edit sponsor form: the advertiser's name, the alt text, where a
+ * click goes (one of our projects or another website, ADR-188), the Active switch, the hero ad's own fields and the four
+ * banner picture slots.
  * Purpose: what the admin fills in to put a sponsor's banner on the public site (S7-T11, FR-ADM-11, DEC-15). Owner:
  *   design system. It holds no state: the page keeps the values, the errors and the files, and passes the words, already
  *   translated. It is made to sit in the manager drawer, whose footer has Cancel and Save sponsor.
- * Props: values ({ advertiser, alt, href, active }), errors (the message of each box with a problem, by box), onChange
- *   (the new values), slots (the four slots in the order of the screen, each the props of a SponsorImageSlot plus a key),
- *   disabled (while saving), words (labels, hints, placeholders, the Active line and the pictures' heading and notes),
- *   className.
+ * Props: values ({ advertiser, alt, link "project" | "url", href, projectSlug, active }), errors (the message of each box
+ *   with a problem, by box), onChange (the new values), projects (the live projects to choose from: { slug, label }),
+ *   adFields (the hero ad's fields, SponsorAdFields, shown after the Active switch), slots (the four slots in the order
+ *   of the screen, each the props of a SponsorImageSlot plus a key), disabled (while saving), words (labels, hints,
+ *   placeholders, the link choice, the Active line and the pictures' heading and notes), className.
  * Responsive: one column at every width, as the drawer is narrow; the slots stack one under the other.
  * Accessibility: every box has a visible label tied to it, with its hint and its error read with it; the Active
  *   switch's whole row is its click target and its line is read with it; the pictures are a named group.
- * States: new (every box empty), editing (filled), with errors on the boxes, with each slot in each of its states,
- *   saving (everything off).
+ * States: new (every box empty), editing (filled), a project link or a website link, no live project to choose, with
+ *   errors on the boxes, with each slot in each of its states, saving (everything off).
  * Dependencies: FormField, Input, Label, Switch, SponsorImageSlot, Heading, cn. Tests: sponsor-parts.test.tsx; Design Lab
  *   "Sponsors" (S7-T11).
  * UX reference: admin-sponsors screen (the drawer: .form-grid, .tgl-row, .slots). The "Booking" line of the table is not
  *   a box here: the drawer has no field for it (ADR-105).
  */
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 import {
   SponsorImageSlot,
   type SponsorImageSlotProps,
@@ -29,17 +31,21 @@ import { FormField } from "@/components/patterns/form-field";
 import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/cn";
 
 type SponsorFieldValues = {
   advertiser: string;
   alt: string;
+  link: "project" | "url";
   href: string;
+  projectSlug: string;
   active: boolean;
 };
 
-type SponsorFieldName = "advertiser" | "alt" | "href";
+type SponsorFieldName = "advertiser" | "alt" | "href" | "projectSlug";
 
 type SponsorFieldErrors = Partial<Record<SponsorFieldName, string>>;
 
@@ -52,6 +58,12 @@ type SponsorFieldsWords = {
   href: string;
   hrefPlaceholder: string;
   hrefHint: string;
+  link: { label: string; project: string; url: string };
+  project: string;
+  projectPlaceholder: string;
+  projectHint: string;
+  /** Said when there is no live project to choose. */
+  projectsNone: string;
   active: { label: string; hint: string };
   images: { title: string; text: string; closing: string };
 };
@@ -60,6 +72,8 @@ type SponsorFieldsProps = {
   values: SponsorFieldValues;
   errors?: SponsorFieldErrors;
   onChange: (values: SponsorFieldValues) => void;
+  projects?: readonly { slug: string; label: string }[];
+  adFields?: ReactNode;
   slots: readonly (SponsorImageSlotProps & { key: string })[];
   disabled?: boolean;
   words: SponsorFieldsWords;
@@ -72,6 +86,8 @@ function SponsorFields({
   values,
   errors = {},
   onChange,
+  projects = [],
+  adFields,
   slots,
   disabled = false,
   words,
@@ -110,17 +126,49 @@ function SponsorFields({
             onChange={(event) => set({ alt: event.target.value })}
           />
         </FormField>
-        <FormField label={words.href} required hint={words.hrefHint} {...problem("href")}>
-          <Input
-            value={values.href}
-            disabled={disabled}
-            maxLength={LIMITS.href}
-            inputMode="url"
-            autoComplete="off"
-            placeholder={words.hrefPlaceholder}
-            onChange={(event) => set({ href: event.target.value })}
-          />
-        </FormField>
+        <SegmentedControl
+          aria-label={words.link.label}
+          size="sm"
+          value={values.link}
+          onValueChange={(next) => set({ link: next === "url" ? "url" : "project" })}
+          options={[
+            { value: "project", label: words.link.project },
+            { value: "url", label: words.link.url },
+          ]}
+        />
+        {values.link === "project" ? (
+          <FormField
+            label={words.project}
+            required
+            hint={projects.length === 0 ? words.projectsNone : words.projectHint}
+            {...problem("projectSlug")}
+          >
+            <Select
+              value={values.projectSlug}
+              disabled={disabled || projects.length === 0}
+              onChange={(event) => set({ projectSlug: event.target.value })}
+            >
+              <option value="">{words.projectPlaceholder}</option>
+              {projects.map((project) => (
+                <option key={project.slug} value={project.slug}>
+                  {project.label}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+        ) : (
+          <FormField label={words.href} required hint={words.hrefHint} {...problem("href")}>
+            <Input
+              value={values.href}
+              disabled={disabled}
+              maxLength={LIMITS.href}
+              inputMode="url"
+              autoComplete="off"
+              placeholder={words.hrefPlaceholder}
+              onChange={(event) => set({ href: event.target.value })}
+            />
+          </FormField>
+        )}
         <div className="flex items-center justify-between gap-4 py-1">
           <Label htmlFor={switchId} className="flex min-w-0 flex-1 flex-col items-start gap-1">
             <span className="font-bold text-ink">{words.active.label}</span>
@@ -137,6 +185,8 @@ function SponsorFields({
           />
         </div>
       </div>
+
+      {adFields}
 
       <section aria-labelledby={imagesId} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
