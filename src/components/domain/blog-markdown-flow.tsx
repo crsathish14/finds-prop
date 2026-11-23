@@ -488,7 +488,7 @@ function BlogMarkdownFlow({
                 })}
               </Text>
               {errors["pictures"] ? <Alert tone="danger">{errors["pictures"]}</Alert> : null}
-              <Input
+              <input
                 id={fileId}
                 type="file"
                 accept={pictureRules.accept}
