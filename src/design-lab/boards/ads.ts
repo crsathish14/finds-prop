@@ -1,6 +1,7 @@
 import type { LabEntry } from "../types";
 import { AnatomyDemo, HeroDemo } from "./ads-demos";
 import { HeroAsBuiltDemo, ResultsBannerDemo } from "./ads-demos-placements";
+import { CinematicBannerDemo, ShowcaseCardDemo, StyledFrameDemo } from "./ads-demos-styled";
 
 export const ADS: LabEntry[] = [
   {
@@ -33,5 +34,29 @@ export const ADS: LabEntry[] = [
       "One sponsored banner across the whole row after the sixth home of the results, as the UX draws it. With no banner that qualifies there is no row and no gap.",
     sources: ["domain/results-list.tsx"],
     Demo: ResultsBannerDemo,
+  },
+  {
+    id: "sponsor-showcase-card",
+    name: "Showcase card",
+    description:
+      "The Showcase style of the hero ad (A, ADR-187): the sponsor's photo beside the developer, project, area, homes, size, possession and price the admin typed, with View project and, for one of our projects, Get price list. Shown for one of our projects with a RERA number, for another site (one button that opens a new tab), and with a very long name.",
+    sources: ["domain/sponsor-showcase-card.tsx"],
+    Demo: ShowcaseCardDemo,
+  },
+  {
+    id: "sponsor-cinematic-banner",
+    name: "Cinematic banner",
+    description:
+      "The Cinematic style of the hero ad (B, ADR-187): a tall photo with a shade, the brand, an eyebrow, the headline, one line and the button the admin typed, and an Up next box naming the following sponsor. Shown with every line and with only the headline and the button.",
+    sources: ["domain/sponsor-cinematic-banner.tsx"],
+    Demo: CinematicBannerDemo,
+  },
+  {
+    id: "sponsor-styled-frame",
+    name: "Styled hero ads",
+    description:
+      "The hero ads in the style the admin chose, in the platform's frame: Sponsored, About this ad, the progress bars and the previous and next buttons. The ads turn when the bar is full and wait while the pointer or focus is on them. Shown for the Showcase and the Cinematic style with three ads, and one ad with About this ad open.",
+    sources: ["layout/sponsor-styled-frame.tsx"],
+    Demo: StyledFrameDemo,
   },
 ];

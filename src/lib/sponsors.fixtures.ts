@@ -87,3 +87,88 @@ export const NEAR_MISS_AD: SponsorAd = sampleAd("a", {
     },
   },
 });
+
+const PHOTO_PATH = "/design-lab/sponsor-photos";
+
+const photo = (name: string) => ({
+  src: `${PHOTO_PATH}/${name}.svg`,
+  width: 1600,
+  height: 900,
+  unoptimized: true,
+});
+
+/** A sample ready for both styles that links to one of our projects (ADR-182, ADR-187). Not a real advertiser. */
+export const STYLED_AD_A: SponsorAd = {
+  id: "styled-a",
+  active: true,
+  placements: ["hero", "results"],
+  alt: "Sample Homes: Lakeview Residences",
+  href: "/projects/lakeview-residences",
+  external: false,
+  projectSlug: "lakeview-residences",
+  brand: "Sample Homes",
+  photo: photo("photo-a"),
+  showcase: {
+    project: "Lakeview Residences",
+    locality: "Sholinganallur, OMR, Chennai",
+    homes: "2 & 3 BHK",
+    size: "1,120 to 1,640 sq ft",
+    possession: "Ready Dec 2027",
+    price: "₹78 L onwards",
+    rera: "TN/00/SAMPLE/0000/2026",
+  },
+  cinematic: {
+    eyebrow: "New launch · OMR",
+    headline: "Homes that open onto the lake",
+    line: "2 & 3 BHK at Lakeview Residences, from ₹78 L. Site visits every weekend.",
+    button: "Explore Lakeview",
+  },
+};
+
+/** A sample that links to another site, with only the words each style needs. */
+export const STYLED_AD_B: SponsorAd = {
+  id: "styled-b",
+  active: true,
+  placements: ["hero", "results"],
+  alt: "Sample Builders: Coastal Greens villas",
+  href: "https://samplebuilders.example/coastal-greens",
+  external: true,
+  brand: "Sample Builders",
+  photo: photo("photo-b"),
+  showcase: {
+    project: "Coastal Greens",
+    locality: "ECR, Chennai",
+    homes: "4 BHK villas",
+    price: "₹2.1 Cr onwards",
+  },
+  cinematic: {
+    headline: "Villas a short walk from the sea",
+    button: "Visit Coastal Greens",
+  },
+};
+
+/** A third sample, with a very long project name and headline. */
+export const STYLED_AD_C: SponsorAd = {
+  id: "styled-c",
+  active: true,
+  placements: ["hero", "results"],
+  alt: "Sample Developers: Velachery One",
+  href: "/projects/velachery-one",
+  external: false,
+  projectSlug: "velachery-one",
+  brand: "Sample Developers and Promoters",
+  photo: photo("photo-c"),
+  showcase: {
+    project: "Velachery One Grand Residences Phase Two",
+    locality: "Velachery, Chennai",
+    homes: "3 BHK",
+    possession: "Ready to move",
+    price: "₹1.2 Cr onwards",
+  },
+  cinematic: {
+    eyebrow: "Ready to move",
+    headline: "Three bedroom homes in Velachery",
+    line: "Move in this month.",
+    button: "See Velachery One",
+  },
+};
