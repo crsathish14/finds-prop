@@ -235,7 +235,8 @@ function HomeSearchBar({
           aria-labelledby={suggestionsId}
           className="mt-3 flex flex-wrap items-center gap-2"
         >
-          <span id={suggestionsId} className="text-caption font-semibold text-muted">
+          {/* The label takes a row of its own, so every line of chips starts at the same left edge (mobile). */}
+          <span id={suggestionsId} className="basis-full text-caption font-semibold text-muted">
             {translate("suggestions")}
           </span>
           {suggestions.map((suggestion) => (
