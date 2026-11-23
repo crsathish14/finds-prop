@@ -2,7 +2,7 @@
 
 /**
  * SponsorFields: the body of the admin's Add sponsor and Edit sponsor form: the advertiser's name, the alt text, where a
- * click goes (one of our projects or another website, ADR-188), the Active switch, the hero ad's own fields and the four
+ * click goes (one of our projects or another website, ADR-189), the Active switch, the hero ad's own fields and the four
  * banner picture slots.
  * Purpose: what the admin fills in to put a sponsor's banner on the public site (S7-T11, FR-ADM-11, DEC-15). Owner:
  *   design system. It holds no state: the page keeps the values, the errors and the files, and passes the words, already

@@ -1,4 +1,4 @@
-# ADR-188 · Sponsor hero styles: the admin's choice and fields
+# ADR-189 · Sponsor hero styles: the admin's choice and fields
 
 - Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words await the owner's approval).
 - Date: 2026-11-25

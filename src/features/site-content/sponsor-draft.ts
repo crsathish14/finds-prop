@@ -22,7 +22,7 @@ import type { SponsorEditView, SponsorPictureView } from "./sponsor-view";
 export const SLOT_KEYS = ["strip-desktop", "strip-phone", "panel-desktop", "panel-phone"] as const;
 export type SlotKey = (typeof SLOT_KEYS)[number];
 
-/** Every picture of a sponsor: the four banner slots and the one photo of the Showcase and Cinematic styles (ADR-188). */
+/** Every picture of a sponsor: the four banner slots and the one photo of the Showcase and Cinematic styles (ADR-189). */
 export const PICTURE_KEYS = [...SLOT_KEYS, "photo"] as const;
 export type PictureKey = (typeof PICTURE_KEYS)[number];
 

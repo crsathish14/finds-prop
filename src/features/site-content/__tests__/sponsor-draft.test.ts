@@ -350,7 +350,7 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
   });
 });
 
-describe("UT-sponsor-draft: the hero ad fields (ADR-188)", () => {
+describe("UT-sponsor-draft: the hero ad fields (ADR-189)", () => {
   const ready = (extra: Partial<SponsorDraft> = {}) =>
     sponsor("a", {
       brand: "Sample Homes",

@@ -47,7 +47,7 @@ export type HeroFormProps = {
   sponsors: readonly SponsorEditView[];
   /** The hero ad style as saved (ADR-182); the Showcase when none is. */
   sponsorStyle?: SponsorStyle;
-  /** The live projects a sponsor can link to (ADR-188). */
+  /** The live projects a sponsor can link to (ADR-189). */
   projects?: readonly SponsorProjectOption[];
   /** The action that saves the sponsor list: every sponsor change goes through it at once. */
   saveSponsors: SaveSponsors;

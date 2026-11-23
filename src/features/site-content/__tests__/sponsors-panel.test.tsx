@@ -338,7 +338,7 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
   });
 });
 
-describe("UT-sponsors-panel: the hero ad style and fields (ADR-188)", () => {
+describe("UT-sponsors-panel: the hero ad style and fields (ADR-189)", () => {
   it("saves the whole list with the new style as soon as the style is switched", async () => {
     const { saveSponsors } = setup([view("a", "Alpha")]);
     const style = screen.getByRole("radiogroup", { name: words.style.label });

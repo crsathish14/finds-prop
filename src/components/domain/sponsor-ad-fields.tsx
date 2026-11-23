@@ -2,7 +2,7 @@
 
 /**
  * SponsorAdFields: the hero ad's part of the admin's sponsor form: the brand, the one photo and the words of the two
- * styles, the Showcase card and the Cinematic banner (ADR-188).
+ * styles, the Showcase card and the Cinematic banner (ADR-189).
  * Purpose: what the admin types and uploads for the hero ad under the search bar (sponsor ads plan, ADR-182). Owner:
  *   design system. It holds no state: the page keeps the values, the errors and the photo, and passes the words, already
  *   translated. It sits inside SponsorFields, between the Active switch and the banner pictures.

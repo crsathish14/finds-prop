@@ -153,7 +153,7 @@ export interface HeroPage {
   sponsors: SponsorEditView[];
   /** The hero ad style as saved (ADR-182). */
   sponsorStyle: SponsorStyle;
-  /** The live projects a sponsor can link to (ADR-188); empty when they cannot be read. */
+  /** The live projects a sponsor can link to (ADR-189); empty when they cannot be read. */
   projects: { slug: string; name: string; developer: string }[];
 }
 

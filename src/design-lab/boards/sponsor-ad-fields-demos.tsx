@@ -10,7 +10,7 @@ import type { SponsorImageSlotProps } from "@/components/domain/sponsor-image-sl
 import { Specimen } from "../frame";
 
 /**
- * The hero ad's part of the sponsor form (ADR-188): the brand, the photo and the Showcase and Cinematic words, empty and
+ * The hero ad's part of the sponsor form (ADR-189): the brand, the photo and the Showcase and Cinematic words, empty and
  * filled, with problems, and with each style marked "Shown now". Plain English text; nothing here is sent anywhere. The
  * sample photo is a drawing, not a real project.
  */

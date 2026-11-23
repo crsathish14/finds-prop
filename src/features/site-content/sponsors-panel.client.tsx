@@ -98,7 +98,7 @@ function without<Value>(
 const typeLabel = (type: string): string => (type.split("/")[1] ?? type).toUpperCase();
 const kilobytes = (bytes: number): number => Math.max(1, Math.round(bytes / 1024));
 
-/** A live project the admin can link a sponsor to (ADR-188). */
+/** A live project the admin can link a sponsor to (ADR-189). */
 export type SponsorProjectOption = { slug: string; name: string; developer: string };
 
 export function useSponsors({
@@ -305,7 +305,7 @@ export function useSponsors({
   const move = (id: string, direction: "up" | "down") =>
     void change(withSponsorMoved(drafts, id, direction));
 
-  /** Changes the hero ad style for every sponsor and saves it at once with the list (ADR-188). */
+  /** Changes the hero ad style for every sponsor and saves it at once with the list (ADR-189). */
   const chooseStyle = async (next: SponsorStyle) => {
     if (saving || next === style) return;
     const before = style;
@@ -485,7 +485,7 @@ export function useSponsors({
     return { ...base, state: "empty" as const };
   });
 
-  /** The photo slot of the hero ad (ADR-188): shown at 16:9, the shape both styles crop from. */
+  /** The photo slot of the hero ad (ADR-189): shown at 16:9, the shape both styles crop from. */
   const photoSlot = ((): SponsorImageSlotProps => {
     const key = "photo" as const;
     const picture = work?.pictures.photo;
@@ -550,7 +550,7 @@ export function useSponsors({
       id: draft.id,
       advertiser: draft.advertiser.trim(),
       status: statusOf(draft, style),
-      // The first readiness column is the hero ad in the chosen style (ADR-188).
+      // The first readiness column is the hero ad in the chosen style (ADR-189).
       strip: styleReady(draft, style),
       panel: formatReady(draft, "panel"),
       moveUpLabel: words.say.moveUp(label),

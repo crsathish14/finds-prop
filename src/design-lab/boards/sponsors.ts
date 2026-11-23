@@ -35,7 +35,7 @@ export const SPONSORS: LabEntry[] = [
     id: "sponsor-ad-fields",
     name: "Hero ad fields",
     description:
-      "The hero ad's part of the sponsor form (ADR-188): the developer or brand, the one photo both styles crop from, and the words of the Showcase card and the Cinematic banner, the style the site shows now marked Shown now. Shown empty for a new sponsor, filled with the photo, with a problem on a box, and while saving.",
+      "The hero ad's part of the sponsor form (ADR-189): the developer or brand, the one photo both styles crop from, and the words of the Showcase card and the Cinematic banner, the style the site shows now marked Shown now. Shown empty for a new sponsor, filled with the photo, with a problem on a box, and while saving.",
     sources: ["domain/sponsor-ad-fields.tsx"],
     Demo: SponsorAdFieldsDemo,
   },

@@ -125,7 +125,7 @@ export function useSponsorWords() {
     },
   };
 
-  /** The photo slot of the hero ad (ADR-188). */
+  /** The photo slot of the hero ad (ADR-189). */
   const photo = {
     title: translate("ad.photoTitle"),
     note: translate("ad.photoNote", {
@@ -136,7 +136,7 @@ export function useSponsorWords() {
     sizeText: translate("slot.photoSizeText", { maximum: SPONSOR_PHOTO_MAX_KB }),
   };
 
-  /** The hero ad style switch above the list (ADR-188). */
+  /** The hero ad style switch above the list (ADR-189). */
   const style = {
     label: translate("style.label"),
     showcase: translate("style.showcase"),
