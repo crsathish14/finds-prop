@@ -1,6 +1,6 @@
 /**
  * The page context of the chat (ADR-128 section 10, AI-P7-T01): which item the customer was looking at when they
- * opened the chat. Only public ids travel: `?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`, in the
+ * opened the chat, and which homes and projects its last answer showed (ADR-177). Only public ids travel: `?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`, in the
  * link and again in the request body. No title, price or any listing text is ever carried, so nothing in a link can
  * put words into the assistant's mouth. The server checks every id against what is listed now before it is used
  * (`resolve.ts`); this file is only the shape and the link, so the buttons and the page share one definition.
@@ -14,6 +14,10 @@ export interface ChatContext {
   readonly home?: string;
   readonly project?: string;
   readonly compare?: readonly string[];
+  /** The homes the assistant's last answer showed, in the order shown (ids only, at most the card limit). */
+  readonly shownHomes?: readonly string[];
+  /** The projects the assistant's last answer showed (slugs only). */
+  readonly shownProjects?: readonly string[];
 }
 
 export type ContextSubject =

@@ -31,6 +31,40 @@ function reads(): ContextReads & { calls: string[] } {
   };
 }
 
+describe("resolveContext: what the last answer showed (ADR-177)", () => {
+  it("keeps the shown homes that are listed now, in the order shown, and drops the rest", async () => {
+    expect(
+      await resolveContext({ shownHomes: ["b4c5d6e7", "zzzzzzzz", "k3m9p2xw"] }, reads()),
+    ).toEqual({ shownHomes: ["b4c5d6e7", "k3m9p2xw"] });
+  });
+
+  it("keeps at most three, each once, and only things that look like ids", async () => {
+    expect(
+      await resolveContext(
+        { shownHomes: ["k3m9p2xw", "K3M9P2XW", "b4c5d6e7", "h2j3k4m5", "n6p7q8r9", "not an id"] },
+        reads(),
+      ),
+    ).toEqual({ shownHomes: ["k3m9p2xw", "b4c5d6e7", "h2j3k4m5"] });
+  });
+
+  it("keeps shown projects that are open, for a signed-in customer only", async () => {
+    expect(
+      await resolveContext({ shownProjects: ["green-park-residency", "no-such-project"] }, reads()),
+    ).toEqual({ shownProjects: ["green-park-residency"] });
+    expect(
+      await resolveContext({ shownProjects: ["green-park-residency"] }, reads(), {
+        projects: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("is no context at all when nothing shown is listed any more", async () => {
+    expect(
+      await resolveContext({ shownHomes: ["zzzzzzzz"], shownProjects: ["gone"] }, reads()),
+    ).toBeNull();
+  });
+});
+
 describe("resolveContext", () => {
   it("keeps an open home and an open project", async () => {
     expect(await resolveContext({ home: "k3m9p2xw" }, reads())).toEqual({ home: "k3m9p2xw" });

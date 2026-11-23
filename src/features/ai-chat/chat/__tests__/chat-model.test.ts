@@ -13,6 +13,7 @@ import {
   STORAGE_KEY,
   type ChatEntry,
   contextField,
+  shownRecords,
 } from "../chat-model";
 
 function memoryStorage(initial?: string) {
@@ -197,6 +198,56 @@ describe("a link the server offers (AI-P5-T02)", () => {
     // A tab or a line break inside the address is dropped by browsers: "/" + tab + "/host" would read as "//host".
     expect(safeHref("/\t/example.com")).toBeUndefined();
     expect(safeHref("/\n/example.com")).toBeUndefined();
+  });
+});
+
+describe("UT-ai-chat-context-field: what the last answer showed (ADR-177)", () => {
+  const answer = (
+    references: Extract<ChatEntry, { role: "assistant" }>["references"],
+    replaced = false,
+  ): ChatEntry => ({
+    id: "a1",
+    role: "assistant",
+    text: "Here you go.",
+    notes: [],
+    references,
+    replaced,
+  });
+
+  it("reads the homes and projects of the newest answer, in order, and nothing from an older one or a replaced one", () => {
+    const shown = answer([
+      { kind: "home", homeId: "k3x9a2bd", slug: "one" },
+      { kind: "project", slug: "kadal-vista" },
+      { kind: "home", homeId: "m4y8b3ce", slug: "two" },
+    ]);
+    expect(shownRecords([shown])).toEqual({
+      homes: ["k3x9a2bd", "m4y8b3ce"],
+      projects: ["kadal-vista"],
+    });
+    expect(shownRecords([shown, user("u2", "and?")])).toEqual({ homes: [], projects: [] });
+    expect(
+      shownRecords([answer([{ kind: "home", homeId: "k3x9a2bd", slug: "one" }], true)]),
+    ).toEqual({
+      homes: [],
+      projects: [],
+    });
+    expect(shownRecords([])).toEqual({ homes: [], projects: [] });
+  });
+
+  it("sends the shown ids beside the page's context, ids only and at most three of each", () => {
+    expect(
+      contextField({ home: "p6a2d5ej" }, [], {
+        homes: ["a", "b", "c", "d"],
+        projects: ["kadal-vista"],
+      }),
+    ).toEqual({
+      context: {
+        home: "p6a2d5ej",
+        shownHomes: ["a", "b", "c"],
+        shownProjects: ["kadal-vista"],
+      },
+    });
+    expect(contextField(null, [], { homes: [], projects: [] })).toEqual({});
   });
 });
 

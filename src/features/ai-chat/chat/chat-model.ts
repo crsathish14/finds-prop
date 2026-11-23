@@ -235,8 +235,36 @@ export function safeHref(href: string | undefined): string | undefined {
 export function contextField(
   page: ChatContext | null,
   ticked: readonly string[],
+  shown: { homes: readonly string[]; projects: readonly string[] } = { homes: [], projects: [] },
 ): { context?: ChatContext } {
   // The compare bar reports nothing unless two or three homes are ticked, so one tick sends no compare context.
-  const context = ticked.length === 0 ? page : { ...page, compare: ticked.slice(0, 3) };
-  return context === null ? {} : { context };
+  const context: ChatContext = {
+    ...page,
+    ...(ticked.length === 0 ? {} : { compare: ticked.slice(0, 3) }),
+    ...(shown.homes.length === 0
+      ? {}
+      : { shownHomes: shown.homes.slice(0, AI_MAX_CARDS_PER_ANSWER) }),
+    ...(shown.projects.length === 0
+      ? {}
+      : { shownProjects: shown.projects.slice(0, AI_MAX_CARDS_PER_ANSWER) }),
+  };
+  return Object.keys(context).length === 0 ? {} : { context };
+}
+
+/**
+ * The homes and projects the newest answer showed, as ids and slugs, so the next message can say "the second one" or
+ * "compare these" and the assistant knows which (ADR-177). Only an answer that was not replaced counts.
+ */
+export function shownRecords(entries: readonly ChatEntry[]): {
+  homes: string[];
+  projects: string[];
+} {
+  const last = entries.at(-1);
+  const shown = { homes: [] as string[], projects: [] as string[] };
+  if (last?.role !== "assistant" || last.replaced) return shown;
+  for (const reference of last.references) {
+    if (reference.kind === "home") shown.homes.push(reference.homeId);
+    else shown.projects.push(reference.slug);
+  }
+  return shown;
 }
