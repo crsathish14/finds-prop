@@ -1585,6 +1585,7 @@
       "blog": "Blog",
       "faq": "FAQ",
       "careers": "Careers",
+      "emails": "Emails",
       "siteContent": "Site content",
       "header": "Header",
       "hero": "Hero",
@@ -1595,6 +1596,66 @@
       "terms": "Terms of Use",
       "projectFields": "Project form boxes",
       "topDevelopers": "Top developers"
+    },
+    "emails": {
+      "metaTitle": "Emails",
+      "title": "Emails",
+      "description": "Edit the wording of the emails sent when someone sends an enquiry. Plain text only. Save draft keeps your changes private; Publish makes the wording the one that is sent.",
+      "poster": {
+        "title": "Mail to the poster",
+        "description": "Sent to the person who posted the home, or to the builder or agent of the project, when someone sends an enquiry. It never holds a phone number or the enquiry message."
+      },
+      "sender": {
+        "title": "Confirmation to the enquirer",
+        "description": "Sent to the person who sent the enquiry, only when they typed an email address."
+      },
+      "subject": {
+        "label": "Subject",
+        "hint": "One line, as the mail's title."
+      },
+      "body": {
+        "label": "Message",
+        "hint": "Plain text. Line breaks are kept."
+      },
+      "counter": "{used} of {max} characters",
+      "placeholders": {
+        "title": "Words you can use. They are filled in when the mail is sent.",
+        "required": "Required.",
+        "enquirerName": "The name the enquirer typed.",
+        "propertyTitle": "The title of the home or project.",
+        "propertyLink": "The public page of the home or project.",
+        "dashboardLink": "Your enquiries or leads page.",
+        "siteName": "The name of the site."
+      },
+      "preview": {
+        "title": "Preview with made-up values",
+        "subject": "Subject",
+        "body": "Message",
+        "fellBack": "This wording cannot be used yet, so the standard wording is shown here."
+      },
+      "status": {
+        "standard": "Not published yet. The standard wording is sent.",
+        "live": "Live since {updated}.",
+        "liveNoDate": "Live now.",
+        "draft": "You have a saved draft that is not live yet."
+      },
+      "save": {
+        "note": "Save draft keeps your changes private. Publish makes this wording the one that is sent.",
+        "discard": "Discard",
+        "saveDraft": "Save draft",
+        "publish": "Publish",
+        "saving": "Saving"
+      },
+      "saved": {
+        "draft": {
+          "title": "Draft saved",
+          "text": "The mails still use the live wording."
+        },
+        "published": {
+          "title": "Published",
+          "text": "The new wording will be used for the next mail."
+        }
+      }
     },
     "topDevelopers": {
       "metaTitle": "Top developers",

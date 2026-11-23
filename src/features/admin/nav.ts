@@ -117,6 +117,12 @@ export function buildAdminNav(
           label: translate("admin.nav.careers"),
           icon: "careers",
         },
+        {
+          key: "emails",
+          href: "/admin/emails",
+          label: translate("admin.nav.emails"),
+          icon: "forms",
+        },
       ],
     },
     {
