@@ -120,3 +120,34 @@ describe("UT-env: public environment", () => {
     }
   });
 });
+
+describe("UT-env: enquiry mail settings (ADR-181)", () => {
+  it("has no key by default, the findsprop addresses and no allowlist", () => {
+    const parsed = parseServerEnv({});
+    expect(parsed.RESEND_API_KEY).toBeUndefined();
+    expect(parsed.MAIL_FROM).toBe("no-reply@findsprop.com");
+    expect(parsed.MAIL_REPLY_TO).toBe("support@findsprop.com");
+    expect(parsed.MAIL_DEV_ALLOWLIST).toBeUndefined();
+  });
+  it("counts blank values as unset, as the example file leaves them", () => {
+    const parsed = parseServerEnv({ RESEND_API_KEY: "", MAIL_FROM: "", MAIL_DEV_ALLOWLIST: "" });
+    expect(parsed.RESEND_API_KEY).toBeUndefined();
+    expect(parsed.MAIL_FROM).toBe("no-reply@findsprop.com");
+    expect(parsed.MAIL_DEV_ALLOWLIST).toBeUndefined();
+  });
+  it("reads the settings it is given", () => {
+    const parsed = parseServerEnv({
+      RESEND_API_KEY: "fake-resend-key-for-tests",
+      MAIL_FROM: "hello@mail.example.test",
+      MAIL_REPLY_TO: "help@mail.example.test",
+      MAIL_DEV_ALLOWLIST: "tester@example.test",
+    });
+    expect(parsed.RESEND_API_KEY).toBe("fake-resend-key-for-tests");
+    expect(parsed.MAIL_FROM).toBe("hello@mail.example.test");
+    expect(parsed.MAIL_REPLY_TO).toBe("help@mail.example.test");
+    expect(parsed.MAIL_DEV_ALLOWLIST).toBe("tester@example.test");
+  });
+  it("fails the check for a sender that is not an address, naming the variable", () => {
+    expect(() => parseServerEnv({ MAIL_FROM: "not an address" })).toThrow(/MAIL_FROM/);
+  });
+});

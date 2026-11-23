@@ -17,7 +17,7 @@ export function createFakeMailSender(options: { failWith?: Error } = {}): FakeMa
   };
 }
 
-/** The sender of v1: no provider is chosen, so a message is accepted and dropped. Nothing calls it yet. */
+/** The sender used when no mail should go out (no key, or a developer's machine): a message is accepted and dropped. */
 export function createNoopMailSender(): MailSender {
   return { send: () => Promise.resolve() };
 }

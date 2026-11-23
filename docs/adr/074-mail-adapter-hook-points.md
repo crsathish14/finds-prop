@@ -1,6 +1,6 @@
 # ADR-074 · Mail adapter hook points, used by nothing yet (S6-T07)
 
-- Status: Accepted
+- Status: Accepted; the rule that no provider is chosen is replaced for enquiries by ADR-181 (Resend)
 - Date: 2026-11-08
 - Related: DEC-27, ADR-035 (message keys), R-BE-09 (adapters), R-BE-10 (no personal data in errors or logs)
 - Plan approved by the owner on 8 Nov 2026 ("all recommended"): the interface, a fake, a sender that drops the message, typed events, tests and this note; no provider and no call from any action.

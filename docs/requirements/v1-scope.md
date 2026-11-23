@@ -34,7 +34,7 @@ This freezes what "version 1" means so Stages 1–9 can be planned and accepted 
 | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
 | PG and hostels (`FR-PG-01`)               | Written requirements and a UX design (ADD-13); post-launch by default                     |
 | Agent portal                              | Written requirements; the role stays in the database with no extra permissions (`DEC-08`) |
-| Notifications (email on enquiry/approval) | Post-launch; the mail adapter has hook points (`DEC-27`)                                  |
+| Notifications (email on enquiry/approval) | Enquiry mail: Resend (`ADR-181`). Approval mail: post-launch (`DEC-27`)                   |
 | AI chat assistant (`FR-PUB-12`)           | Behind `FLAG_AI_SEARCH`, off by default; ADR-128; gates in `docs/ai-chat-phase-plan.md`   |
 
 ## 4. Out of scope (not planned)

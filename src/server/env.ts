@@ -26,6 +26,14 @@ const serverEnvSchema = z.object({
   MSG91_AUTH_KEY: z.string().min(1).optional(),
   MSG91_TEMPLATE_ID: z.string().min(1).optional(),
   MSG91_SENDER_ID: z.string().min(1).optional(),
+  /** Resend, for enquiry mail (ADR-181). Without a key no mail is sent, in any environment. */
+  RESEND_API_KEY: z.string().min(1).optional(),
+  /** The sender address; its domain must be verified in Resend. */
+  MAIL_FROM: z.email().default("no-reply@findsprop.com"),
+  /** Where a reply to a notification mail goes. */
+  MAIL_REPLY_TO: z.email().default("support@findsprop.com"),
+  /** Addresses (or `@domain` entries), comma separated, that dev and staging may mail. Production ignores it. */
+  MAIL_DEV_ALLOWLIST: z.string().optional(),
   OLA_MAPS_API_KEY: z.string().min(1).optional(),
   /** The manual kill switch for place search (ADR-131): 1 and every lookup says "off" without calling the provider. */
   PLACES_DISABLED: flag,

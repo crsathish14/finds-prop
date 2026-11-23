@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
-  chooseMailSender,
   createFakeMailSender,
   createNoopMailSender,
   MAIL_TIMEOUT_MS,
@@ -42,11 +41,6 @@ describe("UT-mail: the mail adapter hook points (S6-T07, DEC-27, R-BE-09)", () =
 
   it("has a sender that accepts and drops a message, and says nothing about it", async () => {
     await expect(createNoopMailSender().send(message)).resolves.toBeUndefined();
-  });
-
-  it("chooses the sender that drops the message in every environment, because no provider is chosen yet", async () => {
-    const sender = chooseMailSender();
-    await expect(sender.send(message)).resolves.toBeUndefined();
   });
 
   it("gives an implementation the same time budget as the SMS adapter", () => {

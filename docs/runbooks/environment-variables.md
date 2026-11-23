@@ -78,6 +78,8 @@ The app limits emails itself: 5 per user per hour and 20 per address per day (th
 | Variable                                              | When                                                                   |
 | ----------------------------------------------------- | ---------------------------------------------------------------------- |
 | `OLA_MAPS_API_KEY`, `PLACES_DISABLED`                 | Place search (ADR-131); see "Place search" below                       |
+| `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`        | Enquiry mail (ADR-181); see "Enquiry mail" below                       |
+| `MAIL_DEV_ALLOWLIST`                                  | Dev and staging only: the addresses they may mail (ADR-181)            |
 | `NEXT_PUBLIC_MAP_STYLE_URL`                           | When the map view is built                                             |
 | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`           | When the AI chat is switched on (see below)                            |
 | `AI_REASONING_EFFORT`                                 | Optional; blank keeps the model default (see below)                    |
@@ -96,6 +98,16 @@ Place search turns a typed place such as "KK Nagar" into a position. It uses Ola
 - Ola gives the first 100,000 calls per API per month free and then charges per call from prepaid credits (checked 16 Nov 2026; the balance is read in Ola's own console). If the balance runs out the lookups answer "refused" and the search box falls back to typed text.
 - `FLAG_AI_PLACE_SEARCH`: `1` lets the AI chat find homes near a place ("homes near KK Nagar", ADR-142). It does nothing unless `FLAG_AI_SEARCH` is `1` too, and it needs `OLA_MAPS_API_KEY`: without a key, or with `PLACES_DISABLED=1`, the chat says it cannot look that place up and offers the localities list. Off by default: with it off the chat's search tool and prompt are exactly as before. The place text is looked up on the server and the model never receives anything from Ola. Each lookup is counted on the admin dashboard under the caller "AI chat", and it shares the search box's `places` rate limit (60 a minute per visitor). To try it: set it to `1` in Vercel for dev, redeploy, and ask the chat for "homes near Velachery". To switch it off again set `0` and redeploy.
 - A wrong key answers `401 Unauthorized`. Check that the key is the API key, that the credential is active, and that no website or address restriction blocks the server.
+
+## Enquiry mail (Resend; ADR-181)
+
+When someone sends an enquiry the site will mail the poster and, if the enquirer typed an email, the enquirer. This is separate from the sign-in email above: it does not use Supabase's mail settings, only the app's own key.
+
+- `RESEND_API_KEY`: a Resend API key with **sending access** for the `findsprop.com` domain only. Create a new key (never reuse one that was pasted in chat) and set it in Vercel for Preview and Production and in `.env.local`. **Without it no mail is sent, in any environment**, and nothing breaks.
+- `MAIL_FROM` (default `no-reply@findsprop.com`) and `MAIL_REPLY_TO` (default `support@findsprop.com`): leave unset to use the defaults. The sending domain must be **Verified** in Resend (Domains: add `findsprop.com`, add the DNS records it shows, usually on a `send` subdomain, so the existing Google mail records stay). The mailbox `support@findsprop.com` must exist so replies are read.
+- `MAIL_DEV_ALLOWLIST`: comma separated addresses, or `@domain` for a whole domain, for example `tester@example.com,@findsprop.com`. Dev and staging mail **only** these; an empty list mails nobody. Production ignores it. A developer's machine (`APP_ENV=local`) never mails, whatever the key.
+- Resend's free plan is about 3,000 mails a month and 100 a day, one domain, with a short log. When the day's allowance is used Resend refuses (`daily_quota_exceeded` in the log) and the mail is lost; the enquiry itself is never affected. Dev and production share it.
+- Part 1 only chooses the sender. Nothing sends until the enquiry actions call it (later parts of ADR-181).
 
 ## Error tracking (optional; ADR-130)
 

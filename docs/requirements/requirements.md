@@ -196,7 +196,7 @@ Phase 1 route IDs (`P-01…P-31`) come from `final-ux/screen-inventory.md`. UX c
 | ---------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------ |
 | The earlier one-shot AI search and its `lead_requests` flow (FR-PUB-12 is now the gated chat)              | ARC; ADR-128                        | C-03               |
 | Agent portal, agent labels/verification badges (UX P1, P15)                                                | No requirement; role kept in enum   | `DEC-08`           |
-| Notifications centre; transactional email on enquiry/approval                                              | UX P7; ARC email scope is auth only | `DEC-27`           |
+| Notifications centre; email on approval (email on an enquiry is built: `ADR-181`)                          | UX P7; ARC email scope is auth only | `DEC-27`           |
 | Account settings page                                                                                      | UX P16                              | as designed        |
 | Map-based post-property pin, saved searches, price alerts                                                  | Not requested                       | n/a                |
 | Tamil interface, dark mode, print styles, offline                                                          | UX §6 "Not designed"                | n/a                |
