@@ -7,7 +7,8 @@
  *   captionError, disabled, maxRows, maxColumns, words ({ caption, column, cell, addRow, removeRow, addColumn,
  *   removeColumn }), className.
  * Responsive: the grid scrolls sideways inside its box when it is wider than the screen; the buttons wrap.
- * Accessibility: the table is a named group; every box names itself ("Column 2", "Cell 3.2") and the remove buttons name
+ * Accessibility: the grid is a focusable, named region so a keyboard can scroll it sideways even when every box is off;
+ *   the table is a named group; every box names itself ("Column 2", "Cell 3.2") and the remove buttons name
  *   the row or column they remove. A problem shows an icon and words, tied to the box, not colour alone.
  * States: default, with a problem, at the row or column limit (the add button is off), one column or one row left
  *   (the remove button is off), disabled.
@@ -98,7 +99,12 @@ function LegalTableEditor({
           onChange={(event) => onChange({ ...table, caption: event.target.value })}
         />
       </FormField>
-      <div className="overflow-x-auto">
+      <div
+        role="region"
+        tabIndex={0}
+        aria-label={table.caption.trim() || words.caption}
+        className="overflow-x-auto rounded-md outline-none focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-primary"
+      >
         <div className="flex min-w-max flex-col gap-2">
           <div className="flex items-start gap-2">
             {head.map((heading, column) => (
