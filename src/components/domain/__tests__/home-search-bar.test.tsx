@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
@@ -58,5 +58,46 @@ describe("HomeSearchBar: the home page's search box (ADR-150)", () => {
     expect(box).toHaveAttribute("placeholder", words.keyword.placeholder);
     expect(screen.getByRole("button", { name: words.keyword.button })).toBeVisible();
     expect(screen.queryByRole("button", { name: words.ai.button })).toBeNull();
+  });
+
+  it("offers suggestion chips (hero lab) that put their words in the box and focus it, without searching", async () => {
+    const onSearch = vi.fn();
+    const user = userEvent.setup();
+    renderWithMessages(
+      <HomeSearchBar
+        mode="ai"
+        action="/ai-search"
+        onSearch={onSearch}
+        suggestions={["2 BHK for rent in Adyar", "Villa in ECR"]}
+      />,
+    );
+    const group = screen.getByRole("group", { name: words.suggestions });
+    expect(group).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Villa in ECR" }));
+    const box = screen.getByRole("searchbox", { name: words.ai.fieldLabel });
+    expect(box).toHaveValue("Villa in ECR");
+    expect(box).toHaveFocus();
+    expect(onSearch).not.toHaveBeenCalled();
+  });
+
+  it("types the sample requests into the hint while the box is empty, and shows the usual hint while it has focus", async () => {
+    vi.useFakeTimers();
+    try {
+      renderWithMessages(
+        <HomeSearchBar mode="ai" action="/ai-search" examples={["3 BHK", "Villa"]} />,
+      );
+      const box = screen.getByRole("searchbox", { name: words.ai.fieldLabel });
+      expect(box).toHaveAttribute("placeholder", words.ai.placeholder);
+      await act(async () => {
+        vi.advanceTimersByTime(900 + 45 * 4);
+      });
+      expect(box).toHaveAttribute("placeholder", "3 BHK");
+      await act(async () => {
+        box.focus();
+      });
+      expect(box).toHaveAttribute("placeholder", words.ai.placeholder);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

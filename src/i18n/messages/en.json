@@ -83,6 +83,38 @@
       "action": "Post your property free"
     }
   },
+  "heroLab": {
+    "switch": {
+      "label": "Hero layout (preview only)",
+      "letters": {
+        "desk": "A",
+        "split": "B",
+        "conversational": "C",
+        "layered": "D"
+      },
+      "names": {
+        "desk": "Search desk",
+        "split": "Split",
+        "conversational": "Conversational",
+        "layered": "Layered"
+      }
+    },
+    "examples": {
+      "budget": "3 BHK near {place} under ₹90 lakh",
+      "rent": "2 BHK for rent in {place}",
+      "ready": "Ready-to-move flat in {place}",
+      "family": "Gated community near schools in {place}"
+    },
+    "plainExamples": {
+      "budget": "3 BHK under ₹90 lakh",
+      "rent": "2 BHK for rent near a metro station",
+      "ready": "Ready-to-move flat with car parking",
+      "family": "Gated community near good schools"
+    },
+    "conversational": {
+      "prompt": "Ask in your own words"
+    }
+  },
   "auth": {
     "phone": {
       "roleTag": "findsprop",
@@ -1270,7 +1302,8 @@
         "fieldLabel": "Search homes",
         "placeholder": "Search by locality, project or keyword",
         "button": "Search"
-      }
+      },
+      "suggestions": "Try"
     },
     "filters": {
       "title": "Filters",
