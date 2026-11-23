@@ -96,7 +96,7 @@ const baseInputShape = {
   ),
   locality: shortText(
     LOCALITY_MAX_CHARACTERS,
-    "Part or all of a locality name as it is listed, such as Velachery, or null. Take the spelling from list_localities when unsure. At most 80 characters.",
+    "Part or all of a locality (neighbourhood) name as it is listed, such as Velachery, or null. A city such as Chennai or Coimbatore is not a locality: put a city in `keyword`. Take the spelling from list_localities when unsure. At most 80 characters.",
   ),
   keyword: shortText(
     KEYWORD_MAX_CHARACTERS,
@@ -237,6 +237,25 @@ function given(text: string | null): string | null {
 }
 
 /**
+ * The search for these filters, with one second try. A customer who asks for homes "in Chennai" gets a city put in the
+ * locality filter by the model, and no home has a locality called Chennai (the city is a separate field), so the first
+ * read finds nothing although the city has homes (ADR-178). When a locality alone found nothing, the same words are
+ * tried once as a keyword, which reads the title, the locality and the city. Both reads are the cached public search.
+ */
+async function searchHomes(input: SearchPropertiesInput, context: ToolContext) {
+  const guest = { guest: !context.signedIn };
+  const first = await getSearchResults(toSearchParams(input), guest);
+  const locality = given(input.locality);
+  if (first.status === "failed" || first.total > 0 || locality === null) return first;
+  if (given(input.keyword) !== null) return first;
+  const second = await getSearchResults(
+    toSearchParams({ ...input, locality: null, keyword: locality }),
+    guest,
+  );
+  return second.status === "failed" ? first : second;
+}
+
+/**
  * The search the results page would run for these filters. The read is always asked for the full ten, so
  * the same question with a different `limit` shares one cached answer; `view` is how the page draws the
  * list and changes nothing here.
@@ -305,7 +324,7 @@ export const searchPropertiesTool: AiChatTool<SearchPropertiesInput, SearchPrope
   output: searchPropertiesOutputSchema,
   async run(input, context) {
     // A guest may search homes (not projects): through the narrow server-only read, ten homes at most.
-    const results = await getSearchResults(toSearchParams(input), { guest: !context.signedIn });
+    const results = await searchHomes(input, context);
     if (results.status === "failed") throw new Error("search results could not be read");
     const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
     return {
@@ -427,7 +446,7 @@ export function createSearchPropertiesTool(
       // searches by the filters, the locality text and the keyword.
       if (place !== null) requireSignIn(context);
       if (place === null) {
-        const results = await getSearchResults(toSearchParams(input), { guest: !context.signedIn });
+        const results = await searchHomes(input, context);
         if (results.status === "failed") throw new Error("search results could not be read");
         const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
         return {

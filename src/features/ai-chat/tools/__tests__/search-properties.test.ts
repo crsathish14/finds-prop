@@ -214,6 +214,48 @@ describe("UT-ai-tool-search: the read", () => {
   });
 });
 
+describe("UT-ai-tool-search: a city given as a locality (ADR-178)", () => {
+  it("tries the same words once as a keyword when a locality alone finds nothing, and gives that answer", async () => {
+    getSearchResults.mockResolvedValueOnce(found([], 0)).mockResolvedValueOnce(found());
+    const outcome = await search({ ...NOTHING, listingType: "sale", locality: "Chennai" });
+    expect(outcome.status).toBe("ok");
+    expect(getSearchResults).toHaveBeenCalledTimes(2);
+    expect(getSearchResults.mock.calls[0]?.[0]).toMatchObject({ locality: "Chennai" });
+    const second = getSearchResults.mock.calls[1]?.[0] as Record<string, unknown>;
+    expect(second).toMatchObject({ keyword: "Chennai", listingType: "sale" });
+    expect(second).not.toHaveProperty("locality");
+    expect(outcome.status === "ok" ? (outcome.output as { total: number }).total : 0).toBe(1);
+  });
+
+  it("does not try again when the locality found homes, when there was no locality, or when a keyword was given", async () => {
+    await search({ ...NOTHING, locality: "Velachery" });
+    expect(getSearchResults).toHaveBeenCalledTimes(1);
+    getSearchResults.mockClear();
+    getSearchResults.mockResolvedValue(found([], 0));
+    await search({ ...NOTHING });
+    expect(getSearchResults).toHaveBeenCalledTimes(1);
+    getSearchResults.mockClear();
+    await search({ ...NOTHING, locality: "Adyar", keyword: "garden" });
+    expect(getSearchResults).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives the first answer, an honest nothing, when the second read finds nothing too or fails", async () => {
+    getSearchResults.mockResolvedValueOnce(found([], 0)).mockResolvedValueOnce(found([], 0));
+    const empty = await search({ ...NOTHING, locality: "Nowhere" });
+    expect(empty.status === "ok" ? (empty.output as { total: number }).total : -1).toBe(0);
+    getSearchResults
+      .mockResolvedValueOnce(found([], 0))
+      .mockResolvedValueOnce({ status: "failed" });
+    const failed = await search({ ...NOTHING, locality: "Nowhere" });
+    expect(failed.status === "ok" ? (failed.output as { total: number }).total : -1).toBe(0);
+  });
+
+  it("tells the model a city goes in the keyword, not the locality", () => {
+    const shape = searchPropertiesInputSchema.shape;
+    expect(shape.locality.description).toContain("put a city in `keyword`");
+  });
+});
+
 describe("UT-ai-tool-search: the result", () => {
   it("gives a home as compact facts, its price as the pages write it", async () => {
     getSearchResults.mockResolvedValue(found([listingRow()], 48));
