@@ -1,0 +1,343 @@
+/* Hero lab: the motion of the two experimental homepage heroes (C conversational, D layered) in
+   src/features/hero-lab. They are shown only where the Design Lab is on and never in production;
+   the live heroes (A search desk, B split) use none of this.
+
+   Rules the motion keeps:
+   - Only transform and opacity animate. The one exception is the arcs drawing on in D, which moves
+     an SVG stroke-dashoffset (no layout, painted once).
+   - The entrance is one short, staggered rise (--hl-step apart, --hl-dur each, eased out).
+   - Loops (the arcs' drift, the floating cards' bob) stop while the tab is hidden
+     ([data-hl-paused], set by <HeroLab>), and are not run on phones.
+   - With prefers-reduced-motion everything is shown in place: no delay, no rise, no loop, no
+     parallax (globals.css shortens what is left).
+
+   Tune here: the variables on .hl-root. */
+
+.hl-root {
+  /* Entrance: distance, gap between items, length of one item, the curves */
+  --hl-rise: 18px;
+  --hl-step: 60ms;
+  --hl-dur: 520ms;
+  --hl-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hl-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  /* Headline words (D): gap between words */
+  --hl-word-step: 45ms;
+}
+
+@media (max-width: 767px) {
+  .hl-root {
+    --hl-rise: 10px;
+    --hl-step: 40ms;
+    --hl-dur: 420ms;
+  }
+}
+
+@keyframes hl-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--hl-rise), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hl-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--hl-rise) * 0.6), 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hl-word {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.42em, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hl-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hl-drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-14px, 10px, 0) rotate(-2deg);
+  }
+}
+
+@keyframes hl-bob {
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+/* ── Entrance ─────────────────────────────────────────────────────────────────────────── */
+
+/* One item of the entrance; its place in the order is --hl-i (set inline). */
+.hl-in {
+  animation: hl-rise var(--hl-dur) var(--hl-ease-out) backwards;
+  animation-delay: calc(var(--hl-i, 0) * var(--hl-step));
+}
+
+/* A card or plate (D): rises with a little spring. */
+.hl-pop {
+  animation: hl-pop calc(var(--hl-dur) + 80ms) var(--hl-spring) backwards;
+  animation-delay: calc(var(--hl-i, 0) * var(--hl-step));
+}
+
+/* The sponsored card in C: waits until the search card has settled, then rises. */
+.hl-late {
+  animation: hl-rise calc(var(--hl-dur) + 120ms) var(--hl-ease-out) backwards;
+  animation-delay: calc(var(--hl-i, 6) * var(--hl-step) + 200ms);
+}
+
+/* Headline words (D). Each word is its own box so it can move; the spaces stay text, so the
+   line still wraps and balances. */
+.hl-word {
+  display: inline-block;
+  animation: hl-word 460ms var(--hl-ease-out) backwards;
+  animation-delay: calc(var(--hl-w, 0) * var(--hl-word-step) + 60ms);
+}
+
+/* ── Search card ──────────────────────────────────────────────────────────────────────── */
+
+/* The suggestion chips under the search card (C) slide in one after another, after the card. */
+.hl-search [data-slot="home-search-suggestions"] > * {
+  animation: hl-rise var(--hl-dur) var(--hl-ease-out) backwards;
+  animation-delay: calc(var(--hl-chips-at, 5) * var(--hl-step) + 120ms);
+}
+.hl-search [data-slot="home-search-suggestions"] > :nth-child(2) {
+  animation-delay: calc(var(--hl-chips-at, 5) * var(--hl-step) + 170ms);
+}
+.hl-search [data-slot="home-search-suggestions"] > :nth-child(3) {
+  animation-delay: calc(var(--hl-chips-at, 5) * var(--hl-step) + 220ms);
+}
+.hl-search [data-slot="home-search-suggestions"] > :nth-child(4) {
+  animation-delay: calc(var(--hl-chips-at, 5) * var(--hl-step) + 270ms);
+}
+.hl-search [data-slot="home-search-suggestions"] > :nth-child(n + 5) {
+  animation-delay: calc(var(--hl-chips-at, 5) * var(--hl-step) + 320ms);
+}
+
+/* ── Running glow on the search card's border (C, D) ──────────────────────────────────── */
+
+/* A bright teal light runs round the card's edge over a faint teal track. The card clips a
+   large square with a conic gradient that turns (transform only); a surface-coloured layer just
+   inside the edge leaves --hl-run-width of it showing as the border. Tune the speed and colours
+   here. */
+.hl-run {
+  --hl-run-width: 2.5px;
+  --hl-run-dur: 4.5s;
+  --hl-run-track: color-mix(in oklab, var(--c-primary) 20%, var(--c-surface));
+  --hl-run-light: var(--c-primary);
+  --hl-run-shine: color-mix(in oklab, var(--c-primary) 50%, var(--c-surface));
+}
+.hl-run form[role="search"] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: transparent;
+}
+.hl-run form[role="search"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -2;
+  width: 150%;
+  aspect-ratio: 1;
+  background: conic-gradient(
+    from 0deg,
+    var(--hl-run-track) 0turn,
+    var(--hl-run-track) 0.5turn,
+    var(--hl-run-shine) 0.68turn,
+    var(--hl-run-light) 0.8turn,
+    var(--hl-run-light) 0.83turn,
+    var(--hl-run-shine) 0.87turn,
+    var(--hl-run-track) 0.92turn,
+    var(--hl-run-track) 1turn
+  );
+  transform: translate(-50%, -50%);
+  animation: hl-run var(--hl-run-dur) linear infinite;
+  pointer-events: none;
+}
+.hl-run form[role="search"]::after {
+  content: "";
+  position: absolute;
+  inset: var(--hl-run-width);
+  z-index: -1;
+  border-radius: calc(var(--hl-run-radius, var(--r-xl)) - var(--hl-run-width));
+  background: var(--c-surface);
+  pointer-events: none;
+}
+/* Focus shows on the border itself, with no box round the bar (owner, 23 Nov 2026): the track
+   turns a stronger teal and the light's trail is brighter. */
+.hl-run:focus-within {
+  --hl-run-track: color-mix(in oklab, var(--c-primary) 45%, var(--c-surface));
+  --hl-run-shine: color-mix(in oklab, var(--c-primary) 70%, var(--c-surface));
+}
+
+/* The joined bar (C, D): the box and the button in one pill. The light runs on the pill's own
+   border. */
+.hl-run form[data-appearance="joined"] {
+  --hl-run-radius: var(--r-pill);
+}
+
+@keyframes hl-run {
+  to {
+    transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+/* ── Hover lift: the suggestion chips ─────────────────────────────────────────────────── */
+
+.hl-root [data-slot="chip"] {
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.hl-root [data-slot="chip"]:hover {
+  transform: translate3d(0, -2px, 0);
+}
+.hl-root [data-slot="chip"]:active {
+  transform: scale(0.97);
+}
+
+/* ── Layered stage (D) ────────────────────────────────────────────────────────────────── */
+
+/* A layer moves with the pointer and the scroll by its depth (--hl-depth). <ParallaxStage> sets
+   --hl-px and --hl-py (-1 to 1, the pointer from the stage's centre) and --hl-sy (pixels
+   scrolled) on the stage. Turned off on touch screens, small screens and reduced motion. */
+.hl-layer {
+  --hl-depth: 1;
+  transform: translate3d(
+    calc(var(--hl-px, 0) * var(--hl-depth) * 10px),
+    calc(var(--hl-py, 0) * var(--hl-depth) * 10px - var(--hl-sy, 0) * var(--hl-depth) * 0.06px),
+    0
+  );
+  transition: transform 420ms var(--hl-ease-out);
+  will-change: transform;
+}
+
+/* A floating card bobs gently, each on its own beat. */
+.hl-float {
+  animation: hl-bob 6s ease-in-out infinite;
+  animation-delay: var(--hl-bob-at, 0s);
+}
+
+/* The arcs (D) draw on, then drift slowly. Each path has pathLength="1". */
+.hl-arcs-draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: hl-draw 1.6s var(--hl-ease-out) forwards;
+}
+.hl-arcs-draw path:nth-child(2),
+.hl-arcs-draw path:nth-child(5) {
+  animation-delay: 160ms;
+}
+.hl-arcs-draw path:nth-child(3),
+.hl-arcs-draw path:nth-child(6) {
+  animation-delay: 320ms;
+}
+.hl-arcs-drift {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hl-drift 18s ease-in-out infinite alternate;
+}
+
+/* ── Page sections under a lab hero ───────────────────────────────────────────────────── */
+
+/* Set by <HeroLabSections> once the page has loaded, so nothing is hidden without the script. */
+[data-hl-reveal="waiting"] {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+}
+[data-hl-reveal] {
+  transition:
+    opacity 600ms var(--ease),
+    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── The layout switch (preview only) ─────────────────────────────────────────────────── */
+
+.hl-switch {
+  position: fixed;
+  left: var(--s-3);
+  bottom: calc(var(--bottombar-h) + var(--s-3));
+  z-index: var(--z-sticky);
+}
+@media (min-width: 768px) {
+  .hl-switch {
+    left: var(--s-6);
+    bottom: var(--s-6);
+  }
+}
+
+/* ── Phones and the tab in the background ─────────────────────────────────────────────── */
+
+@media (max-width: 1023px), (hover: none) {
+  .hl-layer {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+  .hl-float,
+  .hl-arcs-drift {
+    animation: none;
+  }
+}
+
+[data-hl-paused] .hl-root *,
+[data-hl-paused] .hl-root *::before,
+[data-hl-paused] .hl-root *::after {
+  animation-play-state: paused !important;
+}
+
+/* ── Reduced motion: everything in place, at once ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-in,
+  .hl-pop,
+  .hl-late,
+  .hl-word,
+  .hl-search [data-slot="home-search-suggestions"] > *,
+  .hl-float,
+  .hl-arcs-drift {
+    animation: none !important;
+  }
+  /* No running light: the border is the plain teal track. */
+  .hl-run form[role="search"]::before {
+    animation: none !important;
+    background: var(--hl-run-track);
+  }
+  .hl-arcs-draw path {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+  .hl-layer,
+  .hl-root [data-slot="chip"] {
+    transform: none !important;
+    transition: none;
+  }
+  [data-hl-reveal="waiting"] {
+    opacity: 1;
+    transform: none;
+  }
+}

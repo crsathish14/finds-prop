@@ -14,14 +14,26 @@ const AI_SEARCH_PATH = "/ai-search";
  * tab (`keepHomeQuestion`) and the chat opens and sends them as its first message. Drawn only while
  * `FLAG_AI_SEARCH` is on; the page shows the keyword bar otherwise. The sign-in the chat needs is still decided by the
  * chat's endpoint: a visitor who is not signed in finds the words back in the box after signing in.
+ * `examples`, `suggestions` and `appearance` pass through to the bar (the experimental conversational hero; see HomeSearchBar).
  */
-export function HomeAiSearch() {
+export function HomeAiSearch({
+  examples,
+  suggestions,
+  appearance,
+}: {
+  examples?: readonly string[] | undefined;
+  suggestions?: readonly string[] | undefined;
+  appearance?: "card" | "joined";
+}) {
   const router = useRouter();
   return (
     <HomeSearchBar
       mode="ai"
       action={AI_SEARCH_PATH}
       maxLength={MAX_INPUT_CHARACTERS}
+      examples={examples}
+      suggestions={suggestions}
+      {...(appearance ? { appearance } : {})}
       onSearch={(text) => {
         keepHomeQuestion(browserStorage(), text);
         router.push(AI_SEARCH_PATH);

@@ -13,9 +13,11 @@ import {
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { HomeAiSearch } from "@/features/ai-chat";
+import { HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
 import { SEARCH_PATH } from "@/features/search";
 import { pageMetadata } from "@/features/seo";
 import { resolveHero } from "@/lib/sponsors";
+import { designLabEnabled } from "@/server/env";
 import {
   buildHero,
   getFeatureFlags,
@@ -75,33 +77,63 @@ export default async function HomePage() {
     cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,
   };
 
+  const liveHero = (
+    <HomeHero
+      title={hero.title}
+      emphasis={hero.emphasis}
+      subtitle={hero.subtitle}
+      layout={arrangement.arrangement}
+      eyebrow={split && eyebrow ? eyebrow : undefined}
+      trust={
+        split
+          ? [
+              translate("home.hero.trust.approved"),
+              translate("home.hero.trust.enquire"),
+              translate("home.hero.trust.compare"),
+            ]
+          : undefined
+      }
+      sponsor={
+        arrangement.sponsors.length > 0 ? (
+          <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
+        ) : undefined
+      }
+    >
+      {/* One search bar (ADR-150): the AI search while it is on, a keyword search of the results otherwise. */}
+      {flags.aiSearch ? <HomeAiSearch /> : <HomeSearchBar mode="keyword" action={SEARCH_PATH} />}
+    </HomeHero>
+  );
+  const order = resolveHomeOrder(homepage.order);
+
+  // The hero lab (preview only, never in production): the live hero plus experimental layouts C
+  // and D, compared with a floating switch or ?layout=a|b|c|d. The live hero is shown until one is picked.
+  if (designLabEnabled) {
+    return (
+      <main id="main" className="flex-1">
+        <HeroLabPreview
+          live={split ? "split" : "desk"}
+          liveHero={liveHero}
+          title={hero.title}
+          emphasis={hero.emphasis}
+          subtitle={hero.subtitle}
+          eyebrow={eyebrow || undefined}
+          ads={ads}
+          aiSearch={flags.aiSearch}
+          localities={homepage.localities}
+        />
+        <HeroLabSections
+          sections={order
+            .map((key) => ({ key, node: sections[key] }))
+            .filter((section) => section.node !== null)}
+        />
+      </main>
+    );
+  }
+
   return (
     <main id="main" className="flex-1">
-      <HomeHero
-        title={hero.title}
-        emphasis={hero.emphasis}
-        subtitle={hero.subtitle}
-        layout={arrangement.arrangement}
-        eyebrow={split && eyebrow ? eyebrow : undefined}
-        trust={
-          split
-            ? [
-                translate("home.hero.trust.approved"),
-                translate("home.hero.trust.enquire"),
-                translate("home.hero.trust.compare"),
-              ]
-            : undefined
-        }
-        sponsor={
-          arrangement.sponsors.length > 0 ? (
-            <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
-          ) : undefined
-        }
-      >
-        {/* One search bar (ADR-150): the AI search while it is on, a keyword search of the results otherwise. */}
-        {flags.aiSearch ? <HomeAiSearch /> : <HomeSearchBar mode="keyword" action={SEARCH_PATH} />}
-      </HomeHero>
-      {resolveHomeOrder(homepage.order).map((key) => (
+      {liveHero}
+      {order.map((key) => (
         <Fragment key={key}>{sections[key]}</Fragment>
       ))}
     </main>
