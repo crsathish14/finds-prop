@@ -73,9 +73,10 @@ vi.mock("@/features/projects", async () => {
   const { isProjectSlug } = await import("@/features/projects/address");
   const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
     await import("@/features/projects/schemas");
-  const { visitDateProblem } = await import("@/features/projects/lead-view");
+  const { indiaToday, visitDateProblem } = await import("@/features/projects/lead-view");
   return {
     getProjects,
+    indiaToday,
     getProject,
     bhkSizes,
     priceOf,
@@ -242,7 +243,7 @@ function propertyNamesIn(schema: unknown, location = "$"): { name: string; locat
 
 /** A visit day inside the window whatever day the tests run: a month from today, India time. */
 const { addDays, indiaToday } = await import("@/features/projects/lead-view");
-const VISIT_DAY = addDays(indiaToday(new Date()), 30);
+const VISIT_DAY = addDays(indiaToday(new Date()), 20);
 
 /** The id of the made-up article every content stand-in below returns. */
 const CONTENT_ID = "a1000000-0000-4000-8000-000000000001";
@@ -290,6 +291,7 @@ const VALID_INPUTS: Record<string, unknown> = {
   },
   get_content_item: { id: CONTENT_ID, query: "registration charges" },
   propose_enquiry: { homeId: "k3x9a2bd", message: "Is this home still available?" },
+  propose_project_enquiry: { slug: "kadal-vista", message: "Is a 2 BHK still available?" },
   propose_site_visit: {
     slug: "kadal-vista",
     visitDate: VISIT_DAY,
@@ -493,7 +495,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the eleven read tools and the two propose tools", () => {
+  it("holds the eleven read tools and the three propose tools", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -509,10 +511,11 @@ describe("UT-ai-tools-registry: the list", () => {
         "search_jobs",
         "get_content_item",
         "propose_enquiry",
+        "propose_project_enquiry",
         "propose_site_visit",
       ]),
     );
-    expect(names).toHaveLength(13);
+    expect(names).toHaveLength(14);
   });
 
   it("serves the search tool that has always existed while place search is off, and the place-aware one only with a lookup (ADR-142)", () => {
@@ -530,14 +533,15 @@ describe("UT-ai-tools-registry: the list", () => {
     const oldShape =
       (searchPropertiesTool.input as { shape?: Record<string, unknown> }).shape ?? {};
     expect(Object.keys(oldShape)).not.toContain("place");
-    // The same twelve tools, every other one untouched.
+    // The same thirteen tools, every other one untouched.
     expect(withPlaces.slice(1)).toEqual(AI_CHAT_TOOLS.slice(1));
   });
 
-  it("gives every tool a kind: eleven read tools the loop may run in parallel, and two propose tools that run alone", () => {
+  it("gives every tool a kind: eleven read tools the loop may run in parallel, and three propose tools that run alone", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
     expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual([
       ...Array<string>(11).fill("read"),
+      "propose",
       "propose",
       "propose",
     ]);
@@ -847,6 +851,7 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       search_jobs: ["job"],
       get_content_item: ["article"],
       propose_enquiry: ["home"],
+      propose_project_enquiry: ["project"],
       propose_site_visit: ["project"],
     });
   });

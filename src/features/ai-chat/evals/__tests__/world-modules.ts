@@ -62,9 +62,10 @@ export async function projectsModule() {
   const { isProjectSlug } = await import("@/features/projects/address");
   const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
     await import("@/features/projects/schemas");
-  const { visitDateProblem } = await import("@/features/projects/lead-view");
+  const { indiaToday, visitDateProblem } = await import("@/features/projects/lead-view");
   return {
     getProjects,
+    indiaToday,
     getProject,
     bhkSizes,
     priceOf,

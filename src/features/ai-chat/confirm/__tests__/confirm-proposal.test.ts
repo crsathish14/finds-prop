@@ -64,6 +64,8 @@ const VISIT = {
   message: MESSAGE,
 } as const;
 
+const PROJECT_ENQUIRY = { kind: "project_enquiry", slug: "kadal-vista", message: MESSAGE } as const;
+
 type Stored = { kind: "enquiry" | "lead"; input: Record<string, unknown> };
 
 interface Options {
@@ -204,6 +206,33 @@ describe("UT-ai-confirm-proposal: a click that sends", () => {
         },
       },
     ]);
+  });
+
+  it("sends a plain project enquiry as a project lead of the kind enquiry, with no visit day (ADR-176)", async () => {
+    const { confirm, stored } = harness();
+    expect(
+      await confirm({ proposal: proposalFor(PROJECT_ENQUIRY), idempotencyKey: CARD_KEY }),
+    ).toEqual({ ok: true, data: { received: true } });
+    expect(stored).toEqual([
+      {
+        kind: "lead",
+        input: {
+          slug: "kadal-vista",
+          kind: "enquiry",
+          name: "Priya Raman",
+          message: MESSAGE,
+          idempotencyKey: expect.any(String),
+        },
+      },
+    ]);
+  });
+
+  it("refuses a project enquiry for a project that is not open any more, like a forged proposal", async () => {
+    const { confirm, stored } = harness({ projectOpen: false });
+    expect(
+      await confirm({ proposal: proposalFor(PROJECT_ENQUIRY), idempotencyKey: CARD_KEY }),
+    ).toMatchObject({ ok: false, code: "NOT_FOUND" });
+    expect(stored).toEqual([]);
   });
 
   it("ignores a person, a phone, a name, a message or a target in the request: only the proposal and the key count", async () => {

@@ -401,7 +401,7 @@ export const AI_LINK_TLDS: readonly string[] = [
  */
 export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
   // The tools by name.
-  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
+  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_project_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
   // The stack and the provider.
   /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|tailwind|typescript|langchain|openai|anthropic|chat ?gpt|gpt-?[0-9][a-z0-9.-]*)\b/u,
   /\b(large language model|language model|llm)\b/u,

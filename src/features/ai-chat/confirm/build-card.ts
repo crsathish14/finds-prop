@@ -96,23 +96,40 @@ function clip(text: string): string {
 /** What the card needs of a proposal or of a sign-in offer, once the target has been read. */
 type Facts =
   | { kind: "enquiry"; homeId: string; message: string }
+  | { kind: "project_enquiry"; slug: string; message: string }
   | { kind: "visit"; slug: string; message: string; visitDate: string };
 
 function factsOfProposal(proposal: Proposal): Facts {
-  return proposal.kind === "enquiry"
-    ? { kind: "enquiry", homeId: proposal.homeId, message: proposal.message }
-    : {
-        kind: "visit",
-        slug: proposal.slug,
-        message: proposal.message,
-        visitDate: proposal.visitDate,
-      };
+  if (proposal.kind === "enquiry") {
+    return { kind: "enquiry", homeId: proposal.homeId, message: proposal.message };
+  }
+  if (proposal.kind === "project_enquiry") {
+    return { kind: "project_enquiry", slug: proposal.slug, message: proposal.message };
+  }
+  return {
+    kind: "visit",
+    slug: proposal.slug,
+    message: proposal.message,
+    visitDate: proposal.visitDate,
+  };
 }
 
 function factsOfOffer(offer: Extract<ProposalOffer, { state: "sign_in_required" }>): Facts {
-  return offer.kind === "enquiry"
-    ? { kind: "enquiry", homeId: offer.homeId, message: offer.message }
-    : { kind: "visit", slug: offer.slug, message: offer.message, visitDate: offer.visitDate };
+  if (offer.kind === "enquiry") {
+    return { kind: "enquiry", homeId: offer.homeId, message: offer.message };
+  }
+  if (offer.kind === "project_enquiry") {
+    return { kind: "project_enquiry", slug: offer.slug, message: offer.message };
+  }
+  return { kind: "visit", slug: offer.slug, message: offer.message, visitDate: offer.visitDate };
+}
+
+/** The card's own kind, and what an enquiry is about: a project's enquiry is an enquiry card about a project. */
+function cardKind(facts: Facts): { kind: "enquiry" | "visit"; about?: "project" } {
+  if (facts.kind === "visit") return { kind: "visit" };
+  return facts.kind === "project_enquiry"
+    ? { kind: "enquiry", about: "project" }
+    : { kind: "enquiry" };
 }
 
 async function targetOf(
@@ -122,6 +139,17 @@ async function targetOf(
   target: { title: string; meta: string };
   extra: { visitDate?: string; builderName?: string };
 } | null> {
+  if (facts.kind === "project_enquiry") {
+    const project = await deps.readProject(facts.slug);
+    if (project === null) return null;
+    const meta = [project.locality, project.developerName].filter(
+      (part) => part !== null && part !== "",
+    );
+    return {
+      target: { title: clip(project.name), meta: clip(meta.join(FIELD_SEPARATOR)) },
+      extra: {},
+    };
+  }
   if (facts.kind === "enquiry") {
     const home = await deps.readHome(facts.homeId);
     if (home === null) return null;
@@ -163,7 +191,7 @@ export async function buildConfirmCard(
       if (read === null) return null;
       return {
         state: "signed_out",
-        kind: facts.kind,
+        ...cardKind(facts),
         target: read.target,
         message: facts.message,
         ...read.extra,
@@ -182,7 +210,7 @@ export async function buildConfirmCard(
     if (read === null) return null;
     const signedOut: ConfirmCard = {
       state: "signed_out",
-      kind: facts.kind,
+      ...cardKind(facts),
       target: read.target,
       message: facts.message,
       ...read.extra,
@@ -193,7 +221,7 @@ export async function buildConfirmCard(
     if (!/^[0-9]{6,15}$/.test(contact.phone)) return signedOut;
     return {
       state: "ready",
-      kind: facts.kind,
+      ...cardKind(facts),
       proposal: offer.proposal,
       target: read.target,
       name: contact.name,

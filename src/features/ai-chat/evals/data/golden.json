@@ -6340,5 +6340,193 @@
         ]
       }
     }
+  },
+  {
+    "id": "G-sales-14",
+    "set": "golden",
+    "category": "propose",
+    "language": "en",
+    "title": "a project: the customer picks the enquiry, which is prepared with no day and with what they said",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Tell me about Kadal Vista in Navalur"
+      },
+      {
+        "role": "assistant",
+        "text": "Kadal Vista is an under-construction project in OMR Navalur. Would you like to enquire, or to book a site visit?"
+      },
+      {
+        "role": "user",
+        "text": "Enquire. I want a 2 BHK, my budget is 80 lakh and I need a loan."
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "propose_project_enquiry",
+            "input": {
+              "slug": "kadal-vista",
+              "message": "Hello, I am interested in Kadal Vista. I am looking for a 2 BHK, my budget is 80 lakh and I will need a home loan. Is a 2 BHK still available? Thank you."
+            }
+          }
+        ]
+      },
+      {
+        "text": "I have prepared an enquiry to the developer of Kadal Vista with your budget and the loan. Please read it on the card below and press Send when you are ready. [[project:kadal-vista]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["Send"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "propose_project_enquiry",
+            "args": {
+              "slug": "kadal-vista",
+              "message": "loan"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_site_visit"]
+      },
+      "visible": {
+        "cards": ["project:kadal-vista"],
+        "mustNotMatch": [
+          "\b(i|we)(['’]ve| have)? sent\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-15",
+    "set": "golden",
+    "category": "propose",
+    "language": "en",
+    "title": "a site visit more than a month away: refused by the tool, and the customer is asked for a nearer day",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I would like to visit Kadal Vista 60 days from today"
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "propose_site_visit",
+            "input": {
+              "slug": "kadal-vista",
+              "visitDate": "{{day+60}}",
+              "message": "I would like to visit the project."
+            }
+          }
+        ]
+      },
+      {
+        "text": "I can only prepare a site visit for a day from today to one month ahead. Which day within the next month suits you?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["month"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "propose_site_visit",
+            "args": {
+              "slug": "kadal-vista"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "mustContain": [["which day", "another day"]],
+        "mustNotMatch": [
+          "\b(i|we)(['’]ve| have)? sent\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-16",
+    "set": "golden",
+    "category": "propose",
+    "language": "tanglish",
+    "title": "a project enquiry in Tanglish: prepared, and the customer is told to press Send",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Kadal Vista ku enquiry pannunga, enakku 2 BHK venum"
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "propose_project_enquiry",
+            "input": {
+              "slug": "kadal-vista",
+              "message": "Hello, I am interested in Kadal Vista. I am looking for a 2 BHK. Thank you."
+            }
+          }
+        ]
+      },
+      {
+        "text": "Kadal Vista ku enquiry ready pannitten. Kila ulla card la message ah paathu, ready na Send press pannunga. [[project:kadal-vista]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["Send"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "propose_project_enquiry",
+            "args": {
+              "slug": "kadal-vista"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["project:kadal-vista"],
+        "mustNotMatch": [
+          "\b(i|we)(['’]ve| have)? sent\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
   }
 ]

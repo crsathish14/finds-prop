@@ -57,6 +57,11 @@ const proposalSchema = z.discriminatedUnion("kind", [
   }),
   z.strictObject({
     ...sharedFields,
+    kind: z.literal("project_enquiry"),
+    slug: z.string().refine(isProjectSlug),
+  }),
+  z.strictObject({
+    ...sharedFields,
     kind: z.literal("site_visit"),
     slug: z.string().refine(isProjectSlug),
     visitDate: z.string().regex(VISIT_DAY),
@@ -69,6 +74,7 @@ export type Proposal = z.infer<typeof proposalSchema>;
 /** What the tool decided; the signer adds the customer, the id and the time. */
 export type ProposalDetails =
   | { readonly kind: "enquiry"; readonly homeId: string; readonly message: string }
+  | { readonly kind: "project_enquiry"; readonly slug: string; readonly message: string }
   | {
       readonly kind: "site_visit";
       readonly slug: string;
