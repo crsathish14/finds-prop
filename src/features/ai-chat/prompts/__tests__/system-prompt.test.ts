@@ -479,8 +479,14 @@ describe("UT-ai-system-prompt: talking with the customer and offering an enquiry
     expect(LOWER_SECTION).toContain("never sends anything");
   });
 
-  it("asks for a day for a site visit and never picks one", () => {
+  it("asks for a day for a site visit and never picks one, and says the day must be inside one month", () => {
     expect(LOWER_SECTION).toContain("never choose a day yourself");
+    expect(LOWER_SECTION).toContain("only within the coming month");
+  });
+
+  it("gives a project the choice between an enquiry and a site visit, and an enquiry has no day", () => {
+    expect(LOWER_SECTION).toContain("enquire or to book a site visit");
+    expect(LOWER_SECTION).toContain("an enquiry has no day");
   });
 
   it("keeps the honesty rules: no pressure, no invented urgency, no request for contact details", () => {

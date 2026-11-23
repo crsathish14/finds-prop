@@ -102,7 +102,11 @@ export function ChatConfirm({
           setOutcome("sent");
         } else if (isSessionEnded(result)) {
           setOutcome("ended");
-        } else if (result.code === "CONFLICT" && card.kind === "enquiry") {
+        } else if (
+          result.code === "CONFLICT" &&
+          card.kind === "enquiry" &&
+          card.about !== "project"
+        ) {
           setOutcome("already");
         } else if (result.code === "RATE_LIMITED") {
           setProblem("limited");
@@ -134,6 +138,10 @@ export function ChatConfirm({
       state={common.state === "already" ? "pending" : common.state}
     />
   ) : (
-    <ChatConfirmCard {...common} kind="enquiry" enquiriesHref={ENQUIRIES_HREF} />
+    <ChatConfirmCard
+      {...common}
+      kind="enquiry"
+      {...(card.about === "project" ? {} : { enquiriesHref: ENQUIRIES_HREF })}
+    />
   );
 }

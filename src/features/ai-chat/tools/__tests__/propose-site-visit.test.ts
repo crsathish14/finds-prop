@@ -22,8 +22,8 @@ vi.mock("@/server/env", () => ({ env: settings.env }));
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 vi.mock("@/features/projects", async () => {
   const { isProjectSlug } = await import("@/features/projects/address");
-  const { visitDateProblem } = await import("@/features/projects/lead-view");
-  return { getProject, isProjectSlug, visitDateProblem };
+  const { indiaToday, visitDateProblem } = await import("@/features/projects/lead-view");
+  return { getProject, indiaToday, isProjectSlug, visitDateProblem };
 });
 vi.mock("@/server/auth/get-session-view", () => ({ getSessionView }));
 // A write would go through the service role. The tool must never reach for it.
@@ -145,17 +145,20 @@ describe("UT-ai-tool-propose-visit: the input", () => {
   });
 });
 
-describe("UT-ai-tool-propose-visit: the day must be from today to a year ahead, India time", () => {
+describe("UT-ai-tool-propose-visit: the day must be from today to one month ahead, India time (ADR-176)", () => {
   it.each([
     ["today", "2026-11-15"],
     ["tomorrow", "2026-11-16"],
-    ["the last day, a year ahead", "2027-11-15"],
+    ["the last day, one month ahead", "2026-12-15"],
   ])("accepts %s", async (_case, day) => {
     expect(okOutput(await visit(day))).toMatchObject({ status: "ready", visitDate: day });
   });
 
   it.each([
     ["yesterday", "2026-11-14"],
+    ["a month and a day ahead", "2026-12-16"],
+    ["two months ahead", "2027-01-15"],
+    ["the project page's last day, a year ahead", "2027-11-15"],
     ["a year and a day ahead", "2027-11-16"],
     ["long ago", "2020-01-01"],
     ["far ahead", "2099-12-31"],
@@ -180,12 +183,37 @@ describe("UT-ai-tool-propose-visit: the day must be from today to a year ahead, 
     expect(await visit("2026-11-14")).toMatchObject({ status: "error", code: "date_out_of_range" });
   });
 
-  it("holds the same limits as the form and the database use: the same rule, not a copy", async () => {
+  it("applies the shared rule first and a stricter month on top: every day it accepts the form accepts too, never the other way round", async () => {
     const { visitDateProblem } = await import("@/features/projects/lead-view");
-    for (const day of ["2026-11-14", "2026-11-15", "2027-11-15", "2027-11-16", "2026-02-30"]) {
+    for (const day of [
+      "2026-11-14",
+      "2026-11-15",
+      "2026-12-15",
+      "2026-12-16",
+      "2027-11-15",
+      "2026-02-30",
+    ]) {
       const accepted = (await visit(day)).status === "ok";
-      expect(accepted, day).toBe(visitDateProblem(day, NOW) === null);
+      if (accepted) expect(visitDateProblem(day, NOW), day).toBeNull();
     }
+    // The project page's form still takes a day two months ahead; only the assistant refuses it.
+    expect(visitDateProblem("2027-01-15", NOW)).toBeNull();
+    expect((await visit("2027-01-15")).status).toBe("error");
+  });
+
+  it("counts the month in India time and clamps a short month (31 Jan gives 28 Feb)", async () => {
+    const { addMonths } = await import("../visit-window");
+    expect(addMonths("2026-11-15", 1)).toBe("2026-12-15");
+    expect(addMonths("2026-01-31", 1)).toBe("2026-02-28");
+    expect(addMonths("2028-01-31", 1)).toBe("2028-02-29");
+    expect(addMonths("2026-12-31", 1)).toBe("2027-01-31");
+  });
+
+  it("tells the model to ask for another day inside the month, and never to pick one", () => {
+    expect(proposeSiteVisitTool.description).toContain("one month ahead");
+    expect(proposeSiteVisitInputSchema.shape.visitDate.description).toContain(
+      "never choose one yourself",
+    );
   });
 });
 

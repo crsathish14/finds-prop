@@ -15,7 +15,7 @@ export {
   type ProjectResult,
 } from "./queries";
 export { submitProjectLead } from "./actions";
-export { visitDateProblem } from "./lead-view";
+export { indiaToday, visitDateProblem } from "./lead-view";
 export { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } from "./schemas";
 export type {
   OfferType,

@@ -25,6 +25,8 @@ const targetSchema = z.object({
 
 const common = {
   kind: z.enum(["enquiry", "visit"]),
+  /** What an enquiry is about; absent means a home. A project's enquiry has no "My enquiries" page to point to. */
+  about: z.enum(["home", "project"]).optional(),
   target: targetSchema,
   message: z.string().min(1).max(CARD_MESSAGE_MAX),
   /** The visit day, already written for reading (a site visit only). */

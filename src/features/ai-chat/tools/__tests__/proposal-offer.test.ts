@@ -5,6 +5,27 @@ import { offerFromOutput } from "../proposal-offer";
 
 const MESSAGE = "Is this home still available?";
 
+describe("UT-ai-proposal-offer: the plain project enquiry (ADR-176)", () => {
+  it("reads a ready result and a sign-in result of propose_project_enquiry, and no other tool's", () => {
+    expect(
+      offerFromOutput("propose_project_enquiry", { status: "ready", proposal: "body.signature" }),
+    ).toEqual({ state: "ready", proposal: "body.signature" });
+    const signIn = {
+      status: "sign_in_required",
+      target: { slug: "kadal-vista" },
+      untrustedText: { name: "Kadal Vista", message: "Hello" },
+    };
+    expect(offerFromOutput("propose_project_enquiry", signIn)).toEqual({
+      state: "sign_in_required",
+      kind: "project_enquiry",
+      slug: "kadal-vista",
+      message: "Hello",
+    });
+    expect(offerFromOutput("get_project", signIn)).toBeNull();
+    expect(offerFromOutput("propose_project_enquiry", { status: "other" })).toBeNull();
+  });
+});
+
 describe("UT-ai-proposal-offer: what a result offers", () => {
   it("offers the signed proposal of a ready result, of either propose tool", () => {
     const output = { status: "ready", proposal: "body.signature", target: { homeId: "k3x9a2bd" } };

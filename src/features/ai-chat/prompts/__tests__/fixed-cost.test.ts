@@ -95,15 +95,16 @@ const CONTENT_TOOL_NAMES = ["search_content", "search_jobs", "get_content_item"]
  */
 // Raised from 11_200 on 23 Nov 2026 (ADR-174): the conversation section adds about 2,000 characters on purpose.
 const PROMPT_CHARACTER_CEILING = 13_000;
-const TOOL_LIST_CHARACTER_CEILING = 25_000;
+// Raised from 25_000 on 23 Nov 2026 (ADR-176): the plain project enquiry is a fourteenth tool.
+const TOOL_LIST_CHARACTER_CEILING = 28_000;
 
 const definitions = toolDefinitions(AI_CHAT_TOOLS);
 const toolListCharacters = JSON.stringify(definitions).length;
 const promptCharacters = buildSystemPrompt({ translate }).length;
 
 describe("UT-ai-fixed-cost: what every model call carries", () => {
-  it("serves the thirteen tools, three of them the content tools", () => {
-    expect(definitions).toHaveLength(13);
+  it("serves the fourteen tools, three of them the content tools", () => {
+    expect(definitions).toHaveLength(14);
     for (const name of CONTENT_TOOL_NAMES) {
       expect(definitions.map((definition) => definition.name)).toContain(name);
     }

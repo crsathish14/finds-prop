@@ -27,6 +27,12 @@ const proposalOfferSchema = z.union([
   }),
   z.object({
     state: z.literal("sign_in_required"),
+    kind: z.literal("project_enquiry"),
+    slug: z.string().min(2).max(80).regex(PROJECT_SLUG),
+    ...signInFields,
+  }),
+  z.object({
+    state: z.literal("sign_in_required"),
     kind: z.literal("site_visit"),
     slug: z.string().min(2).max(80).regex(PROJECT_SLUG),
     visitDate: z.string().min(1),
@@ -43,6 +49,11 @@ const enquirySignInOutput = z.object({
   target: z.object({ homeId: z.string() }),
   untrustedText: z.object({ message: z.string() }),
 });
+const projectEnquirySignInOutput = z.object({
+  status: z.literal("sign_in_required"),
+  target: z.object({ slug: z.string() }),
+  untrustedText: z.object({ message: z.string() }),
+});
 const visitSignInOutput = z.object({
   status: z.literal("sign_in_required"),
   target: z.object({ slug: z.string() }),
@@ -55,7 +66,13 @@ const visitSignInOutput = z.object({
  * card: an error result never gets here). Only the two propose tools are read, by name.
  */
 export function offerFromOutput(toolName: string, output: unknown): ProposalOffer | null {
-  if (toolName !== "propose_enquiry" && toolName !== "propose_site_visit") return null;
+  if (
+    toolName !== "propose_enquiry" &&
+    toolName !== "propose_site_visit" &&
+    toolName !== "propose_project_enquiry"
+  ) {
+    return null;
+  }
   const ready = readyOutput.safeParse(output);
   if (ready.success) return { state: "ready", proposal: ready.data.proposal };
   if (toolName === "propose_enquiry") {
@@ -65,6 +82,17 @@ export function offerFromOutput(toolName: string, output: unknown): ProposalOffe
       state: "sign_in_required",
       kind: "enquiry",
       homeId: signIn.data.target.homeId,
+      message: signIn.data.untrustedText.message,
+    });
+    return offer.success ? offer.data : null;
+  }
+  if (toolName === "propose_project_enquiry") {
+    const signIn = projectEnquirySignInOutput.safeParse(output);
+    if (!signIn.success) return null;
+    const offer = proposalOfferSchema.safeParse({
+      state: "sign_in_required",
+      kind: "project_enquiry",
+      slug: signIn.data.target.slug,
       message: signIn.data.untrustedText.message,
     });
     return offer.success ? offer.data : null;

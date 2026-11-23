@@ -94,6 +94,7 @@ describe("UT-ai-eval-cases: the real files", () => {
       "search_jobs",
       "get_content_item",
       "propose_enquiry",
+      "propose_project_enquiry",
       "propose_site_visit",
     ]);
   });
