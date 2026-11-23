@@ -6,9 +6,19 @@ import {
   type MarkdownCreateResult,
 } from "@/components/domain/blog-markdown-flow";
 import { BlogMethodChooser } from "@/components/domain/blog-markdown-flow-chooser";
+import { extensionOf, pictureProblem, PICTURE_ACCEPT } from "@/features/blog/blog-pictures";
+import { buildAiPrompt } from "@/features/blog/markdown/ai-prompt";
 import { convertMarkdown } from "@/features/blog/markdown/convert";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
+
+const PICTURE_RULES = {
+  accept: PICTURE_ACCEPT,
+  problem: pictureProblem,
+  extension: extensionOf,
+  maximumKb: 500,
+};
+const AI_PROMPT = buildAiPrompt();
 
 const CATEGORIES = [
   { id: "guides", name: "Guides" },
@@ -19,6 +29,8 @@ const CATEGORIES = [
 const SAMPLE = `# How to check a plot before you buy it in Chennai
 
 Buying land is a big decision. Here is **a short guide** to the papers you should ask for.
+
+![A buyer reading the sale papers](IMAGE-1)
 
 ## What to ask the seller
 
@@ -75,6 +87,8 @@ function PreFilled({
     <BlogMarkdownFlow
       categories={CATEGORIES}
       convert={convertMarkdown}
+      aiPrompt={AI_PROMPT}
+      pictureRules={PICTURE_RULES}
       backHref="/design-lab"
       debounceMs={0}
       headingAs="h2"
@@ -100,7 +114,9 @@ export function BlogMarkdownFlowDemo() {
         The second way to start an article (ADR-172): paste Markdown written elsewhere, see it drawn
         exactly as readers will, read the list of what the conversion changed, confirm the title,
         address, summary, author and category, and create a draft that opens in the block editor.
-        The pasted text is not stored. All wording is draft wording for the owner to approve.
+        ADR-173 adds a prompt to copy into any AI tool, an Add a link button in the paste box, and a
+        place for each picture (a line like IMAGE-1) with its own file chooser. The pasted text is
+        not stored. All wording is draft wording for the owner to approve.
       </Text>
       <Specimen label="Empty: a gentle note, nothing to create">
         <FlowTryIt start="" />
@@ -119,6 +135,8 @@ export function BlogMarkdownFlowDemo() {
           <BlogMarkdownFlow
             categories={CATEGORIES}
             convert={convertMarkdown}
+            aiPrompt={AI_PROMPT}
+            pictureRules={PICTURE_RULES}
             backHref="/design-lab"
             debounceMs={0}
             headingAs="h2"

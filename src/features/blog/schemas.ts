@@ -3,6 +3,7 @@ import {
   BLOCKS_BYTES_MAX,
   BLOCKS_MAX,
   BLOG_ALT_MAX,
+  BLOG_PICTURE_SLOT,
   BLOG_AUTHOR_MAX,
   BLOG_AUTHOR_MIN,
   BLOG_CAPTION_MAX,
@@ -213,21 +214,43 @@ export const updateBlogPostSchema = z.object({
 });
 export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
 
+/** A picture the admin chose for a place (`IMAGE-1`) of the pasted text; its file is already in the article's folder (ADR-173). */
+const markdownPicture = z.strictObject({
+  slot: z
+    .string({ error: "validation.invalid" })
+    .regex(BLOG_PICTURE_SLOT, { error: "validation.invalid" }),
+  path: z
+    .string({ error: "validation.invalid" })
+    .regex(BLOG_IMAGE_PATH, { error: "validation.invalid" }),
+  alt: plain(1, BLOG_ALT_MAX),
+});
+
 /**
  * A draft made from pasted Markdown (ADR-172). The server converts the text itself, so the blocks are never taken from
  * the browser; the title, address, summary, author and category are what the admin confirmed beside the preview. The
- * text is not stored.
+ * text is not stored. Pictures (ADR-173) come with the id the article is made with and the files already sent to its folder.
  */
-export const createBlogPostFromMarkdownSchema = z.object({
-  markdown: z
-    .string({ error: "validation.required" })
-    .max(MARKDOWN_MAX_CHARS, { error: "validation.invalid" }),
-  title,
-  slug: slug.optional(),
-  excerpt,
-  authorName,
-  categoryId: uuid.nullable().default(null),
-});
+export const createBlogPostFromMarkdownSchema = z
+  .object({
+    markdown: z
+      .string({ error: "validation.required" })
+      .max(MARKDOWN_MAX_CHARS, { error: "validation.invalid" }),
+    title,
+    slug: slug.optional(),
+    excerpt,
+    authorName,
+    categoryId: uuid.nullable().default(null),
+    /** The id the article is made with: the browser chose it first, so the pictures could be sent to its folder. */
+    postId: uuid.optional(),
+    pictures: z
+      .array(markdownPicture, { error: "validation.invalid" })
+      .max(BLOCKS_MAX, { error: "validation.invalid" })
+      .default([]),
+  })
+  .refine((input) => input.pictures.length === 0 || input.postId !== undefined, {
+    path: ["postId"],
+    error: "validation.invalid",
+  });
 export type CreateBlogPostFromMarkdownInput = z.infer<typeof createBlogPostFromMarkdownSchema>;
 
 /** Sets the cover picture (already in the bucket under the article's folder) with its description, or removes it. */

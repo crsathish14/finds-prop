@@ -8,7 +8,9 @@ import {
 import {
   BLOCKS_BYTES_MAX,
   BLOCKS_MAX,
+  BLOG_ALT_MAX,
   BLOG_EXCERPT_MAX,
+  BLOG_PICTURE_SLOT,
   HEADING_MAX,
   LIST_ITEMS_MAX,
   MARKDOWN_MAX_CHARS,
@@ -48,7 +50,10 @@ export type MarkdownWarningCode =
   | "image"
   | "html"
   | "split"
-  | "rule";
+  | "rule"
+  | "imageFromAddress"
+  | "imageSlotEmpty"
+  | "imageSlotRepeated";
 
 export type MarkdownErrorCode = "headingTooLong" | "tooManyBlocks" | "tooBig" | "inputTooBig";
 
@@ -67,8 +72,24 @@ export type MarkdownError = {
   count?: number;
 };
 
+/** A place for a picture in the pasted text (ADR-173): a line that is only `![what it shows](IMAGE-1)`. */
+export type MarkdownSlot = {
+  /** `IMAGE-1`. */
+  id: string;
+  /** What the pasted text said the picture shows (may be empty); the admin may change it. */
+  alt: string;
+  line: number;
+  /** Set when the pasted line pointed at an address (not an `IMAGE-n` name): that address is never fetched. */
+  address?: string;
+};
+
+/** A picture the admin chose for a place: where its file is (a stored path, or any name for the preview) and what it shows. */
+export type MarkdownPicture = { path: string; alt: string };
+
 export type MarkdownConversion = {
   blocks: BlogBlock[];
+  /** Every place for a picture, in the order of the text, whether or not a picture was chosen for it. */
+  slots: MarkdownSlot[];
   /** The first `# Title` line, or "". */
   title: string;
   /** The address `slugFromTitle` makes of the title, or "". */
@@ -100,6 +121,8 @@ const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const HEADING = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/;
 const RULE = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
 const QUOTE = /^ {0,3}>/;
+/** A line that is only a picture: its description and its address (an `IMAGE-n` name, or any address). */
+const PICTURE_LINE = /^ {0,3}!\[([^\]]*)\]\(([^)]*)\)[ \t]*$/;
 const LIST = /^([ \t]*)([-*+]|\d{1,9}[.)])[ \t]+(\S.*)$/;
 const TABLE_SEPARATOR = /^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/;
 const CITE = /^(?:—|–|―|--)[ \t]*(\S.*)$/;
@@ -323,22 +346,48 @@ function cellsOf(row: string): string[] {
   return trimmed.split("|");
 }
 
-export function convertMarkdown(source: string): MarkdownConversion {
+/**
+ * Pictures (ADR-173): a line that is only `![what it shows](IMAGE-1)` is a place for a picture. `pictures` holds the
+ * ones the admin has chosen so far, by place name; a place with a picture becomes an image block at that spot, a place
+ * without one is left out (with a note). A picture line that points at any other address becomes a place too, named
+ * for it here: the address is never fetched (no picture is read from the internet), the admin chooses the file.
+ */
+export function convertMarkdown(
+  source: string,
+  pictures: Readonly<Record<string, MarkdownPicture>> = {},
+): MarkdownConversion {
   const context: Context = { warnings: [], errors: [], formatting: 0, rules: 0 };
   const blocks: BlogBlock[] = [];
+  const slots: MarkdownSlot[] = [];
   let title = "";
 
   if (source.length > MARKDOWN_MAX_CHARS) {
     context.errors.push({ code: "inputTooBig", line: null, count: MARKDOWN_MAX_CHARS });
-    return { blocks, title, slug: "", excerpt: "", warnings: [], errors: context.errors };
+    return { blocks, slots, title, slug: "", excerpt: "", warnings: [], errors: context.errors };
   }
 
   const lines = (source.charCodeAt(0) === 0xfeff ? source.slice(1) : source)
     .replace(/\r\n?/g, "\n")
     .split("\n");
 
+  // The names the text gives its pictures are kept for them; a picture with another address gets the next free one.
+  const named = new Set<string>();
+  for (const text of lines) {
+    const address = PICTURE_LINE.exec(text)?.[2];
+    if (address !== undefined && BLOG_PICTURE_SLOT.test(addressOf(address)))
+      named.add(addressOf(address));
+  }
+  const used = new Set<string>();
+  let counter = 0;
+  const freshName = (): string => {
+    do counter += 1;
+    while (named.has(`IMAGE-${counter}`) || used.has(`IMAGE-${counter}`));
+    return `IMAGE-${counter}`;
+  };
+
   const startsBlock = (index: number): boolean => {
     const line = lines[index] ?? "";
+    if (PICTURE_LINE.test(line)) return true;
     if (FENCE.test(line) || HEADING.test(line) || RULE.test(line) || QUOTE.test(line)) return true;
     const item = LIST.exec(line);
     if (item && (/^[-*+]$/.test(item[2] ?? "") || /^1[.)]$/.test(item[2] ?? ""))) return true;
@@ -397,6 +446,42 @@ export function convertMarkdown(source: string): MarkdownConversion {
         ),
         number,
       );
+      continue;
+    }
+
+    // A picture on a line of its own: a place for a picture, never read from the address.
+    const picture = PICTURE_LINE.exec(line);
+    if (picture) {
+      index += 1;
+      const address = addressOf(picture[2] ?? "");
+      const given = BLOG_PICTURE_SLOT.test(address);
+      if (given && used.has(address)) {
+        warn(context, "imageSlotRepeated", number, { count: Number(address.slice(6)) });
+        continue;
+      }
+      const id = given ? address : freshName();
+      used.add(id);
+      const alt = inline(picture[1] ?? "", number, context, { keepLinks: false }).slice(
+        0,
+        BLOG_ALT_MAX,
+      );
+      slots.push({ id, alt, line: number, ...(given ? {} : { address }) });
+      if (!given) {
+        warn(context, "imageFromAddress", number, {
+          detail: shorten(address, 80),
+          count: Number(id.slice(6)),
+        });
+      }
+      const chosen = pictures[id];
+      if (chosen) {
+        blocks.push({
+          type: "image",
+          path: chosen.path,
+          alt: chosen.alt.replace(/\s+/g, " ").trim(),
+        });
+      } else {
+        warn(context, "imageSlotEmpty", number, { count: Number(id.slice(6)) });
+      }
       continue;
     }
 
@@ -568,6 +653,7 @@ export function convertMarkdown(source: string): MarkdownConversion {
 
   return {
     blocks,
+    slots,
     title,
     slug: slugFromTitle(title),
     excerpt: excerptOf(blocks),

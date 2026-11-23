@@ -9,6 +9,9 @@
  *   keeps the text.
  * Props: label, hint (the box's own), value, onValueChange, error (already translated), place (the block's place, for the
  *   button's name), rows, maxLength, disabled, and `multiline` (a list: the box is the same, its hint is the caller's).
+ *   For a box that is not one block of an article (the Markdown paste box, ADR-173): addLabel and groupLabel (already
+ *   translated, in place of the ones that name a block), placeholder, monospace, spellCheck and dataBox (the name the
+ *   page uses to focus the box).
  * Responsive: the form's two boxes stack on a phone and sit side by side from the medium width; the buttons keep 44 px
  *   targets.
  * Accessibility: the button says which block it acts on ("Add a link to block 2") and tells whether the form is open
@@ -40,6 +43,12 @@ type BlogLinkTextFieldProps = {
   rows?: number;
   maxLength?: number;
   disabled?: boolean;
+  addLabel?: string;
+  groupLabel?: string;
+  placeholder?: string;
+  monospace?: boolean;
+  spellCheck?: boolean;
+  dataBox?: string;
 };
 
 /** The words of each problem (static keys, so the messages check can see them). */
@@ -59,6 +68,12 @@ function BlogLinkTextField({
   rows = 5,
   maxLength,
   disabled = false,
+  addLabel,
+  groupLabel,
+  placeholder,
+  monospace = false,
+  spellCheck,
+  dataBox,
 }: BlogLinkTextFieldProps) {
   const translate = useTranslations();
   const boxId = useId();
@@ -140,6 +155,10 @@ function BlogLinkTextField({
           disabled={disabled}
           rows={rows}
           {...(maxLength ? { maxLength } : {})}
+          {...(placeholder ? { placeholder } : {})}
+          {...(spellCheck === undefined ? {} : { spellCheck })}
+          {...(dataBox ? { "data-box": dataBox } : {})}
+          {...(monospace ? { className: "font-mono" } : {})}
           onFocus={() => {
             touched.current = true;
           }}
@@ -158,14 +177,14 @@ function BlogLinkTextField({
           aria-controls={open ? formId : undefined}
           onClick={() => (open ? close() : openForm())}
         >
-          {translate("admin.blog.editor.link.add", { place })}
+          {addLabel ?? translate("admin.blog.editor.link.add", { place })}
         </Button>
       </div>
       {open ? (
         <div
           id={formId}
           role="group"
-          aria-label={translate("admin.blog.editor.link.groupLabel", { place })}
+          aria-label={groupLabel ?? translate("admin.blog.editor.link.groupLabel", { place })}
           className="flex min-w-0 flex-col gap-4 rounded-lg border border-line bg-canvas-sunken p-4"
         >
           <div className="grid gap-4 md:grid-cols-2">

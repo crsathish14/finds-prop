@@ -2,6 +2,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../../tests/render-intl";
+import type { BlogStorage } from "../../blog-storage";
 import { BlogMarkdownScreen, type BlogMarkdownActions } from "../blog-markdown-screen.client";
 
 const navigation = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }));
@@ -122,5 +123,120 @@ describe("BlogMarkdownScreen: the Markdown flow with the real converter (ADR-172
     fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(navigation.push).not.toHaveBeenCalled();
+  });
+});
+
+describe("BlogMarkdownScreen: pictures are sent before the draft is made (ADR-173)", () => {
+  const WITH_PICTURES = `# The gate
+
+Before.
+
+![The front gate](IMAGE-1)
+
+![The lobby](IMAGE-2)
+`;
+
+  function fakeStorage(uploadResult: (path: string) => boolean = () => true) {
+    const uploaded: string[] = [];
+    const removed: string[] = [];
+    const storage: BlogStorage = {
+      upload: (path) => {
+        const ok = uploadResult(path);
+        if (ok) uploaded.push(path);
+        return Promise.resolve(ok);
+      },
+      remove: (paths) => {
+        removed.push(...paths);
+        return Promise.resolve();
+      },
+    };
+    return { storage, uploaded, removed };
+  }
+
+  async function pasteWithPictures(
+    create: BlogMarkdownActions["create"],
+    storage: BlogStorage,
+    count: number,
+  ) {
+    URL.createObjectURL = vi.fn(() => "blob:chosen");
+    renderWithMessages(
+      <BlogMarkdownScreen
+        categories={[{ id: "c1", name: "Guides" }]}
+        actions={{ create }}
+        storage={storage}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("Markdown text"), {
+      target: { value: WITH_PICTURES },
+    });
+    await screen.findByText("IMAGE-1 (line 5)");
+    for (const id of ["IMAGE-1", "IMAGE-2"].slice(0, count)) {
+      fireEvent.click(screen.getByRole("button", { name: `Choose a picture for ${id}` }));
+      const chooser = document.querySelector<HTMLInputElement>('input[type="file"]');
+      fireEvent.change(chooser as HTMLInputElement, {
+        target: { files: [new File(["x"], `${id}.png`, { type: "image/png" })] },
+      });
+      await screen.findByLabelText(`What ${id} shows`);
+    }
+    fireEvent.change(screen.getByLabelText("Author name"), { target: { value: "Asha Rao" } });
+  }
+
+  it("sends each chosen file to a folder named after a new id, then makes the draft with that id", async () => {
+    const { storage, uploaded } = fakeStorage();
+    const create = vi.fn<BlogMarkdownActions["create"]>(() =>
+      Promise.resolve({ ok: true as const, data: DONE }),
+    );
+    await pasteWithPictures(create, storage, 1);
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith(`/admin/blog/${POST_ID}`));
+    const sent = create.mock.calls[0]?.[0];
+    expect(sent?.postId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(uploaded).toHaveLength(1);
+    expect(uploaded[0]).toMatch(new RegExp(`^blog/${sent?.postId}/[a-z0-9]+\\.png$`));
+    expect(sent?.pictures).toEqual([{ slot: "IMAGE-1", path: uploaded[0], alt: "The front gate" }]);
+  });
+
+  it("sends nothing and takes back what it sent when a file cannot be sent", async () => {
+    let count = 0;
+    const { storage, removed, uploaded } = fakeStorage(() => ++count === 1);
+    const create = vi.fn<BlogMarkdownActions["create"]>();
+    await pasteWithPictures(create, storage, 2);
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    expect(await screen.findByText(/A picture could not be sent/)).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
+    expect(removed).toEqual(uploaded);
+    expect(navigation.push).not.toHaveBeenCalled();
+  });
+
+  it("takes the files away again when the server refuses the draft", async () => {
+    const { storage, removed, uploaded } = fakeStorage();
+    const create = vi.fn<BlogMarkdownActions["create"]>(() =>
+      Promise.resolve({
+        ok: false as const,
+        code: "VALIDATION" as const,
+        fieldErrors: { pictures: [{ key: "validation.blogImageSize", values: { maximum: 500 } }] },
+      }),
+    );
+    await pasteWithPictures(create, storage, 1);
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    await waitFor(() => expect(removed).toEqual(uploaded));
+    expect(uploaded).toHaveLength(1);
+    expect(navigation.push).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/500 KB/, { selector: "[role=alert] *, [role=alert]" }),
+    ).toBeInTheDocument();
+  });
+
+  it("sends no id and touches no bucket when no picture was chosen", async () => {
+    const { storage, uploaded } = fakeStorage();
+    const create = vi.fn<BlogMarkdownActions["create"]>(() =>
+      Promise.resolve({ ok: true as const, data: DONE }),
+    );
+    await pasteWithPictures(create, storage, 0);
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(create.mock.calls[0]?.[0]).not.toHaveProperty("postId");
+    expect(create.mock.calls[0]?.[0]).not.toHaveProperty("pictures");
+    expect(uploaded).toEqual([]);
   });
 });
