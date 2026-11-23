@@ -11,6 +11,7 @@ vi.mock("@/features/seo", () => ({
 }));
 
 const { legalMetadata } = await import("../metadata");
+const { legalDocument } = await import("../documents");
 
 /** A translator over en.json, enough for the keys the metadata reads. */
 const translate = ((key: string) =>
@@ -32,6 +33,15 @@ describe("legalMetadata: title, description and address of a legal page (S5-T06)
       expect(metadata.alternates?.canonical).toBe(path);
     },
   );
+
+  it("lets a published page be indexed, and keeps a draft out, by the text it is given (ADR-151)", () => {
+    const base = legalDocument("privacy");
+    expect(legalMetadata("privacy", translate, { ...base, draft: false }).robots).toBeUndefined();
+    expect(legalMetadata("privacy", translate, { ...base, draft: true }).robots).toEqual({
+      index: false,
+      follow: false,
+    });
+  });
 
   it("keeps a draft out of search results", () => {
     expect(legalMetadata("privacy", translate).robots).toEqual({ index: false, follow: false });

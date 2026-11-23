@@ -7,11 +7,19 @@ import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { formatDate, type Translate } from "@/lib/format";
 import { contentsOf, legalDocument } from "./documents";
-import { LEGAL_KINDS, LEGAL_PATHS, type LegalBlock, type LegalKind } from "./types";
+import {
+  LEGAL_KINDS,
+  LEGAL_PATHS,
+  type LegalBlock,
+  type LegalDocument,
+  type LegalKind,
+} from "./types";
 import { legalTitle } from "./words";
 
 type LegalPageProps = {
   kind: LegalKind;
+  /** The text to draw: what the page read (the admin's published text, ADR-151). The Design Lab leaves it out and gets the text in code. */
+  document?: LegalDocument;
   /** Design Lab only: show the phone's "On this page" list open. */
   contentsOpen?: boolean;
   /** Design Lab only: several pages on one board need their own heading level and id. */
@@ -24,8 +32,8 @@ function Block({ block }: { block: LegalBlock }) {
   if (block.type === "list") {
     return (
       <ul className="mb-4 list-disc space-y-2 pl-6 text-body">
-        {block.items.map((item) => (
-          <li key={item}>{item}</li>
+        {block.items.map((item, place) => (
+          <li key={place + "-" + item}>{item}</li>
         ))}
       </ul>
     );
@@ -36,9 +44,9 @@ function Block({ block }: { block: LegalBlock }) {
         <caption className="sr-only">{block.caption}</caption>
         <thead>
           <tr>
-            {block.head.map((cell) => (
+            {block.head.map((cell, place) => (
               <th
-                key={cell}
+                key={place + "-" + cell}
                 scope="col"
                 className="border-b border-line-strong px-4 py-3 font-bold"
               >
@@ -48,15 +56,22 @@ function Block({ block }: { block: LegalBlock }) {
           </tr>
         </thead>
         <tbody>
-          {block.rows.map((row) => (
-            <tr key={row.join("|")}>
+          {block.rows.map((row, rowPlace) => (
+            <tr key={rowPlace + "-" + row.join("|")}>
               {row.map((cell, index) =>
                 index === 0 ? (
-                  <th key={cell} scope="row" className="border-b border-line px-4 py-3 font-bold">
+                  <th
+                    key={index + "-" + cell}
+                    scope="row"
+                    className="border-b border-line px-4 py-3 font-bold"
+                  >
                     {cell}
                   </th>
                 ) : (
-                  <td key={cell} className="border-b border-line px-4 py-3 text-muted">
+                  <td
+                    key={index + "-" + cell}
+                    className="border-b border-line px-4 py-3 text-muted"
+                  >
                     {cell}
                   </td>
                 ),
@@ -73,11 +88,13 @@ function Block({ block }: { block: LegalBlock }) {
  * One of the three legal pages in the shared reading layout (ADR-053, ADD-12): the breadcrumb, a switch
  * between Privacy Policy, Terms of Use and Cookie information, the title with when it was last changed, a
  * summary, and numbered sections beside an "On this page" list (a column from 1024 px, a closed list on
- * a phone). The text is in `content/`. While the text is a placeholder (`draft`), the page says so
- * on its face. It fetches nothing, so the Design Lab draws every page.
+ * a phone). The text is the one given (the page reads the admin's published text, ADR-151) or, with none given, the
+ * text in `content/`. While the text is a placeholder (`draft`), the page says so on its face. It fetches nothing, so
+ * the Design Lab draws every page.
  */
 export function LegalPage({
   kind,
+  document: given,
   contentsOpen = false,
   titleAs = "h1",
   titleId = "legal-title",
@@ -86,7 +103,7 @@ export function LegalPage({
   // The same cast the helpers' own tests use: next-intl's strict translator type is wider than Translate.
   const everything = useTranslations() as unknown as Translate;
   const locale = useLocale();
-  const document = legalDocument(kind);
+  const document = given ?? legalDocument(kind);
   const contents = contentsOf(document.sections);
   const title = legalTitle(everything, kind);
   const updated =
