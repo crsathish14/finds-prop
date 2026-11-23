@@ -46,7 +46,9 @@ begin
   if parts[1] !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
     return false;
   end if;
-  return parts[1]::uuid = (select public.current_builder_id()) or (select public.is_super_admin());
+  -- Someone with no builder record has no id to match (NULL), so the answer is a plain no, never NULL.
+  return coalesce(parts[1]::uuid = (select public.current_builder_id()), false)
+    or coalesce((select public.is_super_admin()), false);
 end;
 $$;
 
