@@ -1526,6 +1526,8 @@
       "homepage": "Homepage",
       "footer": "Footer",
       "disclaimers": "Disclaimers",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
       "projectFields": "Project form boxes",
       "topDevelopers": "Top developers"
     },
@@ -2508,6 +2510,88 @@
         "saved": {
           "title": "Header saved",
           "text": "The change is live on the public site."
+        }
+      },
+      "legal": {
+        "privacy": {
+          "metaTitle": "Site content: Privacy Policy",
+          "title": "Privacy Policy",
+          "description": "The text of the Privacy Policy page. Save a draft while you work: visitors read it only after you publish."
+        },
+        "terms": {
+          "metaTitle": "Site content: Terms of Use",
+          "title": "Terms of Use",
+          "description": "The text of the Terms of Use page. Save a draft while you work: visitors read it only after you publish."
+        },
+        "status": {
+          "placeholder": "Visitors see the placeholder text with a draft notice. Publish to replace it.",
+          "live": "Live now: version {version}, last updated {updated}.",
+          "liveNoDate": "Live now.",
+          "unpublished": "You have saved changes that visitors cannot see yet. Publish to make them live."
+        },
+        "save": {
+          "note": "Save draft keeps your changes private. Publish makes this text live and raises the version.",
+          "discard": "Discard",
+          "saveDraft": "Save draft",
+          "publish": "Publish",
+          "saving": "Saving"
+        },
+        "saved": {
+          "draft": {
+            "title": "Draft saved",
+            "text": "Visitors still read the live version."
+          },
+          "published": {
+            "title": "Published",
+            "text": "The new text is live on the public site."
+          }
+        },
+        "preview": {
+          "noSummary": "No summary yet.",
+          "noSections": "No sections yet.",
+          "noHeading": "Section without a heading"
+        },
+        "words": {
+          "summary": {
+            "title": "Summary",
+            "description": "A short plain-language line at the top of the page.",
+            "label": "Summary"
+          },
+          "sections": {
+            "title": "Sections",
+            "description": "The page reads in this order. The list beside the page links to each heading.",
+            "row": "Section",
+            "heading": "Heading",
+            "add": "Add section",
+            "remove": "Remove section",
+            "drag": "Drag",
+            "moveUp": "Move up",
+            "moveDown": "Move down",
+            "empty": "No sections yet. Add one to start the page.",
+            "full": "The page is full."
+          },
+          "blocks": {
+            "paragraph": "Paragraph",
+            "list": "List",
+            "listHint": "One item on each line.",
+            "table": "Table",
+            "addParagraph": "Add paragraph",
+            "addList": "Add list",
+            "addTable": "Add table",
+            "remove": "Remove",
+            "moveUp": "Move up",
+            "moveDown": "Move down",
+            "full": "This section is full."
+          },
+          "table": {
+            "caption": "Table caption",
+            "column": "Column",
+            "cell": "Cell",
+            "addRow": "Add row",
+            "removeRow": "Remove row",
+            "addColumn": "Add column",
+            "removeColumn": "Remove column"
+          }
         }
       },
       "disclaimers": {

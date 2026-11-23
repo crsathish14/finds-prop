@@ -44,6 +44,8 @@ export { HeroForm } from "./hero-form.client";
 export type { HeroFormProps } from "./hero-form.client";
 export { TopDevelopersForm } from "./top-developers-form.client";
 export type { TopDeveloperOption, TopDevelopersFormProps } from "./top-developers-form.client";
+export { LegalForm } from "./legal-form.client";
+export type { LegalFormProps } from "./legal-form.client";
 export { HomepageForm } from "./homepage-form.client";
 export type { HomepageFormProps } from "./homepage-form.client";
 export { ProjectFieldsForm } from "./project-fields-form.client";

@@ -23,10 +23,12 @@ const TABS = [
   "homepage",
   "footer",
   "disclaimers",
-] as const satisfies readonly EditableSetting[];
+  "privacy",
+  "terms",
+] as const satisfies readonly (EditableSetting | "privacy" | "terms")[];
 
-/** The four page tabs (links to the four routes, the current one marked) and the words the frame and the save bar need. */
-export function useSiteContentFrame(current: EditableSetting) {
+/** The page tabs (links to the routes, the current one marked; the Privacy Policy and the Terms of Use are two of them, ADR-151) and the words the frame and the save bar need. */
+export function useSiteContentFrame(current: EditableSetting | "privacy" | "terms") {
   const translate = useTranslations("admin.siteContent");
   const nav = useTranslations("admin.nav");
   const tabs: SiteContentTab[] = TABS.map((key) => ({
@@ -76,12 +78,16 @@ export function useSaveFlow(save: SaveContent, saved: { title: string; text: str
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
-  const submit = async (payload: Record<string, unknown>): Promise<Problems> => {
+  // `savedAs` says something else than `saved` for a save that means more (the legal editor's Publish).
+  const submit = async (
+    payload: Record<string, unknown>,
+    savedAs: { title: string; text: string } = saved,
+  ): Promise<Problems> => {
     setSaving(true);
     try {
       const result = await save(payload);
       if (result.ok) {
-        notify.success(saved.title, { description: saved.text });
+        notify.success(savedAs.title, { description: savedAs.text });
         router.refresh();
         return {};
       }
