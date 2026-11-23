@@ -3598,7 +3598,32 @@
         "paste": {
           "label": "Markdown text",
           "hint": "Headings, lists, quotes and links are kept. Anything else becomes plain words, and the notes beside the preview say what changed.",
-          "placeholder": "# Article title\n\nThe first paragraph of the article.\n\n## A heading\n\n- a list item"
+          "placeholder": "# Article title\n\nThe first paragraph of the article.\n\n## A heading\n\n- a list item",
+          "addLink": "Add a link to the text",
+          "linkGroup": "Add a link"
+        },
+        "ai": {
+          "title": "Already wrote the article with an AI tool?",
+          "intro": "Copy this prompt and paste it into the AI tool (ChatGPT, Gemini, Claude or any other), then paste your article under it. Paste the answer into the box below. The AI writes the headings, lists, links and picture places in the way this page reads them.",
+          "copy": "Copy the AI prompt",
+          "copied": "Copied. Paste it into your AI tool.",
+          "copyFailed": "Your browser did not copy it. Open the prompt below, select it and copy it yourself.",
+          "show": "Show the prompt",
+          "promptLabel": "The prompt to give to an AI tool"
+        },
+        "pictures": {
+          "title": "Pictures ({count})",
+          "intro": "Each line like ![what it shows](IMAGE-1) in your text is a place for a picture. Choose a JPG, PNG or WEBP file of up to {maximum} KB for each place. A place with no picture is left out of the draft, and you can add it later in the block editor.",
+          "place": "{id} (line {line})",
+          "choose": "Choose a picture for {id}",
+          "change": "Change the picture for {id}",
+          "remove": "Remove the picture for {id}",
+          "none": "No picture chosen. This place will be left out.",
+          "chosen": "{name} ({kb} KB)",
+          "alt": "What {id} shows",
+          "altHint": "Read aloud to people who cannot see the picture. Required.",
+          "needAlt": "Say what each chosen picture shows.",
+          "uploadFailed": "A picture could not be sent. Check your connection and try again."
         },
         "syntax": {
           "title": "What is kept",
@@ -3606,8 +3631,9 @@
           "headings": "## is a heading and ### a smaller one. A hash needs a space after it: #realestate stays as text.",
           "lists": "- bullets and 1. numbers. A list inside a list is flattened.",
           "quotes": "> quotes. A last line that starts with a dash becomes the credit.",
-          "links": "[words](https://example.com) or [words](/page). Other addresses are removed.",
-          "other": "Bold, italic, code, tables, pictures and HTML become plain words."
+          "links": "[words](https://example.com) or [words](/page). Other addresses are removed. You can also select words and press Add a link.",
+          "pictures": "![what it shows](IMAGE-1) on a line of its own is a place for a picture. Choose the file for it below.",
+          "other": "Bold, italic, code, tables and HTML become plain words."
         },
         "create": "Create draft",
         "creating": "Creating the draft…",
@@ -3632,7 +3658,10 @@
           "linkDropped": "Line {line}: a link was removed and its words kept, because its address ({detail}) is not allowed. A link must start with https:// or be a page of this site starting with /.",
           "codeBlock": "Line {line}: a code block became a plain paragraph. Its line breaks and spacing were lost.",
           "table": "Line {line}: a table became plain paragraphs, one per row. Its columns and borders were lost.",
-          "image": "Line {line}: a picture was removed ({detail}). Add pictures in the block editor once the draft is made.",
+          "image": "Line {line}: a picture inside a sentence was removed ({detail}). Put a picture on a line of its own, like ![what it shows](IMAGE-1), to keep a place for it.",
+          "imageFromAddress": "Line {line}: this picture pointed to {detail}. Pictures are never fetched from the internet, so it became the place IMAGE-{count}. Choose the picture file for it.",
+          "imageSlotEmpty": "Line {line}: IMAGE-{count} has no picture yet, so nothing shows there. Choose a file for it, or add one later in the block editor.",
+          "imageSlotRepeated": "Line {line}: IMAGE-{count} was already used above, so this line was removed. Give each picture its own number.",
           "html": "Line {line}: HTML tags were removed and the words kept.",
           "split": "Line {line}: a long piece of text was split.",
           "splitParagraph": "Line {line}: a very long paragraph was split into {count} paragraphs.",

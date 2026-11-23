@@ -353,15 +353,19 @@ describe("convertMarkdown: things the article format does not have", () => {
     expect(result.blocks).toEqual([{ type: "paragraph", text: "# not a title - not a list" }]);
   });
 
-  it("turns an image into its description as words and warns with what was lost", () => {
-    const result = convertMarkdown("![Front view of the plot](https://example.com/p.png)");
-    expect(result.blocks).toEqual([{ type: "paragraph", text: "Front view of the plot" }]);
+  it("turns a picture inside a sentence into its description as words and warns with what was lost", () => {
+    const result = convertMarkdown(
+      "See ![Front view of the plot](https://example.com/p.png) here.",
+    );
+    expect(result.blocks).toEqual([
+      { type: "paragraph", text: "See Front view of the plot here." },
+    ]);
     expect(result.warnings).toEqual([{ code: "image", line: 1, detail: "Front view of the plot" }]);
   });
 
-  it("drops an image with no description and still warns", () => {
-    const result = convertMarkdown("![](https://example.com/p.png)");
-    expect(result.blocks).toEqual([]);
+  it("drops a picture inside a sentence that has no description and still warns", () => {
+    const result = convertMarkdown("Look ![](https://example.com/p.png)");
+    expect(result.blocks).toEqual([{ type: "paragraph", text: "Look" }]);
     expect(codes(result)).toEqual(["image"]);
   });
 
@@ -497,6 +501,7 @@ describe("convertMarkdown: empty input, address and excerpt", () => {
     for (const text of ["", "   ", "\n\n\t\n"]) {
       expect(convertMarkdown(text)).toEqual({
         blocks: [],
+        slots: [],
         title: "",
         slug: "",
         excerpt: "",
@@ -581,5 +586,106 @@ describe("convertMarkdown: whatever is pasted, the blocks pass the article's sch
       const result = convertMarkdown(text);
       if (result.errors.length === 0) expect(accepted(result), text).toBe(true);
     }
+  });
+});
+
+describe("convertMarkdown: places for pictures (ADR-173)", () => {
+  const TEXT = `# Title
+
+Before.
+
+![The front gate](IMAGE-1)
+
+After.
+
+![The lobby](IMAGE-2)
+`;
+
+  it("makes a place of each picture line, in order, and leaves it out with a note while no file is chosen", () => {
+    const result = convertMarkdown(TEXT);
+    expect(result.slots).toEqual([
+      { id: "IMAGE-1", alt: "The front gate", line: 5 },
+      { id: "IMAGE-2", alt: "The lobby", line: 9 },
+    ]);
+    expect(result.blocks).toEqual([
+      { type: "paragraph", text: "Before." },
+      { type: "paragraph", text: "After." },
+    ]);
+    expect(result.warnings).toEqual([
+      { code: "imageSlotEmpty", line: 5, count: 1 },
+      { code: "imageSlotEmpty", line: 9, count: 2 },
+    ]);
+  });
+
+  it("puts a chosen picture at its place, with the description the admin gave", () => {
+    const path = "blog/00000000-0000-4000-8000-000000000001/aa11.jpg";
+    const result = convertMarkdown(TEXT, { "IMAGE-1": { path, alt: "  The   gate at dusk " } });
+    expect(result.blocks).toEqual([
+      { type: "paragraph", text: "Before." },
+      { type: "image", path, alt: "The gate at dusk" },
+      { type: "paragraph", text: "After." },
+    ]);
+    expect(result.warnings).toEqual([{ code: "imageSlotEmpty", line: 9, count: 2 }]);
+  });
+
+  it("ends a paragraph at a picture line that follows it with no blank line", () => {
+    const result = convertMarkdown("Words\n![A view](IMAGE-1)\nMore", {
+      "IMAGE-1": { path: "p", alt: "A view" },
+    });
+    expect(result.blocks.map((block) => block.type)).toEqual(["paragraph", "image", "paragraph"]);
+  });
+
+  it("never reads a picture from an address: it becomes the next free place, with a note", () => {
+    const result = convertMarkdown(
+      "![Gate](https://example.com/gate.png)\n\n![Lobby](IMAGE-1)\n\n![Hall](https://example.com/hall.png)",
+    );
+    expect(result.slots.map((slot) => [slot.id, slot.alt])).toEqual([
+      ["IMAGE-2", "Gate"],
+      ["IMAGE-1", "Lobby"],
+      ["IMAGE-3", "Hall"],
+    ]);
+    expect(result.slots[0]?.address).toBe("https://example.com/gate.png");
+    expect(codes(result)).toEqual([
+      "imageFromAddress",
+      "imageSlotEmpty",
+      "imageSlotEmpty",
+      "imageFromAddress",
+      "imageSlotEmpty",
+    ]);
+    expect(result.warnings[0]).toEqual({
+      code: "imageFromAddress",
+      line: 1,
+      detail: "https://example.com/gate.png",
+      count: 2,
+    });
+  });
+
+  it("removes a second line that reuses a name, with a note", () => {
+    const result = convertMarkdown("![One](IMAGE-1)\n\n![Two](IMAGE-1)");
+    expect(result.slots).toHaveLength(1);
+    expect(codes(result)).toContain("imageSlotRepeated");
+  });
+
+  it("keeps a place's description to 200 characters and takes the formatting marks off it", () => {
+    const result = convertMarkdown(`![${"w".repeat(300)}](IMAGE-1)\n\n![A **bold** view](IMAGE-2)`);
+    expect(result.slots[0]?.alt).toHaveLength(200);
+    expect(result.slots[1]?.alt).toBe("A bold view");
+  });
+
+  it("does not take a picture line inside a code fence, and ignores a title text after the name", () => {
+    const fenced = convertMarkdown("```\n![x](IMAGE-1)\n```");
+    expect(fenced.slots).toEqual([]);
+    const titled = convertMarkdown('![x](IMAGE-4 "a title")');
+    expect(titled.slots[0]?.id).toBe("IMAGE-4");
+  });
+
+  it("makes blocks the article's schema accepts when every place has a file", () => {
+    const folder = "blog/00000000-0000-4000-8000-000000000001/";
+    const result = convertMarkdown(TEXT, {
+      "IMAGE-1": { path: `${folder}aa.jpg`, alt: "One" },
+      "IMAGE-2": { path: `${folder}bb.png`, alt: "Two" },
+    });
+    expect(result.warnings).toEqual([]);
+    expect(accepted(result)).toBe(true);
   });
 });

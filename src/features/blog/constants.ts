@@ -27,6 +27,12 @@ export const BLOG_CAPTION_MAX = 200;
 /** The longest Markdown text the paste flow reads (ADR-172); a full article is far smaller. */
 export const MARKDOWN_MAX_CHARS = 400_000;
 
+/**
+ * The name of a picture's place in pasted Markdown (ADR-173): a line `![what it shows](IMAGE-1)` marks where a picture
+ * goes, and the admin chooses the file for it on the paste screen. Up to three digits, so at most 999 names.
+ */
+export const BLOG_PICTURE_SLOT = /^IMAGE-(\d{1,3})$/;
+
 export const BLOCKS_MAX = 100;
 export const BLOCKS_BYTES_MAX = 100_000;
 export const HEADING_MAX = 160;

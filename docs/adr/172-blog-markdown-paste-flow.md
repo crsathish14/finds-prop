@@ -2,6 +2,7 @@
 
 - Status: Accepted (the owner asked on 22 Nov 2026 for a second way to create a Blog article, kept beside the block editor so both can be tried and one removed; the draft wording is waiting for approval).
 - Date: 2026-11-22
+- Amended by: ADR-173 (an AI prompt, an Add link button, and places for pictures; a picture line is no longer turned into words).
 - Related: ADR-143 (the Blog), ADR-144 (the block format), ADR-169 (inline links and the one `<h1>`), R-SEC-10 (never draw user text as HTML)
 - Class: C2 (a new server action). No dependency, no migration, no new table, column or type.
 

@@ -11,7 +11,12 @@
  * Props: categories ({ id, name }), initialCategory, convert (text in, a preview out: the blocks, the title, the
  *   address, the summary, the changes and the problems; must be a stable function), onCreate (asks the page to make the
  *   draft; answers `{ ok: true }` or the problems by box name, already translated), backHref, defaultMarkdown (the paste box's first text), headingAs (h1 by default), debounceMs (how long the
- *   preview waits after typing; 250 by default), className.
+ *   preview waits after typing; 250 by default), className. ADR-173: aiPrompt (the text a writer gives an AI tool to
+ *   get Markdown this screen reads; a "Copy the AI prompt" button copies it) and pictureRules (what a picture file may
+ *   be: the chooser's accept list, a check of one file, the ending it is stored with, the weight limit shown to the
+ *   admin). The paste box has an "Add link" form (the block editor's), and each `![what it shows](IMAGE-1)` line of
+ *   the text is a place for a picture with its own file chooser and description; the chosen files wait in the
+ *   browser, are drawn in the preview at their place, and are sent by the page when the draft is made.
  * Responsive: one column on a phone with no sideways scroll (the paste box, the boxes, the changes, then the preview);
  *   from the large width the paste box and the preview sit side by side.
  * Accessibility: every box has a visible label tied to it; a problem is a message tied to its box with an icon, and
@@ -24,9 +29,9 @@
  * Tests: blog-markdown-flow.test.tsx; Design Lab "Blog" board (ADR-172).
  * UX reference: none yet; drawn for the owner's approval (ADR-172).
  */
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Copy, ImagePlus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import { Button } from "@/components/ui/button";
@@ -42,6 +47,14 @@ import type { Translator } from "@/i18n/failure-text";
 import { cn } from "@/lib/cn";
 import { BlogArticleHeader } from "./blog-article-header";
 import { BlogBlocks, type BlogBlock } from "./blog-blocks";
+import { BlogLinkTextField } from "./blog-link-text-field";
+
+/** A copy of a record without one key. */
+const without = <Value,>(record: Record<string, Value>, key: string): Record<string, Value> =>
+  Object.fromEntries(Object.entries(record).filter(([name]) => name !== key));
+
+/** A picture chosen for a place: the file, how it will be stored, what it shows, and where the browser shows it from. */
+type ChosenPicture = { file: File; extension: string; alt: string; url: string };
 
 /** One change or problem: what happened (a code), where (a line of the pasted text) and what was lost. */
 type MarkdownNote = {
@@ -51,9 +64,20 @@ type MarkdownNote = {
   count?: number | undefined;
 };
 
+/** A place for a picture in the pasted text (`IMAGE-1`). */
+type MarkdownSlot = {
+  id: string;
+  /** What the pasted text said the picture shows (may be empty). */
+  alt: string;
+  line: number;
+  /** Set when the pasted line pointed at an address; that address is never fetched. */
+  address?: string | undefined;
+};
+
 /** What the conversion answers; the feature's converter returns this shape. */
 type MarkdownPreview = {
   blocks: BlogBlock[];
+  slots: MarkdownSlot[];
   title: string;
   slug: string;
   excerpt: string;
@@ -61,8 +85,24 @@ type MarkdownPreview = {
   errors: MarkdownNote[];
 };
 
+/** A picture the admin chose for a place; its file waits in the browser until the page sends it. */
+type MarkdownChosenPicture = { slot: string; file: File; extension: string; alt: string };
+
+/** What a picture file may be; the feature knows the rules, the screen only asks. */
+type MarkdownPictureRules = {
+  /** The file chooser's `accept` list. */
+  accept: string;
+  /** Why a file cannot be used, or null. */
+  problem: (file: File) => "type" | "size" | null;
+  /** The ending the file is stored with, or null when it is not a kind the bucket takes. */
+  extension: (file: File) => string | null;
+  /** The weight limit, in KB, said in the words. */
+  maximumKb: number;
+};
+
 type MarkdownCreateInput = {
   markdown: string;
+  pictures: MarkdownChosenPicture[];
   title: string;
   slug: string;
   excerpt: string;
@@ -77,7 +117,14 @@ type MarkdownCreateResult =
 type BlogMarkdownFlowProps = {
   categories: readonly { id: string; name: string }[];
   initialCategory?: string;
-  convert: (markdown: string) => MarkdownPreview;
+  /** `pictures` are the chosen ones by place name; a chosen one is drawn at its place (its `path` is any name `imageUrl` knows). */
+  convert: (
+    markdown: string,
+    pictures?: Readonly<Record<string, { path: string; alt: string }>>,
+  ) => MarkdownPreview;
+  /** The prompt to give an AI tool (ADR-173). */
+  aiPrompt: string;
+  pictureRules: MarkdownPictureRules;
   onCreate: (input: MarkdownCreateInput) => Promise<MarkdownCreateResult>;
   backHref: string;
   /** The text the paste box starts with (the Design Lab shows a pasted article). */
@@ -107,6 +154,9 @@ const WARNING_WORDS = {
   html: "admin.blog.markdown.warning.html",
   split: "admin.blog.markdown.warning.split",
   rule: "admin.blog.markdown.warning.rule",
+  imageFromAddress: "admin.blog.markdown.warning.imageFromAddress",
+  imageSlotEmpty: "admin.blog.markdown.warning.imageSlotEmpty",
+  imageSlotRepeated: "admin.blog.markdown.warning.imageSlotRepeated",
 } as const;
 const SPLIT_WORDS = {
   paragraph: "admin.blog.markdown.warning.splitParagraph",
@@ -122,12 +172,25 @@ const ERROR_WORDS = {
 } as const;
 
 /** The first box that has a problem, by its place in the form. */
-const BOX_ORDER = ["markdown", "title", "slug", "authorName", "categoryId", "excerpt"] as const;
+const BOX_ORDER = [
+  "markdown",
+  "pictures",
+  "title",
+  "slug",
+  "authorName",
+  "categoryId",
+  "excerpt",
+] as const;
+
+/** What the preview calls a chosen picture's place; the file itself is shown from the browser's address of it. */
+const SLOT_PATH = "slot/";
 
 function BlogMarkdownFlow({
   categories,
   initialCategory = "",
   convert,
+  aiPrompt,
+  pictureRules,
   onCreate,
   backHref,
   defaultMarkdown = "",
@@ -147,6 +210,20 @@ function BlogMarkdownFlow({
   const [categoryId, setCategoryId] = useState(initialCategory);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState<"no" | "yes" | "failed">("no");
+  const [chosen, setChosen] = useState<Record<string, ChosenPicture>>({});
+  const [slotErrors, setSlotErrors] = useState<Record<string, string>>({});
+  const fileId = useId();
+  const aiTitleId = useId();
+  const choosing = useRef<string | null>(null);
+  // The browser's addresses of the chosen files, noted when they are made (never during a render) and given back on leaving.
+  const addresses = useRef<string[]>([]);
+  useEffect(
+    () => () => {
+      for (const address of addresses.current) URL.revokeObjectURL(address);
+    },
+    [],
+  );
 
   // The preview waits until typing stops, so a big paste is converted once.
   useEffect(() => {
@@ -155,7 +232,17 @@ function BlogMarkdownFlow({
     return () => clearTimeout(timer);
   }, [markdown, debounceMs]);
 
-  const preview = useMemo(() => convert(settled), [convert, settled]);
+  const placed = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(chosen).map(([id, picture]) => [
+          id,
+          { path: `${SLOT_PATH}${id}`, alt: picture.alt },
+        ]),
+      ),
+    [chosen],
+  );
+  const preview = useMemo(() => convert(settled, placed), [convert, settled, placed]);
   const title = typed.title ?? preview.title;
   const slug = typed.slug ?? preview.slug;
   const excerpt = typed.excerpt ?? preview.excerpt;
@@ -173,6 +260,44 @@ function BlogMarkdownFlow({
       return;
     }
   }, [errors]);
+
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(aiPrompt);
+      setCopied("yes");
+    } catch {
+      setCopied("failed");
+    }
+  };
+
+  const choose = (id: string) => {
+    choosing.current = id;
+    document.getElementById(fileId)?.click();
+  };
+
+  const picked = (file: File | undefined) => {
+    const id = choosing.current;
+    choosing.current = null;
+    if (!file || !id) return;
+    const problem = pictureRules.problem(file);
+    const extension = pictureRules.extension(file);
+    if (problem !== null || extension === null) {
+      setSlotErrors((now) => ({
+        ...now,
+        [id]:
+          problem === "size"
+            ? translate("validation.blogImageSize", { maximum: pictureRules.maximumKb })
+            : translate("validation.blogImageType"),
+      }));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    addresses.current.push(url);
+    const alt = chosen[id]?.alt ?? preview.slots.find((slot) => slot.id === id)?.alt ?? "";
+    setChosen((now) => ({ ...now, [id]: { file, extension, alt, url } }));
+    setSlotErrors((now) => without(now, id));
+    setErrors({});
+  };
 
   const warningText = (note: MarkdownNote): string => {
     const split =
@@ -205,6 +330,17 @@ function BlogMarkdownFlow({
     if (saving) return;
     const problems: Partial<Record<string, string>> = {};
     if (blocked) problems["markdown"] = translate("admin.blog.markdown.needText");
+    const sending = preview.slots.flatMap((slot) => {
+      const picture = chosen[slot.id];
+      return picture ? [{ slot: slot.id, picture }] : [];
+    });
+    const missing: Record<string, string> = {};
+    for (const { slot, picture } of sending)
+      if (picture.alt.trim() === "") missing[slot] = translate("validation.required");
+    if (Object.keys(missing).length > 0) {
+      setSlotErrors(missing);
+      problems["pictures"] = translate("admin.blog.markdown.pictures.needAlt");
+    }
     if (title.trim().length < 3) problems["title"] = translate("validation.required");
     if (authorName.trim().length < 2) problems["authorName"] = translate("validation.required");
     if (Object.keys(problems).length > 0) {
@@ -216,6 +352,12 @@ function BlogMarkdownFlow({
     try {
       const result = await onCreate({
         markdown,
+        pictures: sending.map(({ slot, picture }) => ({
+          slot,
+          file: picture.file,
+          extension: picture.extension,
+          alt: picture.alt.trim(),
+        })),
         title,
         slug: slug.trim(),
         excerpt,
@@ -254,25 +396,66 @@ function BlogMarkdownFlow({
         className="grid min-w-0 gap-6 lg:grid-cols-2"
       >
         <div className="flex min-w-0 flex-col gap-4">
-          <FormField
+          <section
+            aria-labelledby={aiTitleId}
+            className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4"
+          >
+            <Text id={aiTitleId} variant="small" className="font-bold">
+              {translate("admin.blog.markdown.ai.title")}
+            </Text>
+            <Text variant="small" tone="muted">
+              {translate("admin.blog.markdown.ai.intro")}
+            </Text>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                iconStart={<Icon icon={Copy} />}
+                onClick={() => void copyPrompt()}
+              >
+                {translate("admin.blog.markdown.ai.copy")}
+              </Button>
+              <span role="status" className="text-small text-muted">
+                {copied === "yes"
+                  ? translate("admin.blog.markdown.ai.copied")
+                  : copied === "failed"
+                    ? translate("admin.blog.markdown.ai.copyFailed")
+                    : ""}
+              </span>
+            </div>
+            <details className="text-small">
+              <summary className="cursor-pointer font-medium text-ink">
+                {translate("admin.blog.markdown.ai.show")}
+              </summary>
+              <pre
+                tabIndex={0}
+                aria-label={translate("admin.blog.markdown.ai.promptLabel")}
+                className="mt-2 max-h-72 overflow-auto rounded-lg border border-line bg-canvas-sunken p-3 text-caption whitespace-pre-wrap text-muted"
+              >
+                {aiPrompt}
+              </pre>
+            </details>
+          </section>
+          <BlogLinkTextField
             label={translate("admin.blog.markdown.paste.label")}
             hint={translate("admin.blog.markdown.paste.hint")}
-            {...problem("markdown")}
-          >
-            <Textarea
-              data-box="markdown"
-              rows={14}
-              value={markdown}
-              disabled={saving}
-              spellCheck={false}
-              placeholder={translate("admin.blog.markdown.paste.placeholder")}
-              className="font-mono"
-              onChange={(event) => {
-                setMarkdown(event.target.value);
-                setErrors({});
-              }}
-            />
-          </FormField>
+            value={markdown}
+            onValueChange={(next) => {
+              setMarkdown(next);
+              setErrors({});
+            }}
+            {...(errors["markdown"] ? { error: errors["markdown"] } : {})}
+            place={1}
+            rows={14}
+            disabled={saving}
+            spellCheck={false}
+            monospace
+            dataBox="markdown"
+            placeholder={translate("admin.blog.markdown.paste.placeholder")}
+            addLabel={translate("admin.blog.markdown.paste.addLink")}
+            groupLabel={translate("admin.blog.markdown.paste.linkGroup")}
+          />
           <div className="rounded-xl border border-line bg-surface p-4">
             <Text variant="small" className="font-bold">
               {translate("admin.blog.markdown.syntax.title")}
@@ -283,9 +466,126 @@ function BlogMarkdownFlow({
               <li>{translate("admin.blog.markdown.syntax.lists")}</li>
               <li>{translate("admin.blog.markdown.syntax.quotes")}</li>
               <li>{translate("admin.blog.markdown.syntax.links")}</li>
+              <li>{translate("admin.blog.markdown.syntax.pictures")}</li>
               <li>{translate("admin.blog.markdown.syntax.other")}</li>
             </ul>
           </div>
+          {preview.slots.length > 0 ? (
+            <section
+              data-box="pictures"
+              tabIndex={-1}
+              aria-label={translate("admin.blog.markdown.pictures.title", {
+                count: preview.slots.length,
+              })}
+              className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-4"
+            >
+              <Text variant="small" className="font-bold">
+                {translate("admin.blog.markdown.pictures.title", { count: preview.slots.length })}
+              </Text>
+              <Text variant="small" tone="muted">
+                {translate("admin.blog.markdown.pictures.intro", {
+                  maximum: pictureRules.maximumKb,
+                })}
+              </Text>
+              {errors["pictures"] ? <Alert tone="danger">{errors["pictures"]}</Alert> : null}
+              <input
+                id={fileId}
+                type="file"
+                accept={pictureRules.accept}
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  picked(file);
+                }}
+              />
+              <ul className="flex flex-col gap-4">
+                {preview.slots.map((slot) => {
+                  const picture = chosen[slot.id];
+                  const failure = slotErrors[slot.id];
+                  return (
+                    <li
+                      key={slot.id}
+                      className="flex min-w-0 flex-col gap-2 border-t border-line pt-4 first:border-t-0 first:pt-0"
+                    >
+                      <Text variant="small" className="font-medium">
+                        {translate("admin.blog.markdown.pictures.place", {
+                          id: slot.id,
+                          line: slot.line,
+                        })}
+                      </Text>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          iconStart={<Icon icon={ImagePlus} />}
+                          disabled={saving}
+                          onClick={() => choose(slot.id)}
+                        >
+                          {translate(
+                            picture
+                              ? "admin.blog.markdown.pictures.change"
+                              : "admin.blog.markdown.pictures.choose",
+                            { id: slot.id },
+                          )}
+                        </Button>
+                        {picture ? (
+                          <>
+                            <Text variant="small" tone="muted" className="min-w-0 break-all">
+                              {translate("admin.blog.markdown.pictures.chosen", {
+                                name: picture.file.name,
+                                kb: Math.max(1, Math.round(picture.file.size / 1024)),
+                              })}
+                            </Text>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              disabled={saving}
+                              onClick={() => setChosen((now) => without(now, slot.id))}
+                            >
+                              {translate("admin.blog.markdown.pictures.remove", { id: slot.id })}
+                            </Button>
+                          </>
+                        ) : (
+                          <Text variant="small" tone="muted">
+                            {translate("admin.blog.markdown.pictures.none")}
+                          </Text>
+                        )}
+                      </div>
+                      {picture ? (
+                        <FormField
+                          label={translate("admin.blog.markdown.pictures.alt", { id: slot.id })}
+                          hint={translate("admin.blog.markdown.pictures.altHint")}
+                          {...(failure ? { error: failure } : {})}
+                        >
+                          <Input
+                            value={picture.alt}
+                            disabled={saving}
+                            maxLength={200}
+                            onChange={(event) => {
+                              const alt = event.target.value;
+                              setChosen((now) =>
+                                now[slot.id] ? { ...now, [slot.id]: { ...picture, alt } } : now,
+                              );
+                              setSlotErrors((now) => without(now, slot.id));
+                            }}
+                          />
+                        </FormField>
+                      ) : failure ? (
+                        <Text variant="small" role="alert" className="text-danger">
+                          {failure}
+                        </Text>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label={translate("admin.blog.form.title")} {...problem("title")}>
               <Input
@@ -430,7 +730,10 @@ function BlogMarkdownFlow({
                   publishedAt={null}
                   cover={null}
                 />
-                <BlogBlocks blocks={preview.blocks} imageUrl={() => ""} />
+                <BlogBlocks
+                  blocks={preview.blocks}
+                  imageUrl={(path) => chosen[path.slice(SLOT_PATH.length)]?.url ?? ""}
+                />
               </>
             )}
           </section>
@@ -442,6 +745,9 @@ function BlogMarkdownFlow({
 
 export { BlogMarkdownFlow };
 export type {
+  MarkdownChosenPicture,
+  MarkdownPictureRules,
+  MarkdownSlot,
   MarkdownCreateInput,
   MarkdownCreateResult,
   MarkdownNote,

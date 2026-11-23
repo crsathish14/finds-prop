@@ -85,20 +85,34 @@ function harness(options: { session?: SessionView | null } = {}) {
   };
 }
 
-function storeOf(options: { takenSlugs?: string[] } = {}) {
+/** The first bytes of a PNG of the given pixel size, padded to `total` bytes. */
+function png(width: number, height: number, total = 200): Uint8Array {
+  const bytes = new Uint8Array(total);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(8, 13);
+  bytes.set([0x49, 0x48, 0x44, 0x52], 12);
+  view.setUint32(16, width);
+  view.setUint32(20, height);
+  return bytes;
+}
+
+function storeOf(options: { takenSlugs?: string[]; files?: Record<string, Uint8Array> } = {}) {
   const inserted: NewPostRow[] = [];
   const patches: PostPatch[] = [];
   const taken = new Set(options.takenSlugs ?? []);
+  let madeId = POST;
   const store: BlogStore = {
     insert(row) {
       inserted.push(row);
+      madeId = row.id ?? POST;
       return taken.has(row.slug)
         ? Promise.reject(mapBlogError({ code: "23505" }))
-        : Promise.resolve({ postId: POST, slug: row.slug });
+        : Promise.resolve({ postId: madeId, slug: row.slug });
     },
     read: () =>
       Promise.resolve({
-        id: POST,
+        id: madeId,
         slug: "plots-in-chennai",
         title: "Plots in Chennai",
         excerpt: "",
@@ -112,7 +126,7 @@ function storeOf(options: { takenSlugs?: string[] } = {}) {
       patches.push(patch);
       return Promise.resolve();
     },
-    fetchImage: () => Promise.resolve(null),
+    fetchImage: (path) => Promise.resolve(options.files?.[path] ?? null),
     removeFiles: () => Promise.resolve(),
   };
   return { store, inserted, patches };
@@ -287,5 +301,119 @@ describe("UT-blog-markdown-service: making the draft (ADR-172)", () => {
     const log = { warn: vi.fn() };
     await createPostFromMarkdown(store, input, log);
     expect(log.warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("UT-blog-markdown-pictures: a draft with pictures (ADR-173)", () => {
+  const NEW_ID = "00000000-0000-4000-b500-0000000000f1";
+  const OTHER_ID = "00000000-0000-4000-b500-0000000000f2";
+  const FILE = `blog/${NEW_ID}/aa11.png`;
+  const text = `# Gate\n\nBefore.\n\n![The front gate](IMAGE-1)\n\nAfter.`;
+  const withPicture = (overrides: Record<string, unknown> = {}) =>
+    createBlogPostFromMarkdownSchema.parse({
+      ...typed,
+      markdown: text,
+      postId: NEW_ID,
+      pictures: [{ slot: "IMAGE-1", path: FILE, alt: "The gate at dusk" }],
+      ...overrides,
+    });
+
+  it("makes the draft with the id the browser chose and the picture at its place", async () => {
+    const { store, inserted, patches } = storeOf({ files: { [FILE]: png(1200, 800) } });
+    await createPostFromMarkdown(store, withPicture());
+    expect(inserted[0]).toMatchObject({ id: NEW_ID });
+    expect(patches[0]?.body).toEqual([
+      { type: "paragraph", text: "Before." },
+      { type: "image", path: FILE, alt: "The gate at dusk" },
+      { type: "paragraph", text: "After." },
+    ]);
+  });
+
+  it("makes no draft with no id when there are no pictures", async () => {
+    const { store, inserted } = storeOf();
+    await createPostFromMarkdown(store, createBlogPostFromMarkdownSchema.parse(typed));
+    expect(inserted[0]).not.toHaveProperty("id");
+  });
+
+  it("refuses a picture list without the article's id", () => {
+    const parsed = createBlogPostFromMarkdownSchema.safeParse({
+      ...typed,
+      markdown: text,
+      pictures: [{ slot: "IMAGE-1", path: FILE, alt: "x" }],
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("refuses a picture whose file is not in the bucket, before any draft is made", async () => {
+    const { store, inserted } = storeOf();
+    const refused = await failure(createPostFromMarkdown(store, withPicture()));
+    expect(refused.fieldErrors?.["pictures"]).toEqual([{ key: "validation.blogImageMissing" }]);
+    expect(inserted).toEqual([]);
+  });
+
+  it("refuses a file that is too big or too wide, before any draft is made", async () => {
+    const big = storeOf({ files: { [FILE]: png(1200, 800, 600 * 1024) } });
+    expect((await failure(createPostFromMarkdown(big.store, withPicture()))).fieldErrors).toEqual({
+      pictures: [{ key: "validation.blogImageSize", values: { maximum: 500 } }],
+    });
+    const wide = storeOf({ files: { [FILE]: png(7000, 800) } });
+    await failure(createPostFromMarkdown(wide.store, withPicture()));
+    expect(big.inserted).toEqual([]);
+    expect(wide.inserted).toEqual([]);
+  });
+
+  it("refuses a file that is in another article's folder", async () => {
+    const foreign = `blog/${OTHER_ID}/aa11.png`;
+    const { store, inserted } = storeOf({ files: { [foreign]: png(1200, 800) } });
+    const refused = await failure(
+      createPostFromMarkdown(
+        store,
+        withPicture({ pictures: [{ slot: "IMAGE-1", path: foreign, alt: "x" }] }),
+      ),
+    );
+    expect(refused.fieldErrors?.["pictures"]).toEqual([{ key: "validation.blogImagePlace" }]);
+    expect(inserted).toEqual([]);
+  });
+
+  it("refuses a picture for a place the text does not have, or two for one place", async () => {
+    const { store, inserted } = storeOf({ files: { [FILE]: png(1200, 800) } });
+    const stray = await failure(
+      createPostFromMarkdown(
+        store,
+        withPicture({ pictures: [{ slot: "IMAGE-9", path: FILE, alt: "x" }] }),
+      ),
+    );
+    expect(stray.fieldErrors?.["markdown"]).toEqual([{ key: "validation.blogMarkdownRefused" }]);
+    await failure(
+      createPostFromMarkdown(
+        store,
+        withPicture({
+          pictures: [
+            { slot: "IMAGE-1", path: FILE, alt: "x" },
+            { slot: "IMAGE-1", path: FILE, alt: "y" },
+          ],
+        }),
+      ),
+    );
+    expect(inserted).toEqual([]);
+  });
+
+  it("refuses a picture with no description and a path that is not a picture path", () => {
+    expect(
+      createBlogPostFromMarkdownSchema.safeParse({
+        ...typed,
+        markdown: text,
+        postId: NEW_ID,
+        pictures: [{ slot: "IMAGE-1", path: FILE, alt: "  " }],
+      }).success,
+    ).toBe(false);
+    expect(
+      createBlogPostFromMarkdownSchema.safeParse({
+        ...typed,
+        markdown: text,
+        postId: NEW_ID,
+        pictures: [{ slot: "IMAGE-1", path: "https://example.com/x.png", alt: "x" }],
+      }).success,
+    ).toBe(false);
   });
 });

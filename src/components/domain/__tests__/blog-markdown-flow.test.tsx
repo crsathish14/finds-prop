@@ -7,6 +7,7 @@ import { BlogMethodChooser } from "../blog-markdown-flow-chooser";
 
 const NONE: MarkdownPreview = {
   blocks: [],
+  slots: [],
   title: "",
   slug: "",
   excerpt: "",
@@ -14,31 +15,69 @@ const NONE: MarkdownPreview = {
   errors: [],
 };
 
+const PICTURE_RULES = {
+  accept: "image/png,image/jpeg,image/webp",
+  problem: (file: File) =>
+    !["image/png", "image/jpeg", "image/webp"].includes(file.type)
+      ? ("type" as const)
+      : file.size > 500 * 1024
+        ? ("size" as const)
+        : null,
+  extension: (file: File) => (file.type === "image/jpeg" ? "jpg" : null),
+  maximumKb: 500,
+};
+
 /** A stand-in for the converter: the text decides what it answers, so the screen is tested alone. */
-const convert = vi.fn((text: string): MarkdownPreview =>
-  text.trim() === ""
-    ? NONE
-    : text === "BAD"
-      ? {
-          ...NONE,
-          blocks: [{ type: "paragraph", text: "x" }],
-          errors: [{ code: "tooManyBlocks", line: null, count: 120 }],
-        }
-      : {
-          blocks: [
-            { type: "heading", level: 2, text: "A heading" },
-            { type: "paragraph", text: "Body words." },
-          ],
-          title: "Made title",
-          slug: "made-title",
-          excerpt: "Body words.",
-          warnings: [
-            { code: "table", line: 4 },
-            { code: "formatting", line: null, count: 3 },
-            { code: "split", line: 2, detail: "list", count: 2 },
-          ],
-          errors: [],
-        },
+const convert = vi.fn(
+  (
+    text: string,
+    pictures: Readonly<Record<string, { path: string; alt: string }>> = {},
+  ): MarkdownPreview =>
+    text.trim() === ""
+      ? NONE
+      : text === "PICS"
+        ? {
+            ...NONE,
+            blocks: [
+              { type: "paragraph", text: "Before." },
+              ...(pictures["IMAGE-1"]
+                ? [
+                    {
+                      type: "image" as const,
+                      path: pictures["IMAGE-1"].path,
+                      alt: pictures["IMAGE-1"].alt,
+                    },
+                  ]
+                : []),
+            ],
+            slots: [{ id: "IMAGE-1", alt: "A gate", line: 3 }],
+            title: "Pics",
+            slug: "pics",
+            excerpt: "Before.",
+            warnings: pictures["IMAGE-1"] ? [] : [{ code: "imageSlotEmpty", line: 3, count: 1 }],
+          }
+        : text === "BAD"
+          ? {
+              ...NONE,
+              blocks: [{ type: "paragraph", text: "x" }],
+              errors: [{ code: "tooManyBlocks", line: null, count: 120 }],
+            }
+          : {
+              slots: [],
+              blocks: [
+                { type: "heading", level: 2, text: "A heading" },
+                { type: "paragraph", text: "Body words." },
+              ],
+              title: "Made title",
+              slug: "made-title",
+              excerpt: "Body words.",
+              warnings: [
+                { code: "table", line: 4 },
+                { code: "formatting", line: null, count: 3 },
+                { code: "split", line: 2, detail: "list", count: 2 },
+              ],
+              errors: [],
+            },
 );
 
 const CATEGORIES = [
@@ -61,6 +100,8 @@ function setup(
       categories={CATEGORIES}
       initialCategory={options.initialCategory ?? ""}
       convert={convert}
+      aiPrompt="THE PROMPT TEXT"
+      pictureRules={PICTURE_RULES}
       onCreate={onCreate}
       backHref="/admin/blog/new"
       debounceMs={options.debounceMs ?? 0}
@@ -183,6 +224,7 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1));
     expect(onCreate).toHaveBeenCalledWith({
       markdown: "# text",
+      pictures: [],
       title: "Made title",
       slug: "made-title",
       excerpt: "Body words.",
@@ -232,14 +274,115 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     paste("# a");
     paste("# ab");
     paste("# abc");
-    expect(convert).not.toHaveBeenCalledWith("# abc");
+    expect(convert).not.toHaveBeenCalledWith("# abc", {});
     act(() => {
       vi.advanceTimersByTime(260);
     });
-    expect(convert).toHaveBeenCalledWith("# abc");
+    expect(convert).toHaveBeenCalledWith("# abc", {});
     expect(convert.mock.calls.filter(([text]) => text === "# a" || text === "# ab")).toHaveLength(
       0,
     );
+  });
+
+  it("copies the AI prompt and shows it on request (ADR-173)", async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.assign(navigator, { clipboard: { writeText } });
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Copy the AI prompt" }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("THE PROMPT TEXT"));
+    expect(await screen.findByText(/Copied\. Paste it into your AI tool/)).toBeInTheDocument();
+    expect(screen.getByLabelText("The prompt to give to an AI tool")).toHaveTextContent(
+      "THE PROMPT TEXT",
+    );
+  });
+
+  it("tells the admin when the browser would not copy", async () => {
+    Object.assign(navigator, {
+      clipboard: { writeText: () => Promise.reject(new Error("no")) },
+    });
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Copy the AI prompt" }));
+    expect(await screen.findByText(/did not copy it/)).toBeInTheDocument();
+  });
+
+  it("adds a link to the pasted text with the Add link form (ADR-173)", async () => {
+    setup();
+    paste("Read the guide.");
+    fireEvent.click(screen.getByRole("button", { name: "Add a link to the text" }));
+    const group = await screen.findByRole("group", { name: "Add a link" });
+    fireEvent.change(within(group).getByLabelText("Words to show"), {
+      target: { value: "the guide" },
+    });
+    fireEvent.change(within(group).getByLabelText("Address"), {
+      target: { value: "https://example.com/guide" },
+    });
+    fireEvent.click(within(group).getByRole("button", { name: "Insert link" }));
+    expect(screen.getByLabelText("Markdown text")).toHaveValue(
+      "Read the guide.[the guide](https://example.com/guide)",
+    );
+  });
+
+  it("lists a place for each picture, draws a chosen one in the preview and sends the file (ADR-173)", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:chosen");
+    const { onCreate } = setup();
+    paste("PICS");
+    expect(await screen.findByText("IMAGE-1 (line 3)")).toBeInTheDocument();
+    expect(screen.getByText(/nothing shows there/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/What IMAGE-1 shows/)).not.toBeInTheDocument();
+
+    const file = new File(["x"], "gate.jpg", { type: "image/jpeg" });
+    fireEvent.click(screen.getByRole("button", { name: "Choose a picture for IMAGE-1" }));
+    const chooser = document.querySelector<HTMLInputElement>('input[type="file"]');
+    fireEvent.change(chooser as HTMLInputElement, { target: { files: [file] } });
+    const alt = await screen.findByLabelText("What IMAGE-1 shows");
+    expect(alt).toHaveValue("A gate");
+    expect(screen.getByText("gate.jpg (1 KB)")).toBeInTheDocument();
+
+    fireEvent.change(alt, { target: { value: "The gate at dusk" } });
+    fireEvent.change(field("Author name"), { target: { value: "Asha Rao" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1));
+    expect(onCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pictures: [{ slot: "IMAGE-1", file, extension: "jpg", alt: "The gate at dusk" }],
+      }),
+    );
+    // The preview was asked for the picture at its place, with the description the admin typed.
+    expect(convert).toHaveBeenLastCalledWith("PICS", {
+      "IMAGE-1": { path: "slot/IMAGE-1", alt: "The gate at dusk" },
+    });
+  });
+
+  it("refuses a picture of the wrong kind or size at once, and one with no description", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:chosen");
+    const { onCreate } = setup();
+    paste("PICS");
+    await screen.findByText("IMAGE-1 (line 3)");
+    const choose = () =>
+      fireEvent.click(screen.getByRole("button", { name: "Choose a picture for IMAGE-1" }));
+    const chooser = () => document.querySelector<HTMLInputElement>('input[type="file"]');
+
+    choose();
+    fireEvent.change(chooser() as HTMLInputElement, {
+      target: { files: [new File(["x"], "x.gif", { type: "image/gif" })] },
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(/JPG, PNG or WEBP/i);
+
+    const big = new File(["x"], "big.jpg", { type: "image/jpeg" });
+    Object.defineProperty(big, "size", { value: 600 * 1024 });
+    choose();
+    fireEvent.change(chooser() as HTMLInputElement, { target: { files: [big] } });
+    expect(await screen.findByRole("alert")).toHaveTextContent(/500 KB/);
+
+    choose();
+    fireEvent.change(chooser() as HTMLInputElement, {
+      target: { files: [new File(["x"], "ok.jpg", { type: "image/jpeg" })] },
+    });
+    fireEvent.change(await screen.findByLabelText("What IMAGE-1 shows"), { target: { value: "" } });
+    fireEvent.change(field("Author name"), { target: { value: "Asha Rao" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    expect(await screen.findByText("Say what each chosen picture shows.")).toBeInTheDocument();
+    expect(onCreate).not.toHaveBeenCalled();
   });
 
   it("links back to the choice", () => {

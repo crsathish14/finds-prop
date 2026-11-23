@@ -74,6 +74,8 @@ export interface PostPatch {
 }
 
 export interface NewPostRow {
+  /** Set only by the Markdown flow, which chose the id first so the pictures could be sent to the article's folder. */
+  id?: string;
   slug: string;
   title: string;
   author_name: string;
@@ -154,7 +156,7 @@ function isSlugTaken(failure: unknown): boolean {
  */
 export async function createPost(
   store: BlogStore,
-  input: CreateBlogPostInput,
+  input: CreateBlogPostInput & { id?: string },
   randomTail: () => string = () => crypto.randomUUID().slice(0, 4),
 ): Promise<PostDone> {
   const typed = input.slug !== undefined;
@@ -172,6 +174,7 @@ export async function createPost(
   for (const slug of candidates) {
     try {
       const made = await store.insert({
+        ...(input.id === undefined ? {} : { id: input.id }),
         slug,
         title: input.title,
         author_name: input.authorName,
@@ -191,18 +194,30 @@ export async function createPost(
  * preview), refused when the converter reports an error, and the blocks are checked by the same schema as any save before
  * anything is made. The draft is made and saved with the same two steps the editor uses, so it has the same rules: the
  * address, the author, the category, and the body's limits. The text itself is never stored.
+ *
+ * Pictures (ADR-173): the browser chose the article's id and sent each chosen file to `blog/<id>/` first. Here each is
+ * read back from the bucket and checked (type, weight and size from its own bytes, and that it is in this article's
+ * folder) BEFORE the draft is made, so a refused picture leaves no draft behind; the draft is then made with that id.
  */
 export async function createPostFromMarkdown(
   store: BlogStore,
   input: CreateBlogPostFromMarkdownInput,
   log?: Logger,
 ): Promise<PostDone> {
-  const converted = convertMarkdown(input.markdown);
+  const chosen = Object.fromEntries(
+    input.pictures.map((picture) => [picture.slot, { path: picture.path, alt: picture.alt }]),
+  );
+  const converted = convertMarkdown(input.markdown, chosen);
   const refused = () =>
     new ActionError("VALIDATION", "The pasted text could not be turned into an article", {
       fieldErrors: { markdown: [{ key: "validation.blogMarkdownRefused" }] },
     });
   if (converted.errors.length > 0) throw refused();
+  // Each chosen picture belongs to a place of this text, and no place has two.
+  const places = new Set(converted.slots.map((slot) => slot.id));
+  const sent = new Set(input.pictures.map((picture) => picture.slot));
+  if (sent.size !== input.pictures.length || [...sent].some((slot) => !places.has(slot)))
+    throw refused();
   // The body is checked before anything is made, so a refused text leaves no empty draft behind.
   const checked = updateBlogPostSchema.safeParse({
     postId: "00000000-0000-4000-8000-000000000000",
@@ -217,8 +232,17 @@ export async function createPostFromMarkdown(
     seoDescription: null,
   });
   if (!checked.success) throw refused();
+  if (input.postId !== undefined && input.pictures.length > 0) {
+    await checkPictures(
+      store,
+      input.postId,
+      input.pictures.map((picture) => ({ path: picture.path, field: "pictures" })),
+      new Set(),
+    );
+  }
 
   const made = await createPost(store, {
+    ...(input.postId === undefined ? {} : { id: input.postId }),
     title: input.title,
     authorName: input.authorName,
     ...(input.slug === undefined ? {} : { slug: input.slug }),
