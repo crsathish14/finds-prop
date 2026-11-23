@@ -69,6 +69,49 @@ describe("LegalPage: the shared reading layout (ADD-12)", () => {
     expect(screen.queryByText(/Last updated/)).toBeNull();
   });
 
+  it("draws the text it is given (what the admin published) with its date and version, and no draft notice", () => {
+    renderWithMessages(
+      <LegalPage
+        kind="privacy"
+        document={{
+          kind: "privacy",
+          draft: false,
+          updated: "2026-11-22",
+          version: "3",
+          summary: "The published summary.",
+          sections: [
+            {
+              id: "who",
+              heading: "Who we are",
+              blocks: [
+                { type: "paragraph", text: "Published words." },
+                { type: "list", items: ["Same", "Same"] },
+                {
+                  type: "table",
+                  caption: "Cap",
+                  head: ["A", "A"],
+                  rows: [
+                    ["1", "1"],
+                    ["1", "1"],
+                  ],
+                },
+              ],
+            },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText("The published summary.")).toBeInTheDocument();
+    expect(screen.getByText("Published words.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "1. Who we are" })).toBeInTheDocument();
+    expect(screen.getByText(/Version 3/)).toBeInTheDocument();
+    expect(screen.queryByText(words.draft.title)).toBeNull();
+    // Repeated words in a list or a table (the admin may type them) draw every one.
+    expect(
+      screen.getAllByRole("listitem").filter((item) => item.textContent === "Same"),
+    ).toHaveLength(2);
+  });
+
   it("numbers the sections, each a heading with its anchor", () => {
     renderWithMessages(<LegalPage kind="terms" />);
     const first = screen.getByRole("heading", { level: 2, name: "1. Using findsprop" });

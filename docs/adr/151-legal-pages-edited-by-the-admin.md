@@ -1,6 +1,6 @@
 # ADR-151 · The Privacy Policy and Terms of Use are edited by the admin
 
-- Status: Accepted for parts A (server), B (Lab parts) and C (the admin screens). Part D (public pages read the saved text) follows in its own pull request. Plan approved by the owner on 22 Nov 2026 ("approve the plan").
+- Status: Accepted for all four parts: A (server), B (Lab parts), C (the admin screens) and D (the public pages read the saved text). Plan approved by the owner on 22 Nov 2026 ("approve the plan").
 - Date: 2026-11-22
 - Related: ADR-053 (legal page shells, text in typed files), ADR-089 and ADR-090 (site content settings), DEC-25 (the owner writes the final text), FR-SYS-09, FR-ADM-10
 - Class: C2 (legal text, a new saved shape)
@@ -44,3 +44,12 @@ Words to confirm (part B): Summary; Sections; Heading; Add section; Remove secti
 - **The preview** beside the boxes is the summary and the headings in order, not the real page: the real reading layout is part D's.
 
 Words to confirm (part C): Privacy Policy; Terms of Use; the two page descriptions; "Visitors see the placeholder text with a draft notice. Publish to replace it."; "Live now: version {version}, last updated {updated}."; "You have saved changes that visitors cannot see yet. Publish to make them live."; "Save draft keeps your changes private. Publish makes this text live and raises the version."; Discard; Save draft; Publish; Saving; "Draft saved" / "Visitors still read the live version."; "Published" / "The new text is live on the public site."; the preview's "No summary yet.", "No sections yet." and "Section without a heading". (The editor's own box words are listed under part B.)
+
+## Part D: the public pages read the saved text
+
+- `/privacy`, `/terms` and `/cookies` read their text with `getLegalDocument` (cached for minutes under the site content tag, which every legal save refreshes, so a published page is live at once) and give it to `LegalPage` as `document`. With no `document` the layout draws the text in code, which is what the Design Lab does.
+- **Indexing follows the text that is drawn.** `legalMetadata(kind, translate, document)` keeps a draft out of search results (`noindex`) and lets a published page index normally, so publishing is what makes a page indexable. The legal pages were never in the sitemap and still are not.
+- **The Cookie information page** still reads the text in code (it is not editable, see above) through the same call, so the three pages share one reading path.
+- Every list item, table cell and row is drawn with its place in its key, so repeated words typed by the admin are all drawn.
+- A read that fails, or a row that does not match its shape, shows the text in code and logs only the error code, so a page can never come up empty.
+- No migration, no dependency, no new words.
