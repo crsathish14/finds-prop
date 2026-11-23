@@ -116,7 +116,9 @@ export default async function HomePage() {
     discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
     featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
     newLaunches: <CityNewLaunchesSection />,
-    projectTypes: homepage.showProjectTypes ? <CityBrowseSection /> : null,
+    projectTypes: homepage.showProjectTypes ? (
+      <CityBrowseSection siteRegion={settings.region.name} />
+    ) : null,
     newest: <CityNewestSection brandName={brandName} />,
     whyUs: homepage.showWhyUs ? <WhySection brandName={brandName} /> : null,
     cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,

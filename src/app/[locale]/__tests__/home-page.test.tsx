@@ -84,7 +84,10 @@ vi.mock("@/features/home", () => ({
   CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),
-  CityBrowseSection: () => <section data-testid="browse" data-region={state.city ?? ""} />,
+  // Browse by area names the city chosen in the header, or the site's region when none was chosen.
+  CityBrowseSection: (props: { siteRegion?: string }) => (
+    <section data-testid="browse" data-region={state.city ?? props.siteRegion ?? ""} />
+  ),
   // The hero reads the city behind its own boundary; here the stand-in hands the page the chosen city,
   // or the site's region when no city is chosen (the fallback the shell holds).
   CityHero: (props: { siteRegion?: string; render: (regionName?: string) => ReactNode }) =>
@@ -235,10 +238,17 @@ describe("the homepage (S4-T06)", () => {
     expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Madurai");
   });
 
-  it("keeps the site's region in the hero when no city is chosen", async () => {
+  it("keeps the site's region in the hero and in Browse by area when no city is chosen", async () => {
     state.region = { name: "Chennai" };
     render(await HomePage());
     expect(screen.getByRole("heading", { level: 1, name: "Headline in Chennai" })).toBeVisible();
+    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Chennai");
+  });
+
+  it("keeps the region-neutral headline when the site has no region and no city is chosen (DEC-14)", async () => {
+    render(await HomePage());
+    expect(screen.getByRole("heading", { level: 1, name: "Headline" })).toBeVisible();
+    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "");
   });
 
   it("gives the sections the brand name and the banner's address", async () => {
