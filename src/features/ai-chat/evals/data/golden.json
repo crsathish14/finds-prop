@@ -1769,7 +1769,8 @@
         "mustNotCall": [],
         "none": false
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-03",

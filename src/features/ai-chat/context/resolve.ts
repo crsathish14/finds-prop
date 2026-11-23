@@ -47,6 +47,7 @@ export function cappedCompareIds(raw: readonly string[]): string[] {
 export async function resolveContext(
   raw: unknown,
   reads: ContextReads,
+  options: { projects?: boolean } = {},
 ): Promise<ChatContext | null> {
   const parsed = rawContextSchema.safeParse(raw);
   if (!parsed.success) return null;
@@ -57,7 +58,10 @@ export async function resolveContext(
   if (isShortId(homeId) && (await reads.homeIsOpen(homeId))) context.home = homeId;
 
   const slug = project === undefined ? "" : tidy(project);
-  if (isProjectSlug(slug) && (await reads.projectIsOpen(slug))) context.project = slug;
+  // Projects are for signed-in customers (login wall, ADR-171): a guest's project page gives the assistant no project.
+  if (options.projects !== false && isProjectSlug(slug) && (await reads.projectIsOpen(slug))) {
+    context.project = slug;
+  }
 
   const compareIds = cappedCompareIds(compare ?? []);
   if (compareIds.length >= COMPARE_MIN) {

@@ -304,8 +304,8 @@ export const searchPropertiesTool: AiChatTool<SearchPropertiesInput, SearchPrope
   input: searchPropertiesInputSchema,
   output: searchPropertiesOutputSchema,
   async run(input, context) {
-    requireSignIn(context);
-    const results = await getSearchResults(toSearchParams(input));
+    // A guest may search homes (not projects): through the narrow server-only read, ten homes at most.
+    const results = await getSearchResults(toSearchParams(input), { guest: !context.signedIn });
     if (results.status === "failed") throw new Error("search results could not be read");
     const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
     return {
@@ -422,10 +422,12 @@ export function createSearchPropertiesTool(
     input: placeSearchPropertiesInputSchema,
     output: placeSearchPropertiesOutputSchema,
     async run(input, context) {
-      requireSignIn(context);
       const place = given(input.place);
+      // A place is looked up against the localities of homes and projects, so it is for signed-in customers; a guest
+      // searches by the filters, the locality text and the keyword.
+      if (place !== null) requireSignIn(context);
       if (place === null) {
-        const results = await getSearchResults(toSearchParams(input));
+        const results = await getSearchResults(toSearchParams(input), { guest: !context.signedIn });
         if (results.status === "failed") throw new Error("search results could not be read");
         const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
         return {

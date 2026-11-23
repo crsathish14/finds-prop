@@ -6,7 +6,9 @@ const rpc = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 
+const guestRead = vi.fn();
 vi.mock("@/server/supabase/server", () => ({ createServerSupabase: async () => ({ rpc }) }));
+vi.mock("@/server/ai/guest-home-search", () => ({ guestSearchHomes: guestRead }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getSearchResults } = await import("../results");
@@ -97,6 +99,23 @@ describe("UT-search-rpc-args: a parsed search as search_properties() arguments",
 
   it("sends no radius without a place", () => {
     expect(toSearchRpcArgs(parseSearchParams({ ["r"]: "10" }))).not.toHaveProperty("p_radius_km");
+  });
+});
+
+describe("UT-search-results: the guest read (the assistant, ADR-171)", () => {
+  it("reads through the server-only guest function, not the visitor's own session", async () => {
+    guestRead.mockResolvedValue({ data: [home()], error: null });
+    const result = await getSearchResults(none, { guest: true });
+    expect(guestRead).toHaveBeenCalledExactlyOnceWith({ p_sort: "newest", p_limit: 12 });
+    expect(rpc).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ status: "ok", total: 48 });
+  });
+
+  it("reads with the own session when it is not a guest, the way the pages do", async () => {
+    rpc.mockResolvedValue({ data: [home()], error: null });
+    await getSearchResults(none);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(guestRead).not.toHaveBeenCalled();
   });
 });
 

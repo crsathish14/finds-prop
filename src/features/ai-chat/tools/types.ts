@@ -146,8 +146,9 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `unknown_tool`: no tool has that name.
  * - `invalid_input`: the input does not fit the tool's schema; `fields` names what to correct.
  * - `unavailable`: the read failed or its result did not fit. "That information isn't available right now."
- * - `sign_in_required`: the tool lists homes, projects, localities or a builder's projects, and the customer is not
- *   signed in (login wall, ADR-171). The model tells them to sign in, with the sign-in button, and does not list from memory.
+ * - `sign_in_required`: the tool is about projects, builders, localities or a place, and the customer is not signed in
+ *   (login wall, ADR-171; a guest may search homes). The model tells them to sign in, with the sign-in button, and does not
+ *   list from memory.
  *
  * The propose tools (ADR-128 section 5.3) refuse with three more, thrown as a `ToolRefusal`. Each is one code for
  * every reason behind it on purpose, so a refusal tells the model what to say and nothing about why:
@@ -185,7 +186,7 @@ export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
  */
 export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   sign_in_required:
-    "Searching homes, projects, places and builders is for signed-in customers. Tell the customer to sign in with their phone number to search, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any home, project, place or builder from memory.",
+    "This is for signed-in customers: projects, builders, localities and searching around a place. Homes can still be searched without signing in, by their filters. Tell the customer to sign in with their phone number for this, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any project, builder, locality or place from memory.",
   not_available:
     "That home or project is not open for requests. Do not try another id; tell the customer it is not available.",
   own_home: "The customer owns this home, so they cannot enquire about it. Tell them so.",
