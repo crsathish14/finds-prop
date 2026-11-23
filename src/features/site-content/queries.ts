@@ -163,11 +163,10 @@ export interface HeroPage {
  * builder the home page uses.
  */
 export async function getHeroPage(): Promise<HeroPage> {
-  const [{ settings }, translate, live] = await Promise.all([
-    getSiteContent(),
-    getTranslate(),
-    getProjects(),
-  ]);
+  const [{ settings }, translate] = await Promise.all([getSiteContent(), getTranslate()]);
+  // After the admin's own read (made with their session), so the page renders at request time: the project list
+  // stamps the time it was read, which a prerender may not do.
+  const live = await getProjects();
   const standard = standardHeroOf(
     buildHero({ ...settings, hero: { layout: settings.hero.layout } }, translate),
   );
