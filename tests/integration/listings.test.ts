@@ -1,8 +1,13 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { DraftFields } from "@/features/listings/schemas";
-import { adminClient } from "./support/clients";
-import { removeTestUser, signInTestCustomer, type TestUser } from "./support/users";
+import { adminClient, visitorClient } from "./support/clients";
+import {
+  giveContactEmail,
+  removeTestUser,
+  signInTestCustomer,
+  type TestUser,
+} from "./support/users";
 
 // Outside a request there is no cookie or header store; the stores below take their clients directly.
 vi.mock("next/headers", () => ({
@@ -90,6 +95,8 @@ describe("IT-actions-listing: the wizard's server side against a real database (
 
   beforeAll(async () => {
     owner = await signInTestCustomer();
+    // Sending a listing for review needs the email for enquiries (ADR-184).
+    await giveContactEmail(owner.userId);
     const other = await admin.auth.admin.createUser({
       email: `it-listings-other-${RUN}@example.test`,
       email_confirm: true,
@@ -287,5 +294,80 @@ describe("IT-actions-listing: the wizard's server side against a real database (
       (await failureOf(() => sendForReview(store(), { listingId: otherListingId }))).code,
     ).toBe("NOT_FOUND");
     expect((await row(otherListingId)).status).toBe("draft");
+  });
+
+  describe("the email for enquiries (ADR-184)", () => {
+    const contactOf = async () => {
+      const { data, error } = await admin
+        .from("profiles")
+        .select("contact_email")
+        .eq("id", owner.userId)
+        .single();
+      if (error) throw new Error("Could not read the profile");
+      return data.contact_email;
+    };
+    const readyDraft = async () => {
+      await clearOwnerListings();
+      const { listingId } = await startDraft(store(), { fields: { ...stepOne, ...restOfListing } });
+      await addPhoto(listingId);
+      await addLocation(listingId);
+      return listingId;
+    };
+
+    it("refuses to send a complete listing when the account has no email, names the field and leaves it a draft", async () => {
+      const listingId = await readyDraft();
+      await giveContactEmail(owner.userId, null);
+      try {
+        const refused = await failureOf(() => sendForReview(store(), { listingId }));
+        expect(refused.code).toBe("VALIDATION");
+        expect(refused.fieldErrors?.contactEmail).toEqual([
+          { key: "validation.contactEmailRequired" },
+        ]);
+        expect((await row(listingId)).status).toBe("draft");
+      } finally {
+        await giveContactEmail(owner.userId);
+      }
+    });
+
+    it("saves the email given with the submit to the account, trimmed and in lower case, and sends the listing", async () => {
+      const listingId = await readyDraft();
+      await giveContactEmail(owner.userId, null);
+      try {
+        await sendForReview(store(), { listingId, contactEmail: "Typed.Owner@Example.Test" });
+        expect(await contactOf()).toBe("typed.owner@example.test");
+        expect((await row(listingId)).status).toBe("pending");
+      } finally {
+        await giveContactEmail(owner.userId);
+      }
+    });
+
+    it("does not send the listing when the email given is refused, and keeps the one the account had", async () => {
+      const listingId = await readyDraft();
+      const refused = await failureOf(() =>
+        sendForReview(store(), { listingId, contactEmail: "not an address" }),
+      );
+      expect(refused.fieldErrors?.contactEmail).toEqual([{ key: "validation.emailInvalid" }]);
+      expect((await row(listingId)).status).toBe("draft");
+      expect(await contactOf()).toBe("it-owner@example.test");
+    });
+
+    it("refuses a reserved admin address with the words of an address that cannot be used, never naming the list", async () => {
+      const refused = await failureOf(() => store().setContactEmail("developer@findsprop.com"));
+      expect(refused.fieldErrors?.contactEmail).toEqual([{ key: "validation.emailTaken" }]);
+      expect(await contactOf()).toBe("it-owner@example.test");
+    });
+
+    it("keeps it private: a visitor cannot read the column, and the owner cannot write it with an update", async () => {
+      const visitor = visitorClient();
+      const read = await visitor.from("profiles").select("contact_email").eq("id", owner.userId);
+      expect(read.error).not.toBeNull();
+      expect(read.data ?? []).toEqual([]);
+      const write = await owner.client
+        .from("profiles")
+        .update({ contact_email: "direct@example.test" })
+        .eq("id", owner.userId);
+      expect(write.error).not.toBeNull();
+      expect(await contactOf()).toBe("it-owner@example.test");
+    });
   });
 });

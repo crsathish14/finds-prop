@@ -71,6 +71,7 @@ function open(
       uploader={UploaderStub as never}
       doneHref="/dashboard?tab=listings"
       edit={edit}
+      contactEmail="owner@example.test"
       locationField={LocationFieldStub}
       areas={[{ label: "Velachery", lat: 12.9791, lng: 80.2184 }]}
       {...props}

@@ -28,6 +28,28 @@ export async function isSignedIn(): Promise<boolean> {
 }
 
 /**
+ * The email enquiries about the signed-in person's homes are mailed to (ADR-184), or null when none is saved or it
+ * could not be read (the wizard then asks for one, and the dashboard offers to add one). It is private: read as the
+ * person, so the database lets them see only their own row, and never logged. Only their own row is asked for, since
+ * the admin could read every row.
+ */
+export async function getMyContactEmail(): Promise<string | null> {
+  const session = await getSessionView();
+  if (!session) return null;
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("contact_email")
+    .eq("id", session.userId)
+    .maybeSingle();
+  if (error) {
+    logger.warn("the email for enquiries could not be read", { errorCode: error.code });
+    return null;
+  }
+  return data?.contact_email ?? null;
+}
+
+/**
  * The signed-in owner's draft, for the wizard to open at `/post-property/[id]` (S6-T02, FR-ACC-08), or
  * null when the listing is not theirs or does not exist (a stranger's listing looks the same as a missing
  * one). `my_properties()` returns only the caller's own rows, drafts included. Any status comes back, so

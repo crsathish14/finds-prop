@@ -39,6 +39,10 @@ export interface ListingCallerStore {
   deleteDraft(listingId: string): Promise<boolean>;
   /** Calls `submit_listing`; returns the listing's short id. Throws the database's failure through `mapListingError`. */
   submit(listingId: string): Promise<string>;
+  /** The caller's own email for enquiries (ADR-184), or null when the account holds none. */
+  contactEmail(): Promise<string | null>;
+  /** Calls `set_contact_email` for the caller; the address as stored. Throws the database's failure through `mapListingError`. */
+  setContactEmail(email: string): Promise<string | null>;
 }
 
 /** What the database says when a call fails. */
@@ -103,6 +107,17 @@ export function mapListingError(failure: DatabaseFailure): ActionError {
     // Marking a sale listing rented, or a rent listing sold: the screen only offers the right one.
     return new ActionError("VALIDATION", "The outcome does not fit the listing", {
       fieldErrors: { outcome: [{ key: "validation.invalid" }] },
+    });
+  }
+  if (message === "profile.contact_email_invalid") {
+    return new ActionError("VALIDATION", "The email for enquiries is not valid", {
+      fieldErrors: { contactEmail: [{ key: "validation.emailInvalid" }] },
+    });
+  }
+  if (message === "profile.contact_email_reserved") {
+    // The same words as an address that cannot be used for another reason: the list of reserved addresses is not shown.
+    return new ActionError("VALIDATION", "The email for enquiries cannot be used", {
+      fieldErrors: { contactEmail: [{ key: "validation.emailTaken" }] },
     });
   }
   if (message === "listing.not_found" || code === "P0002") {
@@ -187,11 +202,45 @@ export async function discardDraft(
   return { listingId: parameters.listingId };
 }
 
-/** Sends a draft for review. The database checks the owner, the fields, the photo and the limit. */
+/**
+ * Sends a draft for review. The database checks the owner, the fields, the photo and the limit. The account must
+ * hold an email for enquiries first (ADR-184): one given with the submit is saved to the account, otherwise the one
+ * already saved is used; with neither the listing is refused with a problem on that field, and stays a draft.
+ */
 export async function sendForReview(
   store: ListingCallerStore,
-  parameters: { listingId: string },
+  parameters: { listingId: string; contactEmail?: string | undefined },
 ): Promise<{ listingId: string; shortId: string }> {
+  if (parameters.contactEmail !== undefined) {
+    await store.setContactEmail(parameters.contactEmail);
+  } else if ((await store.contactEmail()) === null) {
+    throw new ActionError("VALIDATION", "The account has no email for enquiries", {
+      fieldErrors: { contactEmail: [{ key: "validation.contactEmailRequired" }] },
+    });
+  }
   const shortId = await store.submit(parameters.listingId);
   return { listingId: parameters.listingId, shortId };
+}
+
+/**
+ * Sets the email enquiries about the caller's homes are mailed to, from the dashboard (ADR-184). Answers the address
+ * as stored (trimmed and lower case). The database checks the shape and refuses the reserved admin addresses.
+ */
+export async function saveOwnContactEmail(
+  store: Pick<ListingCallerStore, "setContactEmail">,
+  parameters: { email: string },
+): Promise<{ email: string }> {
+  try {
+    const stored = await store.setContactEmail(parameters.email);
+    return { email: stored ?? parameters.email };
+  } catch (error) {
+    // The database names the problem on `contactEmail`; this action's box is called `email`.
+    const problems = error instanceof ActionError ? error.fieldErrors?.["contactEmail"] : undefined;
+    if (problems) {
+      throw new ActionError("VALIDATION", "The email for enquiries is not valid", {
+        fieldErrors: { email: problems },
+      });
+    }
+    throw error;
+  }
 }

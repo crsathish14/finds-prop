@@ -6,6 +6,7 @@ import { createLogger } from "@/server/logger";
 import {
   createDraftConfig,
   deleteDraftConfig,
+  saveContactEmailConfig,
   saveDraftConfig,
   submitListingConfig,
 } from "../action-config";
@@ -61,6 +62,13 @@ function harness(
     save: define({ ...saveDraftConfig, handler }),
     remove: define({ ...deleteDraftConfig, handler }),
     submit: define({ ...submitListingConfig, handler }),
+    saveEmail: define({
+      ...saveContactEmailConfig,
+      handler: async () => {
+        calls.push("handler");
+        return { email: "owner@example.test" };
+      },
+    }),
   };
 }
 
@@ -136,5 +144,62 @@ describe("UT-listing-actions: who may post, and what it costs (S6-T02)", () => {
       fieldErrors: { "fields.title": [{ key: "validation.titleTooShort" }] },
     });
     expect(calls).not.toContain("handler");
+  });
+
+  describe("the email for enquiries (ADR-184)", () => {
+    it("saving it needs a verified phone, counts the project_save limit, has no key and refreshes nothing", async () => {
+      const { saveEmail, calls } = harness();
+      const answer = await saveEmail({ email: "Owner@Example.Test" });
+      expect(answer).toEqual({ ok: true, data: { email: "owner@example.test" } });
+      expect(calls).toEqual(["rateLimit:project_save", "handler"]);
+    });
+
+    it("refuses a visitor and an account with no verified phone", async () => {
+      for (const session of [null, noPhone]) {
+        const { saveEmail, calls } = harness({ session });
+        const answer = await saveEmail({ email: "owner@example.test" });
+        expect(answer).toMatchObject({
+          ok: false,
+          code: session === null ? "UNAUTHENTICATED" : "FORBIDDEN",
+        });
+        expect(calls).not.toContain("handler");
+      }
+    });
+
+    it("answers rate limited and never runs the handler", async () => {
+      const { saveEmail, calls } = harness({ rateLimited: true });
+      expect(await saveEmail({ email: "owner@example.test" })).toMatchObject({
+        ok: false,
+        code: "RATE_LIMITED",
+      });
+      expect(calls).not.toContain("handler");
+    });
+
+    it("refuses an empty or malformed address on the email field before anything runs", async () => {
+      const { saveEmail, calls } = harness();
+      expect(await saveEmail({ email: "  " })).toMatchObject({
+        ok: false,
+        code: "VALIDATION",
+        fieldErrors: { email: [{ key: "validation.contactEmailRequired" }] },
+      });
+      expect(await saveEmail({ email: "owner at example" })).toMatchObject({
+        ok: false,
+        code: "VALIDATION",
+        fieldErrors: { email: [{ key: "validation.emailInvalid" }] },
+      });
+      expect(calls).not.toContain("handler");
+    });
+
+    it("submitting with a malformed address is refused on the contactEmail field", async () => {
+      const { submit, calls } = harness();
+      expect(
+        await submit({ listingId: LISTING, idempotencyKey: KEY, contactEmail: "owner" }),
+      ).toMatchObject({
+        ok: false,
+        code: "VALIDATION",
+        fieldErrors: { contactEmail: [{ key: "validation.emailInvalid" }] },
+      });
+      expect(calls).not.toContain("handler");
+    });
   });
 });

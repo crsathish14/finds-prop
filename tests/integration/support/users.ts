@@ -55,6 +55,21 @@ export async function signInTestCustomer(): Promise<TestUser> {
   return { userId, client };
 }
 
+/**
+ * Saves the email enquiries are mailed to on a user's profile (ADR-184). Sending a listing for review needs one, so the
+ * tests that send listings give their owner one first. The address is made up and ends in a reserved test domain.
+ */
+export async function giveContactEmail(
+  userId: string,
+  email: string | null = "it-owner@example.test",
+): Promise<void> {
+  const { error } = await adminClient()
+    .from("profiles")
+    .update({ contact_email: email })
+    .eq("id", userId);
+  if (error) throw new Error(`Could not set the contact email (${error.code})`);
+}
+
 /** Gives a user a role. Roles are written by the service role only (BR-13). */
 export async function grantRole(userId: string, role: AppRole): Promise<void> {
   const { error } = await adminClient().from("user_roles").insert({ user_id: userId, role });

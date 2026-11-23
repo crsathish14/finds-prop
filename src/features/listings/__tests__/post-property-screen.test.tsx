@@ -7,6 +7,7 @@ const state = vi.hoisted(() => ({
   reads: [] as string[],
   email: { kind: "verified", email: "priya@example.com" } as { kind: string; email?: string },
   drafts: [] as unknown[],
+  contact: null as string | null,
 }));
 
 vi.mock("server-only", () => ({}));
@@ -50,6 +51,7 @@ vi.mock("../actions", () => ({
 }));
 vi.mock("../queries", () => ({
   isSignedIn: async () => state.signedIn,
+  getMyContactEmail: async () => state.contact,
   listMyDrafts: async () => {
     state.reads.push("drafts");
     return state.drafts;
@@ -77,12 +79,14 @@ vi.mock("../wizard.client", () => ({
     areas?: unknown[];
     locationHeld?: boolean;
     locationField?: unknown;
+    contactEmail?: string;
   }) => (
     <div
       data-testid="wizard"
       data-areas={JSON.stringify(props.areas ?? [])}
       data-held={String(props.locationHeld ?? false)}
       data-field={props.locationField ? "given" : ""}
+      data-contact={props.contactEmail ?? ""}
       data-edit={props.edit ? `${props.edit.state}|${props.edit.reason ?? ""}` : ""}
       data-listing={props.listingId ?? ""}
       data-done={props.doneHref}
@@ -123,6 +127,7 @@ beforeEach(() => {
   state.reads = [];
   state.email = { kind: "verified", email: "priya@example.com" };
   state.drafts = [];
+  state.contact = null;
 });
 
 describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
@@ -212,6 +217,15 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
         previewUrl: "http://127.0.0.1:54321/storage/v1/object/public/listing-photos/u/l/a%20b.jpg",
       },
     ]);
+  });
+
+  it("starts the wizard's email box with the address the account already holds, and leaves it empty when there is none (ADR-184)", async () => {
+    const view = render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "");
+    view.unmount();
+    state.contact = "owner@example.test";
+    render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "owner@example.test");
   });
 
   it("gives the wizard the connected location field and the site's curated localities, with no coordinates but theirs", async () => {

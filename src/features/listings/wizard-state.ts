@@ -15,6 +15,7 @@ import {
 } from "./constants";
 import {
   basicsStepSchema,
+  contactEmailSchema,
   descriptionStepSchema,
   detailsStepSchema,
   draftFieldsSchema,
@@ -56,6 +57,12 @@ export interface WizardValues {
   locationKind: "" | "exact" | "approximate";
   locationLabel: string;
   locationDetail: string;
+  /**
+   * The email enquiries are mailed to (ADR-184): asked on the last step of a new listing, started from the one the
+   * account already holds. It belongs to the account, not the listing, so it is never part of the draft's fields
+   * (`draftInput`) and is not kept in the browser for the way back in.
+   */
+  contactEmail: string;
 }
 
 export type WizardField = keyof WizardValues;
@@ -81,6 +88,7 @@ export const EMPTY_VALUES: WizardValues = {
   locationKind: "",
   locationLabel: "",
   locationDetail: "",
+  contactEmail: "",
 };
 
 /** The fields each step asks for, so an error lands on the right step. Step 3 (photos) has none. */
@@ -100,6 +108,8 @@ export function stepOfField(field: string): WizardStep | null {
   if (field === "photos") return 3;
   // The place is asked on the address step, though it is not one of the draft's boxes.
   if (field === "location") return 1;
+  // The email for enquiries is asked on the review step, next to Submit.
+  if (field === "contactEmail") return 5;
   return null;
 }
 
@@ -129,6 +139,8 @@ export function valuesFromDraft(draft: DraftView): WizardValues {
     locationKind: "",
     locationLabel: "",
     locationDetail: "",
+    // The account's own address comes from the page, not from the listing.
+    contactEmail: "",
   };
 }
 
@@ -211,6 +223,16 @@ export function draftInput(
     }
   }
   return input;
+}
+
+/**
+ * The email for enquiries, checked the way the server will before Submit (ADR-184). Returns the problem on that field
+ * (empty, or not shaped like an address), or nothing when it is fine.
+ */
+export function validateContactEmail(values: WizardValues): StepErrors {
+  const input = { contactEmail: values.contactEmail };
+  const result = contactEmailSchema.safeParse(input);
+  return result.success ? {} : firstErrors(result.error, input);
 }
 
 /** Checks a draft's fields the way the server will, so "Save draft" can show a field that is wrong. */

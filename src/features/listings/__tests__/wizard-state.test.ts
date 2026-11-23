@@ -6,6 +6,7 @@ import {
   hasBedrooms,
   stepOfField,
   stepsWithErrors,
+  validateContactEmail,
   validateStep,
   valuesFromDraft,
   type WizardValues,
@@ -147,6 +148,39 @@ describe("UT-wizard-state: the wizard without React (S6-T02)", () => {
       expect(hasBedrooms("apartment")).toBe(true);
       expect(hasBedrooms("plot")).toBe(false);
       expect(hasBedrooms("commercial")).toBe(false);
+    });
+  });
+
+  describe("the email for enquiries (ADR-184)", () => {
+    it("starts empty, and an opened draft does not bring one (it belongs to the account)", () => {
+      expect(EMPTY_VALUES.contactEmail).toBe("");
+      expect(valuesFromDraft(draftView).contactEmail).toBe("");
+    });
+
+    it("is asked on the review step", () => {
+      expect(stepOfField("contactEmail")).toBe(5);
+      expect(stepsWithErrors({ contactEmail: { key: "validation.contactEmailRequired" } })).toEqual(
+        [5],
+      );
+    });
+
+    it("is never part of what a step or Save draft sends, and no step checks it", () => {
+      const values = { ...complete, contactEmail: "owner@example.test" };
+      expect(Object.keys(draftInput(values, [1, 2, 3, 4, 5]))).not.toContain("contactEmail");
+      expect(checkDraft(draftInput(values, [1, 2, 4]))).toEqual({});
+      expect(validateStep(5, values)).toEqual({});
+    });
+
+    it("is checked on its own before Submit: empty asks for it, a slip is not an address, an address passes", () => {
+      expect(validateContactEmail({ ...complete, contactEmail: "" })["contactEmail"]?.key).toBe(
+        "validation.contactEmailRequired",
+      );
+      expect(
+        validateContactEmail({ ...complete, contactEmail: "owner" })["contactEmail"]?.key,
+      ).toBe("validation.emailInvalid");
+      expect(validateContactEmail({ ...complete, contactEmail: " Owner@Example.Test " })).toEqual(
+        {},
+      );
     });
   });
 });

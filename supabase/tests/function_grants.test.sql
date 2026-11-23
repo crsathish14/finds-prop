@@ -44,7 +44,7 @@ select is(
   || 'project_is_live, project_is_mine, public_project, public_project_form, public_property, reorder_faqs, '
   || 'save_crm_integration, '
   || 'save_project_price_trends, search_blog_posts, search_faqs, search_job_postings, search_properties, '
-  || 'set_listing_location, sitemap_entries, '
+  || 'set_contact_email, set_listing_location, sitemap_entries, '
   || 'storage_builder_logo_path_ok, storage_listing_path_ok, storage_project_path_ok, submit_builder_feedback, '
   || 'submit_listing',
   'signed-in people can run the visitors'' list and the helpers and portal functions that check the caller themselves'

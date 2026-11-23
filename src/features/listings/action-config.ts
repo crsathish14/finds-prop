@@ -4,6 +4,7 @@ import {
   createDraftSchema,
   deleteDraftSchema,
   deleteListingSchema,
+  saveContactEmailSchema,
   saveDraftSchema,
   saveListingChangesSchema,
   setListingLocationSchema,
@@ -105,4 +106,18 @@ export const setListingLocationConfig = {
   rateLimit: { scope: "project_save" as const },
   invalidate: (result: { shortId: string; wentBackToReview: boolean }) =>
     result.wentBackToReview ? tagsAfterListingChange(result.shortId) : [],
+};
+
+/**
+ * Setting the email enquiries are mailed to, from the dashboard (ADR-184). It needs a signed-in account with a
+ * verified phone, like every owner write, and changes only the caller's own account (the database function uses the
+ * session). It is limited with the existing `project_save` scope (60 an hour a user; no new scope was wanted). The same
+ * address twice leaves the same account, so it has no key. Nothing public changes, so nothing is refreshed. The address
+ * is private: it is in no log line and no error text. It is not confirmed to belong to the person.
+ */
+export const saveContactEmailConfig = {
+  name: "saveContactEmail",
+  input: saveContactEmailSchema,
+  auth: "verified-phone" as const,
+  rateLimit: { scope: "project_save" as const },
 };

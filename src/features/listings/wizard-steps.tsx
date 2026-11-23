@@ -13,6 +13,7 @@ import type { ListingLocationFieldProps } from "@/types/places";
 import { formatArea, formatPrice, type Translate } from "@/lib/format";
 import { AMENITY_OPTIONS, DESCRIPTION_MAX, STATE_NAME, TITLE_MAX } from "./constants";
 import { hasBedrooms, type StepErrors, type WizardStep, type WizardValues } from "./wizard-state";
+import type { FieldError } from "@/types/action";
 
 /**
  * The five steps of the post-property wizard as they are drawn (S6-T02, FR-ACC-06). Each takes what the
@@ -352,17 +353,30 @@ export function ReviewStep({
   onEdit,
   headingRef,
   copy,
+  email,
 }: {
   values: WizardValues;
   photoCount: number;
   onEdit: (step: WizardStep) => void;
   headingRef: Ref<HTMLHeadingElement>;
+  /**
+   * The box for the email enquiries are mailed to (ADR-184), asked here next to Submit. Left out when a listing
+   * that is already sent is edited without being sent again.
+   */
+  email?: {
+    value: string;
+    error: FieldError | undefined;
+    disabled: boolean;
+    onChange: (value: string) => void;
+  };
   /** The heading and the "what happens next" line when a sent listing is being edited (S6-T05); the new listing's by default. */
   copy?: { heading: string; nextBody: string };
 }) {
   const words = useTranslations("postProperty.review");
   const types = useTranslations("postProperty.basics");
   const root = useTranslations() as unknown as Translate;
+  const contact = useTranslations("postProperty.review.contact");
+  const translator = useTranslations() as unknown as Translator;
   const typeLabels = {
     apartment: types("typeApartment"),
     villa: types("typeVilla"),
@@ -424,6 +438,24 @@ export function ReviewStep({
           row("title", words("title"), values.title, 4),
         ]}
       />
+      {email ? (
+        <FormField
+          label={contact("label")}
+          required
+          hint={contact("hint")}
+          {...errorProp(email.error ? fieldErrorText(translator, email.error) : undefined)}
+        >
+          <Input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder={contact("placeholder")}
+            value={email.value}
+            disabled={email.disabled}
+            onChange={(event) => email.onChange(event.target.value)}
+          />
+        </FormField>
+      ) : null}
       <NextSteps title={words("nextTitle")}>{copy?.nextBody ?? words("nextBody")}</NextSteps>
     </div>
   );

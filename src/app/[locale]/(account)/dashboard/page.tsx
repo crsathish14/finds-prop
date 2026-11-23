@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  ContactEmail,
   DashboardScreen,
   EmailPrompt,
   TabEmpty,
@@ -15,7 +16,12 @@ import {
   countReceivedEnquiries,
   countSentEnquiries,
 } from "@/features/enquiries";
-import { MyListingsTab, countMyListings } from "@/features/listings";
+import {
+  MyListingsTab,
+  countMyListings,
+  getMyContactEmail,
+  saveContactEmail,
+} from "@/features/listings";
 import { SavedTab, countSavedHomes } from "@/features/saved";
 import { getTranslate } from "@/features/site";
 import { getSessionView } from "@/server/auth/get-session-view";
@@ -32,11 +38,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * The numbers on the four tabs (S6-T03): four reads, made together, and none for a visitor (the page gate is
- * already sending them to sign in). A tab with nothing to count shows no number.
+ * already sending them to sign in). A tab with nothing to count shows no number. The count of the owner's listings
+ * outside the drafts comes back too: an owner who has homes is offered the email for enquiries (ADR-184).
  */
 async function readTabCounts() {
   const session = await getSessionView();
-  if (!session) return {};
+  if (!session) return { counts: {}, homes: 0 };
   const [saved, listings, received, sent, translate] = await Promise.all([
     countSavedHomes(),
     countMyListings(),
@@ -44,9 +51,10 @@ async function readTabCounts() {
     countSentEnquiries(session.userId),
     getTranslate(),
   ]);
-  return tabCountsFrom({ saved, listings, received, sent }, (count) =>
+  const counts = tabCountsFrom({ saved, listings, received, sent }, (count) =>
     translate("account.dashboard.counts.new", { count }),
   );
+  return { counts, homes: listings };
 }
 
 /**
@@ -54,17 +62,21 @@ async function readTabCounts() {
  * content is made: the saved homes, the owner's listings, the enquiries received and the enquiries sent
  * (each shows its empty state when it has nothing). The four tabs carry their numbers. The email prompt
  * shows for someone with no address, the reminder for someone whose link is not used yet, and nothing
- * when the address is confirmed or could not be read.
+ * when the address is confirmed or could not be read. An owner with homes also sees the card for the email
+ * enquiries are mailed to: the prompt when there is none, the address with Change when there is one (ADR-184).
  */
 export default async function DashboardPage({ searchParams }: PageProps) {
   const tab = parseTab((await searchParams)["tab"]);
-  const [person, email, counts] = await Promise.all([
+  const [person, email, { counts, homes }] = await Promise.all([
     getDashboardPerson(),
     getEmailState(),
     readTabCounts(),
   ]);
   // Nobody signed in: the page gate in the layout is already sending them to sign in.
   if (!person) return null;
+  // The email enquiries are mailed to (ADR-184) is only asked of an owner who has homes; it is private and is
+  // read as the owner.
+  const contactEmail = homes > 0 ? await getMyContactEmail() : null;
 
   return (
     <main id="main" className="flex-1 bg-canvas-sunken">
@@ -75,9 +87,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         counts={counts}
         emailPending={email.kind === "pending"}
         notice={
-          email.kind === "none" || email.kind === "pending" ? (
-            <EmailPrompt state={email} send={addEmail} resend={resendEmailLink} />
-          ) : null
+          <>
+            {email.kind === "none" || email.kind === "pending" ? (
+              <EmailPrompt state={email} send={addEmail} resend={resendEmailLink} />
+            ) : null}
+            {homes > 0 ? <ContactEmail email={contactEmail} save={saveContactEmail} /> : null}
+          </>
         }
       >
         {tab === "saved" ? (

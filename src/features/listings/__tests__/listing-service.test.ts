@@ -4,6 +4,7 @@ import {
   discardDraft,
   keepDraft,
   mapListingError,
+  saveOwnContactEmail,
   sendForReview,
   startDraft,
   toDraftRow,
@@ -35,6 +36,14 @@ function store(overrides: Partial<ListingCallerStore> = {}) {
     submit: async (id) => {
       calls.push(`submit:${id}`);
       return "abcd2345";
+    },
+    contactEmail: async () => {
+      calls.push("contact");
+      return "owner@example.test";
+    },
+    setContactEmail: async (email) => {
+      calls.push(`set-contact:${email}`);
+      return email;
     },
     ...overrides,
   };
@@ -151,7 +160,40 @@ describe("UT-listing-service: the wizard's server rules (S6-T02)", () => {
         listingId: LISTING,
         shortId: "abcd2345",
       });
-      expect(calls).toEqual([`submit:${LISTING}`]);
+      expect(calls).toEqual(["contact", `submit:${LISTING}`]);
+    });
+
+    it("submits with the account's saved email, saving nothing new", async () => {
+      const { fake, calls } = store();
+      await sendForReview(fake, { listingId: LISTING });
+      expect(calls).toEqual(["contact", `submit:${LISTING}`]);
+    });
+
+    it("saves the email given with the submit to the account first", async () => {
+      const { fake, calls } = store();
+      await sendForReview(fake, { listingId: LISTING, contactEmail: "new@example.test" });
+      expect(calls).toEqual(["set-contact:new@example.test", `submit:${LISTING}`]);
+    });
+
+    it("refuses a submit when the account has no email and none was given, names the field and does not submit", async () => {
+      const { fake, calls } = store({ contactEmail: async () => null });
+      const error = await failure(() => sendForReview(fake, { listingId: LISTING }));
+      expect(error.code).toBe("VALIDATION");
+      expect(error.fieldErrors?.contactEmail).toEqual([{ key: "validation.contactEmailRequired" }]);
+      expect(calls).not.toContain(`submit:${LISTING}`);
+    });
+
+    it("does not submit when the email given is refused by the database", async () => {
+      const { fake, calls } = store({
+        setContactEmail: async () => {
+          throw mapListingError({ code: "22023", message: "profile.contact_email_invalid" });
+        },
+      });
+      const error = await failure(() =>
+        sendForReview(fake, { listingId: LISTING, contactEmail: "bad@example.test" }),
+      );
+      expect(error.fieldErrors?.contactEmail).toEqual([{ key: "validation.emailInvalid" }]);
+      expect(calls).not.toContain(`submit:${LISTING}`);
     });
 
     it("lets a refusal from the database through", async () => {
@@ -226,6 +268,47 @@ describe("UT-listing-service: the wizard's server rules (S6-T02)", () => {
         message: "relation public.properties exploded",
       });
       expect(error.message).not.toContain("properties");
+    });
+  });
+
+  describe("the email for enquiries (ADR-184)", () => {
+    it("maps the database's refusals to a problem on the email field, never naming the reserved list", () => {
+      expect(
+        mapListingError({ code: "22023", message: "profile.contact_email_invalid" }).fieldErrors,
+      ).toEqual({ contactEmail: [{ key: "validation.emailInvalid" }] });
+      expect(
+        mapListingError({ code: "22023", message: "profile.contact_email_reserved" }).fieldErrors,
+      ).toEqual({ contactEmail: [{ key: "validation.emailTaken" }] });
+      expect(mapListingError({ code: "42501", message: "profile.not_allowed" }).code).toBe(
+        "FORBIDDEN",
+      );
+    });
+
+    it("saves it from the dashboard and answers the address as stored", async () => {
+      const { fake } = store({ setContactEmail: async (email) => email.toLowerCase() });
+      expect(await saveOwnContactEmail(fake, { email: "Owner@Example.Test" })).toEqual({
+        email: "owner@example.test",
+      });
+    });
+
+    it("names the problem on the dashboard's box, which is called email", async () => {
+      const refused = store({
+        setContactEmail: async () => {
+          throw mapListingError({ code: "22023", message: "profile.contact_email_reserved" });
+        },
+      });
+      const error = await failure(() => saveOwnContactEmail(refused.fake, { email: "a@b.test" }));
+      expect(error.fieldErrors).toEqual({ email: [{ key: "validation.emailTaken" }] });
+    });
+
+    it("lets any other failure through as it was", async () => {
+      const broken = store({
+        setContactEmail: async () => {
+          throw mapListingError({ code: "42501", message: "profile.not_allowed" });
+        },
+      });
+      const error = await failure(() => saveOwnContactEmail(broken.fake, { email: "a@b.test" }));
+      expect(error.code).toBe("FORBIDDEN");
     });
   });
 });

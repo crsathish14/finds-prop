@@ -6,6 +6,7 @@ import {
   descriptionStepSchema,
   detailsStepSchema,
   draftFieldsSchema,
+  saveContactEmailSchema,
   saveDraftSchema,
   submitListingSchema,
 } from "../schemas";
@@ -212,6 +213,71 @@ describe("UT-schemas: the post-property wizard's inputs (S6-T02, FR-ACC-06)", ()
         submitListingSchema.safeParse({ listingId: LISTING, idempotencyKey: KEY }).success,
       ).toBe(true);
       expect(submitListingSchema.safeParse({ listingId: LISTING }).success).toBe(false);
+    });
+  });
+
+  describe("the email for enquiries (ADR-184)", () => {
+    const keys = (value: unknown) => {
+      const input = { email: value };
+      return keysOf(saveContactEmailSchema.safeParse(input), input);
+    };
+
+    it("is trimmed and lower-cased", () => {
+      expect(saveContactEmailSchema.parse({ email: "  Owner.One@Example.Test " }).email).toBe(
+        "owner.one@example.test",
+      );
+    });
+
+    it("is required: empty, spaces and missing all ask for it", () => {
+      expect(keys("")).toEqual({ email: ["validation.contactEmailRequired"] });
+      expect(keys("   ")).toEqual({ email: ["validation.contactEmailRequired"] });
+      expect(keys(undefined)).toEqual({ email: ["validation.contactEmailRequired"] });
+    });
+
+    it("must look like an address: one @, something either side, a dot in the domain, no spaces", () => {
+      const bad = [
+        "owner",
+        "owner@",
+        "@example.test",
+        "owner@example",
+        "a b@example.test",
+        "a@@example.test",
+        "a@b@example.test",
+      ];
+      for (const value of bad) {
+        expect(keys(value), value).toEqual({ email: ["validation.emailInvalid"] });
+      }
+      expect(keys(42)).toEqual({ email: ["validation.invalid"] });
+    });
+
+    it("is at most 254 characters, as the database check says", () => {
+      const longest = "a".repeat(254 - "@b.test".length) + "@b.test";
+      expect(longest).toHaveLength(254);
+      expect(keys(longest)).toEqual({});
+      expect(keys("a" + longest)).toEqual({ email: ["validation.emailInvalid"] });
+    });
+
+    it("rides with the submit when given, and the schema does not need it", () => {
+      const parsed = submitListingSchema.parse({
+        listingId: LISTING,
+        idempotencyKey: KEY,
+        contactEmail: " Owner@Example.Test",
+      });
+      expect(parsed.contactEmail).toBe("owner@example.test");
+      expect(
+        submitListingSchema.safeParse({ listingId: LISTING, idempotencyKey: KEY }).success,
+      ).toBe(true);
+      const input = { listingId: LISTING, idempotencyKey: KEY, contactEmail: "" };
+      expect(keysOf(submitListingSchema.safeParse(input), input)).toEqual({
+        contactEmail: ["validation.contactEmailRequired"],
+      });
+    });
+
+    it("is not one of the draft's fields, so a draft saves without it", () => {
+      expect(draftFieldsSchema.safeParse({ title: "A short title for it" }).success).toBe(true);
+      expect(
+        "contactEmail" in draftFieldsSchema.parse({ contactEmail: "owner@example.test" }),
+      ).toBe(false);
     });
   });
 });
