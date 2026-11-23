@@ -42,13 +42,9 @@ export function sponsorStore(supabase: SupabaseClient<Database>): SponsorStore {
     },
 
     async isLiveProject(slug) {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("id")
-        .eq("slug", slug)
-        .eq("moderation", "approved")
-        .eq("published", true)
-        .maybeSingle();
+      // The moderation columns are not readable by signed-in people (column grants), so ask the public projection,
+      // which answers only for an approved, published project.
+      const { data, error } = await supabase.rpc("public_project", { p_slug: slug });
       if (error) throw mapContentError(error);
       return data !== null;
     },
