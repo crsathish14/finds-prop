@@ -119,6 +119,7 @@ function Editor({
       onChange={setValues}
       limits={limits}
       disabled={disabled}
+      className="w-full"
       words={LEGAL_WORDS}
       {...(errors ? { errors } : {})}
     />
