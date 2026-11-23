@@ -1,6 +1,6 @@
 /**
  * The page context of the chat (ADR-128 section 10, AI-P7-T01): which item the customer was looking at when they
- * opened the chat, and which homes and projects its last answer showed (ADR-177). Only public ids travel: `?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`, in the
+ * opened the chat, and which homes and projects its last answer showed (ADR-180). Only public ids travel: `?home=<shortId>`, `?project=<slug>` or `?compare=<id>,<id>[,<id>]`, in the
  * link and again in the request body. No title, price or any listing text is ever carried, so nothing in a link can
  * put words into the assistant's mouth. The server checks every id against what is listed now before it is used
  * (`resolve.ts`); this file is only the shape and the link, so the buttons and the page share one definition.

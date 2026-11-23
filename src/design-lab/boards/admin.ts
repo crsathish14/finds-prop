@@ -1,5 +1,10 @@
 import type { LabEntry } from "../types";
-import { BuilderFormDemo, BuilderTableDemo, SignInAddressDemo } from "./admin-builders-demos";
+import {
+  BuilderFormDemo,
+  BuilderLogoFieldDemo,
+  BuilderTableDemo,
+  SignInAddressDemo,
+} from "./admin-builders-demos";
 import {
   SubmissionDetailDemo,
   SubmissionsFiltersDemo,
@@ -74,9 +79,17 @@ export const ADMIN: LabEntry[] = [
     id: "builder-form",
     name: "Builder form",
     description:
-      "The fields of the New builder and Edit details drawers: company, login email, type (builder or agent), contact person, phone, logo link, website and about. Empty, with an email that cannot be used, in edit mode (the login email cannot be changed) and while sending; the drawer opens from its button and, after Invite builder, shows the address to pass on.",
+      "The fields of the New builder and Edit details drawers: company, login email, type (builder or agent), contact person, phone, logo link, website and about, then the Developer spotlight group (tagline, year started, projects delivered). Empty, with an email that cannot be used, in edit mode (the login email cannot be changed) and while sending; the drawer opens from its button and, after Invite builder, shows the address to pass on.",
     sources: ["domain/builder-form.tsx", "patterns/sheet.tsx"],
     Demo: BuilderFormDemo,
+  },
+  {
+    id: "builder-logo-field",
+    name: "Builder logo",
+    description:
+      "The logo box of a builder's Company profile: the company's initials with no logo, the uploaded logo shown whole with Replace and Remove, uploading, and a refused picture with its message. The Developer Spotlight shows this logo.",
+    sources: ["domain/builder-logo-field.tsx"],
+    Demo: BuilderLogoFieldDemo,
   },
   {
     id: "sign-in-address",

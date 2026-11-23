@@ -31,6 +31,9 @@ describe("UT-builder-form: helpers of the Builders page (S7-T05)", () => {
       logoUrl: "",
       website: "",
       description: "",
+      tagline: "",
+      establishedYear: "",
+      projectsDelivered: "",
     });
   });
 
@@ -46,6 +49,10 @@ describe("UT-builder-form: helpers of the Builders page (S7-T05)", () => {
       logoUrl: null,
       website: "https://kadalhomes.example",
       description: null,
+      tagline: "Homes by the sea",
+      establishedYear: 2004,
+      projectsDelivered: null,
+      logoPath: null,
       projects: 1,
       leads: 2,
       invitedAt: null,
@@ -60,6 +67,9 @@ describe("UT-builder-form: helpers of the Builders page (S7-T05)", () => {
       logoUrl: "",
       website: "https://kadalhomes.example",
       description: "",
+      tagline: "Homes by the sea",
+      establishedYear: "2004",
+      projectsDelivered: "",
     });
   });
 

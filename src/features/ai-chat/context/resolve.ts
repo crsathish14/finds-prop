@@ -89,7 +89,7 @@ export async function resolveContext(
     if (open.length >= COMPARE_MIN) context.compare = open.slice(0, COMPARE_MAX);
   }
 
-  // What the last answer showed (ADR-177): each id is checked like any other, and one that is not listed now is dropped.
+  // What the last answer showed (ADR-180): each id is checked like any other, and one that is not listed now is dropped.
   const shownIds = cappedIds(shownHomes ?? [], AI_MAX_CARDS_PER_ANSWER);
   if (shownIds.length > 0) {
     const open = await reads.openHomeIds(shownIds);

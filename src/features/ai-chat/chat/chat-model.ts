@@ -253,7 +253,7 @@ export function contextField(
 
 /**
  * The homes and projects the newest answer showed, as ids and slugs, so the next message can say "the second one" or
- * "compare these" and the assistant knows which (ADR-177). Only an answer that was not replaced counts.
+ * "compare these" and the assistant knows which (ADR-180). Only an answer that was not replaced counts.
  */
 export function shownRecords(entries: readonly ChatEntry[]): {
   homes: string[];

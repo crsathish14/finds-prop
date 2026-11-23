@@ -30,7 +30,9 @@ export async function getMyProfile(): Promise<MyProfileView | null> {
   const supabase = await createServerSupabase();
   const mine = await supabase
     .rpc("my_builder")
-    .select("id, name, email, kind, contact_person, phone, logo_url, website, description");
+    .select(
+      "id, name, email, kind, contact_person, phone, logo_url, website, description, tagline, established_year, projects_delivered, logo_path",
+    );
   if (mine.error) {
     logger.error("the builder's profile could not be read", { errorCode: mine.error.code });
     throw mine.error;
@@ -58,6 +60,10 @@ export async function getMyProfile(): Promise<MyProfileView | null> {
     logoUrl: row.logo_url,
     website: row.website,
     description: row.description,
+    tagline: row.tagline,
+    establishedYear: row.established_year,
+    projectsDelivered: row.projects_delivered,
+    logoPath: row.logo_path,
     liveProjects: live.count ?? 0,
   };
 }
