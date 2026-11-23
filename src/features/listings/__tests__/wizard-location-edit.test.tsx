@@ -31,6 +31,7 @@ const VALUES: WizardValues = {
   ...EMPTY_VALUES,
   address: "12 Beach Road",
   locality: "Adyar",
+  city: "Chennai",
   pincode: "600020",
   bhk: "3",
   bathrooms: "2",
@@ -175,15 +176,15 @@ describe("PostingWizard editing: the place of a listing that is already sent (AD
     const fake = actions();
     open(fake, waiting, { locationHeld: true });
     press("stub change place");
-    press("stub pick curated area");
+    press("stub pick place");
     await toReview();
     press(words.save);
     await waitFor(() => expect(fake.setLocation).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("alertdialog")).toBeNull();
     expect(fake.setLocation).toHaveBeenCalledWith({
       listingId: LISTING,
-      lat: 12.9791,
-      lng: 80.2184,
+      lat: 13.05,
+      lng: 80.25,
     });
     expect(fake.saveChanges).toHaveBeenCalledTimes(1);
   });

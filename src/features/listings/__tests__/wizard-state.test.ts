@@ -17,6 +17,7 @@ const complete: WizardValues = {
   ...EMPTY_VALUES,
   address: "12, Second Cross Street, Velachery",
   locality: "Velachery",
+  city: "Chennai",
   pincode: "600042",
   bhk: "3",
   bathrooms: "2",
@@ -67,7 +68,7 @@ describe("UT-wizard-state: the wizard without React (S6-T02)", () => {
       expect(errors["address"]?.key).toBe("validation.addressRequired");
       expect(errors["pincode"]?.key).toBe("validation.pincodeInvalid");
       expect(errors["locality"]?.key).toBe("validation.required");
-      expect(errors["city"]).toBeUndefined();
+      expect(errors["city"]?.key).toBe("validation.required");
     });
 
     it("needs the area and the price on step 2, and takes bathrooms, bedrooms and furnishing as optional", () => {
@@ -126,7 +127,7 @@ describe("UT-wizard-state: the wizard without React (S6-T02)", () => {
       expect(valuesFromDraft({ ...draftView, listingType: null, city: null }).listingType).toBe(
         "sale",
       );
-      expect(valuesFromDraft({ ...draftView, city: null }).city).toBe("Chennai");
+      expect(valuesFromDraft({ ...draftView, city: null }).city).toBe("");
     });
 
     it("tells which step a field belongs to, photos included, and lists the steps with problems in order", () => {

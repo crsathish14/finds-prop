@@ -62,8 +62,8 @@ describe("UT-wizard-location: what a picked place fills, and what it never overw
     expect(after.pincode).toBe("600042");
   });
 
-  it("fills the city with the first part of the address that is not the state", () => {
-    expect(applySuggestion(empty, street, { approximate: false }).city).toBe("Velachery");
+  it("fills the city with the part of the address just before the state", () => {
+    expect(applySuggestion(empty, street, { approximate: false }).city).toBe("Chennai");
     expect(applySuggestion(empty, area, { approximate: true }).city).toBe("Chennai");
     // The state, the country and bare numbers are not cities.
     const odd = { ...area, detail: "Tamil Nadu 600042, India, 600042, Madurai" };
@@ -88,7 +88,7 @@ describe("UT-wizard-location: what a picked place fills, and what it never overw
     expect(pin("Chennai 500001 and 600042")).toBe("500001");
   });
 
-  it("never overwrites a box that has something in it", () => {
+  it("never overwrites an address, locality or pincode that has something in it, but the city follows the place", () => {
     const typed: WizardValues = {
       ...EMPTY_VALUES,
       address: "12, Second Cross Street",
@@ -99,7 +99,7 @@ describe("UT-wizard-location: what a picked place fills, and what it never overw
     const after = applySuggestion(typed, area, { approximate: true });
     expect(after.address).toBe("12, Second Cross Street");
     expect(after.locality).toBe("Velachery East");
-    expect(after.city).toBe("Chengalpattu");
+    expect(after.city).toBe("Chennai");
     expect(after.pincode).toBe("603202");
     // The point is still kept.
     expect(after.locationLat).toBe("13.0012");
@@ -116,22 +116,15 @@ describe("UT-wizard-location: what a picked place fills, and what it never overw
     expect(after.pincode).toBe("600042");
   });
 
-  it("treats the City box as empty only while it still holds the starting value nobody typed over", () => {
-    expect(EMPTY_VALUES.city).toBe("Chennai");
+  it("starts with no city: it only comes from a place", () => {
+    expect(EMPTY_VALUES.city).toBe("");
     const madurai = { ...area, detail: "Madurai, Tamil Nadu, India" };
-    // The starting value is not the owner's answer.
+    expect(applySuggestion(EMPTY_VALUES, madurai, { approximate: true }).city).toBe("Madurai");
+    // A place that names no city gives an empty one (the wizard then lets the owner type it).
+    const none = { ...area, detail: "Tamil Nadu, India" };
     expect(
-      applySuggestion(EMPTY_VALUES, madurai, { approximate: true, cityUntouched: true }).city,
-    ).toBe("Madurai");
-    // Typed (or saved), "Chennai" is an answer and stays.
-    expect(applySuggestion(EMPTY_VALUES, madurai, { approximate: true }).city).toBe("Chennai");
-    // And a different typed city is never replaced, flag or not.
-    expect(
-      applySuggestion({ ...EMPTY_VALUES, city: "Salem" }, madurai, {
-        approximate: true,
-        cityUntouched: false,
-      }).city,
-    ).toBe("Salem");
+      applySuggestion({ ...EMPTY_VALUES, city: "Salem" }, none, { approximate: true }).city,
+    ).toBe("");
   });
 
   it("cuts what it writes to the limits of the boxes", () => {
@@ -159,18 +152,19 @@ describe("UT-wizard-location: what a picked place fills, and what it never overw
       locality: "Velachery",
       address: "",
       pincode: "",
-      city: "Chennai",
+      city: "",
     });
     const typed = applyArea({ ...EMPTY_VALUES, locality: "Velachery East" }, velachery);
     expect(typed.locality).toBe("Velachery East");
   });
 
-  it("Change lets go of the place and nothing else", () => {
+  it("Change lets go of the place and the city that came from it, and nothing else", () => {
     const placed = applySuggestion(empty, street, { approximate: false });
     const cleared = clearPlace(placed);
     expect(pointOf(cleared)).toBeNull();
     expect(pickedPlace(cleared)).toBeNull();
     expect(cleared.locationKind).toBe("");
+    expect(cleared.city).toBe("");
     expect(cleared.address).toBe(placed.address);
     expect(cleared.pincode).toBe(placed.pincode);
   });

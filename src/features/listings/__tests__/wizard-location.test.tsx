@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { resetDraftsForTests } from "@/lib/form-draft";
 import type { ActionResult } from "@/types/action";
+import { EMPTY_VALUES } from "../wizard-state";
 import { AREA, LocationFieldStub, STREET } from "./location-stub";
 
 configure({ asyncUtilTimeout: 8000 });
@@ -106,36 +107,58 @@ describe("PostingWizard: the place on the address step (ADR-141, FR-GEO-02)", ()
   it("fills only the empty boxes from a pick and never what was typed", () => {
     open(actions());
     type(/^Address/, "12, Second Cross Street");
-    type(/^City/, "Chengalpattu");
     press("stub pick street");
     expect(screen.getByLabelText(/^Address/)).toHaveValue("12, Second Cross Street");
-    expect(screen.getByLabelText(/^City/)).toHaveValue("Chengalpattu");
     // The empty ones are filled: the pincode from the address, not the locality (the place is a street).
     expect(screen.getByLabelText(/^Pincode/)).toHaveValue("600042");
     expect(screen.getByLabelText(/^Locality/)).toHaveValue("");
     expect(held()).toBe("Velachery Main Road|exact");
   });
 
-  it("fills the starting City only while nobody has typed in it, and the rest of an empty form", () => {
+  it("fills the City from the place picked, and follows the place when another is picked", () => {
     open(actions());
+    expect(screen.getByLabelText(/^City/)).toHaveValue("");
     press("stub pick street");
     expect(screen.getByLabelText(/^Address/)).toHaveValue(
       "Velachery Main Road, Velachery, Chennai, Tamil Nadu 600042, India",
     );
-    expect(screen.getByLabelText(/^City/)).toHaveValue("Velachery");
-    // Another pick does not overwrite what the first one filled.
+    expect(screen.getByLabelText(/^City/)).toHaveValue("Chennai");
+    // A pick fills only the empty address, but the city is always the picked place's.
     press("stub pick area suggestion");
-    expect(screen.getByLabelText(/^City/)).toHaveValue("Velachery");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("Chennai");
     expect(screen.getByLabelText(/^Locality/)).toHaveValue("Adyar");
     expect(held()).toBe("Adyar|approximate");
   });
 
-  it("leaves a City that was typed, even when it is the starting word", () => {
+  it("does not let the City be typed in once the place gave it, and empties it on Change", () => {
     open(actions());
-    type(/^City/, "Madurai");
-    type(/^City/, "Chennai");
-    press("stub pick street");
+    // Before a place is picked there is nothing to read the city from, so it can be typed.
+    expect(screen.getByLabelText(/^City/)).not.toHaveAttribute("readonly");
+    press("stub pick place");
     expect(screen.getByLabelText(/^City/)).toHaveValue("Chennai");
+    expect(screen.getByLabelText(/^City/)).toHaveAttribute("readonly");
+    press("stub change place");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("");
+    expect(screen.getByLabelText(/^City/)).not.toHaveAttribute("readonly");
+  });
+
+  it("lets the City be typed when the place names none, and keeps it", () => {
+    open(actions());
+    press("stub pick curated area");
+    expect(screen.getByLabelText(/^City/)).not.toHaveAttribute("readonly");
+    type(/^City/, "Madurai");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("Madurai");
+    // Another place that names no city leaves what was typed.
+    press("stub pick curated area");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("Madurai");
+    // A place that names one takes over.
+    press("stub pick place");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("Chennai");
+    expect(screen.getByLabelText(/^City/)).toHaveAttribute("readonly");
+    // And a curated area afterwards takes the city it gave away and hands the box back.
+    press("stub pick curated area");
+    expect(screen.getByLabelText(/^City/)).toHaveValue("");
+    expect(screen.getByLabelText(/^City/)).not.toHaveAttribute("readonly");
   });
 
   it("writes the place when the draft is first saved, after it, to its own action, and never in the draft's fields", async () => {
@@ -189,10 +212,11 @@ describe("PostingWizard: the place on the address step (ADR-141, FR-GEO-02)", ()
     });
   });
 
-  it("holds a curated area as an approximate place and writes its middle", async () => {
+  it("holds a curated area as an approximate place and writes its middle, with the city typed", async () => {
     const fake = actions();
     open(fake);
     type(/^Address/, "12 Beach Road");
+    type(/^City/, "Chennai");
     type(/^Pincode/, "600020");
     press("stub pick curated area");
     expect(held()).toBe("Velachery|approximate");
@@ -310,7 +334,11 @@ describe("PostingWizard: the place on the address step (ADR-141, FR-GEO-02)", ()
 
   it("does not ask for a place again when the opened draft already holds one, and writes nothing", async () => {
     const fake = actions();
-    open(fake, { listingId: LISTING, locationHeld: true });
+    open(fake, {
+      listingId: LISTING,
+      locationHeld: true,
+      values: { ...EMPTY_VALUES, city: "Chennai" },
+    });
     // Only that a place is held is known: it is shown by a saved-place note, not by a point.
     expect(held()).toBe("Your saved location|exact");
     type(/^Address/, "12 Beach Road");

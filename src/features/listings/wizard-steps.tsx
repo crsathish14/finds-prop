@@ -87,7 +87,8 @@ export function BasicsStep({
   headingRef,
   disabled,
   location,
-}: StepProps & { location: LocationSlot }) {
+  cityLocked,
+}: StepProps & { location: LocationSlot; cityLocked: boolean }) {
   const words = useTranslations("postProperty.basics");
   const rootWords = useTranslations() as unknown as Translator;
   const errorText = useFieldText(errors);
@@ -155,10 +156,16 @@ export function BasicsStep({
             onChange={(event) => onChange("locality", event.target.value)}
           />
         </FormField>
-        <FormField label={words("city")} required {...errorProp(errorText("city"))}>
+        <FormField
+          label={words("city")}
+          required
+          hint={cityLocked ? words("cityHint") : words("cityTypeHint")}
+          {...errorProp(errorText("city"))}
+        >
           <Input
             value={values.city}
             autoComplete="address-level2"
+            readOnly={cityLocked}
             disabled={disabled ?? false}
             onChange={(event) => onChange("city", event.target.value)}
           />
