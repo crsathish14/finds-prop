@@ -110,6 +110,66 @@ describe("the chat page's first screen (AI-P5-T02)", () => {
   });
 });
 
+describe("the reply buttons under an answer (ADR-175)", () => {
+  const withReplies = (text: string): Response =>
+    answered(text, [
+      {
+        type: "replies",
+        items: [
+          { key: "enquireHome", text: words.replies.enquireHome },
+          { key: "workOutEmi", text: words.replies.workOutEmi },
+        ],
+      },
+    ]);
+
+  it("draws the buttons in a labelled list under the newest answer only", async () => {
+    fetchMock.mockResolvedValueOnce(withReplies("I found one home."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+    const list = await screen.findByRole("list", { name: words.replies.label });
+    expect(
+      within(list)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual([words.replies.enquireHome, words.replies.workOutEmi]);
+  });
+
+  it("sends the words of a button as the next message, and draws none after a plain answer", async () => {
+    fetchMock
+      .mockResolvedValueOnce(withReplies("I found one home."))
+      .mockResolvedValueOnce(answered("I can prepare it."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+    await user.click(await screen.findByRole("button", { name: words.replies.enquireHome }));
+    expect(await screen.findByText("I can prepare it.")).toBeVisible();
+    expect(sentMessages(1)).toEqual([
+      { role: "user", text: "3 BHK in Velachery" },
+      { role: "assistant", text: "I found one home." },
+      { role: "user", text: words.replies.enquireHome },
+    ]);
+    await waitFor(() =>
+      expect(screen.queryByRole("list", { name: words.replies.label })).not.toBeInTheDocument(),
+    );
+  });
+
+  it("leaves the buttons out when the message was refused at the sign-in gate", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: { state: "sign_in_required" } }), { status: 401 }),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+    await waitFor(() =>
+      expect(screen.queryByRole("list", { name: words.replies.label })).not.toBeInTheDocument(),
+    );
+  });
+});
+
 describe("sending a message and reading the answer (AI-P5-T02)", () => {
   it("sends the text, draws the answer, keeps focus in the box and keeps the transcript", async () => {
     fetchMock.mockResolvedValueOnce(answered("I found two homes in Velachery."));

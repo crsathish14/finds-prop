@@ -15,6 +15,7 @@ import type { ConfirmCard } from "../confirm/confirm-card";
 import { SITE_LINKS } from "../site-links";
 import { sourceHref } from "../source-links";
 import type { ProposalOffer } from "../tools/proposal-offer";
+import { pickReplies } from "./replies";
 import type { AnyAiChatTool } from "../tools/types";
 import type { ChatOutcome, ChatStreamEvent } from "./events";
 
@@ -223,6 +224,10 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     const card = await input.confirmCard(offer);
     if (card !== null) yield { type: "confirm", card };
   }
+
+  // The reply buttons come last, only after an answer that was let through, and never beside a confirm card.
+  const replies = pickReplies(agent, translate);
+  if (replies.length > 0) yield { type: "replies", items: replies };
 
   if (agent.noticeKey !== null && agent.outcome === "limit") {
     yield { type: "notice", key: agent.noticeKey, text: translate(agent.noticeKey) };

@@ -30,6 +30,10 @@ const eventSchema = z.discriminatedUnion("type", [
     href: z.string().max(80),
   }),
   z.object({ type: z.literal("confirm"), card: confirmCardSchema }),
+  z.object({
+    type: z.literal("replies"),
+    items: z.array(z.object({ key: z.string().max(40), text: z.string().max(80) })).max(3),
+  }),
   z.object({ type: z.literal("notice"), key: z.string(), text: z.string() }),
   z.object({
     type: z.literal("replace"),

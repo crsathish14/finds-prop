@@ -57,6 +57,11 @@ const assistantEntrySchema = z.object({
   sources: z.array(sourceSchema).max(AI_MAX_SOURCES_PER_ANSWER).optional(),
   /** The confirm card of a propose tool, in memory only (never kept in the tab: it holds a signed proposal). */
   confirm: confirmCardSchema.optional(),
+  /** The reply buttons the server offered under this answer (ADR-175): fixed wording, shown under the latest answer only. */
+  replies: z
+    .array(z.object({ key: z.string().max(40), text: z.string().max(80) }))
+    .max(3)
+    .optional(),
   /** A fixed line replaced the answer; `href` is where the search page is when the line offers it. */
   replaced: z.boolean(),
   href: z.string().max(200).optional(),
@@ -117,6 +122,7 @@ function withoutConfirmCard(entry: AssistantEntry): AssistantEntry {
     references: entry.references,
     ...(entry.links === undefined ? {} : { links: entry.links }),
     ...(entry.sources === undefined ? {} : { sources: entry.sources }),
+    ...(entry.replies === undefined ? {} : { replies: entry.replies }),
     replaced: entry.replaced,
     ...(entry.href === undefined ? {} : { href: entry.href }),
   };
