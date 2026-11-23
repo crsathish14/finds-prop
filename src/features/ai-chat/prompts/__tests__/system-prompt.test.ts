@@ -453,3 +453,65 @@ describe("UT-ai-system-prompt: the articles, questions and open jobs (ADR-143 se
     }
   });
 });
+
+describe("UT-ai-system-prompt: talking with the customer and offering an enquiry (ADR-174)", () => {
+  const SECTION = PROMPT.slice(
+    PROMPT.indexOf("Talking with the customer:"),
+    PROMPT.indexOf("Showing a home or project:"),
+  );
+  const LOWER_SECTION = SECTION.toLowerCase();
+
+  it("sits after the language rule and before the cards rule", () => {
+    expect(SECTION.length).toBeGreaterThan(0);
+    expect(PROMPT.indexOf("Language and style:")).toBeLessThan(PROMPT.indexOf(SECTION));
+  });
+
+  it("asks questions first for a very general ask, and never twice for the same thing", () => {
+    expect(LOWER_SECTION).toContain("ask one or two short questions before you search");
+    expect(LOWER_SECTION).toContain("never ask again for something the customer already said");
+  });
+
+  it("offers an enquiry after showing homes, once for each, and prepares it only on a yes", () => {
+    expect(LOWER_SECTION).toContain("offer to prepare an enquiry");
+    expect(LOWER_SECTION).toContain("offer an enquiry once for each home or project");
+    expect(LOWER_SECTION).toContain("do not offer it again");
+    expect(LOWER_SECTION).toContain("a typed yes only makes you prepare the card");
+    expect(LOWER_SECTION).toContain("never sends anything");
+  });
+
+  it("asks for a day for a site visit and never picks one", () => {
+    expect(LOWER_SECTION).toContain("never choose a day yourself");
+  });
+
+  it("keeps the honesty rules: no pressure, no invented urgency, no request for contact details", () => {
+    expect(LOWER_SECTION).toContain("never press the customer");
+    expect(LOWER_SECTION).toContain("never promise a result");
+    expect(LOWER_SECTION).toContain(
+      "never ask for the customer's phone number, email address or name",
+    );
+    expect(LOWER_SECTION).toContain("one real plus point that its result holds");
+  });
+
+  it("names no tool and no portal, and the rest of the rules are still there", () => {
+    for (const name of ["propose_enquiry", "propose_site_visit", "search_properties"]) {
+      expect(SECTION).not.toContain(name);
+    }
+    expect(LOWER_PROMPT).toContain("no legal, tax, loan or investment advice");
+    expect(LOWER_PROMPT).toContain("never say or suggest that anything was sent");
+    expect(LOWER_PROMPT).toContain("at most three homes at a time");
+  });
+
+  it("is not a sentence a good answer would repeat: ordinary offers pass the output check", () => {
+    const answers = [
+      "The Velachery flat has a clubhouse. Shall I enquire about it for you?",
+      "Which area and what budget do you have in mind? And is it to buy or to rent?",
+      "Would you like to book a site visit at Kadal Vista? Tell me the day that suits you.",
+      "Nothing matched that budget. Shall I try nearby localities or a higher budget?",
+    ];
+    for (const answer of answers) {
+      const result = checkOutput(answer, evidence());
+      expect(result.summary.tags, answer).not.toContain("prompt_leak");
+      expect(result.summary.outcome, answer).toBe("passed");
+    }
+  });
+});

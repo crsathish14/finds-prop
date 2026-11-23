@@ -5581,5 +5581,764 @@
         "mustNotMatch": ["https?://", "@"]
       }
     }
+  },
+  {
+    "id": "G-sales-01",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "very general ask: asks short questions before searching",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me flats"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Happy to help. Which area or city are you looking in, and what is your budget? Is it to buy or to rent?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["area", "city"], ["budget"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-02",
+    "set": "golden",
+    "category": "search",
+    "language": "tanglish",
+    "title": "very general ask in Tanglish: asks questions first",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Enakku oru veedu venum"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Sari, udhavi pannren. Entha area la paakreenga, budget evvalavu, vaanga venuma illa rent ah?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["area"], ["budget"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-03",
+    "set": "golden",
+    "category": "search",
+    "language": "ta",
+    "title": "very general ask in Tamil: asks questions first",
+    "messages": [
+      {
+        "role": "user",
+        "text": "எனக்கு ஒரு வீடு வேண்டும்"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "உதவுகிறேன். எந்த பகுதியில் தேடுகிறீர்கள்? உங்கள் பட்ஜெட் என்ன? வாங்க வேண்டுமா அல்லது வாடகைக்கா?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["பகுதி"], ["பட்ஜெட்"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-04",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "one specific home: a plus point from the result and an offer to enquire",
+    "messages": [
+      {
+        "role": "user",
+        "text": "3 BHK flat to buy in Velachery under 1.5 crore"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 3,
+              "maxPrice": 15000000,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found one 3 BHK home in Velachery: a 1,420 sq ft apartment for ₹1.25 Cr, and it has a clubhouse. [[home:k3x9a2bd]] Shall I prepare an enquiry for it?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        },
+        {
+          "number": 1420
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "bhk": 3,
+              "locality": "velachery"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd"],
+        "mustContain": [["enquiry", "enquire"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-05",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "several homes: an offer to enquire about any of them",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Homes to buy in Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found two homes in Velachery. The first has a clubhouse and the second is near the lake. [[home:k3x9a2bd]] [[home:m4y8b3ce]] Shall I prepare an enquiry about either of them?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd", "home:m4y8b3ce"],
+        "mustContain": [["enquiry", "enquire"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-06",
+    "set": "golden",
+    "category": "followup",
+    "language": "en",
+    "title": "yes, the second one: prepares the enquiry for that home and says Send is the customer's",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Homes to buy in Velachery"
+      },
+      {
+        "role": "assistant",
+        "text": "I found two homes in Velachery, a 3 BHK with a clubhouse and a 2 BHK near the lake. Shall I prepare an enquiry about either of them?"
+      },
+      {
+        "role": "user",
+        "text": "Yes, the second one"
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "propose_enquiry",
+            "input": {
+              "homeId": "m4y8b3ce",
+              "message": "Hello, I am interested in the 2 BHK apartment near the lake in Velachery. Is it still available? Thank you."
+            }
+          }
+        ]
+      },
+      {
+        "text": "I have prepared an enquiry about the 2 BHK near the lake. Please read the message on the card below and press Send when you are ready. [[home:m4y8b3ce]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["Send"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "propose_enquiry",
+            "args": {
+              "homeId": "m4y8b3ce"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:m4y8b3ce"],
+        "mustNotMatch": [
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-07",
+    "set": "golden",
+    "category": "followup",
+    "language": "en",
+    "title": "a no: no second offer for the same home",
+    "messages": [
+      {
+        "role": "user",
+        "text": "3 BHK in Velachery to buy"
+      },
+      {
+        "role": "assistant",
+        "text": "I found a 3 BHK apartment in Velachery with a clubhouse. Shall I prepare an enquiry for it?"
+      },
+      {
+        "role": "user",
+        "text": "No, not now. Tell me more about that home."
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 3,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "It is a 3 BHK apartment of 1,420 sq ft in Velachery, semi-furnished, with a lift, covered parking and a clubhouse. [[home:k3x9a2bd]] Anything else you would like to know?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd"],
+        "mustNotContain": ["enquir"],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-08",
+    "set": "golden",
+    "category": "project",
+    "language": "en",
+    "title": "a project: offers a site visit and asks for the day",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Tell me about Kadal Vista in Navalur"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_projects",
+            "input": {
+              "locality": "Navalur"
+            }
+          }
+        ]
+      },
+      {
+        "text": "Kadal Vista in OMR Navalur is an under-construction project by Kadal Homes. [[project:kadal-vista]] Would you like to book a site visit? Tell me which day suits you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_projects",
+            "args": {
+              "locality": "navalur"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_site_visit"]
+      },
+      "visible": {
+        "cards": ["project:kadal-vista"],
+        "mustContain": [["site visit"], ["day"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-09",
+    "set": "golden",
+    "category": "search",
+    "language": "tanglish",
+    "title": "a specific ask in Tanglish: results and an offer to enquire",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Velachery la 3 BHK venum, 1.5 crore kulla"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 3,
+              "maxPrice": 15000000,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "Velachery la oru 3 BHK irukku: 1,420 sq ft apartment, ₹1.25 Cr, clubhouse um irukku. [[home:k3x9a2bd]] Ungalukku idhukku enquiry ready pannatuma?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd"],
+        "mustContain": [["enquiry"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-10",
+    "set": "golden",
+    "category": "search",
+    "language": "ta",
+    "title": "a specific ask in Tamil: results and an offer to enquire",
+    "messages": [
+      {
+        "role": "user",
+        "text": "வேளச்சேரியில் 3 BHK வீடு வாங்க வேண்டும், 1.5 கோடிக்குள்"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 3,
+              "maxPrice": 15000000,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "வேளச்சேரியில் ஒரு 3 BHK வீடு உள்ளது: 1,420 sq ft அடுக்குமாடி, ₹1.25 Cr, கிளப்ஹவுஸ் உடன். [[home:k3x9a2bd]] இதற்கு விசாரணை தயார் செய்யட்டுமா?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd"],
+        "mustContain": [["விசாரணை"]],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-11",
+    "set": "golden",
+    "category": "near_miss",
+    "language": "en",
+    "title": "nothing matches: suggests widening and offers to search again",
+    "messages": [
+      {
+        "role": "user",
+        "text": "4 BHK to buy in Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 4,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I did not find a 4 BHK home in Velachery. Shall I try a nearby locality or a different type of home?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"]
+      },
+      "visible": {
+        "mustContain": [["nearby", "different", "budget"]],
+        "cards": [],
+        "mustNotMatch": [
+          "hurry",
+          "only \\d+ left",
+          "few left",
+          "going fast",
+          "offer ends",
+          "definitely go up",
+          "good investment"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-12",
+    "set": "golden",
+    "category": "followup",
+    "language": "en",
+    "title": "stated needs are reused: no second question about the area",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I want to rent a home in Adyar"
+      },
+      {
+        "role": "assistant",
+        "text": "Happy to help. How many bedrooms do you need, and what is your monthly budget?"
+      },
+      {
+        "role": "user",
+        "text": "2 BHK, under 40000"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "rent",
+              "bhk": 2,
+              "maxPrice": 40000,
+              "locality": "Adyar"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found one 2 BHK in Adyar for ₹35,000/mo: fully furnished, 1,100 sq ft. [[home:v4g8k3ls]] Shall I prepare an enquiry for it?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 35000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "adyar",
+              "bhk": 2
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:v4g8k3ls"],
+        "mustNotMatch": [
+          "which area",
+          "what area",
+          "which locality",
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-sales-13",
+    "set": "golden",
+    "category": "propose",
+    "language": "en",
+    "title": "the enquiry message carries what the customer said (loan, budget, move-in)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Yes, enquire about k3x9a2bd. My budget is 1.3 crore, I need a home loan and I want to move in by March."
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "propose_enquiry",
+            "input": {
+              "homeId": "k3x9a2bd",
+              "message": "Hello, I am interested in this home. My budget is 1.3 crore, I will need a home loan and I would like to move in by March. Is it still available? Thank you."
+            }
+          }
+        ]
+      },
+      {
+        "text": "I have prepared an enquiry with your budget, the loan and your move-in time. Please read it on the card below and press Send when you are ready. [[home:k3x9a2bd]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["Send"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "propose_enquiry",
+            "args": {
+              "homeId": "k3x9a2bd",
+              "message": "loan"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd"],
+        "mustNotMatch": [
+          "\\b(i|we)(['’]ve| have)? sent\\b",
+          "(has|have) been sent",
+          "was sent",
+          "is sent",
+          "(submitted|forwarded) (it|your)"
+        ]
+      }
+    }
   }
 ]

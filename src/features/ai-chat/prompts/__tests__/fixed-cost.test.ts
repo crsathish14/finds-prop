@@ -93,7 +93,8 @@ const CONTENT_TOOL_NAMES = ["search_content", "search_jobs", "get_content_item"]
  * `docs/ai-chat-run-ledger.md`). A change that passes them has made the fixed cost of every message noticeably
  * larger: raise the figure here in the same pull request and say why.
  */
-const PROMPT_CHARACTER_CEILING = 11_200;
+// Raised from 11_200 on 23 Nov 2026 (ADR-174): the conversation section adds about 2,000 characters on purpose.
+const PROMPT_CHARACTER_CEILING = 13_000;
 const TOOL_LIST_CHARACTER_CEILING = 25_000;
 
 const definitions = toolDefinitions(AI_CHAT_TOOLS);
