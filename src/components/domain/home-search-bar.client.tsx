@@ -13,7 +13,8 @@
  *   after another while the box is empty and not focused) and suggestions (short requests shown as chips under the
  *   box; a chip puts its words in the box and moves focus there, it does not search). Without them nothing changes.
  *   appearance: "card" (default: the box and the button on a white card) | "joined" (the conversational hero: no
- *   card, the box and the button merged into one pill-shaped bar with a single border).
+ *   card, the box and the button merged into one pill-shaped bar with a single border; focus shows as that border
+ *   turning teal, with no outline box round the bar, as the owner asked on 23 Nov 2026).
  * Responsive: it answers to its own width (container queries). Card: under 576 px the button sits under the box at
  *   full width; from 576 px they share one row. Joined: always one row; under 448 px the button shows its icon only
  *   (its words stay for screen readers).
@@ -59,10 +60,10 @@ const APPEARANCE = {
     label: undefined,
   },
   joined: {
+    // No focus box round the bar (owner, 23 Nov 2026): focus shows as the bar's own border turning teal.
     form: cn(
       "flex items-center gap-2 rounded-pill border-[length:var(--bw-field)] border-line-input bg-surface p-2 text-left shadow-card",
       "transition-colors duration-(--dur-fast) hover:border-primary focus-within:border-primary",
-      "has-[input:focus-visible]:outline-(length:--focus-w) has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-focus",
     ),
     input:
       "h-12 rounded-pill border-0 bg-transparent text-ellipsis focus-visible:outline-0 @xl:h-14",

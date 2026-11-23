@@ -22,9 +22,6 @@
   --hl-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
   /* Headline words (D): gap between words */
   --hl-word-step: 45ms;
-  /* Glow around the search card while it has focus */
-  --hl-glow-ring: color-mix(in oklab, var(--c-primary) 22%, transparent);
-  --hl-glow-haze: color-mix(in oklab, var(--c-primary) 45%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -119,33 +116,6 @@
 
 /* ── Search card ──────────────────────────────────────────────────────────────────────── */
 
-/* A soft teal ring and haze behind the search card while anything in it has focus. The glow is
-   a pseudo-element whose opacity and scale move; the card itself does not change. */
-.hl-search {
-  position: relative;
-  isolation: isolate;
-}
-.hl-search::before {
-  content: "";
-  position: absolute;
-  inset: calc(var(--s-1) * -1.5);
-  z-index: -1;
-  border-radius: calc(var(--r-xl) + var(--s-1) * 1.5);
-  box-shadow:
-    0 0 0 var(--s-1) var(--hl-glow-ring),
-    0 24px 60px -24px var(--hl-glow-haze);
-  opacity: 0;
-  transform: scale(0.985);
-  transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-  pointer-events: none;
-}
-.hl-search:focus-within::before {
-  opacity: 1;
-  transform: none;
-}
-
 /* The suggestion chips under the search card (C) slide in one after another, after the card. */
 .hl-search [data-slot="home-search-suggestions"] > * {
   animation: hl-rise var(--hl-dur) var(--hl-ease-out) backwards;
@@ -215,24 +185,17 @@
   background: var(--c-surface);
   pointer-events: none;
 }
-/* While the search card has focus the light's trail is brighter. */
+/* Focus shows on the border itself, with no box round the bar (owner, 23 Nov 2026): the track
+   turns a stronger teal and the light's trail is brighter. */
 .hl-run:focus-within {
-  --hl-run-shine: color-mix(in oklab, var(--c-primary) 55%, var(--c-surface));
+  --hl-run-track: color-mix(in oklab, var(--c-primary) 45%, var(--c-surface));
+  --hl-run-shine: color-mix(in oklab, var(--c-primary) 70%, var(--c-surface));
 }
 
-/* The joined bar (C): the box and the button in one pill. The light runs on the pill's own
-   border, and the focus glow hugs the pill instead of the area round it (chips included). */
+/* The joined bar (C, D): the box and the button in one pill. The light runs on the pill's own
+   border. */
 .hl-run form[data-appearance="joined"] {
   --hl-run-radius: var(--r-pill);
-  transition: box-shadow var(--dur) var(--ease);
-}
-.hl-run form[data-appearance="joined"]:focus-within {
-  box-shadow:
-    0 0 0 var(--s-1) var(--hl-glow-ring),
-    0 20px 48px -20px var(--hl-glow-haze);
-}
-.hl-search:has(form[data-appearance="joined"])::before {
-  display: none;
 }
 
 @keyframes hl-run {
