@@ -21,3 +21,13 @@
 - Publishing is a deliberate act that raises the version; the screen (part C) disables the button while a save is pending, because a repeated publish would raise the version twice.
 - **All words of the editor are unapproved** until the owner reviews them (part C). The legal text itself is still the owner's or counsel's (DEC-25): this tool does not write or check it.
 - There is no version history: only the live version and one working copy are kept.
+
+## Part B: the editor's boxes (Lab parts)
+
+- `LegalDocumentFields` and `LegalTableEditor` (`src/components/domain`) are the summary box and the sections editor: a heading and paragraphs, lists and tables for each section. They hold no state and take their words as props; they are shown on the Site content board of the Design Lab (entry `legal-document-fields`), in the states filled, empty, with problems, at the limits and saving.
+- **No approved UX exists for this screen.** The parts reuse the Site content patterns (form sections, sortable rows, the link list's buttons) and nothing new is invented in the look. Every word in the entry is unapproved.
+- **A list block is one box with one item per line**, and a table is a grid with Add and Remove for rows and columns, because the Privacy Policy already holds a list and a table (a table needs a header, rows as wide as the header, and at least one row and one column).
+- **The anchor of a section is never typed:** part C makes it from the heading (lower case words joined by hyphens, made unique) when it builds the save.
+- The save bar for this page needs two buttons (Save draft and Publish); it comes with part C.
+
+Words to confirm (part B): Summary; Sections; Heading; Add section; Remove section; Paragraph; List ("One item on each line."); Table; Add paragraph, Add list, Add table; Table caption; Column; Cell; Add row, Remove row; Add column, Remove column; "No sections yet. Add one to start the page."; "The page is full."; "This section is full."
