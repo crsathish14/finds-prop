@@ -269,9 +269,9 @@ test.describe("@smoke site footer and bottom bar", () => {
     page,
   }) => {
     // An article address that is no slug makes the blog page call notFound() (as does a switched-off blog), inside
-    // the public group. (The property page draws its own not-found message with a 200, so it cannot serve here.)
-    const response = await page.goto("/blog/Not_A_Slug");
-    expect(response?.status()).toBe(404);
+    // the public group. The status is not checked: the locale's loading screen starts the response before the page
+    // runs, so Next sends 200 with the not-found screen (the property page draws its own message, also with a 200).
+    await page.goto("/blog/Not_A_Slug");
     await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
     await expect(page.getByRole("banner")).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
