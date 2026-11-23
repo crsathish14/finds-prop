@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { selectSponsors } from "@/lib/sponsors";
 import { mergeSiteSettings } from "../merge";
-import { SPONSOR_BUCKET, toSponsorAds } from "../sponsors";
+import { projectPath } from "@/features/projects/address";
+import { SPONSOR_BUCKET, sponsorProjectHref, toSponsorAds, toSponsorStyle } from "../sponsors";
 
 const SUPABASE = "https://abc.supabase.co";
 
@@ -162,5 +163,71 @@ describe("UT-sponsors-setting: the sponsors key of the site content", () => {
     const ignored = mergeSiteSettings([{ key: "sponsors", value: { ads: "nope" } }], log as never);
     expect(ignored.sponsors).toEqual({ ads: [] });
     expect(log.warn).toHaveBeenCalledWith(expect.any(String), { settingKey: "sponsors" });
+  });
+});
+
+describe("UT-sponsors-setting: the Showcase and Cinematic fields (ADR-182)", () => {
+  const PHOTO = { path: "sponsors/ad-1/photo.jpg", width: 2000, height: 1125 };
+
+  it("builds the address of one of our projects for a project link, never another site's", () => {
+    const [ad] = toSponsorAds(
+      [{ ...AD, href: undefined, link: "project", projectSlug: "aranya-heights" }],
+      SUPABASE,
+    );
+    expect(ad).toMatchObject({
+      href: "/projects/aranya-heights",
+      external: false,
+      projectSlug: "aranya-heights",
+    });
+    expect(sponsorProjectHref("aranya-heights")).toBe(projectPath("aranya-heights"));
+  });
+
+  it("keeps an ad that links to another site as before, marked as external", () => {
+    const [ad] = toSponsorAds([AD], SUPABASE);
+    expect(ad).toMatchObject({ href: AD.href, external: true });
+    expect(ad).not.toHaveProperty("projectSlug");
+  });
+
+  it("drops a project link with no slug, and an address link with no address", () => {
+    expect(toSponsorAds([{ ...AD, link: "project" }], SUPABASE)).toEqual([]);
+    expect(toSponsorAds([{ ...AD, href: undefined }], SUPABASE)).toEqual([]);
+  });
+
+  it("takes the photo from our bucket, and a style's words only when the ones it needs are there", () => {
+    const [complete] = toSponsorAds(
+      [
+        {
+          ...AD,
+          brand: "Meridian Homes",
+          photo: PHOTO,
+          showcase: {
+            project: "Aranya Heights",
+            locality: "OMR",
+            homes: "2 & 3 BHK",
+            price: "₹78 L",
+          },
+          cinematic: { headline: "Homes by the lake" },
+        },
+      ],
+      SUPABASE,
+    );
+    expect(complete?.photo?.src).toBe(
+      `${SUPABASE}/storage/v1/object/public/${SPONSOR_BUCKET}/sponsors/ad-1/photo.jpg`,
+    );
+    expect(complete?.brand).toBe("Meridian Homes");
+    expect(complete?.showcase).toEqual({
+      project: "Aranya Heights",
+      locality: "OMR",
+      homes: "2 & 3 BHK",
+      price: "₹78 L",
+    });
+    expect(complete).not.toHaveProperty("cinematic");
+  });
+
+  it("reads the style tolerantly: the Showcase unless the Cinematic banner was chosen", () => {
+    expect(toSponsorStyle("cinematic")).toBe("cinematic");
+    expect(toSponsorStyle("showcase")).toBe("showcase");
+    expect(toSponsorStyle(undefined)).toBe("showcase");
+    expect(toSponsorStyle("banner")).toBe("showcase");
   });
 });

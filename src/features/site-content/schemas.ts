@@ -52,7 +52,7 @@ const text = (max: number) =>
       .regex(/^[^\p{C}]*$/u, { error: "validation.invalid" }),
   );
 
-const optionalLine = (max: number) => clearable(text(max));
+export const optionalLine = (max: number) => clearable(text(max));
 
 export const requiredLine = (max: number) =>
   z.preprocess(

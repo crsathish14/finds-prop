@@ -348,6 +348,7 @@
     "sponsorImageSize": "This picture is too heavy. The limit is {maximum} KB.",
     "sponsorImageSmall": "This picture is too small. Supply at least {width} × {height} pixels.",
     "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape.",
+    "sponsorProjectMissing": "Choose a project that buyers can see on the site.",
     "formSlugTaken": "This slug is already used by another form.",
     "categorySlugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 60 characters.",
     "categorySlugTaken": "This slug is already used by another category in this list.",

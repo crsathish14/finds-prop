@@ -41,5 +41,5 @@ export {
   SITE_SETTING_SCHEMAS,
 } from "./schemas";
 export type { SiteSettingKey, SiteSettings } from "./schemas";
-export { getSponsorAds } from "./sponsors.server";
-export { toSponsorAds, SPONSOR_BUCKET } from "./sponsors";
+export { getSponsorAds, getSponsorStyle } from "./sponsors.server";
+export { toSponsorAds, toSponsorStyle, sponsorProjectHref, SPONSOR_BUCKET } from "./sponsors";

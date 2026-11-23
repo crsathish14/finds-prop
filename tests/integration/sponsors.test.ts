@@ -142,7 +142,34 @@ describe("IT-sponsors: the sponsor manager against a real database and bucket (S
 
     const { settings, saved } = await readSiteContent(staff.client);
     expect(settings.sponsors.ads).toHaveLength(1);
+    // No style was sent and none was stored: the Showcase is written (ADR-182).
+    expect(settings.sponsors.style).toBe("showcase");
     expect(saved).toBeDefined();
+  });
+
+  it("refuses a link to a project buyers cannot see, and writes nothing (ADR-182)", async () => {
+    const before = await storedAds();
+    await expect(
+      saveSponsorsContent(
+        sponsorStore(staff.client),
+        sponsorsInputSchema.parse({
+          style: "cinematic",
+          sponsors: [
+            {
+              id: ONE,
+              advertiser: "Integration Sponsor",
+              alt: "Integration Sponsor: a test banner.",
+              link: "project",
+              projectSlug: "no-such-project-anywhere",
+              active: true,
+            },
+          ],
+        }),
+      ),
+    ).rejects.toMatchObject({
+      fieldErrors: { "sponsors.0.projectSlug": [{ key: "validation.sponsorProjectMissing" }] },
+    });
+    expect(await storedAds()).toEqual(before);
   });
 
   it("refuses a picture that was never uploaded and leaves the saved list as it was", async () => {

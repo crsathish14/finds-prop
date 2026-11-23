@@ -117,3 +117,55 @@ describe("UT-sponsors-schema: what the Sponsors save sends (S7-T11)", () => {
     expect(sponsorsInputSchema.safeParse({ sponsors: many }).success).toBe(false);
   });
 });
+
+describe("UT-sponsors-schema: the Showcase and Cinematic fields (ADR-182)", () => {
+  it("links to a project by its slug with no address, and names a missing slug", () => {
+    const parsed = sponsorsInputSchema.parse({
+      sponsors: [sponsor({ link: "project", projectSlug: " Aranya-Heights ", href: "" })],
+    });
+    expect(parsed.sponsors[0]).toMatchObject({ link: "project", projectSlug: "aranya-heights" });
+    expect(parsed.sponsors[0]?.href).toBeUndefined();
+    expect(problems({ sponsors: [sponsor({ link: "project", href: "" })] })).toEqual({
+      "sponsors.0.projectSlug": [{ key: "validation.required" }],
+    });
+    expect(
+      problems({ sponsors: [sponsor({ link: "project", projectSlug: "not a slug" })] }),
+    ).toEqual({ "sponsors.0.projectSlug": [{ key: "validation.invalid" }] });
+  });
+
+  it("takes a style, and refuses one it does not know", () => {
+    expect(sponsorsInputSchema.parse({ style: "cinematic", sponsors: [] }).style).toBe("cinematic");
+    expect(sponsorsInputSchema.parse({ sponsors: [] }).style).toBeUndefined();
+    expect(sponsorsInputSchema.safeParse({ style: "banner", sponsors: [] }).success).toBe(false);
+  });
+
+  it("reads empty Showcase and Cinematic boxes as no value, and refuses lines that are too long", () => {
+    const parsed = sponsorsInputSchema.parse({
+      sponsors: [
+        sponsor({
+          brand: " Meridian  Homes ",
+          showcase: { project: "Aranya Heights", price: "" },
+          cinematic: { headline: " " },
+        }),
+      ],
+    });
+    expect(parsed.sponsors[0]).toMatchObject({
+      brand: "Meridian Homes",
+      showcase: { project: "Aranya Heights", price: null },
+      cinematic: { headline: null },
+    });
+    expect(
+      problems({ sponsors: [sponsor({ cinematic: { headline: "a".repeat(41) } })] }),
+    ).toHaveProperty(["sponsors.0.cinematic.headline"]);
+  });
+
+  it("keeps the photo inside the sponsor's own folder", () => {
+    expect(problems({ sponsors: [sponsor({ photo: "sponsors/other/photo.jpg" })] })).toEqual({
+      "sponsors.0.photo": [{ key: "validation.invalid" }],
+    });
+    expect(
+      sponsorsInputSchema.safeParse({ sponsors: [sponsor({ photo: `sponsors/${ID}/photo.jpg` })] })
+        .success,
+    ).toBe(true);
+  });
+});
