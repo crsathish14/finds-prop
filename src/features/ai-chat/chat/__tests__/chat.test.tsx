@@ -853,7 +853,7 @@ describe("the confirm card in the conversation (AI-P6-T02)", () => {
   });
 });
 
-describe("the homes the last answer showed travel with the next message (ADR-177)", () => {
+describe("the homes the last answer showed travel with the next message (ADR-180)", () => {
   it("sends the ids of the shown homes and projects, so 'compare these' needs no new search, and none before any answer", async () => {
     fetchMock
       .mockResolvedValueOnce(

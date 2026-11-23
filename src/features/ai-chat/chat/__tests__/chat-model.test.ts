@@ -201,7 +201,7 @@ describe("a link the server offers (AI-P5-T02)", () => {
   });
 });
 
-describe("UT-ai-chat-context-field: what the last answer showed (ADR-177)", () => {
+describe("UT-ai-chat-context-field: what the last answer showed (ADR-180)", () => {
   const answer = (
     references: Extract<ChatEntry, { role: "assistant" }>["references"],
     replaced = false,

@@ -454,7 +454,7 @@ describe("UT-ai-system-prompt: the articles, questions and open jobs (ADR-143 se
   });
 });
 
-describe("UT-ai-system-prompt: what the last answer showed (ADR-177)", () => {
+describe("UT-ai-system-prompt: what the last answer showed (ADR-180)", () => {
   const WITH_SHOWN = buildSystemPrompt({
     translate,
     pageContext: { shownHomes: ["k3x9a2bd", "m4y8b3ce"], shownProjects: ["kadal-vista"] },

@@ -396,7 +396,7 @@ describe("UT-ai-agent: parallel read calls", () => {
     expect(results[2]?.[1]).toEqual(results[3]?.[1]);
   });
 
-  it("logs the tool and the fixed code of a call that failed, and never its input (ADR-177)", async () => {
+  it("logs the tool and the fixed code of a call that failed, and never its input (ADR-180)", async () => {
     const provider = createFakeAiProvider([
       toolCallTurn([{ id: "wrong", name: "lookup_home", input: { id: 7, note: "Zzcustomer" } }]),
       textTurn("Done."),

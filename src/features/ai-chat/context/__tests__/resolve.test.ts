@@ -31,7 +31,7 @@ function reads(): ContextReads & { calls: string[] } {
   };
 }
 
-describe("resolveContext: what the last answer showed (ADR-177)", () => {
+describe("resolveContext: what the last answer showed (ADR-180)", () => {
   it("keeps the shown homes that are listed now, in the order shown, and drops the rest", async () => {
     expect(
       await resolveContext({ shownHomes: ["b4c5d6e7", "zzzzzzzz", "k3m9p2xw"] }, reads()),
