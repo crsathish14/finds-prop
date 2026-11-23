@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { LegalDocumentFieldsDemo } from "./admin-legal-demos";
+import { MailTemplateFieldsDemo } from "./admin-mail-template-demos";
 import {
   LinkListFieldDemo,
   SiteContentFrameDemo,
@@ -78,6 +79,18 @@ export const SITE_CONTENT: LabEntry[] = [
       "domain/legal-save-bar.tsx",
     ],
     Demo: LegalDocumentFieldsDemo,
+  },
+  {
+    id: "mail-template-fields",
+    name: "Mail template fields",
+    description:
+      "The boxes of the admin's mail editor (ADR-183), one set for each enquiry mail (the mail to whoever posted the home or project, and the confirmation to the enquirer): a subject and a message with a counter each, the list of words in curly brackets the wording may use (the enquirer name is required in the poster mail; the dashboard link is for the poster mail only), a preview filled in with made-up values that follows what is typed (and says so when the typed wording cannot be used and the standard wording is shown), and the save bar with Discard, Save draft and Publish. Shown with the standard wording and the preview, live with a draft waiting, empty, with problems on the boxes, at the limits and while publishing. Plain text only. Every word is unapproved.",
+    sources: [
+      "domain/mail-template-fields.tsx",
+      "domain/mail-template-preview.tsx",
+      "domain/legal-save-bar.tsx",
+    ],
+    Demo: MailTemplateFieldsDemo,
   },
   {
     id: "site-homepage-page",

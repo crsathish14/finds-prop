@@ -1,6 +1,6 @@
 # ADR-183 · The wording of the enquiry mails is edited by the super admin
 
-- Status: Accepted for part A (the server: storage, rules, render function, defaults). Parts B (Design Lab parts) and C (the admin screen "Emails") follow in their own pull requests and add their sections here. Plan approved by the owner on 24 Nov 2026 ("Approve, start PR 1"; PR 3 of the plan in `ENQUIRY_EMAIL_PLAN.md`).
+- Status: Accepted for part A (the server: storage, rules, render function, defaults). Part B (Design Lab parts) is described below. Part C (the admin screen "Emails") follows in its own pull request and adds its section here. Plan approved by the owner on 24 Nov 2026 ("Approve, start PR 1"; PR 3 of the plan in `ENQUIRY_EMAIL_PLAN.md`).
 - Date: 2026-11-24
 - Related: ADR-181 (the Resend sender and the settings), ADR-151 (legal pages edited by the admin: the same draft and publish storage), ADR-152 (disclaimers), ADR-089 (site content settings), ADR-074 (mail hook points), R-BE-10 (no personal data in logs), FR-ADM-17
 - Class: C2 (a new saved shape and wording that reaches people by mail)
@@ -64,3 +64,12 @@ Words in curly brackets are filled in when the mail is written. Only these are a
 | Enquirer mail, body            | Hello {enquirerName}, / We have passed your enquiry about {propertyTitle} on to the owner. / You can look at it again here: {propertyLink} / {siteName}                                 |
 | Problem on a box (not allowed) | This wording uses a word in curly brackets that is not allowed here. Use only the words listed beside the boxes.                                                                        |
 | Problem on a box (missing)     | Add the enquirer name word from the list beside the boxes, so the owner can see who wrote.                                                                                              |
+
+## Part B: the editor's boxes (Lab parts)
+
+- `MailTemplateFields` and `MailTemplatePreview` (`src/components/domain`) are the boxes for one mail and the preview under them. They hold no state and take their words as props. They are shown on the Site content board of the Design Lab (entry `mail-template-fields`) in the states: standard wording with preview, live with a draft waiting, empty, with problems, at the limits and while publishing.
+- **No approved UX exists for this screen.** The parts reuse the form section, the form field, the legal editor's save bar (Discard, Save draft, Publish) and the Site content boxes; nothing new is invented in the look.
+- **The preview is the real mail:** the Lab (and part C) fill the typed wording with `renderMailTemplate` and made-up values (`MAIL_SAMPLE_VALUES`), so the preview and the sent mail cannot differ. When the typed wording cannot be used, the preview shows the wording in code and says so.
+- **The list of words** shows each placeholder as written in curly brackets with a short description; the required one is marked.
+
+Words to confirm (part B): "Mail to the poster"; "Confirmation to the enquirer"; the two descriptions; Subject; Message; "One line, as the mail's title."; "Plain text. Line breaks are kept."; "{used} of {max}"; "Words you can use. They are filled in when the mail is sent."; "Required."; the placeholder descriptions (The name the enquirer typed; The title of the home or project; The public page of the home or project; Your enquiries or leads page; The name of the site); "Preview with made-up values"; "This wording cannot be used yet, so the standard wording is shown here."; "Save draft keeps your changes private. Publish makes this wording the one that is sent."
