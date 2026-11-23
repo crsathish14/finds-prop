@@ -13,3 +13,13 @@ export const BUILDER_EMAIL_MAX = 254;
 
 /** Where an invited builder signs in (Google only, ADR-010). */
 export const BUILDER_SIGN_IN_PATH = "/builder/login";
+
+/** The Developer Spotlight fields a builder fills in their profile (ADR-179). */
+export const BUILDER_TAGLINE_MAX = 100;
+export const BUILDER_YEAR_MIN = 1900;
+export const BUILDER_DELIVERED_MAX = 100000;
+
+/** The public bucket a builder's logo is uploaded to, under `<builder id>/` (ADR-179), and what it takes. */
+export const BUILDER_LOGO_BUCKET = "builder-logos";
+export const BUILDER_LOGO_BYTES_MAX = 1048576;
+export const BUILDER_LOGO_TYPES = ["image/webp", "image/jpeg", "image/png"] as const;

@@ -29,7 +29,10 @@ from (values
     'id', 'listing_id', 'storage_path', 'mime', 'bytes', 'width', 'height', 'position', 'is_cover',
     'alt_text', 'created_at'
   ]),
-  ('builders', array['id', 'name', 'logo_url', 'website', 'description']),
+  ('builders', array[
+    'id', 'name', 'logo_url', 'website', 'description', 'tagline', 'established_year', 'projects_delivered',
+    'logo_path'
+  ]),
   ('projects', array[
     'id', 'slug', 'name', 'builder_id', 'project_type', 'property_type', 'project_status',
     'bhk_options', 'land_area_acres', 'total_units', 'possession_date',

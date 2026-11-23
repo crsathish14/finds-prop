@@ -94,6 +94,73 @@ describe("UT-builder-schemas: the admin's builder forms (S7-T05)", () => {
   });
 });
 
+describe("UT-builder-schemas: the Developer Spotlight fields (ADR-179)", () => {
+  it("takes a tagline, a year and a count typed in boxes, and blank boxes as no value", () => {
+    expect(
+      updateMyProfileSchema.parse({
+        name: "Kadal Homes",
+        tagline: " Homes  by the sea ",
+        establishedYear: " 2004 ",
+        projectsDelivered: "18",
+        logoPath: `${BUILDER}/logo-1.webp`,
+      }),
+    ).toEqual({
+      name: "Kadal Homes",
+      tagline: "Homes by the sea",
+      establishedYear: 2004,
+      projectsDelivered: 18,
+      logoPath: `${BUILDER}/logo-1.webp`,
+    });
+    expect(
+      updateMyProfileSchema.parse({
+        name: "Kadal Homes",
+        tagline: "",
+        establishedYear: "",
+        projectsDelivered: " ",
+        logoPath: "",
+      }),
+    ).toEqual({
+      name: "Kadal Homes",
+      tagline: null,
+      establishedYear: null,
+      projectsDelivered: null,
+      logoPath: null,
+    });
+  });
+
+  it("refuses a long tagline, a year out of range, a count that is not a whole number and a strange logo path", () => {
+    const refused = (extra: Record<string, unknown>) =>
+      updateMyProfileSchema.safeParse({ name: "Kadal Homes", ...extra }).success;
+    expect(refused({ tagline: "a".repeat(101) })).toBe(false);
+    expect(refused({ establishedYear: "1850" })).toBe(false);
+    expect(refused({ establishedYear: String(new Date().getFullYear() + 1) })).toBe(false);
+    expect(refused({ establishedYear: "two thousand" })).toBe(false);
+    expect(refused({ projectsDelivered: "-3" })).toBe(false);
+    expect(refused({ projectsDelivered: "4.5" })).toBe(false);
+    expect(refused({ logoPath: "../logo.webp" })).toBe(false);
+    expect(refused({ logoPath: `${BUILDER}/logo.svg` })).toBe(false);
+  });
+
+  it("lets the admin correct the spotlight text, but not the uploaded logo", () => {
+    expect(
+      updateBuilderSchema.parse({
+        builderId: BUILDER,
+        ...base,
+        projectsDelivered: "20",
+        logoPath: `${BUILDER}/logo-1.webp`,
+      }),
+    ).toMatchObject({ projectsDelivered: 20 });
+    expect(
+      "logoPath" in
+        updateBuilderSchema.parse({
+          builderId: BUILDER,
+          ...base,
+          logoPath: `${BUILDER}/logo-1.webp`,
+        }),
+    ).toBe(false);
+  });
+});
+
 describe("UT-builder-schemas: the builder's own profile (S7-T03)", () => {
   it("takes the company name alone, and reads blank boxes as no value", () => {
     expect(updateMyProfileSchema.parse({ name: "Kadal Homes" })).toEqual({ name: "Kadal Homes" });

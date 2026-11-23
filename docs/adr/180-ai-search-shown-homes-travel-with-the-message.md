@@ -1,7 +1,8 @@
-# ADR-177 · AI search: the homes the last answer showed travel with the next message
+# ADR-180 · AI search: the homes the last answer showed travel with the next message
 
 - Status: Accepted (a fix for a defect the owner reported on 24 Nov 2026; no new customer wording).
 - Date: 2026-11-24
+- Renumbered: was ADR-177, which the Conversational hero ADR also used; moved to 180 on 25 Nov 2026 so the numbers are unique.
 - Amends: ADR-128 section 10 (the page context), ADR-175 (reply buttons)
 - Class: C1. No migration, no dependency, no new tool.
 

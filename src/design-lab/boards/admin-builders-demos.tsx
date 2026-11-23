@@ -8,6 +8,7 @@ import {
   type BuilderFormValues,
   type BuilderFormWords,
 } from "@/components/domain/builder-form";
+import { BuilderLogoField } from "@/components/domain/builder-logo-field";
 import { BuilderTable, type BuilderTableRow } from "@/components/domain/builder-table";
 import { SignInAddress } from "@/components/domain/sign-in-address";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
@@ -279,6 +280,12 @@ const WORDS: BuilderFormWords = {
   logoUrl: "Logo link",
   website: "Website",
   description: "About",
+  spotlight: "Developer spotlight",
+  spotlightHint: "Shown when findsprop features your company on the home page.",
+  tagline: "Tagline",
+  taglineHint: "One line about your company, up to 100 characters.",
+  establishedYear: "Year started",
+  projectsDelivered: "Projects delivered",
   optional: "(optional)",
 };
 
@@ -291,6 +298,9 @@ const EMPTY: BuilderFormValues = {
   logoUrl: "",
   website: "",
   description: "",
+  tagline: "",
+  establishedYear: "",
+  projectsDelivered: "",
 };
 
 const FILLED: BuilderFormValues = {
@@ -302,6 +312,9 @@ const FILLED: BuilderFormValues = {
   logoUrl: "https://kadalhomes.example/logo.png",
   website: "https://kadalhomes.example",
   description: "Ready-to-move apartments in west Chennai.",
+  tagline: "Ready-to-move homes in west Chennai",
+  establishedYear: "2004",
+  projectsDelivered: "18",
 };
 
 function LiveForm({
@@ -457,6 +470,73 @@ export function SignInAddressDemo() {
             copiedLabel="Copied"
           />
         </div>
+      </Specimen>
+    </div>
+  );
+}
+
+const LOGO_WORDS = {
+  title: "Logo",
+  hint: "A square JPG, PNG or WEBP picture, up to 1 MB. Without one, your initials are shown.",
+  choose: "Upload logo",
+  replace: "Replace logo",
+  remove: "Remove logo",
+  uploading: "Uploading",
+  alt: "Your company logo",
+};
+
+/** A sample logo kept with the Lab's other sample pictures. */
+const SAMPLE_LOGO = "/design-lab/logos/sample-builder.svg";
+
+export function BuilderLogoFieldDemo() {
+  const none = () => undefined;
+  return (
+    <div className="flex flex-col gap-10">
+      <Specimen label="No logo yet: the company's initials">
+        <Card>
+          <BuilderLogoField
+            initials="KH"
+            src={null}
+            words={LOGO_WORDS}
+            onFile={none}
+            onRemove={none}
+          />
+        </Card>
+      </Specimen>
+      <Specimen label="A logo, shown whole, with Replace and Remove">
+        <Card>
+          <BuilderLogoField
+            initials="KH"
+            src={SAMPLE_LOGO}
+            words={LOGO_WORDS}
+            onFile={none}
+            onRemove={none}
+          />
+        </Card>
+      </Specimen>
+      <Specimen label="Uploading: the button is busy">
+        <Card>
+          <BuilderLogoField
+            initials="KH"
+            src={null}
+            state="uploading"
+            words={LOGO_WORDS}
+            onFile={none}
+            onRemove={none}
+          />
+        </Card>
+      </Specimen>
+      <Specimen label="A refused picture: the message under the box">
+        <Card>
+          <BuilderLogoField
+            initials="KH"
+            src={null}
+            error="This picture is too heavy. The limit is 1 MB."
+            words={LOGO_WORDS}
+            onFile={none}
+            onRemove={none}
+          />
+        </Card>
       </Specimen>
     </div>
   );

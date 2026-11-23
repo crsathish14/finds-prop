@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { BuilderForm, type BuilderFormValues, type BuilderFormWords } from "../builder-form";
+import { BuilderLogoField } from "../builder-logo-field";
 import { BuilderTable, type BuilderTableRow } from "../builder-table";
 import { SignInAddress } from "../sign-in-address";
 import { changeField } from "../../../../tests/select";
@@ -94,6 +95,12 @@ const WORDS: BuilderFormWords = {
   logoUrl: "Logo link",
   website: "Website",
   description: "About",
+  spotlight: "Developer spotlight",
+  spotlightHint: "Shown when findsprop features your company on the home page.",
+  tagline: "Tagline",
+  taglineHint: "One line about your company, up to 100 characters.",
+  establishedYear: "Year started",
+  projectsDelivered: "Projects delivered",
   optional: "(optional)",
 };
 
@@ -106,6 +113,9 @@ const VALUES: BuilderFormValues = {
   logoUrl: "",
   website: "",
   description: "",
+  tagline: "",
+  establishedYear: "",
+  projectsDelivered: "",
 };
 
 describe("BuilderForm: the invite and edit fields (S7-T05)", () => {
@@ -119,7 +129,8 @@ describe("BuilderForm: the invite and edit fields (S7-T05)", () => {
     for (const label of ["Contact person", "Phone", "Logo link", "Website", "About"]) {
       expect(screen.getByLabelText(new RegExp(`^${label}`))).toBeInTheDocument();
     }
-    expect(screen.getAllByText("(optional)")).toHaveLength(5);
+    // The five details boxes and the three Developer Spotlight boxes (ADR-179).
+    expect(screen.getAllByText("(optional)")).toHaveLength(8);
     expect(screen.getByText(WORDS.emailHint)).toBeVisible();
   });
 
@@ -224,5 +235,99 @@ describe("SignInAddress: the address passed on after inviting (S7-T05)", () => {
     await waitFor(() => expect(writeText).toHaveBeenCalled());
     expect(screen.getByRole("button", { name: "Copy address" })).toBeVisible();
     expect(screen.getByRole("status")).toHaveTextContent("");
+  });
+});
+
+const LOGO_WORDS = {
+  title: "Logo",
+  hint: "A square JPG, PNG or WEBP picture, up to 1 MB.",
+  choose: "Upload logo",
+  replace: "Replace logo",
+  remove: "Remove logo",
+  uploading: "Uploading",
+  alt: "Your company logo",
+};
+
+describe("BuilderForm: the Developer Spotlight boxes (ADR-179)", () => {
+  it("asks for a tagline, the year started and the projects delivered under their own heading", () => {
+    renderWithMessages(
+      <BuilderForm mode="edit" values={VALUES} onChange={vi.fn()} words={WORDS} />,
+    );
+    expect(screen.getByRole("group", { name: /Developer spotlight/ })).toBeVisible();
+    for (const label of ["Tagline", "Year started", "Projects delivered"]) {
+      expect(screen.getByLabelText(new RegExp(`^${label}`))).toBeVisible();
+    }
+  });
+
+  it("leaves out the logo link box when asked", () => {
+    renderWithMessages(
+      <BuilderForm
+        mode="edit"
+        values={VALUES}
+        onChange={vi.fn()}
+        words={WORDS}
+        showLogoUrl={false}
+      />,
+    );
+    expect(screen.queryByLabelText(/^Logo link/)).toBeNull();
+  });
+});
+
+describe("BuilderLogoField: the logo box of the profile (ADR-179)", () => {
+  it("shows the initials and an upload button with no logo", () => {
+    renderWithMessages(
+      <BuilderLogoField
+        initials="KH"
+        src={null}
+        words={LOGO_WORDS}
+        onFile={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("KH")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Upload logo" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Remove logo" })).toBeNull();
+  });
+
+  it("shows the logo with replace and remove, and passes a chosen file on", () => {
+    const onFile = vi.fn();
+    const onRemove = vi.fn();
+    renderWithMessages(
+      <BuilderLogoField
+        initials="KH"
+        src="https://example.test/logo.png"
+        words={LOGO_WORDS}
+        onFile={onFile}
+        onRemove={onRemove}
+      />,
+    );
+    expect(screen.getByRole("img", { name: "Your company logo" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Remove logo" }));
+    expect(onRemove).toHaveBeenCalled();
+    const file = new File(["x"], "logo.png", { type: "image/png" });
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!input) throw new Error("no file input");
+    fireEvent.change(input, { target: { files: [file] } });
+    expect(onFile).toHaveBeenCalledWith(file);
+  });
+
+  it("is busy while uploading and says an error with an icon", () => {
+    renderWithMessages(
+      <BuilderLogoField
+        initials="KH"
+        src={null}
+        state="uploading"
+        error="The logo could not be uploaded. Try again."
+        words={LOGO_WORDS}
+        onFile={vi.fn()}
+        onRemove={vi.fn()}
+      />,
+    );
+    expect(document.querySelector('[data-slot="builder-logo-field"]')).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /Uploading/ })).toBeDisabled();
+    expect(screen.getByRole("alert")).toHaveTextContent("could not be uploaded");
   });
 });

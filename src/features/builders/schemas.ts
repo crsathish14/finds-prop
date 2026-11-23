@@ -1,13 +1,16 @@
 import { z } from "zod";
 import {
   BUILDER_CONTACT_MAX,
+  BUILDER_DELIVERED_MAX,
   BUILDER_DESCRIPTION_MAX,
   BUILDER_EMAIL_MAX,
   BUILDER_KINDS,
   BUILDER_LOGO_MAX,
   BUILDER_NAME_MAX,
   BUILDER_NAME_MIN,
+  BUILDER_TAGLINE_MAX,
   BUILDER_WEBSITE_MAX,
+  BUILDER_YEAR_MIN,
 } from "./constants";
 
 /**
@@ -78,6 +81,61 @@ const description = clearable(
   ),
 );
 
+/** The spotlight's short line (ADR-179): one line, spaces tidied. */
+const tagline = clearable(
+  z.preprocess(
+    tidy,
+    z
+      .string({ error: "validation.invalid" })
+      .max(BUILDER_TAGLINE_MAX, { error: "validation.invalid" })
+      .regex(/^[^\p{C}]*$/u, { error: "validation.invalid" }),
+  ),
+);
+
+/** A whole number typed in a box ("2001", " 42 "); anything else is left for the rule to refuse. */
+const typedNumber = (typed: unknown): unknown => {
+  if (typeof typed !== "string") return typed;
+  const trimmed = typed.trim();
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
+};
+
+/** The year the company started: from 1900 to this year (ADR-179). */
+const establishedYear = clearable(
+  z.preprocess(
+    typedNumber,
+    z
+      .number({ error: "validation.invalid" })
+      .int({ error: "validation.invalid" })
+      .min(BUILDER_YEAR_MIN, { error: "validation.invalid" })
+      .refine((year) => year <= new Date().getFullYear(), { error: "validation.invalid" }),
+  ),
+);
+
+/** How many projects they have delivered (ADR-179). */
+const projectsDelivered = clearable(
+  z.preprocess(
+    typedNumber,
+    z
+      .number({ error: "validation.invalid" })
+      .int({ error: "validation.invalid" })
+      .min(0, { error: "validation.invalid" })
+      .max(BUILDER_DELIVERED_MAX, { error: "validation.invalid" }),
+  ),
+);
+
+/** An uploaded logo: `<builder id>/<file>` in the logo bucket. Whose folder it must be is checked by the save. */
+const logoPath = clearable(
+  z
+    .string({ error: "validation.invalid" })
+    .max(200, { error: "validation.invalid" })
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[A-Za-z0-9][A-Za-z0-9._-]*\.(?:webp|jpe?g|png)$/,
+      {
+        error: "validation.invalid",
+      },
+    ),
+);
+
 /** What a builder may say about their own company (S7-T03): the same boxes, with no type and no email. */
 const profile = {
   name,
@@ -86,6 +144,9 @@ const profile = {
   logoUrl: link(BUILDER_LOGO_MAX),
   website: link(BUILDER_WEBSITE_MAX),
   description,
+  tagline,
+  establishedYear,
+  projectsDelivered,
 };
 
 const details = { ...profile, kind };
@@ -108,5 +169,5 @@ export const resendInvitationSchema = z.object({ builderId: uuid });
 export type ResendInvitationInput = z.infer<typeof resendInvitationSchema>;
 
 /** The builder's own company profile (S7-T03, FR-BLD-05). Whose profile is the session, never an input. */
-export const updateMyProfileSchema = z.object(profile);
+export const updateMyProfileSchema = z.object({ ...profile, logoPath });
 export type UpdateMyProfileInput = z.infer<typeof updateMyProfileSchema>;

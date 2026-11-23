@@ -12,6 +12,9 @@ export const EMPTY_BUILDER_VALUES: BuilderFormValues = {
   logoUrl: "",
   website: "",
   description: "",
+  tagline: "",
+  establishedYear: "",
+  projectsDelivered: "",
 };
 
 /**
@@ -21,7 +24,17 @@ export const EMPTY_BUILDER_VALUES: BuilderFormValues = {
 export function valuesOf(
   row: Pick<
     BuilderRowView,
-    "name" | "email" | "kind" | "contactPerson" | "phone" | "logoUrl" | "website" | "description"
+    | "name"
+    | "email"
+    | "kind"
+    | "contactPerson"
+    | "phone"
+    | "logoUrl"
+    | "website"
+    | "description"
+    | "tagline"
+    | "establishedYear"
+    | "projectsDelivered"
   >,
 ): BuilderFormValues {
   return {
@@ -33,6 +46,9 @@ export function valuesOf(
     logoUrl: row.logoUrl ?? "",
     website: row.website ?? "",
     description: row.description ?? "",
+    tagline: row.tagline ?? "",
+    establishedYear: row.establishedYear === null ? "" : String(row.establishedYear),
+    projectsDelivered: row.projectsDelivered === null ? "" : String(row.projectsDelivered),
   };
 }
 
@@ -47,6 +63,9 @@ export function isFormField(field: string): field is BuilderFormField {
     "logoUrl",
     "website",
     "description",
+    "tagline",
+    "establishedYear",
+    "projectsDelivered",
   ].includes(field);
 }
 

@@ -1821,6 +1821,12 @@
         "logoUrl": "Logo link",
         "website": "Website",
         "description": "About",
+        "spotlight": "Developer spotlight",
+        "spotlightHint": "Shown when findsprop features your company on the home page.",
+        "tagline": "Tagline",
+        "taglineHint": "One line about your company, up to 100 characters.",
+        "establishedYear": "Year started",
+        "projectsDelivered": "Projects delivered",
         "optional": "(optional)"
       },
       "invite": {
@@ -4077,6 +4083,18 @@
       },
       "toast": {
         "title": "Profile saved"
+      },
+      "logo": {
+        "title": "Logo",
+        "hint": "A square JPG, PNG or WEBP picture, up to 1 MB. Without one, your initials are shown.",
+        "choose": "Upload logo",
+        "replace": "Replace logo",
+        "remove": "Remove logo",
+        "uploading": "Uploading",
+        "alt": "Your company logo",
+        "wrongType": "Use a JPG, PNG or WEBP picture.",
+        "tooHeavy": "This picture is too heavy. The limit is 1 MB.",
+        "failed": "The logo could not be uploaded. Try again."
       }
     },
     "feedback": {
