@@ -497,7 +497,12 @@
     "previous": "Previous sponsored banner",
     "next": "Next sponsored banner",
     "position": "Banner {current} of {total}",
-    "newTab": "(opens in a new tab)"
+    "newTab": "(opens in a new tab)",
+    "adPosition": "Ad {current} of {total}",
+    "viewProject": "View project",
+    "priceList": "Get price list",
+    "rera": "RERA registered",
+    "upNext": "Up next"
   },
   "toast": {
     "container": "Notifications"

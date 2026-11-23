@@ -1,0 +1,96 @@
+/* Sponsored hero ads: the motion of the Showcase card and the Cinematic banner (ADR-187), used through
+   <SponsorStyledFrame> (src/components/layout/sponsor-styled-frame.tsx), <SponsorShowcaseCard> and
+   <SponsorCinematicBanner> (src/components/domain). Nothing here is used on its own.
+
+   Rules the motion keeps:
+   - One quiet movement per ad: the photo drifts slowly (a scale and a small shift), and the Cinematic
+     banner's gold line is drawn once when it first shows. Only transform, opacity and an SVG
+     stroke-dashoffset move, so nothing is laid out again.
+   - The progress bars are the clock: when the bar of the ad on show is full, the frame moves to the
+     next ad (onAnimationEnd), so the bars and the ads can never drift apart.
+   - Pointer over the ads or focus inside them pauses the bar and the drift ([data-sponsor-paused]).
+   - With prefers-reduced-motion nothing moves and nothing turns by itself; the bar of the ad on show
+     is drawn full and the previous and next buttons move the ads.
+
+   Tune here: the variables on [data-sponsor-styled]. */
+
+[data-sponsor-styled] {
+  /* How long one ad stays (SPONSOR_ROTATION_MS in src/lib/sponsors.ts sets it on the element) */
+  --sp-turn: 5000ms;
+  /* The photo's drift: one way, then back */
+  --sp-drift: 16s;
+  --sp-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* The photo drifts slowly. */
+.sp-drift {
+  transform-origin: 60% 60%;
+  animation: sp-drift var(--sp-drift) var(--sp-ease) infinite alternate;
+}
+
+@keyframes sp-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08) translate(-1.5%, -1%);
+  }
+}
+
+/* The progress bars: done (full), now (filling), waiting (empty). */
+.sp-bar-fill {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.sp-bar[data-state="done"] .sp-bar-fill {
+  transform: scaleX(1);
+}
+
+.sp-bar[data-state="now"] .sp-bar-fill {
+  animation: sp-fill var(--sp-turn) linear forwards;
+}
+
+@keyframes sp-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Pointer over the ads or focus inside them: everything waits. */
+[data-sponsor-paused] .sp-bar-fill,
+[data-sponsor-paused] .sp-drift {
+  animation-play-state: paused;
+}
+
+/* The Cinematic banner's gold line, drawn once around the frame. */
+.sp-gold rect {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: sp-draw 2.2s var(--sp-ease) 0.3s forwards;
+}
+
+@keyframes sp-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-drift {
+    animation: none;
+  }
+
+  .sp-bar[data-state="now"] .sp-bar-fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .sp-gold rect {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
