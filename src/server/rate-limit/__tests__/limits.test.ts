@@ -21,6 +21,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "builder_feedback",
         "email_link",
         "enquiry",
+        "enquiry_mail",
         "form_submit",
         "listing_create",
         "map_search",
@@ -42,6 +43,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["project_lead", [{ who: "visitor", windowSeconds: 3600, max: 5 }]], // BR-72
     ["otp_verify", [{ who: "key", windowSeconds: 3600, max: 10 }]],
     ["enquiry", [{ who: "user", windowSeconds: 86400, max: 10 }]],
+    ["enquiry_mail", [{ who: "key", windowSeconds: 86400, max: 20 }]], // ADR-188
     ["listing_create", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["upload_url", [{ who: "user", windowSeconds: 3600, max: 30 }]],
     ["admin_decision", [{ who: "user", windowSeconds: 3600, max: 120 }]],

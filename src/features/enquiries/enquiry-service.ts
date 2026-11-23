@@ -52,10 +52,19 @@ export function mapEnquiryWriteError(failure: DatabaseFailure): ActionError {
   return new ActionError("INTERNAL", "The enquiry write failed");
 }
 
-/** Stores an enquiry for the signed-in visitor. The sender comes from the session, never from the form. */
+/**
+ * Stores an enquiry for the signed-in visitor. The sender comes from the session, never from the form.
+ * `onStored` is told the new enquiry's id, only once the enquiry is stored: a duplicate, a home nobody can see or the
+ * owner's own home throws before it, so nobody is mailed about them (ADR-188). A hook that throws is ignored, because
+ * telling someone is never a reason for the enquiry to fail.
+ */
 export async function submitEnquiry(
   store: EnquiryWriteStore,
-  parameters: { input: SendEnquiryInput; userId: string },
+  parameters: {
+    input: SendEnquiryInput;
+    userId: string;
+    onStored?: (enquiryId: string) => void;
+  },
 ): Promise<{ enquiryId: string }> {
   const { input } = parameters;
   const enquiryId = await store.insertEnquiry({
@@ -66,5 +75,10 @@ export async function submitEnquiry(
     email: input.email ?? null,
     message: input.message ?? null,
   });
+  try {
+    parameters.onStored?.(enquiryId);
+  } catch {
+    // The enquiry is stored; the mail about it is best effort.
+  }
   return { enquiryId };
 }
