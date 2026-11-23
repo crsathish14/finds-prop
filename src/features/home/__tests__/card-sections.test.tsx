@@ -23,6 +23,7 @@ vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example-project.supabase.co" },
 }));
 vi.mock("@/features/site", () => ({
+  getSiteSettings: async () => ({ top_developers: { builderIds: [] } }),
   getTranslate: async () => (key: string, values?: Record<string, string | number>) => {
     let node: unknown = messages;
     for (const part of key.split(".")) node = (node as Record<string, unknown>)[part];
@@ -120,7 +121,7 @@ describe("NewLaunchesSection: New launches from developers (S4-T06)", () => {
   it("is a region on the darker band, with the line under the title and a card for each developer", async () => {
     state.developers = [developer("b1", "Kadal Homes"), developer("b2", "Nila Habitats")];
     renderWithMessages(<>{await NewLaunchesSection()}</>);
-    const region = screen.getByRole("region", { name: "New launches from developers" });
+    const region = screen.getByRole("region", { name: "Top developers" });
     expect(region).toHaveAttribute("data-tone", "band");
     expect(within(region).getByText("Approved and published projects only.")).toBeVisible();
     expect(within(region).getByRole("heading", { name: "Kadal Homes" })).toBeVisible();

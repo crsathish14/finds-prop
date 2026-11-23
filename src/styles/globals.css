@@ -4,6 +4,7 @@
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./theme.css";
+@import "./ai-cta.css";
 
 @layer base {
   html {
@@ -79,5 +80,18 @@
 @media (forced-colors: active) {
   :focus-visible {
     outline: var(--focus-w) solid CanvasText;
+  }
+}
+
+/* The login wall card (ADR-171): where it sticks below the header, and the tallest it may be, which is the free space between
+   the header and the phone bar (the bar is hidden from 768px). They are measurements of the layout, not design tokens. */
+:root {
+  --wall-card-top: calc(var(--header-h) + 16px);
+  --wall-card-max-h: calc(100dvh - var(--header-h) - var(--bottombar-h) - 32px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --wall-card-max-h: calc(100dvh - var(--header-h) - 32px);
   }
 }

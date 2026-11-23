@@ -15,7 +15,7 @@ import { PhotoUploaderDemo } from "./photo-uploader-demos";
 import { PropertyPageDemo } from "./domain-demos-property";
 import { NearbyDemo } from "./domain-demos-nearby";
 import { PlaceSuggestionsDemo } from "./domain-demos-place-suggestions";
-import { SearchCardDemo } from "./domain-demos-search";
+import { HomeSearchBarDemo } from "./domain-demos-search";
 import {
   CategoryCardDemo,
   CtaBandDemo,
@@ -70,18 +70,18 @@ export const DOMAIN: LabEntry[] = [
     Demo: LocalityTileDemo,
   },
   {
-    id: "search-card",
-    name: "Search card",
+    id: "home-search-bar",
+    name: "Home search bar",
     description:
-      "The home page search box: Buy, Rent and New projects, a locality box with suggestions, property type, bedrooms, maximum budget and the copper Search button, with Popular and Quick-pick chips. Wide (one joined bar), stacked, with values, Rent, no AI link and no chips, and long text.",
-    sources: ["domain/search-card.tsx"],
-    Demo: SearchCardDemo,
+      "The home page search box (ADR-150): one box and the Search with AI button, which opens the chat with the words as its first message. Empty, filled with long text, and the keyword search shown while AI search is off.",
+    sources: ["domain/home-search-bar.client.tsx"],
+    Demo: HomeSearchBarDemo,
   },
   {
     id: "place-suggestions",
     name: "Place suggestions",
     description:
-      "The panel under the search box's locality field (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps), and the Ola Maps credit with the OpenStreetMap licence at the bottom. Drawn open, wide and stacked.",
+      "The panel under the results filters' Locality box (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps), and the Ola Maps credit with the OpenStreetMap licence at the bottom. Drawn open.",
     sources: ["domain/place-panel.tsx"],
     Demo: PlaceSuggestionsDemo,
   },
@@ -129,7 +129,7 @@ export const DOMAIN: LabEntry[] = [
     id: "value-card",
     name: "Value card",
     description:
-      "One reason to use Find Prop: a green icon square, a bold title and a sentence, on a white card. Three in a row, and a long text.",
+      "One reason to use findsprop: a green icon square, a bold title and a sentence, on a white card. Three in a row, and a long text.",
     sources: ["domain/value-card.tsx"],
     Demo: ValueCardDemo,
   },
@@ -153,7 +153,7 @@ export const DOMAIN: LabEntry[] = [
     id: "home-hero",
     name: "Home hero",
     description:
-      "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search card, on faint green arches. With and without the copper word and the line, and a long headline.",
+      "The top of the homepage: the headline (the region's name in copper when the site content has one), the line under it and the search bar, on faint green arches. With and without the copper word and the line, and a long headline.",
     sources: ["domain/home-hero.tsx"],
     Demo: HomeHeroDemo,
   },
@@ -161,7 +161,7 @@ export const DOMAIN: LabEntry[] = [
     id: "home-sections",
     name: "Homepage sections",
     description:
-      "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why Find Prop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
+      "The static sections of the homepage as the page builds them: Explore by locality (the curated places as tinted tiles), Browse by what matters, Why findsprop and the banner, each a labelled region with the page's spacing, and the darker band tone. The grid columns are 2, 3 and 5 for tiles, 1, 2 and 4 for category cards, and 1 and 3 for value cards.",
     sources: ["domain/home-section.tsx", "domain/section-grid.tsx"],
     Demo: HomeSectionsDemo,
   },
@@ -169,7 +169,7 @@ export const DOMAIN: LabEntry[] = [
     id: "home-card-sections",
     name: "Homepage card sections",
     description:
-      "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on Find Prop is the Scrolling row.",
+      "The two homepage sections that show cards in a grid: Featured homes (property cards, 1, 2 and 3 across, with View all) and New launches from developers (developer cards on the darker band, with the line under the title and See all projects). Newest on findsprop is the Scrolling row.",
     sources: [],
     Demo: HomeCardSectionsDemo,
   },

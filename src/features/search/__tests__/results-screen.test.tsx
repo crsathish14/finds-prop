@@ -2,12 +2,13 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import messages from "@/i18n/messages/en.json";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { parseSearchParams } from "../params";
 import { ResultsScreen } from "../results-screen";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const replace = vi.fn();
 const push = vi.fn();
@@ -54,7 +55,15 @@ function renderScreen(props: Partial<Parameters<typeof ResultsScreen>[0]> = {}) 
 
 const chips = () => screen.getByRole("group", { name: "Active filters" });
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // The locality box asks for place suggestions (ADR-136); no test reaches the network.
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise<Response>(() => undefined)),
+  );
+});
+afterEach(() => vi.unstubAllGlobals());
 
 describe("ResultsScreen: heading, count and breadcrumb (S4-T04)", () => {
   it("names the search and counts the homes, with the place and the region", () => {
@@ -70,7 +79,7 @@ describe("ResultsScreen: heading, count and breadcrumb (S4-T04)", () => {
     renderScreen({ regionName: undefined });
     expect(screen.getByText(/found in Velachery$/)).toBeVisible();
     expect(screen.getByRole("combobox", { name: "Locality" })).toHaveDisplayValue("Velachery");
-    expect(screen.getByRole("option", { name: "All localities" })).toBeInTheDocument();
+    expect(screen.getByText("Tamil Nadu only for now.")).toBeInTheDocument();
   });
 
   it("says Homes for sale and rent, with no place, when nothing is filtered", () => {
@@ -143,7 +152,7 @@ describe("ResultsScreen: every choice writes the address (S4-T04)", () => {
 
   it("changes the sort order and starts again from the first page", async () => {
     renderScreen({ params: parseSearchParams({ show: "36", bhk: "2" }) });
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Sort by" }), "price_desc");
+    await changeField(screen.getByRole("combobox", { name: "Sort by" }), "price_desc");
     expect(replace.mock.calls[0]?.[0]).toBe("/properties?bhk=2&sort=price_desc");
   });
 
@@ -167,10 +176,7 @@ describe("ResultsScreen: every choice writes the address (S4-T04)", () => {
   it("changes a filter in the rail, turns a curated locality into its place, drops the budget for All", async () => {
     renderScreen({ params: parseSearchParams({ listingType: "sale", maxPrice: "7500000" }) });
     const rail = screen.getByRole("complementary", { name: "Filters" });
-    await userEvent.selectOptions(
-      within(rail).getByRole("combobox", { name: "Locality" }),
-      "Adyar",
-    );
+    await userEvent.type(within(rail).getByRole("combobox", { name: "Locality" }), "adyar{Enter}");
     expect(replace.mock.calls[0]?.[0]).toBe(
       "/properties?lat=13.0012&listingType=sale&lng=80.2565&maxPrice=7500000&place=Adyar&r=3",
     );
@@ -290,8 +296,203 @@ describe("ResultsScreen: the list and its states (S4-T04)", () => {
   it("navigates nowhere in the Design Lab preview", async () => {
     renderScreen({ preview: true });
     await userEvent.click(screen.getByRole("button", { name: "Remove filter: 3 BHK" }));
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Sort by" }), "price_asc");
+    await changeField(screen.getByRole("combobox", { name: "Sort by" }), "price_asc");
     expect(replace).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
+  });
+});
+
+describe("ResultsScreen: the nearby choices of a place search (ADR-137)", () => {
+  const rail = () => screen.getByRole("complementary", { name: "Filters" });
+
+  it("offers the distance chips on the rail with a place, 5 km chosen when none is given", async () => {
+    renderScreen();
+    const group = within(rail()).getByRole("group", { name: "Search within" });
+    expect(
+      within(group)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["2 km", "5 km", "10 km", "15 km"]);
+    expect(within(group).getByRole("button", { name: "Within 5 km" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(within(group).getByRole("button", { name: "Within 10 km" }));
+    expect(replace).toHaveBeenCalledOnce();
+    expect(replace.mock.calls[0]?.[0]).toBe(
+      "/properties?bhk=3&lat=12.9815&listingType=sale&lng=80.2209&place=Velachery&propertyType=apartment&r=10",
+    );
+  });
+
+  it("marks the radius of the address, and choosing 5 km leaves it out of the address", async () => {
+    renderScreen({
+      params: parseSearchParams({
+        place: "Velachery",
+        lat: "12.9815",
+        lng: "80.2209",
+        ["r"]: "10",
+      }),
+    });
+    const group = within(rail()).getByRole("group", { name: "Search within" });
+    expect(within(group).getByRole("button", { name: "Within 10 km" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(within(group).getByRole("button", { name: "Within 5 km" }));
+    expect(replace.mock.calls[0]?.[0]).toBe("/properties?lat=12.9815&lng=80.2209&place=Velachery");
+  });
+
+  it("draws no distance chips without a place, with a text locality, or in the Design Lab", () => {
+    const none = renderScreen({ params: parseSearchParams({}) });
+    expect(screen.queryByRole("group", { name: "Search within" })).not.toBeInTheDocument();
+    none.unmount();
+    const text = renderScreen({ params: parseSearchParams({ locality: "Adyar" }) });
+    expect(screen.queryByRole("group", { name: "Search within" })).not.toBeInTheDocument();
+    text.unmount();
+    renderScreen({ preview: true });
+    expect(screen.queryByRole("group", { name: "Search within" })).not.toBeInTheDocument();
+  });
+
+  it("offers the distance chips in the phone sheet and applies the choice with Show", async () => {
+    renderScreen();
+    await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    await userEvent.click(
+      within(within(sheet).getByRole("group", { name: "Search within" })).getByRole("button", {
+        name: "Within 15 km",
+      }),
+    );
+    expect(push).not.toHaveBeenCalled();
+    await userEvent.click(within(sheet).getByRole("button", { name: /^Show/ }));
+    expect(push.mock.calls[0]?.[0]).toContain("r=15");
+  });
+
+  it("draws no distance chips in the phone sheet without a place", async () => {
+    renderScreen({ params: parseSearchParams({}) });
+    await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(within(sheet).queryByRole("group", { name: "Search within" })).not.toBeInTheDocument();
+  });
+
+  it("offers Nearest first in the sort only with a place, and writes sort=distance", async () => {
+    const placed = renderScreen();
+    const sort = screen.getByRole("combobox", { name: "Sort by" });
+    expect(await optionTexts(sort)).toContain("Nearest first");
+    await changeField(sort, "distance");
+    expect(replace.mock.calls[0]?.[0]).toContain("sort=distance");
+    placed.unmount();
+    renderScreen({ params: parseSearchParams({ locality: "Adyar" }) });
+    expect(
+      within(screen.getByRole("combobox", { name: "Sort by" })).queryByRole("option", {
+        name: "Nearest first",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("offers Nearest first in the sheet's Sort by only with a place", async () => {
+    const placed = renderScreen();
+    await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(await optionTexts(within(sheet).getByRole("combobox", { name: "Sort by" }))).toContain(
+      "Nearest first",
+    );
+    placed.unmount();
+    renderScreen({ params: parseSearchParams({}) });
+    await userEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    const plain = screen.getByRole("dialog", { name: "Filters" });
+    expect(
+      within(within(plain).getByRole("combobox", { name: "Sort by" })).queryByRole("option", {
+        name: "Nearest first",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows Nearest first as chosen when the address says so", () => {
+    renderScreen({
+      params: parseSearchParams({
+        place: "Velachery",
+        lat: "12.9815",
+        lng: "80.2209",
+        sort: "distance",
+      }),
+    });
+    expect(screen.getByRole("combobox", { name: "Sort by" })).toHaveTextContent("Nearest first");
+  });
+});
+
+describe("ResultsScreen: the Also near section (ADR-137, FR-GEO-03)", () => {
+  const nearby = {
+    count: 3,
+    radiusKm: 15,
+    cards: [card("near-one"), card("near-two"), card("near-three")],
+  };
+  const section = () => screen.getByRole("region", { name: "Also near Velachery" });
+
+  it("draws the section under the main list, with its own note, and leaves the headline alone", () => {
+    renderScreen({ total: 2, shown: 2, nearby });
+    expect(within(section()).getByRole("heading", { level: 2 })).toHaveTextContent(
+      "Also near Velachery",
+    );
+    expect(within(section()).getByText("3 more homes within 15 km, nearest first.")).toBeVisible();
+    expect(
+      within(section())
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["near-one", "near-two", "near-three"]);
+    // The headline counts the main list only, and the section comes after its cards.
+    expect(screen.getByText("2 homes")).toBeVisible();
+    const main = screen.getByRole("link", { name: "second-home" });
+    expect(main.compareDocumentPosition(section()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("uses the singular note for one home, in the list view as well", () => {
+    renderScreen({
+      params: parseSearchParams({
+        place: "Velachery",
+        lat: "12.9815",
+        lng: "80.2209",
+        view: "list",
+      }),
+      total: 2,
+      shown: 2,
+      nearby: { count: 1, radiusKm: 15, cards: [card("near-one")] },
+    });
+    expect(within(section()).getByText("1 more home within 15 km, nearest first.")).toBeVisible();
+  });
+
+  it("draws nothing when there is no section: no heading, no region, no gap", () => {
+    renderScreen({ total: 2, shown: 2 });
+    expect(screen.queryByRole("region", { name: /Also near/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/nearest first\.$/)).not.toBeInTheDocument();
+  });
+
+  it("draws nothing for a section with no homes", () => {
+    renderScreen({ total: 2, shown: 2, nearby: { count: 0, radiusKm: 15, cards: [] } });
+    expect(screen.queryByRole("region", { name: /Also near/ })).not.toBeInTheDocument();
+  });
+
+  it("shows the empty state first and the section below it when the circle has no home", () => {
+    renderScreen({ total: 0, shown: 0, cards: [], nearby });
+    const empty = screen.getByRole("heading", { name: "No homes match your filters" });
+    expect(empty).toBeVisible();
+    expect(
+      empty.compareDocumentPosition(section()) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("draws no section when the load failed", () => {
+    renderScreen({ status: "failed", total: 0, shown: 0, cards: [], nearby });
+    expect(screen.queryByRole("region", { name: /Also near/ })).not.toBeInTheDocument();
+  });
+
+  it("draws no section when the search has no place name to say it by", () => {
+    renderScreen({
+      params: parseSearchParams({ lat: "12.9815", lng: "80.2209" }),
+      total: 0,
+      shown: 0,
+      cards: [],
+      nearby,
+    });
+    expect(screen.queryByRole("region", { name: /Also near/ })).not.toBeInTheDocument();
   });
 });

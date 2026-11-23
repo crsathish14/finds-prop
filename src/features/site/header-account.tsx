@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { AccountMenu, SignOutButton, getAccountSummary } from "@/features/auth";
+import { AvatarMenu } from "@/components/layout/avatar-menu";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { getSessionView } from "@/server/auth/get-session-view";
@@ -59,10 +60,43 @@ async function readSession(): Promise<SessionView | null> {
  * While the AI chat is on the saved-homes heart is left out (ADD-17); Saved homes stay in the
  * account menu and the drawer.
  */
-export async function HeaderAccountActions() {
+export async function HeaderAccountActions({
+  links,
+  cta,
+}: {
+  links: NavLink[];
+  cta: HeaderModel["cta"];
+}) {
   const translate = await getTranslate();
   const session = await readSession();
-  if (!session) return <SignInLink label={translate("site.header.signIn")} />;
+  // Phones have no menu button: the main links, Sign in and Post a property sit in the person menu instead.
+  const exploreGroup = {
+    label: translate("site.header.exploreHeading"),
+    phoneOnly: true,
+    items: links.map((link) => ({ label: link.label, href: link.href })),
+  };
+  if (!session) {
+    return (
+      <>
+        <SignInLink label={translate("site.header.signIn")} className="hidden md:inline-flex" />
+        <AvatarMenu
+          triggerLabel={translate("site.header.guestMenu")}
+          initials=""
+          triggerClassName="md:hidden"
+          groups={[
+            exploreGroup,
+            {
+              phoneOnly: true,
+              items: [
+                { label: translate("site.header.signIn"), href: "/auth" },
+                ...(cta ? [{ label: cta.label, href: cta.href }] : []),
+              ],
+            },
+          ]}
+        />
+      </>
+    );
+  }
 
   const summary = await getAccountSummary(session.userId);
   const menu = buildAccountMenu(session, translate);
@@ -86,14 +120,17 @@ export async function HeaderAccountActions() {
         initials={initialsFrom(summary.fullName)}
         {...(menu.roleLabel ? { roleLabel: menu.roleLabel } : {})}
         roleTone={menu.roleTone}
-        groups={menu.groups.map((group) => ({
-          ...(group.label ? { label: group.label } : {}),
-          entries: group.entries.map((entry) => ({
-            label: entry.label,
-            href: entry.href,
-            icon: <Icon icon={ENTRY_ICONS[entry.key]} />,
+        groups={[
+          { label: exploreGroup.label, phoneOnly: true, entries: links },
+          ...menu.groups.map((group) => ({
+            ...(group.label ? { label: group.label } : {}),
+            entries: group.entries.map((entry) => ({
+              label: entry.label,
+              href: entry.href,
+              icon: <Icon icon={ENTRY_ICONS[entry.key]} />,
+            })),
           })),
-        }))}
+        ]}
         signOut={{
           label: translate("site.header.signOut"),
           failedText: translate("site.header.signOutFailed"),

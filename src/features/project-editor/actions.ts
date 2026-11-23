@@ -9,6 +9,7 @@ import {
   updateProjectConfig,
 } from "./action-config";
 import { addProject, saveProject } from "./project-service";
+import { withCleanExtras } from "./extra-fields.server";
 import { createProjectStore } from "./service";
 
 /** Adds a project for a builder, as the signed-in super admin. It starts in review; media and price trends come after the first save. */
@@ -17,7 +18,7 @@ export const createProject = defineAction({
   handler: async ({ input, session, log }) => {
     // defineAction has already refused anyone who is not a super admin; this keeps the type honest.
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
-    const done = await addProject(await createProjectStore("admin"), input);
+    const done = await addProject(await createProjectStore("admin"), await withCleanExtras(input));
     log.info("project added by the admin", {
       projectId: done.projectId,
       builderId: input.builderId,
@@ -31,7 +32,7 @@ export const updateProject = defineAction({
   ...updateProjectConfig,
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
-    const done = await saveProject(await createProjectStore("admin"), input);
+    const done = await saveProject(await createProjectStore("admin"), await withCleanExtras(input));
     log.info("project saved by the admin", { projectId: done.projectId });
     return done;
   },
@@ -42,7 +43,10 @@ export const createMyProject = defineAction({
   ...createMyProjectConfig,
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
-    const done = await addProject(await createProjectStore("builder"), input);
+    const done = await addProject(
+      await createProjectStore("builder"),
+      await withCleanExtras(input),
+    );
     log.info("project added by a builder", { projectId: done.projectId });
     return done;
   },
@@ -56,7 +60,10 @@ export const updateMyProject = defineAction({
   ...updateMyProjectConfig,
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
-    const done = await saveProject(await createProjectStore("builder"), input);
+    const done = await saveProject(
+      await createProjectStore("builder"),
+      await withCleanExtras(input),
+    );
     log.info("project saved by a builder", {
       projectId: done.projectId,
       moderation: done.moderation,

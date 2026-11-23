@@ -29,8 +29,8 @@ const PROJECT: ProjectCardData = {
   developerName: "Kadal Homes",
   locality: "OMR Navalur",
   city: "Chennai",
-  minRupees: 78_00_000,
-  maxRupees: 1_42_00_000,
+  priceRupees: 78_00_000,
+  priceType: "basic",
   bedrooms: [2, 3],
   status: "under_construction",
   cover: {

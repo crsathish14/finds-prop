@@ -258,6 +258,22 @@ describe("AvatarMenu", () => {
     expect(within(screen.getByRole("menu")).getByText("Your account")).toBeInTheDocument();
   });
 
+  it("has no name block for a visitor, and hides a phone-only group from the tablet width up", async () => {
+    render(
+      <AvatarMenu
+        triggerLabel="Menu"
+        initials=""
+        groups={[{ label: "Explore", phoneOnly: true, items: [{ label: "Blog", href: "/blog" }] }]}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Menu" }));
+    const menu = screen.getByRole("menu");
+    expect(within(menu).queryByText("Your account")).not.toBeInTheDocument();
+    expect(within(menu).getByText("Explore")).toHaveClass("md:hidden");
+    expect(within(menu).getByRole("menuitem", { name: "Blog" })).toHaveClass("md:hidden");
+    expect(menu.querySelector("[role=separator]")).toBeNull();
+  });
+
   it("shows initials as the picture when there is no photo", () => {
     render(<AvatarMenu {...props} />);
     expect(document.querySelector("[data-initials=PR]")).toBeInTheDocument();
@@ -360,6 +376,23 @@ describe("SiteFooter", () => {
     expect(screen.getByRole("link", { name: "+91 44 0000 0000" })).toBeInTheDocument();
     expect(screen.getByText("2026 Find Prop")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Privacy" })).toBeInTheDocument();
+  });
+
+  it("shows the disclaimer as plain text above the legal line, and nothing when it is empty", () => {
+    const { rerender } = render(<Example />);
+    expect(document.querySelector("[data-slot='site-footer-disclaimer']")).toBeNull();
+    rerender(
+      <SiteFooter
+        logo={<Logo name="Find Prop" tone="on-dark" />}
+        navLabel="Footer"
+        columns={[]}
+        disclaimer={"Prices are <b>indicative</b>.\nCheck with the builder."}
+        legal={{ copyright: "2026 Find Prop" }}
+      />,
+    );
+    const note = document.querySelector("[data-slot='site-footer-disclaimer']");
+    expect(note?.textContent).toBe("Prices are <b>indicative</b>.\nCheck with the builder.");
+    expect(note?.querySelector("b")).toBeNull();
   });
 
   it("opens an external link in a new tab safely", () => {

@@ -8,7 +8,7 @@ import { Link } from "@/components/ui/link";
 import { buildSearchHref } from "@/features/search";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
-import { getTranslate } from "@/features/site";
+import { getSiteSettings, getTranslate } from "@/features/site";
 import { publicEnv } from "@/lib/public-env";
 import { toDeveloperCard, toPropertyCard, type CardContext } from "./cards";
 import type { ListingRow } from "./schemas";
@@ -45,8 +45,8 @@ const PROJECTS_PATH = "/projects";
  * is featured, or the read failed) the section is not drawn, so no gap is left (FR-PUB-05). The cards
  * have no Save or Compare yet (S5-T01, S4-T02).
  */
-export async function FeaturedSection() {
-  const homes = await getFeaturedHomes();
+export async function FeaturedSection({ cityKey }: { cityKey?: string } = {}) {
+  const homes = await getFeaturedHomes(cityKey);
   if (homes.length === 0) return null;
   const translate = await getTranslate();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };
@@ -71,13 +71,14 @@ export async function FeaturedSection() {
 }
 
 /**
- * "New launches from developers": three developers with approved, published projects, on the darker
- * band. It has no switch of its own: it appears when there is a developer to show (BR-42, BR-94).
+ * "Top developers": up to ten developers the super admin chose (in that order), or, until one is chosen, three
+ * picked by the site, each with approved, published projects, on the darker band. It has no switch of its own:
+ * it appears when there is a developer to show (BR-42, BR-94).
  */
-export async function NewLaunchesSection() {
-  const developers = await getNewLaunchDevelopers();
+export async function NewLaunchesSection({ cityKey }: { cityKey?: string } = {}) {
+  const [settings, translate] = await Promise.all([getSiteSettings(), getTranslate()]);
+  const developers = await getNewLaunchDevelopers(settings.top_developers.builderIds, cityKey);
   if (developers.length === 0) return null;
-  const translate = await getTranslate();
   return (
     <HomeSection labelledBy={NEW_LAUNCHES_TITLE} tone="band">
       <SectionHead
@@ -106,8 +107,14 @@ export async function NewLaunchesSection() {
  * "Newest on Find Prop": the newest approved homes in a row that scrolls sideways. It has no switch
  * of its own: it appears when there is a home to show.
  */
-export async function NewestSection({ brandName }: { brandName: string }) {
-  const homes = await getNewestHomes();
+export async function NewestSection({
+  brandName,
+  cityKey,
+}: {
+  brandName: string;
+  cityKey?: string;
+}) {
+  const homes = await getNewestHomes(cityKey);
   if (homes.length === 0) return null;
   const translate = await getTranslate();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Find Prop",
-    "titleTemplate": "%s · Find Prop",
+    "title": "findsprop",
+    "titleTemplate": "%s · findsprop",
     "description": "Find homes, plots and new projects in Tamil Nadu."
   },
   "common": {
@@ -34,7 +34,7 @@
       "viewAll": "View all"
     },
     "newLaunches": {
-      "title": "New launches from developers",
+      "title": "Top developers",
       "description": "Approved and published projects only.",
       "seeAll": "See all projects"
     },
@@ -85,7 +85,7 @@
   },
   "auth": {
     "phone": {
-      "roleTag": "Find Prop",
+      "roleTag": "findsprop",
       "asideTitle": "Find the place that fits your life.",
       "asideEmphasis": "your life",
       "benefitShortlist": "Shortlist the homes you like",
@@ -93,7 +93,7 @@
       "benefitEnquire": "Enquire directly with owners and builders",
       "benefitPost": "Post your own property",
       "title": "Sign in or create your account",
-      "lead": "Enter your mobile number and we'll text you a 6-digit code. New to Find Prop? We'll set up your account.",
+      "lead": "Enter your mobile number and we'll text you a 6-digit code. New to findsprop? We'll set up your account.",
       "gateTitle": "Sign in to contact the owner",
       "gateBody": "We will take you straight back to the home you were viewing.",
       "saveGateTitle": "Sign in to save homes",
@@ -126,7 +126,7 @@
       }
     },
     "code": {
-      "roleTag": "Find Prop",
+      "roleTag": "findsprop",
       "asideTitle": "Nearly there. One code and you're in.",
       "asideEmphasis": "in",
       "benefitPrivate": "Your number stays private",
@@ -162,7 +162,7 @@
       "resendSoon": "You can ask for a new code in {seconds, plural, one {# second} other {# seconds}}.",
       "resendReady": "You can now ask for a new code.",
       "successTitle": "Number verified",
-      "successBody": "Welcome to Find Prop. Taking you back to what you were doing…",
+      "successBody": "Welcome to findsprop. Taking you back to what you were doing…",
       "continue": "Continue"
     },
     "name": {
@@ -225,9 +225,9 @@
       "builder": {
         "roleTag": "Builder portal",
         "title": "Builder and agent sign in",
-        "lead": "Sign in with the Google account Find Prop invited. There is no password to remember.",
+        "lead": "Sign in with the Google account findsprop invited. There is no password to remember.",
         "deniedTitle": "This Google account can't sign in here",
-        "deniedBody": "It isn't an active builder or agent account. Try a different Google account, or contact Find Prop if you think this is a mistake. You have been signed out.",
+        "deniedBody": "It isn't an active builder or agent account. Try a different Google account, or contact findsprop if you think this is a mistake. You have been signed out.",
         "invitationOnly": "Builder and agent accounts are created by invitation only. There is no sign-up here.",
         "buyerLink": "Looking for a buyer or owner account?",
         "asideTitle": "Manage your projects, units and leads.",
@@ -240,9 +240,9 @@
       "admin": {
         "roleTag": "Administrator",
         "title": "Administrator sign in",
-        "lead": "For Find Prop administrators only. Sign in with your Google account.",
+        "lead": "For findsprop administrators only. Sign in with your Google account.",
         "deniedTitle": "This account isn't authorised",
-        "deniedBody": "You have been signed out. Only a Find Prop administrator account can use this area.",
+        "deniedBody": "You have been signed out. Only a findsprop administrator account can use this area.",
         "backLink": "Back to the public site",
         "quietNote": "Admin pages are never indexed by search engines."
       }
@@ -305,7 +305,8 @@
     "slugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 80 characters.",
     "slugTaken": "This page address is already used by another project.",
     "slugLocked": "The page address cannot be changed once the project is approved.",
-    "priceRange": "The highest price must be the same as or more than the lowest.",
+    "duplicate": "Another box already has this label.",
+    "areaRange": "The largest area must be the same as or more than the smallest.",
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
     "localityLabelTaken": "Another row already uses this name.",
@@ -316,6 +317,29 @@
     "sponsorImageSmall": "This picture is too small. Supply at least {width} × {height} pixels.",
     "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape.",
     "formSlugTaken": "This slug is already used by another form.",
+    "categorySlugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 60 characters.",
+    "categorySlugTaken": "This slug is already used by another category in this list.",
+    "blogSlugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 120 characters.",
+    "blogSlugTaken": "This address is already used by another article.",
+    "blogNeedsExcerpt": "Write a short summary before you publish.",
+    "blogNeedsBody": "Add some text to the article before you publish.",
+    "blogImageMissing": "We could not find this picture. Choose it again.",
+    "blogImageType": "Use a JPG, PNG or WEBP picture.",
+    "blogImageSize": "This picture is too heavy. The limit is {maximum} KB.",
+    "blogImageTooLarge": "This picture is too large. Use one no more than {maximum} pixels on its longest side.",
+    "blogImagePlace": "This picture is not stored with this article. Add it again.",
+    "blogLinkLabel": "The words of a link must be 1 to 160 characters, with no [ ] ( ) in them.",
+    "blogLinkAddress": "A link must go to an address that starts with https:// or to a page of this site that starts with a single /. Spaces, ( ) and other brackets are not allowed in the address.",
+    "blogLinkTooLong": "This link address is too long. The most is 2,000 characters.",
+    "jobSlugInvalid": "Use lower case letters, numbers and single hyphens, from 2 to 120 characters.",
+    "jobSlugTaken": "This address is already used by another job.",
+    "jobApplyUrlInvalid": "Enter a full link that starts with https://.",
+    "jobApplyEmailInvalid": "Enter a valid email address.",
+    "jobApplyOne": "Give either an apply link or an apply email address, not both and not neither.",
+    "jobNeedsSummary": "Write a short summary before you open this job.",
+    "jobNeedsDescription": "Describe the job before you open it.",
+    "jobNeedsRequirements": "List the requirements before you open this job.",
+    "jobClosesPast": "The closing date is already past. Choose a later date or clear it.",
     "fieldKeyInvalid": "Use lower case letters, numbers and underscores, starting with a letter.",
     "fieldKeyTaken": "This key is already used by another field.",
     "optionsRequired": "Add at least one choice.",
@@ -323,7 +347,9 @@
     "fieldsRequired": "Add at least one field.",
     "projectRequired": "Choose the project this form is for.",
     "rangeOrder": "The largest value must be the same as or more than the smallest.",
-    "crmUrlNotAllowed": "Must be https and a public address."
+    "crmUrlNotAllowed": "Must be https and a public address.",
+    "locationOutOfRegion": "That place is outside Tamil Nadu. Choose a place in Tamil Nadu.",
+    "blogMarkdownRefused": "The pasted text cannot be made into an article. Check the notes beside the preview."
   },
   "format": {
     "rupees": "₹{value}",
@@ -387,7 +413,7 @@
         "properties": "Properties",
         "back": "Back to results"
       },
-      "metaFallback": "{title}. See the photos, price and details on Find Prop.",
+      "metaFallback": "{title}. See the photos, price and details on findsprop.",
       "photoAlt": "{title}: photo {number}",
       "location": "{place} · Listed {ago}",
       "listedOnly": "Listed {ago}",
@@ -410,7 +436,7 @@
       "amenities": "Amenities",
       "aside": {
         "label": "Price and enquiry",
-        "note": "Only approved homes are listed on Find Prop."
+        "note": "Only approved homes are listed on findsprop."
       },
       "enquiry": {
         "signInToEnquire": "Sign in to enquire",
@@ -441,13 +467,15 @@
     "container": "Notifications"
   },
   "site": {
-    "brandName": "Find Prop",
+    "brandName": "findsprop",
     "nav": {
       "buy": "Buy",
       "rent": "Rent",
       "projects": "Projects",
       "aiSearch": "AI Search",
-      "contact": "Contact"
+      "contact": "Contact",
+      "faq": "FAQ",
+      "blog": "Blog"
     },
     "header": {
       "postProperty": "Post property",
@@ -459,8 +487,13 @@
       "accountMenu": "Account menu",
       "yourAccount": "Your account",
       "openMenu": "Open menu",
+      "exploreHeading": "Explore",
+      "guestMenu": "Menu",
       "menuTitle": "Menu",
-      "closeMenu": "Close menu"
+      "closeMenu": "Close menu",
+      "cityButton": "City: {city}. Change city",
+      "cityHeading": "Choose your city",
+      "defaultCity": "Chennai"
     },
     "footer": {
       "exploreHeading": "Explore",
@@ -473,7 +506,10 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "copyright": "© {year} {brandName}",
-      "navLabel": "Footer"
+      "navLabel": "Footer",
+      "linkFaq": "FAQ",
+      "linkBlog": "Blog",
+      "linkCareers": "Careers"
     },
     "bottomBar": {
       "navLabel": "Primary",
@@ -502,7 +538,7 @@
     "metaTitle": "Properties",
     "meta": {
       "titleFiltered": "{heading}, {filters}",
-      "description": "{title}. Photos, prices and details of homes on Find Prop."
+      "description": "{title}. Photos, prices and details of homes on findsprop."
     },
     "keyword": "“{keyword}”",
     "title": {
@@ -539,7 +575,7 @@
   "projects": {
     "list": {
       "metaTitle": "Projects",
-      "metaDescription": "Browse new projects with prices, sizes and possession dates on Find Prop.",
+      "metaDescription": "Browse new projects with prices, sizes and possession dates on findsprop.",
       "crumb": {
         "nav": "Breadcrumb",
         "home": "Home",
@@ -549,7 +585,7 @@
       "overline": "New launches",
       "title": "New projects",
       "titleIn": "Projects in {region}",
-      "sub": "New developments from developers on Find Prop. Only approved and published projects are shown.",
+      "sub": "New developments from developers on findsprop. Only approved and published projects are shown.",
       "listLabel": "Projects",
       "loadingTitle": "Loading projects",
       "empty": {
@@ -570,11 +606,12 @@
         "projects": "Projects",
         "back": "All projects"
       },
-      "metaFallback": "{name} by {developer} in {locality}. See prices, plans and amenities on Find Prop.",
+      "metaFallback": "{name} by {developer} in {locality}. See prices, plans and amenities on findsprop.",
       "loading": "Loading project",
       "photoAlt": "{name}: photo {number}",
       "reraTag": "RERA applicable · {number}",
       "reraTagBare": "RERA applicable",
+      "reraNotApplicable": "RERA not applicable: {reason}",
       "actions": {
         "call": "Call",
         "whatsapp": "WhatsApp",
@@ -582,8 +619,13 @@
       },
       "overview": {
         "heading": "Project overview",
-        "priceRange": "Price range",
+        "price": "Starting price",
+        "propertyType": "Property type",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "configuration": "Configuration",
+        "area": "Area",
+        "areaRange": "{min} – {max} sq ft",
         "status": "Status",
         "possession": "Possession",
         "landArea": "Land area",
@@ -651,7 +693,7 @@
         "send": "Send enquiry",
         "requestVisit": "Request a site visit",
         "phoneHint": "The number you signed in with.",
-        "consent": "Your name, phone number and message go to {developer} and Find Prop so they can contact you.",
+        "consent": "Your name, phone number and message go to {developer} and findsprop so they can contact you.",
         "consentDeveloper": "the developer",
         "consentPrivacy": "Privacy Policy",
         "failed": "We couldn't send your request. Please try again.",
@@ -671,6 +713,27 @@
       },
       "bar": {
         "enquire": "Enquire about this project"
+      },
+      "extras": {
+        "heading": "More details"
+      },
+      "propertyType": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "plot": "Plot",
+        "vacantLand": "Vacant land",
+        "flat": "Flat",
+        "office": "Office",
+        "coWorking": "Co-working space"
+      },
+      "plotStatus": {
+        "investment": "Investment",
+        "readyToBuild": "Ready to build"
+      },
+      "villaType": {
+        "duplex": "Duplex",
+        "rowHouse": "Row house",
+        "individual": "Individual"
       }
     }
   },
@@ -682,7 +745,7 @@
     },
     "meta": {
       "title": "Contact",
-      "description": "Questions about a listing, a project or your account? Send Find Prop a message."
+      "description": "Questions about a listing, a project or your account? Send findsprop a message."
     },
     "title": "Talk to us",
     "loadingTitle": "Loading contact page",
@@ -731,9 +794,9 @@
       "cookies": "Cookie information"
     },
     "description": {
-      "privacy": "How Find Prop collects, uses and protects your information.",
-      "terms": "The terms for using Find Prop.",
-      "cookies": "What Find Prop stores in your browser and why."
+      "privacy": "How findsprop collects, uses and protects your information.",
+      "terms": "The terms for using findsprop.",
+      "cookies": "What findsprop stores in your browser and why."
     }
   },
   "enquiries": {
@@ -802,7 +865,7 @@
         "sale": "For sale",
         "rent": "For rent",
         "footnote": "Only approved listings can be marked as sold or rented. A sold or rented home is removed from search.",
-        "waiting": "Waiting for review. It will appear on Find Prop once it is approved.",
+        "waiting": "Waiting for review. It will appear on findsprop once it is approved.",
         "reason": "Reason: {reason}",
         "edit": "Edit",
         "sold": "Mark as sold",
@@ -903,6 +966,11 @@
       "stateHint": "Tamil Nadu only for now.",
       "pincode": "Pincode"
     },
+    "location": {
+      "savedLabel": "Your saved location",
+      "areaLabel": "Area",
+      "areaOption": "Choose the area"
+    },
     "details": {
       "heading": "Tell us about the home",
       "lead": "Accurate size and price help buyers find it.",
@@ -976,10 +1044,10 @@
       "reviewSave": "Review and save",
       "reviewResubmit": "Review and resubmit",
       "liveNoticeTitle": "You're editing a live listing",
-      "liveNoticeBody": "A change to the kind, type, title, description or address sends it back to review. Any other change shows on Find Prop at once.",
+      "liveNoticeBody": "A change to the kind, type, title, description or address sends it back to review. Any other change shows on findsprop at once.",
       "rejectedNoticeTitle": "This listing was not approved",
       "rejectedNoticeBody": "Reason: {reason}",
-      "nextApproved": "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on Find Prop at once.",
+      "nextApproved": "Your changes are saved to your live listing. Changes to the price, size, amenities and place show on findsprop at once.",
       "nextPending": "Your changes are saved to your listing. It is still waiting for review and stays hidden until it is approved.",
       "nextRejected": "When you resubmit, your listing goes back to review. It stays hidden until it is approved.",
       "save": "Save changes",
@@ -1017,6 +1085,18 @@
       "sentLead": "We sent a link to {email}. Open it, then come back here to keep going.",
       "sentInfo": "This page updates by itself once the email is verified.",
       "sentNote": "Your draft is saved. You can close this tab and return later."
+    }
+  },
+  "loginWall": {
+    "metaTitle": "Sign in to browse homes and projects",
+    "title": "Sign in to see all properties",
+    "body": "Enter your phone number to browse every property and project. It takes a minute.",
+    "mock": {
+      "home": "Sample home {number}",
+      "project": "Sample project {number}",
+      "locality": "Sample locality",
+      "city": "Sample city",
+      "developer": "Sample builders"
     }
   },
   "compare": {
@@ -1100,11 +1180,28 @@
         "underConstruction": "Under construction",
         "readyToMove": "Ready to move"
       },
-      "location": "{locality}, {city}",
-      "priceRange": "{min} – {max}"
+      "offer": {
+        "sale": "For sale",
+        "rent": "For rent"
+      },
+      "priceType": {
+        "perSqft": "{price} per sq ft",
+        "basic": "{price} basic price",
+        "allInclusive": "{price} all inclusive",
+        "rentPerMonth": "{price} per month",
+        "rentPerSqftMonth": "{price} per sq ft per month"
+      },
+      "location": "{locality}, {city}"
     },
     "developerCard": {
       "projects": "{count, plural, one {# project} other {# projects}}"
+    },
+    "placePicker": {
+      "label": "Find a place",
+      "placeholder": "Search for a place",
+      "hint": "Choose a place to fill the latitude and longitude below. You can still change them by hand.",
+      "picked": "Filled in from “{place}”. You can still change the numbers below.",
+      "unavailableBody": "Type the latitude and longitude below instead."
     },
     "places": {
       "region": "Suggestions cover Tamil Nadu only for now.",
@@ -1140,23 +1237,15 @@
       }
     },
     "searchCard": {
-      "label": "Property search",
       "intentLabel": "Looking to",
       "buy": "Buy",
       "rent": "Rent",
-      "newProjects": "New projects",
-      "describeInWords": "Describe it in words",
       "locality": {
         "label": "Locality",
-        "placeholder": "Search a locality",
-        "clear": "Clear locality",
-        "loading": "Looking for localities",
-        "noResults": "No localities found",
-        "resultCount": "{count, plural, one {# locality found} other {# localities found}}"
+        "placeholder": "Search a locality"
       },
       "propertyType": {
         "label": "Property type",
-        "shortLabel": "Type",
         "any": "Any type",
         "apartment": "Apartment",
         "villa": "Villa",
@@ -1164,21 +1253,24 @@
         "plot": "Plot / Land",
         "commercial": "Commercial"
       },
-      "bedrooms": {
-        "label": "Bedrooms",
-        "any": "Any BHK"
-      },
       "budget": {
         "label": "Max budget",
-        "shortLabel": "Budget",
         "any": "Any budget",
         "upTo": "Up to {amount}"
+      }
+    },
+    "homeSearchBar": {
+      "label": "Property search",
+      "ai": {
+        "fieldLabel": "Describe the home you want",
+        "placeholder": "Describe the home you want, e.g. 3 BHK near Velachery under ₹90 lakh",
+        "button": "Search with AI"
       },
-      "search": "Search",
-      "popular": "Popular",
-      "quickPicks": "Quick picks",
-      "quickPickBedrooms": "3 BHK",
-      "quickPickBudget": "Budget homes"
+      "keyword": {
+        "fieldLabel": "Search homes",
+        "placeholder": "Search by locality, project or keyword",
+        "button": "Search"
+      }
     },
     "filters": {
       "title": "Filters",
@@ -1192,7 +1284,8 @@
         "newest": "Newest",
         "priceAsc": "Price: low to high",
         "priceDesc": "Price: high to low",
-        "areaDesc": "Largest first"
+        "areaDesc": "Largest first",
+        "distance": "Nearest first"
       },
       "button": "Filters",
       "buttonApplied": "Filters, {count} applied",
@@ -1365,6 +1458,7 @@
     "locationPrompt": {
       "title": "Add your location to appear in nearby searches",
       "body": "{count, plural, one {# of your listings has no location.} other {# of your listings have no location.}} Homes without one are left out of searches by place.",
+      "reviewNote": "A live listing goes back to review when you add its location, and shows again once it is approved.",
       "action": "Add location"
     },
     "placesUsage": {
@@ -1379,7 +1473,11 @@
       "problemsNone": "None: every call was answered.",
       "callers": {
         "title": "Where the calls came from",
-        "description": "The search box, the post form and the admin pickers."
+        "description": "The search box, the post form and the admin pickers.",
+        "searchBox": "Search box",
+        "listingForm": "Post form",
+        "adminPicker": "Admin pickers",
+        "aiChat": "AI chat"
       },
       "outcomes": {
         "title": "How the calls ended",
@@ -1417,16 +1515,97 @@
       "leads": "Leads",
       "forms": "Forms",
       "crm": "CRM",
+      "feedback": "Feedback",
+      "content": "Content",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "careers": "Careers",
       "siteContent": "Site content",
       "header": "Header",
       "hero": "Hero",
       "homepage": "Homepage",
-      "footer": "Footer"
+      "footer": "Footer",
+      "disclaimers": "Disclaimers",
+      "projectFields": "Project form boxes",
+      "topDevelopers": "Top developers"
+    },
+    "topDevelopers": {
+      "metaTitle": "Top developers",
+      "title": "Top developers",
+      "description": "Choose the developers the home page shows under Top developers, and put them in order. At most {max}. A developer with no approved, published project is skipped on the home page.",
+      "chosen": {
+        "title": "{count} of {max} chosen"
+      },
+      "empty": {
+        "title": "No developer chosen",
+        "text": "The home page picks developers by itself until you choose some."
+      },
+      "full": {
+        "title": "{max} developers chosen",
+        "text": "Remove one to add another."
+      },
+      "available": {
+        "title": "Developers you can add",
+        "empty": "There is no other developer to add."
+      },
+      "unknown": "A developer that is no longer listed",
+      "projects": "{count, plural, one {# project} other {# projects}}",
+      "add": "Add {name}",
+      "addShort": "Add",
+      "remove": "Remove {name}",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "saved": {
+        "title": "Top developers saved",
+        "text": "The home page shows them in this order."
+      }
+    },
+    "contentModules": {
+      "title": "Content modules",
+      "description": "Turn the Blog, FAQ and Careers sections on or off for visitors. Your content is kept while a section is hidden.",
+      "switchLabel": "Show {name} on the site",
+      "barLabel": "{name} switch",
+      "saving": "Saving the change",
+      "status": {
+        "live": "Live",
+        "hidden": "Hidden"
+      },
+      "counts": {
+        "published": "Published",
+        "drafts": "Drafts",
+        "unavailable": "Not available yet"
+      },
+      "blog": {
+        "name": "Blog",
+        "effect": "Hides /blog from the site, menus, sitemap and the AI assistant."
+      },
+      "faq": {
+        "name": "FAQ",
+        "effect": "Hides /faq from the site, menus, sitemap and the AI assistant."
+      },
+      "careers": {
+        "name": "Careers",
+        "effect": "Hides /careers from the site, menus, sitemap and the AI assistant."
+      },
+      "saved": {
+        "live": "{name} is now live on the site.",
+        "hidden": "{name} is now hidden from the site."
+      },
+      "error": {
+        "turnOn": "{name} could not be turned on, so it is still hidden.",
+        "turnOff": "{name} could not be turned off, so it is still live."
+      },
+      "confirm": {
+        "title": "Hide {name} from the site?",
+        "text": "Visitors will see a page not found for {name}, and it leaves the menus, the sitemap and the AI assistant. Nothing is deleted, and you can turn it back on at any time.",
+        "confirm": "Hide {name}",
+        "cancel": "Keep it live"
+      }
     },
     "listings": {
       "metaTitle": "Listings",
       "title": "Listings",
-      "intro": "Review listings posted by owners. Only approved listings appear on Find Prop.",
+      "intro": "Review listings posted by owners. Only approved listings appear on findsprop.",
       "loadingTitle": "Loading listings",
       "tabsLabel": "Filter by status",
       "tabs": {
@@ -1532,7 +1711,7 @@
       },
       "reject": {
         "title": "Reject this listing?",
-        "description": "“{title}” stays off Find Prop and the owner will see it as not approved, with the reason you give.",
+        "description": "“{title}” stays off findsprop and the owner will see it as not approved, with the reason you give.",
         "reasonLabel": "Reason for the owner",
         "reasonHint": "The owner reads this, so say what to fix.",
         "counter": "{count} / {max}",
@@ -1544,7 +1723,7 @@
       "toast": {
         "approved": {
           "title": "Listing approved",
-          "text": "It is now live on Find Prop."
+          "text": "It is now live on findsprop."
         },
         "rejected": {
           "title": "Listing rejected",
@@ -1552,11 +1731,11 @@
         },
         "featured": {
           "title": "Listing featured",
-          "text": "It is marked as featured on Find Prop."
+          "text": "It is marked as featured on findsprop."
         },
         "unfeatured": {
           "title": "Removed from featured",
-          "text": "It stays live on Find Prop."
+          "text": "It stays live on findsprop."
         }
       },
       "conflict": "Someone has already decided this listing. The list has been refreshed."
@@ -1875,6 +2054,45 @@
         "days": "{count, plural, one {# day} other {# days}}"
       }
     },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Messages from builders and agents. Mark each one reviewed when you have read it.",
+      "filterLabel": "Filter feedback",
+      "filter": {
+        "open": "Not reviewed ({count})",
+        "reviewed": "Reviewed ({count})",
+        "all": "All ({count})"
+      },
+      "role": {
+        "builder": "Builder",
+        "agent": "Agent"
+      },
+      "state": {
+        "open": "Not reviewed",
+        "reviewed": "Reviewed"
+      },
+      "markReviewed": "Mark as reviewed",
+      "markNotReviewed": "Mark as not reviewed",
+      "toast": {
+        "reviewed": "Marked as reviewed.",
+        "unreviewed": "Marked as not reviewed."
+      },
+      "empty": {
+        "open": {
+          "title": "Nothing waiting",
+          "description": "Every message has been reviewed."
+        },
+        "reviewed": {
+          "title": "No reviewed messages yet",
+          "description": "Messages you mark as reviewed appear here."
+        },
+        "all": {
+          "title": "No feedback yet",
+          "description": "When a builder or an agent sends feedback, it appears here."
+        }
+      }
+    },
     "projects": {
       "metaTitle": "Projects",
       "title": "Projects",
@@ -1960,6 +2178,9 @@
       }
     },
     "projectForm": {
+      "extras": {
+        "optional": "(optional)"
+      },
       "metaTitleNew": "New project",
       "metaTitleEdit": "Edit project",
       "newTitle": "New project",
@@ -2003,14 +2224,19 @@
         "unset": "Not set",
         "projectType": "Project type",
         "propertyType": "Property type",
+        "offerType": "This project is for",
+        "plotStatus": "Plot status",
+        "villaType": "Villa type",
         "projectStatus": "Status",
-        "priceMin": "Price from (₹)",
-        "priceMax": "Price to (₹)",
+        "price": "Starting price (₹)",
+        "priceType": "Price type",
+        "areaMin": "Minimum area (sq ft)",
+        "areaMax": "Maximum area (sq ft)",
         "bhk": "BHK options",
         "landArea": "Land area (acres)",
-        "totalUnits": "Total units",
-        "possession": "Possession",
+        "possession": "Possession (month and year)",
         "contactPhone": "Contact phone",
+        "city": "City",
         "locality": "Locality",
         "address": "Address",
         "latitude": "Latitude",
@@ -2019,6 +2245,8 @@
         "nearby": "Nearby places",
         "reraApplicable": "RERA applicable",
         "reraNumber": "RERA number",
+        "reraReason": "Why is RERA not applicable?",
+        "reraReasonHint": "This reason will be shown publicly on your project page.",
         "description": "Description",
         "specifications": "Specifications",
         "amenities": "Amenities",
@@ -2039,12 +2267,36 @@
       "options": {
         "projectType": {
           "residential": "Residential",
-          "commercial": "Commercial",
-          "plottedLayout": "Plotted layout"
+          "commercial": "Commercial"
         },
         "propertyType": {
           "apartment": "Apartment",
-          "villa": "Villa"
+          "villa": "Villa",
+          "plot": "Plot",
+          "vacantLand": "Vacant land",
+          "flat": "Flat",
+          "office": "Office",
+          "coWorking": "Co-working space"
+        },
+        "offerType": {
+          "sale": "Sale",
+          "rent": "Rent"
+        },
+        "plotStatus": {
+          "investment": "Investment",
+          "readyToBuild": "Ready to build"
+        },
+        "villaType": {
+          "duplex": "Duplex",
+          "rowHouse": "Row house",
+          "individual": "Individual"
+        },
+        "priceType": {
+          "perSqft": "Rate per sq ft",
+          "basic": "Basic price (excludes registration, GST and other costs)",
+          "allInclusive": "All inclusive (includes GST, registration and other costs)",
+          "rentPerMonth": "Rent per month",
+          "rentPerSqftMonth": "Rent per sq ft per month"
         },
         "status": {
           "newLaunch": "New launch",
@@ -2126,7 +2378,21 @@
       "problems": {
         "name": "Enter the project name.",
         "builder": "Choose the builder.",
-        "locality": "Enter the locality."
+        "projectType": "Choose the project type.",
+        "propertyType": "Choose the property type.",
+        "offerType": "Choose whether the project is for sale or for rent.",
+        "plotStatus": "Choose the plot status.",
+        "villaType": "Choose the villa type.",
+        "status": "Choose the status.",
+        "possession": "Choose the possession month.",
+        "price": "Enter the price.",
+        "priceType": "Choose a price type.",
+        "area": "Enter the minimum and maximum area.",
+        "areaRange": "The maximum area must be the same as or more than the minimum.",
+        "city": "Enter the city.",
+        "locality": "Enter the locality.",
+        "reraNumber": "Enter the RERA number.",
+        "reraReason": "Tell us why RERA is not applicable."
       },
       "alert": {
         "title": "{count, plural, one {# thing needs attention} other {# things need attention}}",
@@ -2160,6 +2426,39 @@
         "createdBuilder": {
           "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
+      }
+    },
+    "projectFields": {
+      "metaTitle": "Project form boxes",
+      "title": "Project form boxes",
+      "description": "Add plain text boxes to the builder's project form without a developer. You can keep up to {max} boxes. Builders type the answers and the answers show on the project page.",
+      "empty": "No extra boxes yet. Builders see only the standard project form.",
+      "row": "Box {number}",
+      "moveUp": "Move box {number} up",
+      "moveDown": "Move box {number} down",
+      "remove": "Delete box {number}",
+      "label": "Label",
+      "hint": "Help text",
+      "hintNote": "Shown under the box. Up to {max} characters.",
+      "appliesTo": "Ask for these property types",
+      "appliesToNote": "Tick none to ask for every property type.",
+      "required": "Builders must fill it in",
+      "on": "Show this box",
+      "add": "Add a box",
+      "full": "You have {max} boxes, the most allowed. Delete one to add another.",
+      "saveNote": "Turning a box off hides it; builders' answers are kept. Deleting a box removes it from every form and page.",
+      "saved": {
+        "title": "Project form boxes saved",
+        "text": "The change shows on the builder's project form now."
+      },
+      "types": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "plot": "Plot",
+        "vacantLand": "Vacant land",
+        "flat": "Flat",
+        "office": "Office",
+        "coWorking": "Co-working space"
       }
     },
     "siteContent": {
@@ -2208,6 +2507,27 @@
         "ctaHref": "Button link",
         "saved": {
           "title": "Header saved",
+          "text": "The change is live on the public site."
+        }
+      },
+      "disclaimers": {
+        "metaTitle": "Site content: Disclaimers",
+        "title": "Disclaimers",
+        "description": "Plain text shown in the footer of every public page and on the AI search page. Leave a box empty to show nothing.",
+        "footer": {
+          "title": "Footer disclaimer",
+          "text": "Shown at the bottom of every public page, above the copyright line.",
+          "label": "Footer disclaimer"
+        },
+        "aiSearch": {
+          "title": "AI search disclaimer",
+          "text": "Shown under the chat on the AI search page.",
+          "label": "AI search disclaimer"
+        },
+        "counter": "{used} of {max} characters",
+        "nothing": "Nothing is shown.",
+        "saved": {
+          "title": "Disclaimers saved",
           "text": "The change is live on the public site."
         }
       },
@@ -2369,7 +2689,7 @@
           "noSponsors": "No sponsors",
           "noneEligible": "Split → Search Desk",
           "noneTitle": "No banner is shown",
-          "noneText": "Visitors see the search card and then the next section. No frame, label or gap.",
+          "noneText": "Visitors see the search bar and then the next section. No frame, label or gap.",
           "phoneNote": "The phone image is used below 1024 px. Nothing is stretched.",
           "caption": "{name} · first of {count} active"
         },
@@ -2390,7 +2710,7 @@
         "description": "Choose which sections appear below the hero, and which localities are featured.",
         "sections": {
           "title": "Sections",
-          "description": "Turn sections on or off. A hidden section is not rendered at all.",
+          "description": "Turn sections on or off and set the order they appear in. A hidden section is not rendered at all.",
           "featured": {
             "label": "Featured listings",
             "hint": "Up to six featured homes."
@@ -2404,7 +2724,7 @@
             "hint": "The locality tiles below. Needs at least one locality."
           },
           "whyUs": {
-            "label": "Why Find Prop",
+            "label": "Why findsprop",
             "hint": "Three short value points."
           },
           "cta": {
@@ -2412,14 +2732,28 @@
             "hint": "The closing banner."
           }
         },
+        "order": {
+          "hint": "The hero and search always come first. Drag a section, or use its arrows, to change the order. The same order is used on phones and computers.",
+          "newLaunches": {
+            "label": "New launches",
+            "hint": "Shown when there are new projects. Has no switch."
+          },
+          "newest": {
+            "label": "Newest listings",
+            "hint": "Shown when there are new listings. Has no switch."
+          },
+          "drag": "Drag {section}",
+          "moveUp": "Move {section} up",
+          "moveDown": "Move {section} down"
+        },
         "localities": {
           "title": "Explore by locality",
-          "description": "Tiles shown under the search. The first {popular} also appear as Popular chips in the search card. Visitors who click one see homes within the radius.",
+          "description": "Tiles shown under the search. Visitors who click one see homes within the radius.",
           "add": "Add locality",
           "limitTitle": "You've reached the limit of {max} localities",
           "limitText": "Remove one to add another.",
           "emptyTitle": "No localities yet",
-          "emptyText": "The \"Explore by locality\" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.",
+          "emptyText": "The \"Explore by locality\" section is hidden on the homepage until you add one. No empty space is shown.",
           "orderHint": "Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches.",
           "row": "Locality",
           "label": "Label",
@@ -2433,18 +2767,17 @@
           "moveDown": "Move down"
         },
         "preview": {
-          "popular": "Popular chips in the search card",
           "explore": "Explore by locality",
           "on": "On",
           "off": "Off",
           "hiddenTitle": "Section hidden",
-          "hiddenText": "With no localities, visitors see the search card followed directly by Featured homes.",
+          "hiddenText": "With no localities, visitors see the search bar followed directly by Featured homes.",
           "sections": {
             "hero": "Hero and search",
             "discovery": "Explore by locality",
             "featured": "Featured homes",
             "projectTypes": "Browse by what matters",
-            "whyUs": "Why Find Prop",
+            "whyUs": "Why findsprop",
             "cta": "Call to action"
           }
         },
@@ -2802,6 +3135,11 @@
         "text": "Check your connection and try again.",
         "kept": "Check your connection and try again. The numbers below are from the last successful load."
       },
+      "places": {
+        "error": {
+          "title": "We couldn't load the place search usage"
+        }
+      },
       "charts": {
         "views": {
           "label": "Chart view",
@@ -2868,6 +3206,664 @@
           }
         }
       }
+    },
+    "faq": {
+      "metaTitle": "FAQ",
+      "metaTitleNew": "Add a question",
+      "metaTitleEdit": "Edit question",
+      "title": "FAQ",
+      "intro": "The questions and answers shown on the FAQ page and used by the assistant.",
+      "add": "Add question",
+      "categoriesButton": "Categories",
+      "tabs": {
+        "label": "Show",
+        "all": "All",
+        "published": "Published",
+        "drafts": "Drafts",
+        "trash": "Trash"
+      },
+      "category": {
+        "label": "Category",
+        "all": "All categories",
+        "hidden": "{name} (hidden)"
+      },
+      "search": {
+        "label": "Search the questions and answers",
+        "placeholder": "Search questions and answers"
+      },
+      "columns": {
+        "question": "Question",
+        "category": "Category",
+        "status": "Status",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "caption": "FAQ questions",
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "trash": "In the Trash"
+      },
+      "actions": {
+        "edit": "Edit",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "restore": "Restore",
+        "trash": "Move to Trash: {question}",
+        "moveUp": "Move up: {question}",
+        "moveDown": "Move down: {question}",
+        "forQuestion": "question: {question}"
+      },
+      "count": "{shown} of {total, plural, one {# question} other {# questions}}",
+      "orderNote": "To change the order, choose a category and clear the search.",
+      "empty": {
+        "title": "No questions yet",
+        "text": "Add the first question. Visitors see it once you publish it."
+      },
+      "noMatches": {
+        "title": "No questions match",
+        "text": "Try other words, or choose another tab or category."
+      },
+      "toast": {
+        "published": "Question published",
+        "unpublished": "Question unpublished",
+        "trashed": "Question moved to the Trash",
+        "restored": "Question restored as a draft",
+        "moved": "Order saved",
+        "created": "Question added",
+        "saved": "Question saved"
+      },
+      "conflict": "That question is no longer there. The list has been refreshed.",
+      "gone": "This question is no longer there. Go back to the list.",
+      "back": "Back to the FAQ list",
+      "newTitle": "Add a question",
+      "editTitle": "Edit question",
+      "saveNote": {
+        "new": "A new question is saved as a draft until you publish it.",
+        "edit": "Saving shows the change on the site at once when the question is published."
+      },
+      "form": {
+        "content": {
+          "title": "Question and answer",
+          "text": "What a visitor reads on the FAQ page."
+        },
+        "publishing": {
+          "title": "Publishing",
+          "text": "A draft is saved but not shown on the site or to the assistant."
+        },
+        "category": "Category",
+        "categoryPlaceholder": "Choose a category",
+        "noCategory": "There are no FAQ categories yet. Add one with Categories on the FAQ list first.",
+        "question": "Question",
+        "questionHint": "One line, as a visitor would ask it.",
+        "answer": "Answer",
+        "answerHint": "Plain text. Leave a blank line between paragraphs.",
+        "answerCounter": "{count} / {max}",
+        "status": "Status",
+        "statusDraft": "Draft",
+        "statusPublished": "Published",
+        "statusHint": "Publishing shows the question on the FAQ page straight away.",
+        "cancel": "Cancel",
+        "save": "Save question",
+        "saving": "Saving"
+      },
+      "categories": {
+        "title": "FAQ categories",
+        "description": "The groups of questions on the FAQ page. The Blog and job departments have their own.",
+        "close": "Close",
+        "listLabel": "FAQ categories",
+        "empty": "There are no categories yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No questions} one {# question} other {# questions}}",
+        "inUse": "Move or delete its questions before you delete it.",
+        "conflict": "That category is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add category",
+          "editTitle": "Edit category {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden category and its questions are not shown to visitors or to the assistant.",
+          "add": "Add category",
+          "save": "Save category",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Category added",
+          "saved": "Category saved",
+          "hidden": "Category hidden",
+          "shown": "Category shown",
+          "moved": "Order saved",
+          "deleted": "Category deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The category is removed for good. This cannot be undone.",
+          "confirm": "Delete category",
+          "cancel": "Keep it"
+        }
+      }
+    },
+    "blog": {
+      "editor": {
+        "empty": "This article has no text yet. Add a first block below.",
+        "blockLabel": "Block {place}: {kind}",
+        "kinds": {
+          "heading": "Heading",
+          "paragraph": "Paragraph",
+          "list": "List",
+          "quote": "Quote",
+          "image": "Picture"
+        },
+        "add": {
+          "heading": "Add heading",
+          "paragraph": "Add paragraph",
+          "list": "Add list",
+          "quote": "Add quote",
+          "image": "Add picture"
+        },
+        "addTitle": "Add a block",
+        "moveUp": "Move block {place} up",
+        "moveDown": "Move block {place} down",
+        "remove": "Delete block {place}",
+        "count": "{count} of {max} blocks used.",
+        "full": "You have used all {max} blocks. Delete one to add another.",
+        "headingLevel": "Heading size of block {place}",
+        "level2": "Section heading",
+        "level3": "Sub-heading",
+        "headingText": "Heading",
+        "headingHint": "The article's title is already the main heading of the page, so start with a section heading (size 2) and use sub-headings (size 3) under it.",
+        "paragraphText": "Text",
+        "linkHint": "To make a link, press Add link below. A link is written as [words](address).",
+        "listKind": "List style of block {place}",
+        "bulleted": "Bullets",
+        "numbered": "Numbers",
+        "listItems": "List items",
+        "listHint": "Write one item on each line.",
+        "quoteText": "Quote",
+        "quoteCite": "Who said it",
+        "optional": "(optional)",
+        "choosePicture": "Choose picture",
+        "replacePicture": "Replace picture",
+        "pictureRules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+        "imageAlt": "Describe the picture",
+        "imageAltHint": "Said aloud to people who cannot see it. Required.",
+        "imageCaption": "Caption",
+        "link": {
+          "add": "Add a link to block {place}",
+          "groupLabel": "New link for block {place}",
+          "label": "Words to show",
+          "labelHint": "What readers see and click, such as the name of the page.",
+          "address": "Address",
+          "addressHint": "Start with https:// for another website, or with / for a page of this site, such as /properties.",
+          "insert": "Insert link",
+          "cancel": "Cancel"
+        }
+      },
+      "list": {
+        "tabsLabel": "Show articles by status",
+        "tabs": {
+          "all": "All",
+          "draft": "Drafts",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "Trash"
+        },
+        "status": {
+          "draft": "Draft",
+          "published": "Published",
+          "archived": "Archived",
+          "trash": "In Trash"
+        },
+        "actions": {
+          "edit": "Edit",
+          "publish": "Publish",
+          "unpublish": "Unpublish",
+          "archive": "Archive",
+          "trash": "Move to Trash",
+          "restore": "Restore"
+        },
+        "searchLabel": "Search articles",
+        "searchPlaceholder": "Search by title, text or tag",
+        "categoryLabel": "Filter by category",
+        "allCategories": "All categories",
+        "apply": "Apply",
+        "noMatchTitle": "No article matches",
+        "noMatchText": "Try other words, another category or another tab.",
+        "emptyTitle": "No articles yet",
+        "emptyText": "Write the first article and it will appear here as a draft.",
+        "address": "/blog/{slug}",
+        "updated": "Updated {date}"
+      },
+      "form": {
+        "basics": {
+          "title": "Basics",
+          "description": "What the list and the top of the article show."
+        },
+        "title": "Title",
+        "slug": "Address",
+        "slugHint": "The last part of the web address. Lower case words joined by hyphens.",
+        "slugSuggest": "Make from title",
+        "slugLive": "This article is on the site. Changing its address breaks links that already point to it.",
+        "author": "Author name",
+        "category": "Category",
+        "noCategory": "No category",
+        "tags": "Tags",
+        "tagsHint": "Up to 10 short tags, such as home-loans.",
+        "tagsPlaceholder": "Type a tag and press Enter",
+        "tagsAdd": "Add",
+        "tagsRemove": "Remove",
+        "tagsSuggestions": "Suggestions",
+        "tagsFull": "You have added the most you can, {max} tags.",
+        "excerpt": "Summary",
+        "excerptHint": "One or two sentences for the list and the top of the article. Needed before you publish.",
+        "cover": {
+          "title": "Cover picture",
+          "description": "Shown on the article's card and at the top of the article.",
+          "choose": "Choose cover",
+          "replace": "Replace cover",
+          "remove": "Remove cover",
+          "rules": "A JPG, PNG or WEBP picture, up to 500 KB.",
+          "alt": "Describe the cover",
+          "altHint": "Said aloud to people who cannot see it. Required."
+        },
+        "body": {
+          "title": "Article text",
+          "description": "Build the article from blocks: headings, paragraphs, lists, quotes and pictures."
+        },
+        "seo": {
+          "title": "Search description",
+          "description": "What search engines and shared links show. Leave empty to use the title and the summary.",
+          "seoTitle": "Search title",
+          "seoTitleHint": "About 60 characters reads best.",
+          "seoDescription": "Search description",
+          "seoDescriptionHint": "About 150 characters reads best.",
+          "preview": "How it may look in search",
+          "previewEmptyTitle": "The article's title",
+          "previewAddress": "/blog/{slug}",
+          "previewEmptyDescription": "The article's summary"
+        },
+        "cancel": "Cancel",
+        "save": "Save article",
+        "saving": "Saving"
+      },
+      "metaTitle": "Blog",
+      "metaTitleNew": "Write an article",
+      "metaTitleEdit": "Edit article",
+      "title": "Blog",
+      "intro": "The articles shown on the Blog page and read by the assistant.",
+      "add": "New article",
+      "categoriesButton": "Categories",
+      "count": "{count, plural, one {# article} other {# articles}}",
+      "toast": {
+        "published": "Article published",
+        "unpublished": "Article unpublished and kept as a draft",
+        "archived": "Article archived",
+        "trashed": "Article moved to the Trash",
+        "restored": "Article restored",
+        "created": "Article created as a draft",
+        "saved": "Article saved"
+      },
+      "conflict": "That article is no longer there. The list has been refreshed.",
+      "gone": "This article is no longer there. Go back to the list.",
+      "uploadFailed": "A picture could not be uploaded. Check your connection and try again.",
+      "back": "Back to the articles",
+      "newTitle": "New article",
+      "editTitle": "Edit article",
+      "saveNote": {
+        "new": "A new article is saved as a draft. Publish it from the list when it is ready.",
+        "edit": "Saving shows the change on the site at once when the article is published."
+      },
+      "preview": {
+        "show": "Preview",
+        "hide": "Back to editing",
+        "note": "This is how the article reads on the site. Nothing is saved until you save.",
+        "empty": "Nothing to preview yet. Add a title and some text.",
+        "untitled": "Untitled article"
+      },
+      "category": {
+        "hidden": "{name} (hidden)"
+      },
+      "categories": {
+        "title": "Blog categories",
+        "description": "The groups of articles on the Blog page. The FAQ and job departments have their own.",
+        "close": "Close",
+        "listLabel": "Blog categories",
+        "empty": "There are no categories yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "inUse": "Move or delete its articles before you delete it.",
+        "conflict": "That category is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add category",
+          "editTitle": "Edit category {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden category and its articles are not shown to visitors or to the assistant.",
+          "add": "Add category",
+          "save": "Save category",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Category added",
+          "saved": "Category saved",
+          "hidden": "Category hidden",
+          "shown": "Category shown",
+          "moved": "Order saved",
+          "deleted": "Category deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The category is removed for good. This cannot be undone.",
+          "confirm": "Delete category",
+          "cancel": "Keep it"
+        }
+      },
+      "chooser": {
+        "blocks": {
+          "title": "Block editor",
+          "description": "Write the article block by block: headings, paragraphs, lists, quotes and pictures, with a preview.",
+          "action": "Open the block editor"
+        },
+        "markdown": {
+          "title": "Paste Markdown",
+          "description": "Paste an article written elsewhere. You see it drawn before anything is saved, then it opens as a draft in the block editor.",
+          "action": "Paste Markdown"
+        }
+      },
+      "markdown": {
+        "title": "New article from Markdown",
+        "intro": "Paste the article, check the preview, then create a draft. The pasted text is not kept: only the article it makes.",
+        "back": "Back to the choice",
+        "needText": "Paste some text that makes at least one block, and fix the problems listed.",
+        "paste": {
+          "label": "Markdown text",
+          "hint": "Headings, lists, quotes and links are kept. Anything else becomes plain words, and the notes beside the preview say what changed.",
+          "placeholder": "# Article title\n\nThe first paragraph of the article.\n\n## A heading\n\n- a list item",
+          "addLink": "Add a link to the text",
+          "linkGroup": "Add a link"
+        },
+        "ai": {
+          "title": "Already wrote the article with an AI tool?",
+          "intro": "Copy this prompt and paste it into the AI tool (ChatGPT, Gemini, Claude or any other), then paste your article under it. Paste the answer into the box below. The AI writes the headings, lists, links and picture places in the way this page reads them.",
+          "copy": "Copy the AI prompt",
+          "copied": "Copied. Paste it into your AI tool.",
+          "copyFailed": "Your browser did not copy it. Open the prompt below, select it and copy it yourself.",
+          "show": "Show the prompt",
+          "promptLabel": "The prompt to give to an AI tool"
+        },
+        "pictures": {
+          "title": "Pictures ({count})",
+          "intro": "Each line like ![what it shows](IMAGE-1) in your text is a place for a picture. Choose a JPG, PNG or WEBP file of up to {maximum} KB for each place. A place with no picture is left out of the draft, and you can add it later in the block editor.",
+          "place": "{id} (line {line})",
+          "choose": "Choose a picture for {id}",
+          "change": "Change the picture for {id}",
+          "remove": "Remove the picture for {id}",
+          "none": "No picture chosen. This place will be left out.",
+          "chosen": "{name} ({kb} KB)",
+          "alt": "What {id} shows",
+          "altHint": "Read aloud to people who cannot see the picture. Required.",
+          "needAlt": "Say what each chosen picture shows.",
+          "uploadFailed": "A picture could not be sent. Check your connection and try again."
+        },
+        "syntax": {
+          "title": "What is kept",
+          "title1": "# Title: the first one becomes the article's title.",
+          "headings": "## is a heading and ### a smaller one. A hash needs a space after it: #realestate stays as text.",
+          "lists": "- bullets and 1. numbers. A list inside a list is flattened.",
+          "quotes": "> quotes. A last line that starts with a dash becomes the credit.",
+          "links": "[words](https://example.com) or [words](/page). Other addresses are removed. You can also select words and press Add a link.",
+          "pictures": "![what it shows](IMAGE-1) on a line of its own is a place for a picture. Choose the file for it below.",
+          "other": "Bold, italic, code, tables and HTML become plain words."
+        },
+        "create": "Create draft",
+        "creating": "Creating the draft…",
+        "errors": {
+          "title": "These must be fixed before a draft can be made"
+        },
+        "error": {
+          "headingTooLong": "Line {line}: the heading is {count} characters long. A heading can have at most {maximum}. Shorten it.",
+          "tooManyBlocks": "The article makes {count} blocks. The most is 100. Split it into two articles.",
+          "tooBig": "The article is {count} bytes once converted. The most is 100,000. Split it into two articles.",
+          "inputTooBig": "The pasted text is too long. The most is {count} characters. Split it into two articles."
+        },
+        "warnings": {
+          "title": "{count, plural, one {# change was made} other {# changes were made}}"
+        },
+        "warning": {
+          "titleLater": "Line {line}: a second # title became a heading, because an article has one title.",
+          "headingDeep": "Line {line}: a heading with {count} hashes became a small heading. Articles have two heading sizes.",
+          "headingLink": "Line {line}: a link inside a heading was removed and its words kept. Headings do not hold links.",
+          "nestedList": "Line {line}: {count, plural, one {# item inside a list was moved up} other {# items inside lists were moved up}}. Lists inside lists are not supported.",
+          "formatting": "Bold, italic, strike-through and code marks were removed in {count, plural, one {# place} other {# places}}. The words were kept.",
+          "linkDropped": "Line {line}: a link was removed and its words kept, because its address ({detail}) is not allowed. A link must start with https:// or be a page of this site starting with /.",
+          "codeBlock": "Line {line}: a code block became a plain paragraph. Its line breaks and spacing were lost.",
+          "table": "Line {line}: a table became plain paragraphs, one per row. Its columns and borders were lost.",
+          "image": "Line {line}: a picture inside a sentence was removed ({detail}). Put a picture on a line of its own, like ![what it shows](IMAGE-1), to keep a place for it.",
+          "imageFromAddress": "Line {line}: this picture pointed to {detail}. Pictures are never fetched from the internet, so it became the place IMAGE-{count}. Choose the picture file for it.",
+          "imageSlotEmpty": "Line {line}: IMAGE-{count} has no picture yet, so nothing shows there. Choose a file for it, or add one later in the block editor.",
+          "imageSlotRepeated": "Line {line}: IMAGE-{count} was already used above, so this line was removed. Give each picture its own number.",
+          "html": "Line {line}: HTML tags were removed and the words kept.",
+          "split": "Line {line}: a long piece of text was split.",
+          "splitParagraph": "Line {line}: a very long paragraph was split into {count} paragraphs.",
+          "splitQuote": "Line {line}: a very long quote was split into {count} quotes.",
+          "splitItem": "Line {line}: a very long list item was split into {count} items.",
+          "splitList": "Line {line}: a list of more than 50 items was split into {count} lists.",
+          "rule": "{count, plural, one {# horizontal line was} other {# horizontal lines were}} removed."
+        },
+        "preview": {
+          "label": "Preview of the article",
+          "note": "This is how readers will see the article. Nothing is saved until you create the draft.",
+          "empty": "Paste your article to see it here.",
+          "status": "{blocks, plural, one {# block} other {# blocks}} in the preview, {changes, plural, one {# change} other {# changes}}, {problems, plural, one {# problem} other {# problems}}."
+        }
+      }
+    },
+    "careers": {
+      "title": "Careers",
+      "intro": "Add the jobs you are hiring for. Visitors see a job while it is open.",
+      "add": "Add job",
+      "departments": "Departments",
+      "tabsLabel": "Show jobs",
+      "tabs": {
+        "all": "All",
+        "open": "Open",
+        "draft": "Drafts",
+        "closed": "Closed",
+        "trash": "Trash"
+      },
+      "departmentFilter": "Department",
+      "allDepartments": "All departments",
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search titles and text",
+      "status": {
+        "draft": "Draft",
+        "open": "Open",
+        "closed": "Closed",
+        "expired": "Expired",
+        "trash": "In the Trash"
+      },
+      "columns": {
+        "title": "Job",
+        "department": "Department",
+        "location": "Location",
+        "status": "Status",
+        "closes": "Closes",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "noClosing": "No date",
+      "edit": "Edit",
+      "step": {
+        "open": "Open",
+        "close": "Close posting",
+        "reopen": "Reopen",
+        "restore": "Restore"
+      },
+      "trashFor": "Move {title} to the Trash",
+      "empty": {
+        "title": "No jobs yet",
+        "text": "Add your first job. It stays a draft until you open it."
+      },
+      "noMatches": {
+        "title": "No jobs match",
+        "text": "Try other words, another department or another tab."
+      },
+      "close": {
+        "button": "Close posting",
+        "notOpen": "Only an open job can be closed.",
+        "title": "Close the posting for {title}?",
+        "text": "The job leaves the Careers page at once and visitors can no longer apply. You can open it again later.",
+        "confirm": "Close posting",
+        "cancel": "Keep it open"
+      },
+      "form": {
+        "counter": "{count} / {max}",
+        "basics": {
+          "title": "Basics",
+          "description": "What visitors see first: the title, the department and where the job is."
+        },
+        "titleLabel": "Job title",
+        "slug": "Address",
+        "slugHint": "The last part of the job's web address. Lower case words joined by hyphens.",
+        "slugOpenHint": "This job is open. If you change the address, its old link stops working.",
+        "noDepartment": "There is no department yet. Choose Departments on the Careers page to add one first.",
+        "department": "Department",
+        "departmentPlaceholder": "Choose a department",
+        "location": "Location",
+        "experience": "Experience",
+        "experienceHint": "For example 2 to 4 years. Leave empty if it does not matter.",
+        "workMode": "Work mode",
+        "employmentType": "Job type",
+        "about": {
+          "title": "About the job",
+          "description": "Plain text. Visitors read this on the job page."
+        },
+        "summary": "Short summary",
+        "summaryHint": "One or two lines for the job card.",
+        "descriptionLabel": "Description",
+        "descriptionHint": "A blank line starts a new paragraph.",
+        "responsibilities": "Responsibilities",
+        "requirements": "Requirements",
+        "pointsHint": "One point on each line.",
+        "apply": {
+          "title": "How to apply",
+          "description": "People apply on another site or by email. Nothing is stored here."
+        },
+        "applyKind": "Apply by",
+        "applyLink": "A link",
+        "applyEmail": "An email",
+        "applyUrl": "Apply link",
+        "applyUrlHint": "A full address that starts with https://.",
+        "applyAddress": "Apply email address",
+        "applyAddressHint": "Applications are sent to this address.",
+        "salaryNote": "Pay note",
+        "salaryNoteHint": "Optional, such as 4 to 6 lakh a year.",
+        "closing": {
+          "title": "Closing date",
+          "description": "After this moment the job leaves the site by itself."
+        },
+        "closesAt": "Last moment to apply",
+        "closesAtHint": "Leave empty to keep the job open until you close it."
+      },
+      "departmentsPanel": {
+        "title": "Job departments",
+        "description": "The departments jobs belong to. The Blog and the FAQ have their own.",
+        "close": "Close",
+        "listLabel": "Job departments",
+        "empty": "There are no departments yet. Add the first one below.",
+        "hidden": "Hidden",
+        "usage": "{count, plural, =0 {No jobs} one {# job} other {# jobs}}",
+        "inUse": "Move or delete its jobs before you delete it.",
+        "conflict": "That department is no longer there. The list has been refreshed.",
+        "rows": {
+          "edit": "Edit {name}",
+          "hide": "Hide {name}",
+          "show": "Show {name}",
+          "delete": "Delete {name}",
+          "up": "Move {name} up",
+          "down": "Move {name} down"
+        },
+        "form": {
+          "addTitle": "Add department",
+          "editTitle": "Edit department {name}",
+          "name": "Name",
+          "slug": "Address word",
+          "slugHint": "Lowercase words joined by hyphens, such as property-owners.",
+          "active": "Show on the site",
+          "activeHint": "A hidden department and its jobs are not shown to visitors or to the assistant.",
+          "add": "Add department",
+          "save": "Save department",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "Department added",
+          "saved": "Department saved",
+          "hidden": "Department hidden",
+          "shown": "Department shown",
+          "moved": "Order saved",
+          "deleted": "Department deleted"
+        },
+        "delete": {
+          "title": "Delete {name}?",
+          "text": "The department is removed for good. This cannot be undone.",
+          "confirm": "Delete department",
+          "cancel": "Keep it"
+        }
+      },
+      "metaTitle": "Careers",
+      "metaTitleNew": "New job",
+      "metaTitleEdit": "Edit job",
+      "caption": "Jobs",
+      "count": "{count, plural, one {# job} other {# jobs}}",
+      "conflict": "That job is no longer there. The list has been refreshed.",
+      "hiddenDepartment": "{name} (hidden)",
+      "toast": {
+        "opened": "Job is open on the site",
+        "closed": "Job closed",
+        "restored": "Job restored. It is closed until you open it.",
+        "trashed": "Job moved to the Trash"
+      },
+      "editor": {
+        "newTitle": "New job",
+        "editTitle": "Edit job",
+        "back": "Back to the jobs",
+        "save": "Save job",
+        "cancel": "Cancel",
+        "saving": "Saving",
+        "gone": "This job is no longer there. Go back to the list.",
+        "open": "Open job",
+        "reopen": "Open job again",
+        "toast": {
+          "created": "Job created as a draft",
+          "saved": "Job saved",
+          "opened": "Job is open on the site",
+          "closed": "Job closed"
+        },
+        "saveNote": {
+          "new": "A new job is saved as a draft. Open it when it is ready.",
+          "edit": "Saving shows the change on the site at once when the job is open."
+        }
+      }
     }
   },
   "builderPortal": {
@@ -2885,6 +3881,7 @@
       "units": "Units",
       "leads": "Leads",
       "insights": "Insights",
+      "feedback": "Feedback",
       "profile": "Profile"
     },
     "projects": {
@@ -2907,7 +3904,7 @@
       "columns": {
         "project": "Project",
         "builder": "Builder",
-        "priceRange": "Price range",
+        "priceRange": "Price",
         "status": "Status",
         "actions": "Actions"
       },
@@ -2947,9 +3944,9 @@
     "profile": {
       "metaTitle": "Profile",
       "title": "Company profile",
-      "intro": "How your company appears on Find Prop.",
+      "intro": "How your company appears on findsprop.",
       "details": "Details",
-      "emailLockedHint": "Only a Find Prop admin can change your login email.",
+      "emailLockedHint": "Only a findsprop admin can change your login email.",
       "save": "Save profile",
       "saving": "Saving",
       "note": "Changes to your profile don't need approval.",
@@ -2959,6 +3956,21 @@
       },
       "toast": {
         "title": "Profile saved"
+      }
+    },
+    "feedback": {
+      "metaTitle": "Feedback",
+      "title": "Feedback",
+      "intro": "Tell us what works and what does not. Your message goes to the findsprop team.",
+      "formTitle": "Send a message",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Write your feedback here",
+      "counter": "{count} / {maximum}",
+      "send": "Send feedback",
+      "sending": "Sending",
+      "note": "We read every message but may not reply to each one.",
+      "toast": {
+        "title": "Thank you. Your feedback was sent."
       }
     },
     "insights": {
@@ -3022,6 +4034,21 @@
     "askHome": "Ask about this home",
     "askProject": "Ask about this project",
     "askCompare": "Ask about these homes",
+    "siteLinks": {
+      "post_property": "Post a property",
+      "my_listings": "Your listings",
+      "saved_homes": "Saved homes",
+      "enquiries": "Your enquiries",
+      "dashboard": "Your dashboard",
+      "sign_in": "Sign in or register",
+      "compare": "Compare homes",
+      "builder_sign_in": "Builder sign in",
+      "projects": "Browse projects",
+      "contact": "Contact us"
+    },
+    "sources": {
+      "label": "Sources"
+    },
     "searching": "Searching…",
     "capNote": "I couldn't check everything. Here is what I found.",
     "fallback": "I couldn't finish that. Try a simpler question, or use the search filters.",
@@ -3104,6 +4131,203 @@
       "visitSignedOutBody": "Sign in to request a site visit. We will bring you back to this chat afterwards.",
       "expiredTitle": "This request is no longer valid",
       "expiredBody": "Ask the assistant to prepare it again, then press Send."
+    }
+  },
+  "faq": {
+    "meta": {
+      "title": "Frequently asked questions",
+      "description": "Quick answers about buying, selling and renting a home, and about using the site."
+    },
+    "crumb": {
+      "nav": "Breadcrumb",
+      "backHome": "Back to home",
+      "home": "Home",
+      "faq": "FAQ"
+    },
+    "title": "Frequently asked questions",
+    "lead": "Quick answers about buying, selling and renting. Search the questions or choose a category.",
+    "search": {
+      "label": "Search the questions",
+      "placeholder": "Search questions, such as sale deed",
+      "submit": "Search"
+    },
+    "categories": {
+      "label": "Question categories",
+      "all": "All"
+    },
+    "groupCount": "{count, plural, one {# question} other {# questions}}",
+    "summary": {
+      "all": "{count, plural, one {# question} other {# questions}}",
+      "query": "{count, plural, one {# question} other {# questions}} for “{query}”",
+      "inCategory": "{count, plural, one {# question} other {# questions}} in {category}",
+      "queryInCategory": "{count, plural, one {# question} other {# questions}} for “{query}” in {category}"
+    },
+    "clear": "Clear search and category",
+    "noMatches": {
+      "title": "No questions match your search",
+      "text": "Try fewer or different words, or choose another category.",
+      "showAll": "Show all questions"
+    },
+    "empty": {
+      "title": "No questions yet",
+      "text": "We are still writing the answers. If you need help now, contact us and we will reply."
+    },
+    "help": {
+      "title": "Still need help?",
+      "text": "Tell us what you are looking for and our team will get back to you.",
+      "link": "Contact us"
+    },
+    "loadingTitle": "Loading the questions"
+  },
+  "blog": {
+    "meta": {
+      "by": "By {name}",
+      "readMinutes": "{minutes} min read"
+    },
+    "search": {
+      "label": "Search articles",
+      "placeholder": "Search the Blog",
+      "submit": "Search"
+    },
+    "filters": {
+      "categories": "Blog categories",
+      "all": "All",
+      "tags": "Tags",
+      "tag": "#{tag}",
+      "clearTag": "Clear tag"
+    },
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "goTo": "Go to page {page}",
+      "position": "Page {page} of {count}",
+      "current": "(current page)"
+    },
+    "related": {
+      "title": "Read next",
+      "all": "All articles"
+    },
+    "page": {
+      "metaTitle": "Blog",
+      "metaDescription": "Guides, tips and news on buying, selling and renting property in Tamil Nadu.",
+      "title": "Blog",
+      "lead": "Guides, tips and news on buying, selling and renting property.",
+      "loadingTitle": "Loading the Blog",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "backHome": "Back to home",
+        "backBlog": "Back to the Blog",
+        "home": "Home",
+        "blog": "Blog"
+      },
+      "summary": {
+        "all": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+        "filtered": "{count, plural, =0 {No articles match} one {# article matches} other {# articles match}}"
+      },
+      "clear": "Clear filters",
+      "noMatches": {
+        "title": "No article matches",
+        "text": "Try other words, another category or another tag.",
+        "showAll": "Show all articles"
+      },
+      "empty": {
+        "title": "No articles yet",
+        "text": "We are writing the first ones. Please check back soon."
+      }
+    },
+    "article": {
+      "tags": "Tags",
+      "loadingTitle": "Loading the article",
+      "share": {
+        "title": "Share this article",
+        "newTab": "(opens in a new tab)",
+        "networks": {
+          "whatsapp": "WhatsApp",
+          "facebook": "Facebook",
+          "x": "X",
+          "linkedin": "LinkedIn",
+          "email": "Email"
+        }
+      }
+    }
+  },
+  "careers": {
+    "workMode": {
+      "onsite": "On site",
+      "hybrid": "Hybrid",
+      "remote": "Remote"
+    },
+    "employmentType": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "contract": "Contract",
+      "internship": "Internship"
+    },
+    "card": {
+      "location": "Location:",
+      "experience": "Experience:",
+      "applyBy": "Apply by {date}"
+    },
+    "filters": {
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search jobs, such as site engineer",
+      "submit": "Search",
+      "department": "Department",
+      "location": "Location",
+      "workMode": "Work mode",
+      "type": "Job type",
+      "allDepartments": "All departments",
+      "allLocations": "All locations",
+      "allWorkModes": "Any work mode",
+      "allTypes": "Any type",
+      "summary": "{count, plural, one {# open job} other {# open jobs}}",
+      "summaryFiltered": "{count, plural, one {# job matches} other {# jobs match}}",
+      "clear": "Clear search and filters"
+    },
+    "detail": {
+      "location": "Location",
+      "experience": "Experience",
+      "pay": "Pay",
+      "posted": "Posted",
+      "closes": "Apply by",
+      "description": "About the job",
+      "responsibilities": "What you will do",
+      "requirements": "What we are looking for"
+    },
+    "apply": {
+      "button": "Apply for this job",
+      "byEmail": "Apply by email",
+      "linkHint": "You apply on the employer's own page. It opens in a new tab.",
+      "emailHint": "This opens your email app with a message to {address}.",
+      "emailSubject": "Application: {title}",
+      "closed": "This job is no longer open",
+      "closedText": "Applications for this job have closed. See the jobs that are open now.",
+      "seeJobs": "See open jobs"
+    },
+    "empty": {
+      "title": "No open jobs right now",
+      "text": "We have no open jobs at the moment. Please check again soon."
+    },
+    "noMatches": {
+      "title": "No jobs match your search",
+      "text": "Try fewer or different words, or clear a filter.",
+      "reset": "Show all jobs"
+    },
+    "page": {
+      "metaTitle": "Careers",
+      "metaDescription": "Open jobs at findsprop: see the roles, the places and how to apply.",
+      "title": "Careers",
+      "lead": "Join the team that helps people find a home. See the jobs that are open now.",
+      "loadingTitle": "Loading the jobs",
+      "jobLoadingTitle": "Loading the job",
+      "crumb": {
+        "nav": "Breadcrumb",
+        "backHome": "Back to home",
+        "backCareers": "Back to the jobs",
+        "home": "Home",
+        "careers": "Careers"
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { resolveHomeOrder } from "@/features/site";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -158,6 +159,7 @@ describe("UT-hero-page: the Hero page (S7-T10)", () => {
 });
 
 const HOMEPAGE: HomepageFormValues = {
+  order: resolveHomeOrder(),
   showFeatured: true,
   showProjectTypes: true,
   showDiscovery: true,
@@ -180,7 +182,7 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Homepage sections" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("switch", { name: /Why Find Prop/ })).not.toBeChecked();
+    expect(screen.getByRole("switch", { name: /Why findsprop/ })).not.toBeChecked();
     expect(screen.getByRole("switch", { name: /Featured listings/ })).toBeChecked();
     expect(screen.getByRole("textbox", { name: "Label 1" })).toHaveValue("Adyar");
     expect(screen.getByRole("textbox", { name: "Latitude 2" })).toHaveValue("12.9815");
@@ -190,20 +192,36 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
         name: "Homepage",
       }),
     ).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText(/The first 4 also appear as Popular chips/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Tiles shown under the search. Visitors who click one/),
+    ).toBeInTheDocument();
   });
 
   it("draws the sections and the localities as the boxes are changed", async () => {
     open();
     const home = () => picture("site-homepage-preview")?.textContent ?? "";
-    expect(home()).toContain("Why Find PropOff");
+    expect(home()).toContain("Why findspropOff");
     expect(home()).toContain("Adyar");
-    await userEvent.click(screen.getByRole("switch", { name: /Why Find Prop/ }));
-    expect(home()).toContain("Why Find PropOn");
+    await userEvent.click(screen.getByRole("switch", { name: /Why findsprop/ }));
+    expect(home()).toContain("Why findspropOn");
     await userEvent.click(screen.getByRole("button", { name: "Remove: Adyar" }));
     await userEvent.click(screen.getByRole("button", { name: "Remove: Velachery" }));
     expect(home()).toContain("Explore by localityOff");
     expect(home()).toContain("Section hidden");
+  });
+
+  it("moves a section with its arrows, draws the new order and sends it", async () => {
+    const save = open();
+    const home = () => picture("site-homepage-preview")?.textContent ?? "";
+    expect(home().indexOf("Explore by localityOn")).toBeLessThan(home().indexOf("Featured homes"));
+    await userEvent.click(screen.getByRole("button", { name: "Move Explore by locality down" }));
+    expect(home().indexOf("Featured homes")).toBeLessThan(home().indexOf("Explore by localityOn"));
+    expect(screen.getByRole("button", { name: "Move Explore by locality up" })).toBeEnabled();
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save.mock.calls[0]?.[0]).toMatchObject({
+      order: ["featured", "discovery", "newLaunches", "projectTypes", "newest", "whyUs", "cta"],
+    });
   });
 
   it("sends the switches and the localities as typed, then says so", async () => {
@@ -217,6 +235,7 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
       showDiscovery: true,
       showWhyUs: false,
       showCta: false,
+      order: HOMEPAGE.order,
       localities: HOMEPAGE.localities,
     });
     await waitFor(() =>

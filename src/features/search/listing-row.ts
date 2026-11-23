@@ -24,6 +24,11 @@ export const listingRowSchema = z.object({
   published_at: z.string().nullable(),
   cover_path: z.string().nullable(),
   cover_alt: z.string().nullable(),
+  /**
+   * Kilometres from the searched place to the home's public point, to one decimal; null when no place
+   * was searched, and absent from rows that came from before the column existed (ADR-135).
+   */
+  distance_km: z.number().nonnegative().nullable().optional(),
 });
 
 /** A home as the readers keep it: the row, and how many days old it was when it was read. */

@@ -55,7 +55,8 @@
       "visible": {
         "cards": ["home:k3x9a2bd"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-02",
@@ -111,7 +112,8 @@
       "visible": {
         "cards": ["home:p6a2d5ek"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-03",
@@ -165,7 +167,8 @@
       "visible": {
         "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-04",
@@ -221,7 +224,8 @@
       "visible": {
         "cards": ["home:n5z7c4dh"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-05",
@@ -275,7 +279,8 @@
       "visible": {
         "cards": ["home:t2e6h9jq"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-06",
@@ -329,7 +334,8 @@
       "visible": {
         "cards": ["home:u3f7j2kr"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-07",
@@ -379,7 +385,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-08",
@@ -484,7 +491,8 @@
       "visible": {
         "cards": ["home:k3x9a2bd"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-10",
@@ -534,7 +542,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-11",
@@ -582,7 +591,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-12",
@@ -631,7 +641,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-13",
@@ -685,7 +696,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-14",
@@ -735,7 +747,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-search-15",
@@ -785,7 +798,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-property-01",
@@ -1502,7 +1516,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-builder-04",
@@ -1665,7 +1680,7 @@
         ]
       },
       {
-        "text": "Velan Gardens in Tambaram is a new launch with prices from ₹48 L to ₹72 L. [[project:velan-gardens]]"
+        "text": "Velan Gardens in Tambaram is a new launch at ₹48 L basic price. [[project:velan-gardens]]"
       }
     ],
     "expect": {
@@ -1673,9 +1688,6 @@
       "facts": [
         {
           "rupees": 4800000
-        },
-        {
-          "rupees": 7200000
         }
       ],
       "tools": {
@@ -1691,7 +1703,8 @@
       "visible": {
         "cards": ["project:velan-gardens"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-02",
@@ -1728,7 +1741,7 @@
         ]
       },
       {
-        "text": "Kadal Vista in OMR Navalur is an under-construction project by Kadal Homes with prices from ₹78 L to ₹1.42 Cr. Possession is expected in Dec 2028. You can call the project's contact number, +914412345678. [[project:kadal-vista]]"
+        "text": "Kadal Vista in OMR Navalur is an under-construction project by Kadal Homes at ₹78 L basic price. Possession is expected in Dec 2028. You can call the project's contact number, +914412345678. [[project:kadal-vista]]"
       }
     ],
     "expect": {
@@ -1736,9 +1749,6 @@
       "facts": [
         {
           "rupees": 7800000
-        },
-        {
-          "rupees": 14200000
         },
         {
           "any": ["+914412345678"]
@@ -1759,7 +1769,8 @@
         "mustNotCall": [],
         "none": false
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-03",
@@ -1786,7 +1797,7 @@
         ]
       },
       {
-        "text": "Kadal Bay in Perungudi is ready to move, with prices from ₹1.1 Cr to ₹1.9 Cr. [[project:kadal-bay]]"
+        "text": "Kadal Bay in Perungudi is ready to move, at ₹1.1 Cr basic price. [[project:kadal-bay]]"
       }
     ],
     "expect": {
@@ -1794,9 +1805,6 @@
       "facts": [
         {
           "rupees": 11000000
-        },
-        {
-          "rupees": 19000000
         }
       ],
       "tools": {
@@ -1809,7 +1817,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-04",
@@ -1836,7 +1845,7 @@
         ]
       },
       {
-        "text": "Kadal Vista in OMR Navalur is an under-construction project from ₹78 L to ₹1.42 Cr. [[project:kadal-vista]]"
+        "text": "Kadal Vista in OMR Navalur is an under-construction project at ₹78 L basic price. [[project:kadal-vista]]"
       }
     ],
     "expect": {
@@ -1853,7 +1862,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-project-05",
@@ -2003,7 +2013,8 @@
         "mustNotCall": [],
         "none": false
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-emi-01",
@@ -2420,7 +2431,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-followup-02",
@@ -2479,7 +2491,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-propose-01",
@@ -2812,7 +2825,8 @@
           }
         ]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-near-04",
@@ -3264,7 +3278,8 @@
         "mustNotMatch": ["https?:", "/properties/"],
         "mustNotContain": ["[[home:"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-cards-02",
@@ -3327,7 +3342,8 @@
         "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }
-    }
+    },
+    "session": "customer"
   },
   {
     "id": "G-compare-selected-01",
@@ -3408,6 +3424,2161 @@
       ],
       "tools": {
         "mustNotCall": ["compare_properties"]
+      }
+    }
+  },
+  {
+    "id": "G-place-01",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "2 BHK homes near Velachery: the distances, then the homes a little further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me 2 BHK homes near Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velachery",
+              "bhk": 2
+            }
+          }
+        ]
+      },
+      {
+        "text": "Two 2 BHK homes are within 5 km of Velachery: a flat for ₹78 L, 1.2 km away, [[home:m4y8b3ce]] and a flat for ₹69 L, 2.9 km away. [[home:y7k3p6qv]] A little further out, a 2 BHK for rent at ₹35,000/mo is 5.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 7800000
+        },
+        {
+          "rupees": 6900000
+        },
+        {
+          "any": ["1.2 km"]
+        },
+        {
+          "any": ["2.9 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velachery",
+              "bhk": 2
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:m4y8b3ce", "home:y7k3p6qv", "home:v4g8k3ls"],
+        "showsCards": ["home:m4y8b3ce", "home:y7k3p6qv"],
+        "mustContain": [["further out", "farther"]]
+      },
+      "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-place-02",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a misspelt place ('vyasarpaadi') is found; nothing within 5 km, so the nearest homes are said to be further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Any homes near vyasarpaadi?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "vyasarpaadi"
+            }
+          }
+        ]
+      },
+      {
+        "text": "There are no homes within 5 km of vyasarpaadi. The nearest is a 2 BHK for rent in Anna Nagar at ₹28,000/mo, 5.8 km away. [[home:p6a2d5ek]] The next ones are about 11.9 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 28000
+        },
+        {
+          "any": ["5.8 km"]
+        },
+        {
+          "any": ["11.9 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "vyasarpaadi"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:p6a2d5ek", "home:n5z7c4dh", "home:v4g8k3ls"],
+        "showsCards": ["home:p6a2d5ek"],
+        "mustContain": [["no homes within", "none within"]]
+      },
+      "modelNeverSaw": ["13.1167", "80.2564", "fake-vyasarpadi", "Vyasarpadi"]
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-place-03",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a locality typed with a typo ('Velacheri') is matched to the listed spelling by the server",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "3 BHK homes to buy near Velacheri"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velacheri",
+              "listingType": "sale",
+              "bhk": 3
+            }
+          }
+        ]
+      },
+      {
+        "text": "Two 3 BHK homes to buy are within 5 km of Velacheri: ₹1.25 Cr, 1.2 km away, [[home:k3x9a2bd]] and ₹1.1 Cr, 2.9 km away. [[home:x6j2n5pu]] Further out there is a 3 BHK villa for ₹2.4 Cr, 5.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        },
+        {
+          "rupees": 11000000
+        },
+        {
+          "rupees": 24000000
+        },
+        {
+          "any": ["1.2 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velacheri",
+              "listingType": "sale",
+              "bhk": 3
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:k3x9a2bd", "home:x6j2n5pu", "home:n5z7c4dh"],
+        "showsCards": ["home:k3x9a2bd", "home:x6j2n5pu"]
+      },
+      "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-place-04",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a place too misspelt to find ('kk nagr'): the assistant says so and offers the listed localities, with no guess",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "homes near kk nagr"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "kk nagr"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find a place called kk nagr in Tamil Nadu. Could you check the spelling, or name a locality that is listed, such as Velachery or Adyar?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "kk nagr"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["could not find", "couldn't find", "cannot find"]],
+        "mustNotContain": ["KK Nagar"]
+      },
+      "modelNeverSaw": ["13.0415", "80.1996", "fake-kk-nagar"]
+    }
+  },
+  {
+    "id": "G-place-05",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a name that fits more than one area ('Anna Nagar'): one short question, and no area of the provider's named",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me homes near Anna Nagar"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Anna Nagar"
+            }
+          }
+        ]
+      },
+      {
+        "text": "More than one place could be meant by Anna Nagar. Could you give me a more specific name, such as the area with a landmark, or the pincode?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "anna nagar"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["more specific"]],
+        "mustNotContain": ["Anna Nagar East", "Anna Nagar West"]
+      },
+      "modelNeverSaw": [
+        "Anna Nagar East",
+        "Anna Nagar West",
+        "13.0905",
+        "Chennai, Tamil Nadu, India"
+      ]
+    }
+  },
+  {
+    "id": "G-place-06",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "an unknown place: the assistant says it is not found and invents no home or place",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Are there any flats near Xyzzyland?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Xyzzyland"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find a place called Xyzzyland in Tamil Nadu. If you name a locality that is listed, I can look there instead."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "xyzzyland"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["could not find", "couldn't find", "cannot find"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-07",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a place outside Tamil Nadu: not found, and no search is made around a far-away point",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Find me a house near Bandra Mumbai"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Bandra Mumbai"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I could not find that place in Tamil Nadu, and findsprop lists homes in Tamil Nadu only. I can look by a locality that is listed if you like."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "bandra mumbai"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["Tamil Nadu"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-08",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "the place lookup is down: the assistant says it cannot look the place up and offers the localities",
+    "placeSearch": true,
+    "placesDown": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "homes near Velachery please"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I cannot look that place up right now. I can search by a locality that is listed instead, such as Velachery, if you would like."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "velachery"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["cannot look", "can't look", "unable to look"]]
+      }
+    }
+  },
+  {
+    "id": "G-place-09",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a distance the customer gave (3 km) is passed on, and homes beyond it are said to be further out",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Rental homes within 3 km of Adyar"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "place": "Adyar",
+              "radiusKm": 3,
+              "listingType": "rent"
+            }
+          }
+        ]
+      },
+      {
+        "text": "One rental is within 3 km of Adyar: a 2 BHK for ₹35,000/mo, 1 km away. [[home:v4g8k3ls]] Further out, a rental for ₹40,000/mo is 3.4 km away."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 35000
+        },
+        {
+          "rupees": 40000
+        },
+        {
+          "any": ["3.4 km"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "place": "adyar",
+              "radiusKm": 3,
+              "listingType": "rent"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:v4g8k3ls", "home:w5h9m4nt", "home:p6a2d5ek"],
+        "showsCards": ["home:v4g8k3ls"],
+        "mustContain": [["further out", "farther"]]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-place-10",
+    "set": "golden",
+    "category": "place",
+    "language": "en",
+    "title": "a locality with no 'near' still searches by locality, with no place and no lookup",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "Homes in Velachery"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found three homes in Velachery. The 3 BHK apartment is ₹1.25 Cr. [[home:k3x9a2bd]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 12500000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "velachery",
+              "place": null
+            }
+          }
+        ]
+      },
+      "visible": {
+        "showsCards": ["home:k3x9a2bd"]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-sitelink-01",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "post a property: says it cannot, gives the page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I want to post my flat for sale, please post it for me"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't post a property from this chat, but you can do it yourself on the website in a few steps. [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-02",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "register: points to the sign-in page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "how do I register on findsprop"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't register you from here, but you can sign in or register with your mobile number on the website. [[link:sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Sign in or register"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-03",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "saved homes: points to the saved tab",
+    "messages": [
+      {
+        "role": "user",
+        "text": "show my saved homes"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't open your saved homes in this chat, but you can see them on your dashboard. [[link:saved_homes]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Saved homes"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-04",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "edit a listing: points to my listings",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I need to edit the price of my listing"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't change a listing from this chat, but you can edit it from your listings on the website. [[link:my_listings]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Your listings"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-05",
+    "set": "golden",
+    "category": "site_link",
+    "language": "ta",
+    "title": "Tamil: post a property",
+    "messages": [
+      {
+        "role": "user",
+        "text": "என் வீட்டை விற்பனைக்கு பதிவு செய்ய வேண்டும், நீங்களே பதிவு செய்யுங்கள்"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "இந்த அரட்டையில் என்னால் சொத்தை பதிவு செய்ய முடியாது, ஆனால் இணையதளத்தில் நீங்களே பதிவு செய்யலாம். [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-06",
+    "set": "golden",
+    "category": "site_link",
+    "language": "ta",
+    "title": "Tamil: sign in",
+    "messages": [
+      {
+        "role": "user",
+        "text": "நான் எப்படி உள்நுழைவது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "என்னால் உங்களை உள்நுழைய வைக்க முடியாது, இணையதளத்தில் உங்கள் மொபைல் எண்ணுடன் நீங்களே உள்நுழையலாம். [[link:sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Sign in or register"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-07",
+    "set": "golden",
+    "category": "site_link",
+    "language": "tanglish",
+    "title": "Tanglish: post a property",
+    "messages": [
+      {
+        "role": "user",
+        "text": "en veetai sell panna post pannunga"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Ennala indha chat-la property post panna mudiyadhu, aana website-la neengale post pannalam. [[link:post_property]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-08",
+    "set": "golden",
+    "category": "site_link",
+    "language": "tanglish",
+    "title": "Tanglish: saved homes",
+    "messages": [
+      {
+        "role": "user",
+        "text": "naan save panna veedugal kaattu"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Ennala ungal saved homes-ai inga open panna mudiyadhu, dashboard-la neengale paarkkalam. [[link:saved_homes]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Saved homes"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-sitelink-09",
+    "set": "golden",
+    "category": "site_link",
+    "language": "en",
+    "title": "builder project form: points to the builder sign-in",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I am a builder, add my new project"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "I can't add a project from this chat, but builders can do it themselves after signing in on the website. [[link:builder_sign_in]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": true
+      },
+      "visible": {
+        "mustContain": [["Builder sign in"]],
+        "mustNotContain": ["[[link", "http", "www."],
+        "mustNotMatch": ["\\b(i|we)(['’]ve| have)? (posted|registered|signed you in|saved)\\b"]
+      }
+    }
+  },
+  {
+    "id": "G-content-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "registration charges: searches the Blog, reads the matching part, names the article as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How are stamp duty and registration charges worked out?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "registration charge"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says stamp duty is paid on the guideline value or on the sale price, whichever is higher, and the registration charge is paid at the sub-registrar office on the day the sale deed is registered. The rates in that guide are made-up examples, 7 percent and 2 percent, and it was published on 5 Nov 2026, so please check the current rates before you plan."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "number": 7
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "registration"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sub-registrar"], ["check the current rates", "published on"]],
+        "mustNotContain": ["zzhiddenmarker", "old advice", "festival"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-content-02",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "how to post a property: finds the FAQ answer and names the question as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I post my property on findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open Post a property from the menu, sign in with your mobile number and follow the steps. Every listing is reviewed before it goes live."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "kind": "faq"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Post a property"], ["reviewed"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+      }
+    }
+  },
+  {
+    "id": "G-content-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about contacting an owner: the model searches in English keywords",
+    "messages": [
+      {
+        "role": "user",
+        "text": "owner ah eppadi contact panradhu? number kedaikuma?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "contact owner",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Use the enquiry form on the page of the home. The owner's phone number is never shown; your enquiry is passed to the owner for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "owner"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["enquiry"]],
+        "mustNotMatch": ["\\d{10}", "\\+91"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+      }
+    }
+  },
+  {
+    "id": "G-content-04",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about home loan papers: the model searches in English keywords and reads the part it needs",
+    "messages": [
+      {
+        "role": "user",
+        "text": "வீட்டுக் கடன் வாங்க என்ன ஆவணங்கள் தேவை?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "home loan checklist",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000002",
+              "query": "income proof"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says banks usually ask for identity proof, address proof, income proof for the last six months and the property papers. Keep copies ready before you apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "loan"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["identity proof"], ["income proof"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
+        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+      }
+    }
+  },
+  {
+    "id": "G-content-05",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "no match: says nothing was found, draws no source and does not answer from memory",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What are the rules for a swimming pool permit in Chennai?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "swimming pool permit",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find an article or a question about that on findsprop, so I can't say what the rules are. A local authority will be able to tell you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": ["get_content_item"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find", "could not find", "no article"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-06",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "a mixed question calls a content tool and the home search together: the answer holds the guide's point, the home's card and the guide as a source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What are the registration charges, and are there any 2 BHK flats in Velachery?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          },
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "bhk": 2,
+              "locality": "Velachery"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says the registration charge is paid at the sub-registrar office on the day the sale deed is registered. For homes, I found a 2 BHK apartment near the lake in Velachery: 980 sq ft for ₹78 L. [[home:m4y8b3ce]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 7800000
+        },
+        {
+          "number": 980
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "registration"
+            }
+          },
+          {
+            "name": "search_properties",
+            "args": {
+              "bhk": 2,
+              "locality": "velachery"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sub-registrar"]],
+        "cards": ["home:m4y8b3ce"],
+        "showsCards": ["home:m4y8b3ce"],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-content-07",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the FAQ is switched off: nothing is found in it, so the answer cannot use it",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I post my property on findsprop?"
+      }
+    ],
+    "hiddenModules": ["faq"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find anything about that on findsprop right now, so I can't give the steps."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["Post a property from the menu", "reviewed before"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-08",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the Blog is switched off: its guide is not found",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How are registration charges worked out?"
+      }
+    ],
+    "hiddenModules": ["blog"],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find anything about that on findsprop right now, so I can't say how they are worked out."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["sub-registrar", "7 percent", "2 percent"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-09",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about stamp duty: finds the guide and says to check the date",
+    "messages": [
+      {
+        "role": "user",
+        "text": "stamp duty registration evlo aagum? edhavadhu guide irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "stamp duty registration",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "stamp duty"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide explains that stamp duty is paid on the guideline value or the sale price, whichever is higher. Its example rate is made up, and the guide was published on 5 Nov 2026, so please confirm the current rate before you rely on it."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["published on"], ["guideline value"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-content-10",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about posting a property: the model searches the FAQ in English keywords",
+    "messages": [
+      {
+        "role": "user",
+        "text": "என் வீட்டை இந்தத் தளத்தில் எப்படிப் பதிவிடுவது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "post property",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open Post a property from the menu, sign in with your mobile number and follow the steps. You can edit or pause the listing from your dashboard."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "kind": "faq"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Post a property"]],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks what jobs are open: lists them and names the first three as sources",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Are there any jobs open at findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there are four open jobs right now: a customer support associate in Coimbatore, a content writing intern, a sales executive in Madurai and a site engineer in Chennai. Open the Careers page to read each one."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["site engineer"], ["Madurai"]],
+        "mustNotContain": ["zzhiddenmarker", "head of growth", "accountant", "data analyst"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": [
+          "/careers/customer-support-associate",
+          "/careers/content-writing-intern",
+          "/careers/sales-executive-madurai"
+        ],
+        "showsSources": [
+          "/careers/customer-support-associate",
+          "/careers/content-writing-intern",
+          "/careers/sales-executive-madurai"
+        ]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-02",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks about a site engineer job in Chennai: searches, reads the posting and names only that job as its source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Is there a site engineer job in Chennai? What do they ask for?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "site engineer",
+              "department": null,
+              "location": "Chennai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "b2000000-0000-4000-8000-000000000001",
+              "query": "requirements"
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes. The site engineer job is hybrid and full time, in Chennai. They ask for a civil engineering degree and three years on building sites. Open the job on the Careers page to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "query": "site engineer"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "b2000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["civil engineering"], ["three years"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/careers/site-engineer"],
+        "showsSources": ["/careers/site-engineer"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about a remote internship: the model searches in English with the work mode and type",
+    "messages": [
+      {
+        "role": "user",
+        "text": "remote la intern job edhavadhu irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": "remote",
+              "type": "internship",
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Aama, oru content writing intern job irukku. Idhu remote internship, stipend irukku. Careers page la paarunga."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "workMode": "remote",
+              "type": "internship"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["content writing"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": ["/careers/content-writing-intern"],
+        "showsSources": ["/careers/content-writing-intern"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-04",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks for a job that does not exist: says none was found and does not invent one",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Do you have a pilot job?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "pilot",
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find an open job like that at findsprop right now."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-jobs-05",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks how to apply: reads the job and says to apply on its page, taking no CV and no number",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How do I apply for the sales executive job in Madurai? Can I send my CV here?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "sales executive",
+              "department": null,
+              "location": "Madurai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "b2000000-0000-4000-8000-000000000002",
+              "query": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Open the sales executive job on the Careers page and use its Apply button. I can't take a CV or apply for you here, so please don't send your CV or phone number in this chat."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "b2000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Careers page"], ["can't take a CV"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/sales-executive-madurai"],
+        "showsSources": ["/careers/sales-executive-madurai"]
+      }
+    }
+  },
+  {
+    "id": "G-jobs-06",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "the admin switched Careers off: the assistant finds no job and says so",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Any vacancies at findsprop?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "I couldn't find any open jobs at findsprop right now."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["couldn't find"]],
+        "mustNotContain": ["zzhiddenmarker", "site engineer"],
+        "sources": []
+      }
+    },
+    "hiddenModules": ["careers"]
+  },
+  {
+    "id": "G-scope-01",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "documents for registration day: found from the guide, dated, and said to be general information",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Which documents should I carry on the day the sale deed is registered?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "documents registration sale deed",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "documents to carry"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide, published on 5 Nov 2026, lists the sale deed, an identity proof and an encumbrance certificate as the documents to carry. This is general information and not legal advice, so please check the list with the sub-registrar office."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": ["search_properties", "propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sale deed"], ["encumbrance"], ["published on", "5 Nov"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-02",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about reaching a home's owner: answered from the FAQ without giving a number",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ஒரு வீட்டின் உரிமையாளரை எப்படி தொடர்பு கொள்வது?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "contact the owner of a home",
+              "kind": "faq",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Use the enquiry form on the page of the home. The owner's phone number is never shown here; the enquiry is passed to the owner for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "owner"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["enquiry form"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "\\+?\\d[\\d ]{8,}\\d"],
+        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
+        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-03",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about home loan papers: finds the checklist and names it as the source",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Home loan vaanga enna papers venum?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "home loan documents checklist",
+              "kind": "article",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000002",
+              "query": "papers income proof"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says banks usually ask for identity proof, address proof, income proof for the last six months and the property papers. Keep copies ready before you apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "mustNotCall": ["calculate_emi"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["identity proof"], ["income proof"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
+        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-04",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "asks about sales jobs in Madurai: searches the open jobs and names that one posting",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Is there any sales job open in Madurai?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "sales",
+              "department": null,
+              "location": "Madurai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there is one open: a sales executive job in Madurai, working on site and full time. Open it on the Careers page to read the details and to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "location": "Madurai"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sales executive"], ["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/sales-executive-madurai"],
+        "showsSources": ["/careers/sales-executive-madurai"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-05",
+    "set": "golden",
+    "category": "content",
+    "language": "tanglish",
+    "title": "Tanglish question about a site engineer job in Chennai: searches in English and names that posting",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Chennai la site engineer velai irukka?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": "site engineer",
+              "department": null,
+              "location": "Chennai",
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there is a site engineer job open in Chennai. It is a hybrid, full time job. Open it on the Careers page to read the details and to apply."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs",
+            "args": {
+              "query": "site engineer"
+            }
+          }
+        ],
+        "mustNotCall": ["propose_enquiry"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["site engineer"], ["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker"],
+        "mustNotMatch": ["https?://", "@"],
+        "sources": ["/careers/site-engineer"],
+        "showsSources": ["/careers/site-engineer"]
+      }
+    }
+  },
+  {
+    "id": "G-scope-06",
+    "set": "golden",
+    "category": "content",
+    "language": "ta",
+    "title": "Tamil question about work at findsprop: lists the open jobs and sends the customer to the Careers page",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ஃபைண்ட்ஸ்ப்ராப்பில் ஏதேனும் வேலை வாய்ப்பு உள்ளதா?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_jobs",
+            "input": {
+              "query": null,
+              "department": null,
+              "location": null,
+              "workMode": null,
+              "type": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Yes, there are open jobs now: a customer support associate, a content writing intern, a sales executive and a site engineer. Open the Careers page to read each one and apply there."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_jobs"
+          }
+        ],
+        "mustNotCall": ["propose_enquiry", "propose_site_visit"],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["Careers page"]],
+        "mustNotContain": ["zzhiddenmarker", "draft"],
+        "mustNotMatch": ["https?://", "@"]
       }
     }
   }

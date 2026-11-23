@@ -32,17 +32,24 @@ type Problem =
 type PhoneSignInProps = {
   siteKey: string | undefined;
   /** The visitor was sent here by an action that needs an account (?gate=enquire). */
-  gate: boolean;
+  gate?: boolean;
   /** The visitor was sent here to save a home (?gate=save): the words say so, and the return brings them back to it. */
   saveGate?: boolean;
   /** The visitor's session ended while they were filling in a form (?gate=expired): the words say so and that what they typed is kept. */
   expiredGate?: boolean;
   /** Where to go once signed in: an address the page has already checked (BR-06). */
-  redirectTo: string;
+  redirectTo?: string;
   /** Whether the visitor was already signed in when the page was requested (the server only reports it). */
-  alreadySignedIn: boolean;
+  alreadySignedIn?: boolean;
   /** Whether the email step follows the name step. When off, the visitor goes straight on after the name. */
   emailStep?: boolean;
+  /**
+   * The flow inside another page's card (the login wall, ADR-171): the same number step, the same code step, the
+   * same actions and limits, but no frame, no page links and no `h1`, and no navigation. Once the code is right this
+   * is called and the page stays where it is. A new account is not asked for its name here (the name is asked for
+   * before posting or enquiring, ADD-04), nor for an email.
+   */
+  onSignedIn?: () => void;
 };
 
 function minutesToWait(retryAfter: number | undefined): number {
@@ -57,13 +64,15 @@ function minutesToWait(retryAfter: number | undefined): number {
  */
 export function PhoneSignIn({
   siteKey,
-  gate,
+  gate = false,
   saveGate = false,
   expiredGate = false,
-  redirectTo,
-  alreadySignedIn,
+  redirectTo = "/dashboard",
+  alreadySignedIn = false,
   emailStep = true,
+  onSignedIn,
 }: PhoneSignInProps) {
+  const inline = onSignedIn !== undefined;
   const translate = useTranslations("auth.phone");
   const translateValidation = useTranslations("validation");
   const [phone, setPhone] = useState("");
@@ -138,14 +147,16 @@ export function PhoneSignIn({
 
   const phoneStep = (
     <div className="flex flex-col gap-4">
-      <div>
-        <Heading as="h1" size="2">
-          {translate("title")}
-        </Heading>
-        <Text variant="lead" className="mt-2">
-          {translate("lead")}
-        </Text>
-      </div>
+      {inline ? null : (
+        <div>
+          <Heading as="h1" size="2">
+            {translate("title")}
+          </Heading>
+          <Text variant="lead" className="mt-2">
+            {translate("lead")}
+          </Text>
+        </div>
+      )}
 
       {expiredGate ? (
         <Alert tone="info" title={translate("expiredGateTitle")}>
@@ -249,19 +260,39 @@ export function PhoneSignIn({
         </Text>
       </form>
 
-      <div className="flex flex-col items-center gap-2 text-center">
-        <Text as="span">
-          {withLinks(translate("builderPrompt", { signIn: marker("signIn") }), {
-            signIn: <Link href="/builder/login">{translate("builderLink")}</Link>,
-          })}
-        </Text>
-        <Link href="/" className="inline-flex items-center gap-2">
-          <Icon icon={ArrowLeft} size="sm" />
-          {translate("backLink")}
-        </Link>
-      </div>
+      {inline ? null : (
+        <div className="flex flex-col items-center gap-2 text-center">
+          <Text as="span">
+            {withLinks(translate("builderPrompt", { signIn: marker("signIn") }), {
+              signIn: <Link href="/builder/login">{translate("builderLink")}</Link>,
+            })}
+          </Text>
+          <Link href="/" className="inline-flex items-center gap-2">
+            <Icon icon={ArrowLeft} size="sm" />
+            {translate("backLink")}
+          </Link>
+        </div>
+      )}
     </div>
   );
+
+  // Inside another page's card: the number step or the code step, nothing around them.
+  if (inline) {
+    return sent ? (
+      <CodeEntry
+        phone={sent.phone}
+        sentAt={sent.sentAt}
+        resendAfter={sent.resendAfter}
+        siteKey={siteKey}
+        headingLevel="h2"
+        onChangeNumber={() => setSent(null)}
+        onNeedsName={onSignedIn}
+        onSignedIn={onSignedIn}
+      />
+    ) : (
+      phoneStep
+    );
+  }
 
   // A visitor who arrived signed in is on their way to where they were headed: show nothing meanwhile.
   if (leaving) return null;

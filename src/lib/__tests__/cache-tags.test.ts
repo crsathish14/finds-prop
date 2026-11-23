@@ -2,11 +2,17 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  blogPostTag,
   CACHE_TAGS,
+  jobTag,
   projectTag,
   propertyTag,
+  tagsAfterBlogChange,
   tagsAfterBuilderChange,
+  tagsAfterContentCategoryChange,
+  tagsAfterFaqChange,
   tagsAfterFormChange,
+  tagsAfterJobChange,
   tagsAfterListingChange,
   tagsAfterProjectChange,
   tagsAfterSiteSettingsChange,
@@ -17,13 +23,16 @@ import {
 // that part is not tested here; this proves the lists and the wiring that decide it.
 
 describe("IT-cache: the names", () => {
-  it("keeps the names the first reads were built with, and adds the forms name", () => {
+  it("keeps the names the first reads were built with, and adds the forms and content module names", () => {
     expect(CACHE_TAGS).toEqual({
       listings: "home-listings",
       homeProjects: "home-projects",
       projects: "projects",
       siteSettings: "site-settings",
       forms: "forms",
+      blog: "blog",
+      faq: "faq",
+      careers: "careers",
     });
   });
 
@@ -107,8 +116,12 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
   const REFRESHED = new Set([
     ...tagsAfterListingChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterProjectChange("x").map((tag) => tag.replace(/:.*/, ":")),
+    ...tagsAfterBlogChange("x").map((tag) => tag.replace(/:.*/, ":")),
+    ...tagsAfterJobChange("x").map((tag) => tag.replace(/:.*/, ":")),
     ...tagsAfterSiteSettingsChange(),
     ...tagsAfterFormChange(),
+    ...tagsAfterContentCategoryChange(),
+    ...tagsAfterFaqChange(),
   ]);
 
   it("finds the cached reads", () => {
@@ -126,6 +139,24 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
           expect(REFRESHED, `${file}: ${part}`).toContain("property:");
         } else if (/^projectTag\(/.test(part)) {
           expect(REFRESHED, `${file}: ${part}`).toContain("project:");
+        } else if (/^jobTag\(/.test(part)) {
+          expect(REFRESHED, `${file}: ${part}`).toContain("job:");
+        } else if (/^blogPostTag\(/.test(part)) {
+          expect(REFRESHED, `${file}: ${part}`).toContain("blog-post:");
+        } else if (/^CACHE_TAGS\.(blog|faq|careers)$/.test(part)) {
+          // a content module's own tag: its list, its pages and the AI assistant's reads (ADR-143)
+          const name = part.replace("CACHE_TAGS.", "") as "blog" | "faq" | "careers";
+          expect(REFRESHED, `${file}: ${part}`).toContain(CACHE_TAGS[name]);
+        } else if (/^categoryTag\(/.test(part)) {
+          // a content category list is tagged blog, faq or careers, and a category change refreshes all three
+          for (const tag of [CACHE_TAGS.blog, CACHE_TAGS.faq, CACHE_TAGS.careers]) {
+            expect(REFRESHED, `${file}: ${part}`).toContain(tag);
+          }
+        } else if (/^CACHE_TAGS\.\w+$/.test(part)) {
+          // a read that names a central tag directly: a helper must refresh that same tag
+          const name = part.slice("CACHE_TAGS.".length) as keyof typeof CACHE_TAGS;
+          expect(CACHE_TAGS, `${file}: ${part}`).toHaveProperty(name);
+          expect(REFRESHED, `${file}: ${part}`).toContain(CACHE_TAGS[name]);
         } else {
           expect.fail(`${file}: cacheTag(${part}) is not a central tag (src/lib/cache-tags.ts)`);
         }
@@ -149,5 +180,30 @@ describe("IT-cache: every cached read is tagged with a tag a change refreshes", 
 describe("IT-cache: what a change to a builder refreshes (S7-T05)", () => {
   it("refreshes the projects and the homepage's developers, because a deactivated builder leaves the showcase", () => {
     expect(tagsAfterBuilderChange()).toEqual([CACHE_TAGS.projects, CACHE_TAGS.homeProjects]);
+  });
+});
+
+describe("IT-cache: what a change to the content modules refreshes (ADR-143)", () => {
+  it("an article change refreshes the Blog and that article's page", () => {
+    expect(tagsAfterBlogChange("buying-guide")).toEqual(["blog", "blog-post:buying-guide"]);
+    expect(blogPostTag("buying-guide")).toBe("blog-post:buying-guide");
+  });
+
+  it("a question change refreshes the FAQ", () => {
+    expect(tagsAfterFaqChange()).toEqual(["faq"]);
+  });
+
+  it("a job change refreshes the careers list and that job's page", () => {
+    expect(tagsAfterJobChange("site-engineer")).toEqual(["careers", "job:site-engineer"]);
+    expect(jobTag("site-engineer")).toBe("job:site-engineer");
+  });
+
+  it("a category change refreshes every module that lists categories", () => {
+    expect(tagsAfterContentCategoryChange()).toEqual(["blog", "faq", "careers"]);
+  });
+
+  it("two articles never share a page tag", () => {
+    expect(tagsAfterBlogChange("one")).not.toContain(blogPostTag("two"));
+    expect(tagsAfterJobChange("one")).not.toContain(jobTag("two"));
   });
 });

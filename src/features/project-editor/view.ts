@@ -13,14 +13,23 @@ export interface ProjectEditView {
   projectType: string | null;
   propertyType: string | null;
   projectStatus: string | null;
-  priceMin: number | null;
-  priceMax: number | null;
+  /** Sale or rent; only a commercial project has one. */
+  offerType: string | null;
+  plotStatus: string | null;
+  villaType: string | null;
+  /** The answers to the extra boxes, by box id (ADR-168). */
+  extraFields: Record<string, string>;
+  price: number | null;
+  priceType: string | null;
+  /** The area range in square feet: a plot and every commercial project. */
+  areaMinSqft: number | null;
+  areaMaxSqft: number | null;
   bhkOptions: number[];
   landAreaAcres: number | null;
-  totalUnits: number | null;
-  /** yyyy-mm-dd */
+  /** yyyy-mm-dd, the first day of the month */
   possessionDate: string | null;
   contactPhone: string | null;
+  city: string;
   locality: string;
   address: string | null;
   latitude: number | null;
@@ -29,6 +38,8 @@ export interface ProjectEditView {
   nearby: string[];
   reraApplicable: boolean;
   reraNumber: string | null;
+  /** Public, like the number: why a project that is not under RERA is not. */
+  reraNotApplicableReason: string | null;
   description: string | null;
   specifications: string | null;
   amenities: string[];
@@ -71,13 +82,19 @@ export interface ProjectDbRow {
   project_type: string | null;
   property_type: string | null;
   project_status: string | null;
-  price_min: number | null;
-  price_max: number | null;
+  offer_type: string | null;
+  plot_status: string | null;
+  villa_type: string | null;
+  extra_fields?: unknown;
+  price: number | null;
+  price_type: string | null;
+  area_min_sqft: number | string | null;
+  area_max_sqft: number | string | null;
   bhk_options: number[];
   land_area_acres: number | string | null;
-  total_units: number | null;
   possession_date: string | null;
   contact_phone: string | null;
+  city: string;
   locality: string;
   address: string | null;
   latitude: number | string | null;
@@ -86,6 +103,7 @@ export interface ProjectDbRow {
   nearby: string[];
   rera_applicable: boolean;
   rera_number: string | null;
+  rera_not_applicable_reason: string | null;
   description: string | null;
   specifications: string | null;
   amenities: string[];
@@ -102,6 +120,16 @@ export interface ProjectDbRow {
   published: boolean;
   featured: boolean;
   rejection_reason: string | null;
+}
+
+/** The stored answers to the extra boxes: only text values count, anything else is ignored (ADR-168). */
+export function extraFieldsOf(value: unknown): Record<string, string> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  const answers: Record<string, string> = {};
+  for (const [id, typed] of Object.entries(value)) {
+    if (typeof typed === "string") answers[id] = typed;
+  }
+  return answers;
 }
 
 /** A numeric column may arrive as text; a value that is not a number is none. */
@@ -124,13 +152,19 @@ export function toProjectEditView(
     projectType: row.project_type,
     propertyType: row.property_type,
     projectStatus: row.project_status,
-    priceMin: row.price_min,
-    priceMax: row.price_max,
+    offerType: row.offer_type,
+    plotStatus: row.plot_status,
+    villaType: row.villa_type,
+    extraFields: extraFieldsOf(row.extra_fields),
+    price: row.price,
+    priceType: row.price_type,
+    areaMinSqft: asNumber(row.area_min_sqft),
+    areaMaxSqft: asNumber(row.area_max_sqft),
     bhkOptions: row.bhk_options,
     landAreaAcres: asNumber(row.land_area_acres),
-    totalUnits: row.total_units,
     possessionDate: row.possession_date,
     contactPhone: row.contact_phone,
+    city: row.city,
     locality: row.locality,
     address: row.address,
     latitude: asNumber(row.latitude),
@@ -139,6 +173,7 @@ export function toProjectEditView(
     nearby: row.nearby,
     reraApplicable: row.rera_applicable,
     reraNumber: row.rera_number,
+    reraNotApplicableReason: row.rera_not_applicable_reason,
     description: row.description,
     specifications: row.specifications,
     amenities: row.amenities,
@@ -161,14 +196,14 @@ export function toProjectEditView(
   };
 }
 
-/** One project as the builder's list shows it (S7-T03): the name and place, the price range, where it stands and a cover. */
+/** One project as the builder's list shows it (S7-T03): the name and place, the price and what it means, where it stands and a cover. */
 export interface ProjectListRow {
   id: string;
   name: string;
   slug: string;
   locality: string;
-  priceMin: number | null;
-  priceMax: number | null;
+  price: number | null;
+  priceType: string | null;
   /** The first image's path in the media bucket, or none. */
   cover: string | null;
   moderation: string;
@@ -183,8 +218,8 @@ export type ProjectListDbRow = Pick<
   | "name"
   | "slug"
   | "locality"
-  | "price_min"
-  | "price_max"
+  | "price"
+  | "price_type"
   | "images"
   | "moderation"
   | "published"
@@ -198,8 +233,8 @@ export function toProjectListRow(row: ProjectListDbRow): ProjectListRow {
     name: row.name,
     slug: row.slug,
     locality: row.locality,
-    priceMin: row.price_min,
-    priceMax: row.price_max,
+    price: row.price,
+    priceType: row.price_type,
     cover: row.images[0] ?? null,
     moderation: row.moderation,
     published: row.published,

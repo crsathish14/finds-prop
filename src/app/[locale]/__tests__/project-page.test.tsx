@@ -19,7 +19,10 @@ vi.mock("next/navigation", () => ({
     throw new Signal(`REDIRECT ${to}`);
   },
 }));
-vi.mock("@/features/site", () => ({ getTranslate: async () => (key: string) => key }));
+vi.mock("@/features/site", () => ({
+  getTranslate: async () => (key: string) => key,
+  getSiteSettings: async () => ({ project_fields: { fields: [] } }),
+}));
 vi.mock("@/lib/public-env", () => ({
   publicEnv: {
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
@@ -38,9 +41,11 @@ vi.mock("@/features/home", () => ({
 }));
 vi.mock("@/features/projects", async () => {
   const address = await vi.importActual("@/features/projects/address");
-  const view = await vi.importActual<{ projectMetaDescription: unknown; contactLinks: unknown }>(
-    "@/features/projects/view",
-  );
+  const view = await vi.importActual<{
+    projectMetaDescription: unknown;
+    contactLinks: unknown;
+    extraRows: unknown;
+  }>("@/features/projects/view");
   const data = await vi.importActual<{ projectStructuredData: unknown }>(
     "@/features/projects/structured-data",
   );
@@ -49,6 +54,7 @@ vi.mock("@/features/projects", async () => {
     projectStructuredData: data.projectStructuredData,
     projectMetaDescription: view.projectMetaDescription,
     contactLinks: view.contactLinks,
+    extraRows: view.extraRows,
     ProjectEnquirySlot: (props: {
       slug: string;
       signInHref: string;

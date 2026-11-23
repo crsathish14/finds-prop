@@ -21,6 +21,12 @@ export const CACHE_TAGS = {
   siteSettings: "site-settings",
   /** The forms a visitor fills in: the contact page's form (S5-T05). */
   forms: "forms",
+  /** The Blog: the article list, every article page, the sitemap's articles and the AI assistant's reads (ADR-143). */
+  blog: "blog",
+  /** The FAQ page, its structured data and the AI assistant's reads (ADR-143). */
+  faq: "faq",
+  /** The open jobs: the careers list, every job page, the sitemap's jobs and the AI assistant's reads (ADR-143). */
+  careers: "careers",
 } as const;
 
 /** The tag of one home page, by its short id: a sold, rejected or edited home leaves it at once. */
@@ -31,6 +37,16 @@ export function propertyTag(shortId: string): string {
 /** The tag of one project page, by its slug. */
 export function projectTag(slug: string): string {
   return `project:${slug}`;
+}
+
+/** The tag of one article, by its slug. */
+export function blogPostTag(slug: string): string {
+  return `blog-post:${slug}`;
+}
+
+/** The tag of one job page, by its slug. */
+export function jobTag(slug: string): string {
+  return `job:${slug}`;
 }
 
 /**
@@ -65,4 +81,24 @@ export function tagsAfterSiteSettingsChange(): string[] {
 /** A form was created, edited, switched on or off, or moved to another placement (FR-ADM-08). */
 export function tagsAfterFormChange(): string[] {
   return [CACHE_TAGS.forms];
+}
+
+/** An article was created, edited, published, unpublished, trashed or restored: the list, its own page and the sitemap (ADR-143). */
+export function tagsAfterBlogChange(slug: string): string[] {
+  return [CACHE_TAGS.blog, blogPostTag(slug)];
+}
+
+/** A question was created, edited, ordered, published, unpublished, trashed or restored (ADR-143). */
+export function tagsAfterFaqChange(): string[] {
+  return [CACHE_TAGS.faq];
+}
+
+/** A job was created, edited, opened, closed, trashed or restored: the list, its own page and the sitemap (ADR-143). */
+export function tagsAfterJobChange(slug: string): string[] {
+  return [CACHE_TAGS.careers, jobTag(slug)];
+}
+
+/** A category was added, renamed, ordered or switched off: it appears in every module that lists categories (ADR-143). */
+export function tagsAfterContentCategoryChange(): string[] {
+  return [CACHE_TAGS.blog, CACHE_TAGS.faq, CACHE_TAGS.careers];
 }

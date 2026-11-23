@@ -5,7 +5,8 @@ import { Container } from "@/components/layout/container";
 import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
 import type { Translate } from "@/lib/format";
 import type { CuratedLocality } from "./from-card";
-import { ResultsList, ResultsRail, ResultsToolbar } from "./results-controls.client";
+import { NearbySection } from "@/components/domain/nearby-section";
+import { ResultsList, ResultsNearby, ResultsRail, ResultsToolbar } from "./results-controls.client";
 import { resultsHeading, resultsPlace } from "./results-view";
 import { SearchNavigationProvider } from "./search-navigation.client";
 import { SEARCH_PATH, type SearchParams } from "./schemas";
@@ -20,6 +21,11 @@ type ResultsScreenProps = {
   cards: ReactNode;
   /** How many cards there are. */
   shown: number;
+  /**
+   * The homes further out under the list (ADR-137): how many there are, how far out they were looked for,
+   * and their cards. Leave it out when there are none: nothing is drawn, not even a gap.
+   */
+  nearby?: { count: number; radiusKm: number; cards: ReactNode } | undefined;
   /** The curated localities of the site content: the Locality choices of the filters. */
   localities: readonly CuratedLocality[];
   /** The region's name, when the site content has one (DEC-14); the words stay neutral without it. */
@@ -45,6 +51,7 @@ export function ResultsScreen({
   total,
   cards,
   shown,
+  nearby,
   localities,
   regionName,
   describeHref,
@@ -112,6 +119,18 @@ export function ResultsScreen({
             <ResultsList status={status} total={total} shown={shown} describeHref={describeHref}>
               {cards}
             </ResultsList>
+            {nearby !== undefined && nearby.count > 0 && place !== undefined && status === "ok" ? (
+              <ResultsNearby>
+                <NearbySection
+                  place={place}
+                  radiusKm={nearby.radiusKm}
+                  count={nearby.count}
+                  view={params.view}
+                >
+                  {nearby.cards}
+                </NearbySection>
+              </ResultsNearby>
+            ) : null}
           </section>
         </div>
       </Container>

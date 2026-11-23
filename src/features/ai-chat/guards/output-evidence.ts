@@ -15,7 +15,7 @@ import { groundingFigures } from "./number-grounding";
 export interface OutputEvidenceInput {
   /** The text of every tool result of this turn, exactly as the model received it (JSON). */
   readonly toolResults: readonly string[];
-  /** Every home and project those results named (the `references` of the agent's `done` event). */
+  /** Every home, project, article and question those results named (the `references` of the agent's `done` event). */
   readonly references: readonly ToolReference[];
   /** The customer's latest message, as sent to the model (a figure they wrote is theirs to hear again). */
   readonly customerMessage: string;
@@ -32,6 +32,12 @@ export interface OutputEvidence {
   readonly addresses: ReadonlySet<string>;
   readonly homeIds: ReadonlySet<string>;
   readonly projectSlugs: ReadonlySet<string>;
+  /** The articles and questions of the Blog and the FAQ those results named (ADR-143 section 6.5), by id and by address word. */
+  readonly articleIds: ReadonlySet<string>;
+  readonly articleSlugs: ReadonlySet<string>;
+  readonly faqIds: ReadonlySet<string>;
+  /** Reserved for the Careers tool: the jobs a result named. */
+  readonly jobSlugs: ReadonlySet<string>;
   /** Figures (see `groundingFigures`) from the tool results and the customer's message. */
   readonly figures: ReadonlySet<string>;
   /** The canary with everything but letters and digits removed, lower case; `null` when there is none. */
@@ -157,9 +163,29 @@ export function buildEvidence(input: OutputEvidenceInput): OutputEvidence {
 
   const homeIds = new Set<string>();
   const projectSlugs = new Set<string>();
+  const articleIds = new Set<string>();
+  const articleSlugs = new Set<string>();
+  const faqIds = new Set<string>();
+  const jobSlugs = new Set<string>();
   for (const reference of input.references) {
-    if (reference.kind === "home") homeIds.add(reference.homeId.toLowerCase());
-    else projectSlugs.add(reference.slug.toLowerCase());
+    switch (reference.kind) {
+      case "home":
+        homeIds.add(reference.homeId.toLowerCase());
+        break;
+      case "project":
+        projectSlugs.add(reference.slug.toLowerCase());
+        break;
+      case "article":
+        articleIds.add(reference.id.toLowerCase());
+        articleSlugs.add(reference.slug.toLowerCase());
+        break;
+      case "faq":
+        faqIds.add(reference.id.toLowerCase());
+        break;
+      case "job":
+        jobSlugs.add(reference.slug.toLowerCase());
+        break;
+    }
   }
 
   const canaryCompact =
@@ -171,5 +197,17 @@ export function buildEvidence(input: OutputEvidenceInput): OutputEvidence {
     input.promptText ? wordRuns(wordsOfText(input.promptText), AI_PROMPT_COPY_RUN_WORDS) : [],
   );
 
-  return { phones, addresses, homeIds, projectSlugs, figures, canaryCompact, promptRuns };
+  return {
+    phones,
+    addresses,
+    homeIds,
+    projectSlugs,
+    articleIds,
+    articleSlugs,
+    faqIds,
+    jobSlugs,
+    figures,
+    canaryCompact,
+    promptRuns,
+  };
 }

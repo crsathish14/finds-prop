@@ -2,6 +2,7 @@ import type { ChatContext } from "../context/page-context";
 import { z } from "zod";
 import {
   AI_MAX_CARDS_PER_ANSWER,
+  AI_MAX_SOURCES_PER_ANSWER,
   AI_MAX_HISTORY_ANSWER_CHARACTERS,
   AI_MAX_HISTORY_MESSAGES,
   MAX_INPUT_CHARACTERS,
@@ -27,6 +28,13 @@ const referenceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("project"), slug: z.string().max(80) }),
 ]);
 
+/** A page the answer drew on: an article, a question of the FAQ or a job, with the address the server built for it. */
+const sourceSchema = z.object({
+  kind: z.enum(["article", "faq", "job"]),
+  title: z.string().max(200),
+  href: z.string().max(200),
+});
+
 const userEntrySchema = z.object({
   id: z.string().max(60),
   role: z.literal("user"),
@@ -40,6 +48,13 @@ const assistantEntrySchema = z.object({
   text: z.string().max(AI_MAX_HISTORY_ANSWER_CHARACTERS),
   notes: z.array(noteSchema).max(4),
   references: z.array(referenceSchema).max(AI_MAX_CARDS_PER_ANSWER),
+  /** Buttons to pages of the site (`site-links.ts`), built by the server from its table. */
+  links: z
+    .array(z.object({ text: z.string().max(80), href: z.string().max(80) }))
+    .max(2)
+    .optional(),
+  /** The pages a content answer drew on (the "Sources" row), built by the server (`source-links.ts`). */
+  sources: z.array(sourceSchema).max(AI_MAX_SOURCES_PER_ANSWER).optional(),
   /** The confirm card of a propose tool, in memory only (never kept in the tab: it holds a signed proposal). */
   confirm: confirmCardSchema.optional(),
   /** A fixed line replaced the answer; `href` is where the search page is when the line offers it. */
@@ -73,6 +88,7 @@ export type UserEntry = z.infer<typeof userEntrySchema>;
 export type AssistantEntry = z.infer<typeof assistantEntrySchema>;
 export type ChatNote = z.infer<typeof noteSchema>;
 export type ChatReference = z.infer<typeof referenceSchema>;
+export type ChatSource = z.infer<typeof sourceSchema>;
 export type StoredChat = {
   version: 1;
   entries: ChatEntry[];
@@ -99,6 +115,8 @@ function withoutConfirmCard(entry: AssistantEntry): AssistantEntry {
     text: entry.text,
     notes: entry.notes,
     references: entry.references,
+    ...(entry.links === undefined ? {} : { links: entry.links }),
+    ...(entry.sources === undefined ? {} : { sources: entry.sources }),
     replaced: entry.replaced,
     ...(entry.href === undefined ? {} : { href: entry.href }),
   };

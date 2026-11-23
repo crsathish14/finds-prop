@@ -25,7 +25,7 @@ const buttonVariants = cva(
     "relative inline-flex max-w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap select-none",
     "rounded-md border-[length:var(--bw-field)] border-transparent font-bold",
     "transition-colors duration-(--dur-fast) ease-standard active:translate-y-px",
-    "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-tint disabled:text-subtle disabled:active:translate-y-0",
+    "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-tint disabled:text-disabled disabled:active:translate-y-0",
     "aria-busy:pointer-events-none aria-busy:active:translate-y-0",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   ],
@@ -34,10 +34,10 @@ const buttonVariants = cva(
       variant: {
         accent: "bg-cta text-on-cta hover:bg-cta-hover",
         primary: "bg-primary text-on-primary hover:bg-primary-hover",
-        secondary: "border-primary bg-surface text-primary hover:bg-primary-tint",
+        secondary: "border-line-strong bg-surface text-ink hover:bg-canvas-sunken",
         ghost: "bg-transparent px-4 text-primary hover:bg-primary-tint",
         danger: "bg-danger text-on-primary hover:brightness-90",
-        "danger-outline": "border-danger bg-surface text-danger hover:bg-danger-tint",
+        "danger-outline": "border-danger bg-surface text-danger-text hover:bg-danger-tint",
       },
       size: {
         sm: "h-(--size-btn-sm) rounded-sm px-4 text-small",

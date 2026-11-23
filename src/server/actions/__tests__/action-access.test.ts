@@ -78,6 +78,7 @@ const EXPECTED: Record<string, Level> = {
   "leads/loadMoreLeads": "super_admin",
   "leads/loadMoreSubmissions": "super_admin",
   "leads/setMyLeadStatus": "builder",
+  "legal/saveLegal": "super_admin",
   "leads/loadMoreMyLeads": "builder",
   "listings/createListingDraft": "verified-phone",
   "listings/saveListingDraft": "verified-phone",
@@ -86,6 +87,7 @@ const EXPECTED: Record<string, Level> = {
   "listings/closeListing": "verified-phone",
   "listings/deleteListing": "verified-phone",
   "listings/saveListingChanges": "verified-phone",
+  "listings/setListingLocation": "verified-phone",
   "media/requestPhotoUpload": "verified-phone",
   "media/finalizePhoto": "verified-phone",
   "media/removePhoto": "verified-phone",
@@ -107,6 +109,39 @@ const EXPECTED: Record<string, Level> = {
   "site-content/saveHomepage": "super_admin",
   "site-content/saveFooter": "super_admin",
   "site-content/saveSponsors": "super_admin",
+  "site-content/saveContentModules": "super_admin",
+  "site-content/saveDisclaimers": "super_admin",
+  "site-content/saveProjectFields": "super_admin",
+  "site-content/saveTopDevelopers": "super_admin",
+  "content-categories/createContentCategory": "super_admin",
+  "content-categories/updateContentCategory": "super_admin",
+  "content-categories/setContentCategoryActive": "super_admin",
+  "content-categories/deleteContentCategory": "super_admin",
+  "blog/createBlogPost": "super_admin",
+  "blog/createBlogPostFromMarkdown": "super_admin",
+  "blog/updateBlogPost": "super_admin",
+  "blog/setBlogCover": "super_admin",
+  "blog/publishBlogPost": "super_admin",
+  "blog/unpublishBlogPost": "super_admin",
+  "blog/archiveBlogPost": "super_admin",
+  "blog/trashBlogPost": "super_admin",
+  "blog/restoreBlogPost": "super_admin",
+  "feedback/sendFeedback": "builder",
+  "feedback/setFeedbackReviewed": "super_admin",
+  "faq/createFaq": "super_admin",
+  "faq/updateFaq": "super_admin",
+  "faq/publishFaq": "super_admin",
+  "faq/unpublishFaq": "super_admin",
+  "faq/trashFaq": "super_admin",
+  "faq/restoreFaq": "super_admin",
+  "faq/reorderFaqs": "super_admin",
+  "careers/createJobPosting": "super_admin",
+  "careers/updateJobPosting": "super_admin",
+  "careers/openJobPosting": "super_admin",
+  "careers/closeJobPosting": "super_admin",
+  "careers/unpublishJobPosting": "super_admin",
+  "careers/trashJobPosting": "super_admin",
+  "careers/restoreJobPosting": "super_admin",
   "staff-auth/startStaffGoogleSignIn": "none",
   "units/addUnit": "super_admin",
   "units/updateUnit": "super_admin",
@@ -140,17 +175,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 31 super_admin, 9 builder, 19 verified-phone, 8 none, 1 user", () => {
+  it("holds the counts by level: 64 super_admin, 10 builder, 20 verified-phone, 8 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 31,
-      builder: 9,
-      "verified-phone": 19,
+      super_admin: 64,
+      builder: 10,
+      "verified-phone": 20,
       none: 8,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(68);
+    expect(Object.keys(table)).toHaveLength(103);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {

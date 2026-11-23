@@ -1,0 +1,9 @@
+[
+  {
+    "advisory": "GHSA-fc5q-39xc-vjpf",
+    "package": "picomatch",
+    "reason": "ReDoS in picomatch through single-branch repeated extglobs; no patched version exists yet (affected: 4.0.7 and older). picomatch only matches file patterns inside build tools (Vite, Rollup plugins of the Sentry build integration, tinyglobby); no visitor input reaches it.",
+    "reference": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+    "expires": "2026-12-17"
+  }
+]

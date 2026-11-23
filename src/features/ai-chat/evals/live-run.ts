@@ -17,7 +17,9 @@ import type { CaseScore } from "./score";
 export interface LiveRunInput {
   readonly cases: readonly EvalCase[];
   readonly tools: readonly AnyAiChatTool[];
-  readonly providerFor: (evalCase: EvalCase) => AiProvider;
+  /** The tools of the cases that turn AI place search on (ADR-142). */
+  readonly placeTools?: readonly AnyAiChatTool[];
+  readonly providerFor: (evalCase: EvalCase, tools: readonly AnyAiChatTool[]) => AiProvider;
   readonly model: string;
   readonly promptVersion: string;
   readonly selection: Selection;
@@ -44,6 +46,7 @@ export async function runAndReport(input: LiveRunInput): Promise<LiveRunResult> 
   const scores = await runAll(selected, {
     mode: "live",
     tools: input.tools,
+    ...(input.placeTools === undefined ? {} : { placeTools: input.placeTools }),
     providerFor: input.providerFor,
     onScore: (score, position, total) =>
       input.progress?.(`[${position}/${total}] ${score.id} ${score.passed ? "pass" : "FAIL"}`),

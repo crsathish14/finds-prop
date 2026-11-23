@@ -1,10 +1,10 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { logger } from "@/server/logger";
-import { createPublicSupabase } from "@/server/supabase/public";
-import { LISTINGS_TAG, listingRowSchema, type ListingRow } from "./listing-row";
+import { guestSearchHomes } from "@/server/ai/guest-home-search";
+import { createServerSupabase } from "@/server/supabase/server";
+import { listingRowSchema, type ListingRow } from "./listing-row";
 import { toSearchRpcArgs } from "./rpc-args";
 import type { SearchParams } from "./schemas";
 
@@ -37,23 +37,22 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
 }
 
 /**
- * Reads one page of results through `search_properties()` as an anonymous visitor, so only approved
- * listings and public columns can come back (BR-90). The total is the function's own `total_count`
- * (frontend.md 6.1 rule 6), not a second query. Rows that do not fit are skipped and counted; a
- * failed read is logged by its code only (never the filters, which can hold what a person typed).
- * Cached for minutes under the homes tag, so an approval refreshes it. A failed read throws, so it is
- * never cached: "Try again" asks the database again instead of getting the same failure back.
+ * Reads one page of results through `search_properties()` with the signed-in visitor's own session (login
+ * wall: the list is for signed-in people, and the database refuses anyone else), so only approved listings and
+ * public columns come back (BR-90). The total is the function's own `total_count` (frontend.md 6.1 rule 6),
+ * not a second query. Rows that do not fit are skipped and counted; a failed read is logged by its code only
+ * (never the filters, which can hold what a person typed). Not cached: a cache is shared between visitors and
+ * this read is one visitor's. A failed read throws; "Try again" asks the database again.
  */
 async function readResults(
   params: SearchParams,
+  guest: boolean,
 ): Promise<Extract<SearchResults, { status: "ok" }>> {
-  "use cache";
-  cacheTag(LISTINGS_TAG);
-  cacheLife("minutes");
-  const { data, error } = await createPublicSupabase().rpc(
-    "search_properties",
-    toSearchRpcArgs(params),
-  );
+  // A guest (the assistant's visitor who is not signed in) gets at most ten homes through the server-only function; a
+  // signed-in visitor reads with their own session. The pages never ask for a guest read.
+  const { data, error } = guest
+    ? await guestSearchHomes(toSearchRpcArgs(params))
+    : await (await createServerSupabase()).rpc("search_properties", toSearchRpcArgs(params));
   if (error) {
     logger.error("search results could not be read", { errorCode: error.code });
     throw new Error("search results could not be read");
@@ -81,9 +80,12 @@ async function readResults(
 }
 
 /** One page of results, or a failure with no detail (the page offers Try again with the filters kept). */
-export async function getSearchResults(params: SearchParams): Promise<SearchResults> {
+export async function getSearchResults(
+  params: SearchParams,
+  options: { guest?: boolean } = {},
+): Promise<SearchResults> {
   try {
-    return await readResults(params);
+    return await readResults(params, options.guest === true);
   } catch (error) {
     // The prerender signal and redirects are Next.js control flow, not failures of the read.
     unstable_rethrow(error);

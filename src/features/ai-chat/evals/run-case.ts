@@ -39,8 +39,12 @@ export interface Observed {
   readonly visibleText: string;
   readonly replaced: boolean;
   readonly noticeKeys: readonly string[];
+  /** The site-link buttons drawn: label and path. */
+  readonly links: readonly { readonly text: string; readonly href: string }[];
   /** The cards drawn, as `home:<id>` and `project:<slug>`. */
   readonly cards: readonly string[];
+  /** The source links drawn under the answer (ADR-143 section 6.5), as the addresses the server built. */
+  readonly sources: readonly string[];
   readonly usage: ChatUsageRecord | null;
   readonly toolCalls: readonly ObservedToolCall[];
   /** Every word given to the model across all its calls: the system prompt, the messages and the tool results. */
@@ -51,6 +55,8 @@ export interface Observed {
 export interface RunOptions {
   readonly provider: AiProvider;
   readonly tools: readonly AnyAiChatTool[];
+  /** True when `tools` hold the place-aware search, so the prompt carries the rules for places (ADR-142). */
+  readonly placeSearch?: boolean;
   /** Milliseconds; the real limits by default. The offline run passes shorter ones. */
   readonly timing?: { readonly timeLimitMs: number; readonly hardStopMs: number };
 }
@@ -77,6 +83,8 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     session: evalCase.session === "customer" ? CUSTOMER_SESSION : null,
     failingTools: evalCase.failingTools,
     ownedHomeIds: evalCase.ownedHomes,
+    placesDown: evalCase.placesDown,
+    hiddenModules: evalCase.hiddenModules,
   });
 
   const toolCalls: ObservedToolCall[] = [];
@@ -111,6 +119,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     enforceLimits: async () => undefined,
     createProvider: () => recording,
     tools: instrumented,
+    ...(options.placeSearch === true ? { placeSearch: true } : {}),
     translate: TOOL_CONTEXT.translate,
     recordUsage: async (record) => void usageRows.push(record),
     // The ticked homes are checked against the made-up world, as the real reads check them against what is listed.
@@ -141,14 +150,24 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
   const texts = events.flatMap((event) => (event.type === "text" ? [event.text] : []));
   const replaced = events.flatMap((event) => (event.type === "replace" ? [event.text] : []));
   const notices = events.flatMap((event) => (event.type === "notice" ? [event] : []));
+  const links = events.flatMap((event) =>
+    event.type === "link" ? [{ text: event.text, href: event.href }] : [],
+  );
   const done = events.find((event) => event.type === "done");
   const answerText = texts.join("");
   return {
     status: response.status,
     outcome: done?.type === "done" ? done.outcome : null,
     answerText,
-    visibleText: [answerText, ...replaced, ...notices.map((notice) => notice.text)].join("\n"),
+    visibleText: [
+      answerText,
+      ...replaced,
+      ...notices.map((notice) => notice.text),
+      ...links.map((link) => link.text),
+      ...events.flatMap((event) => (event.type === "source" ? [event.title] : [])),
+    ].join("\n"),
     replaced: replaced.length > 0,
+    links,
     noticeKeys: notices.map((notice) => notice.key),
     cards: events.flatMap((event) =>
       event.type === "card"
@@ -159,6 +178,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
           ]
         : [],
     ),
+    sources: events.flatMap((event) => (event.type === "source" ? [event.href] : [])),
     usage: usageRows[0] ?? null,
     toolCalls,
     modelSaw: modelSawText(modelCalls),

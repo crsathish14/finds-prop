@@ -46,7 +46,7 @@ values
   ('00000000-0000-4000-9000-000000000001', 'a1/l1/one.jpg', 'image/jpeg', 100000, 1600, 1200, 0);
 
 -- DB-PRIV: not callable by a visitor, a customer or a builder
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select throws_ok(
   $$select * from public.moderate_listing('00000000-0000-4000-9000-000000000001', 'approve')$$,
   '42501', null, 'a visitor cannot moderate (no execute grant)'
@@ -249,7 +249,8 @@ select is(
   'Add a photo of the home.', 'the owner reads the reason through my_properties()'
 );
 reset role;
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
+select set_config('request.jwt.claims', '{"role": "authenticated"}', true);
 select is(
   (select count(*) from public.properties where id in (
     '00000000-0000-4000-9000-000000000001', '00000000-0000-4000-9000-000000000002'))::int,

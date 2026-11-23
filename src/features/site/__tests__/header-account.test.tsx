@@ -18,6 +18,7 @@ const state = vi.hoisted(() => ({
   drawer: [] as Record<string, unknown>[],
   signOutButtons: [] as Record<string, unknown>[],
   warnings: [] as unknown[][],
+  guestMenu: [] as Record<string, unknown>[],
 }));
 
 vi.mock("server-only", () => ({}));
@@ -42,6 +43,12 @@ vi.mock("@/features/auth", () => ({
   SignOutButton: (props: Record<string, unknown>) => {
     state.signOutButtons.push(props);
     return <div data-testid="sign-out-button" />;
+  },
+}));
+vi.mock("@/components/layout/avatar-menu", () => ({
+  AvatarMenu: (props: Record<string, unknown>) => {
+    state.guestMenu.push(props);
+    return <div data-testid="guest-menu" />;
   },
 }));
 vi.mock("../account-drawer.client", () => ({
@@ -80,7 +87,7 @@ const links = [
 const cta = { label: "Post property", href: "/post-property" };
 
 async function renderActions() {
-  render(await HeaderAccountActions());
+  render(await HeaderAccountActions({ links, cta }));
 }
 
 async function renderDrawer() {
@@ -96,6 +103,7 @@ beforeEach(() => {
   state.drawer = [];
   state.signOutButtons = [];
   state.warnings = [];
+  state.guestMenu = [];
 });
 
 describe("HeaderAccountActions: the right side of the header", () => {
@@ -103,6 +111,40 @@ describe("HeaderAccountActions: the right side of the header", () => {
     await renderActions();
     expect(screen.getByTestId("sign-in-link")).toHaveTextContent("Sign in");
     expect(screen.queryByTestId("account-menu")).not.toBeInTheDocument();
+  });
+
+  it("gives a phone visitor a person menu with the main links, Sign in and Post property, in place of the menu button", async () => {
+    await renderActions();
+    expect(state.guestMenu[0]).toMatchObject({
+      triggerLabel: "Menu",
+      initials: "",
+      triggerClassName: "md:hidden",
+      groups: [
+        {
+          label: "Explore",
+          phoneOnly: true,
+          items: [
+            { label: "Buy", href: "/properties" },
+            { label: "AI Search", href: "/ai-search" },
+          ],
+        },
+        {
+          phoneOnly: true,
+          items: [
+            { label: "Sign in", href: "/auth" },
+            { label: "Post property", href: "/post-property" },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("puts the main links in the signed-in menu for phones only", async () => {
+    state.session = customer;
+    await renderActions();
+    const groups = state.menu[0]?.groups as { label?: string; phoneOnly?: boolean }[];
+    expect(groups[0]).toMatchObject({ label: "Explore", phoneOnly: true });
+    expect(groups[1]?.phoneOnly).toBeUndefined();
   });
 
   it("shows the saved link and the account menu with the name, email and initials", async () => {
@@ -177,7 +219,7 @@ describe("HeaderAccountActions: errors that belong to Next.js", () => {
     } catch (error) {
       state.sessionFailure = error as Error;
     }
-    await expect(HeaderAccountActions()).rejects.toBe(state.sessionFailure);
+    await expect(HeaderAccountActions({ links, cta })).rejects.toBe(state.sessionFailure);
     expect(state.warnings).toEqual([]);
   });
 });

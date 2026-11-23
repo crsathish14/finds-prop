@@ -12,6 +12,8 @@ import {
 } from "../guards/output";
 import { SYSTEM_PROMPT_CANARY } from "../prompts/version";
 import type { ConfirmCard } from "../confirm/confirm-card";
+import { SITE_LINKS } from "../site-links";
+import { sourceHref } from "../source-links";
 import type { ProposalOffer } from "../tools/proposal-offer";
 import type { AnyAiChatTool } from "../tools/types";
 import type { ChatOutcome, ChatStreamEvent } from "./events";
@@ -40,6 +42,8 @@ export interface TurnInput {
   readonly messages: readonly AiMessage[];
   /** The customer's new message as the model sees it: figures the customer wrote may be said back. */
   readonly customerMessage: string;
+  /** Whether the customer is signed in: the tools that list homes and projects refuse otherwise (ADR-171). */
+  readonly signedIn: boolean;
   /** The hard stop (the customer left or the function is about to be cut off). */
   readonly signal: AbortSignal;
   /** The time limit for the whole message. */
@@ -73,6 +77,21 @@ function toStreamEvent(event: OutputEvent, translate: Translate): ChatStreamEven
       return { type: "text", text: event.text };
     case "card":
       return { type: "card", reference: event.reference };
+    case "source":
+      return {
+        type: "source",
+        kind: event.reference.kind,
+        title: event.reference.title,
+        // A reference reaches here only with an address (the guard checks), so the empty text is never drawn.
+        href: sourceHref(event.reference) ?? "",
+      };
+    case "link":
+      return {
+        type: "link",
+        key: event.key,
+        text: translate(SITE_LINKS[event.key].labelKey),
+        href: SITE_LINKS[event.key].path,
+      };
     case "notice":
       return { type: "notice", key: event.messageKey, text: translate(event.messageKey) };
     case "replace":
@@ -97,9 +116,25 @@ const EMI_TOOL_NAME = "calculate_emi";
  */
 export function showsAutomaticCards(agent: AgentDone): boolean {
   return (
-    agent.references.length > 0 &&
+    agent.references.some(
+      (reference) => reference.kind === "home" || reference.kind === "project",
+    ) &&
     agent.offers.length === 0 &&
     !agent.toolsRan.includes(EMI_TOOL_NAME)
+  );
+}
+
+/**
+ * Whether the articles and questions the content tools returned this turn get a source link under the answer (ADR-143
+ * section 6.5). Not when the turn ended with a proposal: the customer sees the confirm card, not a source.
+ */
+export function showsAutomaticSources(agent: AgentDone): boolean {
+  return (
+    agent.offers.length === 0 &&
+    agent.references.some(
+      (reference) =>
+        reference.kind === "article" || reference.kind === "faq" || reference.kind === "job",
+    )
   );
 }
 
@@ -113,7 +148,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     tools: input.tools,
     system: input.system,
     messages: input.messages,
-    context: { translate, locale: "en" },
+    context: { translate, locale: "en", signedIn: input.signedIn },
     signal: input.signal,
     timeLimit: input.timeLimit,
   })) {
@@ -143,6 +178,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       canary: SYSTEM_PROMPT_CANARY,
       promptText: input.system,
       automaticCards: showsAutomaticCards(agent),
+      automaticSources: showsAutomaticSources(agent),
     });
     const checked: OutputEvent[] = [];
     for (const delta of deltas) {

@@ -16,7 +16,7 @@
  *   an error shows an icon and words under its box and sets the box invalid; the list is a labelled group.
  * States: no rows (the empty line), one row, many rows, a row with errors (a repeated name), the second box a list, saving
  *   (all off).
- * Dependencies: Input, NativeSelect, Button, IconButton, Icon, cn. Tests: crm-parts.test.tsx; Design Lab "CRM" (S7-T09).
+ * Dependencies: Input, Select, Button, IconButton, Icon, cn. Tests: crm-parts.test.tsx; Design Lab "CRM" (S7-T09).
  * UX reference: admin-crm screen, the editor, "Headers and body" (kvrow, Add header, Remove).
  */
 import { CircleAlert, Plus, Trash2 } from "lucide-react";
@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
 type CrmRow = {
@@ -90,7 +90,7 @@ function CrmRowsEditor({
         >
           <div className="flex min-w-0 flex-col gap-1">
             {firstChoices ? (
-              <NativeSelect
+              <Select
                 aria-label={firstLabel}
                 aria-invalid={row.firstError ? true : undefined}
                 value={row.first}
@@ -103,7 +103,7 @@ function CrmRowsEditor({
                     {choice.label}
                   </option>
                 ))}
-              </NativeSelect>
+              </Select>
             ) : (
               <Input
                 aria-label={firstLabel}

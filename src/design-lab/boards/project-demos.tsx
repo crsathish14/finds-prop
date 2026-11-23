@@ -81,8 +81,15 @@ const FULL: ProjectData = {
   name: "Kadal Vista",
   developer: { id: "b1", name: "Kadal Homes" },
   status: "under_construction",
-  priceMin: 78_00_000,
-  priceMax: 1_42_00_000,
+  propertyType: "apartment",
+  offerType: null,
+  plotStatus: null,
+  villaType: null,
+  extraFields: {},
+  price: 78_00_000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [2, 3],
   landAreaAcres: 4.2,
   totalUnits: 320,
@@ -93,6 +100,7 @@ const FULL: ProjectData = {
   nearby: ["Navalur junction", "Shopping mall", "Hospital"],
   reraApplicable: true,
   reraNumber: "TN/SAMPLE/0000",
+  reraNotApplicableReason: null,
   description:
     "Kadal Vista is a gated community of mid-rise towers around landscaped courtyards on the OMR corridor. This is sample copy: the real description comes from the developer's project record.",
   specifications:
@@ -126,8 +134,14 @@ const SPARSE: ProjectData = {
   slug: "sea-breeze-towers",
   developer: { id: "b2", name: "Marina Group" },
   status: null,
-  priceMin: 1_05_00_000,
-  priceMax: 1_05_00_000,
+  propertyType: "apartment",
+  offerType: null,
+  plotStatus: null,
+  villaType: null,
+  price: 1_05_00_000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [3],
   landAreaAcres: null,
   totalUnits: null,
@@ -138,6 +152,7 @@ const SPARSE: ProjectData = {
   nearby: [],
   reraApplicable: false,
   reraNumber: null,
+  reraNotApplicableReason: null,
   description: null,
   specifications: null,
   amenities: [],
@@ -146,6 +161,52 @@ const SPARSE: ProjectData = {
   videos: [],
   brochurePath: null,
   featured: false,
+  units: [],
+  unitCount: 0,
+  availableCount: 0,
+  trend: [],
+};
+
+/** A plotted layout: plots priced per sq ft, an area range, no bedrooms, and no RERA with the reason shown in public. */
+const PLOTS: ProjectData = {
+  ...FULL,
+  name: "Thendral Gardens",
+  slug: "thendral-gardens",
+  developer: { id: "b3", name: "Thendral Estates" },
+  status: "ready_to_move",
+  propertyType: "plot",
+  price: 2_450,
+  priceType: "per_sqft",
+  areaMinSqft: 1200,
+  areaMaxSqft: 2400,
+  bhkOptions: [],
+  possessionDate: null,
+  locality: "Tambaram",
+  reraApplicable: false,
+  reraNumber: null,
+  reraNotApplicableReason: "A small layout below the size that needs registration.",
+  units: [],
+  unitCount: 0,
+  availableCount: 0,
+  trend: [],
+};
+
+/** A commercial office for rent: the For rent tag, a rent price type and an area range. */
+const OFFICE_FOR_RENT: ProjectData = {
+  ...FULL,
+  name: "Marina Trade Centre",
+  slug: "marina-trade-centre",
+  developer: { id: "b2", name: "Marina Group" },
+  status: "new_launch",
+  propertyType: "office",
+  offerType: "rent",
+  price: 85,
+  priceType: "rent_per_sqft_month",
+  areaMinSqft: 500,
+  areaMaxSqft: 2500,
+  bhkOptions: [],
+  possessionDate: "2027-06-01",
+  locality: "Anna Nagar",
   units: [],
   unitCount: 0,
   availableCount: 0,
@@ -209,6 +270,18 @@ export function ProjectPageDemo() {
         className="w-full"
       >
         <Screen project={SPARSE} brochure={false} signedIn />
+      </Specimen>
+      <Specimen
+        label="A plotted layout: priced per sq ft, a smallest and a largest area, no bedrooms, and the reason RERA does not apply shown to the public"
+        className="w-full"
+      >
+        <Screen project={PLOTS} brochure={false} signedIn={false} />
+      </Specimen>
+      <Specimen
+        label="A commercial office for rent: the For rent tag, a rent price type per sq ft per month and an area range"
+        className="w-full"
+      >
+        <Screen project={OFFICE_FOR_RENT} brochure={false} signedIn={false} />
       </Specimen>
       <Specimen
         label="Enquiry card, visitor not signed in: the gate (sending needs a phone sign-in)"

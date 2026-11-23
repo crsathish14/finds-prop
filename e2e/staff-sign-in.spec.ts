@@ -21,7 +21,8 @@ test.describe("@smoke staff sign-in pages", () => {
     await page.goto("/builder/login");
     await expect(page.getByRole("heading", { level: 1, name: words.builder.title })).toBeVisible();
     await expect(page.getByRole("button", { name: words.google })).toBeEnabled();
-    await expect(page.getByRole("button")).toHaveCount(1);
+    // The page body only: the site header has its own city button.
+    await expect(page.locator("main").getByRole("button")).toHaveCount(1);
     await expect(page.locator("input")).toHaveCount(0);
     await expect(page.getByText(words.builder.invitationOnly)).toBeVisible();
     await expect(page.getByRole("link", { name: words.builder.buyerLink })).toHaveAttribute(

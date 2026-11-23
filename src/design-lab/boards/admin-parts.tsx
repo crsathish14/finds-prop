@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/patterns/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 
 /**
  * The sample content of the Admin board (S6-T04): the rows, the drawer and the dialog as the listings page
@@ -211,16 +211,16 @@ export function SampleQueue({
       </TabsList>
       <div className="flex flex-col gap-3 py-4 md:flex-row">
         <div className="md:w-60">
-          <NativeSelect aria-label="Locality" defaultValue="">
+          <Select aria-label="Locality" defaultValue="">
             <option value="">All localities</option>
             <option value="adyar">Adyar</option>
-          </NativeSelect>
+          </Select>
         </div>
         <div className="md:w-60">
-          <NativeSelect aria-label="Type" defaultValue="">
+          <Select aria-label="Type" defaultValue="">
             <option value="">For sale and rent</option>
             <option value="sale">For sale</option>
-          </NativeSelect>
+          </Select>
         </div>
       </div>
       <TabsContent value={tab} className="flex flex-col gap-4 pt-0">
@@ -369,7 +369,7 @@ export function SampleReject({
         open={open}
         onOpenChange={setOpen}
         title="Reject this listing?"
-        description={`"${VILLA}" stays off Find Prop and the owner will see it as not approved, with the reason you give.`}
+        description={`"${VILLA}" stays off findsprop and the owner will see it as not approved, with the reason you give.`}
         icon={<Icon icon={CircleX} size="lg" />}
         reasonLabel="Reason for the owner"
         reasonHint="The owner reads this, so say what to fix."

@@ -6,7 +6,7 @@ import { LocationPrompt } from "@/components/domain/location-prompt";
 import { usePlacePanel, type PlacePanelState } from "@/components/domain/place-panel";
 import { Combobox, type ComboboxOption } from "@/components/patterns/combobox";
 import { FormField } from "@/components/patterns/form-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
 
@@ -26,8 +26,8 @@ const SUGGESTIONS: ComboboxOption[] = [
   },
 ];
 
-/** The place search box as the form holds it. */
-function AddressBox({
+/** The place search box as the form holds it. Also drawn by the wizard's address step (seller-parts.tsx). */
+export function AddressBox({
   text,
   state = "ready",
   open = false,
@@ -59,14 +59,14 @@ function AddressBox({
 function AreaChooser({ chosen }: { chosen?: string }) {
   return (
     <FormField label="Area">
-      <NativeSelect defaultValue={chosen ?? ""}>
+      <Select defaultValue={chosen ?? ""}>
         <option value="">Choose the area</option>
         {AREAS.map((area) => (
           <option key={area} value={area}>
             {area}
           </option>
         ))}
-      </NativeSelect>
+      </Select>
     </FormField>
   );
 }
@@ -131,6 +131,7 @@ export function LocationFieldDemo() {
         <div className="flex w-full max-w-2xl flex-col gap-4">
           <LocationPrompt count={1} href="#edit-listing" />
           <LocationPrompt count={3} href="#edit-listing" />
+          <LocationPrompt count={2} href="#edit-listing" sendsBackToReview />
         </div>
       </Specimen>
     </div>

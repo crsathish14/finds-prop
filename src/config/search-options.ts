@@ -63,19 +63,31 @@ export function parseFilterIntent(text: string): FilterIntent {
   return FILTER_INTENTS.find((intent) => intent === text) ?? "all";
 }
 
-/** The orders the search function accepts (`p_sort`), as the UX lists them. */
+/** The orders that need no place (`p_sort`), as the UX lists them. The AI assistant offers these only. */
 export const SORT_OPTIONS = ["newest", "price_asc", "price_desc", "area_desc"] as const;
-export type SortOption = (typeof SORT_OPTIONS)[number];
+
+/** The order that exists only with a place: the nearest home first (ADR-135, ADR-137). */
+export const DISTANCE_SORT = "distance" as const;
+
+/** Every order the address accepts: the four above, and the distance one (valid only with a place). */
+export const ALL_SORT_OPTIONS = [...SORT_OPTIONS, DISTANCE_SORT] as const;
+export type SortOption = (typeof ALL_SORT_OPTIONS)[number];
 
 export const SORT_WORDS = {
   newest: "domain.filters.sort.newest",
   price_asc: "domain.filters.sort.priceAsc",
   price_desc: "domain.filters.sort.priceDesc",
   area_desc: "domain.filters.sort.areaDesc",
+  distance: "domain.filters.sort.distance",
 } as const satisfies Record<SortOption, string>;
 
+/** The orders to offer: "Nearest first" only while a place is searched. */
+export function sortOptionsFor(hasPlace: boolean): readonly SortOption[] {
+  return hasPlace ? ALL_SORT_OPTIONS : SORT_OPTIONS;
+}
+
 export function parseSort(text: string): SortOption {
-  return SORT_OPTIONS.find((option) => option === text) ?? "newest";
+  return ALL_SORT_OPTIONS.find((option) => option === text) ?? "newest";
 }
 
 /** The distances a visitor can choose around a place, in kilometres (OLA_MAPS_PLAN.md D5). */
@@ -92,7 +104,12 @@ export type FilterValues = {
   /** Shown in the filter sheet only; the results bar holds it on a wide screen (S4-T04). */
   sort: SortOption;
   /** How far around a chosen place to look; used only when the page shows the radius choices. */
-  radiusKm?: RadiusChoice | null | undefined;
+  radiusKm?: number | null | undefined;
+  /**
+   * The point of the place picked from the place search, when the locality is one (ADR-136). It means
+   * something only while `locality` is set, so "Clear all" need not reset it.
+   */
+  point?: { lat: number; lng: number } | null | undefined;
 };
 
 /**

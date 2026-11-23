@@ -53,7 +53,7 @@ describe("Button", () => {
     );
     const link = screen.getByRole("link", { name: "Browse" });
     expect(link).toHaveAttribute("href", "/properties");
-    expect(link).toHaveClass("text-primary", "border-primary");
+    expect(link).toHaveClass("text-ink", "border-line-strong");
   });
 });
 

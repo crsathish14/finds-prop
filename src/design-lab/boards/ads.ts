@@ -22,7 +22,7 @@ export const ADS: LabEntry[] = [
     id: "hero-as-built",
     name: "Home hero, as built",
     description:
-      "The real homepage hero with its banner area: Search Desk with the strip directly under the search card, Split with the headline, stacked card and trust lines on the left and the panel on the right, and Split without a panel banner, which becomes Search Desk with nothing in the banner position and no gap.",
+      "The real homepage hero with its banner area: Search Desk with the strip directly under the search bar, Split with the headline, search bar and trust lines on the left and the panel on the right, and Split without a panel banner, which becomes Search Desk with nothing in the banner position and no gap.",
     sources: ["domain/home-hero.tsx"],
     Demo: HeroAsBuiltDemo,
   },

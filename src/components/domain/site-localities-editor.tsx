@@ -3,14 +3,15 @@
 /**
  * SiteLocalitiesEditor: the list of curated localities of the admin's Homepage page: for each one a label, a latitude
  * and a longitude, and how far a search reaches from it.
- * Purpose: the places the home page shows as "Explore by locality" tiles and, for the first four, as Popular chips in
- *   the search card (S7-T10, FR-ADM-10, ADD-11, DEC-13). Owner: design system. It holds no list of its own: the page
- *   keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
- *   Coordinates are typed for now; a place picker will fill the same two boxes when the place search exists (ADR-099).
+ * Purpose: the places the home page shows as "Explore by locality" tiles (S7-T10, FR-ADM-10, ADD-11, DEC-13).
+ *   Owner: design system. It holds no list of its own: the page keeps the rows, the errors and the words (already translated). The order of the rows is the order on the site.
+ *   Coordinates are typed, or filled by the place picker the page gives (ADR-140): choosing a place writes the same two
+ *   boxes (and the label, only while it is empty); the boxes stay editable.
  * Props: localities ({ id, label, lat, lng, radiusKm }[], all text as typed; an id is kept by the page and never
  *   shown), onChange (the new list), max (how many the list may hold), radii (the distances offered, in km),
  *   defaultRadius (the distance a new row starts with), errors (the message of each box with a problem, by row id),
- *   disabled (while saving), words (the headings, labels, hints and notes), className. A row can be dragged or moved
+ *   disabled (while saving), placePicker (the place search box of a row, a component the page gives; left out, a row
+ *   has the typed boxes alone), words (the headings, labels, hints and notes), className. A row can be dragged or moved
  *   with the arrows; a distance the row already holds that is not offered is kept and shown too.
  * Responsive: on a phone every box is on its own line; from 768 px the label has a line and the latitude, the longitude
  *   and the radius share the next. The grip and the two arrows are 44 px targets (SortableRow).
@@ -18,10 +19,11 @@
  *   problems show an icon and words tied to their box; the buttons say which locality they move or remove; at the limit
  *   Add is off and a note says so; the list is a named group.
  * States: empty, some localities, at the limit, with errors on rows, disabled.
- * Dependencies: SortableList, SortableRow, FormField, Input, NativeSelect, Button, Alert, Icon, cn. Tests:
- *   site-content-parts.test.tsx; Design Lab "Site content" (S7-T10).
- * UX reference: admin-localities screen (the Explore by locality panel). The "Place" box is two boxes, Latitude and
- *   Longitude, until the place search is built; the radius choices include 6 km, which the stored data already uses.
+ * Dependencies: SortableList, SortableRow, FormField, Input, Select, Button, Alert, Icon, PlacePicker (types and
+ *   helpers), cn. Tests: site-hero-homepage-parts.test.tsx; Design Lab "Site content" (S7-T10).
+ * UX reference: admin-localities screen (the Explore by locality panel). Its Place box is the place picker above the
+ *   Latitude and Longitude boxes, which the admin can still edit (ADR-140); the radius choices include 6 km, which the
+ *   stored data already uses.
  */
 import { MapPin, Plus, Trash2 } from "lucide-react";
 import { Alert } from "@/components/patterns/alert";
@@ -29,9 +31,13 @@ import { FormField } from "@/components/patterns/form-field";
 import { SortableList, SortableRow } from "@/components/patterns/sortable-list";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { pickedCoordinates, type PlacePickerComponent } from "@/components/domain/place-picker";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
+
+/** The longest label a locality can have (the server checks it too). */
+const LABEL_MAX = 60;
 
 type SiteLocalityRow = { id: string; label: string; lat: string; lng: string; radiusKm: string };
 
@@ -70,6 +76,7 @@ type SiteLocalitiesEditorProps = {
   defaultRadius: number;
   errors?: Readonly<Record<string, SiteLocalityErrors>>;
   disabled?: boolean;
+  placePicker?: PlacePickerComponent;
   words: SiteLocalitiesWords;
   className?: string;
 };
@@ -82,6 +89,7 @@ function SiteLocalitiesEditor({
   defaultRadius,
   errors = {},
   disabled = false,
+  placePicker: PlacePicker,
   words,
   className,
 }: SiteLocalitiesEditorProps) {
@@ -188,12 +196,28 @@ function SiteLocalitiesEditor({
                     <Input
                       value={place.label}
                       disabled={disabled}
-                      maxLength={60}
+                      maxLength={LABEL_MAX}
                       autoComplete="off"
                       aria-label={`${words.label} ${position}`}
                       onChange={(event) => change(place.id, { label: event.target.value })}
                     />
                   </FormField>
+                  {PlacePicker ? (
+                    <PlacePicker
+                      id={["site-locality-place", place.id].join("-")}
+                      suffix={String(position)}
+                      disabled={disabled}
+                      onPick={(pick) =>
+                        change(place.id, {
+                          ...pickedCoordinates(pick),
+                          // The name is offered only while the box is empty: a name the admin typed stays.
+                          ...(place.label.trim() === ""
+                            ? { label: pick.label.slice(0, LABEL_MAX) }
+                            : {}),
+                        })
+                      }
+                    />
+                  ) : null}
                   <div className="grid gap-3 md:grid-cols-3">
                     <FormField label={words.lat} {...problem("lat")}>
                       <Input
@@ -216,7 +240,7 @@ function SiteLocalitiesEditor({
                       />
                     </FormField>
                     <FormField label={words.radius} {...problem("radiusKm")}>
-                      <NativeSelect
+                      <Select
                         value={place.radiusKm}
                         disabled={disabled}
                         aria-label={`${words.radius} ${position}`}
@@ -227,7 +251,7 @@ function SiteLocalitiesEditor({
                             {km} {words.km}
                           </option>
                         ))}
-                      </NativeSelect>
+                      </Select>
                     </FormField>
                   </div>
                   <div className="flex justify-end">

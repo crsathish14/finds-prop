@@ -5,6 +5,8 @@ const life = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 const from = vi.fn();
+const rpc = vi.fn();
+const listRpc = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
 vi.mock("next/navigation", () => ({
@@ -12,38 +14,21 @@ vi.mock("next/navigation", () => ({
     if (thrown instanceof Error && thrown.message === "NEXT_REDIRECT") throw thrown;
   },
 }));
-vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from }) }));
+vi.mock("@/server/supabase/server", () => ({
+  createServerSupabase: async () => ({ rpc: listRpc }),
+}));
+vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from, rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getProject, getProjects, PROJECT_LIST_LIMIT, PROJECTS_TAG } = await import("../queries");
-
-type Result = { data: unknown; error: { code: string } | null; count?: number | null };
-
-/**
- * A query builder that remembers every call made on it and can be awaited, or ended with
- * `maybeSingle()`, like the one the Supabase client gives.
- */
-function builder(result: Result) {
-  const calls: { method: string; args: unknown[] }[] = [];
-  const query: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "limit"]) {
-    query[method] = (...args: unknown[]) => {
-      calls.push({ method, args });
-      return query;
-    };
-  }
-  query.maybeSingle = () => Promise.resolve(result);
-  query.then = (resolve: (value: Result) => unknown, reject: (reason: unknown) => unknown) =>
-    Promise.resolve(result).then(resolve, reject);
-  return { query, calls };
-}
 
 const listRow = (overrides: Record<string, unknown> = {}) => ({
   slug: "kadal-vista",
   name: "Kadal Vista",
   project_status: "under_construction",
-  price_min: 7_800_000,
-  price_max: 14_200_000,
+  offer_type: null,
+  price: 7_800_000,
+  price_type: "basic",
   bhk_options: [2, 3],
   locality: "OMR Navalur",
   images: ["kadal/1.webp", "kadal/2.webp"],
@@ -57,8 +42,12 @@ const projectRow = (overrides: Record<string, unknown> = {}) => ({
   slug: "kadal-vista",
   name: "Kadal Vista",
   project_status: "under_construction",
-  price_min: 7_800_000,
-  price_max: 14_200_000,
+  property_type: "apartment",
+  offer_type: null,
+  price: 7_800_000,
+  price_type: "basic",
+  area_min_sqft: null,
+  area_max_sqft: null,
   bhk_options: [2, 3],
   land_area_acres: 4.2,
   total_units: 320,
@@ -69,6 +58,7 @@ const projectRow = (overrides: Record<string, unknown> = {}) => ({
   nearby: ["Shopping mall"],
   rera_applicable: true,
   rera_number: "TN/SAMPLE/0000",
+  rera_not_applicable_reason: null,
   description: "A gated community.",
   specifications: "Structure: RCC",
   amenities: ["Gym"],
@@ -95,31 +85,36 @@ const unitRow = (number: string, floor: number | null, status = "available") => 
 });
 
 type Parts = {
-  project?: Result;
-  units?: Result;
-  available?: Result;
-  trend?: Result;
+  project?: unknown;
+  units?: unknown[];
+  unitCount?: number;
+  availableCount?: number;
+  trend?: unknown[];
+  /** Replaces the whole answer of `public_project()`, for the failures and the missing project. */
+  answer?: { data: unknown; error: { code: string } | null };
 };
 
-/** Hands out the builders the page asks for, by table and by what it selects. */
-function arrange({ project, units, available, trend }: Parts = {}) {
-  const made = {
-    project: builder(project ?? { data: projectRow(), error: null }),
-    units: builder(units ?? { data: [unitRow("A-2", 1)], error: null, count: 1 }),
-    available: builder(available ?? { data: null, error: null, count: 1 }),
-    trend: builder(trend ?? { data: [], error: null }),
-  };
-  let unitsAsked = false;
-  from.mockImplementation((table: string) => {
-    if (table === "projects") return made.project.query;
-    if (table === "project_price_trends") return made.trend.query;
-    if (table !== "project_units") return undefined;
-    // The first call asks for the rows, the second for the count of available ones.
-    if (unitsAsked) return made.available.query;
-    unitsAsked = true;
-    return made.units.query;
-  });
-  return made;
+/** The one call the page makes: rpc("public_project"), which answers a document or null. */
+function arrange({
+  project = projectRow(),
+  units = [unitRow("A-2", 1)],
+  unitCount = 1,
+  availableCount = 1,
+  trend = [],
+  answer,
+}: Parts = {}) {
+  rpc.mockResolvedValue(
+    answer ?? {
+      data: {
+        project,
+        units,
+        unit_count: unitCount,
+        available_count: availableCount,
+        trend,
+      },
+      error: null,
+    },
+  );
 }
 
 const NOW = new Date("2026-11-13T10:12:00.000Z");
@@ -131,21 +126,30 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
+/** The list is read with the signed-in visitor's own session: `live_project_list()`, never a table. */
+const answer = (data: unknown, failure: { code: string } | null = null) =>
+  listRpc.mockResolvedValue({ data, error: failure });
+
 describe("UT-project-queries: the list of projects", () => {
-  it("reads the public columns as a visitor, featured first and then newest, with a limit", async () => {
-    const list = builder({ data: [listRow()], error: null });
-    from.mockReturnValue(list.query);
+  it("asks for one city only when a city key is given", async () => {
+    answer([]);
+    await getProjects("madurai");
+    expect(listRpc).toHaveBeenCalledWith("live_project_list", {
+      p_limit: PROJECT_LIST_LIMIT,
+      p_city: "madurai",
+    });
+  });
+
+  it("reads the live projects through the sign-in-only function, with a limit", async () => {
+    answer([listRow()]);
     const result = await getProjects();
-    expect(from).toHaveBeenCalledWith("projects");
-    const methods = list.calls.map((call) => call.method);
-    expect(methods).toEqual(["select", "order", "order", "limit"]);
-    expect(list.calls[0]?.args[0]).toContain("builders!inner(id, name)");
-    expect(list.calls[0]?.args[0]).not.toMatch(/moderation|form_id|published|rejection/);
-    expect(list.calls[1]?.args).toEqual(["featured", { ascending: false }]);
-    expect(list.calls[2]?.args).toEqual(["created_at", { ascending: false }]);
-    expect(list.calls[3]?.args).toEqual([PROJECT_LIST_LIMIT]);
-    expect(tag).toHaveBeenCalledWith(PROJECTS_TAG);
-    expect(life).toHaveBeenCalledWith("minutes");
+    expect(listRpc).toHaveBeenCalledTimes(1);
+    expect(listRpc).toHaveBeenCalledWith("live_project_list", { p_limit: PROJECT_LIST_LIMIT });
+    // Nothing shared between visitors: no cache tag, no cache life, no table, no anonymous client.
+    expect(tag).not.toHaveBeenCalled();
+    expect(life).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
     expect(result).toEqual({
       status: "ok",
       readAt: NOW.toISOString(),
@@ -155,8 +159,9 @@ describe("UT-project-queries: the list of projects", () => {
           name: "Kadal Vista",
           developerName: "Kadal Homes",
           status: "under_construction",
-          priceMin: 7_800_000,
-          priceMax: 14_200_000,
+          offerType: null,
+          price: 7_800_000,
+          priceType: "basic",
           bhkOptions: [2, 3],
           locality: "OMR Navalur",
           coverPath: "kadal/1.webp",
@@ -167,28 +172,34 @@ describe("UT-project-queries: the list of projects", () => {
   });
 
   it("gives an empty list, not a failure, when there are no projects", async () => {
-    from.mockReturnValue(builder({ data: [], error: null }).query);
+    answer([]);
     expect(await getProjects()).toEqual({ status: "ok", projects: [], readAt: NOW.toISOString() });
   });
 
   it("has no cover for a project with no pictures", async () => {
-    from.mockReturnValue(builder({ data: [listRow({ images: [] })], error: null }).query);
+    answer([listRow({ images: [] })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]?.coverPath).toBeNull();
   });
 
   it("treats a status this site does not know as no status", async () => {
-    from.mockReturnValue(
-      builder({ data: [listRow({ project_status: "dreaming" })], error: null }).query,
-    );
+    answer([listRow({ project_status: "dreaming" })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects[0]?.status).toBeNull();
   });
 
+  it("treats a price type or a sale or rent choice this site does not know as none", async () => {
+    answer([listRow({ price_type: "weekly", offer_type: "lease" })]);
+    const result = await getProjects();
+    expect(result.status === "ok" && result.projects[0]).toMatchObject({
+      price: 7_800_000,
+      priceType: null,
+      offerType: null,
+    });
+  });
+
   it("skips a row that does not fit and says how many, without the row", async () => {
-    from.mockReturnValue(
-      builder({ data: [listRow({ slug: "" }), listRow({ slug: "ok-one" })], error: null }).query,
-    );
+    answer([listRow({ slug: "" }), listRow({ slug: "ok-one" })]);
     const result = await getProjects();
     expect(result.status === "ok" && result.projects.map((project) => project.slug)).toEqual([
       "ok-one",
@@ -197,13 +208,13 @@ describe("UT-project-queries: the list of projects", () => {
   });
 
   it("reports a failed read as failed, logging only the code", async () => {
-    from.mockReturnValue(builder({ data: null, error: { code: "PGRST301" } }).query);
+    answer(null, { code: "PGRST301" });
     expect(await getProjects()).toEqual({ status: "failed" });
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "PGRST301" });
   });
 
   it("lets a redirect or a prerender signal through instead of calling it a failure", async () => {
-    from.mockImplementation(() => {
+    listRpc.mockImplementation(() => {
       throw new Error("NEXT_REDIRECT");
     });
     await expect(getProjects()).rejects.toThrow("NEXT_REDIRECT");
@@ -211,27 +222,21 @@ describe("UT-project-queries: the list of projects", () => {
 });
 
 describe("UT-project-queries: one project by its slug", () => {
-  it("reads the project, its first units, the counts and the trend as a visitor", async () => {
-    const made = arrange({
-      units: { data: [unitRow("A-10", 1), unitRow("A-2", 1)], error: null, count: 320 },
-      available: { data: null, error: null, count: 184 },
-      trend: {
-        data: [
-          { month: "2026-10-01", price_per_sqft: 8350 },
-          { month: "2026-09-01", price_per_sqft: 8230 },
-        ],
-        error: null,
-      },
+  it("reads the project, its first units, the counts and the trend in one call, as a visitor", async () => {
+    arrange({
+      units: [unitRow("A-10", 1), unitRow("A-2", 1)],
+      unitCount: 320,
+      availableCount: 184,
+      trend: [
+        { month: "2026-10-01", price_per_sqft: 8350 },
+        { month: "2026-09-01", price_per_sqft: 8230 },
+      ],
     });
     const result = await getProject("kadal-vista");
 
-    expect(made.project.calls.map((call) => call.method)).toEqual(["select", "eq"]);
-    expect(made.project.calls[1]?.args).toEqual(["slug", "kadal-vista"]);
-    expect(made.units.calls[0]?.args[1]).toEqual({ count: "exact" });
-    expect(made.units.calls.at(-1)).toEqual({ method: "limit", args: [20] });
-    expect(made.available.calls[0]?.args[1]).toEqual({ count: "exact", head: true });
-    expect(made.available.calls.map((call) => call.args)).toContainEqual(["status", "available"]);
-    expect(made.trend.calls.at(-1)).toEqual({ method: "limit", args: [12] });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("public_project", { p_slug: "kadal-vista" });
+    expect(from).not.toHaveBeenCalled();
     expect(tag).toHaveBeenCalledWith(PROJECTS_TAG, "project:kadal-vista");
 
     expect(result.status).toBe("found");
@@ -244,6 +249,13 @@ describe("UT-project-queries: one project by its slug", () => {
       availableCount: 184,
       totalUnits: 320,
       reraNumber: "TN/SAMPLE/0000",
+      reraNotApplicableReason: null,
+      propertyType: "apartment",
+      offerType: null,
+      price: 7_800_000,
+      priceType: "basic",
+      areaMinSqft: null,
+      areaMaxSqft: null,
     });
     // The rows are put in the order of the table, and the trend oldest month first.
     expect(result.project.units.map((unit) => unit.number)).toEqual(["A-2", "A-10"]);
@@ -252,46 +264,19 @@ describe("UT-project-queries: one project by its slug", () => {
     expect(result.readAt).toBe(NOW.toISOString());
   });
 
-  it("never asks for the moderation columns, the form link or the exact location", async () => {
-    const made = arrange();
-    await getProject("kadal-vista");
-    const columns = String(made.project.calls[0]?.args[0]);
-    for (const hidden of [
-      "moderation",
-      "published",
-      "form_id",
-      "latitude",
-      "longitude",
-      "address",
-      "rejection",
-    ]) {
-      expect(columns).not.toContain(hidden);
-    }
-  });
-
   it("is missing when no approved, published project has this slug", async () => {
-    arrange({ project: { data: null, error: null } });
+    arrange({ answer: { data: null, error: null } });
     expect(await getProject("nobody-here")).toEqual({
       status: "missing",
       readAt: NOW.toISOString(),
     });
   });
 
-  it("falls back to the rows it holds when the database gives no counts", async () => {
-    arrange({
-      units: { data: [unitRow("A-1", 1), unitRow("A-2", 1)], error: null, count: null },
-      available: { data: null, error: null, count: null },
-    });
-    const result = await getProject("kadal-vista");
-    expect(
-      result.status === "found" && [result.project.unitCount, result.project.availableCount],
-    ).toEqual([2, 0]);
-  });
-
   it("skips a unit or a month that does not fit, and says so", async () => {
     arrange({
-      units: { data: [unitRow("A-1", 1, "mystery"), unitRow("A-2", 1)], error: null, count: 2 },
-      trend: { data: [{ month: "March", price_per_sqft: 1 }], error: null },
+      units: [unitRow("A-1", 1, "mystery"), unitRow("A-2", 1)],
+      unitCount: 2,
+      trend: [{ month: "March", price_per_sqft: 1 }],
     });
     const result = await getProject("kadal-vista");
     expect(result.status === "found" && result.project.units.map((unit) => unit.number)).toEqual([
@@ -302,24 +287,18 @@ describe("UT-project-queries: one project by its slug", () => {
   });
 
   it("throws, so it is never cached, when the project cannot be read", async () => {
-    arrange({ project: { data: null, error: { code: "PGRST301" } } });
+    arrange({ answer: { data: null, error: { code: "PGRST301" } } });
     await expect(getProject("kadal-vista")).rejects.toThrow("project could not be read");
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "PGRST301" });
   });
 
   it("throws, not missing, when the project row does not fit", async () => {
-    arrange({ project: { data: projectRow({ name: "" }), error: null } });
+    arrange({ project: projectRow({ name: "" }) });
     await expect(getProject("kadal-vista")).rejects.toThrow("does not fit");
   });
 
-  it("throws when the units, the count or the trend cannot be read", async () => {
-    for (const parts of [
-      { units: { data: null, error: { code: "42501" } } },
-      { available: { data: null, error: { code: "42501" } } },
-      { trend: { data: null, error: { code: "42501" } } },
-    ] satisfies Parts[]) {
-      arrange(parts);
-      await expect(getProject("kadal-vista")).rejects.toThrow("could not be read");
-    }
+  it("throws, not missing, when the answer is not the document the page expects", async () => {
+    arrange({ answer: { data: { project: projectRow() }, error: null } });
+    await expect(getProject("kadal-vista")).rejects.toThrow("does not fit");
   });
 });

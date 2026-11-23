@@ -11,14 +11,17 @@ import {
   CARDS_SECTION,
   COMPETITOR_SECTION,
   confidentialitySection,
+  CONTENT_SECTION,
   contextSection,
   EMI_SECTION,
   FACTS_SECTION,
   LANGUAGE_SECTION,
   OFF_TOPIC_SECTION,
+  PLACE_SECTION,
   PROMPT_MESSAGE_KEYS,
   ROLE_SECTION,
   SCOPE_SECTION,
+  SITE_LINKS_SECTION,
 } from "./sections";
 import { SYSTEM_PROMPT_CANARY, SYSTEM_PROMPT_VERSION } from "./version";
 
@@ -30,6 +33,11 @@ export interface SystemPromptOptions {
    * to this turn's prompt, after the rules.
    */
   readonly addInjectionReminder?: boolean;
+  /**
+   * True while `FLAG_AI_PLACE_SEARCH` is on (ADR-142): the prompt then carries the rules for homes near a place. Absent or
+   * false leaves the prompt as it was before, apart from its version line.
+   */
+  readonly placeSearch?: boolean;
   /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
   readonly pageContext?: Parameters<typeof contextSection>[0];
 }
@@ -41,6 +49,7 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     `Instructions version ${SYSTEM_PROMPT_VERSION}.`,
     ROLE_SECTION,
     SCOPE_SECTION,
+    CONTENT_SECTION,
     OFF_TOPIC_SECTION,
     COMPETITOR_SECTION,
     FACTS_SECTION,
@@ -48,6 +57,8 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     ADVICE_SECTION,
     LANGUAGE_SECTION,
     CARDS_SECTION,
+    SITE_LINKS_SECTION,
+    ...(options.placeSearch === true ? [PLACE_SECTION] : []),
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,
   ];

@@ -14,8 +14,8 @@ const ROW = {
   name: "Kadal Vista",
   slug: "kadal-vista",
   locality: "OMR Navalur",
-  price_min: 7800000,
-  price_max: 11200000,
+  price: 7800000,
+  price_type: "basic",
   cover: "a/1.jpg",
   moderation: "pending",
   published: false,
@@ -41,8 +41,8 @@ describe("UT-project-moderation-view: the admin's rows (S7-T04)", () => {
           name: "Kadal Vista",
           slug: "kadal-vista",
           locality: "OMR Navalur",
-          priceMin: 7800000,
-          priceMax: 11200000,
+          price: 7800000,
+          priceType: "basic",
           cover: "a/1.jpg",
           moderation: "pending",
           published: false,
@@ -58,9 +58,9 @@ describe("UT-project-moderation-view: the admin's rows (S7-T04)", () => {
 
   it("keeps an empty price and picture as none", () => {
     const { projects } = toAdminProjectRows([
-      { ...ROW, price_min: null, price_max: null, cover: null },
+      { ...ROW, price: null, price_type: null, cover: null },
     ]);
-    expect(projects[0]).toMatchObject({ priceMin: null, priceMax: null, cover: null });
+    expect(projects[0]).toMatchObject({ price: null, priceType: null, cover: null });
   });
 
   it("leaves out a row that is not in the expected shape, and counts it", () => {

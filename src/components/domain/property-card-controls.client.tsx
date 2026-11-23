@@ -69,7 +69,7 @@ function CompareToggle({ compared, disabled = false, onToggle, className }: Comp
       onClick={onToggle}
       className={cn(
         "group/compare -ml-2 inline-flex min-h-(--size-touch-min) items-center gap-2 rounded-sm px-2 text-small font-bold text-primary",
-        "disabled:cursor-not-allowed disabled:text-subtle",
+        "disabled:cursor-not-allowed disabled:text-disabled",
         className,
       )}
     >

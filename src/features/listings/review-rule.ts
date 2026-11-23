@@ -3,9 +3,10 @@ import type { ListingStatus } from "@/lib/status-machine";
 /**
  * The fields whose change sends a Live listing back to review (DEC-09, policy C), as the wizard names them. The
  * database decides this in `guard_properties` (title, description, listing type, property type, address and the
- * pin on a map); this mirrors it so the screen can warn the owner before saving. `IT-listing-edit` changes each
- * field of a Live listing against the real database and checks the two agree. The pin is not here because the
- * wizard has no map yet.
+ * place on the map); this mirrors it so the screen can warn the owner before saving. `IT-listing-edit` changes each
+ * field of a Live listing against the real database and checks the two agree. The place is not one of these text
+ * fields: the wizard holds it apart (its point is private, ADR-141) and passes whether it changed to
+ * `changesNeedReview`.
  */
 export const MODERATED_FIELDS = [
   "listingType",
@@ -44,6 +45,9 @@ export function changesNeedReview(
   status: ListingStatus,
   before: Partial<ModeratedValues>,
   after: Partial<ModeratedValues>,
+  placeChanged = false,
 ): boolean {
-  return status === "approved" && changedModeratedFields(before, after).length > 0;
+  return (
+    status === "approved" && (placeChanged || changedModeratedFields(before, after).length > 0)
+  );
 }

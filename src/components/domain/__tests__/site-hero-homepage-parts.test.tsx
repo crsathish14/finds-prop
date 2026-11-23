@@ -17,6 +17,7 @@ import {
   type SiteLocalitiesWords,
   type SiteLocalityRow,
 } from "../site-localities-editor";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const HERO_WORDS: SiteHeroFieldsWords = {
   text: { title: "Text" },
@@ -207,7 +208,7 @@ describe("UT-site-localities-editor: the list of localities (S7-T10)", () => {
       { ...THREE_PLACES[1], label: "Velachery!" },
       THREE_PLACES[2],
     ]);
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Radius 1" }), "5");
+    await changeField(screen.getByRole("combobox", { name: "Radius 1" }), "5");
     expect(onChange).toHaveBeenLastCalledWith([
       { ...THREE_PLACES[0], radiusKm: "5" },
       THREE_PLACES[1],
@@ -215,11 +216,9 @@ describe("UT-site-localities-editor: the list of localities (S7-T10)", () => {
     ]);
   });
 
-  it("offers the distances and keeps a stored one that is not offered", () => {
+  it("offers the distances and keeps a stored one that is not offered", async () => {
     setup({ localities: [place("p1", "Adyar", "10")] });
-    const options = within(screen.getByRole("combobox", { name: "Radius 1" }))
-      .getAllByRole("option")
-      .map((option) => option.textContent);
+    const options = await optionTexts(screen.getByRole("combobox", { name: "Radius 1" }));
     expect(options).toEqual(["2 km", "3 km", "4 km", "5 km", "6 km", "10 km"]);
     expect(screen.getByRole("combobox", { name: "Radius 1" })).toHaveValue("10");
   });
@@ -378,7 +377,7 @@ describe("UT-site-homepage-fields: the Homepage page's boxes (S7-T10)", () => {
 });
 
 describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () => {
-  const words = { popular: "Popular chips", explore: "Explore tiles", on: "On", off: "Off" };
+  const words = { explore: "Explore tiles", on: "On", off: "Off" };
   const hiddenNote = { title: "Section hidden", text: "No localities." };
   const sections = [
     { label: "Hero", on: true },
@@ -387,29 +386,21 @@ describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () =
 
   it("says On or Off in words for each section, not by colour alone", () => {
     const { container } = render(
-      <SiteHomepagePreview
-        sections={sections}
-        popular={[]}
-        tiles={[]}
-        hiddenNote={hiddenNote}
-        words={words}
-      />,
+      <SiteHomepagePreview sections={sections} tiles={[]} hiddenNote={hiddenNote} words={words} />,
     );
     expect(container.textContent).toContain("HeroOn");
     expect(container.textContent).toContain("Why usOff");
   });
 
-  it("draws the chips and the tiles when there are localities", () => {
+  it("draws the tiles when there are localities", () => {
     const { container } = render(
       <SiteHomepagePreview
         sections={sections}
-        popular={["Adyar", "Velachery"]}
         tiles={["Adyar", "Velachery", "Navalur"]}
         hiddenNote={hiddenNote}
         words={words}
       />,
     );
-    expect(container.textContent).toContain("Popular chips");
     expect(container.textContent).toContain("Explore tiles");
     expect(container.textContent).toContain("Navalur");
     expect(container.textContent).not.toContain("Section hidden");
@@ -417,19 +408,13 @@ describe("UT-site-homepage-preview: the drawing of the home page (S7-T10)", () =
 
   it("draws the note instead when there are no localities, hidden from a screen reader", () => {
     const { container } = render(
-      <SiteHomepagePreview
-        sections={sections}
-        popular={[]}
-        tiles={[]}
-        hiddenNote={hiddenNote}
-        words={words}
-      />,
+      <SiteHomepagePreview sections={sections} tiles={[]} hiddenNote={hiddenNote} words={words} />,
     );
     expect(container.querySelector("[data-slot='site-homepage-preview']")).toHaveAttribute(
       "aria-hidden",
       "true",
     );
     expect(container.textContent).toContain("Section hidden");
-    expect(container.textContent).not.toContain("Popular chips");
+    expect(container.textContent).not.toContain("Explore tiles");
   });
 });

@@ -27,3 +27,4 @@ export {
   type ValueCardModel,
 } from "./static-sections";
 export { FeaturedSection, NewLaunchesSection, NewestSection } from "./card-sections";
+export { CityFeaturedSection, CityNewestSection, CityNewLaunchesSection } from "./city-sections";

@@ -1,4 +1,12 @@
 import { ActionError } from "@/server/actions/normalise-error";
+import {
+  areaApplies,
+  bedroomsApply,
+  offerTypeApplies,
+  plotStatusApplies,
+  possessionApplies,
+  villaTypeApplies,
+} from "./rules";
 import type {
   CreateMyProjectInput,
   CreateProjectInput,
@@ -22,13 +30,18 @@ export interface ProjectRow {
   project_type?: string | null;
   property_type?: string | null;
   project_status?: string | null;
-  price_min?: number | null;
-  price_max?: number | null;
+  offer_type?: string | null;
+  plot_status?: string | null;
+  villa_type?: string | null;
+  price?: number | null;
+  price_type?: string | null;
+  area_min_sqft?: number | null;
+  area_max_sqft?: number | null;
   bhk_options?: number[];
   land_area_acres?: number | null;
-  total_units?: number | null;
   possession_date?: string | null;
   contact_phone?: string | null;
+  city?: string;
   locality?: string;
   address?: string | null;
   latitude?: number | null;
@@ -37,6 +50,7 @@ export interface ProjectRow {
   nearby?: string[];
   rera_applicable?: boolean;
   rera_number?: string | null;
+  rera_not_applicable_reason?: string | null;
   description?: string | null;
   specifications?: string | null;
   amenities?: string[];
@@ -49,6 +63,7 @@ export interface ProjectRow {
   videos?: string[];
   brochure_path?: string | null;
   form_id?: string | null;
+  extra_fields?: Record<string, string>;
 }
 
 /** A month of the price trends as the database function takes it. */
@@ -72,7 +87,7 @@ export interface ProjectDone {
 export interface ProjectStore {
   /** Adds a project; a builder's own id is the database's default. Throws the database's failure through `mapProjectError`. */
   insert(
-    row: ProjectRow & { name: string; slug: string; locality: string },
+    row: ProjectRow & { name: string; slug: string; city: string; locality: string },
     builderId?: string,
   ): Promise<ProjectDone>;
   /** Saves a project; null when there is no such project (or it is not theirs). */
@@ -107,8 +122,41 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
   if (says(failure, "projects.slug_locked")) {
     return onBox("slug", "validation.slugLocked", "The page address cannot change once approved");
   }
-  if (says(failure, "projects_price_range")) {
-    return onBox("priceMax", "validation.priceRange", "The price range runs backwards");
+  if (says(failure, "projects.rera_number_required")) {
+    return onBox("reraNumber", "validation.required", "The RERA number is required");
+  }
+  if (says(failure, "projects.rera_reason_required")) {
+    return onBox(
+      "reraNotApplicableReason",
+      "validation.required",
+      "The reason RERA does not apply is required",
+    );
+  }
+  if (says(failure, "projects.plot_status_required")) {
+    return onBox("plotStatus", "validation.required", "The plot status is required");
+  }
+  if (says(failure, "projects.villa_type_required")) {
+    return onBox("villaType", "validation.required", "The villa type is required");
+  }
+  if (says(failure, "projects_possession_for_status")) {
+    return onBox(
+      "possessionDate",
+      "validation.invalid",
+      "The possession month does not fit the status",
+    );
+  }
+  if (says(failure, "projects_property_type_fits")) {
+    return onBox(
+      "propertyType",
+      "validation.invalid",
+      "That property type does not fit the project type",
+    );
+  }
+  if (says(failure, "projects_area_range")) {
+    return onBox("areaMaxSqft", "validation.areaRange", "The largest area is below the smallest");
+  }
+  if (says(failure, "projects_price_type")) {
+    return onBox("priceType", "validation.invalid", "That price type does not fit the project");
   }
   if (says(failure, "projects_coordinates_together")) {
     return onBox("longitude", "validation.coordinatesTogether", "Give both coordinates or none");
@@ -147,39 +195,54 @@ function put<Key extends keyof ProjectRow>(
 }
 
 /**
- * The columns from what the form gave. A number of bedrooms and the lists are written as given; the RERA number is
- * kept only when RERA applies (the database refuses a number without it, so a leftover box never blocks a save).
+ * The columns from what the form gave (ADR-148). What does not apply to this kind of project is cleared, whatever the
+ * form sent: bedrooms only for a residential apartment or villa, the sale or rent choice only for a commercial
+ * project, the area range only for a plot and commercial projects, the possession month only while the project is
+ * still to be built, the RERA number only when RERA applies and the reason only when it does not (the database
+ * refuses a number without RERA, so a leftover box never blocks a save).
  */
 export function projectRowFrom(
   input: Fields,
-): ProjectRow & { name: string; slug: string; locality: string } {
-  const row: ProjectRow & { name: string; slug: string; locality: string } = {
+): ProjectRow & { name: string; slug: string; city: string; locality: string } {
+  const row: ProjectRow & { name: string; slug: string; city: string; locality: string } = {
     name: input.name,
     slug: input.slug,
+    city: input.city,
     locality: input.locality,
     rera_applicable: input.reraApplicable,
+    project_type: input.projectType,
+    property_type: input.propertyType,
+    project_status: input.projectStatus,
+    offer_type: offerTypeApplies(input.projectType) ? (input.offerType ?? null) : null,
+    plot_status: plotStatusApplies(input.propertyType) ? (input.plotStatus ?? null) : null,
+    villa_type: villaTypeApplies(input.propertyType) ? (input.villaType ?? null) : null,
+    price: input.price,
+    price_type: input.priceType,
+    bhk_options: bedroomsApply(input.projectType, input.propertyType)
+      ? (input.bhkOptions ?? [])
+      : [],
+    possession_date: possessionApplies(input.projectStatus) ? (input.possessionDate ?? null) : null,
+    rera_number: input.reraApplicable ? (input.reraNumber ?? null) : null,
+    rera_not_applicable_reason: input.reraApplicable
+      ? null
+      : (input.reraNotApplicableReason ?? null),
   };
-  put(row, "project_type", input.projectType);
-  put(row, "property_type", input.propertyType);
-  put(row, "project_status", input.projectStatus);
-  put(row, "price_min", input.priceMin);
-  put(row, "price_max", input.priceMax);
-  put(row, "bhk_options", input.bhkOptions);
+  const sized = areaApplies(input.projectType, input.propertyType);
+  row.area_min_sqft = sized ? (input.areaMinSqft ?? null) : null;
+  row.area_max_sqft = sized ? (input.areaMaxSqft ?? null) : null;
   put(row, "land_area_acres", input.landAreaAcres);
-  put(row, "total_units", input.totalUnits);
-  put(row, "possession_date", input.possessionDate);
   put(row, "contact_phone", input.contactPhone);
   put(row, "address", input.address);
   put(row, "latitude", input.latitude);
   put(row, "longitude", input.longitude);
   put(row, "advantages", input.advantages);
   put(row, "nearby", input.nearby);
-  row.rera_number = input.reraApplicable ? (input.reraNumber ?? null) : null;
   put(row, "description", input.description);
   put(row, "specifications", input.specifications);
   put(row, "amenities", input.amenities);
   put(row, "seo_title", input.seoTitle);
   put(row, "seo_description", input.seoDescription);
+  put(row, "extra_fields", input.extraFields);
   if ("images" in input) {
     put(row, "images", input.images);
     put(row, "floor_plans", input.floorPlans);

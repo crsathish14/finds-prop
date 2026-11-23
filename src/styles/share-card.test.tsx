@@ -12,10 +12,10 @@ const primitive = (name: string) =>
 describe("UT-share-card: the default share image's colours", () => {
   it("are the brand's own primitives in tokens.css, so the card cannot drift from the site", () => {
     expect(SHARE_CARD_COLORS).toEqual({
-      background: primitive("forest-950"),
-      ink: primitive("ivory-50"),
-      muted: primitive("mist-300"),
-      accent: primitive("copper-400"),
+      background: primitive("ink-950"),
+      ink: primitive("white"),
+      muted: primitive("ink-200"),
+      accent: primitive("teal-500"),
     });
   });
 

@@ -100,8 +100,8 @@ select ok(
   'search_properties has no owner, address, exact location, description, pincode, status or vector column'
 );
 select ok(
-  has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer)', 'EXECUTE'),
-  'visitors may run the search'
+  not has_function_privilege('anon', 'public.search_properties(text, text, integer, bigint, bigint, text, double precision, double precision, double precision, double precision, double precision, double precision, double precision, text, text, text, integer, text)', 'EXECUTE'),
+  'visitors who are not signed in may not run the search (login wall); signed-in people may'
 );
 select is(
   (select count(*)::int from pg_indexes where schemaname = 'public' and tablename = 'properties'
@@ -111,9 +111,9 @@ select is(
 );
 
 -- A visitor
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 
-select lives_ok($$select search_vector from public.properties limit 1$$, 'a visitor can read the keyword vector');
+select lives_ok($$select search_vector from public.properties limit 1$$, 'a signed-in person can read the keyword vector');
 select throws_ok($$select location from public.properties limit 1$$, '42501', null, 'a visitor still cannot read the exact location');
 
 -- Only approved listings (BR-90)

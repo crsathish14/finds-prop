@@ -4,6 +4,9 @@ const db = vi.hoisted(() => ({
   draft: { data: null as unknown, error: null as null | { code: string } },
   photos: { data: [] as unknown[], error: null as null | { code: string } },
   list: { data: [] as unknown[], error: null as null | { code: string } },
+  // The answer to "is a place stored?": a row with only the listing's id, or nothing.
+  located: { data: null as unknown, error: null as null | { code: string } },
+  selected: [] as string[],
   asked: [] as string[],
 }));
 const errors = vi.hoisted(() => ({ calls: [] as unknown[][] }));
@@ -19,12 +22,17 @@ vi.mock("@/server/supabase/server", () => ({
     rpc: (name: string) => ({
       select: (columns: string) => {
         db.asked.push(`rpc:${name}:${columns.slice(0, 20)}`);
+        db.selected.push(columns);
         return {
           eq: (column: string, value: string) => {
             db.asked.push(`eq:${column}:${value}`);
             return {
               maybeSingle: async () => db.draft,
               order: () => ({ limit: async () => db.list }),
+              not: (notColumn: string, operator: string, operand: unknown) => {
+                db.asked.push(`not:${notColumn}:${operator}:${String(operand)}`);
+                return { maybeSingle: async () => db.located };
+              },
             };
           },
         };
@@ -69,6 +77,8 @@ beforeEach(() => {
   db.draft = { data: draftRow, error: null };
   db.photos = { data: [{ id: "p1", storage_path: "u/l/a.jpg", position: 0 }], error: null };
   db.list = { data: [], error: null };
+  db.located = { data: null, error: null };
+  db.selected = [];
   db.asked = [];
   errors.calls = [];
 });
@@ -116,5 +126,21 @@ describe("UT-listings-queries: reading the owner's drafts (S6-T02)", () => {
     expect((await listMyDrafts()).map((draft) => draft.id)).toEqual(["a"]);
     db.list = { data: [], error: { code: "XX002" } };
     await expect(listMyDrafts()).rejects.toMatchObject({ code: "XX002" });
+  });
+
+  it("tells whether a place is stored by a filter, and never reads the point itself", async () => {
+    expect((await getMyDraft(ID))?.hasLocation).toBe(false);
+    db.located = { data: { id: ID }, error: null };
+    expect((await getMyDraft(ID))?.hasLocation).toBe(true);
+    // The question is a filter on the column: no read asks for `location` or `public_location`.
+    expect(db.asked).toContain("not:location:is:null");
+    expect(db.selected.join(" ")).not.toMatch(/location/);
+  });
+
+  it("throws when the check for a place fails, and logs only the error code", async () => {
+    db.located = { data: null, error: { code: "XX003" } };
+    await expect(getMyDraft(ID)).rejects.toMatchObject({ code: "XX003" });
+    expect(JSON.stringify(errors.calls)).toContain("XX003");
+    expect(JSON.stringify(errors.calls)).not.toContain(ID);
   });
 });

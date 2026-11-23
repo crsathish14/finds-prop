@@ -169,7 +169,7 @@ select throws_ok(
 );
 
 -- Visitors (guests): DB-RLS-properties-anon, DB-RLS-column-grants (ADR-017)
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select count(*) from public.properties)::int,
   7,

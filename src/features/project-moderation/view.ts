@@ -9,8 +9,9 @@ export interface AdminProjectRow {
   name: string;
   slug: string;
   locality: string;
-  priceMin: number | null;
-  priceMax: number | null;
+  /** Whole rupees: the one price, and what it means (per sq ft, basic, all inclusive, rent). */
+  price: number | null;
+  priceType: string | null;
   /** The first picture's path in the media bucket, or none. */
   cover: string | null;
   moderation: string;
@@ -26,8 +27,8 @@ const rowSchema = z.object({
   name: z.string(),
   slug: z.string(),
   locality: z.string(),
-  price_min: z.number().nullable(),
-  price_max: z.number().nullable(),
+  price: z.number().nullable(),
+  price_type: z.string().nullable(),
   cover: z.string().nullable(),
   moderation: z.string(),
   published: z.boolean(),
@@ -59,8 +60,8 @@ export function toAdminProjectRows(rows: readonly unknown[] | null): {
       name: row.name,
       slug: row.slug,
       locality: row.locality,
-      priceMin: row.price_min,
-      priceMax: row.price_max,
+      price: row.price,
+      priceType: row.price_type,
       cover: row.cover,
       moderation: row.moderation,
       published: row.published,

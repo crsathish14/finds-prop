@@ -11,11 +11,13 @@
  *   moves into the drawer and the menu button shows.
  * Accessibility: a banner landmark with a labelled nav; the current page has aria-current="page"
  *   and a copper underline (an accent link, "AI Search", is a copper-tint pill with a border instead). It stays at the top while the page scrolls (sticky).
+ *   The accent pill gets the AI motion (AiCta "pill": sparkle, glow, shimmer; see src/styles/ai-cta.css).
  * States: default, bordered; each link has hover, focus and current.
  * Dependencies: Container, Link, cn. Tests: layout.test.tsx; Design Lab "Navigation" (S2-T07).
  * UX reference: ds-navigation, public header (c-nav.css .hdr, .nav).
  */
 import type { ReactNode } from "react";
+import { AiCta } from "@/components/ui/ai-cta.client";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
 import { Container } from "./container";
@@ -23,6 +25,8 @@ import type { NavItem } from "./nav-types";
 
 type SiteHeaderProps = {
   logo: ReactNode;
+  /** The city selector, beside the logo (left out when absent). */
+  city?: ReactNode;
   navLabel: string;
   nav: NavItem[];
   actions?: ReactNode;
@@ -33,6 +37,7 @@ type SiteHeaderProps = {
 
 function SiteHeader({
   logo,
+  city,
   navLabel,
   nav,
   actions,
@@ -51,10 +56,11 @@ function SiteHeader({
     >
       <Container className="flex h-full items-center gap-3 lg:gap-10">
         {logo}
+        {city}
         <nav aria-label={navLabel} className="hidden lg:block">
           <ul className="flex gap-6 xl:gap-8">
-            {nav.map((item) => (
-              <li key={`${item.href}|${item.label}`}>
+            {nav.map((item) => {
+              const link = (
                 <Link
                   href={item.href}
                   current={item.current}
@@ -71,8 +77,19 @@ function SiteHeader({
                   {item.icon}
                   {item.label}
                 </Link>
-              </li>
-            ))}
+              );
+              return (
+                <li key={`${item.href}|${item.label}`}>
+                  {item.accent ? (
+                    <AiCta name="nav" variant="pill">
+                      {link}
+                    </AiCta>
+                  ) : (
+                    link
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
         <div className="ml-auto flex items-center gap-1 md:gap-3">{actions}</div>

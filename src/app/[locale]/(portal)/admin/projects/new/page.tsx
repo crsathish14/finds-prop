@@ -3,8 +3,10 @@ import {
   createProject,
   getBuilderOptions,
   getFormOptions,
+  getExtraBoxes,
   ProjectForm,
 } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 // The portal layout already says the page is never indexed.
@@ -23,6 +25,7 @@ export default async function NewProjectPage() {
   const [builders, forms] = await Promise.all([getBuilderOptions(), getFormOptions()]);
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="admin"
       project={null}
       builders={builders}
@@ -30,6 +33,7 @@ export default async function NewProjectPage() {
       save={createProject}
       backHref="/admin/projects"
       editBase="/admin/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

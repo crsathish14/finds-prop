@@ -1,5 +1,6 @@
 import { CircleUser, Heart, House, Plus, Search, Sparkles } from "lucide-react";
 import { Suspense } from "react";
+import { AiSparkle } from "@/components/ui/ai-sparkle";
 import { Icon } from "@/components/ui/icon";
 import { BottomBarNav } from "./bottom-bar.client";
 import { buildBottomBar, type BottomBarKey } from "./chrome";
@@ -28,7 +29,10 @@ export async function PublicBottomBar() {
     <Suspense fallback={null}>
       <BottomBarNav
         navLabel={bar.navLabel}
-        items={bar.items.map((item) => ({ ...item, icon: <Icon icon={ICONS[item.key]} /> }))}
+        items={bar.items.map((item) => ({
+          ...item,
+          icon: item.key === "ai" ? <AiSparkle size="md" /> : <Icon icon={ICONS[item.key]} />,
+        }))}
       />
     </Suspense>
   );

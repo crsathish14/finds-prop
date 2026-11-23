@@ -20,8 +20,12 @@ export type AdminIconName =
   | "hero"
   | "homepage"
   | "footer"
+  | "blog"
+  | "faq"
+  | "careers"
   | "insights"
-  | "profile";
+  | "profile"
+  | "feedback";
 
 export type AdminNavItem = {
   key: string;
@@ -35,7 +39,11 @@ export type AdminNavItem = {
 export type AdminNavGroup = { label?: string; items: AdminNavItem[] };
 
 /** The groups in the order of the approved navigation. Literal message keys, so the messages check sees them. */
-export function buildAdminNav(translate: Translate, pendingListings: number): AdminNavGroup[] {
+export function buildAdminNav(
+  translate: Translate,
+  pendingListings: number,
+  feedbackNotReviewed = 0,
+): AdminNavGroup[] {
   return [
     {
       items: [
@@ -70,6 +78,12 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
       items: [
         { key: "units", href: "/admin/units", label: translate("admin.nav.units"), icon: "units" },
         {
+          key: "projectFields",
+          href: "/admin/project-fields",
+          label: translate("admin.nav.projectFields"),
+          icon: "projects",
+        },
+        {
           key: "builders",
           href: "/admin/builders",
           label: translate("admin.nav.builders"),
@@ -83,6 +97,26 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
         { key: "leads", href: "/admin/leads", label: translate("admin.nav.leads"), icon: "leads" },
         { key: "forms", href: "/admin/forms", label: translate("admin.nav.forms"), icon: "forms" },
         { key: "crm", href: "/admin/crm", label: translate("admin.nav.crm"), icon: "crm" },
+        {
+          key: "feedback",
+          href: "/admin/feedback",
+          label: translate("admin.nav.feedback"),
+          icon: "feedback",
+          ...(feedbackNotReviewed > 0 ? { count: feedbackNotReviewed } : {}),
+        },
+      ],
+    },
+    {
+      label: translate("admin.nav.content"),
+      items: [
+        { key: "blog", href: "/admin/blog", label: translate("admin.nav.blog"), icon: "blog" },
+        { key: "faq", href: "/admin/faq", label: translate("admin.nav.faq"), icon: "faq" },
+        {
+          key: "careers",
+          href: "/admin/careers",
+          label: translate("admin.nav.careers"),
+          icon: "careers",
+        },
       ],
     },
     {
@@ -102,9 +136,21 @@ export function buildAdminNav(translate: Translate, pendingListings: number): Ad
           icon: "homepage",
         },
         {
+          key: "top-developers",
+          href: "/admin/top-developers",
+          label: translate("admin.nav.topDevelopers"),
+          icon: "builders",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),
+          icon: "footer",
+        },
+        {
+          key: "disclaimers",
+          href: "/admin/disclaimers",
+          label: translate("admin.nav.disclaimers"),
           icon: "footer",
         },
       ],

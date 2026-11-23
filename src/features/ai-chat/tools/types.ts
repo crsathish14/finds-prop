@@ -16,6 +16,12 @@ import type { Translate } from "@/lib/format";
  * principle 5, and section 6.4.3).
  */
 export interface ToolContext {
+  /**
+   * Whether the customer is signed in. The tools that list homes, projects, localities or a builder's projects are for
+   * signed-in customers (login wall, ADR-171) and refuse with `sign_in_required` otherwise. It is one yes or no, not a
+   * person: no id, phone or session reaches a tool.
+   */
+  readonly signedIn: boolean;
   /** The translator for the words around numbers (₹, L, Cr, /mo, sq.ft), which live in en.json. */
   readonly translate: Translate;
   /** The language the numbers and dates are written in. */
@@ -28,7 +34,10 @@ export interface ToolContext {
  * is shown the id only; the slug is here for the address, which code builds (`/properties/{slug}-{shortId}`
  * for a home, `/projects/{slug}` for a project, whose slug is its only id).
  */
-export type ToolReference =
+export type ToolReference = CardReference | SourceReference;
+
+/** A record the chat draws as a card under the answer (a home or a project). */
+export type CardReference =
   | {
       readonly kind: "home";
       /** The public id of the home (`short_id`), the same value the tool result shows as `homeId`. */
@@ -41,9 +50,51 @@ export type ToolReference =
       readonly slug: string;
     };
 
-/** What names a reference once in a set: its kind and its id (a home's public id, a project's slug). */
+/**
+ * A record the chat names as a source under the answer (ADR-143 section 6.5): an article, a question of the FAQ and a job
+ * (ADR-143 section 6). The server builds the link (`source-links.ts`) from the id or
+ * slug a tool returned in the same message, and the title it draws as the link's words is the one the read gave
+ * (cleaned as third-party text). `opened` is true for a record the assistant read in full (`get_content_item`): when
+ * one was, only the opened ones are drawn as sources; when none was, the best matches of the search are.
+ */
+export type SourceReference =
+  | {
+      readonly kind: "article";
+      /** The article's id, the same value the tool result shows as `id`. */
+      readonly id: string;
+      /** The article's address word (`/blog/<slug>`). */
+      readonly slug: string;
+      readonly title: string;
+      readonly opened: boolean;
+    }
+  | {
+      readonly kind: "faq";
+      /** The question's id, the same value the tool result shows as `id`. */
+      readonly id: string;
+      readonly title: string;
+      readonly opened: boolean;
+    }
+  | {
+      /** An open job (`search_jobs`, `get_content_item`); the page is `/careers/<slug>`. */
+      readonly kind: "job";
+      readonly slug: string;
+      readonly title: string;
+      readonly opened: boolean;
+    };
+
+/** What names a reference once in a set: its kind and its id (a home's public id, a project's slug, an article's id). */
 export function referenceKey(reference: ToolReference): string {
-  return reference.kind === "home" ? `home:${reference.homeId}` : `project:${reference.slug}`;
+  switch (reference.kind) {
+    case "home":
+      return `home:${reference.homeId}`;
+    case "project":
+      return `project:${reference.slug}`;
+    case "article":
+    case "faq":
+      return `${reference.kind}:${reference.id}`;
+    case "job":
+      return `job:${reference.slug}`;
+  }
 }
 
 /** What `run` gives back: the result for the model, and the records that result names. */
@@ -60,11 +111,19 @@ export interface ToolRun<Output> {
  */
 export type ToolKind = "read" | "propose";
 
+/** The groups of tools that share a cap of calls per customer message (`AI_TOOL_GROUP_CALL_LIMITS`). */
+export type ToolCallGroup = "content";
+
 export interface AiChatTool<Input, Output> {
   /** Lowercase letters, digits and underscores (`search_properties`): the name the model asks for. */
   readonly name: string;
   /** Whether the loop may run it beside other calls (`read`) or only alone (`propose`). */
   readonly kind: ToolKind;
+  /**
+   * The tool group whose calls are capped together inside the message's total (`AI_TOOL_GROUP_CALL_LIMITS`): the two
+   * content tools share 2 of the 6 calls (ADR-143 section 6.3). Absent for a tool with no cap of its own.
+   */
+  readonly callGroup?: ToolCallGroup;
   /** What the tool is for and how to read its result, written for the model. Never shown to a customer. */
   readonly description: string;
   /** What the tool takes. It must stay inside the portable subset (`toPortableJsonSchema`), and name no person. */
@@ -87,6 +146,9 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `unknown_tool`: no tool has that name.
  * - `invalid_input`: the input does not fit the tool's schema; `fields` names what to correct.
  * - `unavailable`: the read failed or its result did not fit. "That information isn't available right now."
+ * - `sign_in_required`: the tool is about projects, builders, localities or a place, and the customer is not signed in
+ *   (login wall, ADR-171; a guest may search homes). The model tells them to sign in, with the sign-in button, and does not
+ *   list from memory.
  *
  * The propose tools (ADR-128 section 5.3) refuse with three more, thrown as a `ToolRefusal`. Each is one code for
  * every reason behind it on purpose, so a refusal tells the model what to say and nothing about why:
@@ -95,16 +157,18 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `own_home`: the signed-in customer owns the home, so they cannot enquire about it.
  * - `date_out_of_range`: the visit day is not from today to a year ahead.
  *
- * The last four are the agent loop's own refusals (ADR-128 section 4.5), given instead of running the call:
+ * The last five are the agent loop's own refusals (ADR-128 section 4.5), given instead of running the call:
  * - `timeout`: the tool did not answer within `TOOL_TIMEOUT_MS`.
  * - `too_many_calls`: more read calls than may run together in one round.
  * - `call_limit`: the calls for this customer message are used up.
  * - `call_alone`: a propose tool was mixed with other calls; ask for it alone in the next round.
+ * - `content_limit`: the content calls of this message (2 of the 6) are used up; the other tools still work.
  */
 export const TOOL_ERROR_CODES = [
   "unknown_tool",
   "invalid_input",
   "unavailable",
+  "sign_in_required",
   "not_available",
   "own_home",
   "date_out_of_range",
@@ -112,6 +176,7 @@ export const TOOL_ERROR_CODES = [
   "too_many_calls",
   "call_limit",
   "call_alone",
+  "content_limit",
 ] as const;
 export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
 
@@ -120,6 +185,8 @@ export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
  * model, never shown to a customer, and holds no data. The older codes need none: their meaning is plain.
  */
 export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
+  sign_in_required:
+    "This is for signed-in customers: projects, builders, localities and searching around a place. Homes can still be searched without signing in, by their filters. Tell the customer to sign in with their phone number for this, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any project, builder, locality or place from memory.",
   not_available:
     "That home or project is not open for requests. Do not try another id; tell the customer it is not available.",
   own_home: "The customer owns this home, so they cannot enquire about it. Tell them so.",
@@ -129,6 +196,8 @@ export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   too_many_calls: "Too many calls this round. Ask again next round if it is still needed.",
   call_limit: "No more calls are allowed for this message. Answer from what you already have.",
   call_alone: "This tool must be called alone. Call it again next round with no other call.",
+  content_limit:
+    "No more articles or questions can be looked up for this message. Answer from what you already have; the other tools still work.",
 };
 
 /**

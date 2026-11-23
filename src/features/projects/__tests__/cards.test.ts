@@ -7,8 +7,9 @@ const item = (overrides: Partial<ProjectListItem> = {}): ProjectListItem => ({
   name: "Kadal Vista",
   developerName: "Kadal Homes",
   status: "new_launch",
-  priceMin: 7_800_000,
-  priceMax: 14_200_000,
+  offerType: null,
+  price: 7_800_000,
+  priceType: "basic",
   bhkOptions: [2, 3],
   locality: "OMR Navalur",
   coverPath: "kadal/front view.webp",
@@ -23,8 +24,9 @@ describe("UT-project-cards: a project as the card takes it", () => {
       name: "Kadal Vista",
       developerName: "Kadal Homes",
       locality: "OMR Navalur",
-      minRupees: 7_800_000,
-      maxRupees: 14_200_000,
+      priceRupees: 7_800_000,
+      priceType: "basic",
+      offerType: null,
       bedrooms: [2, 3],
       status: "new_launch",
       featured: true,
@@ -42,6 +44,15 @@ describe("UT-project-cards: a project as the card takes it", () => {
     expect(
       toProjectCard(item({ coverPath: null }), "https://example.supabase.co").cover,
     ).toBeNull();
+  });
+
+  it("carries the price type and the sale or rent choice of a commercial project", () => {
+    expect(
+      toProjectCard(
+        item({ price: 85, priceType: "rent_per_sqft_month", offerType: "rent" }),
+        "https://example.supabase.co",
+      ),
+    ).toMatchObject({ priceRupees: 85, priceType: "rent_per_sqft_month", offerType: "rent" });
   });
 
   it("gives the card no city, since a project has none", () => {

@@ -16,7 +16,7 @@ import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
 import { PLOT_NO_PICTURE, RENT_PRIME, SALE_BUDGET, SALE_FEATURED } from "./domain-demos";
 import { DEVELOPERS } from "./domain-demos-places";
-import { SearchCardHost } from "./domain-demos-search";
+import { HomeSearchBarHost } from "./domain-demos-search";
 
 export function HomeHeroDemo() {
   return (
@@ -29,7 +29,7 @@ export function HomeHeroDemo() {
           title="Find the place that fits your life."
           subtitle="Shortlist, compare and enquire directly."
         >
-          <SearchCardHost layout="wide" />
+          <HomeSearchBarHost />
         </HomeHero>
       </Specimen>
       <Specimen
@@ -44,7 +44,7 @@ export function HomeHeroDemo() {
           emphasis="Chennai"
           subtitle="Shortlist, compare and enquire directly."
         >
-          <SearchCardHost layout="wide" />
+          <HomeSearchBarHost />
         </HomeHero>
       </Specimen>
       <Specimen
@@ -57,7 +57,7 @@ export function HomeHeroDemo() {
           className="w-full"
           title="Homes, plots and new projects across Tamil Nadu"
         >
-          <SearchCardHost layout="wide" />
+          <HomeSearchBarHost />
         </HomeHero>
       </Specimen>
       <Specimen label="A long headline wraps and stays centred" className="w-full">
@@ -69,12 +69,12 @@ export function HomeHeroDemo() {
           emphasis="Coimbatore"
           subtitle="Shortlist, compare and enquire directly with owners and builders you can trust."
         >
-          <SearchCardHost layout="wide" />
+          <HomeSearchBarHost />
         </HomeHero>
       </Specimen>
       <Text tone="muted">
-        The faint arches are decoration. The sponsor strip joins under the search card in a later
-        step (S4-T07); without one the section simply ends below the card.
+        The faint arches are decoration. The sponsor strip joins under the search bar in a later
+        step (S4-T07); without one the section simply ends below the bar.
       </Text>
     </div>
   );
@@ -153,12 +153,12 @@ export function HomeSectionsDemo() {
             </SectionGrid>
           </HomeSection>
           <HomeSection labelledBy="lab-why-title">
-            <SectionHead id="lab-why-title" title="Why Find Prop" emphasis="Find Prop" />
+            <SectionHead id="lab-why-title" title="Why findsprop" emphasis="findsprop" />
             <SectionGrid variant="values">
               <ValueCard
                 icon={ShieldCheck}
                 title="Approved listings only"
-                description="Homes appear on Find Prop after they are approved."
+                description="Homes appear on findsprop after they are approved."
               />
               <ValueCard
                 icon={MessageCircle}
@@ -188,12 +188,12 @@ export function HomeSectionsDemo() {
         className="w-full"
       >
         <HomeSection labelledBy="lab-band-title" tone="band" className="w-full">
-          <SectionHead id="lab-band-title" title="Why Find Prop" emphasis="Find Prop" />
+          <SectionHead id="lab-band-title" title="Why findsprop" emphasis="findsprop" />
           <SectionGrid variant="values">
             <ValueCard
               icon={ShieldCheck}
               title="Approved listings only"
-              description="Homes appear on Find Prop after they are approved."
+              description="Homes appear on findsprop after they are approved."
             />
             <ValueCard
               icon={MessageCircle}
@@ -266,7 +266,7 @@ export function HomeCardSectionsDemo() {
         </HomeSection>
       </Specimen>
       <Text tone="muted">
-        Newest on Find Prop is the Scrolling row entry above. Each of these sections is left out
+        Newest on findsprop is the Scrolling row entry above. Each of these sections is left out
         whole when it has nothing to show.
       </Text>
     </div>

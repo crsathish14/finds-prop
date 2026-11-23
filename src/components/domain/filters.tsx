@@ -17,8 +17,12 @@
  *   what is being chosen), className (the page hides the "Filters" button on a wide screen).
  *   FilterFields: values, onChange, localities, allLocalitiesLabel, showSort, placeField (the place
  *   search box, a Combobox with usePlacePanel, which takes the place of the Locality list and adds
- *   "Tamil Nadu only for now"), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
- *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset). ADR-131.
+ *   "Tamil Nadu only for now". A node is drawn as it is; a function is called with { id, values, onChange }
+ *   (the id of the Locality label, the fields now, and the way to change them), so a box that chooses a
+ *   place can set the locality and its point in the same set of values, in the sheet's draft as well as in
+ *   the rail), radiusChoices (the distances to offer, 2, 5, 10 and 15 km; a "Search within"
+ *   chip row is drawn only when given; `values.radiusKm` is the chosen one, 5 when unset), sortOptions (the
+ *   orders Sort by lists; the four that need no place unless the page adds "Nearest first"). ADR-131, ADR-137.
  *   FilterRail also takes onClearAll (what Clear all does instead of clearing the four fields).
  *   All three take budgetNeedsLooking (default off): the results page turns it on, so the budget
  *   field is left out while Looking to is All and goes back to Any when All is chosen, because a sale
@@ -37,20 +41,20 @@
  *   sheet keeps its choices until Show is pressed; closing it any other way throws them away.
  * States: rail and sheet: default, filled, Rent, All, nothing set. Button: with and without a
  *   count. Sheet: closed, open. Show button: with a count, one home, count unknown.
- * Dependencies: Sheet, Button, Chip, Icon, Label, NativeSelect, SegmentedControl, search-options,
+ * Dependencies: Sheet, Button, Chip, Icon, Label, Select, SegmentedControl, search-options,
  *   format helpers, next-intl.
  * Tests: filters.test.tsx; Design Lab "Domain" (S4-T01).
  * UX reference: search screen, filters rail and sheet (s-browse.css .filter-panel, .filters-btn; fp-pages.js FP.filters).
  */
 import { SlidersHorizontal } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useState, type ChangeEvent, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/patterns/sheet";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select, type SelectChangeEvent } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/cn";
 import { formatPrice, type Translate } from "@/lib/format";
@@ -71,10 +75,21 @@ import {
   type BedroomChoice,
   type FilterValues,
   type RadiusChoice,
+  type SortOption,
 } from "@/config/search-options";
 
 /** The distance used when none was chosen: the same 5 km the search itself uses. */
 const DEFAULT_RADIUS_KM = 5;
+
+/** What the place box is given when the page passes a function: the label's id and the fields it may change. */
+type PlaceFieldContext = {
+  id: string;
+  values: FilterValues;
+  onChange: (next: FilterValues) => void;
+};
+
+/** The place search box: a node, or a function of the fields so the box can change them (see the header). */
+type PlaceFieldSlot = ReactNode | ((field: PlaceFieldContext) => ReactNode);
 
 type FilterFieldsProps = {
   values: FilterValues;
@@ -84,9 +99,11 @@ type FilterFieldsProps = {
   showSort?: boolean;
   budgetNeedsLooking?: boolean;
   /** The place search box (a Combobox with usePlacePanel) that takes the place of the Locality list. */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place; leave it out and no distance field is drawn. */
   radiusChoices?: readonly RadiusChoice[];
+  /** The orders the Sort by list offers; leave it out for the four that need no place ("Nearest first" needs one). */
+  sortOptions?: readonly SortOption[];
 };
 
 /** One field: its label above, its control below. */
@@ -107,6 +124,7 @@ function FilterFields({
   budgetNeedsLooking = false,
   placeField,
   radiusChoices,
+  sortOptions = SORT_OPTIONS,
 }: FilterFieldsProps) {
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
@@ -118,6 +136,10 @@ function FilterFields({
       ? [values.locality, ...localities]
       : localities;
   const bedroomChoices: (BedroomChoice | null)[] = [null, ...BEDROOM_CHOICES];
+  const placeNode =
+    typeof placeField === "function"
+      ? placeField({ id: id("locality"), values, onChange })
+      : placeField;
 
   return (
     <div className="flex flex-col gap-5">
@@ -150,12 +172,12 @@ function FilterFields({
 
       <Field>
         <Label htmlFor={id("locality")}>{translate("domain.searchCard.locality.label")}</Label>
-        {placeField ?? (
-          <NativeSelect
+        {placeNode ?? (
+          <Select
             id={id("locality")}
             className={SELECT_HEIGHT}
             value={values.locality ?? ""}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+            onChange={(event: SelectChangeEvent) =>
               set({ locality: event.target.value === "" ? null : event.target.value })
             }
           >
@@ -165,9 +187,9 @@ function FilterFields({
                 {name}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         )}
-        {placeField ? (
+        {placeNode ? (
           <p className="text-caption text-muted">{translate("domain.filters.regionOnly")}</p>
         ) : null}
       </Field>
@@ -195,11 +217,11 @@ function FilterFields({
 
       <Field>
         <Label htmlFor={id("type")}>{translate("domain.searchCard.propertyType.label")}</Label>
-        <NativeSelect
+        <Select
           id={id("type")}
           className={SELECT_HEIGHT}
           value={values.propertyType ?? ""}
-          onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+          onChange={(event: SelectChangeEvent) =>
             set({ propertyType: parsePropertyType(event.target.value) })
           }
         >
@@ -209,7 +231,7 @@ function FilterFields({
               {translate(PROPERTY_TYPE_WORDS[type])}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </Field>
 
       <Field>
@@ -237,11 +259,11 @@ function FilterFields({
       {budgetNeedsLooking && values.intent === "all" ? null : (
         <Field>
           <Label htmlFor={id("budget")}>{translate("domain.searchCard.budget.label")}</Label>
-          <NativeSelect
+          <Select
             id={id("budget")}
             className={SELECT_HEIGHT}
             value={values.maxBudget === null ? "" : String(values.maxBudget)}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+            onChange={(event: SelectChangeEvent) =>
               set({ maxBudget: parseFilterBudget(values.intent, event.target.value) })
             }
           >
@@ -253,27 +275,25 @@ function FilterFields({
                 })}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </Field>
       )}
 
       {showSort ? (
         <Field>
           <Label htmlFor={id("sort")}>{translate("domain.filters.sortLabel")}</Label>
-          <NativeSelect
+          <Select
             id={id("sort")}
             className={SELECT_HEIGHT}
             value={values.sort}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-              set({ sort: parseSort(event.target.value) })
-            }
+            onChange={(event: SelectChangeEvent) => set({ sort: parseSort(event.target.value) })}
           >
-            {SORT_OPTIONS.map((option) => (
+            {sortOptions.map((option) => (
               <option key={option} value={option}>
                 {translate(SORT_WORDS[option])}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </Field>
       ) : null}
     </div>
@@ -287,7 +307,7 @@ type FilterRailProps = {
   allLocalitiesLabel: string;
   budgetNeedsLooking?: boolean;
   /** The place search box in place of the Locality list (ADR-131). */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place (ADR-131). */
   radiusChoices?: readonly RadiusChoice[];
   /** What Clear all does when the page has more to clear than the four fields (the label, the keyword). */
@@ -349,9 +369,11 @@ type FilterSheetProps = {
   onDraftChange?: ((values: FilterValues) => void) | undefined;
   budgetNeedsLooking?: boolean;
   /** The place search box in place of the Locality list (ADR-131). */
-  placeField?: ReactNode;
+  placeField?: PlaceFieldSlot;
   /** The distances to offer around a chosen place (ADR-131). */
   radiusChoices?: readonly RadiusChoice[];
+  /** The orders its Sort by list offers (see FilterFields). */
+  sortOptions?: readonly SortOption[];
   className?: string | undefined;
 };
 
@@ -366,6 +388,7 @@ function FilterSheet({
   budgetNeedsLooking,
   placeField,
   radiusChoices,
+  sortOptions,
   className,
 }: FilterSheetProps) {
   const translate = useTranslations();
@@ -450,6 +473,7 @@ function FilterSheet({
           {...(budgetNeedsLooking === undefined ? {} : { budgetNeedsLooking })}
           {...(placeField === undefined ? {} : { placeField })}
           {...(radiusChoices === undefined ? {} : { radiusChoices })}
+          {...(sortOptions === undefined ? {} : { sortOptions })}
         />
       </SheetContent>
     </Sheet>
@@ -457,4 +481,10 @@ function FilterSheet({
 }
 
 export { FilterFields, FilterRail, FilterSheet };
-export type { FilterFieldsProps, FilterRailProps, FilterSheetProps };
+export type {
+  FilterFieldsProps,
+  FilterRailProps,
+  FilterSheetProps,
+  PlaceFieldContext,
+  PlaceFieldSlot,
+};

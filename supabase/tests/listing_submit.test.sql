@@ -134,10 +134,11 @@ select set_config(
   true
 );
 
--- A listing without a location can be submitted (DEC-19 fallback)
-select lives_ok(
+-- A listing without a location is no longer submitted (ADR-138; before it was the DEC-19 fallback)
+select throws_ok(
   $$select public.submit_listing('00000000-0000-4000-9000-000000000003')$$,
-  'a listing with no location can be submitted'
+  '23514', 'listing.location_required',
+  'a listing with no location cannot be submitted'
 );
 
 -- The refusals
@@ -373,9 +374,11 @@ select is(
   'adding a location sends the listing back to review'
 );
 
--- Search copes with listings that have no location
+-- Search copes with listings that have no location (a live listing from before ADR-138; the system moves
+-- listing 3 on, since a user can no longer submit it)
+update public.properties set status = 'pending' where id = '00000000-0000-4000-9000-000000000003';
 update public.properties set status = 'approved' where id = '00000000-0000-4000-9000-000000000003';
-set local role anon;
+set local role authenticated; -- login wall: the lists are for signed-in people (no user: sees approved rows only)
 select is(
   (select count(*)::int from public.search_properties(p_q => 'apartment') where latitude is null),
   1,

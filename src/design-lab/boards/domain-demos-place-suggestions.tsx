@@ -1,8 +1,10 @@
 "use client";
 
-import { SearchCard } from "@/components/domain/search-card";
+import { MapPin } from "lucide-react";
+import { useState } from "react";
 import { usePlacePanel, type PlacePanelState } from "@/components/domain/place-panel";
-import type { ComboboxOption } from "@/components/patterns/combobox";
+import { Combobox, type ComboboxOption } from "@/components/patterns/combobox";
+import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 import { Specimen } from "../frame";
 
@@ -29,7 +31,6 @@ type StateSpec = {
   query: string;
   options: ComboboxOption[];
   loading?: boolean;
-  layout?: "wide" | "stacked";
 };
 
 const STATES: StateSpec[] = [
@@ -45,30 +46,59 @@ const STATES: StateSpec[] = [
     options: [],
   },
   { label: "Too many searches", state: "limited", query: "Vel", options: [] },
-  {
-    label: "Stacked card, results",
-    state: "ready",
-    query: "Vel",
-    options: VELACHERY,
-    layout: "stacked",
-  },
 ];
 
-/** One search card with its place panel open in a given state. Space under it keeps the panel off the next specimen. */
-function PanelCard({ spec }: { spec: StateSpec }) {
+/** The Locality box of the results filters, as wide as the filter rail. */
+function PlaceField({
+  id,
+  query,
+  options,
+  loading = false,
+  panel,
+  open = false,
+}: {
+  id: string;
+  query: string;
+  options: ComboboxOption[];
+  loading?: boolean;
+  panel: ReturnType<typeof usePlacePanel>;
+  open?: boolean;
+}) {
+  const [text, setText] = useState(query);
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-2">
+      <Label htmlFor={id}>Locality</Label>
+      <Combobox
+        id={id}
+        aria-label="Locality"
+        placeholder="Search a locality"
+        icon={MapPin}
+        value={text}
+        onValueChange={setText}
+        onQueryChange={() => undefined}
+        onSelect={(option) => setText(option.label)}
+        options={options}
+        loading={loading}
+        minChars={3}
+        {...panel}
+        {...(open ? { defaultOpen: true } : {})}
+      />
+    </div>
+  );
+}
+
+/** One box with its place panel open in a given state. Space under it keeps the panel off the next specimen. */
+function PanelCard({ spec, id }: { spec: StateSpec; id: string }) {
   const panel = usePlacePanel(spec.state, spec.query);
   return (
-    <div className="h-120 w-full max-w-(--w-search-card)">
-      <SearchCard
-        layout={spec.layout ?? "wide"}
-        projectsHref="#projects"
-        defaultValues={{ locality: spec.query }}
-        localityOptions={spec.options}
-        onLocalityQueryChange={() => undefined}
-        localityLoading={spec.loading ?? false}
-        localityMinChars={3}
-        localityPanel={{ ...panel, defaultOpen: true }}
-        onSearch={() => undefined}
+    <div className="h-120 w-full">
+      <PlaceField
+        id={id}
+        query={spec.query}
+        options={spec.options}
+        loading={spec.loading ?? false}
+        panel={panel}
+        open
       />
     </div>
   );
@@ -76,34 +106,22 @@ function PanelCard({ spec }: { spec: StateSpec }) {
 
 function PickedCard() {
   const panel = usePlacePanel("ready", "Velachery, Chennai");
-  return (
-    <div className="w-full max-w-(--w-search-card)">
-      <SearchCard
-        layout="wide"
-        projectsHref="#projects"
-        defaultValues={{ locality: "Velachery, Chennai" }}
-        localityOptions={[]}
-        onLocalityQueryChange={() => undefined}
-        localityMinChars={3}
-        localityPanel={panel}
-        onSearch={() => undefined}
-      />
-    </div>
-  );
+  return <PlaceField id="lab-place-picked" query="Velachery, Chennai" options={[]} panel={panel} />;
 }
 
 export function PlaceSuggestionsDemo() {
   return (
     <div className="flex flex-col gap-10">
       <Text tone="muted">
-        The place panel of the search box (ADR-131, UX addendum ADD-07). Every state is drawn open
-        here so it can be checked at 390, 820 and 1440 px; on the site the panel opens when the box
-        is focused. Suggestions come from Ola Maps through our own server, so its credit and the
-        OpenStreetMap licence always show at the bottom. The wording is for approval.
+        The place panel of the Locality box in the results filters (ADR-131, UX addendum ADD-07).
+        Every state is drawn open here so it can be checked at 390, 820 and 1440 px; on the site the
+        panel opens when the box is focused. Suggestions come from Ola Maps through our own server,
+        so its credit and the OpenStreetMap licence always show at the bottom. The wording is for
+        approval.
       </Text>
-      {STATES.map((spec) => (
+      {STATES.map((spec, index) => (
         <Specimen key={spec.label} label={spec.label}>
-          <PanelCard spec={spec} />
+          <PanelCard spec={spec} id={`lab-place-${index}`} />
         </Specimen>
       ))}
       <Specimen label="A place chosen: the box holds the name and the panel is closed">

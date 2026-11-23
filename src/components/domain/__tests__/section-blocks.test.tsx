@@ -291,6 +291,24 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
   });
 
+  it("scrolls sideways with the mouse wheel while there is room, and lets the page scroll at the end", () => {
+    renderWithMessages(
+      <ScrollRow title="Newest" label="Newest homes">
+        {cards(6)}
+      </ScrollRow>,
+    );
+    // At the start, an up-down wheel turned down moves the row to the right.
+    expect(turnWheel({ deltaY: 100 })).toBe(true);
+    expect(embla.distance).toHaveBeenLastCalledWith(-100, false);
+    // At the start, turned up, there is nowhere to go: the page scrolls.
+    embla.distance.mockClear();
+    expect(turnWheel({ deltaY: -100 })).toBe(false);
+    // At the end, turned down, the page scrolls.
+    embla.state.target = -900;
+    expect(turnWheel({ deltaY: 100 })).toBe(false);
+    expect(embla.distance).not.toHaveBeenCalled();
+  });
+
   it("moves the carousel one screenful when Next or Previous is pressed", () => {
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
@@ -411,13 +429,12 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
     expect(embla.distance).toHaveBeenLastCalledWith(-48, false);
   });
 
-  it("leaves an up-down wheel to the page, and a sideways one at the row's ends", () => {
+  it("leaves a sideways turn to the page at the row's ends", () => {
     renderWithMessages(
       <ScrollRow title="Newest" label="Newest homes">
         {cards(6)}
       </ScrollRow>,
     );
-    expect(turnWheel({ deltaY: 100 })).toBe(false);
     // At the start, a turn to the left has nowhere to go.
     expect(turnWheel({ deltaX: -100 })).toBe(false);
     embla.state.target = -900;

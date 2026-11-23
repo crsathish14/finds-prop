@@ -8,6 +8,7 @@ import type { ActionResult } from "@/types/action";
 import type { MediaStorage } from "../media-storage";
 import type { ProjectDone } from "../project-service";
 import type { ProjectEditView } from "../view";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -35,14 +36,20 @@ const saved: ProjectEditView = {
   builderId: BUILDER_ID,
   projectType: "residential",
   propertyType: "apartment",
+  offerType: null,
+  plotStatus: null,
+  villaType: null,
+  extraFields: {},
   projectStatus: "under_construction",
-  priceMin: 7800000,
-  priceMax: 14200000,
+  price: 7800000,
+  priceType: "basic",
+  areaMinSqft: null,
+  areaMaxSqft: null,
   bhkOptions: [2, 3],
   landAreaAcres: 4.2,
-  totalUnits: 320,
-  possessionDate: "2028-12-31",
+  possessionDate: "2028-12-01",
   contactPhone: null,
+  city: "Chennai",
   locality: "OMR Navalur",
   address: null,
   latitude: null,
@@ -51,6 +58,7 @@ const saved: ProjectEditView = {
   nearby: [],
   reraApplicable: false,
   reraNumber: null,
+  reraNotApplicableReason: "Below the size that needs registration.",
   description: "A gated community.",
   specifications: null,
   amenities: [],
@@ -114,8 +122,26 @@ function open({ scope = "admin", project = null, save, storage }: Setup = {}) {
   return { save: action, storage: media };
 }
 
-const box = (name: string) => screen.getByRole("textbox", { name: new RegExp(`^${name}`) });
+/** A label as the start of an accessible name; the label may hold brackets, so it is escaped. */
+const startsWith = (label: string) =>
+  new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+const box = (name: string) => screen.getByRole("textbox", { name: startsWith(name) });
 const saveButton = () => screen.getByRole("button", { name: words.save.save });
+const select = (label: string) => screen.getByRole("combobox", { name: startsWith(label) });
+
+/** Fills every required box of a new project: a residential apartment, ready to move, not under RERA. */
+async function fillRequired({ admin }: { admin: boolean }) {
+  await userEvent.type(box(words.fields.name), "Kadal Vista");
+  if (admin) await changeField(select(words.fields.builder), BUILDER_ID);
+  await changeField(select(words.fields.projectType), "residential");
+  await changeField(select(words.fields.propertyType), "apartment");
+  await changeField(select(words.fields.projectStatus), "ready_to_move");
+  await userEvent.type(box(words.fields.price), "78,00,000");
+  await changeField(select(words.fields.priceType), "basic");
+  await userEvent.type(box(words.fields.reraReason), "Below the size that needs registration.");
+  await userEvent.type(box(words.fields.city), "Chennai");
+  await userEvent.type(box(words.fields.locality), "OMR Navalur");
+}
 const fileInput = (group: string) =>
   screen.getByRole("group", { name: group }).querySelector("input[type=file]") as HTMLInputElement;
 const png = (name = "plan.png", size = 1000) => {
@@ -157,23 +183,127 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
     expect((box(words.fields.slug) as HTMLInputElement).value).toBe("my-own-address");
   });
 
-  it("does not save and names what is missing when the name, builder and locality are empty", async () => {
+  it("does not save and names everything that is missing at once", async () => {
     const { save } = open();
     await userEvent.click(saveButton());
     expect(save).not.toHaveBeenCalled();
-    expect(await screen.findByText("3 things need attention")).toBeVisible();
-    expect(screen.getByText(words.problems.name)).toBeVisible();
-    expect(screen.getByText(words.problems.builder)).toBeVisible();
-    expect(screen.getByText(words.problems.locality)).toBeVisible();
+    expect(await screen.findByText("10 things need attention")).toBeVisible();
+    for (const problem of [
+      "name",
+      "builder",
+      "projectType",
+      "propertyType",
+      "status",
+      "price",
+      "priceType",
+      "reraReason",
+      "city",
+      "locality",
+    ] as const) {
+      expect(screen.getByText(words.problems[problem])).toBeVisible();
+    }
     // The line under the title names the boxes.
-    expect(
-      screen.getByText(
-        `Check ${words.fields.name}, ${words.fields.builder}, ${words.fields.locality} before saving.`,
-      ),
-    ).toBeVisible();
+    const named = [
+      words.fields.name,
+      words.fields.builder,
+      words.fields.projectType,
+      words.fields.propertyType,
+      words.fields.projectStatus,
+      words.fields.price,
+      words.fields.priceType,
+      words.fields.reraReason,
+      words.fields.city,
+      words.fields.locality,
+    ].join(", ");
+    expect(screen.getByText(`Check ${named} before saving.`)).toBeVisible();
     const nav = screen.getByRole("navigation", { name: words.nav.label });
-    // Basics and Location each have a problem; the list says so in words.
-    expect(within(nav).getAllByText(words.nav.error, { exact: false })).toHaveLength(2);
+    // Basics, Location and RERA each have a problem; the list says so in words.
+    expect(within(nav).getAllByText(words.nav.error, { exact: false })).toHaveLength(3);
+  });
+
+  it("asks only for what applies: a plot asks for an area range and no bedrooms, a ready project for no possession", async () => {
+    open();
+    await changeField(select(words.fields.projectType), "residential");
+    await changeField(select(words.fields.propertyType), "apartment");
+    expect(screen.getByRole("group", { name: new RegExp(words.fields.bhk) })).toBeVisible();
+    expect(screen.queryByRole("textbox", { name: startsWith(words.fields.areaMin) })).toBeNull();
+    await changeField(select(words.fields.projectStatus), "new_launch");
+    expect(screen.getByLabelText(words.fields.possession, { exact: false })).toBeVisible();
+    await changeField(select(words.fields.projectStatus), "ready_to_move");
+    expect(screen.queryByLabelText(words.fields.possession, { exact: false })).toBeNull();
+    await changeField(select(words.fields.propertyType), "plot");
+    expect(screen.queryByRole("group", { name: new RegExp(words.fields.bhk) })).toBeNull();
+    expect(box(words.fields.areaMin)).toBeVisible();
+    expect(box(words.fields.areaMax)).toBeVisible();
+    expect(
+      screen.queryByRole("combobox", { name: new RegExp(`^${words.fields.offerType}`) }),
+    ).toBeNull();
+  });
+
+  it("offers the property types of the project type, and the rent price types only for a commercial project for rent", async () => {
+    open();
+    await changeField(select(words.fields.projectType), "residential");
+    expect(await optionTexts(select(words.fields.propertyType))).toEqual([
+      words.fields.unset,
+      words.options.propertyType.apartment,
+      words.options.propertyType.villa,
+      words.options.propertyType.plot,
+    ]);
+    expect(await optionTexts(select(words.fields.priceType))).toEqual([
+      words.fields.unset,
+      words.options.priceType.perSqft,
+      words.options.priceType.basic,
+      words.options.priceType.allInclusive,
+    ]);
+    await changeField(select(words.fields.projectType), "commercial");
+    expect(await optionTexts(select(words.fields.propertyType))).toEqual([
+      words.fields.unset,
+      words.options.propertyType.vacantLand,
+      words.options.propertyType.flat,
+      words.options.propertyType.office,
+      words.options.propertyType.coWorking,
+      words.options.propertyType.villa,
+    ]);
+    await changeField(select(words.fields.offerType), "rent");
+    expect(await optionTexts(select(words.fields.priceType))).toEqual([
+      words.fields.unset,
+      words.options.priceType.rentPerMonth,
+      words.options.priceType.rentPerSqftMonth,
+    ]);
+  });
+
+  it("clears the price type and the property type when what they depend on changes", async () => {
+    open();
+    await changeField(select(words.fields.projectType), "commercial");
+    await changeField(select(words.fields.propertyType), "office");
+    await changeField(select(words.fields.offerType), "rent");
+    await changeField(select(words.fields.priceType), "rent_per_month");
+    await changeField(select(words.fields.offerType), "sale");
+    expect(select(words.fields.priceType)).toHaveTextContent(words.fields.unset);
+    await changeField(select(words.fields.projectType), "residential");
+    expect(select(words.fields.propertyType)).toHaveTextContent(words.fields.unset);
+  });
+
+  it("says the RERA reason is shown publicly, and asks for the number instead when RERA applies", async () => {
+    open();
+    expect(screen.getByText(words.fields.reraReasonHint)).toBeVisible();
+    await userEvent.click(screen.getByRole("switch", { name: words.fields.reraApplicable }));
+    expect(screen.queryByText(words.fields.reraReasonHint)).toBeNull();
+    expect(box(words.fields.reraNumber)).toBeVisible();
+    await userEvent.click(saveButton());
+    expect(await screen.findByText(words.problems.reraNumber)).toBeVisible();
+  });
+
+  it("holds the save back when the largest area is below the smallest", async () => {
+    const { save } = open();
+    await fillRequired({ admin: true });
+    await changeField(select(words.fields.propertyType), "plot");
+    await changeField(select(words.fields.priceType), "per_sqft");
+    await userEvent.type(box(words.fields.areaMin), "2400");
+    await userEvent.type(box(words.fields.areaMax), "1200");
+    await userEvent.click(saveButton());
+    expect(save).not.toHaveBeenCalled();
+    expect(await screen.findByText(words.problems.areaRange)).toBeVisible();
   });
 
   it("clears a box's message as soon as it is typed in", async () => {
@@ -186,12 +316,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
 
   it("creates the project with its boxes only, then opens its edit page", async () => {
     const { save } = open();
-    await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
-      BUILDER_ID,
-    );
-    await userEvent.type(box(words.fields.locality), "OMR Navalur");
+    await fillRequired({ admin: true });
     await userEvent.click(saveButton());
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     const sent = save.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -201,6 +326,13 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
       locality: "OMR Navalur",
       builderId: BUILDER_ID,
       formId: "",
+      projectType: "residential",
+      propertyType: "apartment",
+      projectStatus: "ready_to_move",
+      price: "78,00,000",
+      priceType: "basic",
+      reraApplicable: false,
+      reraNotApplicableReason: "Below the size that needs registration.",
     });
     expect("projectId" in sent).toBe(false);
     expect("images" in sent).toBe(false);
@@ -221,12 +353,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
       fieldErrors: { slug: [{ key: "validation.slugTaken" }] },
     }));
     open({ save });
-    await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
-      BUILDER_ID,
-    );
-    await userEvent.type(box(words.fields.locality), "OMR Navalur");
+    await fillRequired({ admin: true });
     await userEvent.click(saveButton());
     expect(await screen.findByText(en.validation.slugTaken)).toBeVisible();
     expect(screen.getByText("1 thing needs attention")).toBeVisible();
@@ -240,12 +367,7 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
       retryAfter: 120,
     }));
     open({ save });
-    await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) }),
-      BUILDER_ID,
-    );
-    await userEvent.type(box(words.fields.locality), "OMR Navalur");
+    await fillRequired({ admin: true });
     await userEvent.click(saveButton());
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(router.refresh).toHaveBeenCalled();
@@ -259,16 +381,12 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
 });
 
 describe("ProjectForm: a saved project, for the admin (S7-T02, part C)", () => {
-  it("opens filled, with its builder as the only choice, the enquiry form box and the price trends", () => {
+  it("opens filled, with its builder as the only choice, the enquiry form box and the price trends", async () => {
     open({ project: saved });
     expect(screen.getByRole("heading", { level: 1, name: "Kadal Vista" })).toBeVisible();
     expect((box(words.fields.name) as HTMLInputElement).value).toBe("Kadal Vista");
     const builder = screen.getByRole("combobox", { name: new RegExp(`^${words.fields.builder}`) });
-    expect(
-      within(builder)
-        .getAllByRole("option")
-        .map((option) => option.textContent),
-    ).toEqual([words.fields.unset, "Kadal Homes"]);
+    expect(await optionTexts(builder)).toEqual([words.fields.unset, "Kadal Homes"]);
     const trends = screen.getByRole("group", { name: words.trends.title });
     expect((within(trends).getByLabelText("Month 1") as HTMLInputElement).value).toBe("2026-10");
     expect(screen.queryByText(words.media.locked)).toBeNull();
@@ -385,7 +503,7 @@ describe("ProjectForm: a saved project, for the admin (S7-T02, part C)", () => {
     fireEvent.change(within(trends).getByLabelText("₹ per sq.ft 2"), {
       target: { value: "eight" },
     });
-    fireEvent.change(within(trends).getByLabelText("Month 2"), { target: { value: "2026-10" } });
+    await changeField(within(trends).getByLabelText("Month 2"), "2026-10");
     await userEvent.click(saveButton());
     expect(save).not.toHaveBeenCalled();
     expect(await within(trends).findByText(words.trends.errors.monthTwice)).toBeVisible();
@@ -433,8 +551,7 @@ describe("ProjectForm: a builder's form (S7-T02, part C)", () => {
 
   it("creates a builder's own project without a builder box, and says it waits for approval without mentioning price trends", async () => {
     const { save } = open({ scope: "builder" });
-    await userEvent.type(box(words.fields.name), "Kadal Vista");
-    await userEvent.type(box(words.fields.locality), "OMR Navalur");
+    await fillRequired({ admin: false });
     await userEvent.click(saveButton());
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     const sent = save.mock.calls[0]?.[0] as Record<string, unknown>;

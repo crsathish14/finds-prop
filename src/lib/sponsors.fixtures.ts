@@ -11,7 +11,7 @@ function creatives(strip: string, panel: string): Pick<SponsorAd, "strip" | "pan
     desktop: {
       src: `${AD_PATH}/strip-970x90-${strip}.svg`,
       width: 970,
-      height: 90,
+      height: 117,
       unoptimized: true,
     },
     compact: {
@@ -62,7 +62,7 @@ export const NEAR_MISS_AD: SponsorAd = sampleAd("a", {
     desktop: {
       src: `${AD_PATH}/near-miss-strip-970x120.svg`,
       width: 970,
-      height: 120,
+      height: 150,
       unoptimized: true,
     },
     compact: {

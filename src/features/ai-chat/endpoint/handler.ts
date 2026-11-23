@@ -135,10 +135,11 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     if (limited !== null) return limited;
 
     // 6 to 9: the agent loop, the output check, the stream, usage
-    const pageContext = await readPageContext(deps, parsed.request.context);
+    const pageContext = await readPageContext(deps, parsed.request.context, session !== null);
     const system = buildSystemPrompt({
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
+      ...(deps.placeSearch === true ? { placeSearch: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
     });
     const conversation = [...history, { role: "user" as const, text: latest.text }];
@@ -172,10 +173,15 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
 // ---------------------------------------------------------------- page context
 
 /** The checked page context of the request (AI-P7-T01), or null; a failing read is logged and means no context. */
-async function readPageContext(deps: ChatDeps, raw: unknown): Promise<ChatContext | null> {
+async function readPageContext(
+  deps: ChatDeps,
+  raw: unknown,
+  signedIn: boolean,
+): Promise<ChatContext | null> {
   if (deps.contextReads === undefined || raw === undefined) return null;
   try {
-    return await resolveContext(raw, deps.contextReads);
+    // A guest's project page gives the assistant no project (login wall, ADR-171).
+    return await resolveContext(raw, deps.contextReads, { projects: signedIn });
   } catch (error) {
     logger.error("ai chat page context could not be read", { error });
     return null;
@@ -304,6 +310,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       system: input.system,
       messages: input.conversation,
       customerMessage: latest.text,
+      signedIn: input.session !== null,
       signal,
       timeLimit,
       ...(deps.confirmCard === undefined

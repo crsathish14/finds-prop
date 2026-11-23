@@ -65,6 +65,46 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"blog_posts": {
+                  Row: {
+                    "author_name": string,"body": NonNullable<Json>,"category_id": string | null,"cover_alt": string | null,"cover_path": string | null,"created_at": string,"deleted_at": string | null,"excerpt": string,"id": string,"published_at": string | null,"read_minutes": number | null,"search_vector": unknown,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": string,"tags": (string)[],"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_name": string,"body"?: NonNullable<Json>,"category_id"?: string | null,"cover_alt"?: string | null,"cover_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"excerpt"?: string,"id"?: string,"published_at"?: string | null,"read_minutes"?: never,"search_vector"?: never,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"status"?: string,"tags"?: (string)[],"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "author_name"?: string,"body"?: NonNullable<Json>,"category_id"?: string | null,"cover_alt"?: string | null,"cover_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"excerpt"?: string,"id"?: string,"published_at"?: string | null,"read_minutes"?: never,"search_vector"?: never,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"status"?: string,"tags"?: (string)[],"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "blog_posts_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"builder_feedback": {
+                  Row: {
+                    "builder_id": string,"created_at": string,"id": string,"message": string,"reviewed_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "builder_id": string,"created_at"?: string,"id"?: string,"message": string,"reviewed_at"?: string | null
+                  }
+                  Update: {
+                    "builder_id"?: string,"created_at"?: string,"id"?: string,"message"?: string,"reviewed_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "builder_feedback_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"builders": {
                   Row: {
                     "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"kind": string,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
@@ -75,6 +115,34 @@ export type Database = {
                   }
                   Update: {
                     "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"cities": {
+                  Row: {
+                    "created_at": string,"id": string,"key": string,"name": string,"state": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"key": string,"name": string,"state"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"key"?: string,"name"?: string,"state"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"content_categories": {
+                  Row: {
+                    "active": boolean,"created_at": string,"id": string,"module": string,"name": string,"slug": string,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"module": string,"name": string,"slug": string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"module"?: string,"name"?: string,"slug"?: string,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -156,6 +224,26 @@ isOneToOne: true
       columns: ["property_id"]
 isOneToOne: false
       referencedRelation: "properties"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"faqs": {
+                  Row: {
+                    "answer": string,"category_id": string,"created_at": string,"deleted_at": string | null,"id": string,"question": string,"search_vector": unknown,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer": string,"category_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question": string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "answer"?: string,"category_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"question"?: string,"search_vector"?: never,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "faqs_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
       referencedColumns: ["id"]
     }
                   ]
@@ -250,6 +338,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"job_postings": {
+                  Row: {
+                    "apply_email": string | null,"apply_url": string | null,"closes_at": string | null,"created_at": string,"deleted_at": string | null,"department_id": string,"description": string,"employment_type": string,"experience": string,"id": string,"location": string,"posted_at": string | null,"requirements": string,"responsibilities": string,"salary_note": string | null,"search_vector": unknown,"slug": string,"status": string,"summary": string,"title": string,"updated_at": string,"work_mode": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "apply_email"?: string | null,"apply_url"?: string | null,"closes_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"department_id": string,"description"?: string,"employment_type": string,"experience"?: string,"id"?: string,"location": string,"posted_at"?: string | null,"requirements"?: string,"responsibilities"?: string,"salary_note"?: string | null,"search_vector"?: never,"slug": string,"status"?: string,"summary"?: string,"title": string,"updated_at"?: string,"work_mode": string
+                  }
+                  Update: {
+                    "apply_email"?: string | null,"apply_url"?: string | null,"closes_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"department_id"?: string,"description"?: string,"employment_type"?: string,"experience"?: string,"id"?: string,"location"?: string,"posted_at"?: string | null,"requirements"?: string,"responsibilities"?: string,"salary_note"?: string | null,"search_vector"?: never,"slug"?: string,"status"?: string,"summary"?: string,"title"?: string,"updated_at"?: string,"work_mode"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "job_postings_department_id_fkey"
+      columns: ["department_id"]
+isOneToOne: false
+      referencedRelation: "content_categories"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"listing_media": {
                   Row: {
@@ -381,14 +489,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "address": string | null,"advantages": (string)[],"amenities": (string)[],"bhk_options": (number)[],"brochure_path": string | null,"builder_id": string,"contact_phone": string | null,"created_at": string,"description": string | null,"elevations": (string)[],"featured": boolean,"floor_plans": (string)[],"form_id": string | null,"id": string,"images": (string)[],"land_area_acres": number | null,"latitude": number | null,"locality": string,"location": unknown,"longitude": number | null,"moderated_at": string | null,"moderated_by": string | null,"moderation": string,"name": string,"nearby": (string)[],"plot_images": (string)[],"possession_date": string | null,"price_max": number | null,"price_min": number | null,"project_status": string | null,"project_type": string | null,"property_type": string | null,"published": boolean,"rejection_reason": string | null,"rera_applicable": boolean,"rera_number": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"specifications": string | null,"total_units": number | null,"updated_at": string,"videos": (string)[]
+                    "address": string | null,"advantages": (string)[],"amenities": (string)[],"area_max_sqft": number | null,"area_min_sqft": number | null,"bhk_options": (number)[],"brochure_path": string | null,"builder_id": string,"city": string,"contact_phone": string | null,"created_at": string,"description": string | null,"elevations": (string)[],"extra_fields": NonNullable<Json>,"featured": boolean,"floor_plans": (string)[],"form_id": string | null,"id": string,"images": (string)[],"land_area_acres": number | null,"latitude": number | null,"locality": string,"location": unknown,"longitude": number | null,"moderated_at": string | null,"moderated_by": string | null,"moderation": string,"name": string,"nearby": (string)[],"offer_type": string | null,"plot_images": (string)[],"plot_status": string | null,"possession_date": string | null,"price": number | null,"price_type": string | null,"project_status": string | null,"project_type": string | null,"property_type": string | null,"published": boolean,"rejection_reason": string | null,"rera_applicable": boolean,"rera_not_applicable_reason": string | null,"rera_number": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"specifications": string | null,"total_units": number | null,"updated_at": string,"videos": (string)[],"villa_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality": string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name": string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"area_max_sqft"?: number | null,"area_min_sqft"?: number | null,"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"city"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"extra_fields"?: NonNullable<Json>,"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality": string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name": string,"nearby"?: (string)[],"offer_type"?: string | null,"plot_images"?: (string)[],"plot_status"?: string | null,"possession_date"?: string | null,"price"?: number | null,"price_type"?: string | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_not_applicable_reason"?: string | null,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[],"villa_type"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality"?: string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name"?: string,"nearby"?: (string)[],"plot_images"?: (string)[],"possession_date"?: string | null,"price_max"?: number | null,"price_min"?: number | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[]
+                    "address"?: string | null,"advantages"?: (string)[],"amenities"?: (string)[],"area_max_sqft"?: number | null,"area_min_sqft"?: number | null,"bhk_options"?: (number)[],"brochure_path"?: string | null,"builder_id"?: string,"city"?: string,"contact_phone"?: string | null,"created_at"?: string,"description"?: string | null,"elevations"?: (string)[],"extra_fields"?: NonNullable<Json>,"featured"?: boolean,"floor_plans"?: (string)[],"form_id"?: string | null,"id"?: string,"images"?: (string)[],"land_area_acres"?: number | null,"latitude"?: number | null,"locality"?: string,"location"?: never,"longitude"?: number | null,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation"?: string,"name"?: string,"nearby"?: (string)[],"offer_type"?: string | null,"plot_images"?: (string)[],"plot_status"?: string | null,"possession_date"?: string | null,"price"?: number | null,"price_type"?: string | null,"project_status"?: string | null,"project_type"?: string | null,"property_type"?: string | null,"published"?: boolean,"rejection_reason"?: string | null,"rera_applicable"?: boolean,"rera_not_applicable_reason"?: string | null,"rera_number"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"specifications"?: string | null,"total_units"?: number | null,"updated_at"?: string,"videos"?: (string)[],"villa_type"?: string | null
                   }
                   Relationships: [
                     {
@@ -521,6 +629,16 @@ isOneToOne: false
               "active": boolean,"base_url": string,"body_mapping": Json,"created_at": string,"endpoint": string,"forms": number,"has_access_token": boolean,"has_api_key": boolean,"has_api_secret": boolean,"headers": Json,"id": string,"lead_id_path": string,"lead_source": string,"method": string,"name": string,"project_codes": Json,"updated_at": string
             }[]
                            },
+"admin_feedback_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "not_reviewed": number,"total": number
+            }[]
+                           },
+"admin_feedback_list":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_state"?: string }; Returns: {
+              "builder_id": string,"builder_kind": string,"builder_name": string,"created_at": string,"id": string,"message": string,"reviewed_at": string,"total_count": number
+            }[]
+                           },
 "admin_forms":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,
@@ -564,7 +682,7 @@ isOneToOne: false
                            },
 "admin_project_overview":
 { Args: Record<PropertyKey, never>; Returns: {
-              "builder_id": string,"builder_name": string,"cover": string,"created_at": string,"featured": boolean,"id": string,"leads": number,"locality": string,"moderation": string,"name": string,"price_max": number,"price_min": number,"published": boolean,"slug": string
+              "builder_id": string,"builder_name": string,"cover": string,"created_at": string,"featured": boolean,"id": string,"leads": number,"locality": string,"moderation": string,"name": string,"price": number,"price_type": string,"published": boolean,"slug": string
             }[]
                            },
 "admin_projects":
@@ -572,13 +690,17 @@ isOneToOne: false
               "address": string | null,
 "advantages": (string)[],
 "amenities": (string)[],
+"area_max_sqft": number | null,
+"area_min_sqft": number | null,
 "bhk_options": (number)[],
 "brochure_path": string | null,
 "builder_id": string,
+"city": string,
 "contact_phone": string | null,
 "created_at": string,
 "description": string | null,
 "elevations": (string)[],
+"extra_fields": NonNullable<Json>,
 "featured": boolean,
 "floor_plans": (string)[],
 "form_id": string | null,
@@ -594,16 +716,19 @@ isOneToOne: false
 "moderation": string,
 "name": string,
 "nearby": (string)[],
+"offer_type": string | null,
 "plot_images": (string)[],
+"plot_status": string | null,
 "possession_date": string | null,
-"price_max": number | null,
-"price_min": number | null,
+"price": number | null,
+"price_type": string | null,
 "project_status": string | null,
 "project_type": string | null,
 "property_type": string | null,
 "published": boolean,
 "rejection_reason": string | null,
 "rera_applicable": boolean,
+"rera_not_applicable_reason": string | null,
 "rera_number": string | null,
 "seo_description": string | null,
 "seo_title": string | null,
@@ -611,7 +736,8 @@ isOneToOne: false
 "specifications": string | null,
 "total_units": number | null,
 "updated_at": string,
-"videos": (string)[]
+"videos": (string)[],
+"villa_type": string | null
             }[]
                           SetofOptions: {
         from: "*"
@@ -661,6 +787,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_set_feedback_reviewed":
+{ Args: { "p_id": string,"p_reviewed": boolean }; Returns: boolean
+                           },
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -682,6 +811,24 @@ isOneToOne: false
 "audit_write":
 { Args: { "action_name": string,"change": Json,"entity_key": string,"entity_kind": string }; Returns: undefined
                            },
+"blog_block_is_valid":
+{ Args: { "block": Json }; Returns: boolean
+                           },
+"blog_body_is_valid":
+{ Args: { "blocks": Json }; Returns: boolean
+                           },
+"blog_body_text":
+{ Args: { "blocks": Json }; Returns: string
+                           },
+"blog_read_minutes":
+{ Args: { "blocks": Json }; Returns: number
+                           },
+"blog_search_text":
+{ Args: { "blocks": Json,"post_excerpt": string,"post_tags": (string)[],"post_title": string }; Returns: string
+                           },
+"blog_tags_are_valid":
+{ Args: { "post_tags": (string)[] }; Returns: boolean
+                           },
 "build_property_slug":
 { Args: { "locality": string,"title": string }; Returns: string
                            },
@@ -692,6 +839,12 @@ isOneToOne: false
                            },
 "changed_columns":
 { Args: { "new_row": Json,"old_row": Json }; Returns: Json
+                           },
+"city_display_name":
+{ Args: { "city": string }; Returns: string
+                           },
+"city_key":
+{ Args: { "city": string }; Returns: string
                            },
 "claim_crm_deliveries":
 { Args: { "p_limit"?: number,"p_submission"?: string }; Returns: {
@@ -715,11 +868,24 @@ isOneToOne: false
 "finalize_listing_media":
 { Args: { "p_bytes": number,"p_height": number,"p_listing": string,"p_mime": string,"p_owner": string,"p_path": string,"p_width": number }; Returns: string
                            },
+"guest_search_properties":
+{ Args: { "p_bhk"?: number,"p_city"?: string,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
+              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
+            }[]
+                           },
 "has_role":
 { Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
                            },
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"home_developers":
+{ Args: { "p_city"?: string }; Returns: Json
+                           },
+"home_properties":
+{ Args: { "p_city"?: string,"p_kind": string }; Returns: {
+              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
+            }[]
                            },
 "hook_before_user_created":
 { Args: { "event": Json }; Returns: Json
@@ -730,6 +896,11 @@ isOneToOne: false
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"listed_cities":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "key": string,"listing_count": number,"name": string
+            }[]
+                           },
 "listing_is_editable":
 { Args: { "target_property": string }; Returns: boolean
                            },
@@ -738,6 +909,15 @@ isOneToOne: false
                            },
 "listing_label":
 { Args: { "is_featured": boolean,"listing_kind": string,"listing_price": number }; Returns: string
+                           },
+"live_builder_projects":
+{ Args: { "p_builder": string,"p_limit"?: number }; Returns: Json
+                           },
+"live_locality_names":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"live_project_list":
+{ Args: { "p_city"?: string,"p_limit"?: number }; Returns: Json
                            },
 "moderate_listing":
 { Args: { "p_action": string,"p_listing": string,"p_reason"?: string }; Returns: {
@@ -778,13 +958,17 @@ isOneToOne: false
               "address": string | null,
 "advantages": (string)[],
 "amenities": (string)[],
+"area_max_sqft": number | null,
+"area_min_sqft": number | null,
 "bhk_options": (number)[],
 "brochure_path": string | null,
 "builder_id": string,
+"city": string,
 "contact_phone": string | null,
 "created_at": string,
 "description": string | null,
 "elevations": (string)[],
+"extra_fields": NonNullable<Json>,
 "featured": boolean,
 "floor_plans": (string)[],
 "form_id": string | null,
@@ -800,16 +984,19 @@ isOneToOne: false
 "moderation": string,
 "name": string,
 "nearby": (string)[],
+"offer_type": string | null,
 "plot_images": (string)[],
+"plot_status": string | null,
 "possession_date": string | null,
-"price_max": number | null,
-"price_min": number | null,
+"price": number | null,
+"price_type": string | null,
 "project_status": string | null,
 "project_type": string | null,
 "property_type": string | null,
 "published": boolean,
 "rejection_reason": string | null,
 "rera_applicable": boolean,
+"rera_not_applicable_reason": string | null,
 "rera_number": string | null,
 "seo_description": string | null,
 "seo_title": string | null,
@@ -817,7 +1004,8 @@ isOneToOne: false
 "specifications": string | null,
 "total_units": number | null,
 "updated_at": string,
-"videos": (string)[]
+"videos": (string)[],
+"villa_type": string | null
             }[]
                           SetofOptions: {
         from: "*"
@@ -870,6 +1058,11 @@ isOneToOne: false
 "normalise_phone":
 { Args: { "raw_phone": string }; Returns: string
                            },
+"orphan_blog_files":
+{ Args: { "p_limit"?: number,"p_older_than_hours"?: number }; Returns: {
+              "name": string
+            }[]
+                           },
 "orphan_listing_photos":
 { Args: { "p_limit"?: number,"p_older_than_hours"?: number }; Returns: {
               "name": string
@@ -884,6 +1077,9 @@ isOneToOne: false
 "project_is_mine":
 { Args: { "target_project": string }; Returns: boolean
                            },
+"public_project":
+{ Args: { "p_slug": string }; Returns: Json
+                           },
 "public_project_form":
 { Args: { "p_project_slug": string }; Returns: {
               "button_text": string,"fields": Json,"kind": string,"name": string,"placement": string,"project_id": string,"slug": string,"success_message": string
@@ -891,6 +1087,9 @@ isOneToOne: false
                            },
 "public_project_id":
 { Args: { "project_slug": string }; Returns: string
+                           },
+"public_property":
+{ Args: { "p_short_id": string }; Returns: Json
                            },
 "rate_limit_hit":
 { Args: { "limit_scope": string,"limit_subject": string,"max_hits": number,"window_seconds": number }; Returns: {
@@ -906,6 +1105,9 @@ isOneToOne: false
 "record_places_call":
 { Args: { "p_api": string,"p_caller": string,"p_outcome": string }; Returns: undefined
                            },
+"reorder_faqs":
+{ Args: { "p_category": string,"p_ids": (string)[] }; Returns: number
+                           },
 "reserved_admin_emails":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
@@ -918,9 +1120,32 @@ isOneToOne: false
 "save_project_price_trends":
 { Args: { "p_project": string,"p_rows": Json }; Returns: number
                            },
+"search_blog_posts":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_tag"?: string }; Returns: {
+              "author_name": string,"category_id": string,"category_name": string,"category_slug": string,"cover_alt": string,"cover_path": string,"excerpt": string,"id": string,"published_at": string,"read_minutes": number,"slug": string,"snippet": string,"tags": (string)[],"title": string,"total_count": number
+            }[]
+                           },
+"search_faqs":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_query"?: string }; Returns: {
+              "answer": string,"category_id": string,"category_name": string,"category_slug": string,"id": string,"question": string,"rank": number,"sort_order": number,"updated_at": string
+            }[]
+                           },
+"search_job_postings":
+{ Args: { "p_department"?: string,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_query"?: string,"p_type"?: string,"p_work_mode"?: string }; Returns: {
+              "closes_at": string,"department_id": string,"department_name": string,"department_slug": string,"employment_type": string,"experience": string,"id": string,"location": string,"posted_at": string,"salary_note": string,"slug": string,"snippet": string,"summary": string,"title": string,"total_count": number,"work_mode": string
+            }[]
+                           },
 "search_properties":
-{ Args: { "p_bhk"?: number,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
-              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
+{ Args: { "p_bhk"?: number,"p_city"?: string,"p_east"?: number,"p_label"?: string,"p_lat"?: number,"p_limit"?: number,"p_listing_type"?: string,"p_lng"?: number,"p_locality"?: string,"p_max_price"?: number,"p_min_price"?: number,"p_north"?: number,"p_property_type"?: string,"p_q"?: string,"p_radius_km"?: number,"p_sort"?: string,"p_south"?: number,"p_west"?: number }; Returns: {
+              "area_sqft": number,"bathrooms": number,"bhk": number,"city": string,"cover_alt": string,"cover_path": string,"distance_km": number,"featured": boolean,"furnishing": string,"id": string,"label": string,"latitude": number,"listing_type": string,"locality": string,"longitude": number,"price": number,"property_type": string,"published_at": string,"short_id": string,"slug": string,"state": string,"title": string,"total_count": number
+            }[]
+                           },
+"set_listing_location":
+{ Args: { "p_lat": number,"p_lng": number,"p_property_id": string }; Returns: string
+                           },
+"sitemap_entries":
+{ Args: { "p_kind": string,"p_limit"?: number,"p_offset"?: number }; Returns: {
+              "short_id": string,"slug": string,"updated_at": string
             }[]
                            },
 "slugify":
@@ -931,6 +1156,9 @@ isOneToOne: false
                            },
 "storage_project_path_ok":
 { Args: { "object_name": string }; Returns: boolean
+                           },
+"submit_builder_feedback":
+{ Args: { "p_message": string }; Returns: string
                            },
 "submit_enquiry":
 { Args: { "p_email"?: string,"p_message"?: string,"p_name": string,"p_phone": string,"p_short_id": string,"p_user_id": string }; Returns: string

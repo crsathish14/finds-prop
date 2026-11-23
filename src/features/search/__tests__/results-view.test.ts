@@ -52,6 +52,7 @@ describe("UT-results-view: the address as filter values", () => {
     expect(filterValuesFromParams(params)).toEqual({
       intent: "rent",
       locality: "Velachery",
+      point: { lat: 12.9815, lng: 80.2209 },
       propertyType: "villa",
       bedrooms: 3,
       maxBudget: 40_000,
@@ -63,6 +64,7 @@ describe("UT-results-view: the address as filter values", () => {
     expect(filterValuesFromParams(parse({}))).toEqual({
       intent: "all",
       locality: null,
+      point: null,
       propertyType: null,
       bedrooms: null,
       maxBudget: null,
@@ -270,7 +272,7 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
   it("is the plain title and a description of the homes when nothing is filtered", () => {
     expect(meta({})).toEqual({
       title: "Properties",
-      description: "Homes for sale and rent. Photos, prices and details of homes on Find Prop.",
+      description: "Homes for sale and rent. Photos, prices and details of homes on findsprop.",
     });
   });
 
@@ -279,7 +281,7 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
       {
         title: "Apartments for sale in Velachery",
         description:
-          "Apartments for sale in Velachery. Photos, prices and details of homes on Find Prop.",
+          "Apartments for sale in Velachery. Photos, prices and details of homes on findsprop.",
       },
     );
   });
@@ -308,5 +310,99 @@ describe("UT-results-meta: what the results page says about itself (FR-PUB-14)",
       meta({ locality: "Velachery" }),
     ].map((entry) => entry.title);
     expect(new Set(titles).size).toBe(titles.length);
+  });
+});
+
+describe("UT-results-view: a place with a point from the place search (ADR-136)", () => {
+  const values: FilterValues = {
+    intent: "buy",
+    locality: "KK Nagar",
+    point: { lat: 13.0418, lng: 80.2341 },
+    propertyType: null,
+    bedrooms: 2,
+    maxBudget: null,
+    sort: "newest",
+  };
+
+  it("reads the point of a place in the address, and none for a text match", () => {
+    expect(
+      filterValuesFromParams(parse({ place: "KK Nagar", lat: "13.0418", lng: "80.2341" })).point,
+    ).toEqual({ lat: 13.0418, lng: 80.2341 });
+    expect(filterValuesFromParams(parse({ locality: "Adyar" })).point).toBeNull();
+  });
+
+  it("searches a place with a point by that point and keeps the radius the address has", () => {
+    const params = parse({ place: "Old", lat: "13.1", lng: "80.1", ["r"]: "10" });
+    const href = buildSearchHref(searchFromFilterValues(params, values, CURATED));
+    expect(href).toBe(
+      "/properties?bhk=2&lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar&r=10",
+    );
+  });
+
+  it("uses the default radius when the address had none", () => {
+    const href = buildSearchHref(searchFromFilterValues(parse({}), values, CURATED));
+    expect(href).toBe("/properties?bhk=2&lat=13.0418&listingType=sale&lng=80.2341&place=KK+Nagar");
+  });
+
+  it("gives a text locality no point, and ignores a point when there is no locality", () => {
+    const text = searchFromFilterValues(parse({}), { ...values, point: null }, CURATED);
+    expect(text.locality).toBe("KK Nagar");
+    expect(text.lat).toBeUndefined();
+    const none = searchFromFilterValues(parse({}), { ...values, locality: null }, CURATED);
+    expect(none.lat).toBeUndefined();
+    expect(none.place).toBeUndefined();
+  });
+
+  it("keeps a curated name the curated place, even with a point", () => {
+    const patch = searchFromFilterValues(parse({}), { ...values, locality: "Velachery" }, CURATED);
+    expect(patch).toMatchObject({ place: "Velachery", lat: 12.9815, radiusKm: 4 });
+  });
+});
+
+describe("UT-results-view: the distance chips and the distance sort (ADR-137)", () => {
+  const placed = { place: "Old", lat: "13.1", lng: "80.1" };
+  const base = filterValuesFromParams(parse(placed));
+
+  it("reads the radius in the address as a filter value, and none when the default is in use", () => {
+    expect(filterValuesFromParams(parse({ ...placed, ["r"]: "10" })).radiusKm).toBe(10);
+    expect(filterValuesFromParams(parse(placed))).not.toHaveProperty("radiusKm");
+    expect(filterValuesFromParams(parse({ sort: "price_asc" }))).not.toHaveProperty("radiusKm");
+  });
+
+  it("reads sort=distance as a filter value only with a place", () => {
+    expect(filterValuesFromParams(parse({ ...placed, sort: "distance" })).sort).toBe("distance");
+    expect(filterValuesFromParams(parse({ sort: "distance" })).sort).toBe("newest");
+  });
+
+  it("sets the radius when a chip is chosen, and leaves it out for the default 5 km", () => {
+    const params = parse(placed);
+    expect(
+      buildSearchHref(searchFromFilterValues(params, { ...base, radiusKm: 10 }, CURATED)),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old&r=10");
+    const wide = parse({ ...placed, ["r"]: "10" });
+    expect(
+      buildSearchHref(
+        searchFromFilterValues(wide, { ...filterValuesFromParams(wide), radiusKm: 5 }, CURATED),
+      ),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old");
+  });
+
+  it("keeps a radius the chips do not offer while no chip is chosen", () => {
+    const params = parse({ ...placed, ["r"]: "7" });
+    expect(
+      buildSearchHref(searchFromFilterValues(params, filterValuesFromParams(params), CURATED)),
+    ).toBe("/properties?lat=13.1&lng=80.1&place=Old&r=7");
+  });
+
+  it("keeps the distance sort with the place, and drops it when the place goes", () => {
+    const params = parse({ ...placed, sort: "distance" });
+    const values = filterValuesFromParams(params);
+    expect(buildSearchHref(searchFromFilterValues(params, values, CURATED))).toContain(
+      "sort=distance",
+    );
+    expect(
+      buildSearchHref(searchFromFilterValues(params, { ...values, locality: null }, CURATED)),
+    ).toBe("/properties");
+    expect(buildSearchHref(withoutFilter(params, "place"))).toBe("/properties");
   });
 });

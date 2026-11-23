@@ -9,9 +9,12 @@ import {
   deleteListingConfig,
   saveDraftConfig,
   saveListingChangesConfig,
+  setListingLocationConfig,
   submitListingConfig,
 } from "./action-config";
 import { discardDraft, keepDraft, sendForReview, startDraft } from "./listing-service";
+import { setOwnLocation } from "./location-service";
+import { createListingLocationStore } from "./location-store";
 import { closeOwnListing, deleteOwnListing, saveOwnChanges } from "./my-listings-service";
 import { createMyListingsStore } from "./my-listings-store";
 import { createListingCallerStore } from "./service";
@@ -95,6 +98,25 @@ export const saveListingChanges = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveOwnChanges(await createMyListingsStore(), input);
     log.info("listing changes saved", {
+      listingId: done.listingId,
+      status: done.status,
+      wentBackToReview: done.wentBackToReview,
+    });
+    return done;
+  },
+});
+
+/**
+ * Sets where the caller's listing is, from the place the owner picked in the wizard (ADR-141). The owner is the
+ * session; the point is stored by the database (ADR-138) and is never returned or logged, only the listing's
+ * state afterwards (a Live listing goes back to review when its place changes).
+ */
+export const setListingLocation = defineAction({
+  ...setListingLocationConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await setOwnLocation(await createListingLocationStore(), input);
+    log.info("listing location set", {
       listingId: done.listingId,
       status: done.status,
       wentBackToReview: done.wentBackToReview,

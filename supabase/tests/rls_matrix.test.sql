@@ -59,7 +59,11 @@ insert into alias values
   ('{l1}', '00000000-0000-4000-a000-000000000001'), ('{l3}', '00000000-0000-4000-a000-000000000003'),
   ('{f1}', '00000000-0000-4000-f100-000000000001'), ('{f2}', '00000000-0000-4000-f100-000000000002'),
   ('{ci1}', '00000000-0000-4000-f000-000000000001'), ('{fs1}', '00000000-0000-4000-d100-000000000001'),
-  ('{cl1}', '00000000-0000-4000-d200-000000000001');
+  ('{cl1}', '00000000-0000-4000-d200-000000000001'),
+  ('{bp1}', '00000000-0000-4000-c400-000000000001'), ('{bp2}', '00000000-0000-4000-c400-000000000002'),
+  ('{bp3}', '00000000-0000-4000-c400-000000000003'),
+  ('{jp1}', '00000000-0000-4000-c600-000000000001'), ('{jp2}', '00000000-0000-4000-c600-000000000002'),
+  ('{jp3}', '00000000-0000-4000-c600-000000000003'), ('{jp4}', '00000000-0000-4000-c600-000000000004');
 
 create function pg_temp.fill(stmt text) returns text
 language plpgsql
@@ -161,12 +165,44 @@ values ('00000000-0000-4000-f000-000000000001', 'not-a-real-key');
 insert into public.form_submissions (id, form_name) values ('00000000-0000-4000-d100-000000000001', 'Matrix form');
 insert into public.crm_api_logs (id, integration_name, outcome) values ('00000000-0000-4000-d200-000000000001', 'Matrix CRM', 'success');
 insert into public.site_settings (key, value) values ('matrix_probe', '{"matrix": 1}');
+insert into public.content_categories (module, slug, name, active) values
+  ('blog', 'matrix-active', 'Matrix active', true),
+  ('blog', 'matrix-hidden', 'Matrix hidden', false),
+  ('faq', 'matrix-faq', 'Matrix questions', true),
+  ('department', 'matrix-dept', 'Matrix department', true);
+insert into public.faqs (category_id, question, answer, status)
+select id, 'Matrix published question', 'Matrix published answer', 'published'
+  from public.content_categories where module = 'faq' and slug = 'matrix-faq'
+union all
+select id, 'Matrix draft question', 'Matrix draft answer', 'draft'
+  from public.content_categories where module = 'faq' and slug = 'matrix-faq';
+insert into public.blog_posts (id, slug, title, excerpt, body, author_name, status, deleted_at) values
+  ('00000000-0000-4000-c400-000000000001', 'matrix-published', 'Matrix published', 'A summary.', '[{"type": "paragraph", "text": "Body."}]', 'Matrix Author', 'published', null),
+  ('00000000-0000-4000-c400-000000000002', 'matrix-draft', 'Matrix draft', '', '[]', 'Matrix Author', 'draft', null),
+  ('00000000-0000-4000-c400-000000000003', 'matrix-trashed', 'Matrix trashed', '', '[]', 'Matrix Author', 'draft', now());
+insert into public.job_postings (
+  id, slug, title, department_id, location, work_mode, employment_type, summary, description, requirements,
+  apply_url, status, closes_at, posted_at, deleted_at
+)
+select vals.id::uuid, vals.slug, vals.title, category.id, 'Chennai', 'onsite', 'full_time', 'A summary.', 'A description.',
+  'A requirement.', 'https://jobs.example.test/apply', vals.status, vals.closes_at::timestamptz,
+  case when vals.status = 'open' then now() end, vals.deleted_at::timestamptz
+from public.content_categories as category
+cross join (values
+  ('00000000-0000-4000-c600-000000000001', 'matrix-open-job', 'Matrix open job', 'open', null, null),
+  ('00000000-0000-4000-c600-000000000002', 'matrix-draft-job', 'Matrix draft job', 'draft', null, null),
+  ('00000000-0000-4000-c600-000000000003', 'matrix-expired-job', 'Matrix expired job', 'open', '2020-01-01 00:00:00+00', null),
+  ('00000000-0000-4000-c600-000000000004', 'matrix-trashed-job', 'Matrix trashed job', 'closed', null, '2026-01-01 00:00:00+00')
+) as vals (id, slug, title, status, closes_at, deleted_at)
+where category.module = 'department' and category.slug = 'matrix-dept';
 insert into public.app_config (key, value) values ('matrix.probe', 'x');
 insert into public.internal_cron_tokens (name, token) values ('matrix_probe', repeat('x', 40));
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
 insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
 insert into public.places_usage_daily (day, api, caller, outcome, calls) values (current_date, 'matrix_probe', 'search_box', 'ok', 1);
+insert into public.cities (key, name) values ('matrixprobe', 'Matrix Probe');
+insert into public.builder_feedback (builder_id, message) values ('00000000-0000-4000-b000-000000000001', 'matrix probe');
 
 -- Layer 1: the privileges each role holds on each table (S select, I insert, U update, D delete, T truncate; select,
 -- insert and update count when held on any column, as the column grants are).
@@ -175,24 +211,30 @@ insert into exp_grants values
   ('ai_usage_events', '', '', 'S,I,U,D,T'),
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
+  ('blog_posts', 'S', 'S,I,U', 'S,I,U,D,T'),
+  ('builder_feedback', '', '', 'S,I,U,D,T'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
+  ('cities', 'S', 'S', 'S,I,U,D,T'),
+  ('content_categories', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('crm_api_logs', '', 'S', 'S,I,U,D,T'),
   ('crm_integration_secrets', '', '', 'S,I,U,D,T'),
   ('crm_integrations', '', 'S,I,U,D', 'S,I,U,D,T'),
   ('enquiries', '', 'S,U', 'S,I,U,D,T'),
+  ('faqs', 'S', 'S,I,U', 'S,I,U,D,T'),
+  ('job_postings', 'S', 'S,I,U', 'S,I,U,D,T'),
   ('form_submissions', '', 'S', 'S,I,U,D,T'),
   ('forms', 'S', 'S,I,U,D', 'S,I,U,D,T'),
   ('idempotency_keys', '', '', 'S,I,U,D,T'),
   ('internal_cron_tokens', '', '', 'S,I,U,D,T'),
-  ('listing_media', 'S', 'S,U,D', 'S,I,U,D,T'),
+  ('listing_media', '', 'S,U,D', 'S,I,U,D,T'),
   ('places_usage_daily', '', '', 'S,I,U,D,T'),
   ('profiles', '', 'S,U', 'S,I,U,D,T'),
   ('project_events', '', 'S', 'S,I,U,D,T'),
   ('project_leads', '', 'S,U', 'S,I,U,D,T'),
-  ('project_price_trends', 'S', 'S,I,U,D', 'S,I,U,D,T'),
-  ('project_units', 'S', 'S,I,U,D', 'S,I,U,D,T'),
-  ('projects', 'S', 'S,I,U,D', 'S,I,U,D,T'),
-  ('properties', 'S', 'S,I,U,D', 'S,I,U,D,T'),
+  ('project_price_trends', '', 'S,I,U,D', 'S,I,U,D,T'),
+  ('project_units', '', 'S,I,U,D', 'S,I,U,D,T'),
+  ('projects', '', 'S,I,U,D', 'S,I,U,D,T'),
+  ('properties', '', 'S,I,U,D', 'S,I,U,D,T'),
   ('public_rate_limits', '', '', 'S,I,U,D,T'),
   ('saved_properties', '', 'S,I,D', 'S,I,U,D,T'),
   ('site_settings', 'S', 'S,I,U', 'S,I,U,D,T'),
@@ -234,13 +276,20 @@ insert into probe values
   ('project_events', 'v1', 'project_id = ''{pr1}'''), ('project_events', 'v3', 'project_id = ''{pr3}'''),
   ('forms', 'f1', 'id = ''{f1}'''), ('forms', 'f2', 'id = ''{f2}'''),
   ('site_settings', 'k1', 'key = ''matrix_probe'''),
+  ('content_categories', 'c1', 'slug = ''matrix-active'''), ('content_categories', 'c2', 'slug = ''matrix-hidden'''),
+  ('blog_posts', 'b1', 'id = ''{bp1}'''), ('blog_posts', 'b2', 'id = ''{bp2}'''), ('blog_posts', 'b3', 'id = ''{bp3}'''),
+  ('faqs', 'q1', 'question = ''Matrix published question'''), ('faqs', 'q2', 'question = ''Matrix draft question'''),
+  ('job_postings', 'j1', 'id = ''{jp1}'''), ('job_postings', 'j2', 'id = ''{jp2}'''),
+  ('job_postings', 'j3', 'id = ''{jp3}'''), ('job_postings', 'j4', 'id = ''{jp4}'''),
   ('form_submissions', 'x1', 'id = ''{fs1}'''), ('crm_api_logs', 'x1', 'id = ''{cl1}'''),
   ('crm_integrations', 'x1', 'id = ''{ci1}'''), ('crm_integration_secrets', 'x1', 'integration_id = ''{ci1}'''),
   ('audit_log', 'x1', 'action = ''builder.created'''),
   ('app_config', 'x1', 'key = ''matrix.probe'''), ('internal_cron_tokens', 'x1', 'name = ''matrix_probe'''),
   ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
   ('ai_usage_events', 'x1', 'request_id = ''matrix_probe'''),
-  ('places_usage_daily', 'x1', 'api = ''matrix_probe''');
+  ('places_usage_daily', 'x1', 'api = ''matrix_probe'''),
+  ('builder_feedback', 'x1', 'message = ''matrix probe'''),
+  ('cities', 'x1', 'key = ''matrixprobe''');
 
 create function pg_temp.sees(who text, tbl text) returns text
 language plpgsql
@@ -271,20 +320,24 @@ create temp table exp_vis (t text not null, who text not null, seen text not nul
 insert into exp_vis
 select x.t, r.who, x.by_who[r.n]
 from (values
-  ('properties', array['p1,p3', 'p1,p2,p3', 'p1,p3,p4', 'p1,p3', 'p1,p3', 'p1,p3', 'p1,p2,p3,p4']),
-  ('listing_media', array['m1', 'm1,m2', 'm1', 'm1', 'm1', 'm1', 'm1,m2']),
+  ('properties', array['', 'p1,p2,p3', 'p1,p3,p4', 'p1,p3', 'p1,p3', 'p1,p3', 'p1,p2,p3,p4']),
+  ('listing_media', array['', 'm1,m2', 'm1', 'm1', 'm1', 'm1', 'm1,m2']),
   ('enquiries', array['', 'e1,e2', 'e1,e2,e3', 'e3', '', '', 'e1,e2,e3']),
   ('saved_properties', array['', 's1', 's2', '', '', '', 's1,s2']),
   ('profiles', array['', 'u1', 'u2', 'u3', '', '', 'u1,u2,u3']),
   ('user_roles', array['', 'r1', 'r2', 'r3', '', '', 'r1,r2,r3']),
   ('builders', array['g1,g2', 'g1,g2', 'g1,g2', 'g1,g2', 'g1,g2', 'g1,g2', 'g1,g2,g3']),
-  ('projects', array['pr1,pr3', 'pr1,pr3', 'pr1,pr3', 'pr1,pr2,pr3', 'pr1,pr3,pr5', 'pr1,pr3', 'pr1,pr2,pr3,pr4,pr5']),
-  ('project_units', array['u1,u3', 'u1,u3', 'u1,u3', 'u1,u2,u3', 'u1,u3', 'u1,u3', 'u1,u2,u3']),
-  ('project_price_trends', array['t1', 't1', 't1', 't1,t2', 't1', 't1', 't1,t2']),
+  ('projects', array['', 'pr1,pr3', 'pr1,pr3', 'pr1,pr2,pr3', 'pr1,pr3,pr5', 'pr1,pr3', 'pr1,pr2,pr3,pr4,pr5']),
+  ('project_units', array['', 'u1,u3', 'u1,u3', 'u1,u2,u3', 'u1,u3', 'u1,u3', 'u1,u2,u3']),
+  ('project_price_trends', array['', 't1', 't1', 't1,t2', 't1', 't1', 't1,t2']),
   ('project_leads', array['', '', '', 'l1', 'l3', '', 'l1,l3']),
   ('project_events', array['', '', '', 'v1', 'v3', '', 'v1,v3']),
   ('forms', array['f1', 'f1', 'f1', 'f1', 'f1', 'f1', 'f1,f2']),
   ('site_settings', array['k1', 'k1', 'k1', 'k1', 'k1', 'k1', 'k1']),
+  ('content_categories', array['c1', 'c1', 'c1', 'c1', 'c1', 'c1', 'c1,c2']),
+  ('blog_posts', array['b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1,b2,b3']),
+  ('faqs', array['q1', 'q1', 'q1', 'q1', 'q1', 'q1', 'q1,q2']),
+  ('job_postings', array['j1', 'j1', 'j1', 'j1', 'j1', 'j1', 'j1,j2,j3,j4']),
   ('form_submissions', array['', '', '', '', '', '', 'x1']),
   ('crm_api_logs', array['', '', '', '', '', '', 'x1']),
   ('crm_integrations', array['', '', '', '', '', '', 'x1']),
@@ -295,7 +348,9 @@ from (values
   ('idempotency_keys', array['', '', '', '', '', '', '']),
   ('public_rate_limits', array['', '', '', '', '', '', '']),
   ('ai_usage_events', array['', '', '', '', '', '', '']),
-  ('places_usage_daily', array['', '', '', '', '', '', ''])
+  ('places_usage_daily', array['', '', '', '', '', '', '']),
+  ('builder_feedback', array['', '', '', '', '', '', '']),
+  ('cities', array['x1', 'x1', 'x1', 'x1', 'x1', 'x1', 'x1'])
 ) as x(t, by_who)
 cross join unnest(array['anon', 'ca', 'cb', 'ba', 'bb', 'bc', 'ad']) with ordinality as r(who, n);
 
@@ -381,6 +436,48 @@ insert into exp_write (label, who, stmt, expected) values
   ('site_settings: a visitor cannot', 'anon', $q$update public.site_settings set value = '{"matrix": 2}' where key = 'matrix_probe'$q$, 'no'),
   ('site_settings: the admin adds a setting', 'ad', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'yes'),
   ('site_settings: a builder cannot add one', 'ba', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'no'),
+  -- content_categories: public to read while active, the admin alone writes
+  ('content_categories: the admin edits a category', 'ad', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'yes'),
+  ('content_categories: a customer cannot', 'ca', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: a builder cannot', 'ba', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: a visitor cannot', 'anon', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),
+  ('content_categories: the admin adds a category', 'ad', $q$insert into public.content_categories (module, slug, name) values ('faq', 'matrix-new', 'Matrix new')$q$, 'yes'),
+  ('content_categories: a builder cannot add one', 'ba', $q$insert into public.content_categories (module, slug, name) values ('faq', 'matrix-new', 'Matrix new')$q$, 'no'),
+  ('content_categories: the admin deletes a category', 'ad', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'yes'),
+  ('content_categories: a customer cannot delete one', 'ca', $q$delete from public.content_categories where slug = 'matrix-hidden'$q$, 'no'),
+  -- blog_posts: public to read while published, the admin alone writes, and nobody deletes (Trash is an update)
+  ('blog_posts: the admin edits an article', 'ad', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'yes'),
+  ('blog_posts: a customer cannot', 'ca', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: a builder cannot', 'ba', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: a visitor cannot', 'anon', $q$update public.blog_posts set title = 'Matrix two' where id = '{bp1}'$q$, 'no'),
+  ('blog_posts: the admin moves an article to Trash', 'ad', $q$update public.blog_posts set deleted_at = now() where id = '{bp2}'$q$, 'yes'),
+  ('blog_posts: a customer cannot move one to Trash', 'ca', $q$update public.blog_posts set deleted_at = now() where id = '{bp2}'$q$, 'no'),
+  ('blog_posts: the admin adds an article', 'ad', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'yes'),
+  ('blog_posts: a customer cannot add one', 'ca', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: a builder cannot add one', 'ba', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: a visitor cannot add one', 'anon', $q$insert into public.blog_posts (slug, title, author_name) values ('matrix-new', 'Matrix new', 'Matrix Author')$q$, 'no'),
+  ('blog_posts: not even the admin deletes one', 'ad', $q$delete from public.blog_posts where id = '{bp3}'$q$, 'no'),
+  -- job_postings: public to read while open, not closed by date and not in Trash; the admin alone writes; nobody deletes
+  ('job_postings: the admin edits a job', 'ad', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'yes'),
+  ('job_postings: a customer cannot', 'ca', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: a builder cannot', 'ba', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: a visitor cannot', 'anon', $q$update public.job_postings set title = 'Matrix job two' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: the admin closes a job', 'ad', $q$update public.job_postings set status = 'closed' where id = '{jp1}'$q$, 'yes'),
+  ('job_postings: a customer cannot close one', 'ca', $q$update public.job_postings set status = 'closed' where id = '{jp1}'$q$, 'no'),
+  ('job_postings: the admin adds a job', 'ad', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'yes'),
+  ('job_postings: a customer cannot add one', 'ca', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: a builder cannot add one', 'ba', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: a visitor cannot add one', 'anon', $q$insert into public.job_postings (slug, title, department_id, location, work_mode, employment_type, apply_email) select 'matrix-new-job', 'Matrix new job', id, 'Madurai', 'remote', 'contract', 'jobs@example.test' from public.content_categories where module = 'department' and slug = 'matrix-dept'$q$, 'no'),
+  ('job_postings: not even the admin deletes one', 'ad', $q$delete from public.job_postings where id = '{jp4}'$q$, 'no'),
+  -- faqs: public to read while published, not in the trash and in an active category; the admin alone writes; nobody deletes
+  ('faqs: the admin edits a question', 'ad', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix draft question'$q$, 'yes'),
+  ('faqs: a customer cannot', 'ca', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: a builder cannot', 'ba', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: a visitor cannot', 'anon', $q$update public.faqs set answer = 'Matrix answer two' where question = 'Matrix published question'$q$, 'no'),
+  ('faqs: the admin adds a question', 'ad', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'yes'),
+  ('faqs: a builder cannot add one', 'ba', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'no'),
+  ('faqs: a customer cannot add one', 'ca', $q$insert into public.faqs (category_id, question, answer) select id, 'Matrix new question', 'Matrix new answer' from public.content_categories where module = 'faq' and slug = 'matrix-faq'$q$, 'no'),
+  ('faqs: not even the admin deletes one', 'ad', $q$delete from public.faqs where question = 'Matrix draft question'$q$, 'no'),
   -- builders: an active builder edits their own record; the admin edits any; no one else
   ('builders: an active builder edits their own record', 'ba', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'yes'),
   ('builders: another builder cannot', 'bb', $q$update public.builders set name = 'Builder A Ltd' where id = '{BA}'$q$, 'no'),
@@ -397,7 +494,7 @@ insert into exp_write (label, who, stmt, expected) values
   ('projects: the admin edits a project', 'ad', $q$update public.projects set name = 'Matrix Edit' where id = '{pr1}'$q$, 'yes'),
   ('projects: a builder cannot delete their own', 'ba', $q$delete from public.projects where id = '{pr2}'$q$, 'no'),
   ('projects: the admin deletes a project', 'ad', $q$delete from public.projects where id = '{pr2}'$q$, 'yes'),
-  ('projects: a builder adds a project of their own', 'ba', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'yes'),
+  ('projects: a builder adds a project of their own', 'ba', $q$insert into public.projects (slug, name, locality, project_type, property_type, project_status, price, price_type, rera_not_applicable_reason) values ('matrix-new', 'Matrix New', 'Matrix', 'residential', 'apartment', 'ready_to_move', 5000000, 'basic', 'Below the size that needs registration.')$q$, 'yes'),
   ('projects: an inactive builder cannot add one', 'bc', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'no'),
   ('projects: a customer cannot add one', 'ca', $q$insert into public.projects (slug, name, locality) values ('matrix-new', 'Matrix New', 'Matrix')$q$, 'no'),
   ('projects: a builder cannot add one for another builder', 'bb', $q$insert into public.projects (slug, name, locality, builder_id) values ('matrix-new', 'Matrix New', 'Matrix', '{BA}')$q$, 'no'),

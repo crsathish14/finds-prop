@@ -3,6 +3,7 @@ import { createOlaPlaceProvider } from "./ola";
 import type { PlaceBounds, PlaceProvider } from "./types";
 
 export { handlePlaceAutocomplete, type PlaceAutocompleteDeps } from "./autocomplete-handler";
+export { createCountedPlaceProvider, type CountedOutcome } from "./counted";
 export { createFakePlaceProvider, FAKE_PLACES, type FakePlaceProvider } from "./fake";
 export {
   normalisePlaceText,

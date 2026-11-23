@@ -4,7 +4,7 @@ import { CACHE_TAGS } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
 import { mergeSiteSettings } from "./merge";
-import type { SiteSettings } from "./schemas";
+import { SITE_SETTING_KEYS, type SiteSettings } from "./schemas";
 
 /** Cache tag the admin site-content action will refresh when it saves (FR-ADM-10). */
 export const SITE_SETTINGS_TAG = CACHE_TAGS.siteSettings;
@@ -18,7 +18,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   cacheTag(SITE_SETTINGS_TAG);
   cacheLife("minutes");
 
-  const { data, error } = await createPublicSupabase().from("site_settings").select("key, value");
+  // Only the keys the site reads: a legal page's row can be large and is read by its own query.
+  const { data, error } = await createPublicSupabase()
+    .from("site_settings")
+    .select("key, value")
+    .in("key", SITE_SETTING_KEYS);
   if (error) {
     logger.error("site settings could not be read, using the defaults", {
       errorCode: error.code,

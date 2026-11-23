@@ -55,7 +55,19 @@ export async function getMyDraft(listingId: string): Promise<DraftView | null> {
     logger.error("listing draft photos could not be read", { errorCode: photos.error.code });
     throw photos.error;
   }
-  return toDraftView(data, photos.data);
+  // Whether a place is stored, asked of the database as a filter: only the listing's id comes back, never the
+  // point, which is the owner's private location (DEC-35, ADR-141).
+  const located = await supabase
+    .rpc("my_properties")
+    .select("id")
+    .eq("id", listingId)
+    .not("location", "is", null)
+    .maybeSingle();
+  if (located.error) {
+    logger.error("listing location could not be checked", { errorCode: located.error.code });
+    throw located.error;
+  }
+  return toDraftView(data, photos.data, located.data !== null);
 }
 
 /** The owner's drafts, the most recently changed first, for "Your drafts" on the post-property page. */
@@ -110,6 +122,46 @@ export async function getMyListings(): Promise<{ listings: MyListing[]; now: num
     publicStorageUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL, PHOTO_BUCKET, path),
   );
   return { listings, now: Date.now() };
+}
+
+/** The listings of the owner that the location prompt is about (ADR-141 addendum, plan PR 7c). */
+export interface ListingsWithoutLocation {
+  /** How many of the owner's listings in review or Live have no place stored. */
+  count: number;
+  /** The newest of them, where "Add location" leads, or null when there is none. */
+  firstId: string | null;
+  /** Whether any of them is Live: adding a place to one sends it back to review (ADR-138, policy C). */
+  anyLive: boolean;
+}
+
+/**
+ * The owner's listings in review or Live that have no place stored, for the one note at the top of My listings
+ * (plan PR 7c). Asked of the database as a filter (`location is null`) with only the id, the state and the sort date selected:
+ * the point is the owner's private location (DEC-35) and is never read. Rejected listings are left out (they must
+ * add a place to be sent again), and so are sold and rented ones, which are final. A failed read throws, so the
+ * account's error page shows it.
+ */
+export async function getListingsWithoutLocation(): Promise<ListingsWithoutLocation> {
+  const supabase = await createServerSupabase();
+  const { data, count, error } = await supabase
+    .rpc("my_properties", undefined, { count: "exact" })
+    // `created_at` is selected because the sort column must be in the select for an RPC (the sort on an
+    // unselected column fails on the live database: "column properties.created_at does not exist").
+    .select("id, status, created_at")
+    .in("status", ["pending", "approved"])
+    .is("location", null)
+    .order("created_at", { ascending: false })
+    .limit(MY_LISTINGS_LIMIT);
+  if (error) {
+    logger.error("listings without a location could not be read", { errorCode: error.code });
+    throw error;
+  }
+  const first = data[0];
+  return {
+    count: count ?? data.length,
+    firstId: first ? first.id : null,
+    anyLive: data.some((row) => row.status === "approved"),
+  };
 }
 
 /**

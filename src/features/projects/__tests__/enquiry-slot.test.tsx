@@ -110,7 +110,7 @@ describe("ProjectEnquirySlot: gate or form, by who is looking (S4-T09 D1b)", () 
     expect(screen.getByRole("button", { name: "Book a visit" })).toBeInTheDocument();
     // The built-in card's own controls are not drawn.
     expect(screen.queryByRole("radio", { name: words.siteVisit })).toBeNull();
-    expect(screen.getByText(/Kadal Homes and Find Prop/)).toBeInTheDocument();
+    expect(screen.getByText(/Kadal Homes and findsprop/)).toBeInTheDocument();
   });
 
   it("falls back to the built-in card when the project shows no form (the form read is null)", async () => {

@@ -275,6 +275,7 @@ const eslintConfig = defineConfig([
       "src/server/rate-limit/**/*.ts",
       "src/server/idempotency/**/*.ts",
       "src/server/audit/**/*.ts",
+      "src/server/ai/guest-home-search.ts",
       "src/features/builders/service.ts",
       "src/features/forms/service.ts",
       "src/features/crm/service.ts",

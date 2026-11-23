@@ -2,31 +2,37 @@
  * ProjectFields: the sections of the project form: Basics, Location, RERA, Details, (Media) and SEO.
  * Purpose: what the admin and a builder type to describe a project (S7-T02, FR-ADM-04, FR-BLD-02). Owner: design
  *   system. It holds no state: the page keeps the values and the errors and passes the words, already translated.
- *   Numbers are typed as text (the server reads "78,00,000" too), and "" means not set.
+ *   Numbers are typed as text (the server reads "78,00,000" too), and "" means not set. The possession box is a month
+ *   ("2026-10"). Which boxes show depends on the kind of project (ADR-148): the page works that out and passes it as
+ *   `applies`.
  * Props: values (every box: text boxes as text, bhkOptions as numbers, advantages, nearby and amenities as lists,
  *   reraApplicable as true or false), errors (the message of each box with a problem, by box), onChange (box, value),
  *   options ({ builders?, projectTypes, propertyTypes, statuses }, each { value, label }[]; give builders only for the
- *   admin: that is what shows the Builder box), amenitySuggestions (phrases offered under Amenities), slugLocked
+ *   admin: that is what shows the Builder box; offerTypes and priceTypes are the choices that fit what is chosen above
+ *   them), applies ({ offerType, bedrooms, area, possession }: which of those boxes show), amenitySuggestions (phrases offered under Amenities), slugLocked
  *   (a builder cannot change the page address of an approved project), media (what goes in the Media section;
- *   leave it out and the section is not shown), disabled (while saving), words (the headings, labels, hints and
+ *   leave it out and the section is not shown), placePicker (the place search box of the Location section, a component
+ *   the page gives: choosing a place writes the latitude and longitude boxes, which stay editable; left out, the boxes
+ *   are typed alone: ADR-140), disabled (while saving), words (the headings, labels, hints and
  *   the tag list's words), className.
  * Responsive: one column on phones, two from 768 px; the sections are cards stacked one above the other.
  * Accessibility: every box has a visible label tied to it; hints and errors are read with the box; an error also shows
- *   an icon; the BHK choices are a named group of checkboxes; the RERA switch has a visible label and turns the
- *   RERA number box on and off.
+ *   an icon; the BHK choices are a named group of checkboxes; the RERA switch has a visible label and swaps the RERA
+ *   number box for the box that says why RERA does not apply.
  * States: empty, filled, with errors, saving (all disabled), builder mode (no Builder box), page address locked.
- * Dependencies: FormSection, FormField, TagListField, Input, Textarea, NativeSelect, Checkbox, Switch, Label, cn.
+ * Dependencies: FormSection, FormField, TagListField, Input, Textarea, Select, Checkbox, Switch, Label, cn.
  *   Tests: project-form-parts.test.tsx; Design Lab "Admin" (S7-T02).
  * UX reference: admin-project-form screen (Basics, Location, RERA, Details, Media, SEO), builder-project-form screen.
  */
 import type { ReactNode } from "react";
+import { formatCoordinate, type PlacePickerComponent } from "@/components/domain/place-picker";
 import { FormField } from "@/components/patterns/form-field";
 import { FormSection } from "@/components/patterns/form-section";
 import { TagListField, type TagListWords } from "@/components/patterns/tag-list-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -36,15 +42,23 @@ type ProjectFieldValues = {
   builderId: string;
   projectType: string;
   propertyType: string;
+  /** "sale" or "rent"; "" for a residential project */
+  offerType: string;
+  /** "investment" or "ready_to_build"; "" unless the property type is a plot */
+  plotStatus: string;
+  /** "duplex", "row_house" or "individual"; "" unless the property type is a villa */
+  villaType: string;
   projectStatus: string;
-  priceMin: string;
-  priceMax: string;
+  price: string;
+  priceType: string;
+  areaMinSqft: string;
+  areaMaxSqft: string;
   bhkOptions: number[];
   landAreaAcres: string;
-  totalUnits: string;
-  /** yyyy-mm-dd, or "" */
+  /** yyyy-mm, or "" */
   possessionDate: string;
   contactPhone: string;
+  city: string;
   locality: string;
   address: string;
   latitude: string;
@@ -53,6 +67,7 @@ type ProjectFieldValues = {
   nearby: string[];
   reraApplicable: boolean;
   reraNumber: string;
+  reraNotApplicableReason: string;
   description: string;
   specifications: string;
   amenities: string[];
@@ -84,14 +99,19 @@ type ProjectFieldsWords = {
   unset: string;
   projectType: string;
   propertyType: string;
+  offerType: string;
+  plotStatus: string;
+  villaType: string;
   projectStatus: string;
-  priceMin: string;
-  priceMax: string;
+  price: string;
+  priceType: string;
+  areaMin: string;
+  areaMax: string;
   bhk: string;
   landArea: string;
-  totalUnits: string;
   possession: string;
   contactPhone: string;
+  city: string;
   locality: string;
   address: string;
   latitude: string;
@@ -100,6 +120,9 @@ type ProjectFieldsWords = {
   nearby: string;
   reraApplicable: string;
   reraNumber: string;
+  reraReason: string;
+  /** Said under the reason: it is shown to the public. */
+  reraReasonHint: string;
   description: string;
   specifications: string;
   amenities: string;
@@ -122,11 +145,27 @@ type ProjectFieldsProps = {
     builders?: ProjectFieldOption[];
     projectTypes: ProjectFieldOption[];
     propertyTypes: ProjectFieldOption[];
+    offerTypes: ProjectFieldOption[];
+    plotStatuses: ProjectFieldOption[];
+    villaTypes: ProjectFieldOption[];
+    priceTypes: ProjectFieldOption[];
     statuses: ProjectFieldOption[];
+  };
+  /** Which boxes apply to the kind of project chosen (the page works it out; the form hides the rest). */
+  applies: {
+    offerType: boolean;
+    plotStatus: boolean;
+    villaType: boolean;
+    bedrooms: boolean;
+    area: boolean;
+    possession: boolean;
   };
   amenitySuggestions?: readonly string[];
   slugLocked?: boolean;
   media?: ReactNode;
+  /** The extra boxes the super admin added (ADR-168); drawn at the end of the Details section. */
+  extras?: ReactNode;
+  placePicker?: PlacePickerComponent;
   disabled?: boolean;
   words: ProjectFieldsWords;
   className?: string;
@@ -137,9 +176,11 @@ const BHK_CHOICES = [1, 2, 3, 4, 5];
 
 const LIMITS = {
   name: 140,
+  city: 80,
   locality: 80,
   address: 300,
   rera: 60,
+  reraReason: 300,
   text: 5000,
   seoTitle: 120,
   seoDescription: 300,
@@ -153,9 +194,12 @@ function ProjectFields({
   errors = {},
   onChange,
   options,
+  applies,
   amenitySuggestions = [],
   slugLocked = false,
   media,
+  extras,
+  placePicker: PlacePicker,
   disabled = false,
   words,
   className,
@@ -206,60 +250,85 @@ function ProjectFields({
               className="md:col-span-2"
               {...problem("builderId")}
             >
-              <NativeSelect {...text("builderId")}>
+              <Select {...text("builderId")}>
                 <option value="">{words.unset}</option>
                 {options.builders.map((builder) => (
                   <option key={builder.value} value={builder.value}>
                     {builder.label}
                   </option>
                 ))}
-              </NativeSelect>
+              </Select>
             </FormField>
           ) : null}
-          <FormField label={words.projectType} {...optional} {...problem("projectType")}>
-            <NativeSelect {...text("projectType")}>{choices(options.projectTypes)}</NativeSelect>
+          <FormField label={words.projectType} required {...problem("projectType")}>
+            <Select {...text("projectType")}>{choices(options.projectTypes)}</Select>
           </FormField>
-          <FormField label={words.propertyType} {...optional} {...problem("propertyType")}>
-            <NativeSelect {...text("propertyType")}>{choices(options.propertyTypes)}</NativeSelect>
+          <FormField label={words.propertyType} required {...problem("propertyType")}>
+            <Select {...text("propertyType")}>{choices(options.propertyTypes)}</Select>
           </FormField>
-          <FormField label={words.projectStatus} {...optional} {...problem("projectStatus")}>
-            <NativeSelect {...text("projectStatus")}>{choices(options.statuses)}</NativeSelect>
+          {applies.offerType ? (
+            <FormField label={words.offerType} required {...problem("offerType")}>
+              <Select {...text("offerType")}>{choices(options.offerTypes)}</Select>
+            </FormField>
+          ) : null}
+          {applies.plotStatus ? (
+            <FormField label={words.plotStatus} required {...problem("plotStatus")}>
+              <Select {...text("plotStatus")}>{choices(options.plotStatuses)}</Select>
+            </FormField>
+          ) : null}
+          {applies.villaType ? (
+            <FormField label={words.villaType} required {...problem("villaType")}>
+              <Select {...text("villaType")}>{choices(options.villaTypes)}</Select>
+            </FormField>
+          ) : null}
+          <FormField label={words.projectStatus} required {...problem("projectStatus")}>
+            <Select {...text("projectStatus")}>{choices(options.statuses)}</Select>
           </FormField>
-          <span aria-hidden="true" className="hidden md:block" />
-          <FormField label={words.priceMin} {...optional} {...problem("priceMin")}>
-            <Input {...text("priceMin")} inputMode="numeric" autoComplete="off" />
+          {applies.possession ? (
+            <FormField label={words.possession} required {...problem("possessionDate")}>
+              <Input {...text("possessionDate")} type="month" autoComplete="off" />
+            </FormField>
+          ) : null}
+          <FormField label={words.price} required {...problem("price")}>
+            <Input {...text("price")} inputMode="numeric" autoComplete="off" />
           </FormField>
-          <FormField label={words.priceMax} {...optional} {...problem("priceMax")}>
-            <Input {...text("priceMax")} inputMode="numeric" autoComplete="off" />
+          <FormField label={words.priceType} required {...problem("priceType")}>
+            <Select {...text("priceType")}>{choices(options.priceTypes)}</Select>
           </FormField>
-          <fieldset className="flex min-w-0 flex-col gap-2 md:col-span-2">
-            <legend className="mb-2 text-small font-semibold text-ink">
-              {words.bhk} <span className="font-normal text-muted">{words.optional}</span>
-            </legend>
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              {bhkShown.map((count) => (
-                <Label key={count} className="flex items-center gap-2 font-medium">
-                  <Checkbox
-                    checked={values.bhkOptions.includes(count)}
-                    disabled={disabled}
-                    onCheckedChange={() => toggleBhk(count)}
-                  />
-                  {count}
-                </Label>
-              ))}
-            </div>
-            {errors.bhkOptions ? (
-              <p className="text-caption font-semibold text-danger">{errors.bhkOptions}</p>
-            ) : null}
-          </fieldset>
+          {applies.area ? (
+            <>
+              <FormField label={words.areaMin} required {...problem("areaMinSqft")}>
+                <Input {...text("areaMinSqft")} inputMode="decimal" autoComplete="off" />
+              </FormField>
+              <FormField label={words.areaMax} required {...problem("areaMaxSqft")}>
+                <Input {...text("areaMaxSqft")} inputMode="decimal" autoComplete="off" />
+              </FormField>
+            </>
+          ) : null}
+          {applies.bedrooms ? (
+            <fieldset className="flex min-w-0 flex-col gap-2 md:col-span-2">
+              <legend className="mb-2 text-small font-semibold text-ink">
+                {words.bhk} <span className="font-normal text-muted">{words.optional}</span>
+              </legend>
+              <div className="flex flex-wrap gap-x-6 gap-y-3">
+                {bhkShown.map((count) => (
+                  <Label key={count} className="flex items-center gap-2 font-medium">
+                    <Checkbox
+                      checked={values.bhkOptions.includes(count)}
+                      disabled={disabled}
+                      onCheckedChange={() => toggleBhk(count)}
+                    />
+                    {count}
+                  </Label>
+                ))}
+              </div>
+              {errors.bhkOptions ? (
+                <p className="text-caption font-semibold text-danger">{errors.bhkOptions}</p>
+              ) : null}
+            </fieldset>
+          ) : null}
           <FormField label={words.landArea} {...optional} {...problem("landAreaAcres")}>
             <Input {...text("landAreaAcres")} inputMode="decimal" autoComplete="off" />
-          </FormField>
-          <FormField label={words.totalUnits} {...optional} {...problem("totalUnits")}>
-            <Input {...text("totalUnits")} inputMode="numeric" autoComplete="off" />
-          </FormField>
-          <FormField label={words.possession} {...optional} {...problem("possessionDate")}>
-            <Input {...text("possessionDate")} type="date" autoComplete="off" />
           </FormField>
           <FormField label={words.contactPhone} {...optional} {...problem("contactPhone")}>
             <Input
@@ -279,12 +348,28 @@ function ProjectFields({
         description={words.location.description}
       >
         <div className="grid gap-5 md:grid-cols-2">
+          <FormField label={words.city} required {...problem("city")}>
+            <Input {...text("city")} maxLength={LIMITS.city} autoComplete="off" />
+          </FormField>
           <FormField label={words.locality} required {...problem("locality")}>
             <Input {...text("locality")} maxLength={LIMITS.locality} autoComplete="off" />
           </FormField>
           <FormField label={words.address} {...optional} {...problem("address")}>
             <Input {...text("address")} maxLength={LIMITS.address} autoComplete="off" />
           </FormField>
+          {PlacePicker ? (
+            <div className="md:col-span-2">
+              <PlacePicker
+                id="project-place"
+                disabled={disabled}
+                onPick={(pick) => {
+                  onChange("latitude", formatCoordinate(pick.lat));
+                  onChange("longitude", formatCoordinate(pick.lng));
+                  if (pick.city) onChange("city", pick.city.slice(0, LIMITS.city));
+                }}
+              />
+            </div>
+          ) : null}
           <FormField label={words.latitude} {...optional} {...problem("latitude")}>
             <Input {...text("latitude")} inputMode="decimal" autoComplete="off" />
           </FormField>
@@ -324,19 +409,29 @@ function ProjectFields({
             />
             {words.reraApplicable}
           </Label>
-          <FormField
-            label={words.reraNumber}
-            className="max-w-105"
-            {...(values.reraApplicable ? {} : optional)}
-            {...problem("reraNumber")}
-          >
-            <Input
-              {...text("reraNumber")}
-              disabled={disabled || !values.reraApplicable}
-              maxLength={LIMITS.rera}
-              autoComplete="off"
-            />
-          </FormField>
+          {values.reraApplicable ? (
+            <FormField
+              label={words.reraNumber}
+              required
+              className="max-w-105"
+              {...problem("reraNumber")}
+            >
+              <Input {...text("reraNumber")} maxLength={LIMITS.rera} autoComplete="off" />
+            </FormField>
+          ) : (
+            <FormField
+              label={words.reraReason}
+              required
+              hint={words.reraReasonHint}
+              {...problem("reraNotApplicableReason")}
+            >
+              <Textarea
+                {...text("reraNotApplicableReason")}
+                maxLength={LIMITS.reraReason}
+                rows={3}
+              />
+            </FormField>
+          )}
         </div>
       </FormSection>
 
@@ -358,6 +453,7 @@ function ProjectFields({
             words={words.tags}
             {...problem("amenities")}
           />
+          {extras}
         </div>
       </FormSection>
 

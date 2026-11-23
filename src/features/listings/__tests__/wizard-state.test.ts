@@ -48,6 +48,7 @@ const draftView: DraftView = {
   description: null,
   updatedAt: "2026-11-07T10:00:00Z",
   photos: [],
+  hasLocation: false,
 };
 
 describe("UT-wizard-state: the wizard without React (S6-T02)", () => {

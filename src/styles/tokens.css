@@ -6,51 +6,47 @@
 
 /* 1. Primitives ───────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Ivory and white */
-  --p-ivory-50: #faf6ee;
-  --p-ivory-100: #f1eadb;
+  /* White and light greys */
   --p-white: #ffffff;
+  --p-gray-50: #f6f8f8;
+  --p-gray-100: #eef2f1;
+  --p-gray-200: #dde4e3;
+  --p-gray-300: #c9d3d1;
+  --p-gray-500: #7d8c8a;
 
-  /* Forest green */
-  --p-forest-950: #163829;
-  --p-forest-800: #1f4a38;
-  --p-forest-700: #2e6450;
-  --p-forest-200: #c9ddd0;
-  --p-forest-100: #e2ece5;
+  /* Teal. 500 is the brand teal: highlights, icons and accents on dark, never text on white and never
+     behind white text (2.5:1). 700 is the action teal (white on it is 5.2:1). 100 is derived: 14% of
+     700 over white, the second step of the tint, which the palette does not name. */
+  --p-teal-500: #16b9a4;
+  --p-teal-700: #0b7a6c;
+  --p-teal-800: #08665a;
+  --p-teal-100: #ddecea;
+  --p-teal-50: #e8f7f4;
 
-  /* Copper */
-  --p-copper-700: #9a4a20;
-  --p-copper-600: #b4592a;
-  --p-copper-400: #e8b98f;
-  --p-copper-300: #f2c9a3;
-  --p-copper-200: #edcdb4;
-  --p-copper-100: #f7e6d8;
+  /* Ink. 800 is derived: 18% white over ink, the active row on a dark surface. */
+  --p-ink-950: #0f1a19;
+  --p-ink-800: #3a4342;
+  --p-ink-600: #5b6b69;
+  --p-ink-400: #8a9997;
+  --p-ink-200: #b9c6c4;
 
-  /* Ink, sand, sage, mist */
-  --p-ink-900: #1c2a23;
-  --p-ink-700: #55635a;
-  --p-ink-600: #626f67;
-  --p-sand-300: #cbbfa6;
-  --p-sand-200: #e2d9c7;
-  --p-sand-100: #e9e2d0;
-  --p-sage-500: #829086;
-  --p-mist-300: #b9cbc0;
+  /* Amber: Featured and New badges, always with ink text */
+  --p-amber-400: #f2a93b;
 
   /* Status */
-  --p-green-700: #1e6b47;
-  --p-green-100: #e1f1e7;
-  --p-amber-800: #7a4f00;
-  --p-amber-100: #fbebc8;
-  --p-red-700: #a62a1b;
-  --p-red-100: #fbe2dd;
-  --p-blue-800: #24566f;
-  --p-blue-100: #e0eef4;
-  --p-slate-700: #3d4a43;
+  --p-green-700: #15803d;
+  --p-green-50: #ecfdf3;
+  --p-amber-700: #b45309;
+  --p-amber-50: #fff7e6;
+  --p-red-600: #dc2626;
+  --p-red-700: #b91c1c;
+  --p-red-50: #fef2f2;
 
-  /* Chart series */
+  /* Chart series. The palette names no categorical colours, so these keep their earlier values. */
   --p-series-green: #1f7a55;
   --p-series-ochre: #b7791f;
   --p-series-blue: #2f7fb0;
+  --p-series-rust: #b4592a;
   --p-series-other: #7a857e;
 }
 
@@ -58,66 +54,75 @@
 :root {
   color-scheme: light;
 
-  /* Surfaces */
-  --c-bg: var(--p-ivory-50);
-  --c-bg-sunken: var(--p-ivory-100);
+  /* Surfaces. The page is white; --c-bg-sunken is the alternate section and dashboard canvas. */
+  --c-bg: var(--p-white);
+  --c-bg-sunken: var(--p-gray-50);
   --c-surface: var(--p-white);
 
-  /* Forest green: identity, selected state, primary action in portals */
-  --c-primary: var(--p-forest-800);
-  --c-primary-hover: var(--p-forest-950);
-  --c-primary-deep: var(--p-forest-950);
+  /* Action teal: identity, links, selected state, primary buttons */
+  --c-primary: var(--p-teal-700);
+  --c-primary-hover: var(--p-teal-800);
+  --c-primary-deep: var(--p-ink-950);
   --c-on-primary: var(--p-white);
-  --c-primary-tint: var(--p-forest-100);
-  --c-primary-tint-2: var(--p-forest-200);
+  --c-primary-tint: var(--p-teal-50);
+  --c-primary-tint-2: var(--p-teal-100);
 
-  /* Copper: the conversion action. Fill only; small copper text uses --c-accent-text (AA). */
-  --c-accent: var(--p-copper-600);
-  --c-accent-hover: var(--p-copper-700);
+  /* The conversion action (token names kept from the copper era). Fill only; small teal text on a
+     light tint uses --c-accent-text. */
+  --c-accent: var(--p-teal-700);
+  --c-accent-hover: var(--p-teal-800);
   --c-on-accent: var(--p-white);
-  --c-accent-text: var(--p-copper-700);
-  --c-accent-tint: var(--p-copper-100);
-  --c-accent-tint-2: var(--p-copper-200);
+  --c-accent-text: var(--p-teal-800);
+  --c-accent-tint: var(--p-teal-50);
+  --c-accent-tint-2: var(--p-teal-100);
 
-  /* Text and lines */
-  --c-ink: var(--p-ink-900);
-  --c-muted: var(--p-ink-700);
+  /* Amber: Featured and New badges, used sparingly and always with ink text */
+  --c-amber: var(--p-amber-400);
+  --c-on-amber: var(--p-ink-950);
+
+  /* Text and lines. --c-disabled is for disabled controls only; placeholders use --c-subtle. */
+  --c-ink: var(--p-ink-950);
+  --c-muted: var(--p-ink-600);
   --c-subtle: var(--p-ink-600);
-  --c-border: var(--p-sand-200);
-  --c-border-strong: var(--p-sand-300);
-  --c-border-input: var(--p-sage-500);
+  --c-disabled: var(--p-ink-400);
+  --c-border: var(--p-gray-200);
+  --c-border-strong: var(--p-gray-300);
+  --c-border-input: var(--p-gray-500);
+  --c-divider: var(--p-gray-100);
 
-  /* Status (always paired with a word and a dot or icon) */
+  /* Status (always paired with a word and a dot or icon). Info uses the teal tint; the palette has
+     no blue. --c-danger-text is the error text on the error tint (--c-danger on it is 4.4:1). */
   --c-success: var(--p-green-700);
-  --c-success-bg: var(--p-green-100);
-  --c-warning: var(--p-amber-800);
-  --c-warning-bg: var(--p-amber-100);
-  --c-danger: var(--p-red-700);
-  --c-danger-bg: var(--p-red-100);
-  --c-info: var(--p-blue-800);
-  --c-info-bg: var(--p-blue-100);
-  --c-neutral: var(--p-slate-700);
-  --c-neutral-bg: var(--p-sand-100);
+  --c-success-bg: var(--p-green-50);
+  --c-warning: var(--p-amber-700);
+  --c-warning-bg: var(--p-amber-50);
+  --c-danger: var(--p-red-600);
+  --c-danger-text: var(--p-red-700);
+  --c-danger-bg: var(--p-red-50);
+  --c-info: var(--p-teal-800);
+  --c-info-bg: var(--p-teal-50);
+  --c-neutral: var(--p-ink-600);
+  --c-neutral-bg: var(--p-gray-100);
 
-  /* Dark surfaces: footer and portal sidebar */
-  --c-dark: var(--p-forest-950);
-  --c-on-dark: var(--p-ivory-50);
-  --c-on-dark-muted: var(--p-mist-300);
-  --c-dark-line: color-mix(in srgb, var(--p-ivory-50) 16%, transparent);
-  --c-dark-hover: color-mix(in srgb, var(--p-ivory-50) 10%, transparent);
-  --c-dark-active: var(--p-forest-700);
-  --c-on-dark-accent: var(--p-copper-400);
+  /* Dark surfaces: footer, portal sidebar and the sign-in aside */
+  --c-dark: var(--p-ink-950);
+  --c-on-dark: var(--p-white);
+  --c-on-dark-muted: var(--p-ink-200);
+  --c-dark-line: color-mix(in srgb, var(--p-white) 16%, transparent);
+  --c-dark-hover: color-mix(in srgb, var(--p-white) 10%, transparent);
+  --c-dark-active: var(--p-ink-800);
+  --c-on-dark-accent: var(--p-teal-500);
 
   /* Chart series: fixed order, pinned to the entity, drawn on white */
   --c-series-1: var(--p-series-green);
   --c-series-2: var(--p-series-ochre);
   --c-series-3: var(--p-series-blue);
-  --c-series-4: var(--p-copper-600);
+  --c-series-4: var(--p-series-rust);
   --c-series-other: var(--p-series-other);
 
   /* Focus ring: an outline, so it survives forced-colors. The UX hard-codes the on-dark colour. */
   --c-focus: var(--c-primary);
-  --c-focus-on-dark: var(--p-copper-300);
+  --c-focus-on-dark: var(--p-teal-500);
   --focus-w: 3px;
   --focus-offset: 2px;
 
@@ -178,11 +183,11 @@
   --bw-error: 2px;
 
   /* Elevation */
-  --shadow-card: 0 1px 2px rgba(28, 42, 35, 0.05), 0 10px 28px -16px rgba(28, 42, 35, 0.22);
-  --shadow-hover: 0 2px 4px rgba(28, 42, 35, 0.06), 0 18px 36px -16px rgba(28, 42, 35, 0.3);
-  --shadow-float: 0 28px 60px -28px rgba(31, 74, 56, 0.38), 0 2px 6px rgba(28, 42, 35, 0.06);
-  --shadow-pop: 0 4px 8px rgba(28, 42, 35, 0.08), 0 24px 48px -12px rgba(28, 42, 35, 0.28);
-  --shadow-modal: 0 32px 80px -24px rgba(22, 56, 41, 0.55);
+  --shadow-card: 0 1px 2px rgba(15, 26, 25, 0.05), 0 10px 28px -16px rgba(15, 26, 25, 0.22);
+  --shadow-hover: 0 2px 4px rgba(15, 26, 25, 0.06), 0 18px 36px -16px rgba(15, 26, 25, 0.3);
+  --shadow-float: 0 28px 60px -28px rgba(11, 122, 108, 0.38), 0 2px 6px rgba(15, 26, 25, 0.06);
+  --shadow-pop: 0 4px 8px rgba(15, 26, 25, 0.08), 0 24px 48px -12px rgba(15, 26, 25, 0.28);
+  --shadow-modal: 0 32px 80px -24px rgba(15, 26, 25, 0.55);
 
   /* Layout */
   --container: 1328px;

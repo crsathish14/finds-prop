@@ -100,6 +100,49 @@ export async function getFooterPage(): Promise<FooterPage> {
   return { initial: footerFormOf(settings.footer, standard), standard };
 }
 
+export interface DisclaimersPage {
+  initial: { footer: string; aiSearch: string };
+}
+
+/** What the Disclaimers page opens with: the saved texts, an empty box where none is saved (nothing shows then). */
+export async function getDisclaimersPage(): Promise<DisclaimersPage> {
+  const { settings } = await getSiteContent();
+  return {
+    initial: {
+      footer: settings.disclaimers.footer ?? "",
+      aiSearch: settings.disclaimers.aiSearch ?? "",
+    },
+  };
+}
+
+export interface ProjectFieldsPage {
+  initial: {
+    id: string;
+    label: string;
+    hint: string;
+    required: boolean;
+    appliesTo: (
+      "apartment" | "villa" | "plot" | "vacant_land" | "flat" | "office" | "co_working"
+    )[];
+    on: boolean;
+  }[];
+}
+
+/** What the Project form boxes page opens with: the saved boxes in order, none until the admin adds some (ADR-168). */
+export async function getProjectFieldsPage(): Promise<ProjectFieldsPage> {
+  const { settings } = await getSiteContent();
+  return {
+    initial: settings.project_fields.fields.map((field) => ({
+      id: field.id,
+      label: field.label,
+      hint: field.hint ?? "",
+      required: field.required,
+      appliesTo: field.appliesTo,
+      on: field.on,
+    })),
+  };
+}
+
 export interface HeroPage {
   initial: HeroFormValues;
   standard: StandardHero;

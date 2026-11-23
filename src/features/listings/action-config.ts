@@ -6,6 +6,7 @@ import {
   deleteListingSchema,
   saveDraftSchema,
   saveListingChangesSchema,
+  setListingLocationSchema,
   submitListingSchema,
   type CreateDraftInput,
   type SubmitListingInput,
@@ -84,4 +85,24 @@ export const saveListingChangesConfig = {
   input: saveListingChangesSchema,
   auth: "verified-phone" as const,
   invalidate: (result: { shortId: string }) => tagsAfterListingChange(result.shortId),
+};
+
+/**
+ * Setting where a listing is (place search PR 7b, FR-GEO-02, ADR-141): written when the wizard's address step is
+ * saved and again when the owner changes the place. It needs a signed-in account with a verified phone, like the
+ * rest, and it names the listing, never the owner. It is limited with the existing `project_save` scope (60 a
+ * user an hour: a place is picked once or a few times per listing, and no new scope or migration was wanted);
+ * the same point twice leaves the same listing, so it has no key. The database checks the owner, the point and
+ * the region (`set_listing_location`, ADR-138). A Live listing whose place changes goes back to review and leaves
+ * the site (policy C), so the tags of the lists and of that home's page are refreshed then, taken from the answer;
+ * for a draft or a listing in review nothing public changes. The point is private (DEC-35): it is in no answer,
+ * no log line and no error text.
+ */
+export const setListingLocationConfig = {
+  name: "setListingLocation",
+  input: setListingLocationSchema,
+  auth: "verified-phone" as const,
+  rateLimit: { scope: "project_save" as const },
+  invalidate: (result: { shortId: string; wentBackToReview: boolean }) =>
+    result.wentBackToReview ? tagsAfterListingChange(result.shortId) : [],
 };

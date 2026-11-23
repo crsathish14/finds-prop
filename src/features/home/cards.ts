@@ -40,6 +40,15 @@ export function toPropertyCard(row: ListingRow, context: CardContext): PropertyC
     areaSqft: row.area_sqft,
     label: row.label,
     ...(row.ageDays === null ? {} : { listedAgo: formatListedAgo(context.translate, row.ageDays) }),
+    // Only a place search gives a distance; the wording is the same for every home, since nothing says
+    // which homes were placed only by their area (ADR-137).
+    ...(typeof row.distance_km === "number"
+      ? {
+          distanceText: context.translate("domain.propertyCard.distanceAway", {
+            distance: row.distance_km.toFixed(1),
+          }),
+        }
+      : {}),
     ...(isPropertyType(row.property_type)
       ? { typeLabel: context.translate(PROPERTY_TYPE_WORDS[row.property_type]) }
       : {}),

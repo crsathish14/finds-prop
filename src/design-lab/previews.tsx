@@ -23,7 +23,7 @@ import { Text } from "@/components/ui/text";
 import { resolveHero, type HeroLayout, type SponsorAd } from "@/lib/sponsors";
 import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "@/lib/sponsors.fixtures";
 import { AdminListingsPreview, AdminRejectPreview, AdminReviewPreview } from "./boards/admin-pages";
-import { SearchCardHost } from "./boards/domain-demos-search";
+import { HomeSearchBarHost } from "./boards/domain-demos-search";
 import { BasicsStep, FailedAlert, ReviewStep, SampleWizard } from "./boards/seller-parts";
 import type { PreviewName } from "./preview-names";
 import {
@@ -39,8 +39,8 @@ import {
 } from "./sample-data";
 
 const HOME_LINK = (
-  <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-    <Logo name="Find Prop" />
+  <Link href="#home" aria-label="findsprop, home" className="no-underline">
+    <Logo name="findsprop" />
   </Link>
 );
 
@@ -215,8 +215,8 @@ function FooterPage() {
       </main>
       <SiteFooter
         logo={
-          <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-            <Logo name="Find Prop" tone="on-dark" />
+          <Link href="#home" aria-label="findsprop, home" className="no-underline">
+            <Logo name="findsprop" tone="on-dark" />
           </Link>
         }
         about="Search, shortlist and compare homes across Chennai, and enquire directly with owners and builders."
@@ -224,7 +224,7 @@ function FooterPage() {
         columns={FOOTER_COLUMNS}
         contacts={FOOTER_CONTACTS}
         legal={{
-          copyright: "© 2026 Find Prop. Sample footer.",
+          copyright: "© 2026 findsprop. Sample footer.",
           links: [
             { label: "Privacy", href: "#privacy" },
             { label: "Terms", href: "#terms" },
@@ -239,8 +239,8 @@ function PortalPage() {
   return (
     <PortalShell
       brand={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" tone="on-dark" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" tone="on-dark" />
         </Link>
       }
       portalTag="Admin"
@@ -248,8 +248,8 @@ function PortalPage() {
       groups={PORTAL_GROUPS}
       footerItems={PORTAL_FOOTER}
       mobileLogo={
-        <Link href="#home" aria-label="Find Prop, home" className="no-underline">
-          <Logo name="Find Prop" />
+        <Link href="#home" aria-label="findsprop, home" className="no-underline">
+          <Logo name="findsprop" />
         </Link>
       }
       mobileMenu={{ triggerLabel: "Open menu", title: "Admin menu", closeLabel: "Close menu" }}
@@ -302,7 +302,7 @@ function HeroPage({ ads, layout }: { ads: SponsorAd[]; layout: HeroLayout }) {
           <Heading as="h1" size={split ? "1" : "display"} className={split ? "" : "text-center"}>
             Find the place that fits your life
           </Heading>
-          <SearchCardHost layout={split ? "stacked" : "wide"} />
+          <HomeSearchBarHost />
           {split ? null : <SponsorSlot ads={ads} placement="hero" layout={layout} />}
         </div>
         {split ? <SponsorSlot ads={ads} placement="hero" layout={layout} /> : null}

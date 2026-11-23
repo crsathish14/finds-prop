@@ -23,6 +23,10 @@ vi.mock("@/features/property", async () => (await import("./world-modules")).pro
 vi.mock("@/features/compare", async () => (await import("./world-modules")).compareModule());
 vi.mock("@/features/projects", async () => (await import("./world-modules")).projectsModule());
 vi.mock("../../queries", async () => (await import("./world-modules")).queriesModule());
+vi.mock("@/features/blog", async () => (await import("./world-modules")).blogModule());
+vi.mock("@/features/faq", async () => (await import("./world-modules")).faqModule());
+vi.mock("@/features/careers", async () => (await import("./world-modules")).careersModule());
+vi.mock("@/features/site", async () => (await import("./world-modules")).siteModule());
 vi.mock("@/server/auth/get-session-view", async () =>
   (await import("./world-modules")).sessionModule(),
 );
@@ -54,7 +58,8 @@ describe.runIf(ready)(
     it(
       "runs the cases, writes the report, and meets the real-model rule when the whole set ran",
       async () => {
-        const { AI_CHAT_TOOLS } = await import("../../tools/registry");
+        const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
+        const { worldPlaceLookup } = await import("../world");
         const { chooseAiProvider } = await import("@/server/ai");
         const { checkToolNames, loadCases } = await import("../cases");
         const { runAndReport } = await import("../live-run");
@@ -68,6 +73,7 @@ describe.runIf(ready)(
         const result = await runAndReport({
           cases: cases.all,
           tools: AI_CHAT_TOOLS,
+          placeTools: createAiChatTools(worldPlaceLookup),
           providerFor: () => provider,
           model: env.AI_MODEL ?? "unknown",
           promptVersion: SYSTEM_PROMPT_VERSION,

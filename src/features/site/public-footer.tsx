@@ -19,7 +19,13 @@ const CONTACT_ICONS = { address: MapPin, phone: Phone, email: Mail } as const;
 export async function PublicFooter() {
   const translate = await getTranslate();
   const settings = await getSiteSettings();
-  const footer = buildFooter(settings, getFeatureFlags(), translate, await getCurrentYear());
+  const footer = buildFooter(
+    settings,
+    getFeatureFlags(),
+    translate,
+    await getCurrentYear(),
+    settings.content_modules,
+  );
 
   return (
     <SiteFooter
@@ -42,6 +48,7 @@ export async function PublicFooter() {
         text: contact.text,
         ...(contact.href ? { href: contact.href } : {}),
       }))}
+      {...(settings.disclaimers.footer ? { disclaimer: settings.disclaimers.footer } : {})}
       legal={{ copyright: footer.copyright, links: footer.legalLinks }}
     />
   );

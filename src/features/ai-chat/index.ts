@@ -1,7 +1,7 @@
 /**
  * The AI chat assistant (ADR-128), behind `FLAG_AI_SEARCH`: the tools, the agent loop, the two guards, the system
  * prompt and the streaming endpoint (`postAiChat`, called by `src/app/api/ai/chat/route.ts`), and the page
- * `/ai-search` (the chat screen and its island). Every export is server-only except the island in `chat/`; the
+ * `/ai-search` (the chat screen and its island). Every export is server-only except the island in `chat/` and the home page's search bar (`HomeAiSearch`); the
  * server ones read through the cached public reads.
  */
 export { ANSWER_ONLY_INSTRUCTION } from "./prompts/answer-only";
@@ -54,3 +54,4 @@ export { AskAboutButton } from "./ask-about-button";
 export { chatContextHref } from "./context/page-context";
 export type { ChatContext, ContextSubject } from "./context/page-context";
 export { AiChatScreen, AiChatScreenSkeleton } from "./chat-screen";
+export { HomeAiSearch } from "./home-ai-search.client";

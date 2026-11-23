@@ -8,6 +8,7 @@ import { LocationField } from "../location-field";
 import { LocationPrompt } from "../location-prompt";
 
 const words = en.domain.locationField;
+const promptWords = en.domain.locationPrompt;
 
 describe("LocationField (ADR-131)", () => {
   it("asks where the property is, with the hint, the provider note and the privacy link", () => {
@@ -84,6 +85,17 @@ describe("LocationField (ADR-131)", () => {
     ).toHaveAccessibleDescription(words.required);
   });
 
+  it("shows other words for the error when it is given them, and still names the group by it", () => {
+    renderWithMessages(
+      <LocationField mode="search" showError errorText="That place is outside Tamil Nadu." />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("That place is outside Tamil Nadu.");
+    expect(screen.queryByText(words.required)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: /Where is the property\?/ }),
+    ).toHaveAccessibleDescription("That place is outside Tamil Nadu.");
+  });
+
   it("shows no error by default", () => {
     renderWithMessages(<LocationField mode="search" />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -103,5 +115,13 @@ describe("LocationPrompt (ADR-131)", () => {
   it("says several listings in the plural", () => {
     renderWithMessages(<LocationPrompt count={3} href="/dashboard/listings" />);
     expect(screen.getByRole("status")).toHaveTextContent("3 of your listings have no location.");
+  });
+
+  it("explains the review only when asked to", () => {
+    const plain = renderWithMessages(<LocationPrompt count={2} href="/x" />);
+    expect(screen.queryByText(promptWords.reviewNote)).not.toBeInTheDocument();
+    plain.unmount();
+    renderWithMessages(<LocationPrompt count={2} href="/x" sendsBackToReview />);
+    expect(screen.getByText(promptWords.reviewNote)).toBeInTheDocument();
   });
 });

@@ -7,6 +7,16 @@ import type {
 } from "@/components/domain/project-section-nav";
 import type { MediaItem } from "@/components/patterns/media-group-field";
 import { SLUG_MAX, TREND_PRICE_MAX, TREND_PRICE_MIN } from "./constants";
+import {
+  areaApplies,
+  bedroomsApply,
+  offerTypeApplies,
+  plotStatusApplies,
+  villaTypeApplies,
+  possessionApplies,
+  priceTypesFor,
+  propertyTypeFits,
+} from "./rules";
 import type { ProjectEditView } from "./view";
 
 /**
@@ -52,14 +62,19 @@ export const EMPTY_PROJECT_VALUES: ProjectFieldValues = {
   builderId: "",
   projectType: "",
   propertyType: "",
+  offerType: "",
+  plotStatus: "",
+  villaType: "",
   projectStatus: "",
-  priceMin: "",
-  priceMax: "",
+  price: "",
+  priceType: "",
+  areaMinSqft: "",
+  areaMaxSqft: "",
   bhkOptions: [],
   landAreaAcres: "",
-  totalUnits: "",
   possessionDate: "",
   contactPhone: "",
+  city: "",
   locality: "",
   address: "",
   latitude: "",
@@ -68,6 +83,7 @@ export const EMPTY_PROJECT_VALUES: ProjectFieldValues = {
   nearby: [],
   reraApplicable: false,
   reraNumber: "",
+  reraNotApplicableReason: "",
   description: "",
   specifications: "",
   amenities: [],
@@ -85,14 +101,20 @@ export function valuesOf(project: ProjectEditView): ProjectFieldValues {
     builderId: project.builderId,
     projectType: text(project.projectType),
     propertyType: text(project.propertyType),
+    offerType: text(project.offerType),
+    plotStatus: text(project.plotStatus),
+    villaType: text(project.villaType),
     projectStatus: text(project.projectStatus),
-    priceMin: text(project.priceMin),
-    priceMax: text(project.priceMax),
+    price: text(project.price),
+    priceType: text(project.priceType),
+    areaMinSqft: text(project.areaMinSqft),
+    areaMaxSqft: text(project.areaMaxSqft),
     bhkOptions: project.bhkOptions,
     landAreaAcres: text(project.landAreaAcres),
-    totalUnits: text(project.totalUnits),
-    possessionDate: text(project.possessionDate),
+    // The month box holds "yyyy-mm"; the project keeps the first day of that month.
+    possessionDate: text(project.possessionDate).slice(0, 7),
     contactPhone: text(project.contactPhone),
+    city: project.city,
     locality: project.locality,
     address: text(project.address),
     latitude: text(project.latitude),
@@ -101,6 +123,7 @@ export function valuesOf(project: ProjectEditView): ProjectFieldValues {
     nearby: project.nearby,
     reraApplicable: project.reraApplicable,
     reraNumber: text(project.reraNumber),
+    reraNotApplicableReason: text(project.reraNotApplicableReason),
     description: text(project.description),
     specifications: text(project.specifications),
     amenities: project.amenities,
@@ -122,20 +145,134 @@ export function slugFromName(name: string): string {
     .replace(/-+$/g, "");
 }
 
+/** Which of the boxes that depend on the kind of project show (ADR-148). */
+export function appliesOf(values: ProjectFieldValues): {
+  offerType: boolean;
+  plotStatus: boolean;
+  villaType: boolean;
+  bedrooms: boolean;
+  area: boolean;
+  possession: boolean;
+} {
+  return {
+    offerType: offerTypeApplies(values.projectType),
+    plotStatus: plotStatusApplies(values.propertyType),
+    villaType: villaTypeApplies(values.propertyType),
+    bedrooms: bedroomsApply(values.projectType, values.propertyType),
+    area: areaApplies(values.projectType, values.propertyType),
+    possession: possessionApplies(values.projectStatus),
+  };
+}
+
+/**
+ * The boxes after a change: a box that no longer applies is cleared (bedrooms, the area range, the possession month,
+ * the sale or rent choice) and a choice that no longer fits what was chosen above it is dropped (the property type
+ * for the project type, the price type for sale or rent), so the form never holds, or sends, what the server would
+ * ignore.
+ */
+export function reconcile(values: ProjectFieldValues): ProjectFieldValues {
+  const next = { ...values };
+  if (!propertyTypeFits(next.projectType, next.propertyType)) next.propertyType = "";
+  if (!offerTypeApplies(next.projectType)) next.offerType = "";
+  if (!plotStatusApplies(next.propertyType)) next.plotStatus = "";
+  if (!villaTypeApplies(next.propertyType)) next.villaType = "";
+  if (!priceTypesFor(next.projectType, next.offerType).includes(next.priceType))
+    next.priceType = "";
+  if (!areaApplies(next.projectType, next.propertyType)) {
+    next.areaMinSqft = "";
+    next.areaMaxSqft = "";
+  }
+  if (!bedroomsApply(next.projectType, next.propertyType)) next.bhkOptions = [];
+  if (!possessionApplies(next.projectStatus)) next.possessionDate = "";
+  return next;
+}
+
+/** A message key under `admin.projectForm.problems` for each box with a problem. */
+export type ProjectProblem =
+  | "name"
+  | "builder"
+  | "city"
+  | "locality"
+  | "projectType"
+  | "propertyType"
+  | "offerType"
+  | "plotStatus"
+  | "villaType"
+  | "status"
+  | "possession"
+  | "price"
+  | "priceType"
+  | "area"
+  | "areaRange"
+  | "reraNumber"
+  | "reraReason";
+
+/** A typed number as the server reads it: "1,480" and " 1480 " are 1480; a word is NaN. */
+const numberOf = (typed: string): number => Number(typed.replace(/[,\s]/g, ""));
+
+/**
+ * What is missing or wrong before a save is sent, for every box at once. It mirrors the server's rules (the schema),
+ * which check again; a box that does not apply to this kind of project is never named.
+ */
+export function projectProblems(
+  values: ProjectFieldValues,
+  options: { needsBuilder: boolean },
+): Partial<Record<ProjectFieldName, ProjectProblem>> {
+  const blank = (value: string) => value.trim() === "";
+  const found: Partial<Record<ProjectFieldName, ProjectProblem>> = {};
+  const applies = appliesOf(values);
+
+  if (blank(values.name)) found.name = "name";
+  if (options.needsBuilder && values.builderId === "") found.builderId = "builder";
+  if (blank(values.projectType)) found.projectType = "projectType";
+  if (blank(values.propertyType)) found.propertyType = "propertyType";
+  if (applies.offerType && blank(values.offerType)) found.offerType = "offerType";
+  if (applies.plotStatus && blank(values.plotStatus)) found.plotStatus = "plotStatus";
+  if (applies.villaType && blank(values.villaType)) found.villaType = "villaType";
+  if (blank(values.projectStatus)) found.projectStatus = "status";
+  if (applies.possession && blank(values.possessionDate)) found.possessionDate = "possession";
+  const price = numberOf(values.price);
+  if (blank(values.price) || !Number.isInteger(price) || price < 1) found.price = "price";
+  if (blank(values.priceType)) found.priceType = "priceType";
+  if (applies.area) {
+    const low = numberOf(values.areaMinSqft);
+    const high = numberOf(values.areaMaxSqft);
+    const given = (typed: string, amount: number) => !blank(typed) && amount > 0;
+    if (!given(values.areaMinSqft, low)) found.areaMinSqft = "area";
+    if (!given(values.areaMaxSqft, high)) found.areaMaxSqft = "area";
+    if (found.areaMinSqft === undefined && found.areaMaxSqft === undefined && low > high) {
+      found.areaMaxSqft = "areaRange";
+    }
+  }
+  if (values.reraApplicable) {
+    if (blank(values.reraNumber)) found.reraNumber = "reraNumber";
+  } else if (blank(values.reraNotApplicableReason)) {
+    found.reraNotApplicableReason = "reraReason";
+  }
+  if (blank(values.city)) found.city = "city";
+  if (blank(values.locality)) found.locality = "locality";
+  return found;
+}
+
 /** The section each box sits in, for the section list and for scrolling to the first problem. */
 export const SECTION_OF: Record<ProjectFieldName, ProjectSectionId> = {
   name: "basics",
   builderId: "basics",
   projectType: "basics",
   propertyType: "basics",
+  offerType: "basics",
+  plotStatus: "basics",
+  villaType: "basics",
   projectStatus: "basics",
-  priceMin: "basics",
-  priceMax: "basics",
+  price: "basics",
+  priceType: "basics",
+  areaMinSqft: "basics",
+  areaMaxSqft: "basics",
   bhkOptions: "basics",
   landAreaAcres: "basics",
-  totalUnits: "basics",
   possessionDate: "basics",
   contactPhone: "basics",
+  city: "location",
   locality: "location",
   address: "location",
   latitude: "location",
@@ -144,6 +281,7 @@ export const SECTION_OF: Record<ProjectFieldName, ProjectSectionId> = {
   nearby: "location",
   reraApplicable: "rera",
   reraNumber: "rera",
+  reraNotApplicableReason: "rera",
   description: "details",
   specifications: "details",
   amenities: "details",
@@ -179,8 +317,8 @@ export function sectionOfError(field: ProjectErrorField): ProjectSectionId | nul
 
 /**
  * What each section of the list shows: a problem where a box has one; done where what the section needs is filled in
- * (the name, and the builder for the admin; the locality; the page address; the RERA number when RERA applies (a project that is not under RERA shows nothing); a
- * description; a file or a link); otherwise nothing.
+ * (the name, and the builder for the admin; the locality; the page address; the RERA number when RERA applies, or the
+ * reason when it does not; a description; a file or a link); otherwise nothing.
  */
 export function sectionStatesOf(input: {
   values: ProjectFieldValues;
@@ -192,8 +330,10 @@ export function sectionStatesOf(input: {
   const filled = (value: string) => value.trim() !== "";
   const complete: Record<ProjectSectionId, boolean> = {
     basics: filled(values.name) && (!needsBuilder || filled(values.builderId)),
-    location: filled(values.locality),
-    rera: values.reraApplicable && filled(values.reraNumber),
+    location: filled(values.locality) && filled(values.city),
+    rera: values.reraApplicable
+      ? filled(values.reraNumber)
+      : filled(values.reraNotApplicableReason),
     details: filled(values.description),
     media: hasMedia,
     seo: filled(values.slug),

@@ -22,7 +22,7 @@
  *   its own full name; the state is a word, never colour alone.
  * States: any number of rows; available, on hold, sold, blocked; a unit with no floor, area, facing or price (a dash);
  *   a long unit number; nothing yet; a row that is being deleted (its buttons are off).
- * Dependencies: ResponsiveTable, Chip, FormField, NativeSelect, Input, EmptyState, Button, IconButton.
+ * Dependencies: ResponsiveTable, Chip, FormField, Select, Input, EmptyState, Button, IconButton.
  *   Tests: units-manager.test.tsx; Design Lab "Admin" (S7-T01).
  * UX reference: admin-units and builder-units screens (fp-unitspage).
  */
@@ -41,7 +41,7 @@ import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { cn } from "@/lib/cn";
@@ -192,7 +192,7 @@ function UnitsManager({
       <div className="flex flex-col gap-3 md:flex-row md:items-end">
         <div className="md:w-72">
           <FormField label={project.label}>
-            <NativeSelect
+            <Select
               value={project.value}
               onChange={(event) => project.onChange(event.target.value)}
             >
@@ -201,7 +201,7 @@ function UnitsManager({
                   {option.label}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </FormField>
         </div>
         <div className="md:grow">

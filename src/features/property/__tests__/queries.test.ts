@@ -1,19 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const maybeSingle = vi.fn();
-const order = vi.fn();
 const rpc = vi.fn();
-const eqProperty = vi.fn();
-const eqMedia = vi.fn();
-const select = vi.fn();
-const from = vi.fn();
 const tag = vi.fn();
 const life = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 
 vi.mock("next/cache", () => ({ cacheTag: tag, cacheLife: life }));
-vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ from, rpc }) }));
+vi.mock("@/server/supabase/public", () => ({ createPublicSupabase: () => ({ rpc }) }));
 vi.mock("@/server/logger", () => ({ logger: { warn, error } }));
 
 const { getProperty } = await import("../queries");
@@ -48,23 +42,14 @@ const photo = (path: string, position: number, isCover = false, alt: string | nu
   is_cover: isCover,
 });
 
-/** The chain the page uses: from("properties").select().eq().maybeSingle(), from("listing_media")... */
+/** The one call the page makes: rpc("public_property"), which answers a document or null. */
 function arrange({
-  property = { data: row(), error: null } as { data: unknown; error: unknown },
-  media = { data: [] as unknown[], error: null } as { data: unknown; error: unknown },
-  label = { data: "prime", error: null } as { data: unknown; error: unknown },
+  property = row() as unknown,
+  photos = [] as unknown[],
+  label = "prime" as unknown,
+  document = undefined as { data: unknown; error: unknown } | undefined,
 } = {}) {
-  maybeSingle.mockResolvedValue(property);
-  order.mockResolvedValue(media);
-  rpc.mockResolvedValue(label);
-  eqProperty.mockReturnValue({ maybeSingle });
-  eqMedia.mockReturnValue({ order });
-  from.mockImplementation((table: string) => ({
-    select: (columns: string) => {
-      select(columns);
-      return { eq: table === "properties" ? eqProperty : eqMedia };
-    },
-  }));
+  rpc.mockResolvedValue(document ?? { data: { property, photos, label }, error: null });
 }
 
 beforeEach(() => {
@@ -74,18 +59,11 @@ beforeEach(() => {
 });
 
 describe("UT-property-queries: one home by its public id", () => {
-  it("reads the home, its photos and its label as an anonymous visitor", async () => {
-    arrange({ media: { data: [photo("a/1.webp", 0, true, "Front")], error: null } });
+  it("reads the home, its photos and its label in one call, as an anonymous visitor", async () => {
+    arrange({ photos: [photo("a/1.webp", 0, true, "Front")] });
     const result = await getProperty("k3x9a2bd");
-    expect(from).toHaveBeenCalledWith("properties");
-    expect(from).toHaveBeenCalledWith("listing_media");
-    expect(eqProperty).toHaveBeenCalledWith("short_id", "k3x9a2bd");
-    expect(eqMedia).toHaveBeenCalledWith("listing_id", "00000000-0000-4000-8000-000000000001");
-    expect(rpc).toHaveBeenCalledWith("listing_label", {
-      listing_price: 12_500_000,
-      listing_kind: "sale",
-      is_featured: false,
-    });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("public_property", { p_short_id: "k3x9a2bd" });
     expect(result).toMatchObject({
       status: "found",
       readAt: "2026-11-05T06:00:00.000Z",
@@ -101,31 +79,23 @@ describe("UT-property-queries: one home by its public id", () => {
     });
   });
 
-  it("asks only for the columns a visitor may read: no owner, address or exact location", async () => {
+  it("never reads a table: the page cannot list homes, only fetch the one it names", async () => {
     arrange();
     await getProperty("k3x9a2bd");
-    const columns = select.mock.calls.map((call) => String(call[0])).join(",");
-    for (const private_ of ["owner_id", "address", "pincode", "location", "status", "rejection"]) {
-      expect(columns, private_).not.toMatch(new RegExp(`\\b${private_}\\b`));
-    }
+    expect(rpc.mock.calls.map((call) => call[0])).toEqual(["public_property"]);
   });
 
-  it("says missing, without reading photos, when no approved home has the id", async () => {
-    arrange({ property: { data: null, error: null } });
+  it("says missing when no approved home has the id", async () => {
+    arrange({ document: { data: null, error: null } });
     expect(await getProperty("zzzzzzzz")).toEqual({
       status: "missing",
       readAt: "2026-11-05T06:00:00.000Z",
     });
-    expect(from).not.toHaveBeenCalledWith("listing_media");
-    expect(rpc).not.toHaveBeenCalled();
   });
 
   it("puts the cover first, then the photos in their order", async () => {
     arrange({
-      media: {
-        data: [photo("b", 1), photo("c", 2), photo("a", 0), photo("cover", 3, true)],
-        error: null,
-      },
+      photos: [photo("b", 1), photo("c", 2), photo("a", 0), photo("cover", 3, true)],
     });
     const result = await getProperty("k3x9a2bd");
     expect(result.status === "found" && result.property.photos.map((entry) => entry.path)).toEqual([
@@ -137,23 +107,23 @@ describe("UT-property-queries: one home by its public id", () => {
   });
 
   it("skips a photo that does not fit and says how many, without naming it", async () => {
-    arrange({ media: { data: [photo("a", 0), { storage_path: "", position: "x" }], error: null } });
+    arrange({ photos: [photo("a", 0), { storage_path: "", position: "x" }] });
     const result = await getProperty("k3x9a2bd");
     expect(result.status === "found" && result.property.photos).toHaveLength(1);
     expect(warn).toHaveBeenCalledWith(expect.any(String), { skipped: 1 });
   });
 
   it("reads a label this site does not know as no label", async () => {
-    arrange({ label: { data: "gold", error: null } });
+    arrange({ label: "gold" });
     const result = await getProperty("k3x9a2bd");
     expect(result.status === "found" && result.property.label).toBeNull();
-    arrange({ label: { data: null, error: null } });
+    arrange({ label: null });
     const none = await getProperty("k3x9a2bd");
     expect(none.status === "found" && none.property.label).toBeNull();
   });
 
   it("gives no age for a home with no publish date", async () => {
-    arrange({ property: { data: row({ published_at: null }), error: null } });
+    arrange({ property: row({ published_at: null }) });
     const result = await getProperty("k3x9a2bd");
     expect(result.status === "found" && result.property.ageDays).toBeNull();
   });
@@ -168,25 +138,19 @@ describe("UT-property-queries: one home by its public id", () => {
 
 describe("UT-property-queries: a failed read is never 'not found'", () => {
   it("throws, and logs only the error code, when the home cannot be read", async () => {
-    arrange({ property: { data: null, error: { code: "57P01", message: "private detail" } } });
+    arrange({ document: { data: null, error: { code: "57P01", message: "private detail" } } });
     await expect(getProperty("k3x9a2bd")).rejects.toThrow("property could not be read");
     expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "57P01" });
     expect(JSON.stringify(error.mock.calls)).not.toContain("private detail");
   });
 
-  it("throws when the photos cannot be read", async () => {
-    arrange({ media: { data: null, error: { code: "42501", message: "x" } } });
-    await expect(getProperty("k3x9a2bd")).rejects.toThrow();
-    expect(error).toHaveBeenCalledWith(expect.any(String), { errorCode: "42501" });
-  });
-
-  it("throws when the label cannot be read", async () => {
-    arrange({ label: { data: null, error: { code: "42883", message: "x" } } });
-    await expect(getProperty("k3x9a2bd")).rejects.toThrow();
-  });
-
   it("throws, not 'missing', when the row does not fit what the page expects", async () => {
-    arrange({ property: { data: row({ listing_type: "lease" }), error: null } });
+    arrange({ property: row({ listing_type: "lease" }) });
+    await expect(getProperty("k3x9a2bd")).rejects.toThrow("does not fit");
+  });
+
+  it("throws, not 'missing', when the answer is not the document the page expects", async () => {
+    arrange({ document: { data: { property: row() }, error: null } });
     await expect(getProperty("k3x9a2bd")).rejects.toThrow("does not fit");
   });
 });

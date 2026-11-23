@@ -37,3 +37,41 @@ export interface PlaceAutocompleteFailure {
 
 export type PlaceAutocompleteResult =
   { ok: true; data: PlaceAutocompleteSuggestion[] } | PlaceAutocompleteFailure;
+
+/**
+ * An area the owner can choose when no suggestion fits the address (place search PR 7b, ADR-141): one of the
+ * site's curated localities, or a suggestion of kind `area`. A listing placed by area is shown as approximate.
+ */
+export interface LocationArea {
+  label: string;
+  detail?: string | undefined;
+  lat: number;
+  lng: number;
+}
+
+/** A place that is already held for the listing, as the field shows it. It never carries the point itself. */
+export interface ListingLocationHeld {
+  label: string;
+  detail?: string | undefined;
+  approximate: boolean;
+}
+
+/**
+ * What the post-property wizard hands to the connected location field (ADR-141, as ADR-140 does for the place
+ * picker): the wizard holds the place; the field holds only what is being typed and which way (address or area)
+ * the owner is choosing. A chosen suggestion goes up through `onPick` with its point; the wizard decides what
+ * boxes it fills and what is kept.
+ */
+export interface ListingLocationFieldProps {
+  /** A place is held: the field shows the "Location found" card with Change. */
+  held: ListingLocationHeld | null;
+  /** The curated localities, the way to choose an area when suggestions cannot be fetched. */
+  areas: readonly LocationArea[];
+  /** The text of the problem with the place, or null. Shown under the field as an alert. */
+  errorText: string | null;
+  disabled: boolean;
+  onPick: (suggestion: PlaceAutocompleteSuggestion) => void;
+  onPickArea: (area: LocationArea) => void;
+  /** Change was pressed: the wizard lets go of the place and the field starts again. */
+  onChange: () => void;
+}

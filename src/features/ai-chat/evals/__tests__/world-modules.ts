@@ -7,22 +7,41 @@
  *   vi.mock("@/features/search", async () => (await import("./world-modules")).searchModule());
  */
 import {
+  getBlogList,
   getBuilderDirectory,
   getBuilderProfile,
   getComparedHomes,
+  getContentModuleOn,
+  getJobList,
   getLocalityCounts,
+  getOpenJobById,
   getProject,
   getProjects,
   getProperty,
+  getPublicFaqs,
+  getPublishedBlogPostById,
   getSearchResults,
   getSessionView,
   ownsHome,
+  searchPublicFaqs,
 } from "../world";
 
 /** `@/features/search`: the read, and the defaults the tool takes from the real feature. */
 export async function searchModule() {
-  const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
-  return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
+  const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
+    await import("@/features/search/schemas");
+  const { NEARBY_RADIUS_KM, nearbyHomesToShow, nearbySearchParams, wantsNearby } =
+    await import("@/features/search/nearby");
+  return {
+    getSearchResults,
+    DEFAULT_RADIUS_KM,
+    DEFAULT_SORT,
+    DEFAULT_VIEW,
+    NEARBY_RADIUS_KM,
+    nearbyHomesToShow,
+    nearbySearchParams,
+    wantsNearby,
+  };
 }
 
 /** `@/features/property`: the read, and the page's own rules. */
@@ -39,17 +58,20 @@ export async function compareModule() {
 
 /** `@/features/projects`: the reads, and the real page rules the tools use. */
 export async function projectsModule() {
-  const { bhkSizes, priceBounds, TREND_MONTHS } = await import("@/features/projects/view");
+  const { bhkSizes, priceOf, TREND_MONTHS } = await import("@/features/projects/view");
   const { isProjectSlug } = await import("@/features/projects/address");
-  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
+  const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
+    await import("@/features/projects/schemas");
   const { visitDateProblem } = await import("@/features/projects/lead-view");
   return {
     getProjects,
     getProject,
     bhkSizes,
-    priceBounds,
+    priceOf,
     TREND_MONTHS,
     isProjectSlug,
+    OFFER_TYPES,
+    PRICE_TYPES,
     PROJECT_STATUSES,
     visitDateProblem,
     PROJECT_LIST_LIMIT: 60,
@@ -64,4 +86,36 @@ export function queriesModule() {
 /** `@/server/auth/get-session-view`. */
 export function sessionModule() {
   return { getSessionView };
+}
+
+/** `@/features/blog`: the reads under search_content and get_content_item, and the page's own text rule. */
+export async function blogModule() {
+  const { blocksToPlainText } = await import("@/features/blog/body-text");
+  return { getBlogList, getPublishedBlogPostById, blocksToPlainText };
+}
+
+/** `@/features/faq`: the reads, and the page's own rule for an answer's paragraphs. */
+export async function faqModule() {
+  const { answerParagraphs } = await import("@/features/faq/view");
+  return { searchPublicFaqs, getPublicFaqs, answerParagraphs };
+}
+
+/** `@/features/careers`: the reads, the page's own rules for a job, and the lists the tool takes its inputs from. */
+export async function careersModule() {
+  const { descriptionParagraphs, isJobOpenAt, pointsOf } = await import("@/features/careers/view");
+  const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
+  return {
+    getJobList,
+    getOpenJobById,
+    descriptionParagraphs,
+    isJobOpenAt,
+    pointsOf,
+    EMPLOYMENT_TYPES,
+    WORK_MODES,
+  };
+}
+
+/** `@/features/site`: the one helper that says whether a content module is switched on. */
+export function siteModule() {
+  return { getContentModuleOn };
 }

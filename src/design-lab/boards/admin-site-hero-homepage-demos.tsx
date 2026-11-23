@@ -24,6 +24,7 @@ import {
 } from "@/components/domain/site-localities-editor";
 import { Alert } from "@/components/patterns/alert";
 import { Specimen } from "../frame";
+import { LabPlacePicker } from "./admin-place-picker-demos";
 import { SaveBar, tabs } from "./admin-site-content-demos";
 
 /**
@@ -146,14 +147,13 @@ export function SiteHeroDemo() {
 
 const LOCALITIES_WORDS: SiteLocalitiesWords = {
   title: "Explore by locality",
-  description:
-    "Tiles shown under the search. The first 4 also appear as Popular chips in the search card. Visitors who click one see homes within the radius.",
+  description: "Tiles shown under the search. Visitors who click one see homes within the radius.",
   add: "Add locality",
   limitTitle: "You've reached the limit of 8 localities",
   limitText: "Remove one to add another.",
   emptyTitle: "No localities yet",
   emptyText:
-    'The "Explore by locality" section is hidden on the homepage until you add one, and the Popular chips in the search card are left out. No empty space is shown.',
+    'The "Explore by locality" section is hidden on the homepage until you add one. No empty space is shown.',
   orderHint:
     "Order matters. Use the arrows (or drag the handle) to change it. Radius is how far from the place a visitor's search reaches.",
   row: "Locality",
@@ -181,7 +181,7 @@ const HOMEPAGE_WORDS: SiteHomepageFieldsWords = {
       label: "Explore by locality",
       hint: "The locality tiles below. Needs at least one locality.",
     },
-    whyUs: { label: "Why Find Prop", hint: "Three short value points." },
+    whyUs: { label: "Why findsprop", hint: "Three short value points." },
     cta: { label: "Post-property call to action", hint: "The closing banner." },
   },
   localities: LOCALITIES_WORDS,
@@ -231,17 +231,15 @@ function homepagePreview(values: SiteHomepageValues): ReactNode {
         section("Explore by locality", values.showDiscovery && labels.length > 0),
         section("Featured homes", values.showFeatured),
         section("Browse by what matters", values.showProjectTypes),
-        section("Why Find Prop", values.showWhyUs),
+        section("Why findsprop", values.showWhyUs),
         section("Call to action", values.showCta),
       ]}
-      popular={labels.slice(0, 4)}
       tiles={labels}
       hiddenNote={{
         title: "Section hidden",
-        text: "With no localities, visitors see the search card followed directly by Featured homes.",
+        text: "With no localities, visitors see the search bar followed directly by Featured homes.",
       }}
       words={{
-        popular: "Popular chips in the search card",
         explore: "Explore by locality",
         on: "On",
         off: "Off",
@@ -279,6 +277,7 @@ function HomepagePage({
         radii={RADII}
         defaultRadius={3}
         disabled={saving}
+        placePicker={LabPlacePicker}
         words={HOMEPAGE_WORDS}
       />
     </SiteContentLayout>
@@ -323,6 +322,7 @@ function LocalitiesState({
         defaultRadius={3}
         {...(errors ? { errors } : {})}
         {...(disabled ? { disabled } : {})}
+        placePicker={LabPlacePicker}
         words={LOCALITIES_WORDS}
       />
     </div>

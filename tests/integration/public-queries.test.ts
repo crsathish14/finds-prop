@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { DEVELOPER_PROJECT_COLUMNS, RANKING_COLUMNS } from "@/features/home/columns";
+import { DEVELOPER_PROJECT_COLUMNS } from "@/features/home/columns";
 import { PHOTO_COLUMNS, PROPERTY_COLUMNS } from "@/features/property/schemas";
 import {
   PROJECT_COLUMNS,
@@ -9,7 +9,7 @@ import {
   TREND_COLUMNS,
   UNIT_COLUMNS,
 } from "@/features/projects/schemas";
-import { SITEMAP_HOME_COLUMNS, SITEMAP_PROJECT_COLUMNS } from "@/features/sitemap/columns";
+import { SITEMAP_HOME_COLUMNS } from "@/features/sitemap/columns";
 import { topLevelKeys } from "../public-columns";
 import { adminClient, visitorClient } from "./support/clients";
 import {
@@ -20,9 +20,10 @@ import {
   type TestUser,
 } from "./support/users";
 
-// S4-T13, IT-queries (FR-SYS-08, R-DB-06, ADR-017, DEC-35): the select strings of the public pages,
-// run as a visitor against the real database. A visitor gets approved homes and live projects of
-// active builders, exactly the columns the page asks for, and is refused any private column.
+// S4-T13, IT-queries (FR-SYS-08, R-DB-06, ADR-017, DEC-35, ADR-171): what the public pages read, run as a visitor
+// against the real database. A visitor who is not signed in gets one approved home or one live project of an active
+// builder through the narrow functions, exactly the columns the page asks for, and is refused the tables and the
+// lists (login wall); a signed-in person reads the lists and is refused any private column.
 // The data is made up. Every row carries this run's tag, so nothing else in the database is touched.
 
 const RUN = randomUUID().slice(0, 8);
@@ -206,41 +207,81 @@ describe("IT-queries: what a visitor reads (S4-T13)", () => {
     await removeTestUser();
   });
 
+  /** The public id of a home, which the fixtures leave to the database's own choice of the home's row. */
+  async function shortIdOf(homeId: string): Promise<string> {
+    const { data, error } = await adminClient()
+      .from("properties")
+      .select("short_id")
+      .eq("id", homeId)
+      .single();
+    if (error) throw new Error(`Could not read a short id (${error.code})`);
+    return data.short_id;
+  }
+
+  /** The signed-in test customer's client without the typed table names, to send any select string. */
+  function looseSignedIn(): SupabaseClient {
+    return user.client as unknown as SupabaseClient;
+  }
+
+  type PropertyDocument = {
+    property: Record<string, unknown>;
+    photos: Record<string, unknown>[];
+    label: unknown;
+  };
+  type ProjectDocument = {
+    project: Record<string, unknown> & { builders: Record<string, unknown> };
+    units: Record<string, unknown>[];
+    unit_count: number;
+    available_count: number;
+    trend: Record<string, unknown>[];
+  };
+
   describe("homes", () => {
-    it("shows the approved home only, with exactly the columns the page asks for", async () => {
-      const rows = rowsOf(
-        await visitorClient()
-          .from("properties")
-          .select(PROPERTY_COLUMNS)
-          .ilike("title", `%${RUN}%`),
-      );
-      expect(rows).toHaveLength(1);
-      expect(rows[0]?.id).toBe(homeIds.approved);
-      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(PROPERTY_COLUMNS));
+    it("gives the approved home through public_property, with exactly the columns the page asks for", async () => {
+      const { data, error } = await visitorClient().rpc("public_property", {
+        p_short_id: await shortIdOf(homeIds.approved),
+      });
+      expect(error).toBeNull();
+      const document = data as unknown as PropertyDocument;
+      expect(document.property["id"]).toBe(homeIds.approved);
+      expect(Object.keys(document.property).sort()).toEqual(topLevelKeys(PROPERTY_COLUMNS));
     });
 
-    it("shows the photos of the approved home only", async () => {
-      const visible = rowsOf(
-        await visitorClient()
-          .from("listing_media")
-          .select(PHOTO_COLUMNS)
-          .eq("listing_id", homeIds.approved),
-      );
-      expect(visible).toHaveLength(1);
-      expect(Object.keys(visible[0] ?? {}).sort()).toEqual(topLevelKeys(PHOTO_COLUMNS));
-      const hidden = rowsOf(
-        await visitorClient()
-          .from("listing_media")
-          .select(PHOTO_COLUMNS)
-          .eq("listing_id", homeIds.pending),
-      );
-      expect(hidden).toEqual([]);
+    it("gives the photos of the approved home only", async () => {
+      const { data } = await visitorClient().rpc("public_property", {
+        p_short_id: await shortIdOf(homeIds.approved),
+      });
+      const document = data as unknown as PropertyDocument;
+      expect(document.photos).toHaveLength(1);
+      expect(Object.keys(document.photos[0] ?? {}).sort()).toEqual(topLevelKeys(PHOTO_COLUMNS));
+    });
+
+    it.each(["pending", "rejected"] as const)("gives nothing for the %s home", async (which) => {
+      const { data, error } = await visitorClient().rpc("public_property", {
+        p_short_id: await shortIdOf(homeIds[which]),
+      });
+      expect(error).toBeNull();
+      expect(data).toBeNull();
+    });
+
+    it.each(["properties", "listing_media"] as const)(
+      "refuses a visitor who is not signed in the %s table (login wall)",
+      async (table) => {
+        const result = await visitorClient().from(table).select("id").limit(1);
+        expect(result.error?.code).toBe("42501");
+        expect(result.data).toBeNull();
+      },
+    );
+
+    it("refuses a visitor who is not signed in the search (login wall)", async () => {
+      const result = await visitorClient().rpc("search_properties", { p_limit: 5 });
+      expect(result.error?.code).toBe("42501");
     });
 
     it.each(["owner_id", "address", "location", "rejection_reason", "moderated_by", "closed_at"])(
-      "refuses a read that names %s",
+      "refuses a signed-in person a read that names %s",
       async (column) => {
-        const result = await looseVisitor()
+        const result = await looseSignedIn()
           .from("properties")
           .select(`${PROPERTY_COLUMNS}, ${column}`)
           .limit(1);
@@ -249,13 +290,13 @@ describe("IT-queries: what a visitor reads (S4-T13)", () => {
       },
     );
 
-    it("refuses a read of every column", async () => {
-      const result = await looseVisitor().from("properties").select("*").limit(1);
+    it("refuses a signed-in person a read of every column", async () => {
+      const result = await looseSignedIn().from("properties").select("*").limit(1);
       expect(result.error?.code).toBe("42501");
     });
 
-    it("gives the search the rounded point and none of the private columns (DEC-35)", async () => {
-      const { data, error } = await visitorClient().rpc("search_properties", {
+    it("gives a signed-in person's search the rounded point and none of the private columns (DEC-35)", async () => {
+      const { data, error } = await user.client.rpc("search_properties", {
         p_locality: LOCALITY,
         p_limit: 50,
       });
@@ -272,87 +313,87 @@ describe("IT-queries: what a visitor reads (S4-T13)", () => {
     });
 
     it("lists the approved home in the sitemap read and nothing else of this run", async () => {
-      const rows = rowsOf(
-        await visitorClient()
-          .from("properties")
-          .select(SITEMAP_HOME_COLUMNS)
-          .ilike("slug", `%${RUN}%`),
-      );
+      const { data, error } = await visitorClient().rpc("sitemap_entries", {
+        p_kind: "homes",
+        p_limit: 1000,
+        p_offset: 0,
+      });
+      expect(error).toBeNull();
+      const rows = (data ?? []).filter((row) => row.slug.includes(RUN));
       expect(rows).toHaveLength(1);
       expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(SITEMAP_HOME_COLUMNS));
     });
   });
 
   describe("projects", () => {
-    it("lists the live project of an active builder only, with the developer's name and id", async () => {
-      const rows = rowsOf(
-        await visitorClient()
-          .from("projects")
-          .select(PROJECT_LIST_COLUMNS)
-          .ilike("slug", `%${RUN}%`),
+    it("lists the live project of an active builder only, for a signed-in person, with the developer's name and id", async () => {
+      const { data, error } = await user.client.rpc("live_project_list", { p_limit: 120 });
+      expect(error).toBeNull();
+      const rows = (data as unknown as (Record<string, unknown> & { slug: string })[]).filter(
+        (row) => row.slug.includes(RUN),
       );
       expect(rows.map((row) => row.slug)).toEqual([slugs.live]);
-      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(PROJECT_LIST_COLUMNS));
-      expect(Object.keys(rows[0]?.builders ?? {}).sort()).toEqual(["id", "name"]);
+      // The list function also gives the project's city (Plan 2), which the page does not ask for yet.
+      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(
+        [...topLevelKeys(PROJECT_LIST_COLUMNS), "city"].sort(),
+      );
+      expect(Object.keys((rows[0]?.["builders"] as object) ?? {}).sort()).toEqual(["id", "name"]);
     });
 
-    it("opens the live project with exactly the columns the page asks for", async () => {
-      const rows = rowsOf(
-        await visitorClient().from("projects").select(PROJECT_COLUMNS).eq("slug", slugs.live),
-      );
-      expect(rows).toHaveLength(1);
-      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(PROJECT_COLUMNS));
+    it("refuses the list to a visitor who is not signed in (login wall)", async () => {
+      const result = await visitorClient().rpc("live_project_list", { p_limit: 5 });
+      expect(result.error?.code).toBe("42501");
+    });
+
+    it.each(["projects", "project_units", "project_price_trends"] as const)(
+      "refuses a visitor who is not signed in the %s table (login wall)",
+      async (table) => {
+        const result = await visitorClient().from(table).select("id").limit(1);
+        expect(result.error?.code).toBe("42501");
+        expect(result.data).toBeNull();
+      },
+    );
+
+    it("opens the live project through public_project with exactly the columns the page asks for", async () => {
+      const { data, error } = await visitorClient().rpc("public_project", { p_slug: slugs.live });
+      expect(error).toBeNull();
+      const document = data as unknown as ProjectDocument;
+      expect(Object.keys(document.project).sort()).toEqual(topLevelKeys(PROJECT_COLUMNS));
+      expect(Object.keys(document.project.builders).sort()).toEqual(["id", "name"]);
     });
 
     it.each(["pending", "unpublished", "inactiveBuilder"] as const)(
       "does not open the %s project",
       async (which) => {
-        const rows = rowsOf(
-          await visitorClient().from("projects").select(PROJECT_COLUMNS).eq("slug", slugs[which]),
-        );
-        expect(rows).toEqual([]);
+        const { data, error } = await visitorClient().rpc("public_project", {
+          p_slug: slugs[which],
+        });
+        expect(error).toBeNull();
+        expect(data).toBeNull();
       },
     );
 
-    it("keeps a project's exact coordinates (DEC-35)", async () => {
+    it("keeps a project's exact coordinates for the people who may read them (DEC-35)", async () => {
       const rows = rowsOf(
-        await visitorClient().from("projects").select("latitude, longitude").eq("slug", slugs.live),
+        await looseSignedIn().from("projects").select("latitude, longitude").eq("slug", slugs.live),
       );
       expect(rows).toEqual([{ latitude: 13.082741, longitude: 80.270741 }]);
     });
 
-    it("shows the units and price trend of the live project only", async () => {
-      const units = rowsOf(
-        await visitorClient()
-          .from("project_units")
-          .select(UNIT_COLUMNS)
-          .eq("project_id", projectIds.live),
-      );
-      expect(units).toHaveLength(1);
-      expect(Object.keys(units[0] ?? {}).sort()).toEqual(topLevelKeys(UNIT_COLUMNS));
-      const trends = rowsOf(
-        await visitorClient()
-          .from("project_price_trends")
-          .select(TREND_COLUMNS)
-          .eq("project_id", projectIds.live),
-      );
-      expect(trends).toHaveLength(1);
-      expect(Object.keys(trends[0] ?? {}).sort()).toEqual(topLevelKeys(TREND_COLUMNS));
-      for (const [table, columns] of [
-        ["project_units", UNIT_COLUMNS],
-        ["project_price_trends", TREND_COLUMNS],
-      ] as const) {
-        const hidden = rowsOf(
-          await looseVisitor().from(table).select(columns).eq("project_id", projectIds.pending),
-        );
-        expect(hidden).toEqual([]);
-      }
+    it("gives the units and price trend of the live project only", async () => {
+      const { data } = await visitorClient().rpc("public_project", { p_slug: slugs.live });
+      const document = data as unknown as ProjectDocument;
+      expect(document.units).toHaveLength(1);
+      expect(Object.keys(document.units[0] ?? {}).sort()).toEqual(topLevelKeys(UNIT_COLUMNS));
+      expect(document.trend).toHaveLength(1);
+      expect(Object.keys(document.trend[0] ?? {}).sort()).toEqual(topLevelKeys(TREND_COLUMNS));
+      expect(document.unit_count).toBe(1);
     });
 
     it.each(["moderation", "published", "rejection_reason", "moderated_by", "form_id"])(
-      "refuses a read that names %s",
+      "refuses a signed-in person a read that names %s",
       async (column) => {
-        const result = await looseVisitor()
+        const result = await looseSignedIn()
           .from("projects")
           .select(`${PROJECT_COLUMNS}, ${column}`)
           .limit(1);
@@ -360,31 +401,26 @@ describe("IT-queries: what a visitor reads (S4-T13)", () => {
       },
     );
 
-    it("reads the homepage developer columns for the live project's builder", async () => {
-      const ranking = rowsOf(
-        await visitorClient().from("projects").select(RANKING_COLUMNS).eq("slug", slugs.live),
+    it("gives the homepage developers through home_developers: the live project's builder only", async () => {
+      const { data, error } = await visitorClient().rpc("home_developers");
+      expect(error).toBeNull();
+      const rows = (data as unknown as (Record<string, unknown> & { slug: string })[]).filter(
+        (row) => row.slug.includes(RUN),
       );
-      expect(ranking).toEqual([{ builder_id: activeBuilderId }]);
-      const rows = rowsOf(
-        await visitorClient()
-          .from("projects")
-          .select(DEVELOPER_PROJECT_COLUMNS)
-          .eq("builder_id", activeBuilderId)
-          .ilike("slug", `%${RUN}%`),
-      );
-      expect(rows).toHaveLength(1);
+      expect(rows.map((row) => row.slug)).toEqual([slugs.live]);
+      expect(rows[0]?.["builder_id"]).toBe(activeBuilderId);
       expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(DEVELOPER_PROJECT_COLUMNS));
     });
 
     it("lists the live project in the sitemap read", async () => {
-      const rows = rowsOf(
-        await visitorClient()
-          .from("projects")
-          .select(SITEMAP_PROJECT_COLUMNS)
-          .ilike("slug", `%${RUN}%`),
-      );
-      expect(rows).toHaveLength(1);
-      expect(Object.keys(rows[0] ?? {}).sort()).toEqual(topLevelKeys(SITEMAP_PROJECT_COLUMNS));
+      const { data, error } = await visitorClient().rpc("sitemap_entries", {
+        p_kind: "projects",
+        p_limit: 1000,
+        p_offset: 0,
+      });
+      expect(error).toBeNull();
+      const rows = (data ?? []).filter((row) => row.slug.includes(RUN));
+      expect(rows.map((row) => row.slug)).toEqual([slugs.live]);
     });
   });
 

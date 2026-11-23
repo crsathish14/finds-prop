@@ -7,9 +7,25 @@ const state = vi.hoisted(() => ({
     { status: "ok"; projects: Record<string, unknown>[] } | { status: "failed" },
   region: {} as { name?: string },
   connection: vi.fn(async () => undefined),
+  wallHref: null as string | null,
+  reads: vi.fn(),
+}));
+
+vi.mock("@/features/login-wall", () => ({
+  isSignedOut: async () => state.wallHref !== null,
+  loginWallMetadata: () => ({
+    title: "loginWall.metaTitle",
+    robots: { index: false, follow: false },
+  }),
+  LoginWallScreen: (props: { kind: string; siteKey?: string }) => (
+    <div data-testid="wall" data-kind={props.kind} data-site-key={props.siteKey ?? ""} />
+  ),
 }));
 
 vi.mock("next/server", () => ({ connection: state.connection }));
+vi.mock("@/features/cities", () => ({
+  getSelectedCity: async () => ({ key: "chennai", name: "Chennai", count: 0 }),
+}));
 vi.mock("@/features/site", () => ({
   getTranslate: async () => (key: string) => key,
   getSiteSettings: async () => ({ region: state.region }),
@@ -18,7 +34,10 @@ vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" },
 }));
 vi.mock("@/features/projects", () => ({
-  getProjects: async () => state.list,
+  getProjects: async () => {
+    state.reads();
+    return state.list;
+  },
   PROJECTS_PATH: "/projects",
   toProjectCard: (project: { slug: string; name: string }) => ({
     href: `/projects/${project.slug}`,
@@ -53,6 +72,26 @@ beforeEach(() => {
   state.list = { status: "ok", projects: [] };
   state.region = {};
   state.connection.mockClear();
+  state.wallHref = null;
+  state.reads.mockClear();
+});
+
+describe("the projects page for a visitor who is not signed in (login wall)", () => {
+  it("draws the wall, with the sign-in inside it, and reads no project", async () => {
+    state.wallHref = "signed-out";
+    render(await ProjectsPage());
+    expect(screen.getByTestId("wall")).toHaveAttribute("data-kind", "projects");
+    expect(screen.queryByTestId("screen")).toBeNull();
+    expect(state.reads).not.toHaveBeenCalled();
+  });
+
+  it("has one generic title and is not indexed", async () => {
+    state.wallHref = "signed-out";
+    const metadata = await generateMetadata();
+    expect(metadata.title).toBe("loginWall.metaTitle");
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+    expect(metadata.alternates).toBeUndefined();
+  });
 });
 
 describe("the projects page (S4-T09)", () => {

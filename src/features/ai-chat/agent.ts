@@ -36,6 +36,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
   const offers: ProposalOffer[] = [];
   const toolCallsPerRound: number[] = [];
   const toolsRan = new Set<string>();
+  const groupCalls: Record<string, number> = {};
   let rounds = 0;
   let callsUsed = 0;
   let retried = false;
@@ -132,9 +133,13 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         calls: round.calls,
         context,
         budget: MAX_TOOL_CALLS_PER_MESSAGE - callsUsed,
+        groupUsed: groupCalls,
         signal,
       });
       callsUsed += run.attempted;
+      for (const [group, used] of Object.entries(run.groupAttempts)) {
+        groupCalls[group] = (groupCalls[group] ?? 0) + used;
+      }
       toolCallsPerRound.push(run.attempted);
       for (const name of run.ranNames) toolsRan.add(name);
       messages.push({

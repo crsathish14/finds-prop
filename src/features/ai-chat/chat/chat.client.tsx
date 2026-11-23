@@ -16,8 +16,15 @@ import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
+import { isSiteLinkPath } from "../site-links";
+import { isSourcePath } from "../source-links";
 import { Text } from "@/components/ui/text";
-import { AI_MAX_CARDS_PER_ANSWER, AI_TRIAL_MESSAGES, MAX_INPUT_CHARACTERS } from "@/config/ai";
+import {
+  AI_MAX_CARDS_PER_ANSWER,
+  AI_MAX_SOURCES_PER_ANSWER,
+  AI_TRIAL_MESSAGES,
+  MAX_INPUT_CHARACTERS,
+} from "@/config/ai";
 import { saveDraft } from "@/lib/form-draft";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ChatContext } from "../context/page-context";
@@ -36,9 +43,11 @@ import {
   type ChatEntry,
   type ChatNote,
   type ChatReference,
+  type ChatSource,
 } from "./chat-model";
 import { readChatEvents, readChatFailure } from "./chat-stream";
 import { ChatConfirm } from "./confirm-card.client";
+import { takeHomeQuestion } from "./home-question";
 
 /** Where the sign-in gate leads: the phone sign-in, asked to come back to this page (ADR-128 section 10). */
 const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
@@ -47,6 +56,9 @@ const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
 const FILTERS_HREF = "/properties";
 
 const COMPOSER_ID = "ai-chat-message";
+
+/** The space kept between the newest words and the composer when the page scrolls to them, in pixels. */
+const NEWEST_BREATHING_ROOM = 16;
 
 /** The name the unsent message of a confirm card is kept under while the customer signs in (the way forms keep theirs). */
 const CONFIRM_DRAFT_NAME = "ai-chat-confirm";
@@ -59,6 +71,8 @@ type LiveAnswer = {
   confirm: ConfirmCard | undefined;
   notes: ChatNote[];
   references: ChatReference[];
+  links: { text: string; href: string }[];
+  sources: ChatSource[];
   replaced: boolean;
   href: string | undefined;
 };
@@ -75,6 +89,8 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   confirm: undefined,
   notes: [],
   references: [],
+  links: [],
+  sources: [],
   replaced: false,
   href: undefined,
 };
@@ -103,10 +119,42 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
   );
 }
 
+/**
+ * The "Sources" row of a content answer (ADR-143 section 6.5): the articles and questions it drew on, each a link the
+ * server built (`source-links.ts`) and the browser draws only when the address is one of those shapes. Nothing is
+ * drawn for an answer with no source.
+ */
+function sourceRow(sources: readonly ChatSource[], label: string) {
+  const shown = sources
+    .filter((source) => isSourcePath(source.href))
+    .slice(0, AI_MAX_SOURCES_PER_ANSWER);
+  if (shown.length === 0) return null;
+  return (
+    <div className="mt-3" data-slot="chat-sources">
+      <Text variant="caption" tone="muted" className="font-bold">
+        {label}
+      </Text>
+      <ul className="mt-1 flex flex-col gap-1">
+        {shown.map((source) => (
+          <li key={source.href}>
+            <Link href={source.href} variant="arrow">
+              {source.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** The text, the cards and the notes of one answer, as the parts of a `ChatAssistantMessage`. */
 function answerParts(
-  entry: Pick<AssistantEntry, "text" | "notes" | "references" | "replaced" | "href" | "confirm">,
+  entry: Pick<
+    AssistantEntry,
+    "text" | "notes" | "references" | "links" | "sources" | "replaced" | "href" | "confirm"
+  >,
   filtersLabel: string,
+  sourcesLabel: string,
   streaming: boolean,
   controls: ChatCardControls,
   keepMessage: (message: string) => void,
@@ -122,6 +170,17 @@ function answerParts(
               <Link href={href}>{filtersLabel}</Link>
             </p>
           ) : null}
+          {(entry.links ?? []).map((link) => {
+            const target = safeHref(link.href);
+            return target !== undefined && isSiteLinkPath(target) ? (
+              <p key={target} className="mt-3">
+                <Link href={target} variant="arrow">
+                  {link.text}
+                </Link>
+              </p>
+            ) : null;
+          })}
+          {sourceRow(entry.sources ?? [], sourcesLabel)}
         </>
       ),
     cards:
@@ -182,12 +241,17 @@ export function ChatIsland({
   const abort = useRef<AbortController | null>(null);
   const problemRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const composerId = useId();
   const fieldId = `${COMPOSER_ID}-${composerId.replaceAll(":", "")}`;
 
   const focusComposer = useCallback(() => {
     document.getElementById(fieldId)?.focus();
   }, [fieldId]);
+
+  // The home page's question, taken from this tab in the restore effect and sent by the effect after `run`. It is
+  // held in a ref so React's development double run of effects can neither lose it nor send it twice.
+  const homeQuestion = useRef<{ text: string; before: readonly ChatEntry[] } | null>(null);
 
   // Restore the conversation, the draft and the gate from this tab, once, after the first render (so the page and
   // its first hydration agree). A visitor who was shown the gate and is now signed in has come back from signing in.
@@ -207,6 +271,13 @@ export function ChatIsland({
       setGate(false);
     } else {
       setGate(stored.gate);
+    }
+    // The question written on the home page's search bar (ADR-150). While the sign-in gate is up it would only be
+    // refused, so it waits in the box; otherwise it is sent once the conversation is back (the effect below).
+    const question = takeHomeQuestion(storage);
+    if (question !== null) {
+      if (question !== "" && stored.gate && !signedIn) setDraft(question);
+      else homeQuestion.current = { text: question, before: stored.entries };
     }
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -237,10 +308,39 @@ export function ChatIsland({
 
   useEffect(() => () => abort.current?.abort(), []);
 
-  // Keep the newest words in view above the composer.
+  // Keep the newest words in view above the composer. The page scrolls (the composer is sticky), so the end of the
+  // conversation is brought up to just above the composer, not to the bottom edge where the composer would cover it.
+  const scrollToNewest = useCallback((smooth: boolean) => {
+    const end = endRef.current;
+    const root = rootRef.current;
+    if (!end || !root) return;
+    const composer = root.querySelector('[data-slot="chat-composer"]');
+    const limit = composer ? composer.getBoundingClientRect().top : window.innerHeight;
+    const distance = end.getBoundingClientRect().bottom - (limit - NEWEST_BREATHING_ROOM);
+    if (distance <= 0) return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    document.documentElement.scrollBy?.({
+      top: distance,
+      behavior: smooth && !reduced ? "smooth" : "auto",
+    });
+  }, []);
+
+  // A new message (the visitor's or the finished answer) glides into view. The first run only restores a
+  // conversation kept in this tab, which is shown in place, and an empty chat never scrolls the page.
+  const shownCount = useRef<number | null>(null);
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: "nearest" });
-  }, [entries.length, live?.text, live?.references.length]);
+    if (!ready) return;
+    const previous = shownCount.current;
+    shownCount.current = entries.length;
+    if (entries.length === 0) return;
+    scrollToNewest(previous !== null);
+  }, [ready, entries.length, scrollToNewest]);
+
+  // While an answer is being written, follow it without a glide (a glide restarted on every word would lag behind).
+  useEffect(() => {
+    if (live === null) return;
+    scrollToNewest(false);
+  }, [live, scrollToNewest]);
 
   // The short wait: the composer is off until it is over, then it works again.
   const waitSeconds = problem?.kind === "too_many_messages" ? problem.seconds : null;
@@ -269,7 +369,13 @@ export function ChatIsland({
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
-      const answer: LiveAnswer = { ...NO_ANSWER, id: newId(), notes: [], references: [] };
+      const answer: LiveAnswer = {
+        ...NO_ANSWER,
+        id: newId(),
+        notes: [],
+        references: [],
+        sources: [],
+      };
       setLive({ ...answer });
       setProblem(null);
 
@@ -316,6 +422,18 @@ export function ChatIsland({
             if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
               answer.references.push(event.reference);
             }
+          } else if (event.type === "link") {
+            if (!answer.links.some((link) => link.href === event.href)) {
+              answer.links.push({ text: event.text, href: event.href });
+            }
+          } else if (event.type === "source") {
+            if (
+              isSourcePath(event.href) &&
+              answer.sources.length < AI_MAX_SOURCES_PER_ANSWER &&
+              !answer.sources.some((source) => source.href === event.href)
+            ) {
+              answer.sources.push({ kind: event.kind, title: event.title, href: event.href });
+            }
           } else if (event.type === "confirm") {
             answer.confirm = event.card;
           } else if (event.type === "notice") {
@@ -332,6 +450,8 @@ export function ChatIsland({
             answer.text = event.text;
             answer.notes = [];
             answer.references = [];
+            answer.links = [];
+            answer.sources = [];
             answer.confirm = undefined;
             answer.replaced = true;
             answer.href = event.href;
@@ -350,6 +470,8 @@ export function ChatIsland({
             text: answer.text,
             notes: answer.notes,
             references: answer.references,
+            ...(answer.links.length === 0 ? {} : { links: answer.links }),
+            ...(answer.sources.length === 0 ? {} : { sources: answer.sources }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),
@@ -363,6 +485,27 @@ export function ChatIsland({
     },
     [context],
   );
+
+  // Send the home page's question as the next message of the conversation in this tab (ADR-150); an empty one only
+  // puts the cursor in the box. The short timer is cancelled by the development double run, so it fires once.
+  useEffect(() => {
+    if (!ready || homeQuestion.current === null) return;
+    const timer = window.setTimeout(() => {
+      const question = homeQuestion.current;
+      homeQuestion.current = null;
+      if (question === null) return;
+      focusComposer();
+      if (question.text === "") return;
+      const userId = newId();
+      setEntries([
+        ...question.before,
+        { id: userId, role: "user", text: question.text, masked: false },
+      ]);
+      setReturned(false);
+      void run(question.text, question.before, userId);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, run, focusComposer]);
 
   function send() {
     const text = draft.trim();
@@ -413,7 +556,10 @@ export function ChatIsland({
     : undefined;
 
   return (
-    <div className="mx-auto flex w-full max-w-205 flex-1 flex-col gap-6 px-gutter py-6 md:py-10">
+    <div
+      ref={rootRef}
+      className="mx-auto flex w-full max-w-205 flex-1 flex-col gap-6 px-gutter py-6 md:py-10"
+    >
       {ready && hasMessages ? (
         <div className="flex items-center gap-3 border-b border-line pb-4">
           <span
@@ -491,6 +637,7 @@ export function ChatIsland({
                   key={entry.id}
                   answer={entry}
                   filtersLabel={translate("notice.useFilters")}
+                  sourcesLabel={translate("sources.label")}
                   controls={controls}
                   keepMessage={keepMessage}
                 />
@@ -504,6 +651,7 @@ export function ChatIsland({
                     answer={live}
                     streaming
                     filtersLabel={translate("notice.useFilters")}
+                    sourcesLabel={translate("sources.label")}
                     controls={controls}
                     keepMessage={keepMessage}
                   />,
@@ -514,6 +662,9 @@ export function ChatIsland({
       ) : null}
 
       <div ref={endRef} />
+
+      {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
+      <div aria-hidden="true" className="flex-1" />
 
       {problem?.kind === "error" ? (
         <div ref={problemRef} tabIndex={-1} className="outline-none">
@@ -562,16 +713,18 @@ function Answer({
   answer,
   streaming = false,
   filtersLabel,
+  sourcesLabel,
   controls,
   keepMessage,
 }: {
   answer: AssistantEntry | LiveAnswer;
   streaming?: boolean;
   filtersLabel: string;
+  sourcesLabel: string;
   controls: ChatCardControls;
   keepMessage: (message: string) => void;
 }) {
-  const parts = answerParts(answer, filtersLabel, streaming, controls, keepMessage);
+  const parts = answerParts(answer, filtersLabel, sourcesLabel, streaming, controls, keepMessage);
   const searching = streaming && answer.text === "" && answer.references.length === 0;
   return (
     <ChatAssistantMessage

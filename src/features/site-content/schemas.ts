@@ -1,7 +1,10 @@
 import { z } from "zod";
+import { HOME_SECTION_KEYS } from "@/lib/home-sections";
+import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
   FOOTER_ADDRESS_MAX,
+  DISCLAIMER_MAX,
   FOOTER_COPYRIGHT_MAX,
   FOOTER_LINKS_MAX,
   FOOTER_PHONE_MAX,
@@ -15,6 +18,11 @@ import {
   LOCALITIES_MAX,
   LOCALITY_LABEL_MAX,
   LOCALITY_RADIUS_MAX_KM,
+  PROJECT_FIELDS_MAX,
+  PROJECT_FIELD_ID,
+  PROJECT_FIELD_PROPERTY_TYPES,
+  PROJECT_FIELD_HINT_MAX,
+  PROJECT_FIELD_LABEL_MAX,
   SITE_NAME_MAX,
 } from "./constants";
 
@@ -118,6 +126,67 @@ export const footerInputSchema = z.object({
 });
 export type FooterInput = z.infer<typeof footerInputSchema>;
 
+/**
+ * One disclaimer (ADR-152): plain text, up to a few short paragraphs. Line breaks are kept (a Windows line break counts
+ * as one), every other control character is refused, and a blank box means "no disclaimer".
+ */
+const disclaimerText = clearable(
+  z.preprocess(
+    (typed) => (typeof typed === "string" ? typed.replace(/\r\n?/g, "\n").trim() : typed),
+    z
+      .string()
+      .max(DISCLAIMER_MAX)
+      .regex(/^(?:[^\p{C}]|\n)*$/u, { error: "validation.invalid" }),
+  ),
+);
+
+export const disclaimersInputSchema = z.object({
+  footer: disclaimerText,
+  aiSearch: disclaimerText,
+});
+export type DisclaimersInput = z.infer<typeof disclaimersInputSchema>;
+
+/**
+ * The extra project form boxes (ADR-168). The whole list is saved at once, in the order the builder sees it. A label is
+ * needed, a hint is optional, two boxes may not share a label (a builder could not tell them apart) or an id (the
+ * answers are stored under it), and no more than ten are kept, on or off.
+ */
+const projectFieldInput = z.object({
+  id: z.string().regex(PROJECT_FIELD_ID, { error: "validation.invalid" }),
+  label: requiredLine(PROJECT_FIELD_LABEL_MAX),
+  hint: optionalLine(PROJECT_FIELD_HINT_MAX),
+  required: z.boolean(),
+  appliesTo: z.array(z.enum(PROJECT_FIELD_PROPERTY_TYPES)),
+  on: z.boolean(),
+});
+
+export const projectFieldsInputSchema = z
+  .object({ fields: z.array(projectFieldInput).max(PROJECT_FIELDS_MAX) })
+  .superRefine((value, context) => {
+    const ids = new Set<string>();
+    const labels = new Set<string>();
+    value.fields.forEach((field, index) => {
+      if (ids.has(field.id)) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "label"],
+          message: "validation.invalid",
+        });
+      }
+      ids.add(field.id);
+      const same = field.label.toLowerCase();
+      if (labels.has(same)) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "label"],
+          message: "validation.duplicate",
+        });
+      }
+      labels.add(same);
+    });
+  });
+export type ProjectFieldsInput = z.infer<typeof projectFieldsInputSchema>;
+
 export const heroInputSchema = z.object({
   eyebrow: optionalLine(HERO_EYEBROW_MAX),
   title: requiredLine(HERO_TITLE_MAX),
@@ -160,12 +229,19 @@ const localityRow = z.object({
   ),
 });
 
+/** The section order: every home section exactly once (a save always sends the whole list). */
+const sectionOrder = z
+  .array(z.enum(HOME_SECTION_KEYS, { error: "validation.invalid" }))
+  .length(HOME_SECTION_KEYS.length, { error: "validation.invalid" })
+  .refine((keys) => new Set(keys).size === keys.length, { error: "validation.invalid" });
+
 export const homepageInputSchema = z.object({
   showFeatured: z.boolean({ error: "validation.invalid" }),
   showProjectTypes: z.boolean({ error: "validation.invalid" }),
   showDiscovery: z.boolean({ error: "validation.invalid" }),
   showWhyUs: z.boolean({ error: "validation.invalid" }),
   showCta: z.boolean({ error: "validation.invalid" }),
+  order: sectionOrder.optional(),
   localities: z
     .array(localityRow)
     .max(LOCALITIES_MAX)
@@ -185,3 +261,23 @@ export const homepageInputSchema = z.object({
     }),
 });
 export type HomepageInput = z.infer<typeof homepageInputSchema>;
+
+/**
+ * The three switches of the content modules (ADR-143, FR-ADM-16): all three are sent together, so a save replaces the
+ * whole setting and repeating it changes nothing more.
+ */
+export const contentModulesInputSchema = z.object({
+  blog: z.boolean({ error: "validation.invalid" }),
+  faq: z.boolean({ error: "validation.invalid" }),
+  careers: z.boolean({ error: "validation.invalid" }),
+});
+export type ContentModulesInput = z.infer<typeof contentModulesInputSchema>;
+
+/** The chosen developers of the home page, in order: at most 10, each once, each a real id. The whole list is sent. */
+export const topDevelopersInputSchema = z.object({
+  builderIds: z
+    .array(z.uuid({ error: "validation.invalid" }))
+    .max(TOP_DEVELOPERS_MAX, { error: "validation.invalid" })
+    .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
+});
+export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;

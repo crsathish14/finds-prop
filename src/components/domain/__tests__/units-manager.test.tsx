@@ -3,6 +3,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { UnitsManager, type UnitRow, type UnitsManagerProps } from "../units-manager";
+import { changeField } from "../../../../tests/select";
 
 const COLUMNS = {
   unit: "Unit",
@@ -95,9 +96,9 @@ describe("UnitsManager: the units of a project (S7-T01)", () => {
     expect(props.onAdd).toHaveBeenCalledTimes(1);
   });
 
-  it("tells the page the chosen project, the typed search and the chosen state", () => {
+  it("tells the page the chosen project, the typed search and the chosen state", async () => {
     const props = manager();
-    fireEvent.change(screen.getByLabelText("Project"), { target: { value: "courts" } });
+    await changeField(screen.getByLabelText("Project"), "courts");
     expect(props.project.onChange).toHaveBeenCalledWith("courts");
     fireEvent.change(screen.getByRole("searchbox", { name: "Search units" }), {
       target: { value: "A-2" },

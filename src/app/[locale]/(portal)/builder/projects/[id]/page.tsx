@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   getProjectForEdit,
+  getExtraBoxes,
   ProjectForm,
   projectIdSchema,
   updateMyProject,
 } from "@/features/project-editor";
+import { AdminPlacePicker } from "@/features/search";
 import { getTranslate } from "@/features/site";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -30,11 +32,13 @@ export default async function EditBuilderProjectPage({ params }: PageProps) {
   if (!project) notFound();
   return (
     <ProjectForm
+      extraBoxes={await getExtraBoxes()}
       scope="builder"
       project={project}
       save={updateMyProject}
       backHref="/builder/projects"
       editBase="/builder/projects"
+      placePicker={AdminPlacePicker}
     />
   );
 }

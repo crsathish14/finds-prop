@@ -64,6 +64,19 @@ describe("UT-home-property-card: a home as the property card takes it", () => {
     });
   });
 
+  it("says how far the home is when a place was searched, always in the exact wording", () => {
+    expect(toPropertyCard({ ...HOME, distance_km: 2.4 }, context).distanceText).toBe("2.4 km away");
+    expect(toPropertyCard({ ...HOME, distance_km: 3 }, context).distanceText).toBe("3.0 km away");
+    expect(toPropertyCard({ ...HOME, distance_km: 0 }, context).distanceText).toBe("0.0 km away");
+  });
+
+  it("gives no distance without a place (null or no column)", () => {
+    expect(toPropertyCard({ ...HOME, distance_km: null }, context)).not.toHaveProperty(
+      "distanceText",
+    );
+    expect(toPropertyCard(HOME, context)).not.toHaveProperty("distanceText");
+  });
+
   it("leaves out the age and the kind of property when they are not known", () => {
     const card = toPropertyCard({ ...HOME, ageDays: null, property_type: "warehouse" }, context);
     expect(card).not.toHaveProperty("listedAgo");

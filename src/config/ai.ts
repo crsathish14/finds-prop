@@ -81,6 +81,35 @@ export const MAX_TOOL_RESULT_ITEMS = 10;
 export const MAX_UNTRUSTED_TEXT_CHARACTERS = 1500;
 
 /**
+ * The content tools (ADR-143 section 6, `tools/search-content.ts` and `tools/get-content-item.ts`): they read the
+ * published articles and questions of the Blog and the FAQ. Engineering limits, not owner decisions.
+ */
+
+/** Of the `MAX_TOOL_CALLS_PER_MESSAGE` calls of one customer message, at most this many may be content calls (ADR-143 6.3). */
+export const MAX_CONTENT_TOOL_CALLS_PER_MESSAGE = 2;
+
+/**
+ * The tool groups that have a cap of their own inside the message's total (a tool names its group with `callGroup`).
+ * A call past its group's cap is refused with `content_limit`; the other tools keep their own calls.
+ */
+export const AI_TOOL_GROUP_CALL_LIMITS = { content: MAX_CONTENT_TOOL_CALLS_PER_MESSAGE } as const;
+
+/** The most articles and questions one `search_content` call returns ("at most 5", ADR-143 6.2). */
+export const MAX_CONTENT_SEARCH_ITEMS = 5;
+
+/** The length of the passage a search result shows for an article or a question, in characters ("about 300"). */
+export const CONTENT_SNIPPET_CHARACTERS = 300;
+
+/** The most text `get_content_item` returns for one article or question, in characters ("about 2,500", ADR-143 6.2). */
+export const CONTENT_ITEM_MAX_CHARACTERS = 2500;
+
+/** The longest title and category name the assistant is given for an article or a question, in characters. */
+export const CONTENT_TITLE_MAX_CHARACTERS = 160;
+
+/** The most source links one answer draws under it (ADR-143 6.5), as cards are capped by `AI_MAX_CARDS_PER_ANSWER`. */
+export const AI_MAX_SOURCES_PER_ANSWER = 3;
+
+/**
  * The propose tools (ADR-128 section 5.3, `tools/propose-*.ts`). A proposal the server signs stays good for this
  * long, in seconds: enough to read the confirm card and press Send, short enough that an old card cannot be
  * replayed. An engineering limit, not an owner decision.
@@ -267,7 +296,7 @@ export const AI_INTERNALS_PROBE_PATTERNS: readonly RegExp[] = [
   /\b(who|which company|which team) (built|made|created|developed|programmed|trained) (you|this assistant|this chatbot|this bot|this site|this website|findsprop)\b/u,
   /\b(what|which) (tools|functions|apis|endpoints|plugins) (do you|are you|can you|you)\b[^.!?\n]{0,15}\b(have|use|call|access|using|available|allowed)\b/u,
   /\b(list|show|name|tell me|give me)\b[^.!?\n]{0,15}\b(your|all your) (tools|functions|apis|endpoints|plugins|tables|columns|database tables)\b/u,
-  /\b(search_properties|get_property|list_localities|search_projects|get_project|get_builder|compare_properties|calculate_emi)\b/u,
+  /\b(search_properties|get_property|list_localities|search_projects|get_project|get_builder|compare_properties|calculate_emi|search_content|get_content_item|search_jobs)\b/u,
   /\b(findsprop'?s?|your) (backend|back end|architecture|tech stack|infrastructure|admin panel|server code)\b/u,
   // A claim of authority. Chat messages carry none, and the answer says so by not changing.
   /\bi\s*(am|'m|’m)\s+(the|your)\s+(developer|dev)\b(?!\s+(of|for)\b)/u,
@@ -372,7 +401,7 @@ export const AI_LINK_TLDS: readonly string[] = [
  */
 export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
   // The tools by name.
-  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit)\b/u,
+  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
   // The stack and the provider.
   /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|tailwind|typescript|langchain|openai|anthropic|chat ?gpt|gpt-?[0-9][a-z0-9.-]*)\b/u,
   /\b(large language model|language model|llm)\b/u,

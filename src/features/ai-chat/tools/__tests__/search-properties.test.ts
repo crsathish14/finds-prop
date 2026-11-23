@@ -11,8 +11,20 @@ const error = vi.fn();
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The search feature is stood in for by its read (a stand-in) and its real defaults.
 vi.mock("@/features/search", async () => {
-  const { DEFAULT_SORT, DEFAULT_VIEW } = await import("@/features/search/schemas");
-  return { getSearchResults, DEFAULT_SORT, DEFAULT_VIEW };
+  const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
+    await import("@/features/search/schemas");
+  const { NEARBY_RADIUS_KM, nearbyHomesToShow, nearbySearchParams, wantsNearby } =
+    await import("@/features/search/nearby");
+  return {
+    getSearchResults,
+    DEFAULT_RADIUS_KM,
+    DEFAULT_SORT,
+    DEFAULT_VIEW,
+    NEARBY_RADIUS_KM,
+    nearbyHomesToShow,
+    nearbySearchParams,
+    wantsNearby,
+  };
 });
 
 const { toPortableJsonSchema } = await import("@/server/ai");
@@ -126,11 +138,14 @@ describe("UT-ai-tool-search: the input", () => {
 describe("UT-ai-tool-search: the read", () => {
   it("asks the results page's read for the newest ten when nothing is asked for", async () => {
     await search(NOTHING);
-    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith({
-      sort: "newest",
-      show: 10,
-      view: "grid",
-    });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      {
+        sort: "newest",
+        show: 10,
+        view: "grid",
+      },
+      { guest: false },
+    );
   });
 
   it("passes every filter on as the search address names it", async () => {
@@ -146,29 +161,35 @@ describe("UT-ai-tool-search: the read", () => {
       sort: "price_asc",
       limit: 5,
     });
-    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith({
-      sort: "price_asc",
-      show: 10,
-      view: "grid",
-      listingType: "rent",
-      propertyType: "villa",
-      bhk: 3,
-      minPrice: 20_000,
-      maxPrice: 60_000,
-      locality: "Velachery",
-      keyword: "lake view",
-      label: "prime",
-    });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      {
+        sort: "price_asc",
+        show: 10,
+        view: "grid",
+        listingType: "rent",
+        propertyType: "villa",
+        bhk: 3,
+        minPrice: 20_000,
+        maxPrice: 60_000,
+        locality: "Velachery",
+        keyword: "lake view",
+        label: "prime",
+      },
+      { guest: false },
+    );
   });
 
   it("trims text and reads blank text as not asked for", async () => {
     await search({ ...NOTHING, locality: "  Adyar ", keyword: "   " });
-    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith({
-      sort: "newest",
-      show: 10,
-      view: "grid",
-      locality: "Adyar",
-    });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      {
+        sort: "newest",
+        show: 10,
+        view: "grid",
+        locality: "Adyar",
+      },
+      { guest: false },
+    );
   });
 
   it("never sends a place, a radius or a point: the assistant has no place search", async () => {

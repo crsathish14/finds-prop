@@ -302,3 +302,38 @@ describe("UT-search-canonical: the canonical address of a search (FR-PUB-14)", (
     );
   });
 });
+
+describe("search address: the distance sort (ADR-137)", () => {
+  const PLACE = { place: "Velachery", lat: "12.98", lng: "80.22" };
+
+  it("keeps sort=distance when a place was searched", () => {
+    expect(parseSearchParams({ ...PLACE, sort: "distance" }).sort).toBe("distance");
+  });
+
+  it("drops sort=distance without a place, as it drops an out-of-range radius", () => {
+    expect(parseSearchParams({ sort: "distance" }).sort).toBe("newest");
+    expect(parseSearchParams({ sort: "distance", lat: "12.98" }).sort).toBe("newest");
+    expect(buildSearchHref({ sort: "distance" })).toBe("/properties");
+  });
+
+  it("drops sort=distance when the place lies outside the bounds", () => {
+    const bounds = { south: 8, west: 76, north: 13.6, east: 80.4 };
+    expect(
+      parseSearchParams({ ...PLACE, lat: "28.6", lng: "77.2", sort: "distance" }, { bounds }).sort,
+    ).toBe("newest");
+  });
+
+  it("goes back to the default sort when the place is taken off, and other sorts stay", () => {
+    expect(clearSearchFilters(parseSearchParams({ ...PLACE, sort: "distance" })).sort).toBe(
+      "newest",
+    );
+    expect(parseSearchParams({ sort: "price_asc" }).sort).toBe("price_asc");
+    expect(parseSearchParams({ ...PLACE, sort: "cheapest" }).sort).toBe("newest");
+  });
+
+  it("writes the place and its distance sort in one address, in order", () => {
+    expect(buildSearchHref(parseSearchParams({ ...PLACE, sort: "distance", ["r"]: "10" }))).toBe(
+      "/properties?lat=12.98&lng=80.22&place=Velachery&r=10&sort=distance",
+    );
+  });
+});

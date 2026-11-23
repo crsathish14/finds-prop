@@ -110,7 +110,14 @@ test.describe("@smoke site header", () => {
       }),
     ).toHaveAttribute("href", "/");
     const main = banner.getByRole("navigation", { name: en.site.header.navLabel });
-    await expect(main.getByRole("link")).toHaveText([nav.buy, nav.rent, nav.projects, nav.contact]);
+    await expect(main.getByRole("link")).toHaveText([
+      nav.buy,
+      nav.rent,
+      nav.projects,
+      nav.blog,
+      nav.faq,
+      nav.contact,
+    ]);
     await expect(banner.getByRole("link", { name: en.site.header.signIn })).toHaveAttribute(
       "href",
       "/auth",
@@ -138,19 +145,20 @@ test.describe("@smoke site header", () => {
     expect(problems).toEqual([]);
   });
 
-  test("opens the menu drawer on a phone, with the main links and the sign-in actions", async ({
+  test("a phone has no menu button: the person menu holds the main links and the sign-in actions", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await expect(page.getByRole("navigation", { name: en.site.header.navLabel })).toBeHidden();
-    await page.getByRole("button", { name: en.site.header.openMenu }).click();
-    const drawer = page.getByRole("dialog", { name: en.site.header.menuTitle });
-    await expect(drawer.getByRole("link", { name: nav.buy })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: en.site.header.signIn })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: en.site.header.postProperty })).toBeVisible();
+    await expect(page.getByRole("button", { name: en.site.header.openMenu })).toBeHidden();
+    await page.getByRole("button", { name: en.site.header.guestMenu }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByRole("menuitem", { name: nav.buy })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: en.site.header.signIn })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: en.site.header.postProperty })).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(drawer).toBeHidden();
+    await expect(menu).toBeHidden();
   });
 
   test("the header itself has no serious accessibility violation, on a page with and without the hero", async ({
@@ -193,6 +201,9 @@ test.describe("@smoke site footer and bottom bar", () => {
       footerText.linkBuy,
       footerText.linkRent,
       footerText.linkProjects,
+      footerText.linkBlog,
+      footerText.linkFaq,
+      footerText.linkCareers,
       footerText.linkContact,
       footerText.linkPost,
     ]);
@@ -282,65 +293,116 @@ test.describe("@smoke site footer and bottom bar", () => {
   });
 });
 
-// S4-T04: the results page. CI has no database behind the app, so these tests look at what does not
-// depend on homes: the address rules, the heading, the filters and the bar, and (with no database) the
-// failed-load state that keeps the filters.
+// S4-T04 and the login wall (ADR-171): the results page. The list is for signed-in visitors, and CI cannot sign
+// anyone in (no code can be sent), so these tests look at what a visitor who is not signed in gets: the wall and
+// the way to sign in and come back, never a list, and the address rules that come before the wall.
+const WALL = en.loginWall;
 test.describe("@smoke results page", () => {
-  test("opens with the heading, the filters and the bar, whatever the data", async ({ page }) => {
+  test("a visitor who is not signed in gets the wall and a generic unindexed title, never the list", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/properties");
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: en.results.title.any.replace("{kind}", en.results.kind.any),
-      }),
-    ).toBeVisible();
-    await expect(page).toHaveTitle(`${en.results.metaTitle} · Find Prop`);
-    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeVisible();
-    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
-    await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
-  });
-
-  test("reads the address: the heading and the chips follow it", async ({ page }) => {
     await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
-    await expect(page.getByRole("heading", { level: 1, name: "Villas for rent" })).toBeVisible();
-    await expect(
-      page.getByRole("button", {
-        name: en.domain.results.active.remove.replace("{label}", "3 BHK"),
-      }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveTitle(`${WALL.metaTitle} · findsprop`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toHaveCount(0);
+    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toHaveCount(0);
   });
 
-  test("sends a hand-edited address to its canonical form", async ({ page }) => {
+  test("the phone sign-in is inside the card: number field and Send code, and the address does not change", async ({
+    page,
+  }) => {
+    await page.goto("/properties?bhk=3&listingType=rent&propertyType=villa");
+    const panel = page.locator('[data-slot="login-wall-panel"]');
+    await expect(panel.getByLabel(en.auth.phone.label)).toBeVisible(LIST_WAIT);
+    await expect(
+      panel.getByRole("button", { name: en.auth.phone.send, exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/properties\?bhk=3&listingType=rent&propertyType=villa$/);
+    await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
+  });
+
+  test("sends a hand-edited address to its canonical form before it shows the wall", async ({
+    page,
+  }) => {
     await page.goto("/properties?view=grid&bhk=9&sort=newest&listingType=sale");
     await expect(page).toHaveURL(/\/properties\?listingType=sale$/);
   });
 
-  test("a choice rewrites the address and keeps the page", async ({ page }) => {
+  test("the cards behind the message are made up, hidden and cannot be reached", async ({
+    page,
+  }) => {
     await page.goto("/properties");
-    await page.getByRole("button", { name: en.domain.propertyCard.label.prime }).click();
-    await expect(page).toHaveURL(/\/properties\?label=prime$/);
-    await page
-      .getByRole("combobox", { name: en.domain.filters.sortLabel })
-      .selectOption("price_asc");
-    await expect(page).toHaveURL(/\/properties\?label=prime&sort=price_asc$/);
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    const mock = page.locator('[data-slot="login-wall-mock"]');
+    await expect(mock).toHaveAttribute("aria-hidden", "true");
+    await expect(mock).toHaveAttribute("inert", "");
+    await expect(page.locator("#main a[href^='/auth']")).toHaveCount(0);
   });
 
-  test("on a phone the filters are behind a button, not beside the results", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+  // (The comparison's made-up table is shorter than the card, so there is nothing behind it to scroll there: the end-of-page
+  // test below covers it.)
+  // The card stays in view below the header and above the phone bar while only the made-up cards scroll, and it leaves
+  // with them before the footer; a short screen (a phone with the keyboard open) keeps it usable by scrolling inside it.
+  for (const route of ["/properties", "/projects"]) {
+    test(`the card stays in view while the cards behind it scroll, on ${route}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 700 });
+      await page.goto(route);
+      const panel = page.locator('[data-slot="login-wall-panel"]');
+      await expect(panel).toBeVisible(LIST_WAIT);
+      const headerBottom = (await page.getByRole("banner").boundingBox())?.height ?? 0;
+      const barTop =
+        (await page.getByRole("navigation", { name: en.site.bottomBar.navLabel }).boundingBox())
+          ?.y ?? 700;
+      await page.evaluate(() => window.scrollTo(0, 400));
+      const box = await panel.boundingBox();
+      expect(box?.y ?? -1).toBeGreaterThanOrEqual(headerBottom - 1);
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(barTop + 1);
+    });
+  }
+
+  for (const route of ["/properties", "/projects", "/compare"]) {
+    test(`the card leaves with the cards at the end of the page and never covers the footer, on ${route}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 700 });
+      await page.goto(route);
+      const panel = page.locator('[data-slot="login-wall-panel"]');
+      await expect(panel).toBeVisible(LIST_WAIT);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const footerTop = (await page.getByRole("contentinfo").boundingBox())?.y ?? 0;
+      const box = await panel.boundingBox();
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(footerTop + 1);
+    });
+  }
+
+  test("on a short screen the card is no taller than the free space and scrolls inside itself", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 420 });
     await page.goto("/properties");
-    await expect(page.getByRole("complementary", { name: en.domain.filters.title })).toBeHidden();
-    await page.getByRole("button", { name: en.domain.filters.button }).click();
-    await expect(page.getByRole("dialog", { name: en.domain.filters.title })).toBeVisible();
+    const panel = page.locator('[data-slot="login-wall-panel"]');
+    await expect(panel).toBeVisible(LIST_WAIT);
+    const box = await panel.boundingBox();
+    const headerBottom = (await page.getByRole("banner").boundingBox())?.height ?? 0;
+    const barHeight =
+      (await page.getByRole("navigation", { name: en.site.bottomBar.navLabel }).boundingBox())
+        ?.height ?? 0;
+    expect(box?.height ?? 9999).toBeLessThanOrEqual(420 - headerBottom - barHeight);
+    const scrollsInside = await panel.evaluate((node) => node.scrollHeight >= node.clientHeight);
+    expect(scrollsInside).toBe(true);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/properties?bhk=3&listingType=sale&propertyType=apartment");
-      // Wait for the page's own bar, not for a quiet network: the site's other links prefetch pages
-      // for a long while when no database answers.
-      await expect(page.getByRole("group", { name: en.domain.results.labels.label })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -370,7 +432,10 @@ test.describe("@smoke property page", () => {
     await expect(page.getByText(en.property.page.notFound.body)).toBeVisible();
     await page.getByRole("link", { name: en.property.page.notFound.browse }).click();
     await expect(page).toHaveURL(/\/properties$/);
-    await expect(page.getByRole("combobox", { name: en.domain.filters.sortLabel })).toBeVisible();
+    // The list is for signed-in visitors (ADR-171): a visitor who is not signed in lands on the wall.
+    await expect(page.getByRole("heading", { level: 1, name: en.loginWall.title })).toBeVisible(
+      LIST_WAIT,
+    );
   });
 
   test("keeps the site header and footer around the not-found screen and is kept out of search results", async ({
@@ -421,7 +486,8 @@ test.describe("@smoke project page", () => {
     await expect(page.getByText(en.projects.page.notFound.body)).toBeVisible();
     await page.getByRole("link", { name: en.projects.page.notFound.all }).click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
+    // The list is for signed-in visitors (ADR-171): a visitor who is not signed in lands on the wall.
+    await expect(page.getByRole("heading", { level: 1, name: en.loginWall.title })).toBeVisible(
       LIST_WAIT,
     );
   });
@@ -467,25 +533,28 @@ const CHOSEN = [
 ];
 
 test.describe("@smoke compare", () => {
-  test("with no homes the comparison asks for at least two and leads to the results", async ({
+  test("a visitor who is not signed in gets the wall on the comparison, never a table", async ({
     page,
   }) => {
     await page.goto("/compare");
-    await expect(page.getByRole("heading", { level: 1, name: en.compare.title })).toBeVisible();
-    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
-    await page.getByRole("link", { name: en.compare.empty.browse }).click();
-    await expect(page).toHaveURL(/\/properties$/);
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible();
+    await expect(page.getByRole("table")).toHaveCount(0);
   });
 
-  test("sends an address that asks for something that is not a home to the plain page", async ({
+  test("the wall keeps the address of the comparison asked for, so the sign-in happens on the same page", async ({
     page,
   }) => {
-    await page.goto("/compare?ids=not-an-id,another-bad-one");
-    await expect(page).toHaveURL(/\/compare$/);
-    await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+    await page.goto("/compare?ids=k3x9a2bd,m4y8b3ce");
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveURL(/\/compare\?ids=k3x9a2bd,m4y8b3ce$/);
   });
 
-  test("the bar appears on the results once a home is chosen, and Compare now waits for two", async ({
+  test("the bar appears on a page once a home is chosen, and Compare now waits for two", async ({
     page,
   }) => {
     await page.addInitScript(
@@ -493,7 +562,7 @@ test.describe("@smoke compare", () => {
       [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
     );
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/properties");
+    await page.goto("/");
     const bar = page.getByRole("region", { name: en.compare.bar.label });
     await expect(bar).toBeVisible();
     await expect(bar.getByText("1 of 3 selected")).toBeVisible();
@@ -525,7 +594,7 @@ test.describe("@smoke compare", () => {
     );
     await page.goto("/compare");
     await expect(page.getByRole("region", { name: en.compare.bar.label })).toBeHidden();
-    await page.goto("/properties");
+    await page.goto("/");
     await page
       .getByRole("region", { name: en.compare.bar.label })
       .getByRole("button", { name: en.compare.bar.clearAll })
@@ -534,7 +603,7 @@ test.describe("@smoke compare", () => {
   });
 
   test("keeps the selection after a reload", async ({ page }) => {
-    await page.goto("/properties");
+    await page.goto("/");
     await page.evaluate(
       ([key, value]) => window.localStorage.setItem(key as string, value as string),
       [COMPARE_KEY, JSON.stringify(CHOSEN.slice(0, 1))],
@@ -547,7 +616,9 @@ test.describe("@smoke compare", () => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/compare");
-      await expect(page.getByRole("heading", { name: en.compare.empty.title })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -563,45 +634,31 @@ test.describe("@smoke compare", () => {
   });
 });
 
-// S4-T09: the projects page. CI has no database behind the app, so these tests look at what does not
-// depend on projects: the heading, the line under it, the way back, and that one of the three states
-// (the projects, coming soon, or the failed load with Try again) is drawn.
+// S4-T09 and the login wall (ADR-171): the projects page. The list is for signed-in visitors and CI cannot sign
+// anyone in, so these tests look at what a visitor who is not signed in gets.
 test.describe("@smoke projects page", () => {
-  test("opens with the breadcrumb, the heading and its line, whatever the data", async ({
+  test("a visitor who is not signed in gets the wall with the sign-in inside it, and a generic unindexed title", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/projects");
-    await expect(page.getByRole("heading", { level: 1, name: en.projects.list.title })).toBeVisible(
-      LIST_WAIT,
-    );
-    await expect(page).toHaveTitle(`${en.projects.list.metaTitle} · Find Prop`);
-    await expect(page.getByText(en.projects.list.overline)).toBeVisible();
-    await expect(page.getByText(en.projects.list.sub)).toBeVisible();
-    const trail = page.getByRole("navigation", { name: en.projects.list.crumb.nav });
-    await expect(trail.getByText(en.projects.list.crumb.projects)).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-  });
-
-  test("draws one of its three states: the projects, coming soon, or the failed load", async ({
-    page,
-  }) => {
-    await page.goto("/projects");
-    const projects = page.getByRole("region", { name: en.projects.list.listLabel });
-    const soon = page.getByRole("heading", { name: en.projects.list.empty.title });
-    const failed = page.getByRole("alert").filter({ hasText: en.projects.list.error.title });
-    await expect(projects.or(soon).or(failed).first()).toBeVisible(LIST_WAIT);
+    await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(LIST_WAIT);
+    await expect(page).toHaveTitle(`${WALL.metaTitle} · findsprop`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(
+      page.locator('[data-slot="login-wall-panel"]').getByLabel(en.auth.phone.label),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect(page.getByRole("region", { name: en.projects.list.listLabel })).toHaveCount(0);
   });
 
   test("has no serious accessibility violation, wide and on a phone", async ({ page }) => {
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/projects");
-      await expect(
-        page.getByRole("heading", { level: 1, name: en.projects.list.title }),
-      ).toBeVisible(LIST_WAIT);
+      await expect(page.getByRole("heading", { level: 1, name: WALL.title })).toBeVisible(
+        LIST_WAIT,
+      );
       const results = await new AxeBuilder({ page })
         .include("#main")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -762,15 +819,17 @@ test.describe("@smoke search engines", () => {
     );
   });
 
-  test("a results page is canonical at its filters, whatever its sort and view, and says what it shows", async ({
+  test("a results page shows a visitor who is not signed in one generic title and asks not to be indexed", async ({
     page,
   }) => {
     await page.goto("/properties?bhk=3&sort=price_asc&view=list");
-    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1, LIST_WAIT);
-    expect(pathOf(await page.locator('link[rel="canonical"]').getAttribute("href"))).toBe(
-      "/properties?bhk=3",
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex/,
+      LIST_WAIT,
     );
-    await expect(page).toHaveTitle(/3 BHK/);
+    await expect(page).toHaveTitle(`${en.loginWall.metaTitle} · findsprop`);
+    await expect(page).not.toHaveTitle(/3 BHK/);
   });
 
   test("the comparison asks not to be indexed", async ({ page }) => {

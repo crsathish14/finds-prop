@@ -11,8 +11,9 @@ const error = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 vi.mock("@/features/projects", async () => {
-  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
-  return { PROJECT_STATUSES };
+  const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
+    await import("@/features/projects/schemas");
+  return { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES };
 });
 vi.mock("../../queries", () => ({ getBuilderDirectory, getBuilderProfile }));
 

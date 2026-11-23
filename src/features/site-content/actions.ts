@@ -3,17 +3,25 @@
 import { defineAction } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
+  saveContentModulesConfig,
+  saveDisclaimersConfig,
   saveFooterConfig,
   saveHeaderConfig,
   saveHeroConfig,
   saveHomepageConfig,
+  saveProjectFieldsConfig,
   saveSponsorsConfig,
+  saveTopDevelopersConfig,
 } from "./action-config";
 import {
+  saveContentModulesContent,
+  saveDisclaimersContent,
   saveFooterContent,
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveProjectFieldsContent,
+  saveTopDevelopersContent,
 } from "./content-service";
 import { createContentStore } from "./service";
 import { saveSponsorsContent } from "./sponsor-service";
@@ -71,6 +79,50 @@ export const saveSponsors = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveSponsorsContent(await createSponsorStore(), input, log);
     log.info("sponsors saved", { count: done.count, active: done.active });
+    return done;
+  },
+});
+
+/** Switches the Blog, FAQ and Careers modules on or off from the admin dashboard (ADR-143). */
+export const saveContentModules = defineAction({
+  ...saveContentModulesConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveContentModulesContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the disclaimers shown in the footer and on the AI search page (ADR-152). */
+export const saveDisclaimers = defineAction({
+  ...saveDisclaimersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveDisclaimersContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the extra boxes of the builder's project form (ADR-168). */
+export const saveProjectFields = defineAction({
+  ...saveProjectFieldsConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveProjectFieldsContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key, count: input.fields.length });
+    return done;
+  },
+});
+
+/** Saves which developers the home page shows under "Top developers", and their order (at most 10). */
+export const saveTopDevelopers = defineAction({
+  ...saveTopDevelopersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveTopDevelopersContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
     return done;
   },
 });

@@ -23,6 +23,11 @@ import type {
   SavedPhoto,
 } from "@/features/media";
 import type { ActionFailure, ActionResult, FieldError } from "@/types/action";
+import type {
+  ListingLocationHeld,
+  LocationArea,
+  PlaceAutocompleteSuggestion,
+} from "@/types/places";
 import { changesNeedReview } from "./review-rule";
 import {
   BasicsStep,
@@ -30,11 +35,19 @@ import {
   DetailsStep,
   PhotosStepFrame,
   ReviewStep,
+  type LocationFieldComponent,
 } from "./wizard-steps";
 import {
+  applyArea,
+  applySuggestion,
   checkDraft,
+  clearPlace,
   draftInput,
   EMPTY_VALUES,
+  locationProblem,
+  pickedPlace,
+  pointKey,
+  pointOf,
   stepOfField,
   stepsWithErrors,
   validateStep,
@@ -66,6 +79,17 @@ export type WizardActions = {
       wentBackToReview: boolean;
     }>
   >;
+  /**
+   * Sets where the listing is (ADR-141). The answer holds the listing's state, never the point. Written when the
+   * address step is saved and again when the owner changes the place.
+   */
+  setLocation: (input: {
+    listingId: string;
+    lat: number;
+    lng: number;
+  }) => Promise<
+    ActionResult<{ listingId: string; shortId: string; status: string; wentBackToReview: boolean }>
+  >;
   photos: PhotoActions;
 };
 
@@ -90,6 +114,15 @@ export type PostingWizardProps = {
   doneHref: string;
   /** Set when the wizard edits a listing that is already sent (S6-T05) instead of continuing a draft. */
   edit?: WizardEdit;
+  /** The connected location field (the search feature's island), handed in by the page (ADR-141). */
+  locationField: LocationFieldComponent;
+  /** The site's curated localities: the way to place a listing when suggestions cannot be fetched. */
+  areas?: readonly LocationArea[];
+  /**
+   * The listing already holds a place (an opened draft, or a listing being edited). Only that is known: the point
+   * is private and never sent to the browser (ADR-141).
+   */
+  locationHeld?: boolean;
 };
 
 const FORM_NAME = "post-property";
@@ -113,10 +146,15 @@ function mergeRestored(base: WizardValues, kept: DraftValues | null): WizardValu
     const value = kept[key];
     if (key === "amenities") {
       if (Array.isArray(value)) merged.amenities = value;
+    } else if (key === "locationKind") {
+      if (value === "exact" || value === "approximate") merged.locationKind = value;
     } else if (typeof value === "string") {
       merged[key] = value;
     }
   }
+  // The kept place is only used as a whole: a point that is not a pair of numbers, or a kind that is not
+  // one of ours, leaves the field asking again.
+  if (pointOf(merged) === null || merged.locationKind === "") return clearPlace(merged);
   return merged;
 }
 
@@ -154,6 +192,9 @@ function WizardBody({
   doneHref,
   edit,
   baseline,
+  locationField,
+  areas = [],
+  locationHeld = false,
 }: PostingWizardProps & { values: WizardValues; baseline: WizardValues }) {
   const words = useTranslations("postProperty");
   const translate = useTranslations() as unknown as Translator;
@@ -174,6 +215,17 @@ function WizardBody({
   const [, startTransition] = useTransition();
   const [busyAction, setBusyAction] = useState<"next" | "draft" | "submit" | "save" | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // A new listing and one being sent again need a place (the database refuses a submission without one, ADR-138).
+  // A listing already in review or Live may be edited without one: an old listing has none, and an unrelated
+  // change must not be held back for it (adding one is a moderated change, so it is the owner's choice).
+  const placeRequired = !edit || edit.state === "rejected";
+  // The listing holds a place the owner has not changed in this sitting (its point is not known here).
+  const [placeHeld, setPlaceHeld] = useState(locationHeld);
+  // The point last stored for this listing, so the same point is not written twice. Never shown or logged.
+  const written = useRef<string | null>(null);
+  // The City box starts as "Chennai"; until somebody types in it (or a draft or the kept answers fill it), a place
+  // may replace that starting value.
+  const cityTouched = useRef(initialValues !== EMPTY_VALUES);
   const [createKey] = useState(() => crypto.randomUUID());
   const [submitKey] = useState(() => crypto.randomUUID());
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -194,7 +246,7 @@ function WizardBody({
   useEffect(() => {
     if (focusTick === 0) return;
     const target = cardRef.current?.querySelector<HTMLElement>(
-      '[aria-invalid="true"], fieldset[aria-describedby] input',
+      '[aria-invalid="true"], fieldset[aria-describedby] input, [data-slot="location-field"][aria-describedby] :is(input, select, button)',
     );
     target?.focus();
   }, [focusTick]);
@@ -202,11 +254,58 @@ function WizardBody({
   const onStatus = useCallback((status: PhotoUploaderStatus) => setPhotoStatus(status), []);
 
   const change = <Field extends keyof WizardValues>(field: Field, value: WizardValues[Field]) => {
+    if (field === "city") cityTouched.current = true;
     setValues((now) => ({ ...now, [field]: value }));
     setErrors((now) =>
       now[field] ? Object.fromEntries(Object.entries(now).filter(([name]) => name !== field)) : now,
     );
   };
+
+  /** Takes what a pick filled out of the error list: the place itself and every box the pick filled. */
+  function forgetErrorsFilled(before: WizardValues, after: WizardValues) {
+    const filled = (Object.keys(after) as (keyof WizardValues)[]).filter(
+      (field) => after[field] !== before[field],
+    );
+    setErrors((now) => {
+      const kept = Object.entries(now).filter(
+        ([name]) => name !== "location" && !(filled as string[]).includes(name),
+      );
+      return kept.length === Object.keys(now).length ? now : Object.fromEntries(kept);
+    });
+  }
+
+  /** A suggestion was chosen: keep its point and fill the boxes that are still empty. */
+  function pickSuggestion(suggestion: PlaceAutocompleteSuggestion) {
+    clearNotices();
+    const after = applySuggestion(values, suggestion, {
+      approximate: suggestion.kind === "area",
+      cityUntouched: !cityTouched.current && values.city === EMPTY_VALUES.city,
+    });
+    forgetErrorsFilled(values, after);
+    setValues(after);
+  }
+
+  /** An area of the curated list was chosen (suggestions cannot be fetched): the middle of it, approximate. */
+  function pickArea(area: LocationArea) {
+    clearNotices();
+    const after = applyArea(values, area);
+    forgetErrorsFilled(values, after);
+    setValues(after);
+  }
+
+  /** Change was pressed: let go of the place (the other boxes stay). A new one is asked for before Continue. */
+  function changePlace() {
+    clearNotices();
+    setValues(clearPlace);
+    setPlaceHeld(false);
+  }
+
+  /** What the "Location found" card shows: the place picked now, or a note that the listing keeps its saved one. */
+  function foundPlace(): ListingLocationHeld | null {
+    const picked = pickedPlace(values);
+    if (picked) return picked;
+    return placeHeld ? { label: words("location.savedLabel"), approximate: false } : null;
+  }
 
   const photosAt = () => (listingId ? `/post-property/${listingId}` : "/post-property");
 
@@ -251,28 +350,52 @@ function WizardBody({
     setAlert({ kind: "failed" });
   }
 
+  /**
+   * Stores the place held in the boxes for the listing when it is not the one already stored. The point goes to its
+   * own action (never into the draft's fields, an address or a log line). A refusal is shown on the address step
+   * and a place the server did not accept is let go, so the field asks again. Only the listing's state comes back.
+   */
+  async function writePlace(id: string): Promise<{ saved: boolean; wentBackToReview: boolean }> {
+    const key = pointKey(values);
+    const point = pointOf(values);
+    if (key === null || point === null || key === written.current) {
+      return { saved: true, wentBackToReview: false };
+    }
+    const result = await actions.setLocation({ listingId: id, lat: point.lat, lng: point.lng });
+    if (!result.ok) {
+      showFailure(result);
+      if (result.fieldErrors?.["location"]) setValues(clearPlace);
+      return { saved: false, wentBackToReview: false };
+    }
+    written.current = key;
+    return { saved: true, wentBackToReview: result.data.wentBackToReview };
+  }
+
   /** Saves the boxes of the given steps to the draft; starts the draft if there is none. True when it was saved. */
   async function persist(steps: readonly WizardStep[]): Promise<boolean> {
     const fields = draftInput(values, steps);
     try {
-      if (!listingId) {
+      let id = listingId;
+      if (!id) {
         const result = await actions.createDraft({ fields, idempotencyKey: createKey });
         if (!result.ok) {
           showFailure(result, true);
           return false;
         }
-        setListingId(result.data.listingId);
+        id = result.data.listingId;
+        setListingId(id);
         // The address now names the draft, so a reload or a shared link comes back to it. No navigation:
         // the wizard keeps what it holds.
-        window.history.replaceState(null, "", `/post-property/${result.data.listingId}`);
-        return true;
+        window.history.replaceState(null, "", `/post-property/${id}`);
+      } else {
+        const result = await actions.saveDraft({ listingId: id, fields });
+        if (!result.ok) {
+          showFailure(result);
+          return false;
+        }
       }
-      const result = await actions.saveDraft({ listingId, fields });
-      if (!result.ok) {
-        showFailure(result);
-        return false;
-      }
-      return true;
+      // The place is written once the draft exists, and again only when the owner picks another.
+      return (await writePlace(id)).saved;
     } catch {
       // The request did not get through (offline, server down): say so, keep what was typed.
       setAlert({ kind: "save" });
@@ -302,7 +425,10 @@ function WizardBody({
       return;
     }
     if (step === 5) return;
-    const found = validateStep(step, values);
+    const found = {
+      ...(step === 1 && placeRequired ? locationProblem(values, placeHeld) : {}),
+      ...validateStep(step, values),
+    };
     if (Object.keys(found).length > 0) return refuse(found);
     setErrors({});
     // Editing a sent listing saves nothing until the last step: a change to a moderated field of a Live listing
@@ -382,6 +508,7 @@ function WizardBody({
     clearNotices();
     if (!listingId || !edit) return;
     const found: StepErrors = {
+      ...(placeRequired ? locationProblem(values, placeHeld) : {}),
       ...validateStep(1, values),
       ...validateStep(2, values),
       ...validateStep(4, values),
@@ -397,7 +524,9 @@ function WizardBody({
       setStep(3);
       return;
     }
-    if (changesNeedReview(edit.state, moderated(baseline), moderated(values))) {
+    // A changed place is a moderated change too (ADR-138): a Live listing goes back to review for it.
+    const placeChanged = pointKey(values) !== null && pointKey(values) !== written.current;
+    if (changesNeedReview(edit.state, moderated(baseline), moderated(values), placeChanged)) {
       setConfirmOpen(true);
       return;
     }
@@ -420,6 +549,10 @@ function WizardBody({
           else showFailure(saved);
           return;
         }
+        // The place goes after the other changes: for a Live listing it is the change that sends it back to review.
+        const place = await writePlace(listingId);
+        if (!place.saved) return;
+        const wentBackToReview = saved.data.wentBackToReview || place.wentBackToReview;
         if (edit.state === "rejected") {
           const sent = await actions.submit({ listingId, idempotencyKey: submitKey });
           if (!sent.ok) {
@@ -431,9 +564,7 @@ function WizardBody({
         } else {
           dropDraft(FORM_NAME, window.location.pathname);
           notify.success(
-            saved.data.wentBackToReview
-              ? words("edit.savedBackToReviewToast")
-              : words("edit.savedToast"),
+            wentBackToReview ? words("edit.savedBackToReviewToast") : words("edit.savedToast"),
           );
         }
         router.push(doneHref);
@@ -486,8 +617,23 @@ function WizardBody({
   };
 
   let body: ReactNode;
-  if (step === 1) body = <BasicsStep {...bodyProps} />;
-  else if (step === 2) body = <DetailsStep {...bodyProps} />;
+  if (step === 1) {
+    body = (
+      <BasicsStep
+        {...bodyProps}
+        location={{
+          Field: locationField,
+          props: {
+            held: foundPlace(),
+            areas,
+            onPick: pickSuggestion,
+            onPickArea: pickArea,
+            onChange: changePlace,
+          },
+        }}
+      />
+    );
+  } else if (step === 2) body = <DetailsStep {...bodyProps} />;
   else if (step === 3) {
     // The first Continue started the draft, so the photos always have a listing to belong to.
     body = listingId ? (

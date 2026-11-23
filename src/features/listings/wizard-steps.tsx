@@ -6,9 +6,10 @@ import { NextSteps } from "@/components/domain/next-steps";
 import { ReviewList } from "@/components/domain/review-list";
 import { FormField } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { fieldErrorText, type Translator } from "@/i18n/failure-text";
+import type { ListingLocationFieldProps } from "@/types/places";
 import { formatArea, formatPrice, type Translate } from "@/lib/format";
 import { AMENITY_OPTIONS, DESCRIPTION_MAX, STATE_NAME, TITLE_MAX } from "./constants";
 import { hasBedrooms, type StepErrors, type WizardStep, type WizardValues } from "./wizard-state";
@@ -29,6 +30,18 @@ type StepProps = {
   onChange: ChangeHandler;
   headingRef: Ref<HTMLHeadingElement>;
   disabled?: boolean;
+};
+
+/**
+ * The connected location field, handed in by the page (ADR-141, as the photo uploader and the place pickers are):
+ * the wizard cannot import the search feature's client code, so the page gives it as a prop.
+ */
+export type LocationFieldComponent = (props: ListingLocationFieldProps) => ReactNode;
+
+/** What the address step needs to draw the location field; the step adds the error text and the disabled state. */
+export type LocationSlot = {
+  Field: LocationFieldComponent;
+  props: Omit<ListingLocationFieldProps, "errorText" | "disabled">;
 };
 
 const PROPERTY_TYPES = ["apartment", "villa", "house", "plot", "commercial"] as const;
@@ -66,9 +79,24 @@ function useFieldText(errors: StepErrors) {
 /** Passes an error to a FormField only when there is one (the prop does not take undefined). */
 const errorProp = (message: string | undefined) => (message ? { error: message } : {});
 
-export function BasicsStep({ values, errors, onChange, headingRef, disabled }: StepProps) {
+export function BasicsStep({
+  values,
+  errors,
+  onChange,
+  headingRef,
+  disabled,
+  location,
+}: StepProps & { location: LocationSlot }) {
   const words = useTranslations("postProperty.basics");
+  const rootWords = useTranslations() as unknown as Translator;
   const errorText = useFieldText(errors);
+  // "Add a location to continue." is the field's own line; any other refusal (a place outside the region) has its words.
+  const placeError = errors["location"];
+  const placeErrorText = placeError
+    ? placeError.key === "validation.required"
+      ? rootWords("domain.locationField.required")
+      : fieldErrorText(rootWords, placeError)
+    : null;
   const typeLabels = {
     apartment: words("typeApartment"),
     villa: words("typeVilla"),
@@ -92,7 +120,7 @@ export function BasicsStep({ values, errors, onChange, headingRef, disabled }: S
         ]}
       />
       <FormField label={words("propertyType")} {...errorProp(errorText("propertyType"))}>
-        <NativeSelect
+        <Select
           value={values.propertyType}
           disabled={disabled ?? false}
           onChange={(event) => onChange("propertyType", event.target.value)}
@@ -102,8 +130,9 @@ export function BasicsStep({ values, errors, onChange, headingRef, disabled }: S
               {typeLabels[type]}
             </option>
           ))}
-        </NativeSelect>
+        </Select>
       </FormField>
+      <location.Field {...location.props} errorText={placeErrorText} disabled={disabled ?? false} />
       <FormField
         label={words("address")}
         required
@@ -172,7 +201,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
       <div className="grid gap-5 md:grid-cols-3">
         {hasBedrooms(values.propertyType) ? (
           <FormField label={words("bedrooms")} {...errorProp(errorText("bhk"))}>
-            <NativeSelect
+            <Select
               value={values.bhk}
               disabled={disabled ?? false}
               onChange={(event) => onChange("bhk", event.target.value)}
@@ -183,11 +212,11 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                   {count}
                 </option>
               ))}
-            </NativeSelect>
+            </Select>
           </FormField>
         ) : null}
         <FormField label={words("bathrooms")} {...errorProp(errorText("bathrooms"))}>
-          <NativeSelect
+          <Select
             value={values.bathrooms}
             disabled={disabled ?? false}
             onChange={(event) => onChange("bathrooms", event.target.value)}
@@ -198,7 +227,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                 {count}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label={words("area")} required {...errorProp(errorText("areaSqft"))}>
           <Input
@@ -224,7 +253,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
           />
         </FormField>
         <FormField label={words("furnishing")} {...errorProp(errorText("furnishing"))}>
-          <NativeSelect
+          <Select
             value={values.furnishing}
             disabled={disabled ?? false}
             onChange={(event) => onChange("furnishing", event.target.value)}
@@ -235,7 +264,7 @@ export function DetailsStep({ values, errors, onChange, headingRef, disabled }: 
                 {furnishingLabels[kind]}
               </option>
             ))}
-          </NativeSelect>
+          </Select>
         </FormField>
       </div>
       <div className="flex flex-col gap-2">

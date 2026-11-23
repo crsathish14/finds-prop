@@ -2,22 +2,24 @@
 
 /**
  * Sample steps of the post-property wizard, shared by the Seller board and its two whole-page previews.
- * They use the real parts (WizardShell, WizardFooter, ChoiceCards, AmenityChips, ReviewList, NextSteps) with
- * made-up words and no server. Nothing outside src/design-lab uses this file.
+ * They use the real parts (WizardShell, WizardFooter, ChoiceCards, AmenityChips, ReviewList, NextSteps,
+ * LocationField) with made-up words and no server. Nothing outside src/design-lab uses this file.
  */
 import { useState, type ReactNode } from "react";
 import { AmenityChips } from "@/components/domain/amenity-chips";
 import { ChoiceCards } from "@/components/domain/choice-cards";
 import { NextSteps } from "@/components/domain/next-steps";
 import { ReviewList } from "@/components/domain/review-list";
+import { LocationField } from "@/components/domain/location-field";
 import { WizardFooter } from "@/components/domain/wizard-footer";
 import { WizardShell } from "@/components/domain/wizard-shell";
 import { Alert } from "@/components/patterns/alert";
 import { FormField } from "@/components/patterns/form-field";
 import type { Step } from "@/components/patterns/stepper";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { AddressBox } from "./seller-location-demos";
 
 const NOTHING = () => undefined;
 
@@ -96,14 +98,26 @@ export function BasicsStep({ withErrors = false }: { withErrors?: boolean }) {
       </div>
       <ListingTypeChoice />
       <FormField label="Property type">
-        <NativeSelect defaultValue="apartment">
+        <Select defaultValue="apartment">
           <option value="apartment">Apartment</option>
           <option value="villa">Villa</option>
           <option value="house">Independent House</option>
           <option value="plot">Plot / Land</option>
           <option value="commercial">Commercial</option>
-        </NativeSelect>
+        </Select>
       </FormField>
+      {withErrors ? (
+        <LocationField mode="search" showError box={<AddressBox text="" />} />
+      ) : (
+        <LocationField
+          mode="found"
+          found={{
+            label: "Velachery Main Road",
+            detail: "Velachery, Chennai, Tamil Nadu 600042",
+            approximate: false,
+          }}
+        />
+      )}
       <FormField
         label="Address"
         required
@@ -144,17 +158,17 @@ export function DetailsStep() {
       </div>
       <div className="grid gap-5 md:grid-cols-3">
         <FormField label="Bedrooms (BHK)">
-          <NativeSelect defaultValue="3">
+          <Select defaultValue="3">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label="Bathrooms">
-          <NativeSelect defaultValue="2">
+          <Select defaultValue="2">
             <option value="1">1</option>
             <option value="2">2</option>
-          </NativeSelect>
+          </Select>
         </FormField>
         <FormField label="Area (sq.ft)">
           <Input defaultValue="1420" inputMode="numeric" />

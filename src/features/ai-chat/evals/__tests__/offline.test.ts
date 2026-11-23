@@ -16,6 +16,10 @@ vi.mock("@/features/property", async () => (await import("./world-modules")).pro
 vi.mock("@/features/compare", async () => (await import("./world-modules")).compareModule());
 vi.mock("@/features/projects", async () => (await import("./world-modules")).projectsModule());
 vi.mock("../../queries", async () => (await import("./world-modules")).queriesModule());
+vi.mock("@/features/blog", async () => (await import("./world-modules")).blogModule());
+vi.mock("@/features/faq", async () => (await import("./world-modules")).faqModule());
+vi.mock("@/features/careers", async () => (await import("./world-modules")).careersModule());
+vi.mock("@/features/site", async () => (await import("./world-modules")).siteModule());
 vi.mock("@/server/auth/get-session-view", async () =>
   (await import("./world-modules")).sessionModule(),
 );
@@ -24,10 +28,14 @@ vi.mock("@/server/env", () => ({
   env: { RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
 }));
 
-const { AI_CHAT_TOOLS } = await import("../../tools/registry");
+const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
+const { worldPlaceLookup } = await import("../world");
 const { checkToolNames, loadCases } = await import("../cases");
 const { runAll, scriptedProvider } = await import("../eval-run");
 const { judge, renderReport, runPassed, summarise } = await import("../report");
+
+// The cases that turn AI place search on run with the place-aware search tool over the world's own place lookup.
+const PLACE_TOOLS = createAiChatTools(worldPlaceLookup);
 
 const cases = loadCases();
 checkToolNames(
@@ -42,7 +50,8 @@ describe("UT-ai-eval-offline: the golden and red-team sets, scripted", () => {
     const all = await runAll(cases.all, {
       mode: "offline",
       tools: AI_CHAT_TOOLS,
-      providerFor: (evalCase) => scriptedProvider(evalCase, AI_CHAT_TOOLS),
+      placeTools: PLACE_TOOLS,
+      providerFor: (evalCase, tools) => scriptedProvider(evalCase, tools),
     });
     for (const score of all) scores.set(score.id, score);
   });

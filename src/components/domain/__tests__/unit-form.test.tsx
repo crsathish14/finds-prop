@@ -3,6 +3,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { UnitForm, type UnitFormValues, type UnitFormWords } from "../unit-form";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const WORDS: UnitFormWords = {
   unitNumber: "Unit number",
@@ -71,17 +72,18 @@ describe("UnitForm: the fields of a unit (S7-T01)", () => {
     expect(screen.getByLabelText(/^Floor plan link/)).not.toBeRequired();
   });
 
-  it("offers Not set for bedrooms and facing, and the states in their words", () => {
+  it("offers Not set for bedrooms and facing, and the states in their words", async () => {
     show();
-    expect(screen.getAllByRole("option", { name: "Not set" })).toHaveLength(2);
-    expect(screen.getByRole("option", { name: "On hold" })).toBeInTheDocument();
+    expect(await optionTexts(screen.getByLabelText(/^BHK/))).toContain("Not set");
+    expect(await optionTexts(screen.getByLabelText(/^Facing/))).toContain("Not set");
+    expect(await optionTexts(screen.getByLabelText(/^Status/))).toContain("On hold");
   });
 
-  it("tells the page which box changed and to what", () => {
+  it("tells the page which box changed and to what", async () => {
     const { onChange } = show();
-    fireEvent.change(screen.getByLabelText(/Unit number/), { target: { value: "B-304" } });
+    await changeField(screen.getByLabelText(/Unit number/), "B-304");
     expect(onChange).toHaveBeenCalledWith("unitNumber", "B-304");
-    fireEvent.change(screen.getByLabelText(/^Status/), { target: { value: "hold" } });
+    await changeField(screen.getByLabelText(/^Status/), "hold");
     expect(onChange).toHaveBeenCalledWith("status", "hold");
   });
 

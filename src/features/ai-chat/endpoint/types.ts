@@ -63,6 +63,11 @@ export interface ChatDeps {
   /** The model provider; throws when it is not configured. Called before any limit is spent. */
   createProvider(): AiProvider;
   readonly tools: readonly AnyAiChatTool[];
+  /**
+   * True when `tools` holds the place-aware search (`FLAG_AI_PLACE_SEARCH` with `FLAG_AI_SEARCH`, ADR-142), so the
+   * system prompt carries the rules for places. Absent or false: the prompt and the tool are as they were before.
+   */
+  readonly placeSearch?: boolean;
   readonly translate: Translate;
   /**
    * Builds the confirm card for a propose tool's offer, for the caller of this request (AI-P6-T02). Absent in tests

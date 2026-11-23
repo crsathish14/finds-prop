@@ -9,13 +9,18 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   project_type: "residential",
   property_type: "apartment",
   project_status: "under_construction",
-  price_min: 7800000,
-  price_max: 14200000,
+  offer_type: null,
+  plot_status: null,
+  villa_type: null,
+  price: 7800000,
+  price_type: "basic",
+  area_min_sqft: null,
+  area_max_sqft: null,
   bhk_options: [2, 3],
   land_area_acres: "4.50",
-  total_units: 320,
-  possession_date: "2027-06-30",
+  possession_date: "2027-06-01",
   contact_phone: "+919841055512",
+  city: "Chennai",
   locality: "OMR Navalur",
   address: "Navalur, Chennai",
   latitude: "12.840000",
@@ -24,6 +29,7 @@ const row = (extra: Partial<ProjectDbRow> = {}): ProjectDbRow => ({
   nearby: [],
   rera_applicable: true,
   rera_number: "TN/29/Building/0123/2026",
+  rera_not_applicable_reason: null,
   description: "A gated community.",
   specifications: null,
   amenities: ["Clubhouse"],
@@ -52,7 +58,13 @@ describe("UT-project-view: the project as the form opens it (S7-T02)", () => {
       landAreaAcres: 4.5,
       latitude: 12.84,
       longitude: 80.23,
-      priceMin: 7800000,
+      price: 7800000,
+      priceType: "basic",
+      offerType: null,
+      plotStatus: null,
+      villaType: null,
+      possessionDate: "2027-06-01",
+      reraNotApplicableReason: null,
       bhkOptions: [2, 3],
       images: ["p/cover.webp"],
       brochure: null,
@@ -68,6 +80,31 @@ describe("UT-project-view: the project as the form opens it (S7-T02)", () => {
       [],
     );
     expect(view).toMatchObject({ landAreaAcres: null, latitude: null, longitude: null });
+  });
+
+  it("carries the area range as numbers, the sale or rent choice and the reason RERA does not apply", () => {
+    const view = toProjectEditView(
+      row({
+        project_type: "commercial",
+        property_type: "office",
+        offer_type: "rent",
+        price_type: "rent_per_sqft_month",
+        area_min_sqft: "500.00",
+        area_max_sqft: 2500,
+        rera_applicable: false,
+        rera_number: null,
+        rera_not_applicable_reason: "Below the size that needs registration.",
+      }),
+      [],
+    );
+    expect(view).toMatchObject({
+      offerType: "rent",
+      priceType: "rent_per_sqft_month",
+      areaMinSqft: 500,
+      areaMaxSqft: 2500,
+      reraApplicable: false,
+      reraNotApplicableReason: "Below the size that needs registration.",
+    });
   });
 
   it("shows the price trends by month, oldest first, as year and month", () => {
@@ -97,8 +134,8 @@ describe("UT-project-list-row: a project as the builder's list shows it (S7-T03)
       name: "Kadal Vista",
       slug: "kadal-vista",
       locality: "OMR Navalur",
-      priceMin: 7800000,
-      priceMax: 14200000,
+      price: 7800000,
+      priceType: "basic",
       cover: "a/first.jpg",
       moderation: "approved",
       published: true,
@@ -107,9 +144,9 @@ describe("UT-project-list-row: a project as the builder's list shows it (S7-T03)
   });
 
   it("has no cover for a project without images, and keeps a missing price as none", () => {
-    const listed = toProjectListRow(row({ images: [], price_min: null, price_max: null }));
+    const listed = toProjectListRow(row({ images: [], price: null, price_type: null }));
     expect(listed.cover).toBeNull();
-    expect(listed.priceMin).toBeNull();
-    expect(listed.priceMax).toBeNull();
+    expect(listed.price).toBeNull();
+    expect(listed.priceType).toBeNull();
   });
 });

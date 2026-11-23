@@ -1,7 +1,16 @@
 import { ActionError } from "@/server/actions/normalise-error";
 import { SITE_SETTING_SCHEMAS } from "@/features/site";
 import type { EditableSetting } from "./constants";
-import type { FooterInput, HeaderInput, HeroInput, HomepageInput } from "./schemas";
+import type {
+  ContentModulesInput,
+  DisclaimersInput,
+  TopDevelopersInput,
+  FooterInput,
+  HeaderInput,
+  HeroInput,
+  HomepageInput,
+  ProjectFieldsInput,
+} from "./schemas";
 
 /**
  * The rules of saving the site content (S7-T10, FR-ADM-10, FR-ADM-11), apart from the code that reaches the database
@@ -83,6 +92,27 @@ export function footerValue(input: FooterInput): Record<string, unknown> {
   });
 }
 
+/** The two disclaimers: a blank one is left out, so nothing shows for it (ADR-152). */
+export function disclaimersValue(input: DisclaimersInput): Record<string, unknown> {
+  return compact({ footer: input.footer, aiSearch: input.aiSearch });
+}
+
+/** The extra project form boxes in the order given; a blank hint is left out and the types are kept once each (ADR-168). */
+export function projectFieldsValue(input: ProjectFieldsInput): Record<string, unknown> {
+  return {
+    fields: input.fields.map((field) =>
+      compact({
+        id: field.id,
+        label: field.label,
+        hint: field.hint,
+        required: field.required,
+        appliesTo: [...new Set(field.appliesTo)],
+        on: field.on,
+      }),
+    ),
+  };
+}
+
 export function heroValue(input: HeroInput): Record<string, unknown> {
   return compact({
     eyebrow: input.eyebrow,
@@ -99,6 +129,7 @@ export function homepageValue(input: HomepageInput): Record<string, unknown> {
     showDiscovery: input.showDiscovery,
     showWhyUs: input.showWhyUs,
     showCta: input.showCta,
+    ...(input.order ? { order: input.order } : {}),
     localities: input.localities.map((place) => ({
       label: place.label,
       lat: place.lat,
@@ -106,6 +137,10 @@ export function homepageValue(input: HomepageInput): Record<string, unknown> {
       radiusKm: place.radiusKm,
     })),
   };
+}
+
+export function contentModulesValue(input: ContentModulesInput): Record<string, unknown> {
+  return { blog: input.blog, faq: input.faq, careers: input.careers };
 }
 
 /** True when the point lies outside the launch area. */
@@ -136,6 +171,38 @@ export function saveHeaderContent(store: ContentStore, input: HeaderInput): Prom
 
 export function saveFooterContent(store: ContentStore, input: FooterInput): Promise<ContentDone> {
   return publish(store, "footer", footerValue(input));
+}
+
+/** Switches the Blog, FAQ and Careers modules on or off (ADR-143). */
+export function saveContentModulesContent(
+  store: ContentStore,
+  input: ContentModulesInput,
+): Promise<ContentDone> {
+  return publish(store, "content_modules", contentModulesValue(input));
+}
+
+/** Saves the footer and AI search disclaimers (ADR-152). */
+export function saveDisclaimersContent(
+  store: ContentStore,
+  input: DisclaimersInput,
+): Promise<ContentDone> {
+  return publish(store, "disclaimers", disclaimersValue(input));
+}
+
+/** Saves the extra project form boxes (ADR-168). */
+export function saveProjectFieldsContent(
+  store: ContentStore,
+  input: ProjectFieldsInput,
+): Promise<ContentDone> {
+  return publish(store, "project_fields", projectFieldsValue(input));
+}
+
+/** Saves the chosen developers of the home page, in order. */
+export function saveTopDevelopersContent(
+  store: ContentStore,
+  input: TopDevelopersInput,
+): Promise<ContentDone> {
+  return publish(store, "top_developers", { builderIds: input.builderIds });
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

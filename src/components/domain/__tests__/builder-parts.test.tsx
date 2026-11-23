@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/patterns/status-badge";
 import { BuilderForm, type BuilderFormValues, type BuilderFormWords } from "../builder-form";
 import { BuilderTable, type BuilderTableRow } from "../builder-table";
 import { SignInAddress } from "../sign-in-address";
+import { changeField } from "../../../../tests/select";
 
 const COLUMNS = {
   company: "Company",
@@ -122,13 +123,13 @@ describe("BuilderForm: the invite and edit fields (S7-T05)", () => {
     expect(screen.getByText(WORDS.emailHint)).toBeVisible();
   });
 
-  it("tells the parent which field changed and to what", () => {
+  it("tells the parent which field changed and to what", async () => {
     const onChange = vi.fn();
     renderWithMessages(
       <BuilderForm mode="invite" values={VALUES} onChange={onChange} words={WORDS} />,
     );
-    fireEvent.change(screen.getByLabelText(/^Company name/), { target: { value: "Kadal Group" } });
-    fireEvent.change(screen.getByLabelText(/^Type/), { target: { value: "agent" } });
+    await changeField(screen.getByLabelText(/^Company name/), "Kadal Group");
+    await changeField(screen.getByLabelText(/^Type/), "agent");
     expect(onChange).toHaveBeenNthCalledWith(1, "name", "Kadal Group");
     expect(onChange).toHaveBeenNthCalledWith(2, "kind", "agent");
   });

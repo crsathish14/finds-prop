@@ -10,6 +10,7 @@ const state = vi.hoisted(() => ({
     showWhyUs: true,
     showCta: true,
     localities: [] as unknown[],
+    order: undefined as string[] | undefined,
   },
   region: {} as { name?: string },
   header: {} as { name?: string },
@@ -20,7 +21,7 @@ const state = vi.hoisted(() => ({
   ads: [] as unknown[],
 }));
 
-vi.mock("@/features/site", () => ({
+vi.mock("@/features/site", async () => ({
   getTranslate: async () => (key: string) => key,
   getSiteSettings: async () => ({
     homepage: state.homepage,
@@ -33,10 +34,19 @@ vi.mock("@/features/site", () => ({
   buildHero: () => ({ title: "Headline", subtitle: "Line" }),
   isRouteEnabled: () => state.postEnabled,
   resolveBrandName: () => "Find Prop",
+  resolveHomeOrder: (
+    (await vi.importActual("@/features/site/home-order")) as {
+      resolveHomeOrder: (saved?: string[]) => string[];
+    }
+  ).resolveHomeOrder,
 }));
-vi.mock("@/features/search", () => ({
-  HomeSearch: (props: { aiSearchHref?: string; layout?: string }) => (
-    <div data-testid="search" data-ai={props.aiSearchHref ?? ""} data-layout={props.layout ?? ""} />
+vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
+vi.mock("@/features/ai-chat", () => ({
+  HomeAiSearch: () => <div data-testid="search" data-mode="ai" />,
+}));
+vi.mock("@/components/domain/home-search-bar.client", () => ({
+  HomeSearchBar: (props: { mode: string; action: string }) => (
+    <div data-testid="search" data-mode={props.mode} data-action={props.action} />
   ),
 }));
 vi.mock("@/components/layout/sponsor-slot", () => ({
@@ -50,9 +60,9 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
 }));
 vi.mock("@/features/home", () => ({
   ExploreSection: () => <section data-testid="explore" />,
-  FeaturedSection: () => <section data-testid="featured" />,
-  NewLaunchesSection: () => <section data-testid="launches" />,
-  NewestSection: (props: { brandName: string }) => (
+  CityFeaturedSection: () => <section data-testid="featured" />,
+  CityNewLaunchesSection: () => <section data-testid="launches" />,
+  CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),
   BrowseSection: (props: { regionName?: string }) => (
@@ -80,6 +90,7 @@ beforeEach(() => {
     showWhyUs: true,
     showCta: true,
     localities: [],
+    order: undefined,
   };
   state.region = {};
   state.header = {};
@@ -119,6 +130,7 @@ describe("the homepage (S4-T06)", () => {
         showWhyUs: true,
         showCta: true,
         localities: [],
+        order: undefined,
       };
       return shown;
     };
@@ -177,6 +189,16 @@ describe("the homepage (S4-T06)", () => {
     expect(sections()).toEqual(["launches", "newest"]);
   });
 
+  it("shows the sections in the order the super admin chose, once for every screen width, and hidden ones stay hidden", async () => {
+    state.homepage = {
+      ...state.homepage,
+      showFeatured: false,
+      order: ["cta", "whyUs", "bogus", "cta", "newest"],
+    };
+    render(await HomePage());
+    expect(sections()).toEqual(["cta", "why", "newest", "explore", "launches", "browse"]);
+  });
+
   it("leaves out the banner when its route is switched off", async () => {
     state.postEnabled = false;
     render(await HomePage());
@@ -193,13 +215,15 @@ describe("the homepage (S4-T06)", () => {
     expect(screen.getByTestId("cta")).toHaveAttribute("data-href", "/post-property");
   });
 
-  it("gives the search the AI address only when AI search is on", async () => {
+  it("draws the AI search bar while AI search is on, and a keyword search of the results otherwise (ADR-150)", async () => {
     const view = render(await HomePage());
-    expect(screen.getByTestId("search")).toHaveAttribute("data-ai", "");
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "keyword");
+    expect(screen.getByTestId("search")).toHaveAttribute("data-action", "/properties");
     view.unmount();
     state.aiSearch = true;
     render(await HomePage());
-    expect(screen.getByTestId("search")).toHaveAttribute("data-ai", "/ai-search");
+    expect(screen.getAllByTestId("search")).toHaveLength(1);
+    expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "ai");
   });
 });
 
@@ -207,28 +231,28 @@ describe("the homepage banner area (S4-T07)", () => {
   it("shows no banner and leaves no gap when no banner is stored", async () => {
     render(await HomePage());
     expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute(
       "data-layout",
       "search_desk",
     );
   });
 
-  it("puts the strip under the wide search card in Search Desk when a banner qualifies", async () => {
+  it("puts the strip under the search bar in Search Desk when a banner qualifies", async () => {
     state.ads = [SAMPLE_AD_A];
     render(await HomePage());
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "search_desk");
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-placement", "hero");
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
   });
 
-  it("is Split, with the stacked card, the panel, the trust lines and the eyebrow, when Split is chosen and a panel banner qualifies", async () => {
+  it("is Split, with the search bar, the panel, the trust lines and the eyebrow, when Split is chosen and a panel banner qualifies", async () => {
     state.layout = "split";
     state.eyebrow = "  Chennai · Homes, plots & new projects  ";
     state.ads = [SAMPLE_AD_A];
     render(await HomePage());
     expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute("data-layout", "split");
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "stacked");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "split");
     expect(screen.getByText("Chennai · Homes, plots & new projects")).toBeInTheDocument();
     expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
@@ -244,7 +268,7 @@ describe("the homepage banner area (S4-T07)", () => {
       "search_desk",
     );
     expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
-    expect(screen.getByTestId("search")).toHaveAttribute("data-layout", "wide");
+    expect(screen.getByTestId("search")).toBeInTheDocument();
     // the eyebrow and the trust lines belong to Split only
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
     expect(screen.queryByText("home.hero.trust.compare")).not.toBeInTheDocument();

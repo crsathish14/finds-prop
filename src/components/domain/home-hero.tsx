@@ -1,13 +1,13 @@
 /**
- * HomeHero: the top of the homepage: the headline, a line under it and the search card.
+ * HomeHero: the top of the homepage: the headline, a line under it and the search bar.
  * Purpose: the first thing a visitor sees ("Find the place that fits your life"), with the search
- *   card directly under it. Owner: design system. It holds no state and fetches nothing: the page
+ *   bar directly under it (ADR-150). Owner: design system. It holds no state and fetches nothing: the page
  *   passes the words (from the site content or the message catalogue, already translated) and the
- *   search card as `children`. Two arrangements (S4-T07): "Search Desk" (centred, the sponsored strip
+ *   search bar as `children`. Two arrangements (S4-T07): "Search Desk" (centred, the sponsored strip
  *   under the card) and "Split" (headline and card on the left, the sponsored panel on the right).
  * Props: title (the whole headline), emphasis (the part of the title to set in italic copper, such
  *   as the region's name; it must appear in the title, otherwise the title is plain), subtitle (the
- *   line under the headline; left out when missing), children (the search card), titleAs ("h1"
+ *   line under the headline; left out when missing), children (the search bar), titleAs ("h1"
  *   default; lower when the hero is shown inside another page, as in the Design Lab), id (the
  *   headline's id, which names the section; "home-hero-title" by default, so give each hero on one
  *   page its own), className, and for the arrangements: layout ("search_desk" default | "split"), sponsor

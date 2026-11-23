@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { SiteContentLayout } from "@/components/domain/site-content-layout";
+import type { PlacePickerComponent } from "@/components/domain/place-picker";
 import {
   SiteHomepageFields,
   type SiteHomepageFieldsWords,
@@ -13,7 +14,6 @@ import { SiteHomepagePreview } from "@/components/domain/site-homepage-preview";
 import { Alert } from "@/components/patterns/alert";
 import { DEFAULT_LOCALITY_RADIUS_KM, LOCALITIES_MAX, LOCALITY_RADII_KM } from "./constants";
 import {
-  POPULAR_CHIPS,
   homepagePayloadOf,
   homepagePictureOf,
   localityProblemsOf,
@@ -34,6 +34,8 @@ export type HomepageFormProps = {
   initial: HomepageFormValues;
   /** The save action. */
   save: SaveContent;
+  /** The place search box of each locality row; the page gives it, because it is another feature (ADR-140). */
+  placePicker?: PlacePickerComponent;
 };
 
 const NO_PROBLEMS: Problems = {};
@@ -44,6 +46,7 @@ const startOf = (initial: HomepageFormValues): SiteHomepageValues => ({
   showDiscovery: initial.showDiscovery,
   showWhyUs: initial.showWhyUs,
   showCta: initial.showCta,
+  order: initial.order,
   localities: localityRowsOf(initial.localities, "place"),
 });
 
@@ -53,7 +56,7 @@ const startOf = (initial: HomepageFormValues): SiteHomepageValues => ({
  * picture of the home page. It works like the Header page. The server reads the typed numbers and checks that each
  * place lies inside the launch area; a place outside it comes back as a problem on that row's latitude.
  */
-export function HomepageForm({ initial, save }: HomepageFormProps) {
+export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) {
   const translate = useTranslations("admin.siteContent");
   const frame = useSiteContentFrame("homepage");
   const flow = useSaveFlow(save, {
@@ -95,9 +98,25 @@ export function HomepageForm({ initial, save }: HomepageFormProps) {
         hint: translate("homepage.sections.cta.hint"),
       },
     },
+    order: {
+      hint: translate("homepage.order.hint"),
+      newLaunches: {
+        label: translate("homepage.order.newLaunches.label"),
+        hint: translate("homepage.order.newLaunches.hint"),
+      },
+      newest: {
+        label: translate("homepage.order.newest.label"),
+        hint: translate("homepage.order.newest.hint"),
+      },
+      rowLabels: (section) => ({
+        drag: translate("homepage.order.drag", { section }),
+        moveUp: translate("homepage.order.moveUp", { section }),
+        moveDown: translate("homepage.order.moveDown", { section }),
+      }),
+    },
     localities: {
       title: translate("homepage.localities.title"),
-      description: translate("homepage.localities.description", { popular: POPULAR_CHIPS }),
+      description: translate("homepage.localities.description"),
       add: translate("homepage.localities.add"),
       limitTitle: translate("homepage.localities.limitTitle", { max: LOCALITIES_MAX }),
       limitText: translate("homepage.localities.limitText"),
@@ -143,14 +162,12 @@ export function HomepageForm({ initial, save }: HomepageFormProps) {
               label: sectionLabels[section.key],
               on: section.on,
             }))}
-            popular={picture.popular}
             tiles={picture.tiles}
             hiddenNote={{
               title: translate("homepage.preview.hiddenTitle"),
               text: translate("homepage.preview.hiddenText"),
             }}
             words={{
-              popular: translate("homepage.preview.popular"),
               explore: translate("homepage.preview.explore"),
               on: translate("homepage.preview.on"),
               off: translate("homepage.preview.off"),
@@ -186,6 +203,7 @@ export function HomepageForm({ initial, save }: HomepageFormProps) {
           radii={LOCALITY_RADII_KM}
           defaultRadius={DEFAULT_LOCALITY_RADIUS_KM}
           disabled={flow.saving}
+          {...(placePicker ? { placePicker } : {})}
           words={words}
         />
       </SiteContentLayout>

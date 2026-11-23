@@ -1,11 +1,11 @@
 import type { ConfirmCard } from "../confirm/confirm-card";
-import type { ToolReference } from "../tools/types";
+import type { CardReference, SourceReference } from "../tools/types";
 
 /**
  * What the endpoint streams (ADR-128 section 4, "stream: text deltas, cards, ..."). The body is newline-delimited
  * JSON (`application/x-ndjson`): one event per line, each a complete JSON object, in this order:
  *
- *   start, then any of status / notice / text / card / confirm, then exactly one done.
+ *   start, then any of status / notice / text / card / source / link / confirm, then exactly one done.
  *
  * `replace` swaps the whole message for a fixed line (a blocked answer, or a turn that could not finish); nothing
  * but `done` follows it. Every sentence is fixed wording from `en.json` that the server has already turned into
@@ -21,7 +21,19 @@ export type ChatStreamEvent =
   | { readonly type: "status"; readonly text: string }
   /** A checked, plain-text piece of the answer (or a fixed refusal). */
   | { readonly type: "text"; readonly text: string }
-  | { readonly type: "card"; readonly reference: ToolReference }
+  | { readonly type: "card"; readonly reference: CardReference }
+  /**
+   * An article or a question of the site the answer drew on (ADR-143 section 6.5): the server built the address from the
+   * id a content tool returned, and the title is the one the read gave. The page draws the "Sources" row from these.
+   */
+  | {
+      readonly type: "source";
+      readonly kind: SourceReference["kind"];
+      readonly title: string;
+      readonly href: string;
+    }
+  /** A page of the site (`site-links.ts`): the server built the label and the path from the table. */
+  | { readonly type: "link"; readonly key: string; readonly text: string; readonly href: string }
   /** The confirm card for an enquiry or a site visit: `ready` to send, or the sign-in prompt. */
   | { readonly type: "confirm"; readonly card: ConfirmCard }
   /** A fixed note beside the answer: "I removed personal details", the cap note, the disclaimer. */

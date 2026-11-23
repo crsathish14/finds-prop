@@ -13,7 +13,7 @@ import {
   SALE_BUDGET,
   SALE_FEATURED,
 } from "./domain-demos";
-import { SearchCardHost } from "./domain-demos-search";
+import { HomeSearchBarHost } from "./domain-demos-search";
 
 const FRAME = "w-full rounded-xl border border-line bg-canvas";
 const TRUST = ["Approved listings only", "Enquire directly", "Compare up to 3 homes"];
@@ -27,7 +27,7 @@ export function HeroAsBuiltDemo() {
   const fallback = resolveHero([], "split");
   return (
     <div className="flex flex-col gap-14">
-      <Specimen label="Search Desk: the strip directly under the search card" className="w-full">
+      <Specimen label="Search Desk: the strip directly under the search bar" className="w-full">
         <div className={FRAME}>
           <HomeHero
             titleAs="h2"
@@ -37,12 +37,12 @@ export function HeroAsBuiltDemo() {
             subtitle="Shortlist, compare and enquire directly."
             sponsor={<SponsorSlot ads={[SAMPLE_AD_A]} placement="hero" layout="search_desk" />}
           >
-            <SearchCardHost layout="wide" />
+            <HomeSearchBarHost />
           </HomeHero>
         </div>
       </Specimen>
       <Specimen
-        label="Split: headline, stacked card and trust lines on the left, the panel on the right"
+        label="Split: headline, search bar and trust lines on the left, the panel on the right"
         className="w-full"
       >
         <div className={FRAME}>
@@ -57,7 +57,7 @@ export function HeroAsBuiltDemo() {
             trust={TRUST}
             sponsor={<SponsorSlot ads={[SAMPLE_AD_A]} placement="hero" layout="split" />}
           >
-            <SearchCardHost layout="stacked" />
+            <HomeSearchBarHost />
           </HomeHero>
         </div>
       </Specimen>
@@ -73,7 +73,7 @@ export function HeroAsBuiltDemo() {
             title="Find the place that fits your life."
             subtitle="Shortlist, compare and enquire directly."
           >
-            <SearchCardHost layout="wide" />
+            <HomeSearchBarHost />
           </HomeHero>
         </div>
       </Specimen>

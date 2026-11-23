@@ -5,6 +5,7 @@ import {
   BUDGET_STEPS,
   PROPERTY_TYPES,
   PROPERTY_TYPE_WORDS,
+  ALL_SORT_OPTIONS,
   SORT_OPTIONS,
   SORT_WORDS,
   budgetStepsFor,
@@ -19,6 +20,7 @@ import {
   parseFilterIntent,
   parsePropertyType,
   parseSort,
+  sortOptionsFor,
   type FilterValues,
 } from "../search-options";
 
@@ -110,6 +112,15 @@ describe("filter options (S4-T01)", () => {
       const key = SORT_WORDS[option].replace("domain.filters.sort.", "");
       expect(en.domain.filters.sort[key as keyof typeof en.domain.filters.sort]).toBeTruthy();
     }
+  });
+
+  it("adds the distance order only for a place: the AI list stays the four", () => {
+    expect(ALL_SORT_OPTIONS).toEqual([...SORT_OPTIONS, "distance"]);
+    expect(sortOptionsFor(false)).toEqual(SORT_OPTIONS);
+    expect(sortOptionsFor(true)).toEqual(ALL_SORT_OPTIONS);
+    expect(parseSort("distance")).toBe("distance");
+    expect(SORT_WORDS.distance).toBe("domain.filters.sort.distance");
+    expect(en.domain.filters.sort.distance).toBe("Nearest first");
   });
 
   it("counts the four filters, as the UX button does, and not Looking to or the sort", () => {

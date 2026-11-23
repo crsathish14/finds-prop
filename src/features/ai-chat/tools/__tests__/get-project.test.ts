@@ -19,15 +19,18 @@ const error = vi.fn();
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The projects feature is stood in for by its read (a stand-in) and its real page rules.
 vi.mock("@/features/projects", async () => {
-  const { bhkSizes, priceBounds, TREND_MONTHS } = await import("@/features/projects/view");
+  const { bhkSizes, priceOf, TREND_MONTHS } = await import("@/features/projects/view");
   const { isProjectSlug } = await import("@/features/projects/address");
-  const { PROJECT_STATUSES } = await import("@/features/projects/schemas");
+  const { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } =
+    await import("@/features/projects/schemas");
   return {
     getProject,
     bhkSizes,
-    priceBounds,
+    priceOf,
     TREND_MONTHS,
     isProjectSlug,
+    OFFER_TYPES,
+    PRICE_TYPES,
     PROJECT_STATUSES,
   };
 });
@@ -118,15 +121,18 @@ describe("UT-ai-tool-project: a project that is listed", () => {
           slug: "kadal-vista",
           builderId: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34",
           status: "under_construction",
-          lowestPriceRupees: 7_800_000,
-          lowestPriceText: "₹78 L",
-          highestPriceRupees: 14_200_000,
-          highestPriceText: "₹1.42 Cr",
+          priceRupees: 7_800_000,
+          priceText: "₹78 L basic price",
+          priceType: "basic",
+          offerType: null,
           bhkOptions: [2, 3],
           landAreaText: "4.2 acres",
           totalUnits: 320,
           possession: "Dec 2028",
           reraApplicable: true,
+          propertyType: "apartment",
+          areaMinSqft: null,
+          areaMaxSqft: null,
           contactPhone: "+914412345678",
           unitCount: 1,
           unitsAvailable: 1,
@@ -150,6 +156,7 @@ describe("UT-ai-tool-project: a project that is listed", () => {
             developerName: "Kadal Homes",
             locality: "OMR Navalur",
             reraNumber: "TN/SAMPLE/0000",
+            reraNotApplicableReason: null,
             description: "A gated community by the sea.\n\nTwo clubhouses.",
             amenities: ["Gym", "Pool"],
             nearby: ["Shopping mall", "School"],
@@ -250,8 +257,8 @@ describe("UT-ai-tool-project: units grouped by BHK and state", () => {
 describe("UT-ai-tool-project: facts the developer may have left out", () => {
   it("gives null for each, never a blank or a zero", async () => {
     const project = await projectFor({
-      priceMin: null,
-      priceMax: null,
+      price: null,
+      priceType: null,
       bhkOptions: [],
       landAreaAcres: 0,
       totalUnits: null,
@@ -270,10 +277,9 @@ describe("UT-ai-tool-project: facts the developer may have left out", () => {
     });
     expect(project).toMatchObject({
       status: null,
-      lowestPriceRupees: null,
-      lowestPriceText: null,
-      highestPriceRupees: null,
-      highestPriceText: null,
+      priceRupees: null,
+      priceText: null,
+      priceType: null,
       bhkOptions: [],
       landAreaText: null,
       totalUnits: null,
@@ -289,6 +295,40 @@ describe("UT-ai-tool-project: facts the developer may have left out", () => {
   it("gives no RERA number for a project that is not under RERA, and none that is blank", async () => {
     expect((await projectFor({ reraApplicable: false })).untrustedText.reraNumber).toBeNull();
     expect((await projectFor({ reraNumber: "   " })).untrustedText.reraNumber).toBeNull();
+  });
+
+  it("gives the reason RERA does not apply, cleaned, only for a project that is not under RERA", async () => {
+    const reason = "Below the size that needs registration.";
+    expect(
+      (await projectFor({ reraApplicable: false, reraNotApplicableReason: reason })).untrustedText
+        .reraNotApplicableReason,
+    ).toBe(reason);
+    expect(
+      (await projectFor({ reraApplicable: true, reraNotApplicableReason: reason })).untrustedText
+        .reraNotApplicableReason,
+    ).toBeNull();
+    expect(
+      (await projectFor({ reraApplicable: false, reraNotApplicableReason: "   " })).untrustedText
+        .reraNotApplicableReason,
+    ).toBeNull();
+  });
+
+  it("gives the kind of property and the area range", async () => {
+    const project = await projectFor({
+      propertyType: "plot",
+      areaMinSqft: 1200,
+      areaMaxSqft: 2400,
+      price: 2450,
+      priceType: "per_sqft",
+    });
+    expect(project).toMatchObject({
+      propertyType: "plot",
+      areaMinSqft: 1200,
+      areaMaxSqft: 2400,
+      priceRupees: 2450,
+      priceText: "₹2,450 per sq ft",
+      priceType: "per_sqft",
+    });
   });
 
   it("gives no possession for a text that is not a day", async () => {
@@ -345,6 +385,8 @@ describe("UT-ai-tool-project: what the developer typed", () => {
       name: injected("name"),
       locality: injected("locality"),
       reraNumber: injected("rera"),
+      reraApplicable: true,
+      reraNotApplicableReason: injected("reason"),
       description: `${injected("description")}${override}`,
       amenities: [injected("amenity")],
       nearby: [injected("nearby")],
@@ -357,6 +399,7 @@ describe("UT-ai-tool-project: what the developer typed", () => {
       developerName: injected("developer"),
       locality: injected("locality"),
       reraNumber: injected("rera"),
+      reraNotApplicableReason: null,
       description: injected("description"),
       amenities: [injected("amenity")],
       nearby: [injected("nearby")],

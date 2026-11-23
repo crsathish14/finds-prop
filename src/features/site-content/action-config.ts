@@ -1,9 +1,13 @@
 import { tagsAfterSiteSettingsChange } from "@/lib/cache-tags";
 import {
+  contentModulesInputSchema,
+  disclaimersInputSchema,
   footerInputSchema,
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  projectFieldsInputSchema,
+  topDevelopersInputSchema,
 } from "./schemas";
 import { sponsorsInputSchema } from "./sponsor-schemas";
 
@@ -54,6 +58,51 @@ export const saveFooterConfig = {
 export const saveSponsorsConfig = {
   name: "saveSponsors",
   input: sponsorsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The Blog, FAQ and Careers switches (ADR-143, FR-ADM-16): one row of `site_settings`, so the same limits and the same
+ * cache tag apply. The change shows on the public site, the menus, the sitemap and the AI assistant at once.
+ */
+export const saveContentModulesConfig = {
+  name: "saveContentModules",
+  input: contentModulesInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The footer and AI search disclaimers (ADR-152): one row of `site_settings`, so the same limits and the same cache tag
+ * apply. The change shows in the footer of every public page and on the AI search page at once.
+ */
+export const saveDisclaimersConfig = {
+  name: "saveDisclaimers",
+  input: disclaimersInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/**
+ * The extra boxes of the builder's project form (ADR-168): one row of `site_settings`, so the same limits and the same
+ * cache tag apply. The database audits the change (who and when, never the content).
+ */
+export const saveProjectFieldsConfig = {
+  name: "saveProjectFields",
+  input: projectFieldsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/** The developers the home page shows under "Top developers", in order (at most 10). Same limits and cache tag as the other settings. */
+export const saveTopDevelopersConfig = {
+  name: "saveTopDevelopers",
+  input: topDevelopersInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

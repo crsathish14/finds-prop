@@ -136,6 +136,27 @@ export function findLocalities(
 }
 
 /**
+ * The one locality that is the text itself or a close spelling of it ("Velacheri" is Velachery), or `null`. Unlike
+ * `findLocalities` it never takes a name that merely starts with or holds the text ("Anna" is not "Anna Nagar"
+ * and "Nagar" is nobody), so the place search can use the answer as the corrected name without changing what
+ * the customer meant. Where two names tie, the first (the busiest) wins.
+ */
+export function closeLocalityMatch<Named extends { name: string }>(
+  localities: readonly Named[],
+  text: string,
+): Named | null {
+  const wanted = localityKey(text);
+  if (wanted === "") return null;
+  let best: { item: Named; distance: number } | null = null;
+  for (const item of localities) {
+    const match = matchRank(localityKey(item.name), wanted);
+    if (match === null || (match.rank !== 0 && match.rank !== 3)) continue;
+    if (best === null || match.distance < best.distance) best = { item, distance: match.distance };
+  }
+  return best === null ? null : best.item;
+}
+
+/**
  * The same match for anything with a name (a builder's name, for `get_builder`): the best match first, ties in
  * the order given, at most `limit`. With no text, the first `limit` as given.
  */

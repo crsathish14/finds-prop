@@ -1,4 +1,5 @@
 import type { SiteSettings } from "@/features/site";
+import { resolveHomeOrder, type HomeSectionKey } from "@/lib/home-sections";
 
 /**
  * What the Header and Footer pages do with the values, kept apart from the screens so they can be tested on their own
@@ -367,9 +368,6 @@ export function heroPictureOf(values: HeroFormValues, standard: StandardHero): H
 
 // --- homepage ----------------------------------------------------------------------------------------------------
 
-/** How many curated localities become Popular chips in the search card (the same count the search feature uses, ADD-11). */
-export const POPULAR_CHIPS = 4;
-
 export const HOMEPAGE_SWITCHES = [
   "showFeatured",
   "showProjectTypes",
@@ -394,6 +392,8 @@ export interface LocalityRowValue extends LocalityFormRow {
 
 export type HomepageFormValues = Record<HomepageSwitch, boolean> & {
   localities: LocalityFormRow[];
+  /** The order of the sections below the hero. */
+  order: HomeSectionKey[];
 };
 
 /** Where the Homepage page's boxes start: the saved switches and localities (the defaults when nothing is saved). */
@@ -404,6 +404,7 @@ export function homepageFormOf(saved: SiteSettings["homepage"]): HomepageFormVal
     showDiscovery: saved.showDiscovery,
     showWhyUs: saved.showWhyUs,
     showCta: saved.showCta,
+    order: resolveHomeOrder(saved.order),
     localities: saved.localities.map((place) => ({
       label: place.label,
       lat: String(place.lat),
@@ -421,9 +422,13 @@ export function localityRowsOf(
 }
 
 export function homepagePayloadOf(
-  values: Record<HomepageSwitch, boolean> & { localities: readonly LocalityFormRow[] },
+  values: Record<HomepageSwitch, boolean> & {
+    localities: readonly LocalityFormRow[];
+    order?: readonly HomeSectionKey[];
+  },
 ): Record<string, unknown> {
   return {
+    ...(values.order ? { order: [...values.order] } : {}),
     showFeatured: values.showFeatured,
     showProjectTypes: values.showProjectTypes,
     showDiscovery: values.showDiscovery,
@@ -462,13 +467,12 @@ export type HomepageSectionKey =
 
 export interface HomepagePicture {
   sections: { key: HomepageSectionKey; on: boolean }[];
-  popular: string[];
   tiles: string[];
 }
 
 /**
- * The small picture of the home page: the sections in the order of the page with their state, the Popular chips (the
- * first four localities) and the locality tiles. A locality section with no localities is drawn Off, as the public page
+ * The small picture of the home page: the sections in the order of the page with their state and the locality tiles
+ * (the home page's search bar has no locality chips since ADR-150). A locality section with no localities is drawn Off, as the public page
  * leaves out a section with nothing to show (FR-PUB-05).
  */
 export function homepagePictureOf(values: {
@@ -478,18 +482,20 @@ export function homepagePictureOf(values: {
   showWhyUs: boolean;
   showCta: boolean;
   localities: readonly { label: string }[];
+  order?: readonly HomeSectionKey[];
 }): HomepagePicture {
   const labels = values.localities.map((place) => place.label.trim()).filter(Boolean);
-  return {
-    sections: [
-      { key: "hero", on: true },
-      { key: "discovery", on: values.showDiscovery && labels.length > 0 },
-      { key: "featured", on: values.showFeatured },
-      { key: "projectTypes", on: values.showProjectTypes },
-      { key: "whyUs", on: values.showWhyUs },
-      { key: "cta", on: values.showCta },
-    ],
-    popular: labels.slice(0, POPULAR_CHIPS),
-    tiles: labels,
+  // Only the five sections with a switch are drawn (New launches and Newest show whenever they have something).
+  const state: Partial<Record<HomeSectionKey, boolean>> = {
+    discovery: values.showDiscovery && labels.length > 0,
+    featured: values.showFeatured,
+    projectTypes: values.showProjectTypes,
+    whyUs: values.showWhyUs,
+    cta: values.showCta,
   };
+  const below = resolveHomeOrder(values.order).flatMap((key) => {
+    const on = state[key];
+    return on === undefined ? [] : [{ key: key as HomepageSectionKey, on }];
+  });
+  return { sections: [{ key: "hero", on: true }, ...below], tiles: labels };
 }

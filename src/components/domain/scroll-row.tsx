@@ -11,9 +11,10 @@
  *   name of the list for screen readers, such as "Newest homes"), children (one card each; each is
  *   put in its own list item), className.
  * Movement: an Embla carousel, so every way of moving has the same easing: dragging with a finger
- *   or the mouse (the row keeps gliding after a flick), the buttons (one screenful at a time), a
- *   sideways trackpad swipe or Shift + mouse wheel (the row follows the wheel and eases to a stop).
- *   A plain up-down wheel still scrolls the page: the row never traps it.
+ *   or the mouse (the row keeps gliding after a flick), the buttons (one screenful at a time), and
+ *   the mouse wheel or a trackpad swipe (the row follows the wheel and eases to a stop). While the
+ *   pointer is over the row, turning the wheel down moves it right and up moves it left; at an end
+ *   the wheel goes on to scroll the page, so the row never traps it.
  * Responsive: cards are 300 px wide, or 78% of the screen when that is less, and a little of the
  *   next one shows so a visitor can see there is more. The row runs to the screen edge while the
  *   first card lines up with the page's side padding. On a phone the visitor swipes and the
@@ -119,18 +120,16 @@ function ScrollRow({ title, description, as, id, label, children, className }: S
     };
   }, [carousel, measure, cards.length]);
 
-  // Embla ignores the wheel, so a sideways swipe (trackpad) or Shift + wheel is handed to its
-  // engine as a distance: it eases the row there the same way it eases a flick. An up-down wheel
-  // is left alone so the page keeps scrolling, and so is a swipe when the row is already at that end.
+  // Embla ignores the wheel, so the wheel is handed to its engine as a distance: it eases the row
+  // there the same way it eases a flick. Both an up-down wheel (down moves the row to the right)
+  // and a sideways swipe count. When the row is already at that end the wheel goes on to the page.
   useEffect(() => {
     if (!carousel) return;
     const api = carousel;
     const root = api.rootNode();
     function follow(event: WheelEvent) {
       const sideways =
-        event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)
-          ? event.deltaX || event.deltaY
-          : 0;
+        Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
       if (sideways === 0) return;
       const unit = event.deltaMode === 1 ? LINE_HEIGHT : 1;
       const engine = api.internalEngine();

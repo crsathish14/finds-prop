@@ -17,12 +17,13 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import {
   InsightsPanel,
   type InsightsGroup,
   type InsightsTile,
 } from "@/components/domain/insights-panel";
+import { PlacesUsageCard } from "@/components/domain/places-usage-card";
 import { RecentLeads, type RecentLead } from "@/components/domain/recent-leads";
 import { Alert } from "@/components/patterns/alert";
 import { BarList } from "@/components/patterns/bar-list";
@@ -35,12 +36,17 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCount } from "@/lib/chart-scale";
+import { dayLabel, intlLocale } from "./day-label";
+import { toCardUsage } from "./places-usage";
 import { isOverviewRange, overviewHref, type ResolvedOverviewRange } from "./range";
-import type { Ago, Overview, RecentLeadRow } from "./view";
+import type { Ago, Overview, PlacesCaller, PlacesUsageNumbers, RecentLeadRow } from "./view";
 
 /** What the server read: the numbers (with the days they were read for), or that the read failed. */
 export type OverviewState =
   { ok: true; overview: Overview; range: ResolvedOverviewRange } | { ok: false };
+
+/** What the server read of the place search calls: the numbers (null when none was ever counted), or that it failed. */
+export type PlacesUsageState = { ok: true; usage: PlacesUsageNumbers | null } | { ok: false };
 
 type AdminOverviewProps = {
   /** The page's own address, so the choices stay on it. */
@@ -48,24 +54,13 @@ type AdminOverviewProps = {
   state: OverviewState;
   /** The choice in the address (it may be ahead of the numbers on show while they reload or when the read failed). */
   filters: ResolvedOverviewRange;
+  /** The place search card under the charts (PR 6b of the Ola Maps plan); left out, there is no such section. */
+  placesUsage?: PlacesUsageState;
+  /** The Content modules card (ADR-143), built by the page; left out, there is no such section. It sits last. */
+  contentModules?: ReactNode;
 };
 
 type Shown = { overview: Overview; range: ResolvedOverviewRange };
-
-const INTL_LOCALES: Record<string, string> = { en: "en-IN" };
-const intlLocale = (locale: string) => INTL_LOCALES[locale] ?? "en-IN";
-
-/** A day (`YYYY-MM-DD`) as "1 Oct" (and "1 Oct 2026" with the year); the day is a calendar day, so no time zone moves it. */
-function dayLabel(day: string, locale: string, withYear: boolean): string {
-  const date = new Date(`${day}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return day;
-  return new Intl.DateTimeFormat(intlLocale(locale), {
-    day: "numeric",
-    month: "short",
-    ...(withYear ? { year: "numeric" as const } : {}),
-    timeZone: "UTC",
-  }).format(date);
-}
 
 /** The first letters of the first two words of a name, in capitals. */
 function initialsOf(name: string): string {
@@ -84,7 +79,13 @@ function initialsOf(name: string): string {
  * that did arrive stay under a notice with a way to try again; with none, the notice is all there is. It keeps nothing
  * the server does not also know.
  */
-export function AdminOverview({ path, state, filters }: AdminOverviewProps) {
+export function AdminOverview({
+  path,
+  state,
+  filters,
+  placesUsage,
+  contentModules,
+}: AdminOverviewProps) {
   const translate = useTranslations("admin.overview");
   const common = useTranslations("common");
   const locale = useLocale();
@@ -258,7 +259,58 @@ export function AdminOverview({ path, state, filters }: AdminOverviewProps) {
           </div>
         </div>
       ) : null}
+      {placesUsage ? <PlacesUsageSection state={placesUsage} /> : null}
+      {contentModules}
     </InsightsPanel>
+  );
+}
+
+/** The names of the four callers (static keys, so the messages check can see them). */
+const CALLER_WORDS = {
+  search_box: "domain.placesUsage.callers.searchBox",
+  listing_form: "domain.placesUsage.callers.listingForm",
+  admin_picker: "domain.placesUsage.callers.adminPicker",
+  ai_chat: "domain.placesUsage.callers.aiChat",
+} as const satisfies Record<PlacesCaller, string>;
+
+/**
+ * The place search card under the charts (PR 6b of the Ola Maps plan, ADR-134): calls to Ola Maps only. When the read
+ * failed, the block says so in the dashboard's own failed-block look (the red notice with "Try again") and the rest of
+ * the page is as it was.
+ */
+function PlacesUsageSection({ state }: { state: PlacesUsageState }) {
+  const translate = useTranslations();
+  const locale = useLocale();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  if (!state.ok) {
+    return (
+      <Alert tone="danger" title={translate("admin.overview.places.error.title")}>
+        <p>{translate("admin.overview.error.text")}</p>
+        <div className="mt-3">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            loading={pending}
+            iconStart={<Icon icon={RefreshCw} size="sm" />}
+            onClick={() => startTransition(() => router.refresh())}
+          >
+            {translate("common.tryAgain")}
+          </Button>
+        </div>
+      </Alert>
+    );
+  }
+  return (
+    <PlacesUsageCard
+      locale={locale}
+      usage={
+        state.usage === null
+          ? null
+          : toCardUsage(state.usage, locale, (caller) => translate(CALLER_WORDS[caller]))
+      }
+    />
   );
 }
 

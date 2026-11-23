@@ -8,19 +8,22 @@ import {
   type PriceTrendRow,
   type PriceTrendsWords,
 } from "@/components/domain/price-trends-editor";
+import type { PlacePickerComponent } from "@/components/domain/place-picker";
 import {
   ProjectFields,
   type ProjectFieldName,
   type ProjectFieldValues,
   type ProjectFieldsWords,
 } from "@/components/domain/project-fields";
+import { FormField } from "@/components/patterns/form-field";
+import { Input } from "@/components/ui/input";
 import { ProjectFormLayout } from "@/components/domain/project-form-layout";
 import { ProjectMedia, type ProjectMediaGroupName } from "@/components/domain/project-media";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { ProjectSectionNav, type ProjectSectionId } from "@/components/domain/project-section-nav";
 import { Alert } from "@/components/patterns/alert";
 import type { MediaItem } from "@/components/patterns/media-group-field";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
@@ -29,14 +32,25 @@ import { publicEnv } from "@/lib/public-env";
 import type { ActionResult } from "@/types/action";
 import { MEDIA_MAX, TREND_MONTHS_MAX } from "./constants";
 import {
+  boxesFor,
+  EXTRA_VALUE_MAX,
+  missingExtras,
+  type ExtraAnswers,
+  type ExtraBox,
+} from "./extra-fields";
+import { priceTypesFor, propertyTypesFor } from "./rules";
+import {
   EMPTY_PROJECT_VALUES,
   MEDIA_GROUPS,
   MEDIA_MAX_MEGABYTES,
+  appliesOf,
   errorFieldOf,
   fileProblem,
   itemOfPath,
   mediaOf,
   payloadOf,
+  projectProblems,
+  reconcile,
   sectionOfError,
   sectionStatesOf,
   slugFromName,
@@ -72,6 +86,10 @@ export type ProjectFormProps = {
   storage?: MediaStorage;
   /** The address of the storage service, for the small pictures; defaults to the project's own. */
   mediaBaseUrl?: string;
+  /** The place search box of the Location section; the page gives it, because it is another feature (ADR-140). */
+  placePicker?: PlacePickerComponent;
+  /** The extra boxes the super admin added to the form (ADR-168); none until some are defined. */
+  extraBoxes?: ExtraBox[];
 };
 
 type Errors = Partial<Record<ProjectErrorField, string>>;
@@ -82,14 +100,19 @@ const LABEL_OF: Record<ProjectFieldName, keyof ProjectFieldsWords> = {
   builderId: "builder",
   projectType: "projectType",
   propertyType: "propertyType",
+  offerType: "offerType",
+  plotStatus: "plotStatus",
+  villaType: "villaType",
   projectStatus: "projectStatus",
-  priceMin: "priceMin",
-  priceMax: "priceMax",
+  price: "price",
+  priceType: "priceType",
+  areaMinSqft: "areaMin",
+  areaMaxSqft: "areaMax",
   bhkOptions: "bhk",
   landAreaAcres: "landArea",
-  totalUnits: "totalUnits",
   possessionDate: "possession",
   contactPhone: "contactPhone",
+  city: "city",
   locality: "locality",
   address: "address",
   latitude: "latitude",
@@ -98,6 +121,7 @@ const LABEL_OF: Record<ProjectFieldName, keyof ProjectFieldsWords> = {
   nearby: "nearby",
   reraApplicable: "reraApplicable",
   reraNumber: "reraNumber",
+  reraNotApplicableReason: "reraReason",
   description: "description",
   specifications: "specifications",
   amenities: "amenities",
@@ -129,6 +153,8 @@ export function ProjectForm({
   editBase,
   storage: givenStorage,
   mediaBaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+  placePicker,
+  extraBoxes = [],
 }: ProjectFormProps) {
   const translate = useTranslations("admin.projectForm");
   const everything = useTranslations() as unknown as Translator;
@@ -142,6 +168,8 @@ export function ProjectForm({
   const [values, setValues] = useState<ProjectFieldValues>(
     project ? valuesOf(project) : EMPTY_PROJECT_VALUES,
   );
+  const [extras, setExtras] = useState<ExtraAnswers>(project?.extraFields ?? {});
+  const [extraErrors, setExtraErrors] = useState<Record<string, string>>({});
   const [formId, setFormId] = useState(project?.formId ?? "");
   const [videos, setVideos] = useState<string[]>(project?.videos ?? []);
   const [media, setMedia] = useState(() => mediaOf(mediaBaseUrl, project));
@@ -183,7 +211,8 @@ export function ProjectForm({
 
   const change = <Name extends ProjectFieldName>(name: Name, value: ProjectFieldValues[Name]) => {
     setValues((now) => {
-      const next = { ...now, [name]: value };
+      // A choice can make other boxes stop applying (a plot has no bedrooms): they are cleared, not left to be sent.
+      const next = reconcile({ ...now, [name]: value });
       if (name === "name" && !slugTouched) next.slug = slugFromName(String(value));
       return next;
     });
@@ -282,13 +311,22 @@ export function ProjectForm({
     if (saving) return;
 
     const found: Errors = {};
-    if (values.name.trim() === "") found.name = translate("problems.name");
-    if (admin && projectId === null && values.builderId === "") {
-      found.builderId = translate("problems.builder");
+    const problemsFound = projectProblems(values, { needsBuilder: admin && projectId === null });
+    for (const [field, problem] of Object.entries(problemsFound)) {
+      found[field as ProjectFieldName] = translate(`problems.${problem}`);
     }
-    if (values.locality.trim() === "") found.locality = translate("problems.locality");
     if (Object.keys(found).length > 0) {
       showErrors(found);
+      return;
+    }
+    const lacking = missingExtras(extraBoxes, values.propertyType, extras);
+    setExtraErrors(
+      Object.fromEntries(
+        lacking.map((id) => [id, fieldErrorText(everything, { key: "validation.required" })]),
+      ),
+    );
+    if (lacking.length > 0) {
+      document.getElementById("details")?.scrollIntoView?.({ block: "start" });
       return;
     }
     const trendProblemsFound = admin && projectId !== null ? trendProblems(trends) : {};
@@ -304,8 +342,9 @@ export function ProjectForm({
 
     setSaving(true);
     try {
-      const result = await save(
-        payloadOf(
+      const result = await save({
+        extraFields: extras,
+        ...payloadOf(
           {
             values,
             formId,
@@ -320,18 +359,25 @@ export function ProjectForm({
           },
           { scope, projectId },
         ),
-      );
+      });
       if (!result.ok) {
         const mapped: Errors = {};
+        const extraMapped: Record<string, string> = {};
         for (const [path, problems] of Object.entries(result.fieldErrors ?? {})) {
+          const extraId = path.startsWith("extraFields.") ? path.slice(12) : null;
+          if (extraId && problems[0])
+            extraMapped[extraId] = fieldErrorText(everything, problems[0]);
           const field = errorFieldOf(path);
           const first = problems[0];
           if (field && first && mapped[field] === undefined) {
             mapped[field] = fieldErrorText(everything, first);
           }
         }
+        setExtraErrors(extraMapped);
         if (Object.keys(mapped).length > 0) showErrors(mapped);
-        else reportFailure(result);
+        else if (Object.keys(extraMapped).length > 0) {
+          document.getElementById("details")?.scrollIntoView?.({ block: "start" });
+        } else reportFailure(result);
         return;
       }
       setErrors({});
@@ -396,14 +442,19 @@ export function ProjectForm({
       unset: translate("fields.unset"),
       projectType: translate("fields.projectType"),
       propertyType: translate("fields.propertyType"),
+      offerType: translate("fields.offerType"),
+      plotStatus: translate("fields.plotStatus"),
+      villaType: translate("fields.villaType"),
       projectStatus: translate("fields.projectStatus"),
-      priceMin: translate("fields.priceMin"),
-      priceMax: translate("fields.priceMax"),
+      price: translate("fields.price"),
+      priceType: translate("fields.priceType"),
+      areaMin: translate("fields.areaMin"),
+      areaMax: translate("fields.areaMax"),
       bhk: translate("fields.bhk"),
       landArea: translate("fields.landArea"),
-      totalUnits: translate("fields.totalUnits"),
       possession: translate("fields.possession"),
       contactPhone: translate("fields.contactPhone"),
+      city: translate("fields.city"),
       locality: translate("fields.locality"),
       address: translate("fields.address"),
       latitude: translate("fields.latitude"),
@@ -412,6 +463,8 @@ export function ProjectForm({
       nearby: translate("fields.nearby"),
       reraApplicable: translate("fields.reraApplicable"),
       reraNumber: translate("fields.reraNumber"),
+      reraReason: translate("fields.reraReason"),
+      reraReasonHint: translate("fields.reraReasonHint"),
       description: translate("fields.description"),
       specifications: translate("fields.specifications"),
       amenities: translate("fields.amenities"),
@@ -507,16 +560,49 @@ export function ProjectForm({
     </>
   );
 
+  // The property types and price types offered are the ones that fit what is chosen above them (ADR-148).
+  const propertyTypeLabels: Record<string, string> = {
+    apartment: translate("options.propertyType.apartment"),
+    villa: translate("options.propertyType.villa"),
+    plot: translate("options.propertyType.plot"),
+    vacant_land: translate("options.propertyType.vacantLand"),
+    flat: translate("options.propertyType.flat"),
+    office: translate("options.propertyType.office"),
+    co_working: translate("options.propertyType.coWorking"),
+  };
+  const priceTypeLabels: Record<string, string> = {
+    per_sqft: translate("options.priceType.perSqft"),
+    basic: translate("options.priceType.basic"),
+    all_inclusive: translate("options.priceType.allInclusive"),
+    rent_per_month: translate("options.priceType.rentPerMonth"),
+    rent_per_sqft_month: translate("options.priceType.rentPerSqftMonth"),
+  };
   const options = {
     projectTypes: [
       { value: "residential", label: translate("options.projectType.residential") },
       { value: "commercial", label: translate("options.projectType.commercial") },
-      { value: "plotted_layout", label: translate("options.projectType.plottedLayout") },
     ],
-    propertyTypes: [
-      { value: "apartment", label: translate("options.propertyType.apartment") },
-      { value: "villa", label: translate("options.propertyType.villa") },
+    propertyTypes: propertyTypesFor(values.projectType).map((type) => ({
+      value: type,
+      label: propertyTypeLabels[type] ?? type,
+    })),
+    offerTypes: [
+      { value: "sale", label: translate("options.offerType.sale") },
+      { value: "rent", label: translate("options.offerType.rent") },
     ],
+    plotStatuses: [
+      { value: "investment", label: translate("options.plotStatus.investment") },
+      { value: "ready_to_build", label: translate("options.plotStatus.readyToBuild") },
+    ],
+    villaTypes: [
+      { value: "duplex", label: translate("options.villaType.duplex") },
+      { value: "row_house", label: translate("options.villaType.rowHouse") },
+      { value: "individual", label: translate("options.villaType.individual") },
+    ],
+    priceTypes: priceTypesFor(values.projectType, values.offerType).map((type) => ({
+      value: type,
+      label: priceTypeLabels[type] ?? type,
+    })),
     statuses: [
       { value: "new_launch", label: translate("options.status.newLaunch") },
       { value: "under_construction", label: translate("options.status.underConstruction") },
@@ -606,7 +692,7 @@ export function ProjectForm({
                   <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 md:p-6">
                     <h2 className="text-title font-bold text-ink">{translate("enquiry.title")}</h2>
                     <p className="text-small text-muted">{translate("enquiry.text")}</p>
-                    <NativeSelect
+                    <Select
                       aria-label={translate("enquiry.title")}
                       value={formId}
                       disabled={saving}
@@ -618,7 +704,7 @@ export function ProjectForm({
                           {form.name}
                         </option>
                       ))}
-                    </NativeSelect>
+                    </Select>
                   </div>
                   {projectId === null ? null : (
                     <PriceTrendsEditor
@@ -660,6 +746,7 @@ export function ProjectForm({
           errors={fieldErrors}
           onChange={change}
           options={options}
+          applies={appliesOf(values)}
           amenitySuggestions={[
             translate("amenitySuggestions.clubhouse"),
             translate("amenitySuggestions.swimmingPool"),
@@ -670,6 +757,24 @@ export function ProjectForm({
           ]}
           slugLocked={slugLocked}
           disabled={saving}
+          extras={boxesFor(extraBoxes, values.propertyType).map((box) => (
+            <FormField
+              key={box.id}
+              label={box.label}
+              required={box.required}
+              optionalLabel={translate("extras.optional")}
+              {...(box.hint ? { hint: box.hint } : {})}
+              {...(extraErrors[box.id] ? { error: extraErrors[box.id] as string } : {})}
+            >
+              <Input
+                value={extras[box.id] ?? ""}
+                maxLength={EXTRA_VALUE_MAX}
+                disabled={saving}
+                onChange={(event) => setExtras({ ...extras, [box.id]: event.target.value })}
+              />
+            </FormField>
+          ))}
+          {...(placePicker ? { placePicker } : {})}
           words={fieldWords()}
           media={
             <ProjectMedia

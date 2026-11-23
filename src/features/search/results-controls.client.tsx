@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { FilterRail, FilterSheet } from "@/components/domain/filters";
+import { FilterRail, FilterSheet, type PlaceFieldSlot } from "@/components/domain/filters";
 import { ActiveFilters, LabelFilter, ResultsBar } from "@/components/domain/results-bar";
 import {
   ResultsEmpty,
@@ -11,10 +11,17 @@ import {
   ResultsLoadMore,
   ResultsSkeleton,
 } from "@/components/domain/results-list";
-import type { FilterValues } from "@/config/search-options";
+import {
+  RADIUS_CHOICES_KM,
+  sortOptionsFor,
+  type FilterValues,
+  type RadiusChoice,
+  type SortOption,
+} from "@/config/search-options";
 import type { Translate } from "@/lib/format";
 import type { CuratedLocality } from "./from-card";
-import { clearSearchFilters } from "./params";
+import { clearSearchFilters, hasSearchPlace } from "./params";
+import { PlaceBox } from "./place-box.client";
 import {
   appliedFilters,
   atShowLimit,
@@ -43,18 +50,54 @@ function same(first: FilterValues, second: FilterValues): boolean {
   return (
     first.intent === second.intent &&
     first.locality === second.locality &&
+    first.point?.lat === second.point?.lat &&
+    first.point?.lng === second.point?.lng &&
     first.propertyType === second.propertyType &&
     first.bedrooms === second.bedrooms &&
     first.maxBudget === second.maxBudget &&
+    (first.radiusKm ?? null) === (second.radiusKm ?? null) &&
     first.sort === second.sort
   );
 }
 
+/**
+ * The Locality field of the filters: the place search box (ADR-136). In the Design Lab (`preview`) the
+ * pictured Locality list stays, so nothing there calls the route.
+ */
+function placeFieldFor(
+  preview: boolean,
+  applyWhileTyping: boolean,
+): { placeField?: PlaceFieldSlot } {
+  if (preview) return {};
+  return {
+    placeField: (field) => <PlaceBox {...field} applyWhileTyping={applyWhileTyping} />,
+  };
+}
+
+/**
+ * What a place search adds to the filters (ADR-137): the "Search within" distances and the "Nearest
+ * first" order, only while a place is searched. Nothing in the Design Lab (`preview`), whose pictures
+ * stay as they were approved; its "Nearby homes" entry draws these parts on its own.
+ */
+function placeChoicesFor(
+  placed: boolean,
+  preview: boolean,
+): { radiusChoices?: readonly RadiusChoice[]; sortOptions: readonly SortOption[] } {
+  const live = placed && !preview;
+  return {
+    ...(live ? { radiusChoices: RADIUS_CHOICES_KM } : {}),
+    sortOptions: sortOptionsFor(live),
+  };
+}
+
 /** The filter panel beside the results on a wide screen (hidden below 1024 px). */
 export function ResultsRail({ localities, allLocalitiesLabel }: FilterSource) {
-  const { params, go } = useSearchNavigation();
+  const { params, go, preview } = useSearchNavigation();
+  const { radiusChoices } = placeChoicesFor(hasSearchPlace(params), preview);
   return (
     <FilterRail
+      {...placeFieldFor(preview, false)}
+      {...(radiusChoices === undefined ? {} : { radiusChoices })}
       values={filterValuesFromParams(params)}
       onChange={(values) => go(searchFromFilterValues(params, values, localities))}
       onClearAll={() => go(clearSearchFilters(params))}
@@ -72,23 +115,30 @@ export function ResultsToolbar({
   allLocalitiesLabel,
   total,
 }: FilterSource & { total: number | null }) {
-  const { params, go, pending } = useSearchNavigation();
+  const { params, go, pending, preview } = useSearchNavigation();
   const translate = useTranslations() as unknown as Translate;
   const locale = useLocale();
   const values = filterValuesFromParams(params);
   // The count on the sheet's button is true only while the choices in it are the ones applied.
   const [draft, setDraft] = useState<FilterValues | null>(null);
+  const choices = placeChoicesFor(hasSearchPlace(params), preview);
   const resultCount = total !== null && (draft === null || same(draft, values)) ? total : null;
 
   return (
     <div aria-busy={pending}>
       <ResultsBar
         sort={params.sort}
+        sortOptions={choices.sortOptions}
         onSortChange={(sort) => go(changeSearch(params, { sort }))}
         view={params.view}
         onViewChange={(view) => go(changeSearch(params, { view }))}
         filters={
           <FilterSheet
+            {...placeFieldFor(preview, true)}
+            {...(choices.radiusChoices === undefined
+              ? {}
+              : { radiusChoices: choices.radiusChoices })}
+            sortOptions={choices.sortOptions}
             values={values}
             onApply={(next) => go(searchFromFilterValues(params, next, localities), "push")}
             onDraftChange={setDraft}
@@ -177,4 +227,15 @@ export function ResultsList({
       />
     </div>
   );
+}
+
+/**
+ * The "Also near" section under the list (ADR-137). It is drawn by the server and given here only so it
+ * can step aside while a new search is on its way, as the list does: the old nearby homes never stand
+ * under the new search's skeleton.
+ */
+export function ResultsNearby({ children }: { children: ReactNode }) {
+  const { pending, pendingMore } = useSearchNavigation();
+  if (pending && !pendingMore) return null;
+  return <>{children}</>;
 }

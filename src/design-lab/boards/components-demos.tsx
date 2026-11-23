@@ -15,6 +15,8 @@ import { SpecTile } from "@/components/patterns/spec-tile";
 import { StatTile } from "@/components/patterns/stat-tile";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { UploadZone, type UploadFile } from "@/components/patterns/upload-zone";
+import { AiCta } from "@/components/ui/ai-cta.client";
+import { AiSparkle } from "@/components/ui/ai-sparkle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/components/ui/link";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Select } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RemovableChip } from "@/components/ui/removable-chip";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -137,6 +139,58 @@ export function IconButtonsDemo() {
   );
 }
 
+export function AiCtaDemo() {
+  return (
+    <Row className="items-center">
+      <Specimen label="pill (header AI Search)">
+        <AiCta name="nav" variant="pill">
+          <Link
+            href="#ai-cta"
+            variant="nav"
+            className="inline-flex items-center gap-2 rounded-pill border-2 border-transparent bg-cta-tint px-4 py-2 text-body font-bold text-cta-text hover:bg-cta-tint-2 hover:text-cta-text"
+          >
+            <AiSparkle />
+            AI Search
+          </Link>
+        </AiCta>
+      </Specimen>
+      <Specimen label="text, with the AI badge (search card)">
+        <AiCta name="hero" variant="text">
+          <Link
+            href="#ai-cta"
+            variant="nav"
+            className="inline-flex min-h-9 items-center gap-2 rounded-sm px-2 text-small font-semibold text-cta-text no-underline hover:bg-cta-tint hover:text-cta-text"
+          >
+            <AiSparkle />
+            <span className="ai-cta__label">Describe it in words</span>
+            <span
+              aria-hidden="true"
+              className="ai-cta__badge rounded-pill bg-primary px-1 text-caption leading-4 font-bold text-on-primary"
+            >
+              AI
+            </span>
+          </Link>
+        </AiCta>
+      </Specimen>
+      <Specimen label="outline, entrance when in view (Ask about this home)">
+        <Button asChild variant="secondary" size="sm">
+          <AiCta name="ask" variant="outline" entrance>
+            <Link href="#ai-cta" className="no-underline hover:no-underline">
+              <AiSparkle />
+              Ask about this home
+            </Link>
+          </AiCta>
+        </Button>
+      </Specimen>
+      <Specimen label="sparkle on its own: still">
+        <span className="inline-flex items-center gap-2 text-cta-text">
+          <AiSparkle size="md" />
+        </span>
+      </Specimen>
+    </Row>
+  );
+}
+
 export function LinksDemo() {
   return (
     <Row className="items-center">
@@ -213,21 +267,21 @@ export function FieldsDemo() {
             counter={`${message.length} / 500`}
           />
         </Specimen>
-        <Specimen label="NativeSelect" className="w-full">
-          <NativeSelect aria-label="Bedrooms" defaultValue="2">
+        <Specimen label="Select" className="w-full">
+          <Select aria-label="Bedrooms" defaultValue="2">
             <option value="1">1 BHK</option>
             <option value="2">2 BHK</option>
             <option value="3">3 BHK</option>
-          </NativeSelect>
+          </Select>
         </Specimen>
-        <Specimen label="NativeSelect, invalid and disabled" className="w-full">
+        <Specimen label="Select, invalid and disabled" className="w-full">
           <div className="flex w-full flex-col gap-4">
-            <NativeSelect aria-label="Type, invalid" invalid>
+            <Select aria-label="Type, invalid" invalid>
               <option>Apartment</option>
-            </NativeSelect>
-            <NativeSelect aria-label="Type, disabled" disabled>
+            </Select>
+            <Select aria-label="Type, disabled" disabled>
               <option>Apartment</option>
-            </NativeSelect>
+            </Select>
           </div>
         </Specimen>
       </Column>

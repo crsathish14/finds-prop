@@ -148,10 +148,10 @@ export function deleteIntegration(
 
 /** The lead a test sends. It is plainly a test, and carries no real person's details. */
 export const TEST_LEAD: Record<string, string> = {
-  name: "Find Prop test",
+  name: "findsprop test",
   mobile: "9000000000",
   email: "test@findprop.invalid",
-  message: "This is a test from Find Prop. Please ignore it.",
+  message: "This is a test from findsprop. Please ignore it.",
   form_name: "Connection test",
   project_name: "Test project",
   project_slug: "test-project",

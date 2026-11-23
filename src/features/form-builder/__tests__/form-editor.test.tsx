@@ -5,6 +5,7 @@ import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import { field } from "./fields";
 import type { AdminFormView } from "../view";
+import { changeField, optionTexts } from "../../../../tests/select";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
@@ -96,7 +97,7 @@ describe("the form editor: a form that exists (S7-T08)", () => {
 
   it("saves the changes with the form's id, tells the admin, and reads the page again", async () => {
     const { save } = open(stored, okAnswer(stored.id));
-    fireEvent.change(box("Button text"), { target: { value: "Send" } });
+    await changeField(box("Button text"), "Send");
     fireEvent.click(screen.getByRole("button", { name: words.save.save }));
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     const sent = save.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -167,7 +168,7 @@ describe("the form editor: a form that exists (S7-T08)", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: words.save.save }));
     expect(await screen.findByText(en.validation.formSlugTaken)).toBeVisible();
-    fireEvent.change(box("Slug"), { target: { value: "contact-us" } });
+    await changeField(box("Slug"), "contact-us");
     await waitFor(() => expect(screen.queryByText(en.validation.formSlugTaken)).toBeNull());
   });
 
@@ -200,23 +201,21 @@ describe("the form editor: a new form", () => {
     expect(screen.getByRole("combobox", { name: /^Project/ })).toBeDisabled();
   });
 
-  it("makes the slug follow the name until the admin types a slug", () => {
+  it("makes the slug follow the name until the admin types a slug", async () => {
     open(null);
-    fireEvent.change(box("Name"), { target: { value: "Kadal Vista site visit" } });
+    await changeField(box("Name"), "Kadal Vista site visit");
     expect(box("Slug")).toHaveValue("kadal-vista-site-visit");
-    fireEvent.change(box("Slug"), { target: { value: "vista" } });
-    fireEvent.change(box("Name"), { target: { value: "Something else" } });
+    await changeField(box("Slug"), "vista");
+    await changeField(box("Name"), "Something else");
     expect(box("Slug")).toHaveValue("vista");
   });
 
-  it("turns the Project box on, and needed, when the placement is one project", () => {
+  it("turns the Project box on, and needed, when the placement is one project", async () => {
     open(null);
-    fireEvent.change(screen.getByRole("combobox", { name: /^Placement/ }), {
-      target: { value: "project_specific" },
-    });
+    await changeField(screen.getByRole("combobox", { name: /^Placement/ }), "project_specific");
     const project = screen.getByRole("combobox", { name: /^Project/ });
     expect(project).toBeEnabled();
-    expect(within(project).getByRole("option", { name: "Kadal Vista" })).toBeInTheDocument();
+    expect(await optionTexts(project)).toContain("Kadal Vista");
   });
 
   it("adds a quick add as a field with its key, and gives a repeated one a free key", () => {
@@ -243,10 +242,10 @@ describe("the form editor: a new form", () => {
     expect(screen.getByRole("textbox", { name: /^Key/ })).toHaveValue("when");
   });
 
-  it("draws the live preview from the fields as they are typed", () => {
+  it("draws the live preview from the fields as they are typed", async () => {
     open(null);
     fireEvent.click(screen.getByRole("button", { name: "+ Email" }));
-    fireEvent.change(box("Button text"), { target: { value: "Ask us" } });
+    await changeField(box("Button text"), "Ask us");
     const preview = screen.getByRole("complementary", { name: words.preview.label });
     expect(within(preview).getByText("Email")).toBeInTheDocument();
     expect(within(preview).getByText("Ask us")).toBeInTheDocument();
@@ -254,7 +253,7 @@ describe("the form editor: a new form", () => {
 
   it("makes the form, then opens it on its own page", async () => {
     const { save } = open(null, okAnswer("made-id"));
-    fireEvent.change(box("Name"), { target: { value: "Callback" } });
+    await changeField(box("Name"), "Callback");
     fireEvent.click(screen.getByRole("button", { name: "+ Mobile" }));
     fireEvent.click(screen.getByRole("button", { name: words.save.save }));
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
@@ -271,7 +270,7 @@ describe("the form editor: a new form", () => {
       code: "VALIDATION",
       fieldErrors: { fields: [{ key: "validation.fieldsRequired" }] },
     });
-    fireEvent.change(box("Name"), { target: { value: "Callback" } });
+    await changeField(box("Name"), "Callback");
     fireEvent.click(screen.getByRole("button", { name: words.save.save }));
     expect(await screen.findByText(en.validation.fieldsRequired)).toBeVisible();
   });

@@ -7,6 +7,7 @@ import { renderWithMessages } from "../../../../../tests/render-intl";
 import { encodeChatEvent, type ChatStreamEvent } from "../../endpoint/events";
 import { limitResponse, serverErrorResponse } from "../../endpoint/responses";
 import { STORAGE_KEY, type StoredChat } from "../chat-model";
+import { HOME_QUESTION_KEY } from "../home-question";
 
 const cards = vi.hoisted(() => ({ read: vi.fn(), confirm: vi.fn() }));
 vi.mock("../../actions", () => ({
@@ -594,6 +595,82 @@ describe("the cards under an answer, when they cannot be read (AI-P5-T02)", () =
     await waitFor(() => expect(sendButton()).toBeDisabled());
     await act(async () => undefined);
     expect(cards.read).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the question from the home page's search bar (ADR-150)", () => {
+  const keep = (text: string) =>
+    window.sessionStorage.setItem(HOME_QUESTION_KEY, JSON.stringify({ text }));
+
+  it("sends it as the first message once, and not again after a reload", async () => {
+    fetchMock.mockResolvedValueOnce(answered("I found two homes in Velachery."));
+    keep("3 BHK near Velachery under 90 lakh");
+    const view = renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+
+    expect(await screen.findByText("I found two homes in Velachery.")).toBeVisible();
+    expect(sentMessages(0)).toEqual([{ role: "user", text: "3 BHK near Velachery under 90 lakh" }]);
+    expect(window.sessionStorage.getItem(HOME_QUESTION_KEY)).toBeNull();
+    expect(box()).toHaveValue("");
+    expect(box()).toHaveFocus();
+
+    view.unmount();
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    expect(await screen.findByText("I found two homes in Velachery.")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds it to the conversation already kept in the tab", async () => {
+    const chat: StoredChat = {
+      version: 1,
+      gate: false,
+      account: false,
+      draft: "",
+      entries: [
+        { id: "a", role: "user", text: "Plots in Porur", masked: false },
+        {
+          id: "b",
+          role: "assistant",
+          text: "Here are three plots.",
+          notes: [],
+          references: [],
+          replaced: false,
+        },
+      ],
+    };
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chat));
+    fetchMock.mockResolvedValueOnce(answered("Two villas in Adyar."));
+    keep("Villas in Adyar");
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+
+    expect(await screen.findByText("Two villas in Adyar.")).toBeVisible();
+    expect(screen.getByText("Here are three plots.")).toBeVisible();
+    expect(sentMessages(0)).toEqual([
+      { role: "user", text: "Plots in Porur" },
+      { role: "assistant", text: "Here are three plots." },
+      { role: "user", text: "Villas in Adyar" },
+    ]);
+  });
+
+  it("only puts the cursor in the box when the search bar was empty", async () => {
+    keep("");
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    await waitFor(() => expect(box()).toHaveFocus());
+    expect(box()).toHaveValue("");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(window.sessionStorage.getItem(HOME_QUESTION_KEY)).toBeNull();
+  });
+
+  it("waits in the box, unsent, while the sign-in gate is up", async () => {
+    const chat: StoredChat = { version: 1, gate: true, account: false, draft: "", entries: [] };
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chat));
+    keep("Same size in Adyar?");
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+
+    const gate = await screen.findByRole("region", { name: words.signInGateTitle });
+    expect(within(gate).getByText("Same size in Adyar?")).toBeVisible();
+    await waitFor(() => expect(stored()?.draft).toBe("Same size in Adyar?"));
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
