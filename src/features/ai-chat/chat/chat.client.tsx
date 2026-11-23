@@ -35,6 +35,7 @@ import {
   EMPTY_CHAT,
   buildHistory,
   contextField,
+  shownRecords,
   loadChat,
   MASKED_NOTICE_KEY,
   safeHref,
@@ -409,7 +410,7 @@ export function ChatIsland({
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             messages: buildHistory(before, text),
-            ...contextField(context, tickedRef.current),
+            ...contextField(context, tickedRef.current, shownRecords(before)),
           }),
           signal: controller.signal,
         });

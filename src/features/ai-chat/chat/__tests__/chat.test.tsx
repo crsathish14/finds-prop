@@ -853,6 +853,35 @@ describe("the confirm card in the conversation (AI-P6-T02)", () => {
   });
 });
 
+describe("the homes the last answer showed travel with the next message (ADR-177)", () => {
+  it("sends the ids of the shown homes and projects, so 'compare these' needs no new search, and none before any answer", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        answered("Here are two.", [
+          { type: "card", reference: { kind: "home", homeId: "k3x9a2bd", slug: "one" } },
+          { type: "card", reference: { kind: "home", homeId: "m4y8b3ce", slug: "two" } },
+          { type: "card", reference: { kind: "project", slug: "kadal-vista" } },
+        ]),
+      )
+      .mockResolvedValueOnce(answered("Compared."));
+    renderWithMessages(<ChatIsland signedIn controls={controls} />);
+    await ready();
+    const user = await type("homes in Velachery");
+    await user.click(sendButton());
+    await screen.findByText("Here are two.");
+    await waitFor(() => expect(box()).toBeEnabled());
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty("context");
+
+    await user.type(box(), "compare these");
+    await user.click(sendButton());
+    await screen.findByText("Compared.");
+    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)).context).toEqual({
+      shownHomes: ["k3x9a2bd", "m4y8b3ce"],
+      shownProjects: ["kadal-vista"],
+    });
+  });
+});
+
 describe("the ticked homes travel with the message (AI chat compare)", () => {
   const Bar = ({ onIds }: { onIds: (ids: readonly string[]) => void }) => (
     <button type="button" onClick={() => onIds(["k3x9a2bd", "m4y8b3ce"])}>

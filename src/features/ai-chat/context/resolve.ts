@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { AI_MAX_CARDS_PER_ANSWER } from "@/config/ai";
 import { COMPARE_MAX, COMPARE_MIN } from "@/features/compare";
 import { isProjectSlug } from "@/features/projects";
 import { isShortId } from "@/lib/short-id";
@@ -27,6 +28,8 @@ const rawContextSchema = z.object({
   home: z.string().max(64).optional(),
   project: z.string().max(160).optional(),
   compare: z.array(z.string().max(64)).max(50).optional(),
+  shownHomes: z.array(z.string().max(64)).max(50).optional(),
+  shownProjects: z.array(z.string().max(160)).max(50).optional(),
 });
 
 function tidy(text: string): string {
@@ -44,6 +47,17 @@ export function cappedCompareIds(raw: readonly string[]): string[] {
   return ids;
 }
 
+/** The ids of a list that look like ids, each once, in the order given, at most `max`. */
+function cappedIds(raw: readonly string[], max: number): string[] {
+  const ids: string[] = [];
+  for (const part of raw) {
+    const id = tidy(part);
+    if (isShortId(id) && !ids.includes(id)) ids.push(id);
+    if (ids.length >= max) break;
+  }
+  return ids;
+}
+
 export async function resolveContext(
   raw: unknown,
   reads: ContextReads,
@@ -51,8 +65,14 @@ export async function resolveContext(
 ): Promise<ChatContext | null> {
   const parsed = rawContextSchema.safeParse(raw);
   if (!parsed.success) return null;
-  const { home, project, compare } = parsed.data;
-  const context: { home?: string; project?: string; compare?: readonly string[] } = {};
+  const { home, project, compare, shownHomes, shownProjects } = parsed.data;
+  const context: {
+    home?: string;
+    project?: string;
+    compare?: readonly string[];
+    shownHomes?: readonly string[];
+    shownProjects?: readonly string[];
+  } = {};
 
   const homeId = home === undefined ? "" : tidy(home);
   if (isShortId(homeId) && (await reads.homeIsOpen(homeId))) context.home = homeId;
@@ -67,6 +87,25 @@ export async function resolveContext(
   if (compareIds.length >= COMPARE_MIN) {
     const open = await reads.openHomeIds(compareIds);
     if (open.length >= COMPARE_MIN) context.compare = open.slice(0, COMPARE_MAX);
+  }
+
+  // What the last answer showed (ADR-177): each id is checked like any other, and one that is not listed now is dropped.
+  const shownIds = cappedIds(shownHomes ?? [], AI_MAX_CARDS_PER_ANSWER);
+  if (shownIds.length > 0) {
+    const open = await reads.openHomeIds(shownIds);
+    const kept = shownIds.filter((id) => open.includes(id));
+    if (kept.length > 0) context.shownHomes = kept;
+  }
+  if (options.projects !== false) {
+    const kept: string[] = [];
+    for (const part of shownProjects ?? []) {
+      const shown = tidy(part);
+      if (kept.length >= AI_MAX_CARDS_PER_ANSWER) break;
+      if (isProjectSlug(shown) && !kept.includes(shown) && (await reads.projectIsOpen(shown))) {
+        kept.push(shown);
+      }
+    }
+    if (kept.length > 0) context.shownProjects = kept;
   }
   return Object.keys(context).length === 0 ? null : context;
 }

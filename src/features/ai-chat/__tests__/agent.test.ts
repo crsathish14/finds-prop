@@ -396,6 +396,19 @@ describe("UT-ai-agent: parallel read calls", () => {
     expect(results[2]?.[1]).toEqual(results[3]?.[1]);
   });
 
+  it("logs the tool and the fixed code of a call that failed, and never its input (ADR-177)", async () => {
+    const provider = createFakeAiProvider([
+      toolCallTurn([{ id: "wrong", name: "lookup_home", input: { id: 7, note: "Zzcustomer" } }]),
+      textTurn("Done."),
+    ]);
+    await collect(provider);
+    const entry = logged.info.mock.calls.find(
+      ([message]) => message === "ai tool returned an error",
+    );
+    expect(entry?.[1]).toEqual({ tool: "lookup_home", code: "invalid_input" });
+    expect(JSON.stringify(logged.info.mock.calls)).not.toContain("Zzcustomer");
+  });
+
   it("lets one failing tool error only its own call", async () => {
     const provider = createFakeAiProvider([
       toolCallTurn([lookup("h1"), lookup("h2", "broken_read"), lookup("h3")]),

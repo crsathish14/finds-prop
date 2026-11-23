@@ -177,6 +177,8 @@ export function contextSection(context: {
   readonly home?: string | undefined;
   readonly project?: string | undefined;
   readonly compare?: readonly string[] | undefined;
+  readonly shownHomes?: readonly string[] | undefined;
+  readonly shownProjects?: readonly string[] | undefined;
 }): string | null {
   const lines: string[] = [];
   if (context.home !== undefined) {
@@ -194,9 +196,19 @@ export function contextSection(context: {
       `- The customer has these homes ticked for Compare, with these homeIds: ${context.compare.join(", ")}. When they say "these homes", "the comparison" or "the selected", "ticked" or "chosen" ones, they mean those homes: use compare_properties with those ids.`,
     );
   }
+  if (context.shownHomes !== undefined && context.shownHomes.length > 0) {
+    lines.push(
+      `- Your last answer showed these homes, in this order, with these homeIds: ${context.shownHomes.join(", ")}. When the customer says "these", "this one", "the first one", "the second one" or "that home", they mean those homes. Use the ids directly (compare_properties to compare, get_property for one home, and the enquiry preparation for an enquiry) and do not search again just to find them.`,
+    );
+  }
+  if (context.shownProjects !== undefined && context.shownProjects.length > 0) {
+    lines.push(
+      `- Your last answer showed these projects, with these slugs: ${context.shownProjects.join(", ")}. When the customer says "this project", "it" or "that one", they mean those: use the slug directly (get_project) and do not search again just to find it.`,
+    );
+  }
   if (lines.length === 0) return null;
   return [
-    "Where the customer came from (only the ids are given; every fact still comes from a lookup):",
+    "Where the customer came from, and what you showed last (only the ids are given; every fact still comes from a lookup):",
     ...lines,
     "- If the customer asks about something else, answer that instead. Never say these ids aloud.",
   ].join("\n");

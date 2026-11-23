@@ -152,10 +152,17 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
       });
       for (const { callId, outcome } of run.results) {
         messages.push({ role: "tool", callId, content: outcome.content });
-        if (outcome.status !== "ok") continue;
+        const toolName = round.calls.find((asked) => asked.id === callId)?.name;
+        if (outcome.status !== "ok") {
+          // Names only: which of OUR tools (a name the model made up is "unknown") and which fixed code, never the input.
+          logger.info("ai tool returned an error", {
+            tool: tools.some((tool) => tool.name === toolName) ? toolName : "unknown",
+            code: outcome.code,
+          });
+          continue;
+        }
         usefulResults = true;
         toolResults.push(outcome.content);
-        const toolName = round.calls.find((asked) => asked.id === callId)?.name;
         const offer = toolName === undefined ? null : offerFromOutput(toolName, outcome.output);
         if (offer !== null) offers.push(offer);
         for (const reference of outcome.references)

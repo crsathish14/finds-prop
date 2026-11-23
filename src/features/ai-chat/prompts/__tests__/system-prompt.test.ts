@@ -454,6 +454,24 @@ describe("UT-ai-system-prompt: the articles, questions and open jobs (ADR-143 se
   });
 });
 
+describe("UT-ai-system-prompt: what the last answer showed (ADR-177)", () => {
+  const WITH_SHOWN = buildSystemPrompt({
+    translate,
+    pageContext: { shownHomes: ["k3x9a2bd", "m4y8b3ce"], shownProjects: ["kadal-vista"] },
+  });
+
+  it("names the shown homes and projects by id, says what the customer means by 'these' and 'the second one', and not to search again", () => {
+    expect(WITH_SHOWN).toContain("k3x9a2bd, m4y8b3ce");
+    expect(WITH_SHOWN).toContain("kadal-vista");
+    expect(WITH_SHOWN.toLowerCase()).toContain("do not search again just to find");
+    expect(WITH_SHOWN.toLowerCase()).toContain("never say these ids aloud");
+  });
+
+  it("adds nothing when nothing was shown, and the prompt is as it was", () => {
+    expect(buildSystemPrompt({ translate, pageContext: {} })).toBe(PROMPT);
+  });
+});
+
 describe("UT-ai-system-prompt: talking with the customer and offering an enquiry (ADR-174)", () => {
   const SECTION = PROMPT.slice(
     PROMPT.indexOf("Talking with the customer:"),
