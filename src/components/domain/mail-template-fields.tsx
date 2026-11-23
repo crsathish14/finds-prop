@@ -13,8 +13,8 @@
  * Accessibility: each box has a visible label tied to it, its hint and its problem; a problem shows an icon and words,
  *   not colour alone; the placeholder list is a real list and each name is read as written, in curly brackets.
  * States: filled, empty, with problems, at the limits (the counters say so), disabled while saving, with a draft waiting.
- * Dependencies: FormSection, FormField, Input, Textarea. Tests: mail-template-fields.test.tsx; Design Lab "Site
- *   content" (ADR-183).
+ * Dependencies: FormSection, FormField, Input, Textarea.
+ * Tests: mail-template-fields.test.tsx; Design Lab "Site content" (ADR-183).
  * UX reference: none: the mail editor has no approved screen (ADR-183); it follows the Site content boxes. Every word is
  *   unapproved.
  */
@@ -75,7 +75,12 @@ function MailTemplateFields({
   className,
 }: MailTemplateFieldsProps) {
   return (
-    <FormSection id={id} title={words.title} description={words.description} className={className}>
+    <FormSection
+      id={id}
+      title={words.title}
+      description={words.description}
+      {...(className ? { className } : {})}
+    >
       {status ? <p className="text-small font-semibold text-ink">{status}</p> : null}
       <FormField
         label={words.subject.label}
