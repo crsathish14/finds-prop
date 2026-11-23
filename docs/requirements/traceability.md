@@ -112,6 +112,7 @@ Legend: **Stage** `S4` = Stage 4, `S4-T14` = a specific task. **E** = `E2E-nn`. 
 | FR-ADM-14 | FAQ management                   | `faq`, `admin`                     | ADR-143 ph. 2   | Lab, to design                   | UT-faq-manager, IT-faq, DB-RLS-faq                                                    |
 | FR-ADM-15 | Careers management               | `careers`, `admin`                 | ADR-143 ph. 4   | Lab, to design                   | UT-jobs-manager, IT-careers, DB-RLS-careers                                           |
 | FR-ADM-16 | Content module switches          | `site-content`, `admin`            | ADR-143 ph. 1   | Overview card, design            | UT-module-switch, IT-module-switch, E-modules                                         |
+| FR-ADM-17 | Enquiry mail wording             | `mail-templates`, `admin`          | ADR-183         | Lab, to design                   | UT-mail-template-*                                                                    |
 
 ### Cross-cutting and gated
 
