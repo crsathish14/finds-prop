@@ -5,7 +5,8 @@ import {
   SPONSOR_ALT_MAX,
   SPONSOR_HREF_MAX,
 } from "./constants";
-import { requiredLine, tidy } from "./schemas";
+import { SPONSOR_STYLES } from "@/lib/sponsors";
+import { optionalLine, requiredLine, tidy } from "./schemas";
 import { SPONSOR_SLOTS } from "./sponsor-rules";
 
 /**
@@ -64,7 +65,56 @@ const format = z.preprocess(
   z.object({ desktop: picturePath, compact: picturePath }).optional(),
 );
 
-const sponsor = z.object({
+/** A project's slug, as the projects feature keeps it. Whether such a live project exists is checked by the save. */
+const projectSlug = z.preprocess(
+  (typed) => (typeof typed === "string" ? typed.trim().toLowerCase() : typed),
+  z
+    .string()
+    .min(1, { error: "validation.required", abort: true })
+    .min(2, { error: "validation.invalid" })
+    .max(80, { error: "validation.invalid" })
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, { error: "validation.invalid" })
+    .optional(),
+);
+
+/** The Showcase card's facts (ADR-182). Every box may be left empty here; the ad shows once its required ones are filled. */
+const showcase = z
+  .object({
+    project: optionalLine(60),
+    locality: optionalLine(60),
+    homes: optionalLine(40),
+    price: optionalLine(40),
+    size: optionalLine(40),
+    possession: optionalLine(40),
+    rera: optionalLine(60),
+  })
+  .optional();
+
+/** The Cinematic banner's words (ADR-182), with the same rule. */
+const cinematic = z
+  .object({
+    eyebrow: optionalLine(30),
+    headline: optionalLine(40),
+    line: optionalLine(90),
+    button: optionalLine(24),
+  })
+  .optional();
+
+/**
+ * Where a click goes decides which box must be filled (ADR-182): another site needs the address, one of our projects
+ * needs its slug, and the other box is set aside. Done before the boxes are checked, so a missing one is named with the
+ * rest (a rule on the whole sponsor would not run while another box has a problem).
+ */
+function sortLink(typed: unknown): unknown {
+  if (typeof typed !== "object" || typed === null || Array.isArray(typed)) return typed;
+  const raw = typed as Record<string, unknown>;
+  if (raw.link === "project") {
+    return { ...raw, href: undefined, projectSlug: raw.projectSlug ?? "" };
+  }
+  return { ...raw, href: raw.href ?? "", projectSlug: undefined };
+}
+
+const sponsorFields = z.object({
   id: z
     .string()
     .min(1, { error: "validation.required" })
@@ -72,13 +122,24 @@ const sponsor = z.object({
     .regex(/^[A-Za-z0-9_-]+$/, { error: "validation.invalid" }),
   advertiser: requiredLine(SPONSOR_ADVERTISER_MAX),
   alt: requiredLine(SPONSOR_ALT_MAX),
-  href: secureLink,
+  /** Where a click goes (ADR-182): another site ("url", as before) or one of our live projects ("project"). */
+  link: z.enum(["url", "project"], { error: "validation.invalid" }).default("url"),
+  href: secureLink.optional(),
+  projectSlug,
   active: z.boolean({ error: "validation.invalid" }),
   strip: format,
   panel: format,
+  brand: optionalLine(60),
+  photo: picturePath,
+  showcase,
+  cinematic,
 });
 
+const sponsor = z.preprocess(sortLink, sponsorFields);
+
 export const sponsorsInputSchema = z.object({
+  /** The hero ad style (ADR-182). Left out, the stored one is kept. */
+  style: z.enum(SPONSOR_STYLES, { error: "validation.invalid" }).optional(),
   sponsors: z
     .array(sponsor)
     .max(SPONSORS_MAX)
@@ -89,6 +150,13 @@ export const sponsorsInputSchema = z.object({
           context.addIssue({ code: "custom", message: "validation.invalid", path: [index, "id"] });
         }
         seen.add(item.id);
+        if (item.photo !== undefined && !item.photo.startsWith(`sponsors/${item.id}/`)) {
+          context.addIssue({
+            code: "custom",
+            message: "validation.invalid",
+            path: [index, "photo"],
+          });
+        }
         for (const name of ["strip", "panel"] as const) {
           const chosen = item[name];
           if (!chosen) continue;

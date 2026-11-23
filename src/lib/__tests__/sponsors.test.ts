@@ -3,8 +3,10 @@ import { NEAR_MISS_AD, SAMPLE_AD_A, SAMPLE_AD_B, SAMPLE_AD_C } from "../sponsors
 import {
   fitFor,
   formatFor,
+  readyFor,
   resolveHero,
   selectSponsors,
+  selectStyled,
   SLOT_RATIOS,
   type SponsorAd,
 } from "../sponsors";
@@ -163,5 +165,49 @@ describe("UT-sponsors: the hero falls back to Search Desk without a banner", () 
     const hero = resolveHero([], "search_desk");
     expect(hero.arrangement).toBe("search_desk");
     expect(hero.sponsors).toEqual([]);
+  });
+});
+
+describe("UT-sponsors: which ads are ready for the hero style (ADR-182)", () => {
+  const photo = { src: "https://example.test/photo.jpg", width: 2000, height: 1125 };
+  const ready: SponsorAd = {
+    id: "ready",
+    active: true,
+    placements: ["hero", "results"],
+    alt: "Meridian Homes",
+    href: "/projects/aranya-heights",
+    external: false,
+    brand: "Meridian Homes",
+    photo,
+    showcase: { project: "Aranya Heights", locality: "OMR", homes: "2 & 3 BHK", price: "₹78 L" },
+    cinematic: { headline: "Homes by the lake", button: "Explore" },
+  };
+
+  /** The ready ad with one field taken away. */
+  const without = (key: keyof SponsorAd): SponsorAd =>
+    Object.fromEntries(Object.entries(ready).filter(([name]) => name !== key)) as SponsorAd;
+
+  it("needs the photo, the brand and the style's own words", () => {
+    expect(readyFor(ready, "showcase")).toBe(true);
+    expect(readyFor(ready, "cinematic")).toBe(true);
+    expect(readyFor(without("photo"), "showcase")).toBe(false);
+    expect(readyFor({ ...ready, brand: " " }, "cinematic")).toBe(false);
+    expect(readyFor(without("cinematic"), "cinematic")).toBe(false);
+    expect(readyFor(without("cinematic"), "showcase")).toBe(true);
+  });
+
+  it("shows active hero ads that are ready, in order, and leaves out picture-only ads", () => {
+    expect(
+      selectStyled(
+        [
+          ready,
+          { ...ready, id: "off", active: false },
+          { ...ready, id: "results-only", placements: ["results"] },
+          SAMPLE_AD_A,
+          { ...ready, id: "second" },
+        ],
+        "showcase",
+      ).map((ad) => ad.id),
+    ).toEqual(["ready", "second"]);
   });
 });

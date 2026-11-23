@@ -1,9 +1,12 @@
-import { SITE_SETTING_SCHEMAS, toSponsorAds } from "@/features/site";
+import { SITE_SETTING_SCHEMAS, toSponsorAds, toSponsorStyle } from "@/features/site";
+import type { SponsorStyle } from "@/lib/sponsors";
 import { ActionError } from "@/server/actions/normalise-error";
-import { SPONSOR_IMAGE_MAX_KB } from "./constants";
+import { SPONSOR_IMAGE_MAX_KB, SPONSOR_PHOTO_MAX_KB } from "./constants";
 import {
+  PHOTO_RULE,
   SLOT_SIZES,
   SPONSOR_SLOTS,
+  photoProblem,
   readImageInfo,
   slotProblem,
   type SlotProblem,
@@ -36,10 +39,14 @@ export interface StoredPicture {
 export interface SponsorStore {
   /** The sponsors as stored now (whatever is there, unchecked). */
   readAds(): Promise<unknown[]>;
+  /** The hero ad style as stored now (unchecked), or nothing. */
+  readStyle(): Promise<unknown>;
+  /** True when a project with this slug is live on the site (approved and published). */
+  isLiveProject(slug: string): Promise<boolean>;
   /** A file of the bucket, or `null` when there is none (or it cannot be read). */
   fetchImage(path: string): Promise<Uint8Array | null>;
-  /** Replaces the whole list. Throws the database's failure through `ActionError`. */
-  write(ads: Record<string, unknown>[]): Promise<void>;
+  /** Replaces the whole list and the style. Throws the database's failure through `ActionError`. */
+  write(ads: Record<string, unknown>[], style: SponsorStyle): Promise<void>;
   /** Takes files out of the bucket. */
   removeFiles(paths: readonly string[]): Promise<void>;
 }
@@ -65,6 +72,14 @@ function knownPictures(ads: readonly unknown[]): {
   const paths = new Set<string>();
   for (const ad of ads) {
     if (!isRecord(ad)) continue;
+    const photo = ad.photo;
+    if (isRecord(photo) && typeof photo.path === "string") {
+      paths.add(photo.path);
+      const { path, width, height, bytes } = photo;
+      if (typeof width === "number" && typeof height === "number" && typeof bytes === "number") {
+        known.set(path, { path, width, height, bytes });
+      }
+    }
     for (const name of ["strip", "panel"] as const) {
       const creatives = ad[name];
       if (!isRecord(creatives)) continue;
@@ -89,29 +104,48 @@ const PROBLEM_KEY: Record<SlotProblem, string> = {
   shape: "validation.sponsorImageShape",
 };
 
-/** Reads one new picture back from the bucket and checks it for its slot. */
+/** What a new picture is for: one of the four banner slots, or the Showcase and Cinematic photo (ADR-182). */
+type PictureUse = SponsorSlot | "photo";
+
+/** Reads one new picture back from the bucket and checks it for its use. */
 async function inspect(
   store: SponsorStore,
   path: string,
-  slot: SponsorSlot,
+  use: PictureUse,
 ): Promise<
   { picture: StoredPicture } | { problem: { key: string; values?: Record<string, number> } }
 > {
   const bytes = await store.fetchImage(path);
   if (!bytes) return { problem: { key: "validation.sponsorImageMissing" } };
   const info = readImageInfo(bytes);
-  const problem = slotProblem(slot, info, bytes.byteLength);
+  const problem =
+    use === "photo"
+      ? photoProblem(info, bytes.byteLength)
+      : slotProblem(use, info, bytes.byteLength);
   if (problem === null && info) {
     return { picture: { path, width: info.width, height: info.height, bytes: bytes.byteLength } };
   }
-  const { minimum } = SLOT_SIZES[slot.format][slot.device];
+  const minimum = use === "photo" ? PHOTO_RULE.minimum : SLOT_SIZES[use.format][use.device].minimum;
   const values =
     problem === "size"
-      ? { maximum: SPONSOR_IMAGE_MAX_KB }
+      ? { maximum: use === "photo" ? SPONSOR_PHOTO_MAX_KB : SPONSOR_IMAGE_MAX_KB }
       : problem === "small"
         ? { width: minimum.width, height: minimum.height }
         : undefined;
   return { problem: { key: PROBLEM_KEY[problem ?? "type"], ...(values ? { values } : {}) } };
+}
+
+/** The lines of a style that were filled in, or nothing when none was. */
+function filledLines(
+  lines: Record<string, string | null | undefined> | undefined,
+): Record<string, string> | undefined {
+  if (!lines) return undefined;
+  const filled = Object.fromEntries(
+    Object.entries(lines).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+  return Object.keys(filled).length > 0 ? filled : undefined;
 }
 
 export async function saveSponsorsContent(
@@ -120,10 +154,15 @@ export async function saveSponsorsContent(
   log?: Logger,
 ): Promise<SponsorsDone> {
   const before = knownPictures(await store.readAds());
+  // Left out, the stored style is kept: a save from an older screen must not reset the admin's choice.
+  const style = input.style ?? toSponsorStyle(await store.readStyle());
 
   // The new files (those the stored list does not already hold), each read back once.
-  const wanted = new Map<string, SponsorSlot>();
+  const wanted = new Map<string, PictureUse>();
   input.sponsors.forEach((sponsor) => {
+    if (sponsor.photo !== undefined && !before.known.has(sponsor.photo)) {
+      wanted.set(sponsor.photo, "photo");
+    }
     for (const slot of SPONSOR_SLOTS) {
       const path = sponsor[slot.format]?.[slot.device];
       if (path !== undefined && !before.known.has(path) && !wanted.has(path)) {
@@ -145,6 +184,20 @@ export async function saveSponsorsContent(
     return result && "picture" in result ? result.picture : undefined;
   };
 
+  // A sponsor that links to one of our projects must name one that buyers can open.
+  const projects = [
+    ...new Set(
+      input.sponsors.flatMap((sponsor) =>
+        sponsor.link === "project" && sponsor.projectSlug ? [sponsor.projectSlug] : [],
+      ),
+    ),
+  ];
+  const live = new Map(
+    await Promise.all(
+      projects.map(async (slug) => [slug, await store.isLiveProject(slug)] as const),
+    ),
+  );
+
   const ads = input.sponsors.map((sponsor, index) => {
     const value: Record<string, unknown> = {
       id: sponsor.id,
@@ -154,8 +207,34 @@ export async function saveSponsorsContent(
       // keeps its own rule (results use the strip, the hero follows the layout).
       placements: ["hero", "results"],
       alt: sponsor.alt,
-      href: sponsor.href,
+      link: sponsor.link,
     };
+    if (sponsor.link === "project" && sponsor.projectSlug) {
+      value.projectSlug = sponsor.projectSlug;
+      if (!live.get(sponsor.projectSlug)) {
+        fieldErrors[`sponsors.${index}.projectSlug`] = [
+          { key: "validation.sponsorProjectMissing" },
+        ];
+      }
+    } else {
+      value.href = sponsor.href;
+    }
+    if (sponsor.brand) value.brand = sponsor.brand;
+    const showcase = filledLines(sponsor.showcase);
+    if (showcase) value.showcase = showcase;
+    const cinematic = filledLines(sponsor.cinematic);
+    if (cinematic) value.cinematic = cinematic;
+    if (sponsor.photo !== undefined) {
+      const picture = pictureAt(sponsor.photo);
+      if (picture) {
+        value.photo = picture;
+      } else {
+        const result = checked.get(sponsor.photo);
+        if (result && "problem" in result) {
+          fieldErrors[`sponsors.${index}.photo`] = [result.problem];
+        }
+      }
+    }
     for (const name of ["strip", "panel"] as const) {
       const chosen = sponsor[name];
       if (!chosen?.desktop || !chosen.compact) continue;
@@ -179,26 +258,27 @@ export async function saveSponsorsContent(
   });
 
   if (Object.keys(fieldErrors).length > 0) {
-    throw new ActionError("VALIDATION", "A sponsor's picture does not fit its slot", {
+    throw new ActionError("VALIDATION", "A sponsor's picture or project cannot be used", {
       fieldErrors,
     });
   }
 
   // A value the public side would ignore must never be stored: the whole setting would silently fall back to none.
-  const readable = SITE_SETTING_SCHEMAS.sponsors.safeParse({ ads });
+  const readable = SITE_SETTING_SCHEMAS.sponsors.safeParse({ style, ads });
   if (!readable.success || toSponsorAds(ads, "https://storage.invalid").length !== ads.length) {
     throw new ActionError("INTERNAL", "The sponsors do not match the shape the site reads");
   }
 
-  await store.write(ads);
+  await store.write(ads, style);
 
   const kept = new Set(
-    ads.flatMap((ad) =>
-      (["strip", "panel"] as const).flatMap((name) => {
+    ads.flatMap((ad) => [
+      ...(["strip", "panel"] as const).flatMap((name) => {
         const creatives = ad[name] as Record<string, StoredPicture> | undefined;
         return creatives ? Object.values(creatives).map((picture) => picture.path) : [];
       }),
-    ),
+      ...(ad.photo ? [(ad.photo as StoredPicture).path] : []),
+    ]),
   );
   const gone = [...before.paths].filter((path) => !kept.has(path));
   if (gone.length > 0) {

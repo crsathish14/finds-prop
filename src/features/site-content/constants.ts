@@ -74,6 +74,10 @@ export const SPONSORS_MAX = 10;
 export const SPONSOR_IMAGE_MAX_KB = 150;
 export const SPONSOR_IMAGE_MAX_BYTES = SPONSOR_IMAGE_MAX_KB * 1024;
 
+/** The Showcase and Cinematic photo (ADR-182): heavier than a banner, as it fills a large area (the bucket's cap is 500 KB). */
+export const SPONSOR_PHOTO_MAX_KB = 480;
+export const SPONSOR_PHOTO_MAX_BYTES = SPONSOR_PHOTO_MAX_KB * 1024;
+
 /**
  * The public bucket the sponsors' pictures are kept in, under `sponsors/<the sponsor's id>/`. The same name as the
  * public side's `SPONSOR_BUCKET` (a test holds them together); it is repeated here because the browser code of this
