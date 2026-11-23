@@ -107,7 +107,7 @@ export const SELLER: LabEntry[] = [
     id: "contact-email-card",
     name: "Contact email card",
     description:
-      "The dashboard card where an owner adds or changes the email enquiries about their homes are mailed to (ADR-184): the prompt for an owner with homes and no address, a problem with the address, saving, a failed save, the saved address with Change (and a very long one), and changing it with Cancel. Try the first one. The wording is for approval.",
+      "The dashboard card where an owner adds or changes the email enquiries about their homes are mailed to (ADR-186): the prompt for an owner with homes and no address, a problem with the address, saving, a failed save, the saved address with Change (and a very long one), and changing it with Cancel. Try the first one. The wording is for approval.",
     sources: ["domain/contact-email-card.tsx"],
     Demo: ContactEmailCardDemo,
   },

@@ -13,14 +13,14 @@ const LOOKS_LIKE_AN_EMAIL = /^\S+@\S+\.\S+$/;
 type SaveContactEmail = (input: { email: string }) => Promise<ActionResult<{ email: string }>>;
 
 type ContactEmailProps = {
-  /** The address the account holds for enquiries, or null when none (ADR-184). Private: only the person's own. */
+  /** The address the account holds for enquiries, or null when none (ADR-186). Private: only the person's own. */
   email: string | null;
   /** The server action that saves it (`saveContactEmail`): the page hands it over, as the email prompt's are. */
   save: SaveContactEmail;
 };
 
 /**
- * The dashboard card for the email enquiries about the owner's homes are mailed to (ADR-184). It shows for an owner
+ * The dashboard card for the email enquiries about the owner's homes are mailed to (ADR-186). It shows for an owner
  * who has homes: the prompt when there is no address, the saved address with Change when there is one. The address
  * is not confirmed: nothing is sent to it to check, which the hint says. The save is the action's; its checks (the
  * sign-in, the verified phone, the hourly limit, the address) run on the server.

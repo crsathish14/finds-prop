@@ -268,13 +268,25 @@ test.describe("@smoke site footer and bottom bar", () => {
   test("a missing page keeps the header and footer around the not-found message", async ({
     page,
   }) => {
-    // /ai-search does not exist while its flag is off, so the page calls notFound().
-    const response = await page.goto("/ai-search");
-    expect(response?.status()).toBe(404);
+    // An article address that is no slug makes the blog page call notFound() (as does a switched-off blog), inside
+    // the public group. The status is not checked: the locale's loading screen starts the response before the page
+    // runs, so Next sends 200 with the not-found screen (the property page draws its own message, also with a 200).
+    await page.goto("/blog/Not_A_Slug");
     await expect(page.getByRole("heading", { name: en.notFound.title })).toBeVisible();
     await expect(page.getByRole("banner")).toBeVisible();
     await expect(page.getByRole("contentinfo")).toBeVisible();
     await expect(page.getByRole("link", { name: en.common.goHome })).toBeVisible();
+  });
+
+  test("the AI search page group has the header but no footer, even on its not-found screen (ADR-185)", async ({
+    page,
+  }) => {
+    // /ai-search does not exist while its flag is off, so the page calls notFound() inside its own group.
+    const response = await page.goto("/ai-search");
+    // With the flag on the page itself is drawn, with the same header and no footer.
+    expect([200, 404]).toContain(response?.status());
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toHaveCount(0);
   });
 
   test("a URL that matches no page at all still shows the plain not-found screen", async ({

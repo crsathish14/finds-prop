@@ -151,7 +151,7 @@ describe("UT-wizard-state: the wizard without React (S6-T02)", () => {
     });
   });
 
-  describe("the email for enquiries (ADR-184)", () => {
+  describe("the email for enquiries (ADR-186)", () => {
     it("starts empty, and an opened draft does not bring one (it belongs to the account)", () => {
       expect(EMPTY_VALUES.contactEmail).toBe("");
       expect(valuesFromDraft(draftView).contactEmail).toBe("");

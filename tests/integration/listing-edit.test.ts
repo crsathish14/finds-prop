@@ -111,7 +111,7 @@ describe("IT-listing-edit: saving changes to a listing against a real database (
 
   beforeAll(async () => {
     owner = await signInTestCustomer();
-    // Sending a rejected listing again needs the email for enquiries (ADR-184).
+    // Sending a rejected listing again needs the email for enquiries (ADR-186).
     await giveContactEmail(owner.userId);
     const email = `it-listing-edit-other-${RUN}@example.test`;
     const created = await admin.auth.admin.createUser({ email, email_confirm: true });

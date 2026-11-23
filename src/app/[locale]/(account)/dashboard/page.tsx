@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * The numbers on the four tabs (S6-T03): four reads, made together, and none for a visitor (the page gate is
  * already sending them to sign in). A tab with nothing to count shows no number. The count of the owner's listings
- * outside the drafts comes back too: an owner who has homes is offered the email for enquiries (ADR-184).
+ * outside the drafts comes back too: an owner who has homes is offered the email for enquiries (ADR-186).
  */
 async function readTabCounts() {
   const session = await getSessionView();
@@ -63,7 +63,7 @@ async function readTabCounts() {
  * (each shows its empty state when it has nothing). The four tabs carry their numbers. The email prompt
  * shows for someone with no address, the reminder for someone whose link is not used yet, and nothing
  * when the address is confirmed or could not be read. An owner with homes also sees the card for the email
- * enquiries are mailed to: the prompt when there is none, the address with Change when there is one (ADR-184).
+ * enquiries are mailed to: the prompt when there is none, the address with Change when there is one (ADR-186).
  */
 export default async function DashboardPage({ searchParams }: PageProps) {
   const tab = parseTab((await searchParams)["tab"]);
@@ -74,7 +74,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   ]);
   // Nobody signed in: the page gate in the layout is already sending them to sign in.
   if (!person) return null;
-  // The email enquiries are mailed to (ADR-184) is only asked of an owner who has homes; it is private and is
+  // The email enquiries are mailed to (ADR-186) is only asked of an owner who has homes; it is private and is
   // read as the owner.
   const contactEmail = homes > 0 ? await getMyContactEmail() : null;
 

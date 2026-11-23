@@ -40,6 +40,7 @@ const PANEL_SPONSOR: SponsorEditView = {
   advertiser: "Alpha",
   active: true,
   alt: "Alpha banner",
+  link: "url",
   href: "https://alpha.example",
   panel: {
     desktop: {

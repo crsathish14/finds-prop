@@ -39,7 +39,7 @@ export interface ListingCallerStore {
   deleteDraft(listingId: string): Promise<boolean>;
   /** Calls `submit_listing`; returns the listing's short id. Throws the database's failure through `mapListingError`. */
   submit(listingId: string): Promise<string>;
-  /** The caller's own email for enquiries (ADR-184), or null when the account holds none. */
+  /** The caller's own email for enquiries (ADR-186), or null when the account holds none. */
   contactEmail(): Promise<string | null>;
   /** Calls `set_contact_email` for the caller; the address as stored. Throws the database's failure through `mapListingError`. */
   setContactEmail(email: string): Promise<string | null>;
@@ -204,7 +204,7 @@ export async function discardDraft(
 
 /**
  * Sends a draft for review. The database checks the owner, the fields, the photo and the limit. The account must
- * hold an email for enquiries first (ADR-184): one given with the submit is saved to the account, otherwise the one
+ * hold an email for enquiries first (ADR-186): one given with the submit is saved to the account, otherwise the one
  * already saved is used; with neither the listing is refused with a problem on that field, and stays a draft.
  */
 export async function sendForReview(
@@ -223,7 +223,7 @@ export async function sendForReview(
 }
 
 /**
- * Sets the email enquiries about the caller's homes are mailed to, from the dashboard (ADR-184). Answers the address
+ * Sets the email enquiries about the caller's homes are mailed to, from the dashboard (ADR-186). Answers the address
  * as stored (trimmed and lower case). The database checks the shape and refuses the reserved admin addresses.
  */
 export async function saveOwnContactEmail(

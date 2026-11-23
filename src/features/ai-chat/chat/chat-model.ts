@@ -40,6 +40,8 @@ const userEntrySchema = z.object({
   role: z.literal("user"),
   text: z.string().min(1).max(MAX_INPUT_CHARACTERS),
   masked: z.boolean(),
+  /** When the visitor sent it, in milliseconds since 1970 (the browser's clock); older kept chats have none. */
+  at: z.number().int().positive().optional(),
 });
 
 const assistantEntrySchema = z.object({
@@ -214,6 +216,70 @@ export function buildHistory(
   });
   turns.push({ role: "user", text: newText });
   return turns.slice(-AI_MAX_HISTORY_MESSAGES);
+}
+
+/**
+ * One paragraph of an answer cut into sentences, each marked as a question or not, with the spaces between them kept
+ * as pieces of their own, so the pieces put back together are the paragraph exactly (ADR-184). A sentence ends at
+ * `.`, `!` or `?` (or a run of them) that is followed by a space or the end, so a price such as 1.29 Cr or a
+ * figure such as 1,420 does not end one. A question is a sentence that ends with `?`; the page draws it in bold, so
+ * the customer sees at once what the assistant is asking. The model is not asked to write any mark-up for this.
+ */
+export function sentenceParts(paragraph: string): { text: string; question: boolean }[] {
+  const parts: { text: string; question: boolean }[] = [];
+  let start = 0;
+  let index = 0;
+  const push = (end: number) => {
+    if (end <= start) return;
+    const text = paragraph.slice(start, end);
+    const blank = text.trim() === "";
+    parts.push({ text, question: !blank && text.trimEnd().endsWith("?") });
+    start = end;
+  };
+  while (index < paragraph.length) {
+    const character = paragraph.charAt(index);
+    if (character === "." || character === "!" || character === "?") {
+      let end = index + 1;
+      while (end < paragraph.length && ".!?".includes(paragraph.charAt(end))) end += 1;
+      const next = paragraph.charAt(end);
+      if (end >= paragraph.length || /\s/u.test(next)) {
+        push(end);
+        // The spaces after the sentence are a piece of their own.
+        let spaceEnd = end;
+        while (spaceEnd < paragraph.length && /\s/u.test(paragraph.charAt(spaceEnd))) spaceEnd += 1;
+        push(spaceEnd);
+      }
+      index = Math.max(end, index + 1);
+    } else {
+      index += 1;
+    }
+  }
+  push(paragraph.length);
+  return parts;
+}
+
+/**
+ * The time a message was sent, written for reading and shown beside the visitor's message (ADR-185): "7:49 pm" for
+ * today, "23 Nov, 7:49 pm" for another day. It uses the visitor's own clock and zone. The answer itself never
+ * carries a time.
+ */
+export function messageTime(
+  at: number,
+  now: number = Date.now(),
+): { label: string; dateTime: string } {
+  const sent = new Date(at);
+  const clock = new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(sent);
+  const today = new Date(now);
+  const sameDay =
+    sent.getFullYear() === today.getFullYear() &&
+    sent.getMonth() === today.getMonth() &&
+    sent.getDate() === today.getDate();
+  const day = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(sent);
+  return { label: sameDay ? clock : `${day}, ${clock}`, dateTime: sent.toISOString() };
 }
 
 /** A link the server offered is drawn only if it is a path on this site. */

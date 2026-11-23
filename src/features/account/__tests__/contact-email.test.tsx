@@ -30,7 +30,7 @@ async function save() {
   });
 }
 
-describe("ContactEmail: the dashboard card for the email enquiries are mailed to (ADR-184)", () => {
+describe("ContactEmail: the dashboard card for the email enquiries are mailed to (ADR-186)", () => {
   it("shows the prompt when the account has no address", () => {
     renderWithMessages(<ContactEmail email={null} save={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 2, name: card.promptTitle })).toBeVisible();

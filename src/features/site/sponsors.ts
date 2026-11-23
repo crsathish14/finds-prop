@@ -1,5 +1,14 @@
 import { z } from "zod";
-import type { SponsorAd, SponsorCreatives, SponsorImage } from "@/lib/sponsors";
+import {
+  DEFAULT_SPONSOR_STYLE,
+  SPONSOR_STYLES,
+  type SponsorAd,
+  type SponsorCinematic,
+  type SponsorCreatives,
+  type SponsorImage,
+  type SponsorShowcase,
+  type SponsorStyle,
+} from "@/lib/sponsors";
 import { publicStorageUrl } from "@/lib/storage-url";
 
 /**
@@ -27,29 +36,99 @@ const imageSchema = z.object({
 
 const creativesSchema = z.object({ desktop: imageSchema, compact: imageSchema });
 
-const adSchema = z.object({
-  id: z.string().min(1).max(64),
-  active: z.boolean(),
-  placements: z.array(z.enum(["hero", "results"])).min(1),
-  alt: z.string().trim().min(1).max(200),
-  href: z
-    .string()
-    .max(2000)
-    .refine((text) => {
-      try {
-        const url = new URL(text);
-        return url.protocol === "https:" && url.username === "" && url.password === "";
-      } catch {
-        return false;
-      }
-    }),
-  strip: creativesSchema.optional(),
-  panel: creativesSchema.optional(),
+/** A project's slug, as the projects feature keeps it (`projectPath` in src/features/projects/address.ts; a test holds them together). */
+const PROJECT_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** The address of one of our project pages. */
+export function sponsorProjectHref(slug: string): string {
+  return `/projects/${slug}`;
+}
+
+const isSecureLink = (text: string) => {
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" && url.username === "" && url.password === "";
+  } catch {
+    return false;
+  }
+};
+
+/** A line the admin typed for a Showcase or Cinematic ad: trimmed, one line, short. */
+const line = (max: number) => z.string().trim().min(1).max(max);
+
+// Every line is optional when stored: the admin may fill one style before the other. An ad takes a style's words only
+// when the ones that style needs are all there (see `showcaseOf` and `cinematicOf`).
+const showcaseSchema = z.object({
+  project: line(60).optional(),
+  locality: line(60).optional(),
+  homes: line(40).optional(),
+  price: line(40).optional(),
+  size: line(40).optional(),
+  possession: line(40).optional(),
+  rera: line(60).optional(),
 });
+
+const cinematicSchema = z.object({
+  eyebrow: line(30).optional(),
+  headline: line(40).optional(),
+  line: line(90).optional(),
+  button: line(24).optional(),
+});
+
+/** The Showcase facts, when the four it needs are there. */
+function showcaseOf(stored: z.infer<typeof showcaseSchema> | undefined): SponsorShowcase | null {
+  if (!stored?.project || !stored.locality || !stored.homes || !stored.price) return null;
+  const { project, locality, homes, price, size, possession, rera } = stored;
+  return {
+    project,
+    locality,
+    homes,
+    price,
+    ...(size ? { size } : {}),
+    ...(possession ? { possession } : {}),
+    ...(rera ? { rera } : {}),
+  };
+}
+
+/** The Cinematic words, when the headline and the button are there. */
+function cinematicOf(stored: z.infer<typeof cinematicSchema> | undefined): SponsorCinematic | null {
+  if (!stored?.headline || !stored.button) return null;
+  const { eyebrow, headline, line: sentence, button } = stored;
+  return {
+    headline,
+    button,
+    ...(eyebrow ? { eyebrow } : {}),
+    ...(sentence ? { line: sentence } : {}),
+  };
+}
+
+const adSchema = z
+  .object({
+    id: z.string().min(1).max(64),
+    active: z.boolean(),
+    placements: z.array(z.enum(["hero", "results"])).min(1),
+    alt: z.string().trim().min(1).max(200),
+    /** "url" (another site, the default for ads saved before the styles) or "project" (one of our project pages). */
+    link: z.enum(["url", "project"]).optional(),
+    href: z.string().max(2000).refine(isSecureLink).optional(),
+    projectSlug: z.string().min(2).max(80).regex(PROJECT_SLUG).optional(),
+    strip: creativesSchema.optional(),
+    panel: creativesSchema.optional(),
+    brand: line(60).optional(),
+    photo: imageSchema.optional(),
+    showcase: showcaseSchema.optional(),
+    cinematic: cinematicSchema.optional(),
+  })
+  .refine((ad) => (ad.link === "project" ? ad.projectSlug !== undefined : ad.href !== undefined));
 
 type Creatives = z.infer<typeof creativesSchema>;
 
-function toImage(supabaseUrl: string, image: Creatives["desktop"]): SponsorImage {
+/** The hero ad style the admin chose; anything else (or nothing) is the default, the Showcase. */
+export function toSponsorStyle(stored: unknown): SponsorStyle {
+  return SPONSOR_STYLES.find((style) => style === stored) ?? DEFAULT_SPONSOR_STYLE;
+}
+
+function toImage(supabaseUrl: string, image: z.infer<typeof imageSchema>): SponsorImage {
   return {
     src: publicStorageUrl(supabaseUrl, SPONSOR_BUCKET, image.path),
     width: image.width,
@@ -86,15 +165,25 @@ export function toSponsorAds(
       continue;
     }
     seen.add(parsed.data.id);
-    const { id, active, placements, alt, href, strip, panel } = parsed.data;
+    const { id, active, placements, alt, link, href, projectSlug, strip, panel } = parsed.data;
+    const { brand, photo, showcase, cinematic } = parsed.data;
+    const project = link === "project" && projectSlug !== undefined ? projectSlug : null;
+    const facts = showcaseOf(showcase);
+    const words = cinematicOf(cinematic);
     ads.push({
       id,
       active,
       placements,
       alt,
-      href,
+      href: project === null ? (href ?? "") : sponsorProjectHref(project),
+      external: project === null,
+      ...(project === null ? {} : { projectSlug: project }),
       ...(strip ? { strip: toCreatives(supabaseUrl, strip) } : {}),
       ...(panel ? { panel: toCreatives(supabaseUrl, panel) } : {}),
+      ...(brand ? { brand } : {}),
+      ...(photo ? { photo: toImage(supabaseUrl, photo) } : {}),
+      ...(facts ? { showcase: facts } : {}),
+      ...(words ? { cinematic: words } : {}),
     });
   }
   if (skipped > 0) log?.warn("sponsored banners skipped, they do not fit", { skipped });

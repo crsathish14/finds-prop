@@ -53,7 +53,7 @@ const wrongKind = (missing: string) => (issue: { code: string; input?: unknown }
     : undefined;
 
 /**
- * The address enquiries about a home are mailed to (ADR-184). It is kept on the account, not in the listing, so it is
+ * The address enquiries about a home are mailed to (ADR-186). It is kept on the account, not in the listing, so it is
  * not one of the draft's fields: a draft saves without it and sending the listing needs it. It is trimmed and
  * lower-cased, then checked for the shape the database check also holds (something, an @, something, a dot,
  * something, no spaces). The address is not confirmed to be the person's own: nothing is sent to it to check.
@@ -232,7 +232,7 @@ export type DeleteDraftInput = z.infer<typeof deleteDraftSchema>;
 /**
  * Submit for review. The key stops a double click from running twice. The email for enquiries comes with it when the
  * person typed or changed one in the wizard (it is saved to their account first); without it the account must
- * already hold one, or the listing is refused with a problem on that field (ADR-184).
+ * already hold one, or the listing is refused with a problem on that field (ADR-186).
  */
 export const submitListingSchema = z.object({
   listingId: uuid,
@@ -241,7 +241,7 @@ export const submitListingSchema = z.object({
 });
 export type SubmitListingInput = z.infer<typeof submitListingSchema>;
 
-/** Set the account's email for enquiries from the dashboard (ADR-184). */
+/** Set the account's email for enquiries from the dashboard (ADR-186). */
 export const saveContactEmailSchema = z.object({ email: contactEmail });
 export type SaveContactEmailInput = z.infer<typeof saveContactEmailSchema>;
 

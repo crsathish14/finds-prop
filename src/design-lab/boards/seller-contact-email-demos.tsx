@@ -8,7 +8,7 @@ const FRAME = "w-full max-w-4xl rounded-xl border border-line bg-canvas p-4";
 const NOTHING = () => undefined;
 const KEEP = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
 
-/** The card on the dashboard where an owner adds or changes the email enquiries are mailed to (ADR-184). */
+/** The card on the dashboard where an owner adds or changes the email enquiries are mailed to (ADR-186). */
 export function ContactEmailCardDemo() {
   const [email, setEmail] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);

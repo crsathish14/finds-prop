@@ -35,6 +35,8 @@ import {
   EMPTY_CHAT,
   buildHistory,
   contextField,
+  messageTime,
+  sentenceParts,
   shownRecords,
   loadChat,
   MASKED_NOTICE_KEY,
@@ -99,6 +101,11 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   href: undefined,
 };
 
+/** The time of a message the visitor sends, from the browser's clock (kept outside the component: it is not a render value). */
+function sentAt(): number {
+  return Date.now();
+}
+
 let counter = 0;
 function newId(): string {
   counter += 1;
@@ -115,7 +122,15 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
     <>
       {parts.map((paragraph, index) => (
         <p key={index} className="whitespace-pre-line">
-          {paragraph.trim()}
+          {sentenceParts(paragraph.trim()).map((part, position) =>
+            part.question ? (
+              <strong key={position} className="font-bold">
+                {part.text}
+              </strong>
+            ) : (
+              part.text
+            ),
+          )}
           {caret && index === parts.length - 1 ? <ChatStreamCaret /> : null}
         </p>
       ))}
@@ -508,7 +523,7 @@ export function ChatIsland({
       const userId = newId();
       setEntries([
         ...question.before,
-        { id: userId, role: "user", text: question.text, masked: false },
+        { id: userId, role: "user", text: question.text, masked: false, at: sentAt() },
       ]);
       setReturned(false);
       void run(question.text, question.before, userId);
@@ -521,7 +536,7 @@ export function ChatIsland({
     if (text === "" || busy || limited || gate) return;
     const userId = newId();
     const before = entries;
-    setEntries([...before, { id: userId, role: "user", text, masked: false }]);
+    setEntries([...before, { id: userId, role: "user", text, masked: false, at: sentAt() }]);
     if (!keepDraft) setDraft("");
     setReturned(false);
     // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
@@ -639,6 +654,7 @@ export function ChatIsland({
               entry.role === "user" ? (
                 <ChatUserBubble
                   key={entry.id}
+                  {...(entry.at === undefined ? {} : { time: messageTime(entry.at) })}
                   notice={
                     entry.masked ? (
                       <ChatNoteLine align="user" live>

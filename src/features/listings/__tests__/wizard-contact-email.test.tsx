@@ -5,7 +5,7 @@ import { renderWithMessages } from "../../../../tests/render-intl";
 import type { ActionResult } from "@/types/action";
 import { LocationFieldStub } from "./location-stub";
 
-// The email for enquiries on the last step of the wizard (ADR-184).
+// The email for enquiries on the last step of the wizard (ADR-186).
 configure({ asyncUtilTimeout: 8000 });
 vi.setConfig({ testTimeout: 30_000 });
 
@@ -88,7 +88,7 @@ beforeEach(() => {
   window.history.replaceState(null, "", "/post-property");
 });
 
-describe("PostingWizard: the email for enquiries (ADR-184)", () => {
+describe("PostingWizard: the email for enquiries (ADR-186)", () => {
   it("asks for it on the last step, empty when the account has none, and says it is not checked", async () => {
     open(actions());
     await reachReview();

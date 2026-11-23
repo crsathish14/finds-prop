@@ -1,7 +1,7 @@
 /**
  * ContactEmailCard: where an owner adds or changes the email enquiries about their homes are mailed to.
  * Purpose: the dashboard note "Add your email to get enquiries by email" for an owner who has homes and no address,
- *   and the same card with the saved address and a Change button once there is one (ADR-184). Owner: design system.
+ *   and the same card with the saved address and a Change button once there is one (ADR-186). Owner: design system.
  *   It holds no state and sends nothing: the connected card on the dashboard keeps the text, calls the action and
  *   decides which state to draw.
  * Props: email (the saved address, or null when none), editing (show the box even though an address is saved),
@@ -14,7 +14,7 @@
  *   aria-describedby (FormField); a refusal is announced as an alert; Change and Cancel are named by their words.
  * States: no address (the prompt), address saved, changing it, saving, an invalid address, a failed save.
  * Dependencies: FormField, Input, Button, Alert, Heading, Text, next-intl. Tests: contact-email-card.test.tsx;
- *   Design Lab "Contact email card" (ADR-184).
+ *   Design Lab "Contact email card" (ADR-186).
  * UX reference: none yet; drawn from the email prompt of ADD-03 for the owner's approval.
  */
 import { useTranslations } from "next-intl";

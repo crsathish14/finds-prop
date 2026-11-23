@@ -70,7 +70,7 @@ export type WizardActions = {
   submit: (input: {
     listingId: string;
     idempotencyKey: string;
-    /** The email enquiries are mailed to, saved to the account with the submit (ADR-184). */
+    /** The email enquiries are mailed to, saved to the account with the submit (ADR-186). */
     contactEmail?: string;
   }) => Promise<ActionResult<{ listingId: string; shortId: string }>>;
   /** Saves the changes to a listing that is already sent (S6-T05); only used when the wizard edits one. */
@@ -127,7 +127,7 @@ export type PostingWizardProps = {
    */
   locationHeld?: boolean;
   /**
-   * The email the account already holds for enquiries (ADR-184), to start the box on the last step with. Empty or
+   * The email the account already holds for enquiries (ADR-186), to start the box on the last step with. Empty or
    * missing when there is none. It is private: only the signed-in person's own is ever given.
    */
   contactEmail?: string;
@@ -538,7 +538,7 @@ function WizardBody({
       ...validateStep(1, values),
       ...validateStep(2, values),
       ...validateStep(4, values),
-      // A listing sent again needs the email too (ADR-184); one that is only edited does not ask.
+      // A listing sent again needs the email too (ADR-186); one that is only edited does not ask.
       ...(edit.state === "rejected" ? validateContactEmail(values) : {}),
     };
     if (Object.keys(found).length > 0) {

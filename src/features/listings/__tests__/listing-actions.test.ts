@@ -146,7 +146,7 @@ describe("UT-listing-actions: who may post, and what it costs (S6-T02)", () => {
     expect(calls).not.toContain("handler");
   });
 
-  describe("the email for enquiries (ADR-184)", () => {
+  describe("the email for enquiries (ADR-186)", () => {
     it("saving it needs a verified phone, counts the project_save limit, has no key and refreshes nothing", async () => {
       const { saveEmail, calls } = harness();
       const answer = await saveEmail({ email: "Owner@Example.Test" });

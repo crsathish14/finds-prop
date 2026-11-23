@@ -56,7 +56,7 @@ export async function signInTestCustomer(): Promise<TestUser> {
 }
 
 /**
- * Saves the email enquiries are mailed to on a user's profile (ADR-184). Sending a listing for review needs one, so the
+ * Saves the email enquiries are mailed to on a user's profile (ADR-186). Sending a listing for review needs one, so the
  * tests that send listings give their owner one first. The address is made up and ends in a reserved test domain.
  */
 export async function giveContactEmail(

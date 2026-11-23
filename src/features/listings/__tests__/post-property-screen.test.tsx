@@ -219,7 +219,7 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
     ]);
   });
 
-  it("starts the wizard's email box with the address the account already holds, and leaves it empty when there is none (ADR-184)", async () => {
+  it("starts the wizard's email box with the address the account already holds, and leaves it empty when there is none (ADR-186)", async () => {
     const view = render(await PostPropertyScreen({}));
     expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "");
     view.unmount();

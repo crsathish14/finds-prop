@@ -58,7 +58,7 @@ export interface WizardValues {
   locationLabel: string;
   locationDetail: string;
   /**
-   * The email enquiries are mailed to (ADR-184): asked on the last step of a new listing, started from the one the
+   * The email enquiries are mailed to (ADR-186): asked on the last step of a new listing, started from the one the
    * account already holds. It belongs to the account, not the listing, so it is never part of the draft's fields
    * (`draftInput`) and is not kept in the browser for the way back in.
    */
@@ -226,7 +226,7 @@ export function draftInput(
 }
 
 /**
- * The email for enquiries, checked the way the server will before Submit (ADR-184). Returns the problem on that field
+ * The email for enquiries, checked the way the server will before Submit (ADR-186). Returns the problem on that field
  * (empty, or not shaped like an address), or nothing when it is fine.
  */
 export function validateContactEmail(values: WizardValues): StepErrors {

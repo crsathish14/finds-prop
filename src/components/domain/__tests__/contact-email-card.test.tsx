@@ -20,7 +20,7 @@ function card(props: Partial<ContactEmailCardProps> = {}) {
   return { ...handlers, view };
 }
 
-describe("ContactEmailCard (ADR-184)", () => {
+describe("ContactEmailCard (ADR-186)", () => {
   it("asks an owner with no address for one: a heading, a labelled box that says it is not checked, and Save", () => {
     const { onSubmit } = card();
     expect(screen.getByRole("heading", { level: 2, name: words.promptTitle })).toBeVisible();

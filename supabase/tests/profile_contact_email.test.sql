@@ -1,4 +1,4 @@
--- The poster's private contact email (ADR-184, enquiry email plan PR 2).
+-- The poster's private contact email (ADR-186, enquiry email plan PR 2).
 -- Tests: DB-COL-profiles-contact_email, DB-FN-set_contact_email, DB-RLS-profiles-contact_email, DB-PRIV-set_contact_email.
 -- A person sets and reads their own address through set_contact_email() only; nobody else can read or write it,
 -- a visitor can do neither, the super admin can read it, and the format, the length and the reserved admin

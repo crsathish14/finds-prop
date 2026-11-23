@@ -109,7 +109,7 @@ export const setListingLocationConfig = {
 };
 
 /**
- * Setting the email enquiries are mailed to, from the dashboard (ADR-184). It needs a signed-in account with a
+ * Setting the email enquiries are mailed to, from the dashboard (ADR-186). It needs a signed-in account with a
  * verified phone, like every owner write, and changes only the caller's own account (the database function uses the
  * session). It is limited with the existing `project_save` scope (60 an hour a user; no new scope was wanted). The same
  * address twice leaves the same account, so it has no key. Nothing public changes, so nothing is refreshed. The address

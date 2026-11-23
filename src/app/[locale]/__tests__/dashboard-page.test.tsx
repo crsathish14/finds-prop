@@ -222,7 +222,7 @@ describe("the My listings and Enquiries received tabs (S6-T03)", () => {
   });
 });
 
-describe("the email for enquiries (ADR-184)", () => {
+describe("the email for enquiries (ADR-186)", () => {
   it("offers it to an owner who has homes and none saved, and shows the saved one with Change", async () => {
     await open();
     expect(screen.getByTestId("contact-email")).toHaveTextContent("none");

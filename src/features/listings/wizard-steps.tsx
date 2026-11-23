@@ -360,7 +360,7 @@ export function ReviewStep({
   onEdit: (step: WizardStep) => void;
   headingRef: Ref<HTMLHeadingElement>;
   /**
-   * The box for the email enquiries are mailed to (ADR-184), asked here next to Submit. Left out when a listing
+   * The box for the email enquiries are mailed to (ADR-186), asked here next to Submit. Left out when a listing
    * that is already sent is edited without being sent again.
    */
   email?: {

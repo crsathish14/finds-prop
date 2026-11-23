@@ -28,7 +28,7 @@ export async function isSignedIn(): Promise<boolean> {
 }
 
 /**
- * The email enquiries about the signed-in person's homes are mailed to (ADR-184), or null when none is saved or it
+ * The email enquiries about the signed-in person's homes are mailed to (ADR-186), or null when none is saved or it
  * could not be read (the wizard then asks for one, and the dashboard offers to add one). It is private: read as the
  * person, so the database lets them see only their own row, and never logged. Only their own row is asked for, since
  * the admin could read every row.

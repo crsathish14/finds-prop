@@ -271,7 +271,7 @@ describe("UT-listing-service: the wizard's server rules (S6-T02)", () => {
     });
   });
 
-  describe("the email for enquiries (ADR-184)", () => {
+  describe("the email for enquiries (ADR-186)", () => {
     it("maps the database's refusals to a problem on the email field, never naming the reserved list", () => {
       expect(
         mapListingError({ code: "22023", message: "profile.contact_email_invalid" }).fieldErrors,

@@ -95,7 +95,7 @@ describe("IT-actions-listing: the wizard's server side against a real database (
 
   beforeAll(async () => {
     owner = await signInTestCustomer();
-    // Sending a listing for review needs the email for enquiries (ADR-184).
+    // Sending a listing for review needs the email for enquiries (ADR-186).
     await giveContactEmail(owner.userId);
     const other = await admin.auth.admin.createUser({
       email: `it-listings-other-${RUN}@example.test`,
@@ -296,7 +296,7 @@ describe("IT-actions-listing: the wizard's server side against a real database (
     expect((await row(otherListingId)).status).toBe("draft");
   });
 
-  describe("the email for enquiries (ADR-184)", () => {
+  describe("the email for enquiries (ADR-186)", () => {
     const contactOf = async () => {
       const { data, error } = await admin
         .from("profiles")

@@ -216,7 +216,7 @@ describe("UT-schemas: the post-property wizard's inputs (S6-T02, FR-ACC-06)", ()
     });
   });
 
-  describe("the email for enquiries (ADR-184)", () => {
+  describe("the email for enquiries (ADR-186)", () => {
     const keys = (value: unknown) => {
       const input = { email: value };
       return keysOf(saveContactEmailSchema.safeParse(input), input);

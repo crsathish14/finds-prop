@@ -133,7 +133,7 @@ export const setListingLocation = defineAction({
 });
 
 /**
- * Sets the email enquiries about the caller's homes are mailed to (ADR-184). The account is the session. The address
+ * Sets the email enquiries about the caller's homes are mailed to (ADR-186). The account is the session. The address
  * is private and unconfirmed: the answer holds it for the screen, and no log line does.
  */
 export const saveContactEmail = defineAction({

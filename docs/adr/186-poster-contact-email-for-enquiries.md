@@ -1,4 +1,4 @@
-# ADR-184 · The poster's private contact email for enquiries (enquiry mail, part 2)
+# ADR-186 · The poster's private contact email for enquiries (enquiry mail, part 2)
 
 - Status: Accepted for part 2 (the address and where it is asked). The mail itself is part 4 of the plan; nothing is sent by this change. The new words await the owner's approval.
 - Date: 2026-11-24

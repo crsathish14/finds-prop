@@ -38,7 +38,7 @@ beforeEach(() => {
   db.warnings = [];
 });
 
-describe("UT-getMyContactEmail: the private email for enquiries (ADR-184)", () => {
+describe("UT-getMyContactEmail: the private email for enquiries (ADR-186)", () => {
   it("reads only that column of the signed-in person's own row", async () => {
     expect(await getMyContactEmail()).toBe("owner@example.test");
     expect(db.asked).toEqual(["profiles:contact_email:id:00000000-0000-4000-8000-0000000000a1"]);

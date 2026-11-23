@@ -13,6 +13,7 @@ export {
   type Notifier,
 } from "./events";
 export { createResendSender, type ResendOptions } from "./resend";
+export * from "./render-template";
 export { MAIL_TIMEOUT_MS, type MailMessage, type MailSender } from "./types";
 
 export interface MailConfig {

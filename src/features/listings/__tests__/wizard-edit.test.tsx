@@ -316,7 +316,7 @@ describe("PostingWizard editing a listing that was not approved (S6-T05, FR-ACC-
     expect(router.push).toHaveBeenCalledWith("/dashboard?tab=listings");
   });
 
-  it("asks for the email for enquiries when sending it again, and sends it with the submit (ADR-184)", async () => {
+  it("asks for the email for enquiries when sending it again, and sends it with the submit (ADR-186)", async () => {
     const fake = actions();
     open(fake, rejected, { contactEmail: "" });
     await toReview();
@@ -333,7 +333,7 @@ describe("PostingWizard editing a listing that was not approved (S6-T05, FR-ACC-
     });
   });
 
-  it("does not ask for it when a listing in review or Live is only edited (ADR-184)", async () => {
+  it("does not ask for it when a listing in review or Live is only edited (ADR-186)", async () => {
     open(actions(), { state: "approved", reason: null }, { contactEmail: "" });
     await toReview();
     await heading(words.reviewSave);

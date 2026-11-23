@@ -110,6 +110,43 @@ describe("the chat page's first screen (AI-P5-T02)", () => {
   });
 });
 
+describe("the time of the visitor's message is shown beside it (ADR-185)", () => {
+  it("shows the time under the visitor's message and none inside the assistant's answer", async () => {
+    fetchMock.mockResolvedValueOnce(answered("I found one home."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+    await screen.findByText("I found one home.");
+    const times = document.querySelectorAll("time");
+    expect(times).toHaveLength(1);
+    expect(times[0]?.closest("[data-slot='chat-user-message']")).not.toBeNull();
+    expect(times[0]?.textContent).toMatch(/^\d{1,2}:\d{2}\s?(am|pm)$/iu);
+    await waitFor(() =>
+      expect(stored()?.entries[0]).toMatchObject({ role: "user", at: expect.any(Number) }),
+    );
+  });
+});
+
+describe("the assistant's questions are drawn in bold (ADR-184)", () => {
+  it("puts the question sentence in bold and leaves the rest as plain text, with the words unchanged", async () => {
+    fetchMock.mockResolvedValueOnce(
+      answered("I found one home for ₹1.29 Cr. Shall I prepare an enquiry for it? Tell me if not."),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("homes in Velachery");
+    await user.click(sendButton());
+    const bold = await screen.findByText("Shall I prepare an enquiry for it?");
+    expect(bold.tagName).toBe("STRONG");
+    const paragraph = bold.closest("p");
+    expect(paragraph?.textContent).toBe(
+      "I found one home for ₹1.29 Cr. Shall I prepare an enquiry for it? Tell me if not.",
+    );
+    expect(paragraph?.querySelectorAll("strong")).toHaveLength(1);
+  });
+});
+
 describe("the reply buttons under an answer (ADR-175)", () => {
   const withReplies = (text: string): Response =>
     answered(text, [

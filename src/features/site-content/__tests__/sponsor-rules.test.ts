@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SPONSOR_IMAGE_MAX_BYTES } from "../constants";
-import { SPONSOR_SLOTS, readImageInfo, slotFit, slotProblem } from "../sponsor-rules";
+import { SPONSOR_SLOTS, photoProblem, readImageInfo, slotFit, slotProblem } from "../sponsor-rules";
 import { jpeg, notAPicture, png, webpExtended, webpLossless, webpLossy } from "./sponsor-fixtures";
 
 const slotOf = (format: "strip" | "panel", device: "desktop" | "compact") => {
@@ -79,5 +79,23 @@ describe("UT-sponsor-slot: which picture fits which slot (S7-T11, DEC-15)", () =
     expect(slotFit(stripDesktop, info(1940, 234))).toBe("cover");
     expect(slotFit(stripDesktop, info(1940, 400))).toBe("rejected");
     expect(slotProblem(stripDesktop, info(1940, 400), 10_000)).toBe("shape");
+  });
+});
+
+describe("UT-sponsor-photo: the Showcase and Cinematic photo (ADR-182)", () => {
+  const info = (width: number, height: number) => ({ type: "image/jpeg" as const, width, height });
+
+  it("takes a large landscape photo from 4:3 to 21:9", () => {
+    expect(photoProblem(info(1600, 900), 1000)).toBeNull();
+    expect(photoProblem(info(2400, 1800), 1000)).toBeNull();
+    expect(photoProblem(info(2100, 900), 1000)).toBeNull();
+  });
+
+  it("refuses what is not a picture, too heavy, too small or not landscape enough", () => {
+    expect(photoProblem(null, 1000)).toBe("type");
+    expect(photoProblem(info(2000, 1125), 481 * 1024)).toBe("size");
+    expect(photoProblem(info(1599, 900), 1000)).toBe("small");
+    expect(photoProblem(info(2000, 2000), 1000)).toBe("shape");
+    expect(photoProblem(info(3000, 1000), 1000)).toBe("shape");
   });
 });

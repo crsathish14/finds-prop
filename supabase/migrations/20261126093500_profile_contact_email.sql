@@ -1,4 +1,4 @@
--- The poster's private contact email (ADR-184, enquiry email plan PR 2, owner approval 24 Nov 2026).
+-- The poster's private contact email (ADR-186, enquiry email plan PR 2, owner approval 24 Nov 2026).
 -- A home owner signs in by phone and has no email on the account, but the poster of a home is to be told by email
 -- when someone enquires. The address is kept on the profile, apart from the sign-in email: it is not verified, it
 -- is never public, and it is never part of the Supabase email flow (FLAG_CUSTOMER_EMAIL).
@@ -28,7 +28,7 @@ alter table public.profiles
   );
 
 comment on column public.profiles.contact_email is
-  'Private. Where enquiries about this person''s homes are mailed (ADR-184). Not verified. Written only by set_contact_email().';
+  'Private. Where enquiries about this person''s homes are mailed (ADR-186). Not verified. Written only by set_contact_email().';
 
 -- Sets or clears the caller's contact email. An empty value clears it. The address is trimmed and lowercased; one
 -- that is not an address, is longer than 254 characters, or is one of the reserved admin addresses (ADR-010) is
