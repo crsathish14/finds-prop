@@ -107,14 +107,14 @@ isOneToOne: false
                   ]
                 },"builders": {
                   Row: {
-                    "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"id": string,"invited_at": string | null,"kind": string,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"updated_at": string,"user_id": string | null,"website": string | null
+                    "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"established_year": number | null,"id": string,"invited_at": string | null,"kind": string,"logo_path": string | null,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"projects_delivered": number | null,"tagline": string | null,"updated_at": string,"user_id": string | null,"website": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email": string,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_url"?: string | null,"name": string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email": string,"established_year"?: number | null,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_path"?: string | null,"logo_url"?: string | null,"name": string,"onboarded_at"?: string | null,"phone"?: string | null,"projects_delivered"?: number | null,"tagline"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
+                    "active"?: boolean,"contact_person"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string,"established_year"?: number | null,"id"?: string,"invited_at"?: string | null,"kind"?: string,"logo_path"?: string | null,"logo_url"?: string | null,"name"?: string,"onboarded_at"?: string | null,"phone"?: string | null,"projects_delivered"?: number | null,"tagline"?: string | null,"updated_at"?: string,"user_id"?: string | null,"website"?: string | null
                   }
                   Relationships: [
                     
@@ -597,7 +597,7 @@ isOneToOne: false
           Functions: {
             "admin_builder_overview":
 { Args: Record<PropertyKey, never>; Returns: {
-              "active": boolean,"contact_person": string,"description": string,"email": string,"id": string,"invited_at": string,"kind": string,"last_sign_in_at": string,"leads": number,"logo_url": string,"name": string,"phone": string,"projects": number,"website": string
+              "active": boolean,"contact_person": string,"description": string,"email": string,"established_year": number,"id": string,"invited_at": string,"kind": string,"last_sign_in_at": string,"leads": number,"logo_path": string,"logo_url": string,"name": string,"phone": string,"projects": number,"projects_delivered": number,"tagline": string,"website": string
             }[]
                            },
 "admin_builders":
@@ -607,13 +607,17 @@ isOneToOne: false
 "created_at": string,
 "description": string | null,
 "email": string,
+"established_year": number | null,
 "id": string,
 "invited_at": string | null,
 "kind": string,
+"logo_path": string | null,
 "logo_url": string | null,
 "name": string,
 "onboarded_at": string | null,
 "phone": string | null,
+"projects_delivered": number | null,
+"tagline": string | null,
 "updated_at": string,
 "user_id": string | null,
 "website": string | null
@@ -936,13 +940,17 @@ isOneToOne: false
 "created_at": string,
 "description": string | null,
 "email": string,
+"established_year": number | null,
 "id": string,
 "invited_at": string | null,
 "kind": string,
+"logo_path": string | null,
 "logo_url": string | null,
 "name": string,
 "onboarded_at": string | null,
 "phone": string | null,
+"projects_delivered": number | null,
+"tagline": string | null,
 "updated_at": string,
 "user_id": string | null,
 "website": string | null

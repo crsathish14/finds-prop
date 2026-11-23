@@ -21,6 +21,9 @@ export interface BuilderRow {
   logo_url: string | null;
   website: string | null;
   description: string | null;
+  tagline: string | null;
+  established_year: number | null;
+  projects_delivered: number | null;
 }
 
 /** What the store knows of one builder, enough to decide what may be done to it. */
@@ -81,7 +84,16 @@ export function mapBuilderError(failure: BuilderFailure): ActionError {
 export function toBuilderRow(
   input: Pick<
     InviteBuilderInput,
-    "name" | "kind" | "contactPerson" | "phone" | "logoUrl" | "website" | "description"
+    | "name"
+    | "kind"
+    | "contactPerson"
+    | "phone"
+    | "logoUrl"
+    | "website"
+    | "description"
+    | "tagline"
+    | "establishedYear"
+    | "projectsDelivered"
   >,
 ): BuilderRow {
   return {
@@ -92,6 +104,9 @@ export function toBuilderRow(
     logo_url: input.logoUrl ?? null,
     website: input.website ?? null,
     description: input.description ?? null,
+    tagline: input.tagline ?? null,
+    established_year: input.establishedYear ?? null,
+    projects_delivered: input.projectsDelivered ?? null,
   };
 }
 

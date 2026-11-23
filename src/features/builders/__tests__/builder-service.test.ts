@@ -63,6 +63,9 @@ describe("UT-builder-service: inviting a builder, the saga (S7-T05, ADR-010)", (
       logo_url: null,
       website: "https://kadalhomes.example",
       description: null,
+      tagline: null,
+      established_year: null,
+      projects_delivered: null,
       email: "sales@kadalhomes.example",
     });
     expect(made.createAccount).toHaveBeenCalledWith("sales@kadalhomes.example");

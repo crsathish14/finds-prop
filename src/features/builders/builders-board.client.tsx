@@ -280,6 +280,12 @@ export function BuildersBoard({ builders, now, actions }: BuildersBoardProps) {
     logoUrl: translate("form.logoUrl"),
     website: translate("form.website"),
     description: translate("form.description"),
+    spotlight: translate("form.spotlight"),
+    spotlightHint: translate("form.spotlightHint"),
+    tagline: translate("form.tagline"),
+    taglineHint: translate("form.taglineHint"),
+    establishedYear: translate("form.establishedYear"),
+    projectsDelivered: translate("form.projectsDelivered"),
     optional: translate("form.optional"),
   };
 

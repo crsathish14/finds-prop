@@ -51,8 +51,40 @@ describe("UT-builder-profile-service: saving the builder's own profile (S7-T03)"
         logo_url: null,
         website: "https://kadalhomes.example",
         description: null,
+        tagline: null,
+        established_year: null,
+        projects_delivered: null,
+        logo_path: null,
       },
     ]);
+  });
+
+  it("saves the spotlight fields and a logo from the builder's own folder (ADR-179)", async () => {
+    const { client, written } = clientWith({});
+    await saveMyProfile(client, {
+      name: "Kadal Homes",
+      tagline: "Homes by the sea",
+      establishedYear: 2004,
+      projectsDelivered: 18,
+      logoPath: `${BUILDER}/logo-1.webp`,
+    });
+    expect(written[0]).toMatchObject({
+      tagline: "Homes by the sea",
+      established_year: 2004,
+      projects_delivered: 18,
+      logo_path: `${BUILDER}/logo-1.webp`,
+    });
+  });
+
+  it("refuses a logo from another builder's folder and writes nothing", async () => {
+    const { client, written } = clientWith({});
+    await expect(
+      saveMyProfile(client, {
+        name: "Kadal Homes",
+        logoPath: "00000000-0000-4000-b000-000000000002/logo-1.webp",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION" });
+    expect(written).toEqual([]);
   });
 
   it("finds nothing for an account with no active builder record", async () => {

@@ -19,6 +19,12 @@ export interface BuilderRowView {
   logoUrl: string | null;
   website: string | null;
   description: string | null;
+  /** The Developer Spotlight fields (ADR-179). */
+  tagline: string | null;
+  establishedYear: number | null;
+  projectsDelivered: number | null;
+  /** The uploaded logo, `<builder id>/<file>` in the logo bucket. */
+  logoPath: string | null;
   projects: number;
   leads: number;
   invitedAt: string | null;
@@ -30,15 +36,19 @@ const overviewRowSchema = z.object({
   contact_person: z.string().nullable(),
   description: z.string().nullable(),
   email: z.string(),
+  established_year: z.number().nullable(),
   id: z.string(),
   invited_at: z.string().nullable(),
   kind: z.string(),
   last_sign_in_at: z.string().nullable(),
   leads: z.number(),
+  logo_path: z.string().nullable(),
   logo_url: z.string().nullable(),
   name: z.string(),
   phone: z.string().nullable(),
   projects: z.number(),
+  projects_delivered: z.number().nullable(),
+  tagline: z.string().nullable(),
   website: z.string().nullable(),
 });
 
@@ -68,6 +78,10 @@ export function toBuilderRows(rows: readonly unknown[]): BuilderRowView[] {
         logoUrl: found.logo_url,
         website: found.website,
         description: found.description,
+        tagline: found.tagline,
+        establishedYear: found.established_year,
+        projectsDelivered: found.projects_delivered,
+        logoPath: found.logo_path,
         projects: found.projects,
         leads: found.leads,
         invitedAt: found.invited_at,
@@ -88,6 +102,12 @@ export interface MyProfileView {
   logoUrl: string | null;
   website: string | null;
   description: string | null;
+  /** The Developer Spotlight fields (ADR-179). */
+  tagline: string | null;
+  establishedYear: number | null;
+  projectsDelivered: number | null;
+  /** The uploaded logo, `<builder id>/<file>` in the logo bucket. */
+  logoPath: string | null;
   /** Approved, published projects: what the buyer's card says. */
   liveProjects: number;
 }
