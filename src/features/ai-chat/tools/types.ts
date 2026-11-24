@@ -186,7 +186,7 @@ export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
  */
 export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   sign_in_required:
-    "This is for signed-in customers: projects, builders, localities and searching around a place. Homes can still be searched without signing in, by their filters. Tell the customer to sign in with their phone number for this, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any project, builder, locality or place from memory.",
+    "This is for signed-in customers: projects, builders and localities. Homes can still be searched without signing in, by their filters and an area name. Tell the customer to sign in with their phone number for this, add the marker [[link:sign_in]], and ask them to send the request again after signing in. Do not name, list or guess any project, builder, locality or place from memory.",
   not_available:
     "That home or project is not open for requests. Do not try another id; tell the customer it is not available.",
   own_home: "The customer owns this home, so they cannot enquire about it. Tell them so.",
