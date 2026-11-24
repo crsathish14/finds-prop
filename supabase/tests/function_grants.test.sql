@@ -71,7 +71,7 @@ select is(
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
        'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files',
-       'guest_search_properties'
+       'guest_search_properties', 'poster_mail_address'
      )
      and not has_function_privilege('service_role', proc.oid, 'execute')),
   '',
@@ -88,7 +88,7 @@ select is(
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
        'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files',
-       'guest_search_properties'
+       'guest_search_properties', 'poster_mail_address'
      )
      and (has_function_privilege('anon', proc.oid, 'execute')
           or has_function_privilege('authenticated', proc.oid, 'execute'))),
