@@ -31,6 +31,7 @@ import {
 import type { PlaceLookup, PlaceLookupResult } from "./place-lookup";
 import type { AiChatTool, ToolContext, ToolRun } from "./types";
 import { cleanOptionalLine, cleanThirdPartyLine } from "./untrusted";
+import { requireSignIn } from "./require-sign-in";
 
 /**
  * `search_properties` (ADR-128 section 5.1): the homes that match what the customer asked for, through the
@@ -185,7 +186,6 @@ export const PLACE_STATUSES = [
   "ambiguous",
   "not_found",
   "unavailable",
-  "guest_area",
 ] as const;
 export type PlaceStatus = (typeof PLACE_STATUSES)[number];
 
@@ -221,7 +221,7 @@ export const placeSearchPropertiesOutputSchema = z.object({
 export type PlaceSearchPropertiesOutput = z.infer<typeof placeSearchPropertiesOutputSchema>;
 
 /** What the assistant is told to do for each answer of the lookup. Addressed to the model, never shown as it is. */
-const PLACE_NOTES: Record<Exclude<PlaceStatus, "not_asked" | "found" | "guest_area">, string> = {
+const PLACE_NOTES: Record<Exclude<PlaceStatus, "not_asked" | "found">, string> = {
   ambiguous:
     "More than one place could be meant. Ask the customer one short question for a more specific place name, such as the area with a landmark or the pincode. Do not name or list places yourself, and do not search again until they answer.",
   not_found:
@@ -229,13 +229,6 @@ const PLACE_NOTES: Record<Exclude<PlaceStatus, "not_asked" | "found" | "guest_ar
   unavailable:
     "Places cannot be looked up right now. Say in one short sentence that you cannot look that place up, and offer to look by a locality that is listed instead.",
 };
-
-/**
- * The note for a customer who is not signed in and asked for homes near a place (ADR-197). The place was not looked
- * up: its words were matched against the homes' locality, title and city, so the homes are not measured by distance.
- */
-const GUEST_AREA_NOTE =
-  "The customer is not signed in, so the place was read as an area name only: these are homes whose locality, title or city matches those words, not homes measured by distance. Say that in one short sentence, and that signing in lets them search within a distance of a place. Add the marker [[link:sign_in]] once. If no homes matched, say so plainly and do not guess any home or area.";
 
 /** Text the customer may not have given: trimmed, and nothing at all when it is empty. */
 function given(text: string | null): string | null {
@@ -351,7 +344,7 @@ function roundedKilometres(distance: number | null | undefined): number | null {
 }
 
 function noPlaceOutput(
-  status: Exclude<PlaceStatus, "not_asked" | "found" | "guest_area">,
+  status: Exclude<PlaceStatus, "not_asked" | "found">,
   context: ToolContext,
 ): ToolRun<PlaceSearchPropertiesOutput> {
   return {
@@ -441,7 +434,7 @@ export function createSearchPropertiesTool(
     description: [
       DESCRIPTION_START,
       "Give null for every filter the customer did not ask for.",
-      "When the customer wants homes near, around or within some distance of a place, put the place in `place` exactly as they wrote it, and the distance in `radiusKm` only if they gave one. The website looks the place up and searches around it; `place.status` says what happened: `found`, `ambiguous` (ask the customer for a more specific place), `not_found` or `unavailable` (say so and offer the listed localities), `guest_area` (the customer is not signed in, so the place was read as an area name only: follow `place.note`), or `not_asked`. You are never told where a place is.",
+      "When the customer wants homes near, around or within some distance of a place, put the place in `place` exactly as they wrote it, and the distance in `radiusKm` only if they gave one. The website looks the place up and searches around it; `place.status` says what happened: `found`, `ambiguous` (ask the customer for a more specific place), `not_found` or `unavailable` (say so and offer the listed localities), or `not_asked`. You are never told where a place is.",
       "With a found place, `total` counts the homes inside `place.radiusKm` and each home has `distanceKm`. Homes with `nearby` true are outside that distance, shown because it held only a few homes, and reach as far as `place.nearbyRadiusKm`: say plainly that they are further out.",
       ...DESCRIPTION_END,
     ].join(" "),
@@ -449,13 +442,11 @@ export function createSearchPropertiesTool(
     output: placeSearchPropertiesOutputSchema,
     async run(input, context) {
       const place = given(input.place);
-      // A place is looked up against the localities of homes and projects, so the lookup is for signed-in customers.
-      // A guest who gives a place gets its words read as an area name through the same narrow guest read (ADR-197):
-      // no lookup, no distance, and a note that tells the model to say so.
-      const guestArea = place !== null && !context.signedIn;
-      if (place === null || guestArea) {
-        const searched = guestArea ? { ...input, locality: given(input.locality) ?? place } : input;
-        const results = await searchHomes(searched, context);
+      // A place is looked up against the localities of homes and projects, so it is for signed-in customers; a guest
+      // searches by the filters, the locality text and the keyword.
+      if (place !== null) requireSignIn(context);
+      if (place === null) {
+        const results = await searchHomes(input, context);
         if (results.status === "failed") throw new Error("search results could not be read");
         const homes = results.homes.slice(0, input.limit ?? MAX_TOOL_RESULT_ITEMS);
         return {
@@ -468,12 +459,12 @@ export function createSearchPropertiesTool(
               nearby: false,
             })),
             place: {
-              status: guestArea ? "guest_area" : "not_asked",
+              status: "not_asked",
               radiusKm: null,
               homesWithinRadius: 0,
               nearbyRadiusKm: null,
               nearbyHomes: 0,
-              note: guestArea ? GUEST_AREA_NOTE : null,
+              note: null,
             },
           },
           references: toReferences(homes),
