@@ -41,7 +41,7 @@ export interface SystemPromptOptions {
    */
   readonly placeSearch?: boolean;
   /**
-   * True when the customer is not signed in (ADR-198): the prompt then carries the rules for a guest's two free
+   * True when the customer is not signed in (ADR-200): the prompt then carries the rules for a guest's two free
    * messages. Absent or false leaves the prompt as it was, apart from its version line.
    */
   readonly guest?: boolean;

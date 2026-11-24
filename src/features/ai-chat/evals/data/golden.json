@@ -806,7 +806,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "a visitor asks only for flats: one short question for the most useful missing detail, and no search yet (ADR-198)",
+    "title": "a visitor asks only for flats: one short question for the most useful missing detail, and no search yet (ADR-200)",
     "messages": [
       {
         "role": "user",
@@ -835,7 +835,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "a visitor asks for homes near an area: the area is searched by name, with no place, and one question follows for the missing detail (ADR-198)",
+    "title": "a visitor asks for homes near an area: the area is searched by name, with no place, and one question follows for the missing detail (ADR-200)",
     "placeSearch": true,
     "messages": [
       {

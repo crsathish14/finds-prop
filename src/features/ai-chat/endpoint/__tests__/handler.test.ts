@@ -139,7 +139,7 @@ describe("UT-ai-endpoint: a normal message", () => {
     expect(harness.usage[0]).toMatchObject({ caller: "signed_in", userId: SIGNED_IN.userId });
   });
 
-  it("gives the guest rules to an anonymous caller's prompt and never to a signed-in caller's (ADR-198)", async () => {
+  it("gives the guest rules to an anonymous caller's prompt and never to a signed-in caller's (ADR-200)", async () => {
     const anonymous = createHarness({ script: [textTurn("Hello there, how can I help?")] });
     await readEvents(await handleAiChat(chatRequest(say("hello there")), anonymous.deps));
     expect(anonymous.provider.calls[0]?.system).toContain("only two free messages");

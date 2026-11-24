@@ -396,7 +396,7 @@ describe("UT-ai-system-prompt: the rules for homes near a place (ADR-142)", () =
   });
 });
 
-describe("UT-ai-system-prompt: the rules for a guest's two free messages (ADR-198)", () => {
+describe("UT-ai-system-prompt: the rules for a guest's two free messages (ADR-200)", () => {
   const FOR_GUEST = buildSystemPrompt({ translate, guest: true });
   const LOWER_FOR_GUEST = FOR_GUEST.toLowerCase();
 

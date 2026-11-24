@@ -1,4 +1,4 @@
-# ADR-198 · A guest's two free messages: search when the message is enough, ask one question when it is not
+# ADR-200 · A guest's two free messages: search when the message is enough, ask one question when it is not
 
 - Status: Accepted. Plan approved by the owner in chat on 26 Nov 2026. Builds on ADR-171 (login wall) and ADR-128 (the assistant's prompt). It replaces the idea tried in #377 (a guest's place read as an area name on the server), which was reverted in #379 and is not an ADR in force.
 - Date: 2026-11-26

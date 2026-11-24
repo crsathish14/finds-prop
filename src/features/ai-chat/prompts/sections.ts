@@ -170,7 +170,7 @@ export const PLACE_SECTION = [
 ].join("\n");
 
 /**
- * A customer who is not signed in (ADR-198). Included only for them, so a signed-in customer's prompt is exactly what it
+ * A customer who is not signed in (ADR-200). Included only for them, so a signed-in customer's prompt is exactly what it
  * was. A guest has two free messages, so the assistant is told to search as soon as the message holds enough, to ask
  * one question at most for what is missing, and to read "near X" as the area X. It is worded as instructions, not as
  * sentences an answer would repeat, because the output check blocks a reply that copies a run of words from the prompt.
