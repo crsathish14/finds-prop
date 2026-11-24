@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TOOL_CONTEXT } from "./fixtures";
 
-// UT-ai-tool-sign-in (ADR-171): a guest (a customer who is not signed in, inside the 2-chat limit) may search homes, and
-// nothing about projects. Every project tool, the localities and a builder's projects refuse a guest with
+// UT-ai-tool-sign-in (ADR-171, ADR-197): a guest (a customer who is not signed in, inside the 2-chat limit) may search
+// homes (a place is read as an area name), and nothing about projects. Every project tool, the localities and a builder's projects refuse a guest with
 // `sign_in_required` and make no read at all; a signed-in customer gets homes and projects.
 
 const reads = {
@@ -133,7 +133,7 @@ describe("UT-ai-tool-guest-homes: a guest searches homes through the narrow read
     expect(reads.getSearchResults.mock.calls[0]?.[1]).toEqual({ guest: false });
   });
 
-  it("lets a guest search by the filters without a place, and refuses a place (it looks at project localities)", async () => {
+  it("lets a guest search by the filters without a place", async () => {
     const lookup = vi.fn();
     const tool = createSearchPropertiesTool(lookup);
     reads.getSearchResults.mockResolvedValue(GUEST_HOMES);
@@ -143,13 +143,65 @@ describe("UT-ai-tool-guest-homes: a guest searches homes through the narrow read
       SIGNED_OUT,
     );
     expect(withoutPlace.status).toBe("ok");
-    const withPlace = await runTool(
+    expect(withoutPlace.content).toContain('"not_asked"');
+  });
+
+  // ADR-197: a guest's place is read as an area name through the guest read: no lookup, no distance, and a note.
+  it("reads a guest's place as an area name: no lookup, the guest read, the place words as the locality", async () => {
+    const lookup = vi.fn();
+    const tool = createSearchPropertiesTool(lookup);
+    reads.getSearchResults.mockResolvedValue({ ...GUEST_HOMES, total: 3 });
+    const outcome = await runTool(
       [tool],
-      { name: "search_properties", input: { ...NO_FILTERS, place: "Velachery", radiusKm: null } },
+      {
+        name: "search_properties",
+        input: { ...NO_FILTERS, bhk: 2, place: "Adyar", radiusKm: 4 },
+      },
       SIGNED_OUT,
     );
-    expect(withPlace.status === "error" && withPlace.code).toBe("sign_in_required");
+    expect(outcome.status).toBe("ok");
     expect(lookup).not.toHaveBeenCalled();
+    const [params, options] = reads.getSearchResults.mock.calls[0] ?? [];
+    expect(options).toEqual({ guest: true });
+    expect(params).toMatchObject({ locality: "Adyar", bhk: 2 });
+    expect(params).not.toHaveProperty("lat");
+    expect(params).not.toHaveProperty("radiusKm");
+    expect(outcome.content).toContain('"guest_area"');
+    expect(outcome.content).toContain("[[link:sign_in]]");
+    expect(outcome.content).toMatch(/not homes measured by distance/);
+  });
+
+  it("tries a guest's place words once as a keyword when no locality matched, and keeps the note", async () => {
+    const lookup = vi.fn();
+    const tool = createSearchPropertiesTool(lookup);
+    reads.getSearchResults.mockResolvedValue(GUEST_HOMES);
+    const outcome = await runTool(
+      [tool],
+      {
+        name: "search_properties",
+        input: { ...NO_FILTERS, place: "Guindy station", radiusKm: null },
+      },
+      SIGNED_OUT,
+    );
+    expect(outcome.status).toBe("ok");
+    expect(reads.getSearchResults).toHaveBeenCalledTimes(2);
+    expect(reads.getSearchResults.mock.calls[1]?.[0]).toMatchObject({ keyword: "Guindy station" });
+    expect(outcome.content).toContain('"guest_area"');
+    expect(outcome.content).toMatch(/If no homes matched, say so plainly/);
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("still looks the place up for a signed-in customer", async () => {
+    const lookup = vi.fn().mockResolvedValue({ status: "not_found" });
+    const tool = createSearchPropertiesTool(lookup);
+    const outcome = await runTool(
+      [tool],
+      { name: "search_properties", input: { ...NO_FILTERS, place: "Velachery", radiusKm: null } },
+      TOOL_CONTEXT,
+    );
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(outcome.content).toContain('"not_found"');
+    expect(outcome.content).not.toContain("guest_area");
   });
 
   it("tells the model what a guest may still do", () => {
