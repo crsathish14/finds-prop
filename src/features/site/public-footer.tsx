@@ -43,6 +43,7 @@ export async function PublicFooter() {
       columns={
         footer.links.length > 0 ? [{ heading: footer.columnHeading, links: footer.links }] : []
       }
+      contactHeading={translate("site.footer.contactHeading")}
       contacts={footer.contacts.map((contact) => ({
         icon: <Icon icon={CONTACT_ICONS[contact.kind]} />,
         text: contact.text,

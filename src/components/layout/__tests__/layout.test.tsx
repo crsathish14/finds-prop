@@ -395,6 +395,28 @@ describe("SiteFooter", () => {
     expect(note?.querySelector("b")).toBeNull();
   });
 
+  it("spreads many links over up to three columns and sets the contact lines apart", () => {
+    const links = Array.from({ length: 13 }, (_, index) => ({
+      label: `Link ${index + 1}`,
+      href: `/page-${index + 1}`,
+    }));
+    render(
+      <SiteFooter
+        logo={<Logo name="Find Prop" tone="on-dark" />}
+        navLabel="Footer"
+        columns={[{ heading: "Explore", links }]}
+        contactHeading="Contact"
+        contacts={[{ icon: <Icon icon={Phone} />, text: "9000909000" }]}
+        legal={{ copyright: "2026 Find Prop" }}
+      />,
+    );
+    const nav = screen.getByRole("navigation", { name: "Footer" });
+    expect(within(nav).getAllByRole("heading")).toHaveLength(1);
+    const lists = within(nav).getAllByRole("list");
+    expect(lists.map((list) => within(list).getAllByRole("listitem").length)).toEqual([5, 4, 4]);
+    expect(screen.getByRole("heading", { name: "Contact" })).toHaveClass("md:hidden");
+  });
+
   it("opens an external link in a new tab safely", () => {
     render(<Example />);
     const link = screen.getByRole("link", { name: /Partner site/ });
