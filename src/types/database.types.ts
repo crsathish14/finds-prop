@@ -913,6 +913,9 @@ isOneToOne: false
 "has_role":
 { Args: { "target_role": Database["public"]['Enums']["app_role"],"target_user": string }; Returns: boolean
                            },
+"has_verified_email":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },

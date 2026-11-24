@@ -342,6 +342,13 @@ function WizardBody({
       setSessionEnded({ href: sessionEndedHref(window.location.pathname) });
       return;
     }
+    if (failure.code === "FORBIDDEN" && failure.reason === "EMAIL_NOT_VERIFIED") {
+      // The site asks for a verified email before a draft is sent (ADR-195). The page shows the gate to a person
+      // with none, in place of the wizard; the draft is already saved, so it is there when they come back.
+      setAlert({ kind: "failed" });
+      router.refresh();
+      return;
+    }
     if (failure.code === "RATE_LIMITED") {
       setAlert({
         kind: "limit",

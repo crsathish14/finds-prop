@@ -13,7 +13,7 @@ export const ERROR_CODES = [
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /** Why a FORBIDDEN happened, when a screen needs to react differently (for example to ask for a phone). */
-export const FAILURE_REASONS = ["PHONE_NOT_VERIFIED"] as const;
+export const FAILURE_REASONS = ["PHONE_NOT_VERIFIED", "EMAIL_NOT_VERIFIED"] as const;
 
 export type FailureReason = (typeof FAILURE_REASONS)[number];
 

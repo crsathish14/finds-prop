@@ -130,6 +130,13 @@ export function mapListingError(failure: DatabaseFailure): ActionError {
   if (message === "listing.not_submittable" || code === "55000") {
     return new ActionError("CONFLICT", "The listing cannot be submitted in its state");
   }
+  if (message === "listing.email_required") {
+    // The site asks for a verified email before a draft is sent for review (ADR-195). The page already shows the
+    // gate to a person with none, so this only meets a direct call or a page that went stale; the wizard reloads.
+    return new ActionError("FORBIDDEN", "A verified email is required to post a listing", {
+      reason: "EMAIL_NOT_VERIFIED",
+    });
+  }
   if (message === "listing.not_allowed" || code === "42501") {
     return new ActionError("FORBIDDEN", "Posting a listing is not allowed for this account");
   }

@@ -149,6 +149,19 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
     expect(screen.getByTestId("gate")).toHaveAttribute("data-pending", "priya@example.com");
   });
 
+  it("shows the gate to a draft with no email, but lets a listing that is already sent be edited without one (ADR-195)", async () => {
+    state.email = { kind: "none" };
+    const continued = render(await PostPropertyScreen({ draft }));
+    expect(screen.getByTestId("gate")).toBeInTheDocument();
+    continued.unmount();
+    for (const status of ["pending", "approved", "rejected"]) {
+      const view = render(await PostPropertyScreen({ draft: { ...draft, status } }));
+      expect(screen.getByTestId("wizard")).toBeInTheDocument();
+      expect(screen.queryByTestId("gate")).toBeNull();
+      view.unmount();
+    }
+  });
+
   it("shows the wizard to a verified email, and also when the state could not be read", async () => {
     const view = render(await PostPropertyScreen({}));
     expect(screen.getByTestId("wizard")).toHaveAttribute("data-listing", "");

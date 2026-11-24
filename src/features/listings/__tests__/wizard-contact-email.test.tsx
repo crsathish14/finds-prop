@@ -169,6 +169,37 @@ describe("PostingWizard: the email for enquiries (ADR-186)", () => {
     expect(screen.getByLabelText(EMAIL_BOX)).toHaveValue("owner@example.test");
   });
 
+  it("reloads the page when the site wants a verified email, so the gate takes the wizard's place (ADR-195)", async () => {
+    const fake = actions({
+      submit: vi.fn(async () => ({
+        ok: false,
+        code: "FORBIDDEN",
+        reason: "EMAIL_NOT_VERIFIED",
+      })) as unknown as Actions["submit"],
+    });
+    open(fake);
+    await reachReview();
+    type(EMAIL_BOX, "owner@example.test");
+    press("Submit for review");
+    await waitFor(() => expect(router.refresh).toHaveBeenCalledTimes(1));
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("does not reload for a refusal that is not about the email", async () => {
+    const fake = actions({
+      submit: vi.fn(async () => ({
+        ok: false,
+        code: "FORBIDDEN",
+      })) as unknown as Actions["submit"],
+    });
+    open(fake);
+    await reachReview();
+    type(EMAIL_BOX, "owner@example.test");
+    press("Submit for review");
+    await waitFor(() => expect(fake.submit).toHaveBeenCalledTimes(1));
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
+
   it("does not keep the address in the browser for the way back in", async () => {
     const fake = actions({
       submit: vi.fn(async () => ({
