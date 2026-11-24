@@ -104,7 +104,7 @@ const STATES: StateSpec[] = [
     open: true,
   },
   {
-    label: "Results open: the same rows as the search box, with the Ola Maps credit",
+    label: "Results open: the same rows as the search box",
     text: "Vel",
     state: "ready",
     options: OPTIONS,

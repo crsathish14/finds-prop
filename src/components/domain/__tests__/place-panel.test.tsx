@@ -62,13 +62,10 @@ describe("usePlacePanel: what the panel says in each state (ADR-131)", () => {
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
   });
 
-  it("always shows the Ola Maps credit and the OpenStreetMap licence link", () => {
+  it("shows no provider credit or licence link in the panel", () => {
     renderWithMessages(<Host state="ready" query="Vel" />);
-    expect(screen.getByText(words.attribution.poweredBy)).toBeInTheDocument();
-    const licence = screen.getByRole("link", { name: /OpenStreetMap contributors/ });
-    expect(licence).toHaveAttribute("href", "https://www.openstreetmap.org/copyright");
-    expect(licence).toHaveAttribute("target", "_blank");
-    expect(licence.getAttribute("rel")).toContain("noopener");
+    expect(screen.queryByText(/Powered by/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /OpenStreetMap/ })).not.toBeInTheDocument();
   });
 
   it("shows grey rows while loading", () => {

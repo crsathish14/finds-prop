@@ -103,8 +103,6 @@ describe("UT-listing-location-field: the connected location field of the address
     await screen.findByRole("option", { name: /Velachery Main Road/ }, { timeout: 2000 });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/places/autocomplete?q=vel&source=listing_form");
-    // The credit the terms ask for stays in the panel.
-    expect(screen.getByText(places.attribution.poweredBy)).toBeInTheDocument();
   });
 
   it("reports the whole suggestion with its point when one is chosen, by click and by keyboard", async () => {

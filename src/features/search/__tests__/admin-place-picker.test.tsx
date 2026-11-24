@@ -63,12 +63,11 @@ describe("UT-admin-place-picker: the place search box of the admin forms (ADR-14
     expect(String(address).startsWith("/api/places/")).toBe(true);
   });
 
-  it("reports the name and the point of the suggestion chosen, with the credit in the panel", async () => {
+  it("reports the name and the point of the suggestion chosen", async () => {
     fetchMock.mockImplementation(answerKkNagar);
     const { box, onPick } = open();
     await userEvent.type(box(), "kk n");
     const row = await screen.findByRole("option", { name: /KK Nagar East/ }, { timeout: 2000 });
-    expect(screen.getByText(places.attribution.poweredBy)).toBeInTheDocument();
     await userEvent.click(row);
     expect(onPick).toHaveBeenCalledTimes(1);
     expect(onPick).toHaveBeenCalledWith({

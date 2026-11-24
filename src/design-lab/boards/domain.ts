@@ -86,7 +86,7 @@ export const DOMAIN: LabEntry[] = [
     id: "place-suggestions",
     name: "Place suggestions",
     description:
-      "The panel under the results filters' Locality box (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps), and the Ola Maps credit with the OpenStreetMap licence at the bottom. Drawn open.",
+      "The panel under the results filters' Locality box (UX addendum ADD-07, ADR-131): place rows with the typed letters marked and the address under the name, a loading skeleton, a note before three letters, no places found, suggestions unavailable and too many searches (the last three with a keyword row where it helps). Drawn open.",
     sources: ["domain/place-panel.tsx"],
     Demo: PlaceSuggestionsDemo,
   },

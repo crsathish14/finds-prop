@@ -115,9 +115,8 @@ export function PlaceSuggestionsDemo() {
       <Text tone="muted">
         The place panel of the Locality box in the results filters (ADR-131, UX addendum ADD-07).
         Every state is drawn open here so it can be checked at 390, 820 and 1440 px; on the site the
-        panel opens when the box is focused. Suggestions come from Ola Maps through our own server,
-        so its credit and the OpenStreetMap licence always show at the bottom. The wording is for
-        approval.
+        panel opens when the box is focused. Suggestions come from Ola Maps through our own server;
+        the panel carries no provider credit. The wording is for approval.
       </Text>
       {STATES.map((spec, index) => (
         <Specimen key={spec.label} label={spec.label}>

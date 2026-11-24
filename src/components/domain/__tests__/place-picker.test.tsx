@@ -85,10 +85,9 @@ describe("UT-place-picker: the place search box of the admin forms (ADR-140)", (
     expect(screen.getAllByText(places.region).length).toBeGreaterThan(0);
   });
 
-  it("lists the suggestions with the Ola Maps credit, and a click reports the option chosen", async () => {
+  it("lists the suggestions, and a click reports the option chosen", async () => {
     const onSelect = vi.fn();
     renderWithMessages(<Harness initial="Vel" options={OPTIONS} onSelect={onSelect} defaultOpen />);
-    expect((await screen.findAllByText(places.attribution.poweredBy))[0]).toBeInTheDocument();
     await userEvent.click(await screen.findByRole("option", { name: /Velachery Main Road/ }));
     expect(onSelect).toHaveBeenCalledWith(OPTIONS[1]);
     // The box then holds the name.
@@ -139,7 +138,6 @@ describe("UT-place-picker: the place search box of the admin forms (ADR-140)", (
   it("while the box holds the place already chosen, opens no panel and says the boxes were filled", async () => {
     renderWithMessages(<Harness initial="Velachery" pickedLabel="Velachery" />);
     await userEvent.click(screen.getByRole("combobox"));
-    expect(screen.queryByText(places.attribution.poweredBy)).not.toBeInTheDocument();
     expect(screen.queryByText(places.idle.title.replace("{count}", "3"))).not.toBeInTheDocument();
     expect(screen.getByText(words.picked.replace("{place}", "Velachery"))).toBeInTheDocument();
     expect(screen.queryByText(words.hint)).not.toBeInTheDocument();

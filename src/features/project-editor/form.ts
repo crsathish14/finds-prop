@@ -6,7 +6,7 @@ import type {
   ProjectSectionState,
 } from "@/components/domain/project-section-nav";
 import type { MediaItem } from "@/components/patterns/media-group-field";
-import { SLUG_MAX, TREND_PRICE_MAX, TREND_PRICE_MIN } from "./constants";
+import { RERA_NUMBER_PATTERN, SLUG_MAX, TREND_PRICE_MAX, TREND_PRICE_MIN } from "./constants";
 import {
   areaApplies,
   bedroomsApply,
@@ -205,6 +205,7 @@ export type ProjectProblem =
   | "area"
   | "areaRange"
   | "reraNumber"
+  | "reraFormat"
   | "reraReason";
 
 /** A typed number as the server reads it: "1,480" and " 1480 " are 1480; a word is NaN. */
@@ -246,6 +247,7 @@ export function projectProblems(
   }
   if (values.reraApplicable) {
     if (blank(values.reraNumber)) found.reraNumber = "reraNumber";
+    else if (!RERA_NUMBER_PATTERN.test(values.reraNumber.trim())) found.reraNumber = "reraFormat";
   } else if (blank(values.reraNotApplicableReason)) {
     found.reraNotApplicableReason = "reraReason";
   }

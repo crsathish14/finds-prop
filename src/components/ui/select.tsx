@@ -156,7 +156,7 @@ function Select({
           sideOffset={6}
           collisionPadding={16}
           className={cn(
-            "z-menu max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden",
+            "z-dialog max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden",
             "rounded-lg border border-line-strong bg-surface text-ink shadow-pop",
           )}
         >

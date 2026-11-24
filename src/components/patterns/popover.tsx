@@ -46,7 +46,7 @@ function PopoverContent({
         data-slot="popover-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-menu w-80 max-w-[calc(100vw-2*var(--gutter))] rounded-lg border border-line-strong bg-surface px-4 py-4 text-small text-ink shadow-pop",
+          "z-dialog w-80 max-w-[calc(100vw-2*var(--gutter))] rounded-lg border border-line-strong bg-surface px-4 py-4 text-small text-ink shadow-pop",
           className,
         )}
         {...props}

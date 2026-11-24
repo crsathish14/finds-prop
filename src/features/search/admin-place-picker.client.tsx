@@ -6,7 +6,7 @@ import { cityFromPlaceDetail } from "@/lib/place-city";
 import { usePlaceSuggestions } from "./use-place-suggestions.client";
 
 /**
- * The place picker of the admin and builder forms (ADR-140): the same suggestions, panel and credit as the search
+ * The place picker of the admin and builder forms (ADR-140): the same suggestions and panel as the search
  * box, asked as `source=admin_picker` so the usage count (ADR-134) tells them apart. It holds only the text in the
  * box; a chosen suggestion goes up through `onPick` as a name and a point, and the form writes the point into its
  * own latitude and longitude boxes, which stay editable and stay the source of truth. When suggestions are

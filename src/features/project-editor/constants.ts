@@ -53,6 +53,12 @@ export const ADDRESS_MAX = 300;
 export const DESCRIPTION_MAX = 5000;
 export const SPECIFICATIONS_MAX = 5000;
 export const RERA_NUMBER_MAX = 60;
+/**
+ * The shape of a Tamil Nadu RERA number: TNRERA or TN, the district (digits), the kind of project (Layout, Building or BLG),
+ * the serial (digits) and the year (4 digits), split by "/". For example TNRERA/29/BLG/0321/2026, TN/35/Layout/2645/2024,
+ * TN/29/Building/0189/2023 (owner's samples, 24 Nov 2026).
+ */
+export const RERA_NUMBER_PATTERN = /^TN[A-Z]*\/\d+\/(?:Layout|Building|BLG)\/\d+\/(?:19|20)\d{2}$/i;
 export const RERA_REASON_MAX = 300;
 export const SEO_TITLE_MAX = 120;
 export const SEO_DESCRIPTION_MAX = 300;

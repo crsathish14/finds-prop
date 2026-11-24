@@ -166,7 +166,7 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
   });
 
   it("reads RERA as yes or no", () => {
-    const withNumber = { ...minimal, reraNumber: "TN/1" };
+    const withNumber = { ...minimal, reraNumber: "TN/29/Building/0189/2023" };
     expect(
       createMyProjectSchema.parse({ ...withNumber, reraApplicable: "on" }).reraApplicable,
     ).toBe(true);
@@ -174,6 +174,31 @@ describe("UT-project-schemas: the boxes of the project form (S7-T02)", () => {
       createMyProjectSchema.parse({ ...withNumber, reraApplicable: true }).reraApplicable,
     ).toBe(true);
     expect(createMyProjectSchema.parse(minimal).reraApplicable).toBe(false);
+  });
+});
+
+describe("UT-project-schemas: the RERA number format", () => {
+  const withRera = (reraNumber: string) => ({ ...minimal, reraApplicable: true, reraNumber });
+  it.each(["TNRERA/29/BLG/0321/2026", "TN/35/Layout/2645/2024", "TN/29/Building/0189/2023"])(
+    "accepts %s",
+    (number) => {
+      expect(problems(createMyProjectSchema, withRera(number))).toEqual([]);
+    },
+  );
+  it.each([
+    "TN/1",
+    "TN/SAMPLE/0000",
+    "TNRERA/29/Plot/0321/2026",
+    "AP/29/BLG/0321/2026",
+    "TN/29/BLG/0321/26",
+    "29/BLG/0321/2026",
+  ])("refuses %s", (number) => {
+    expect(problems(createMyProjectSchema, withRera(number))).toEqual([
+      "reraNumber:validation.reraFormat",
+    ]);
+  });
+  it("does not check the number when RERA is not applicable", () => {
+    expect(problems(createMyProjectSchema, { ...minimal, reraNumber: "x" })).toEqual([]);
   });
 });
 
@@ -391,7 +416,12 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
       "reraNumber:validation.required",
     ]);
     expect(
-      parse({ ...minimal, reraApplicable: true, reraNumber: "TN/1", reraNotApplicableReason: "" }),
+      parse({
+        ...minimal,
+        reraApplicable: true,
+        reraNumber: "TN/29/Building/0189/2023",
+        reraNotApplicableReason: "",
+      }),
     ).toEqual([]);
     expect(parse({ ...minimal, reraNotApplicableReason: " " })).toEqual([
       "reraNotApplicableReason:validation.required",

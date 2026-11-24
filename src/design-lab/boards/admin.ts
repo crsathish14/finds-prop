@@ -244,7 +244,7 @@ export const ADMIN: LabEntry[] = [
     id: "place-picker",
     name: "Place picker",
     description:
-      "The place search box of the admin and builder forms (ADR-140): search for an area and choose it, and the latitude and longitude boxes fill (they stay editable, and are what is saved). The same three characters, 300 ms pause, rows and Ola Maps credit as the search box. Shown empty, typing, with results open, picked (a line says the boxes were filled), unavailable (the panel says to type the numbers instead), inside a row of the homepage localities (the approved screen) and inside the project form's Location section (new, for approval).",
+      "The place search box of the admin and builder forms (ADR-140): search for an area and choose it, and the latitude and longitude boxes fill (they stay editable, and are what is saved). The same three characters, 300 ms pause, and rows as the search box. Shown empty, typing, with results open, picked (a line says the boxes were filled), unavailable (the panel says to type the numbers instead), inside a row of the homepage localities (the approved screen) and inside the project form's Location section (new, for approval).",
     sources: ["domain/place-picker.tsx"],
     Demo: PlacePickerDemo,
   },

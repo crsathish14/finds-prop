@@ -196,7 +196,9 @@ describe("UT-section-states: what the section list shows (S7-T02)", () => {
   it("needs the builder for the admin's new project, and the RERA number once RERA applies", () => {
     expect(states({ needsBuilder: true, values: { name: "Kadal Vista" } }).basics).toBe("idle");
     expect(states({ values: { reraApplicable: true } }).rera).toBe("idle");
-    expect(states({ values: { reraApplicable: true, reraNumber: "TN/1" } }).rera).toBe("done");
+    expect(
+      states({ values: { reraApplicable: true, reraNumber: "TN/29/Building/0189/2023" } }).rera,
+    ).toBe("done");
   });
 
   it("needs the reason once RERA does not apply", () => {
@@ -623,7 +625,7 @@ describe("UT-project-form-problems: what is missing before a save is sent (ADR-1
 
   it("needs the RERA number when RERA applies and the reason when it does not", () => {
     expect(found({ reraApplicable: true })).toEqual({ reraNumber: "reraNumber" });
-    expect(found({ reraApplicable: true, reraNumber: "TN/1" })).toEqual({});
+    expect(found({ reraApplicable: true, reraNumber: "TN/29/Building/0189/2023" })).toEqual({});
     expect(found({ reraApplicable: false, reraNotApplicableReason: "  " })).toEqual({
       reraNotApplicableReason: "reraReason",
     });
