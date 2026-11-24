@@ -3,9 +3,8 @@
    <SponsorCinematicBanner> (src/components/domain). Nothing here is used on its own.
 
    Rules the motion keeps:
-   - One quiet movement per ad: the photo drifts slowly (a scale and a small shift), and the Cinematic
-     banner's gold line is drawn once when it first shows. Only transform, opacity and an SVG
-     stroke-dashoffset move, so nothing is laid out again.
+   - Quiet movement: the photo drifts slowly (a scale and a small shift), and a light runs round the
+     Cinematic banner's gold line. Only transform and opacity move, so nothing is laid out again.
    - The progress bars are the clock: when the bar of the ad on show is full, the frame moves to the
      next ad (onAnimationEnd), so the bars and the ads can never drift apart.
    - Pointer over the ads or focus inside them pauses the bar and the drift ([data-sponsor-paused]).
@@ -66,17 +65,55 @@
   animation-play-state: paused;
 }
 
-/* The Cinematic banner's gold line, drawn once around the frame. */
-.sp-gold rect {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: sp-draw 2.2s var(--sp-ease) 0.3s forwards;
+/* The Cinematic banner's gold line: a thin ring that follows the frame's rounded corners, with a bright
+   light running round it. The ring is the frame's own edge (inset 0, corner radius inherited, a mask
+   keeps only --sp-gold-width of it), so it is the same on a phone and on a desktop. Only a transform
+   moves. Tune the width, speed and colours here. */
+.sp-gold {
+  --sp-gold-width: 2px;
+  --sp-gold-dur: 5s;
+  --sp-gold-track: color-mix(in oklab, var(--c-amber) 55%, transparent);
+  --sp-gold-light: color-mix(in oklab, var(--c-amber) 55%, white);
+  padding: var(--sp-gold-width);
+  overflow: hidden;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
 }
 
-@keyframes sp-draw {
+.sp-gold::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  aspect-ratio: 1;
+  background: conic-gradient(
+    from 0deg,
+    var(--sp-gold-track) 0turn,
+    var(--sp-gold-track) 0.55turn,
+    var(--c-amber) 0.72turn,
+    var(--sp-gold-light) 0.8turn,
+    var(--c-amber) 0.88turn,
+    var(--sp-gold-track) 0.96turn,
+    var(--sp-gold-track) 1turn
+  );
+  transform: translate(-50%, -50%);
+  animation: sp-run var(--sp-gold-dur) linear infinite;
+}
+
+@keyframes sp-run {
   to {
-    stroke-dashoffset: 0;
+    transform: translate(-50%, -50%) rotate(1turn);
   }
+}
+
+[data-sponsor-paused] .sp-gold::before {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -89,9 +126,10 @@
     transform: scaleX(1);
   }
 
-  .sp-gold rect {
+  /* A still, whole gold line: nothing runs. */
+  .sp-gold::before {
     animation: none;
-    stroke-dashoffset: 0;
+    background: var(--c-amber);
   }
 }
 

@@ -6,8 +6,8 @@
  *   It holds no state; <SponsorStyledFrame> rotates several and owns the Sponsored label.
  * Props: ad (a SponsorAd that is ready for the Cinematic style: photo, brand and cinematic words), next ({ brand,
  *   photo } of the following sponsor, or nothing), words ({ upNext, newTab }, already translated), priority (the
- *   first ad: its photo loads at once), drift (the slow photo movement), drawLine (the gold line drawn once around
- *   the frame), className.
+ *   first ad: its photo loads at once), drift (the slow photo movement), drawLine (the gold line round the frame, with
+ *   a light running along it), className.
  * Responsive: 300 px tall from 768 px with the words on the left over a side shade; below that 400 px tall with the
  *   words at the bottom over a rising shade, a full-width button and no "Up next" box.
  * Accessibility: the headline is a heading; the photo is decoration; the whole banner has one link (the button),
@@ -88,23 +88,10 @@ function SponsorCinematicBanner({
         className="absolute inset-0 -z-10 bg-linear-to-t from-dark/95 via-dark/60 to-transparent md:bg-linear-to-r md:from-dark/90 md:via-dark/55 md:to-transparent"
       />
       {drawLine ? (
-        <svg
+        <span
           aria-hidden="true"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          className="sp-gold pointer-events-none absolute inset-0 size-full"
-        >
-          <rect
-            x="0.5"
-            y="0.5"
-            width="99"
-            height="99"
-            rx="3"
-            pathLength={100}
-            vectorEffect="non-scaling-stroke"
-            className="fill-none stroke-amber stroke-[1.5]"
-          />
-        </svg>
+          className="sp-gold pointer-events-none absolute inset-0 rounded-[inherit]"
+        />
       ) : null}
       <span className="absolute top-3 right-3 inline-flex max-w-[60%] items-center rounded-pill bg-on-dark/15 px-3 py-1 text-caption font-semibold backdrop-blur-sm">
         <span className="truncate">{ad.brand}</span>
