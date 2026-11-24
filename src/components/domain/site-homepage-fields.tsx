@@ -59,9 +59,11 @@ type SiteHomepageFieldsWords = {
   order?: {
     /** One line under the list: the hero stays first, one order for every screen. */
     hint: string;
-    /** The two sections that have no switch. */
+    /** The sections that have no switch: they show when there is something to show. */
     newLaunches: SwitchWords;
     newest: SwitchWords;
+    /** The Developer spotlight (ADR-193): shown when the admin picked a developer for it. */
+    spotlight: SwitchWords;
     /** The grip and the arrows of one row, naming the section ("Move Featured listings up"). */
     rowLabels: (section: string) => { drag: string; moveUp: string; moveDown: string };
   };
@@ -178,7 +180,7 @@ function SiteHomepageFields({
                 const found = SWITCH_OF[key];
                 const rowWords =
                   found === undefined
-                    ? orderWords[key as "newLaunches" | "newest"]
+                    ? orderWords[key as "newLaunches" | "newest" | "spotlight"]
                     : words.sections[found.word];
                 return (
                   <SortableRow key={key} id={key} labels={orderWords.rowLabels(rowWords.label)}>

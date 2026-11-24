@@ -167,7 +167,16 @@ describe("UT-schemas-site-content: homepage (S7-T10)", () => {
 });
 
 describe("UT-schemas-site-content: homepage section order (CR plan 5)", () => {
-  const all = ["cta", "whyUs", "newest", "projectTypes", "newLaunches", "featured", "discovery"];
+  const all = [
+    "cta",
+    "whyUs",
+    "newest",
+    "projectTypes",
+    "spotlight",
+    "newLaunches",
+    "featured",
+    "discovery",
+  ];
   const ok = (order: unknown) =>
     homepageInputSchema.safeParse({ ...switches, localities: [], order }).success;
 

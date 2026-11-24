@@ -108,6 +108,10 @@ export function HomepageForm({ initial, save, placePicker }: HomepageFormProps) 
         label: translate("homepage.order.newest.label"),
         hint: translate("homepage.order.newest.hint"),
       },
+      spotlight: {
+        label: translate("homepage.order.spotlight.label"),
+        hint: translate("homepage.order.spotlight.hint"),
+      },
       rowLabels: (section) => ({
         drag: translate("homepage.order.drag", { section }),
         moveUp: translate("homepage.order.moveUp", { section }),

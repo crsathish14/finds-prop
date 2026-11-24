@@ -17,6 +17,7 @@ import { SponsorStyledFrame } from "@/components/layout/sponsor-styled-frame";
 import { HomeAiSearch } from "@/features/ai-chat";
 import { ConversationalLive, HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
 import { SEARCH_PATH } from "@/features/search";
+import { SpotlightSection } from "@/features/sponsored";
 import { pageMetadata } from "@/features/seo";
 import { resolveHero, selectStyled } from "@/lib/sponsors";
 import { designLabEnabled } from "@/server/env";
@@ -126,6 +127,8 @@ export default async function HomePage() {
     discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
     featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
     newLaunches: <CityNewLaunchesSection />,
+    // The Developer spotlight (ADR-193): only when the admin picked a builder or agent for it; one per visit.
+    spotlight: settings.sponsored_builders.spotlight.length > 0 ? <SpotlightSection /> : null,
     projectTypes: homepage.showProjectTypes ? (
       <CityBrowseSection siteRegion={settings.region.name} />
     ) : null,

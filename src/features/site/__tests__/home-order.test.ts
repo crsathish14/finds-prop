@@ -13,6 +13,7 @@ describe("resolveHomeOrder", () => {
       "featured",
       "discovery",
       "newLaunches",
+      "spotlight",
       "projectTypes",
       "newest",
       "whyUs",

@@ -221,7 +221,16 @@ describe("UT-homepage-page: the Homepage page (S7-T10)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     expect(save.mock.calls[0]?.[0]).toMatchObject({
-      order: ["featured", "discovery", "newLaunches", "projectTypes", "newest", "whyUs", "cta"],
+      order: [
+        "featured",
+        "discovery",
+        "newLaunches",
+        "spotlight",
+        "projectTypes",
+        "newest",
+        "whyUs",
+        "cta",
+      ],
     });
   });
 

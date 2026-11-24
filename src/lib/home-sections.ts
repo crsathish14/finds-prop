@@ -6,6 +6,7 @@ export const HOME_SECTION_KEYS = [
   "discovery",
   "featured",
   "newLaunches",
+  "spotlight",
   "projectTypes",
   "newest",
   "whyUs",
