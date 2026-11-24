@@ -8,7 +8,10 @@
  *   hero: nothing in it can be clicked, and the drawing is hidden from screen readers (the boxes and the list beside
  *   it say the same things). The page works out which sponsor shows (the first active one with the format the layout
  *   needs) and passes it in; this part keeps only which size is drawn.
- * Props: layout ("search_desk" | "split" | "conversational"), title, subtitle and eyebrow (as in SiteHeroPreview), banner ({ desktop,
+ * Props: layout ("search_desk" | "split" | "conversational"), title, subtitle and eyebrow (as in SiteHeroPreview), styled (the
+ *   ad under the search bar in the chosen style, ADR-190: { style "showcase" | "cinematic", photo, brand, title, line },
+ *   drawn small: the photo beside the project and price for the Showcase, the headline on the photo for the Cinematic
+ *   banner; used in Search Desk and Conversational), banner ({ desktop,
  *   phone, alt }: the addresses of the two pictures of the format the layout needs, or null when no sponsor can
  *   be shown), reason ("no_sponsors" | "none_eligible", used when the banner is null), caption (the line next to the
  *   layout's name, such as "Sample Developer · first of 2 active"), defaultDevice ("desktop" default | "phone"),
@@ -39,7 +42,16 @@ import { SLOT_RATIOS } from "@/lib/sponsors";
 
 type SponsorHeroLayout = "search_desk" | "split" | "conversational";
 type SponsorHeroDevice = "desktop" | "phone";
-type SponsorHeroReason = "no_sponsors" | "none_eligible";
+type SponsorHeroReason = "no_sponsors" | "none_eligible" | "none_ready";
+
+/** The styled hero ad, drawn small in the preview (ADR-190). */
+type SponsorHeroStyled = {
+  style: "showcase" | "cinematic";
+  photo: string;
+  brand: string;
+  title: string;
+  line?: string | undefined;
+};
 
 type SponsorHeroBanner = { desktop: string; phone: string; alt: string };
 
@@ -49,6 +61,7 @@ type SponsorHeroPreviewProps = {
   subtitle?: string;
   eyebrow?: string;
   banner: SponsorHeroBanner | null;
+  styled?: SponsorHeroStyled | undefined;
   reason?: SponsorHeroReason;
   caption?: string;
   defaultDevice?: SponsorHeroDevice;
@@ -78,6 +91,7 @@ function SponsorHeroPreview({
   subtitle,
   eyebrow,
   banner,
+  styled,
   reason = "no_sponsors",
   caption,
   defaultDevice = "desktop",
@@ -86,10 +100,64 @@ function SponsorHeroPreview({
 }: SponsorHeroPreviewProps) {
   const [device, setDevice] = useState<SponsorHeroDevice>(defaultDevice);
   const phone = device === "phone";
-  // With no banner to show, visitors see the search card alone, whichever layout is chosen.
-  const drawn: SponsorHeroLayout = banner ? layout : "search_desk";
+  // With no ad to show, visitors see the search card alone, whichever layout is chosen.
+  const shown = banner !== null || styled !== undefined;
+  const drawn: SponsorHeroLayout = shown ? layout : "search_desk";
 
-  const picture = banner ? (
+  const picture = styled ? (
+    <span className="flex flex-col gap-1">
+      <span className="text-overline text-muted">{words.sponsored}</span>
+      {styled.style === "showcase" ? (
+        <span
+          className={cn(
+            "grid overflow-hidden rounded-md border border-line bg-surface",
+            phone ? "grid-cols-1" : "grid-cols-[1.15fr_1fr]",
+          )}
+        >
+          <span className="relative block aspect-16/10 bg-canvas-sunken">
+            <Image
+              src={styled.photo}
+              alt=""
+              fill
+              unoptimized
+              loading="eager"
+              sizes="200px"
+              className="object-cover"
+            />
+          </span>
+          <span className="flex min-w-0 flex-col gap-1 p-2">
+            <span className="truncate text-caption text-muted">{styled.brand}</span>
+            <span className="truncate text-small font-bold text-ink">{styled.title}</span>
+            {styled.line ? (
+              <span className="truncate text-caption text-ink">{styled.line}</span>
+            ) : null}
+          </span>
+        </span>
+      ) : (
+        <span
+          className={cn(
+            "relative block overflow-hidden rounded-md bg-dark",
+            phone ? "aspect-3/4" : "aspect-[970/300]",
+          )}
+        >
+          <Image
+            src={styled.photo}
+            alt=""
+            fill
+            unoptimized
+            loading="eager"
+            sizes="320px"
+            className="object-cover"
+          />
+          <span className="absolute inset-0 bg-linear-to-t from-dark/90 to-transparent md:bg-linear-to-r" />
+          <span className="absolute inset-x-2 bottom-2 flex flex-col gap-1">
+            <span className="truncate text-caption text-on-dark-muted">{styled.brand}</span>
+            <span className="text-small font-bold text-on-dark">{styled.title}</span>
+          </span>
+        </span>
+      )}
+    </span>
+  ) : banner ? (
     <span className="flex flex-col gap-1">
       <span className="text-overline text-muted">{words.sponsored}</span>
       <span
@@ -125,8 +193,8 @@ function SponsorHeroPreview({
         ]}
       />
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="neutral">{banner ? words.layouts[layout] : words.reasons[reason]}</Badge>
-        {banner && caption ? <span className="text-caption text-muted">{caption}</span> : null}
+        <Badge tone="neutral">{shown ? words.layouts[layout] : words.reasons[reason]}</Badge>
+        {shown && caption ? <span className="text-caption text-muted">{caption}</span> : null}
       </div>
       <div className={cn("min-w-0", phone && "mx-auto w-full max-w-56")}>
         <SiteHeroPreview
@@ -139,7 +207,7 @@ function SponsorHeroPreview({
         />
       </div>
       {banner && phone ? <p className="text-caption text-muted">{words.phoneNote}</p> : null}
-      {banner ? null : (
+      {shown ? null : (
         <Alert tone="neutral" title={words.none.title}>
           {words.none.text}
         </Alert>
@@ -155,4 +223,5 @@ export type {
   SponsorHeroLayout,
   SponsorHeroPreviewProps,
   SponsorHeroReason,
+  SponsorHeroStyled,
 };

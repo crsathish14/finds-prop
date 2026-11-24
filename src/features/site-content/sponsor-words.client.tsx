@@ -176,6 +176,7 @@ export function useSponsorWords() {
     reasons: {
       no_sponsors: translate("preview.noSponsors"),
       none_eligible: translate("preview.noneEligible"),
+      none_ready: translate("preview.noneReady"),
     },
     none: { title: translate("preview.noneTitle"), text: translate("preview.noneText") },
     phoneNote: translate("preview.phoneNote"),
@@ -212,6 +213,11 @@ export function useSponsorWords() {
       translate("layout.someTitle", { missing, active, layout }),
     layoutSomeText: (missing: number, layout: string, format: string) =>
       translate("layout.someText", { missing, layout, format }),
+    layoutNoneStyle: (style: string) => translate("layout.noneTextStyle", { style }),
+    layoutSomeStyleTitle: (missing: number, active: number, style: string) =>
+      translate("layout.someTitleStyle", { missing, active, style }),
+    layoutSomeStyleText: (missing: number, style: string) =>
+      translate("layout.someTextStyle", { missing, style }),
     formatName: (format: "strip" | "panel") =>
       format === "strip" ? translate("layout.formatStrip") : translate("layout.formatPanel"),
     deleteTitle: (name: string) => translate("confirmDelete.title", { name }),

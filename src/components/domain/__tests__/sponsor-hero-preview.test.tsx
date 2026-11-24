@@ -13,7 +13,11 @@ const WORDS: SponsorHeroPreviewProps["words"] = {
   phone: "Phone",
   sponsored: "Sponsored",
   layouts: { search_desk: "Search Desk", split: "Split", conversational: "Conversational" },
-  reasons: { no_sponsors: "No sponsors", none_eligible: "Split → Search Desk" },
+  reasons: {
+    no_sponsors: "No sponsors",
+    none_eligible: "Split → Search Desk",
+    none_ready: "No ad ready",
+  },
   none: { title: "No banner is shown", text: "Visitors see the search card alone." },
   phoneNote: "The phone image is used below 1024 px.",
 };

@@ -47,8 +47,10 @@ type ConversationalLiveProps = {
   /** FLAG_AI_SEARCH: the AI search bar while on, the keyword bar otherwise (as every hero). */
   aiSearch: boolean;
   localities: readonly CuratedLocality[];
-  /** The sponsored strip (a SponsorSlot), left out when no ad qualifies. */
+  /** The hero's sponsored ads (the styled frame, ADR-190), left out when no ad qualifies. */
   sponsor?: ReactNode;
+  /** True when the sponsor brings its own frame, so the hero draws no box round it. */
+  sponsorBare?: boolean;
 };
 
 /**
@@ -64,6 +66,7 @@ export async function ConversationalLive({
   aiSearch,
   localities,
   sponsor,
+  sponsorBare = false,
 }: ConversationalLiveProps) {
   const translate = await getTranslate();
   const requests = sampleRequests(translate, localities);
@@ -81,6 +84,7 @@ export async function ConversationalLive({
         prompt={translate("heroLab.conversational.prompt")}
         trust={trustPoints(translate).map((point) => point.line)}
         sponsor={sponsor}
+        sponsorBare={sponsorBare}
       >
         {aiSearch ? (
           <HomeAiSearch {...extras} />

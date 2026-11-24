@@ -12,17 +12,19 @@ import {
   WhySection,
 } from "@/features/home";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
+import { SponsorStyledFrame } from "@/components/layout/sponsor-styled-frame";
 import { HomeAiSearch } from "@/features/ai-chat";
 import { ConversationalLive, HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
 import { SEARCH_PATH } from "@/features/search";
 import { pageMetadata } from "@/features/seo";
-import { resolveHero } from "@/lib/sponsors";
+import { resolveHero, selectStyled } from "@/lib/sponsors";
 import { designLabEnabled } from "@/server/env";
 import {
   buildHero,
   getFeatureFlags,
   getSiteSettings,
   getSponsorAds,
+  getSponsorStyle,
   getTranslate,
   isRouteEnabled,
   resolveBrandName,
@@ -58,7 +60,7 @@ export default async function HomePage() {
   const hero = buildHero(settings, translate);
   // The banner area: the Split layout needs a panel banner, and without one the page is Search Desk
   // with nothing in the banner position and no gap (FR-PUB-02, FR-PUB-03).
-  const ads = await getSponsorAds();
+  const [ads, style] = await Promise.all([getSponsorAds(), getSponsorStyle()]);
   const arrangement = resolveHero(ads, settings.hero.layout);
   const split = arrangement.arrangement === "split";
   const conversational = arrangement.arrangement === "conversational";
@@ -78,10 +80,16 @@ export default async function HomePage() {
     cta: showCta ? <CtaSection href={POST_PROPERTY_PATH} /> : null,
   };
 
-  const stripSponsor =
+  // Under the search bar (Search Desk, Conversational): the ads in the style the admin chose, only those ready for it
+  // (ADR-190). Split keeps its picture panel. With nothing to show there is no ad and no gap.
+  const styled = selectStyled(ads, style);
+  const stripSponsor = split ? (
     arrangement.sponsors.length > 0 ? (
-      <SponsorSlot ads={ads} placement="hero" layout={arrangement.arrangement} />
-    ) : undefined;
+      <SponsorSlot ads={ads} placement="hero" layout="split" />
+    ) : undefined
+  ) : styled.length > 0 ? (
+    <SponsorStyledFrame ads={styled} style={style} />
+  ) : undefined;
   // Conversational (ADR-177): the centred joined search bar with sample requests, trust lines and the strip.
   const liveHero = conversational ? (
     <ConversationalLive
@@ -91,6 +99,7 @@ export default async function HomePage() {
       aiSearch={flags.aiSearch}
       localities={homepage.localities}
       sponsor={stripSponsor}
+      sponsorBare
     />
   ) : (
     <HomeHero

@@ -125,8 +125,28 @@ export function HeroForm({
   const count = Object.keys(problems).length;
   const picture = heroPictureOf(values, standard);
   const sponsorWords = sponsorState.words;
-  const hero = heroViewOf(sponsorState.drafts, values.layout);
-  const warning = layoutWarningOf(hero.coverage);
+  const hero = heroViewOf(sponsorState.drafts, values.layout, sponsorState.style);
+  const warning = layoutWarningOf(hero.coverage, hero.style);
+  const styleName = sponsorWords.style[sponsorState.style];
+  // The ad under the search bar, drawn small in the preview (ADR-190).
+  const styled = hero.styled?.photo
+    ? sponsorState.style === "showcase" && hero.styled.showcase
+      ? {
+          style: "showcase" as const,
+          photo: hero.styled.photo.src,
+          brand: hero.styled.brand ?? "",
+          title: hero.styled.showcase.project,
+          line: hero.styled.showcase.price,
+        }
+      : hero.styled.cinematic
+        ? {
+            style: "cinematic" as const,
+            photo: hero.styled.photo.src,
+            brand: hero.styled.brand ?? "",
+            title: hero.styled.cinematic.headline,
+          }
+        : undefined
+    : undefined;
   const layoutName = sponsorWords.preview.layouts[values.layout];
   const say = sponsorWords.say;
 
@@ -144,6 +164,7 @@ export function HeroForm({
             subtitle={picture.subtitle}
             layout={picture.layout}
             banner={hero.banner}
+            styled={styled}
             words={sponsorWords.preview}
             {...(picture.eyebrow ? { eyebrow: picture.eyebrow } : {})}
             {...(hero.reason ? { reason: hero.reason } : {})}
@@ -190,15 +211,27 @@ export function HeroForm({
               <p className="text-caption text-muted">{say.layoutLive(layoutName)}</p>
               {warning?.kind === "none_can_show" ? (
                 <Alert tone="warning" title={say.layoutNoneTitle(layoutName)}>
-                  {say.layoutNoneText(values.layout === "split", say.formatName(warning.format))}
+                  {warning.style
+                    ? say.layoutNoneStyle(styleName)
+                    : say.layoutNoneText(values.layout === "split", say.formatName(warning.format))}
                 </Alert>
               ) : null}
               {warning?.kind === "some_missing" ? (
                 <Alert
                   tone="warning"
-                  title={say.layoutSomeTitle(warning.missing, warning.active, layoutName)}
+                  title={
+                    warning.style
+                      ? say.layoutSomeStyleTitle(warning.missing, warning.active, styleName)
+                      : say.layoutSomeTitle(warning.missing, warning.active, layoutName)
+                  }
                 >
-                  {say.layoutSomeText(warning.missing, layoutName, say.formatName(warning.format))}
+                  {warning.style
+                    ? say.layoutSomeStyleText(warning.missing, styleName)
+                    : say.layoutSomeText(
+                        warning.missing,
+                        layoutName,
+                        say.formatName(warning.format),
+                      )}
                 </Alert>
               ) : null}
             </>
