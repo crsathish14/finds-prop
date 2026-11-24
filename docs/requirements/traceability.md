@@ -227,6 +227,8 @@ All 33 Phase 1 routes are covered. New routes with no Phase 1 counterpart: `/adm
 
 **Business rules → tests:** see `08` §10 (BR-01 … BR-95 mapped; BR-73/74/95 were never built; the AI chat limits are in ADR-128 section 7).
 
+**Customer email (26 Nov 2026):** FR-AUTH-02 and FR-ACC-06 are extended by ADR-195 (a draft needs a verified email to be sent for review, behind the `posting_requires_verified_email` setting; tests `listing_email_required.test.sql`, `function_grants.test.sql`, the error mapping in `listing-service.test.ts` and the wizard reload in `wizard-contact-email.test.tsx`) and ADR-196 (a confirmed account email becomes the contact email; tests `profile_adopt_email.test.sql`, `email-confirm.test.ts`, `post-property-screen.test.tsx`). Switching and setup: `docs/runbooks/customer-email.md`.
+
 **Decisions → stage gates:** see `12` §2 ("Needed by" column) and `10` §4.
 
 **Maintenance rule.** When a slice changes behaviour, update: the FR row (stage/tests), the route row, the screen row, and add the new test IDs to `08` if a new test is created.

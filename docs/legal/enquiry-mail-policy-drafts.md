@@ -26,6 +26,14 @@
 > **Contact email for people who post.** If you post a home, we ask for an email address so that we can tell you when someone enquires about it. We keep this address privately with your account. We do not show it on the site and we do not give it to the people who enquire. We use it only to send you these notifications. We do not check that the address is correct, so please check that you typed it correctly. You can change or remove it at any time on your dashboard; if you remove it, we stop sending these emails and enquiries still appear on your dashboard. For builders and agents, we use the email address on the builder's profile in the same way.
 > **[Owner/legal: how long the address is kept after the account is deleted (not checked by the agent: confirm what the account deletion does with `profiles.contact_email`), and the lawful basis.]**
 
+## Draft 2b: added 26 Nov 2026 for the customer email (ADR-195, ADR-196). Use only when `FLAG_CUSTOMER_EMAIL` is switched on
+
+**What is true:** a customer may add an email to their phone account and confirm it with a link sent by our authentication service (Supabase) through Resend. A confirmed email is needed to send a home for review, when that rule is switched on. When a customer confirms an email and has no contact email yet, the confirmed address is **also used as their contact email**, so enquiries about their homes are mailed to it. They can change it on their dashboard; an address they chose is never replaced. The app does not log the address.
+
+> **[DRAFT, owner approval needed]**
+> **Your email address.** You can add an email address to your Find Prop account and confirm it with a link we send you. We use it to confirm that you can receive email and to keep your account safe. You need a confirmed email to send a home for review. If you have not given us a separate email for enquiries, we also use this address to tell you when someone enquires about one of your homes. You can change the address for enquiries at any time on your dashboard. The confirmation email is sent through our email service provider, Resend, on behalf of our sign-in service.
+> **[Owner/legal: lawful basis for using the confirmed address for enquiry mail; whether the email step or the post-property form needs a short notice saying so (the plan's line "We will also send enquiries about your homes to this address. You can change it later." is proposed, not built); the retention of the account email after account deletion.]**
+
 ## Draft 3: privacy policy, data table rows (replace the `[Purpose]`, `[Recipients]`, `[Period]` placeholders)
 
 | What                                 | Purpose (draft)                                                   | Who gets it (draft)                                                                                        | How long (draft)                                                            |

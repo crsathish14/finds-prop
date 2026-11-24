@@ -18,6 +18,7 @@ Stubs are written in Stage 1; each is completed in the stage shown (plan 09 sect
 | Sweeping unclaimed photo files (`media-sweep.md`)                 | S6 (written, 7 Nov 2026)  |
 | Content modules and their Trash (`content-modules.md`)            | ADR-143 (22 Nov 2026)     |
 | Enquiry mail through Resend (`enquiry-mail.md`)                   | ADR-181 (24 Nov 2026)     |
+| Customer email verification (`customer-email.md`)                 | ADR-195 (26 Nov 2026)     |
 | OTP abuse response                                                | S5                        |
 | CRM outage and manual retry (`crm-retry.md`)                      | S7 (written, 10 Nov 2026) |
 | Staff second-factor lost device                                   | S3                        |
