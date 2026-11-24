@@ -10,6 +10,7 @@
  *   "limited" (our own limit refused), and query is the text in the box. It returns props to spread on
  *   Combobox (labels, idleNotices, notices, fallbackOption, loadingRows). The panel has no provider
  *   credit footer (owner's decision, 24 Nov 2026).
+ * Responsive: the notes wrap inside the panel at any width.
  * Accessibility: notes are plain text announced politely by the combobox.
  * States: ready, loading, empty, unavailable, limited; idle and typing are the notes shown before three
  *   letters.
