@@ -5,17 +5,27 @@ import { handleEmailConfirm, type EmailConfirmDeps } from "../email-confirm";
 
 const TOKEN = "fake-token-hash-for-tests";
 
-function harness(error: { code?: string } | null = null) {
+type Outcome = { error: { code?: string } | null };
+
+function harness(
+  error: { code?: string } | null = null,
+  adopt: () => Promise<Outcome> = () => Promise.resolve({ error: null }),
+) {
   const requests: Parameters<EmailConfirmDeps["verifyOtp"]>[0][] = [];
+  const adoptions: string[] = [];
   const logLines: string[] = [];
   const deps: EmailConfirmDeps = {
     verifyOtp: (credentials) => {
       requests.push(credentials);
       return Promise.resolve({ error });
     },
+    adoptContactEmail: () => {
+      adoptions.push("adopt");
+      return adopt();
+    },
     log: createLogger({}, { write: (line) => logLines.push(line) }),
   };
-  return { deps, requests, logLines };
+  return { deps, requests, adoptions, logLines };
 }
 
 describe("UT-email-confirm: finishing an email link (S3-T09, FR-AUTH-02)", () => {
@@ -63,6 +73,34 @@ describe("UT-email-confirm: finishing an email link (S3-T09, FR-AUTH-02)", () =>
     expect(everything.length).toBeGreaterThan(0);
     expect(everything).not.toContain(TOKEN);
     expect(everything).not.toContain("x y z");
+  });
+
+  it("copies the confirmed address into the contact email once, after the link is accepted (ADR-196)", async () => {
+    const { deps, adoptions } = harness();
+    await handleEmailConfirm({ tokenHash: TOKEN, type: "email_change" }, deps);
+    expect(adoptions).toEqual(["adopt"]);
+  });
+
+  it("does not try to copy anything after a refused link or a refused query", async () => {
+    const refused = harness({ code: "otp_expired" });
+    await handleEmailConfirm({ tokenHash: TOKEN, type: "email_change" }, refused.deps);
+    const odd = harness();
+    await handleEmailConfirm({ tokenHash: TOKEN, type: "recovery" }, odd.deps);
+    expect(refused.adoptions).toEqual([]);
+    expect(odd.adoptions).toEqual([]);
+  });
+
+  it.each([
+    ["answers with an error", () => Promise.resolve({ error: { code: "42501" } })],
+    ["throws", () => Promise.reject(new Error("owner@example.test is down"))],
+  ])("still says verified when the copy %s, and logs only a code", async (_what, adopt) => {
+    const { deps, logLines } = harness(null, adopt);
+    await expect(
+      handleEmailConfirm({ tokenHash: TOKEN, type: "email_change" }, deps),
+    ).resolves.toBe("/auth?email=verified");
+    const logged = logLines.join("\n");
+    expect(logged).toContain("contact email not copied");
+    expect(logged).not.toContain("owner@example.test");
   });
 
   it("only ever answers with one of our two result paths", async () => {

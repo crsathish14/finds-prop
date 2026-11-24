@@ -827,6 +827,9 @@ isOneToOne: false
               "clicks": number,"slot": string,"sponsor_key": string,"views": number
             }[]
                            },
+"adopt_verified_email_as_contact":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },

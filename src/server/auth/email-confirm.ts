@@ -13,6 +13,11 @@ export interface EmailConfirmDeps {
     token_hash: string;
     type: "email_change";
   }): Promise<{ error: { code?: string | undefined } | null }>;
+  /**
+   * Copies the address just confirmed into the person's private contact email when they have none (ADR-196),
+   * so enquiries and the account share one address. It acts on the session that verifyOtp just made.
+   */
+  adoptContactEmail(): Promise<{ error: { code?: string | undefined } | null }>;
   log: Logger;
 }
 
@@ -39,5 +44,20 @@ export async function handleEmailConfirm(
     deps.log.warn("email link refused", { errorCode: error.code ?? "none" });
     return emailResultPath("expired");
   }
+  await adoptContactEmail(deps);
   return emailResultPath("verified");
+}
+
+/**
+ * A failed copy never changes the answer: the address is confirmed either way, and the post-property page starts
+ * the contact email box from the confirmed address when the copy was missed (ADR-196). Only the error code is
+ * logged, never the address.
+ */
+async function adoptContactEmail(deps: EmailConfirmDeps): Promise<void> {
+  try {
+    const { error } = await deps.adoptContactEmail();
+    if (error) deps.log.warn("contact email not copied", { errorCode: error.code ?? "none" });
+  } catch {
+    deps.log.warn("contact email not copied", { errorCode: "thrown" });
+  }
 }

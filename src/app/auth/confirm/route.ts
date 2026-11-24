@@ -18,6 +18,10 @@ export async function GET(request: Request) {
     { tokenHash: query.get("token_hash"), type: query.get("type") },
     {
       verifyOtp: (credentials) => supabase.auth.verifyOtp(credentials),
+      adoptContactEmail: async () => {
+        const { error } = await supabase.rpc("adopt_verified_email_as_contact");
+        return { error };
+      },
       log: createLogger().child({ requestId, route: "email-confirm" }),
     },
   );
