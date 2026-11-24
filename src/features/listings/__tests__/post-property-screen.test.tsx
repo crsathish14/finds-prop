@@ -233,12 +233,29 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
   });
 
   it("starts the wizard's email box with the address the account already holds, and leaves it empty when there is none (ADR-186)", async () => {
+    // No confirmed account email either, so nothing to start from (ADR-196 covers the confirmed one below).
+    state.email = { kind: "unknown" };
     const view = render(await PostPropertyScreen({}));
     expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "");
     view.unmount();
     state.contact = "owner@example.test";
     render(await PostPropertyScreen({}));
     expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "owner@example.test");
+  });
+
+  it("starts the email box from the confirmed account email when none is saved, and never over one that is (ADR-196)", async () => {
+    state.email = { kind: "verified", email: "priya@example.com" };
+    const empty = render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "priya@example.com");
+    empty.unmount();
+    state.contact = "chosen@example.test";
+    const saved = render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "chosen@example.test");
+    saved.unmount();
+    state.contact = null;
+    state.email = { kind: "unknown" };
+    render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "");
   });
 
   it("gives the wizard the connected location field and the site's curated localities, with no coordinates but theirs", async () => {

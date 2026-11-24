@@ -87,11 +87,14 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
     );
   }
 
-  const [translate, settings, contactEmail] = await Promise.all([
+  const [translate, settings, savedContactEmail] = await Promise.all([
     getTranslate(),
     getSiteSettings(),
     getMyContactEmail(),
   ]);
+  // One address, not two (ADR-196): a confirmed account email starts the box when none is saved yet, which covers a
+  // copy that was missed at the link. The box stays visible and editable, and what is typed in it is what is saved.
+  const contactEmail = savedContactEmail ?? (email.kind === "verified" ? email.email : null);
   // The site's curated localities are how an owner places a listing when suggestions cannot be fetched (ADR-141).
   const areas = settings.homepage.localities.map(({ label, lat, lng }) => ({ label, lat, lng }));
   const drafts: DraftRowView[] = draft
