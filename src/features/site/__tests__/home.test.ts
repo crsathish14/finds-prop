@@ -101,4 +101,54 @@ describe("UT-site-hero-text: the words of the homepage hero (S4-T06, DEC-14)", (
       emphasis: "Chennai",
     });
   });
+
+  it("fills the {city} placeholder in a written headline with the chosen city, in copper (owner, 24 Nov)", () => {
+    expect(
+      buildHero(
+        settings({
+          hero: { title: "Find the place that fits your life in {city}." },
+          region: { name: "Chennai" },
+        }),
+        translate,
+        "Madurai",
+      ),
+    ).toEqual({
+      title: "Find the place that fits your life in Madurai.",
+      emphasis: "Madurai",
+      subtitle: "Shortlist, compare and enquire directly.",
+    });
+  });
+
+  it("fills every {city} in the headline", () => {
+    expect(
+      buildHero(settings({ hero: { title: "{city} homes, {city} prices" } }), translate, "Madurai"),
+    ).toMatchObject({ title: "Madurai homes, Madurai prices", emphasis: "Madurai" });
+  });
+
+  it("fills the placeholder with the site's region when no city was chosen", () => {
+    expect(
+      buildHero(
+        settings({
+          hero: { title: "Find the place that fits your life in {city}." },
+          region: { name: "Chennai" },
+        }),
+        translate,
+      ),
+    ).toMatchObject({
+      title: "Find the place that fits your life in Chennai.",
+      emphasis: "Chennai",
+    });
+  });
+
+  it("falls back to the region-neutral headline when the placeholder has no city and no region", () => {
+    expect(
+      buildHero(
+        settings({ hero: { title: "Find the place that fits your life in {city}." } }),
+        translate,
+      ),
+    ).toEqual({
+      title: "Find the place that fits your life.",
+      subtitle: "Shortlist, compare and enquire directly.",
+    });
+  });
 });
