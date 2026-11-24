@@ -130,6 +130,7 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
         locationField={ListingLocationField}
         areas={areas}
         {...(contactEmail ? { contactEmail } : {})}
+        {...(email.kind === "verified" ? { contactEmailOptional: true } : {})}
         doneHref={MY_LISTINGS_HREF}
         {...(editing ? { edit: editing } : {})}
       />

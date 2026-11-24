@@ -131,7 +131,17 @@ export type PostingWizardProps = {
    * missing when there is none. It is private: only the signed-in person's own is ever given.
    */
   contactEmail?: string;
+  /**
+   * The account's own email is confirmed (ADR-198), so the box for enquiries may be left empty: the mail goes to that
+   * address. What is typed is still checked and, if given, is the address enquiries are mailed to.
+   */
+  contactEmailOptional?: boolean;
 };
+
+/** The email for enquiries to send with the submit: what is typed, or nothing when the box is empty (ADR-198). */
+function contactEmailInput(values: WizardValues): { contactEmail?: string } {
+  return values.contactEmail.trim() === "" ? {} : { contactEmail: values.contactEmail };
+}
 
 const FORM_NAME = "post-property";
 const STEP_ORDER = [1, 2, 3, 4, 5] as const;
@@ -206,6 +216,7 @@ function WizardBody({
   locationField,
   areas = [],
   locationHeld = false,
+  contactEmailOptional = false,
 }: PostingWizardProps & {
   values: WizardValues;
   baseline: WizardValues;
@@ -511,7 +522,7 @@ function WizardBody({
     clearNotices();
     if (!listingId) return;
     // The email for enquiries is on this step: a missing or mistyped one is shown next to the box.
-    const missing = validateContactEmail(values);
+    const missing = validateContactEmail(values, contactEmailOptional);
     if (Object.keys(missing).length > 0) return refuse(missing);
     setErrors({});
     setBusyAction("submit");
@@ -520,7 +531,7 @@ function WizardBody({
         const result = await actions.submit({
           listingId,
           idempotencyKey: submitKey,
-          contactEmail: values.contactEmail,
+          ...contactEmailInput(values),
         });
         if (result.ok) {
           dropDraft(FORM_NAME, window.location.pathname);
@@ -555,7 +566,7 @@ function WizardBody({
       ...validateStep(2, values),
       ...validateStep(4, values),
       // A listing sent again needs the email too (ADR-186); one that is only edited does not ask.
-      ...(edit.state === "rejected" ? validateContactEmail(values) : {}),
+      ...(edit.state === "rejected" ? validateContactEmail(values, contactEmailOptional) : {}),
     };
     if (Object.keys(found).length > 0) {
       const first = stepsWithErrors(found)[0] ?? step;
@@ -601,7 +612,7 @@ function WizardBody({
           const sent = await actions.submit({
             listingId,
             idempotencyKey: submitKey,
-            contactEmail: values.contactEmail,
+            ...contactEmailInput(values),
           });
           if (!sent.ok) {
             showFailure(sent);
