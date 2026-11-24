@@ -194,18 +194,18 @@ test.describe("@smoke site footer and bottom bar", () => {
     const footer = page.getByRole("contentinfo");
     await expect(
       footer.getByRole("navigation", { name: footerText.navLabel }).getByRole("heading"),
-    ).toHaveText(footerText.exploreHeading);
+    ).toHaveText([footerText.exploreHeading, footerText.companyHeading]);
     await expect(
       footer.getByRole("navigation", { name: footerText.navLabel }).getByRole("link"),
     ).toHaveText([
       footerText.linkBuy,
       footerText.linkRent,
       footerText.linkProjects,
+      footerText.linkContact,
+      footerText.linkPost,
       footerText.linkBlog,
       footerText.linkFaq,
       footerText.linkCareers,
-      footerText.linkContact,
-      footerText.linkPost,
     ]);
     await expect(footer.getByRole("link", { name: footerText.privacy })).toHaveAttribute(
       "href",
