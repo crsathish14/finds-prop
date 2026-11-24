@@ -10,6 +10,7 @@ import type {
   HeroInput,
   HomepageInput,
   ProjectFieldsInput,
+  SponsoredBuildersInput,
 } from "./schemas";
 
 /**
@@ -203,6 +204,17 @@ export function saveTopDevelopersContent(
   input: TopDevelopersInput,
 ): Promise<ContentDone> {
   return publish(store, "top_developers", { builderIds: input.builderIds });
+}
+
+/** Saves the builders and agents picked for the Featured card and the Developer Spotlight (ADR-191). */
+export function saveSponsoredBuildersContent(
+  store: ContentStore,
+  input: SponsoredBuildersInput,
+): Promise<ContentDone> {
+  return publish(store, "sponsored_builders", {
+    featured: input.featured,
+    spotlight: input.spotlight,
+  });
 }
 
 export function saveHeroContent(store: ContentStore, input: HeroInput): Promise<ContentDone> {

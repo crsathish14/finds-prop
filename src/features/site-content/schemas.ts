@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 import { HOME_SECTION_KEYS } from "@/lib/home-sections";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
@@ -281,3 +282,16 @@ export const topDevelopersInputSchema = z.object({
     .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
 });
 export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;
+
+/** One sponsored slot's builders and agents: at most 10, each once, each a real id. */
+const sponsoredList = z
+  .array(z.uuid({ error: "validation.invalid" }))
+  .max(SPONSORED_BUILDERS_MAX, { error: "validation.invalid" })
+  .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" });
+
+/** The builders and agents picked for the Featured card and the Developer Spotlight (ADR-191). Both lists are sent. */
+export const sponsoredBuildersInputSchema = z.object({
+  featured: sponsoredList,
+  spotlight: sponsoredList,
+});
+export type SponsoredBuildersInput = z.infer<typeof sponsoredBuildersInputSchema>;

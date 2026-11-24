@@ -1597,7 +1597,8 @@
       "privacy": "Privacy Policy",
       "terms": "Terms of Use",
       "projectFields": "Project form boxes",
-      "topDevelopers": "Top developers"
+      "topDevelopers": "Top developers",
+      "sponsoredBuilders": "Sponsored builders"
     },
     "emails": {
       "metaTitle": "Emails",
@@ -4139,6 +4140,42 @@
           "new": "A new job is saved as a draft. Open it when it is ready.",
           "edit": "Saving shows the change on the site at once when the job is open."
         }
+      }
+    },
+    "sponsoredBuilders": {
+      "metaTitle": "Sponsored builders",
+      "title": "Sponsored builders",
+      "description": "Pick the builders and agents whose projects are promoted, up to {max} for each place. You only pick them: what is shown comes from what each one uploaded, and each visit shows a different one of those picked.",
+      "featured": {
+        "title": "Featured project card",
+        "text": "A large card in the homes and projects lists, after the sixth result, showing one of their live projects. A project in the area being searched comes first."
+      },
+      "spotlight": {
+        "title": "Developer spotlight",
+        "text": "A band on the home page with the builder's or agent's logo, tagline, years and projects delivered, and up to three of their live projects."
+      },
+      "chosen": "{count, plural, =0 {None picked} one {# of {max} picked} other {# of {max} picked}}",
+      "empty": {
+        "title": "No one is picked",
+        "featured": "The Featured project card is not shown until you pick at least one builder or agent.",
+        "spotlight": "The Developer spotlight is not shown until you pick at least one builder or agent."
+      },
+      "available": "Active builders and agents",
+      "availableEmpty": "Every active builder and agent is already picked.",
+      "kindBuilder": "Builder",
+      "kindAgent": "Agent",
+      "projects": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+      "add": "Add {name}",
+      "addShort": "Add",
+      "remove": "Remove {name}",
+      "unknown": "A builder who is no longer active",
+      "full": {
+        "title": "{max} picked, the most this place holds",
+        "text": "Remove one to pick another."
+      },
+      "saved": {
+        "title": "Sponsored builders saved",
+        "text": "The change shows on the site on the next page load."
       }
     }
   },
