@@ -2,6 +2,7 @@ import type { LabEntry } from "../types";
 import { AnatomyDemo, HeroDemo } from "./ads-demos";
 import { HeroAsBuiltDemo, ResultsBannerDemo } from "./ads-demos-placements";
 import { CinematicBannerDemo, ShowcaseCardDemo, StyledFrameDemo } from "./ads-demos-styled";
+import { FeaturedProjectCardDemo } from "./ads-demos-featured";
 
 export const ADS: LabEntry[] = [
   {
@@ -58,5 +59,13 @@ export const ADS: LabEntry[] = [
       "The hero ads in the style the admin chose, in the platform's frame: Sponsored, About this ad, the progress bars and the previous and next buttons. The ads turn when the bar is full and wait while the pointer or focus is on them. Shown for the Showcase and the Cinematic style with three ads, and one ad with About this ad open.",
     sources: ["layout/sponsor-styled-frame.tsx"],
     Demo: StyledFrameDemo,
+  },
+  {
+    id: "featured-project-card",
+    name: "Featured project card",
+    description:
+      "The Featured project card (C, ADR-192): a project of a builder or agent the admin picked, after the sixth result in the homes and projects lists, across the whole row. A big photo with two more and a count, the developer's logo or initials, Sponsored, the project, the homes, the size range, the status, RERA, three highlights and the price, with Request a call back and View project. An amber ring and a Featured project ribbon set it apart. Shown with every detail and with little given.",
+    sources: ["domain/featured-project-card.tsx"],
+    Demo: FeaturedProjectCardDemo,
   },
 ];

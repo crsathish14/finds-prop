@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { FeaturedProjectCard } from "@/components/domain/featured-project-card";
 import { ProjectCard } from "@/components/domain/project-card";
 import { isSignedOut, LoginWallScreen, loginWallMetadata } from "@/features/login-wall";
 import { getProjects, PROJECTS_PATH, ProjectsScreen, toProjectCard } from "@/features/projects";
 import { getSelectedCity } from "@/features/cities";
 import { pageMetadata } from "@/features/seo";
 import { getSiteSettings, getTranslate } from "@/features/site";
+import { getFeaturedProject } from "@/features/sponsored";
 import { publicEnv } from "@/lib/public-env";
+import { RESULTS_SPONSOR_AFTER } from "@/lib/sponsors";
 
 export async function generateMetadata(): Promise<Metadata> {
   const translate = await getTranslate();
@@ -40,19 +43,35 @@ export default async function ProjectsPage() {
   const city = await getSelectedCity();
   const [list, settings] = await Promise.all([getProjects(city.key), getSiteSettings()]);
   const projects = list.status === "ok" ? list.projects : [];
+  // The Featured project card after the sixth project (ADR-192), only when one can show: no empty row, no gap.
+  const featured =
+    projects.length >= RESULTS_SPONSOR_AFTER
+      ? await getFeaturedProject({ cityKey: city.key })
+      : null;
+  const cards = projects.map((project, index) => (
+    <ProjectCard
+      key={project.slug}
+      project={toProjectCard(project, publicEnv.NEXT_PUBLIC_SUPABASE_URL)}
+      priority={index < PRIORITY_CARDS}
+    />
+  ));
   return (
     <main id="main" className="flex-1">
       <ProjectsScreen
         status={list.status}
         regionName={settings.region.name}
         browseHref="/properties"
-        cards={projects.map((project, index) => (
-          <ProjectCard
-            key={project.slug}
-            project={toProjectCard(project, publicEnv.NEXT_PUBLIC_SUPABASE_URL)}
-            priority={index < PRIORITY_CARDS}
-          />
-        ))}
+        cards={
+          featured
+            ? [
+                ...cards.slice(0, RESULTS_SPONSOR_AFTER),
+                <div key="featured" className="col-span-full">
+                  <FeaturedProjectCard project={featured} />
+                </div>,
+                ...cards.slice(RESULTS_SPONSOR_AFTER),
+              ]
+            : cards
+        }
       />
     </main>
   );

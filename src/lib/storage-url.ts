@@ -10,3 +10,6 @@ export function publicStorageUrl(supabaseUrl: string, bucket: string, path: stri
 
 /** The public bucket that holds a project's pictures, floor plans and brochure. */
 export const PROJECT_BUCKET = "project-media";
+
+/** The public bucket that holds builders' and agents' logos, under `<builder id>/` (ADR-179). */
+export const BUILDER_LOGO_BUCKET = "builder-logos";
