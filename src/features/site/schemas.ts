@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 
 /**
@@ -145,6 +146,16 @@ const topDevelopersSchema = z.object({
   builderIds: z.array(z.uuid()).max(TOP_DEVELOPERS_MAX),
 });
 
+/**
+ * The builders and agents the super admin picked for the Featured project card (C) and the Developer Spotlight (D)
+ * (ADR-191), at most 10 each. Empty means the slot shows nothing. An id that is no longer an active builder with a
+ * public project is skipped when it is read.
+ */
+const sponsoredBuildersSchema = z.object({
+  featured: z.array(z.uuid()).max(SPONSORED_BUILDERS_MAX),
+  spotlight: z.array(z.uuid()).max(SPONSORED_BUILDERS_MAX),
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -156,6 +167,7 @@ export const SITE_SETTING_SCHEMAS = {
   disclaimers: disclaimersSchema,
   project_fields: projectFieldsSchema,
   top_developers: topDevelopersSchema,
+  sponsored_builders: sponsoredBuildersSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

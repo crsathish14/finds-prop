@@ -8,9 +8,12 @@ import {
   getFeatureFlags,
   getTranslate,
   mergeSiteSettings,
+  toSponsorStyle,
   type SiteSettings,
 } from "@/features/site";
+import { getProjects } from "@/features/projects";
 import { publicEnv } from "@/lib/public-env";
+import type { SponsorStyle } from "@/lib/sponsors";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import type { Database } from "@/types/database.types";
@@ -148,6 +151,10 @@ export interface HeroPage {
   standard: StandardHero;
   /** The sponsors as saved, in their order, for the manager under the hero boxes (S7-T11). */
   sponsors: SponsorEditView[];
+  /** The hero ad style as saved (ADR-182). */
+  sponsorStyle: SponsorStyle;
+  /** The live projects a sponsor can link to (ADR-189); empty when they cannot be read. */
+  projects: { slug: string; name: string; developer: string }[];
 }
 
 /**
@@ -157,11 +164,29 @@ export interface HeroPage {
  */
 export async function getHeroPage(): Promise<HeroPage> {
   const [{ settings }, translate] = await Promise.all([getSiteContent(), getTranslate()]);
+  // After the admin's own read (made with their session), so the page renders at request time: the project list
+  // stamps the time it was read, which a prerender may not do.
+  const live = await getProjects();
   const standard = standardHeroOf(
     buildHero({ ...settings, hero: { layout: settings.hero.layout } }, translate),
   );
   const { sponsors } = sponsorsPageOf(settings);
-  return { initial: heroFormOf(settings.hero, standard), standard, sponsors };
+  // A failed read of the projects leaves the list empty: the admin can still link a sponsor to a website.
+  const projects =
+    live.status === "ok"
+      ? live.projects.map((project) => ({
+          slug: project.slug,
+          name: project.name,
+          developer: project.developerName,
+        }))
+      : [];
+  return {
+    initial: heroFormOf(settings.hero, standard),
+    standard,
+    sponsors,
+    sponsorStyle: toSponsorStyle(settings.sponsors.style),
+    projects,
+  };
 }
 
 export interface HomepagePage {

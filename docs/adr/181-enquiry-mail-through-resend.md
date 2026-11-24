@@ -20,7 +20,7 @@
 
 ## Consequences
 
-- **The free plan is small:** about 3,000 mails a month and 100 a day, one verified domain, and a short log. Two mails per enquiry means about 50 enquiries a day. Past the limit Resend refuses and the sender throws `UPSTREAM_FAILED` with `daily_quota_exceeded`; the later calls will log that and carry on, because a mail never fails an enquiry. If it ever matters, the paid plan or another provider is one new adapter file.
+- **The free plan is small:** about 3,000 mails a month and 100 a day, a short log. (Resend's pricing page of 24 Nov 2026 lists three verified domains, not one; see `docs/runbooks/enquiry-mail.md`.) Two mails per enquiry means about 50 enquiries a day. Past the limit Resend refuses and the sender throws `UPSTREAM_FAILED` with `daily_quota_exceeded`; the later calls will log that and carry on, because a mail never fails an enquiry. If it ever matters, the paid plan or another provider is one new adapter file.
 - **Dev and production share the key's domain,** so the allowlist is the only thing that keeps dev from mailing real people. Keeping the allowlist empty by default is deliberate.
 - **Owner steps outside the code:** verify `findsprop.com` in Resend, create a new sending key, set `RESEND_API_KEY` in Vercel (Preview and Production) and in `.env.local`, and set `MAIL_DEV_ALLOWLIST` on dev. The key is never pasted in chat.
 - Rollback: delete `resend.ts`, `allowlist.ts` and their tests, restore `chooseMailSender()`, remove the four settings. Nothing else imports them yet.

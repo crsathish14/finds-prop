@@ -1,6 +1,6 @@
 # ADR-188 · The enquiry actions send the mail (part 4 of the enquiry mail plan)
 
-- Status: Accepted. Part 4 of the plan the owner approved on 24 Nov 2026 (`ENQUIRY_EMAIL_PLAN.md`). Part 5 (the runbook and one live send) follows.
+- Status: Accepted. Part 4 of the plan the owner approved on 24 Nov 2026 (`ENQUIRY_EMAIL_PLAN.md`). Part 5 is the runbook `docs/runbooks/enquiry-mail.md`; the one live send is the owner's checklist in it and needs the Resend setup first.
 - Date: 2026-11-24
 - Related: ADR-181 (the Resend sender, the allowlist, the settings), ADR-183 (the editable wording and the render function), ADR-186 (`profiles.contact_email`), ADR-074 (the hook points this uses), R-BE-09 (adapters), R-BE-10 (no personal data in logs), DEC-26 (one enquiry per user per home per 24 hours), BR-72 (project leads: 5 per hour)
 - Class: C2 (a new caller of an external provider, a new rate-limit scope, new read paths with the service role)

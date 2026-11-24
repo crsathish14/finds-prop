@@ -3,7 +3,8 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { PropertyCard } from "@/components/domain/property-card";
-import { SponsorSlot } from "@/components/layout/sponsor-slot";
+import { FeaturedProjectCard } from "@/components/domain/featured-project-card";
+import { getSelectedCity } from "@/features/cities";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
 import { toPropertyCard } from "@/features/home";
@@ -23,9 +24,10 @@ import {
 } from "@/features/search";
 import { isSignedOut, LoginWallScreen, loginWallMetadata } from "@/features/login-wall";
 import { pageMetadata } from "@/features/seo";
-import { getFeatureFlags, getSiteSettings, getSponsorAds, getTranslate } from "@/features/site";
+import { getFeatureFlags, getSiteSettings, getTranslate } from "@/features/site";
+import { getFeaturedProject } from "@/features/sponsored";
 import { publicEnv } from "@/lib/public-env";
-import { RESULTS_SPONSOR_AFTER, selectSponsors } from "@/lib/sponsors";
+import { RESULTS_SPONSOR_AFTER } from "@/lib/sponsors";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -88,17 +90,21 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   const flags = getFeatureFlags();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };
   const homes = results.status === "ok" ? results.homes : [];
-  // One sponsored banner after the sixth home, only when one qualifies: no empty row, no gap (FR-PUB-03).
-  const ads = await getSponsorAds();
-  const showBanner =
-    homes.length >= RESULTS_SPONSOR_AFTER &&
-    selectSponsors({ ads, placement: "results", layout: "search_desk" }).sponsors.length > 0;
+  // The Featured project card after the sixth home (ADR-192): a project of a builder or agent the admin picked, the
+  // searched area first, a different one on each visit. Only when one can show: no empty row, no gap (FR-PUB-03).
+  const featured =
+    homes.length >= RESULTS_SPONSOR_AFTER
+      ? await getFeaturedProject({
+          cityKey: (await getSelectedCity()).key,
+          area: params.locality ?? params.place,
+        })
+      : null;
   const withBanner = (cards: ReactNode[]): ReactNode[] =>
-    showBanner
+    featured
       ? [
           ...cards.slice(0, RESULTS_SPONSOR_AFTER),
           <div key="sponsor" className="col-span-full">
-            <SponsorSlot ads={ads} placement="results" />
+            <FeaturedProjectCard project={featured} />
           </div>,
           ...cards.slice(RESULTS_SPONSOR_AFTER),
         ]

@@ -101,12 +101,14 @@ Place search turns a typed place such as "KK Nagar" into a position. It uses Ola
 
 ## Enquiry mail (Resend; ADR-181)
 
+The full runbook (setup order, reading the logs, limits, switching mail off, the first live send) is `enquiry-mail.md`; this section lists only the settings.
+
 When someone sends an enquiry the site will mail the poster and, if the enquirer typed an email, the enquirer. This is separate from the sign-in email above: it does not use Supabase's mail settings, only the app's own key.
 
 - `RESEND_API_KEY`: a Resend API key with **sending access** for the `findsprop.com` domain only. Create a new key (never reuse one that was pasted in chat) and set it in Vercel for Preview and Production and in `.env.local`. **Without it no mail is sent, in any environment**, and nothing breaks.
 - `MAIL_FROM` (default `no-reply@findsprop.com`) and `MAIL_REPLY_TO` (default `support@findsprop.com`): leave unset to use the defaults. The sending domain must be **Verified** in Resend (Domains: add `findsprop.com`, add the DNS records it shows, usually on a `send` subdomain, so the existing Google mail records stay). The mailbox `support@findsprop.com` must exist so replies are read.
 - `MAIL_DEV_ALLOWLIST`: comma separated addresses, or `@domain` for a whole domain, for example `tester@example.com,@findsprop.com`. Dev and staging mail **only** these; an empty list mails nobody. Production ignores it. A developer's machine (`APP_ENV=local`) never mails, whatever the key.
-- Resend's free plan is about 3,000 mails a month and 100 a day, one domain, with a short log. When the day's allowance is used Resend refuses (`daily_quota_exceeded` in the log) and the mail is lost; the enquiry itself is never affected. Dev and production share it.
+- Resend's free plan is about 3,000 mails a month and 100 a day, three verified domains, with a short log (30 days). When the day's allowance is used Resend refuses (`daily_quota_exceeded` in the log) and the mail is lost; the enquiry itself is never affected. Dev and production share it.
 - Since ADR-188 the enquiry actions send: after an enquiry about a home or a lead about a project is stored, the poster is mailed (a home's private contact email, or the builder's email) and the enquirer gets a confirmation if they typed an email. The mail runs after the answer, a failure is only logged (never an address or text), and each poster gets at most 20 such notifications a day (past that, the mails are skipped and the log says so). No new setting.
 
 ## Error tracking (optional; ADR-130)

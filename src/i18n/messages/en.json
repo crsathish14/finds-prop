@@ -1559,6 +1559,17 @@
       "saving": "Saving email",
       "change": "Change",
       "cancel": "Cancel"
+    },
+    "featuredProject": {
+      "ribbon": "Featured project",
+      "sponsored": "Sponsored",
+      "bhk": "{sizes} BHK",
+      "areaRange": "{from} to {to}",
+      "possession": "Possession {date}",
+      "rera": "RERA registered",
+      "morePhotos": "+{count} photos",
+      "callBack": "Request a call back",
+      "view": "View project"
     }
   },
   "admin": {
@@ -1597,7 +1608,8 @@
       "privacy": "Privacy Policy",
       "terms": "Terms of Use",
       "projectFields": "Project form boxes",
-      "topDevelopers": "Top developers"
+      "topDevelopers": "Top developers",
+      "sponsoredBuilders": "Sponsored builders"
     },
     "emails": {
       "metaTitle": "Emails",
@@ -2814,7 +2826,7 @@
         "columns": {
           "advertiser": "Advertiser",
           "status": "Status",
-          "strip": "Strip",
+          "strip": "Hero ad",
           "panel": "Panel",
           "order": "Order",
           "actions": "Actions"
@@ -2865,7 +2877,14 @@
           "activeHint": "Inactive sponsors are never shown.",
           "imagesTitle": "Banner images",
           "imagesText": "Finished images supplied by the advertiser. Supply each at twice the size for sharp screens. JPG, PNG or WEBP only, up to {maximum} KB each.",
-          "imagesClosing": "Supplying both the desktop and phone image of a format makes it ready. A sponsor with no ready format is never shown."
+          "imagesClosing": "Supplying both the desktop and phone image of a format makes it ready. A sponsor with no ready format is never shown.",
+          "linkLabel": "Where a click goes",
+          "linkProject": "Our project",
+          "linkUrl": "Another website",
+          "project": "Project",
+          "projectPlaceholder": "Choose a project",
+          "projectHint": "Only projects buyers can see are listed. A click opens its page on findsprop.",
+          "projectsNone": "No project is live yet. Choose Another website, or publish a project first."
         },
         "slot": {
           "stripDesktop": "Strip · desktop",
@@ -2901,7 +2920,8 @@
           "uploadTitle": "The picture could not be sent",
           "uploadText": "Check your connection and try again.",
           "neededTitle": "This picture is needed",
-          "neededText": "A format needs both its desktop and its phone picture. Add this one, or remove the other."
+          "neededText": "A format needs both its desktop and its phone picture. Add this one, or remove the other.",
+          "photoSizeText": "Supply a picture of {maximum} KB or less."
         },
         "preview": {
           "device": "Preview size",
@@ -2913,7 +2933,8 @@
           "noneTitle": "No banner is shown",
           "noneText": "Visitors see the search bar and then the next section. No frame, label or gap.",
           "phoneNote": "The phone image is used below 1024 px. Nothing is stretched.",
-          "caption": "{name} · first of {count} active"
+          "caption": "{name} · first of {count} active",
+          "noneReady": "No ad ready"
         },
         "layout": {
           "live": "Live layout: {layout}. Changes apply on the next page load after you save.",
@@ -2923,7 +2944,52 @@
           "noneTextSplit": "Visitors will see the Search Desk homepage without a banner until a sponsor supplies the {format} format.",
           "noneTextSearchDesk": "Visitors will see the homepage without a banner until a sponsor supplies the {format} format.",
           "someTitle": "{missing, plural, one {# of {active} sponsors doesn't have the {layout} format} other {# of {active} sponsors don't have the {layout} format}}",
-          "someText": "{missing, plural, one {It won't be shown} other {They won't be shown}} while {layout} is live. Add a {format} image to {missing, plural, one {it} other {each}} in Sponsors below."
+          "someText": "{missing, plural, one {It won't be shown} other {They won't be shown}} while {layout} is live. Add a {format} image to {missing, plural, one {it} other {each}} in Sponsors below.",
+          "noneTextStyle": "Visitors will see the homepage without an ad until a sponsor has its {style} details filled in.",
+          "someTitleStyle": "{missing, plural, one {# of {active} sponsors isn't ready for the {style} style} other {# of {active} sponsors aren't ready for the {style} style}}",
+          "someTextStyle": "{missing, plural, one {It won't be shown} other {They won't be shown}} under the search bar. Add the photo, the brand and the {style} words to {missing, plural, one {it} other {each}} in Sponsors below."
+        },
+        "ad": {
+          "title": "Hero ad",
+          "text": "What the ad under the search bar shows, in the style chosen above the list. Fill the boxes marked required for that style.",
+          "brand": "Developer or brand",
+          "brandHint": "Shown on the ad, up to 60 characters.",
+          "optional": "(optional)",
+          "shownNow": "Shown now",
+          "photoTitle": "Photo",
+          "photoNote": "Landscape, at least {width} × {height} pixels, up to {maximum} KB. No words on it: the ad lays its own text on top.",
+          "showcase": {
+            "title": "Showcase card",
+            "text": "The photo beside the project's details, with View project and Get price list.",
+            "project": "Project name",
+            "locality": "Area",
+            "localityPlaceholder": "Sholinganallur, OMR",
+            "homes": "Homes",
+            "homesPlaceholder": "2 & 3 BHK",
+            "price": "Price",
+            "pricePlaceholder": "₹78 L onwards",
+            "size": "Size",
+            "sizePlaceholder": "1,120 to 1,640 sq ft",
+            "possession": "Possession",
+            "possessionPlaceholder": "Ready Dec 2027",
+            "rera": "RERA number"
+          },
+          "cinematic": {
+            "title": "Cinematic banner",
+            "text": "A tall photo with a headline, one line and a button laid on it.",
+            "headline": "Headline",
+            "button": "Button words",
+            "buttonPlaceholder": "Explore the project",
+            "eyebrow": "Small label above",
+            "eyebrowPlaceholder": "New launch",
+            "line": "One line"
+          }
+        },
+        "style": {
+          "label": "Hero ad style",
+          "showcase": "Showcase",
+          "cinematic": "Cinematic",
+          "hint": "How every sponsor's ad under the search bar looks. The Split layout keeps its picture panel."
         }
       },
       "homepage": {
@@ -4085,6 +4151,42 @@
           "new": "A new job is saved as a draft. Open it when it is ready.",
           "edit": "Saving shows the change on the site at once when the job is open."
         }
+      }
+    },
+    "sponsoredBuilders": {
+      "metaTitle": "Sponsored builders",
+      "title": "Sponsored builders",
+      "description": "Pick the builders and agents whose projects are promoted, up to {max} for each place. You only pick them: what is shown comes from what each one uploaded, and each visit shows a different one of those picked.",
+      "featured": {
+        "title": "Featured project card",
+        "text": "A large card in the homes and projects lists, after the sixth result, showing one of their live projects. A project in the area being searched comes first."
+      },
+      "spotlight": {
+        "title": "Developer spotlight",
+        "text": "A band on the home page with the builder's or agent's logo, tagline, years and projects delivered, and up to three of their live projects."
+      },
+      "chosen": "{count, plural, =0 {None picked} one {# of {max} picked} other {# of {max} picked}}",
+      "empty": {
+        "title": "No one is picked",
+        "featured": "The Featured project card is not shown until you pick at least one builder or agent.",
+        "spotlight": "The Developer spotlight is not shown until you pick at least one builder or agent."
+      },
+      "available": "Active builders and agents",
+      "availableEmpty": "Every active builder and agent is already picked.",
+      "kindBuilder": "Builder",
+      "kindAgent": "Agent",
+      "projects": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+      "add": "Add {name}",
+      "addShort": "Add",
+      "remove": "Remove {name}",
+      "unknown": "A builder who is no longer active",
+      "full": {
+        "title": "{max} picked, the most this place holds",
+        "text": "Remove one to pick another."
+      },
+      "saved": {
+        "title": "Sponsored builders saved",
+        "text": "The change shows on the site on the next page load."
       }
     }
   },

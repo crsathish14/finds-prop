@@ -20,6 +20,6 @@ export const BUILDER_YEAR_MIN = 1900;
 export const BUILDER_DELIVERED_MAX = 100000;
 
 /** The public bucket a builder's logo is uploaded to, under `<builder id>/` (ADR-179), and what it takes. */
-export const BUILDER_LOGO_BUCKET = "builder-logos";
+export { BUILDER_LOGO_BUCKET } from "@/lib/storage-url";
 export const BUILDER_LOGO_BYTES_MAX = 1048576;
 export const BUILDER_LOGO_TYPES = ["image/webp", "image/jpeg", "image/png"] as const;

@@ -11,6 +11,7 @@ import {
   saveHomepageConfig,
   saveProjectFieldsConfig,
   saveSponsorsConfig,
+  saveSponsoredBuildersConfig,
   saveTopDevelopersConfig,
 } from "./action-config";
 import {
@@ -21,6 +22,7 @@ import {
   saveHeroContent,
   saveHomepageContent,
   saveProjectFieldsContent,
+  saveSponsoredBuildersContent,
   saveTopDevelopersContent,
 } from "./content-service";
 import { createContentStore } from "./service";
@@ -122,6 +124,17 @@ export const saveTopDevelopers = defineAction({
   handler: async ({ input, session, log }) => {
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveTopDevelopersContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
+    return done;
+  },
+});
+
+/** Saves the builders and agents picked for the Featured card and the Developer Spotlight (ADR-191). */
+export const saveSponsoredBuilders = defineAction({
+  ...saveSponsoredBuildersConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveSponsoredBuildersContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key });
     return done;
   },

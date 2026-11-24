@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * and a sponsor change must not wipe the hero words being typed.
  */
 export default async function HeroPage() {
-  const { initial, standard, sponsors } = await getHeroPage();
+  const { initial, standard, sponsors, sponsorStyle, projects } = await getHeroPage();
   return (
     <HeroForm
       key={JSON.stringify(initial)}
@@ -24,6 +24,8 @@ export default async function HeroPage() {
       standard={standard}
       save={saveHero}
       sponsors={sponsors}
+      sponsorStyle={sponsorStyle}
+      projects={projects}
       saveSponsors={saveSponsors}
     />
   );
