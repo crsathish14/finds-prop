@@ -16,6 +16,7 @@ import {
   saveHeaderContent,
   saveHeroContent,
   saveHomepageContent,
+  saveSponsoredBuildersContent,
   saveTopDevelopersContent,
   type ContentStore,
   type RegionBounds,
@@ -27,6 +28,7 @@ import {
   headerInputSchema,
   heroInputSchema,
   homepageInputSchema,
+  sponsoredBuildersInputSchema,
   topDevelopersInputSchema,
 } from "../schemas";
 
@@ -280,5 +282,32 @@ describe("UT-top-developers: the chosen developers of the home page", () => {
   it("refuses a repeated id and a value that is not an id", () => {
     expect(topDevelopersInputSchema.safeParse({ builderIds: [ID(1), ID(1)] }).success).toBe(false);
     expect(topDevelopersInputSchema.safeParse({ builderIds: ["not-an-id"] }).success).toBe(false);
+  });
+});
+
+describe("UT-sponsored-builders: who the Featured card and the Spotlight draw from (ADR-191)", () => {
+  it("writes the sponsored_builders setting with both lists", async () => {
+    const { store, writes } = fakeStore();
+    const done = await saveSponsoredBuildersContent(store, {
+      featured: [ID(2), ID(1)],
+      spotlight: [ID(3)],
+    });
+    expect(done).toEqual({ key: "sponsored_builders" });
+    expect(writes).toEqual([
+      { key: "sponsored_builders", value: { featured: [ID(2), ID(1)], spotlight: [ID(3)] } },
+    ]);
+  });
+
+  it("takes none and ten in each list, but not eleven, a repeat or something that is not an id", () => {
+    const ten = Array.from({ length: 10 }, (_, index) => ID(index + 1));
+    const ok = (featured: string[], spotlight: string[] = []) =>
+      sponsoredBuildersInputSchema.safeParse({ featured, spotlight }).success;
+    expect(ok([])).toBe(true);
+    expect(ok(ten, ten)).toBe(true);
+    expect(ok([...ten, ID(11)])).toBe(false);
+    expect(ok([], [...ten, ID(11)])).toBe(false);
+    expect(ok([ID(1), ID(1)])).toBe(false);
+    expect(ok(["not-an-id"])).toBe(false);
+    expect(sponsoredBuildersInputSchema.safeParse({ featured: [] }).success).toBe(false);
   });
 });

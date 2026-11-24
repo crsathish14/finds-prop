@@ -7,6 +7,7 @@ import {
   heroInputSchema,
   homepageInputSchema,
   projectFieldsInputSchema,
+  sponsoredBuildersInputSchema,
   topDevelopersInputSchema,
 } from "./schemas";
 import { sponsorsInputSchema } from "./sponsor-schemas";
@@ -94,6 +95,15 @@ export const saveDisclaimersConfig = {
 export const saveProjectFieldsConfig = {
   name: "saveProjectFields",
   input: projectFieldsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/** The builders and agents picked for the Featured card and the Developer Spotlight (ADR-191). Same limits and cache tag. */
+export const saveSponsoredBuildersConfig = {
+  name: "saveSponsoredBuilders",
+  input: sponsoredBuildersInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

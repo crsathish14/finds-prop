@@ -148,6 +148,12 @@ export function buildAdminNav(
           icon: "builders",
         },
         {
+          key: "sponsored-builders",
+          href: "/admin/sponsored-builders",
+          label: translate("admin.nav.sponsoredBuilders"),
+          icon: "builders",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),

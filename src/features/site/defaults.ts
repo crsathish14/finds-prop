@@ -29,4 +29,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   project_fields: { fields: [] },
   // No chosen developers: the home page picks them by itself.
   top_developers: { builderIds: [] },
+  // No builder is picked for the Featured card or the Developer Spotlight until the admin picks one (ADR-191).
+  sponsored_builders: { featured: [], spotlight: [] },
 };
