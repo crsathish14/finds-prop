@@ -151,6 +151,35 @@ describe("PostingWizard: the email for enquiries (ADR-186)", () => {
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/dashboard?tab=listings"));
   });
 
+  it("lets Submit go with the box empty when the account email is confirmed, sending no address (ADR-198)", async () => {
+    const fake = actions();
+    open(fake, { contactEmailOptional: true });
+    await reachReview();
+    press("Submit for review");
+    await waitFor(() => expect(fake.submit).toHaveBeenCalledTimes(1));
+    const sent = vi.mocked(fake.submit).mock.calls[0]?.[0] as unknown as Record<string, unknown>;
+    expect(sent).toMatchObject({ listingId: LISTING });
+    expect(sent).not.toHaveProperty("contactEmail");
+    expect(screen.queryByText(REQUIRED)).toBeNull();
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/dashboard?tab=listings"));
+  });
+
+  it("still checks and sends an address typed in the box when the account email is confirmed", async () => {
+    const fake = actions();
+    open(fake, { contactEmailOptional: true });
+    await reachReview();
+    type(EMAIL_BOX, "not an address");
+    press("Submit for review");
+    expect(await screen.findByText(INVALID)).toBeVisible();
+    expect(fake.submit).not.toHaveBeenCalled();
+    type(EMAIL_BOX, "other@example.test");
+    press("Submit for review");
+    await waitFor(() => expect(fake.submit).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(fake.submit).mock.calls[0]?.[0]).toMatchObject({
+      contactEmail: "other@example.test",
+    });
+  });
+
   it("shows the server's refusal of the email next to the box and keeps what was typed", async () => {
     const fake = actions({
       submit: vi.fn(async () => ({

@@ -80,9 +80,11 @@ vi.mock("../wizard.client", () => ({
     locationHeld?: boolean;
     locationField?: unknown;
     contactEmail?: string;
+    contactEmailOptional?: boolean;
   }) => (
     <div
       data-testid="wizard"
+      data-optional={props.contactEmailOptional ? "yes" : ""}
       data-areas={JSON.stringify(props.areas ?? [])}
       data-held={String(props.locationHeld ?? false)}
       data-field={props.locationField ? "given" : ""}
@@ -256,6 +258,16 @@ describe("PostPropertyScreen: the gate or the wizard (S6-T02)", () => {
     state.email = { kind: "unknown" };
     render(await PostPropertyScreen({}));
     expect(screen.getByTestId("wizard")).toHaveAttribute("data-contact", "");
+  });
+
+  it("lets the email box be left empty only with a confirmed account email (ADR-198)", async () => {
+    state.email = { kind: "verified", email: "priya@example.com" };
+    const confirmed = render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-optional", "yes");
+    confirmed.unmount();
+    state.email = { kind: "unknown" };
+    render(await PostPropertyScreen({}));
+    expect(screen.getByTestId("wizard")).toHaveAttribute("data-optional", "");
   });
 
   it("gives the wizard the connected location field and the site's curated localities, with no coordinates but theirs", async () => {

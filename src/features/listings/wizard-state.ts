@@ -227,9 +227,11 @@ export function draftInput(
 
 /**
  * The email for enquiries, checked the way the server will before Submit (ADR-186). Returns the problem on that field
- * (empty, or not shaped like an address), or nothing when it is fine.
+ * (empty, or not shaped like an address), or nothing when it is fine. With a confirmed account email the box may be
+ * left empty (ADR-198): the mail goes to that address; what is typed is still checked.
  */
-export function validateContactEmail(values: WizardValues): StepErrors {
+export function validateContactEmail(values: WizardValues, optional = false): StepErrors {
+  if (optional && values.contactEmail.trim() === "") return {};
   const input = { contactEmail: values.contactEmail };
   const result = contactEmailSchema.safeParse(input);
   return result.success ? {} : firstErrors(result.error, input);

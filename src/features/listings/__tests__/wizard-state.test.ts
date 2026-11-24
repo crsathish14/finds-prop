@@ -183,5 +183,16 @@ describe("UT-wizard-state: the wizard without React (S6-T02)", () => {
         {},
       );
     });
+
+    it("may be left empty with a confirmed account email, but what is typed is still checked (ADR-198)", () => {
+      expect(validateContactEmail({ ...complete, contactEmail: "" }, true)).toEqual({});
+      expect(validateContactEmail({ ...complete, contactEmail: "   " }, true)).toEqual({});
+      expect(
+        validateContactEmail({ ...complete, contactEmail: "owner" }, true)["contactEmail"]?.key,
+      ).toBe("validation.emailInvalid");
+      expect(
+        validateContactEmail({ ...complete, contactEmail: "" }, false)["contactEmail"]?.key,
+      ).toBe("validation.contactEmailRequired");
+    });
   });
 });

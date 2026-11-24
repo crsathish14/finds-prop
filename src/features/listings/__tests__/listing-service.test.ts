@@ -45,6 +45,10 @@ function store(overrides: Partial<ListingCallerStore> = {}) {
       calls.push(`set-contact:${email}`);
       return email;
     },
+    hasVerifiedEmail: async () => {
+      calls.push("verified");
+      return false;
+    },
     ...overrides,
   };
   return { fake, calls, rows };
@@ -179,8 +183,40 @@ describe("UT-listing-service: the wizard's server rules (S6-T02)", () => {
       const { fake, calls } = store({ contactEmail: async () => null });
       const error = await failure(() => sendForReview(fake, { listingId: LISTING }));
       expect(error.code).toBe("VALIDATION");
+      expect(calls).toEqual(["verified"]);
       expect(error.fieldErrors?.contactEmail).toEqual([{ key: "validation.contactEmailRequired" }]);
       expect(calls).not.toContain(`submit:${LISTING}`);
+    });
+
+    it("takes a confirmed account email as the address for enquiries, and does not refuse the submit (ADR-198)", async () => {
+      const { fake, calls } = store({
+        contactEmail: async () => null,
+        hasVerifiedEmail: async () => true,
+      });
+      expect(await sendForReview(fake, { listingId: LISTING })).toEqual({
+        listingId: LISTING,
+        shortId: "abcd2345",
+      });
+      expect(calls).toEqual([`submit:${LISTING}`]);
+    });
+
+    it("still refuses when the account has no saved email and none that is confirmed", async () => {
+      const { fake, calls } = store({
+        contactEmail: async () => null,
+        hasVerifiedEmail: async () => false,
+      });
+      const error = await failure(() => sendForReview(fake, { listingId: LISTING }));
+      expect(error.fieldErrors?.contactEmail).toEqual([{ key: "validation.contactEmailRequired" }]);
+      expect(calls).not.toContain(`submit:${LISTING}`);
+    });
+
+    it("does not ask whether the email is confirmed when one is saved or given", async () => {
+      const saved = store({ hasVerifiedEmail: async () => true });
+      await sendForReview(saved.fake, { listingId: LISTING });
+      const given = store({ hasVerifiedEmail: async () => true });
+      await sendForReview(given.fake, { listingId: LISTING, contactEmail: "new@example.test" });
+      expect(saved.calls).toEqual(["contact", `submit:${LISTING}`]);
+      expect(given.calls).toEqual(["set-contact:new@example.test", `submit:${LISTING}`]);
     });
 
     it("does not submit when the email given is refused by the database", async () => {

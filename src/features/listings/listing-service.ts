@@ -43,6 +43,8 @@ export interface ListingCallerStore {
   contactEmail(): Promise<string | null>;
   /** Calls `set_contact_email` for the caller; the address as stored. Throws the database's failure through `mapListingError`. */
   setContactEmail(email: string): Promise<string | null>;
+  /** Whether the caller's account email is confirmed (`has_verified_email`, ADR-195). The mail then goes there (ADR-198). */
+  hasVerifiedEmail(): Promise<boolean>;
 }
 
 /** What the database says when a call fails. */
@@ -212,7 +214,8 @@ export async function discardDraft(
 /**
  * Sends a draft for review. The database checks the owner, the fields, the photo and the limit. The account must
  * hold an email for enquiries first (ADR-186): one given with the submit is saved to the account, otherwise the one
- * already saved is used; with neither the listing is refused with a problem on that field, and stays a draft.
+ * already saved is used; with neither the listing is refused with a problem on that field, and stays a draft. A
+ * confirmed account email counts as the one (ADR-198): the mail goes there, so nothing more is asked.
  */
 export async function sendForReview(
   store: ListingCallerStore,
@@ -220,7 +223,7 @@ export async function sendForReview(
 ): Promise<{ listingId: string; shortId: string }> {
   if (parameters.contactEmail !== undefined) {
     await store.setContactEmail(parameters.contactEmail);
-  } else if ((await store.contactEmail()) === null) {
+  } else if ((await store.contactEmail()) === null && !(await store.hasVerifiedEmail())) {
     throw new ActionError("VALIDATION", "The account has no email for enquiries", {
       fieldErrors: { contactEmail: [{ key: "validation.contactEmailRequired" }] },
     });

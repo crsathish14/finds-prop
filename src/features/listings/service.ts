@@ -67,6 +67,11 @@ export function listingCallerStore(supabase: SupabaseClient<Database>): ListingC
       if (error) throw mapListingError(error);
       return data?.contact_email ?? null;
     },
+    async hasVerifiedEmail() {
+      const { data, error } = await supabase.rpc("has_verified_email");
+      if (error) throw mapListingError(error);
+      return data === true;
+    },
     async setContactEmail(email) {
       const { data, error } = await supabase.rpc("set_contact_email", { p_email: email });
       if (error) throw mapListingError(error);
