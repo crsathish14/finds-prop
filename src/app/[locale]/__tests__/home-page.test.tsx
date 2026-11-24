@@ -14,6 +14,8 @@ const state = vi.hoisted(() => ({
     order: undefined as string[] | undefined,
   },
   region: {} as { name?: string },
+  /** The city the visitor chose in the header (the cookie), when a test sets one. */
+  city: undefined as string | undefined,
   header: {} as { name?: string },
   aiSearch: false,
   postEnabled: true,
@@ -34,7 +36,10 @@ vi.mock("@/features/site", async () => ({
   getSponsorAds: async () => state.ads,
   getSponsorStyle: async () => state.style,
   getFeatureFlags: () => ({ aiSearch: state.aiSearch, mapView: false, pgListings: false }),
-  buildHero: () => ({ title: "Headline", subtitle: "Line" }),
+  buildHero: (_settings: unknown, _translate: unknown, cityName?: string) => ({
+    title: cityName ? `Headline in ${cityName}` : "Headline",
+    subtitle: "Line",
+  }),
   isRouteEnabled: () => state.postEnabled,
   resolveBrandName: () => "Find Prop",
   resolveHomeOrder: (
@@ -99,9 +104,14 @@ vi.mock("@/features/home", () => ({
   CityNewestSection: (props: { brandName: string }) => (
     <section data-testid="newest" data-brand={props.brandName} />
   ),
-  BrowseSection: (props: { regionName?: string }) => (
-    <section data-testid="browse" data-region={props.regionName ?? ""} />
+  // Browse by area names the city chosen in the header, or the site's region when none was chosen.
+  CityBrowseSection: (props: { siteRegion?: string }) => (
+    <section data-testid="browse" data-region={state.city ?? props.siteRegion ?? ""} />
   ),
+  // The hero reads the city behind its own boundary; here the stand-in hands the page the chosen city,
+  // or the site's region when no city is chosen (the fallback the shell holds).
+  CityHero: (props: { siteRegion?: string; render: (regionName?: string) => ReactNode }) =>
+    props.render(state.city ?? props.siteRegion),
   WhySection: (props: { brandName: string }) => (
     <section data-testid="why" data-brand={props.brandName} />
   ),
@@ -128,6 +138,7 @@ beforeEach(() => {
     order: undefined,
   };
   state.region = {};
+  state.city = undefined;
   state.header = {};
   state.aiSearch = false;
   state.postEnabled = true;
@@ -240,11 +251,30 @@ describe("the homepage (S4-T06)", () => {
     expect(sections()).toEqual(["explore", "featured", "launches", "browse", "newest", "why"]);
   });
 
-  it("gives the sections the region, the brand name and the banner's address", async () => {
+  it("names the city the visitor chose in the hero and in Browse by area (owner, 24 Nov)", async () => {
     state.region = { name: "Chennai" };
+    state.city = "Madurai";
+    render(await HomePage());
+    expect(screen.getByRole("heading", { level: 1, name: "Headline in Madurai" })).toBeVisible();
+    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Madurai");
+  });
+
+  it("keeps the site's region in the hero and in Browse by area when no city is chosen", async () => {
+    state.region = { name: "Chennai" };
+    render(await HomePage());
+    expect(screen.getByRole("heading", { level: 1, name: "Headline in Chennai" })).toBeVisible();
+    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Chennai");
+  });
+
+  it("keeps the region-neutral headline when the site has no region and no city is chosen (DEC-14)", async () => {
+    render(await HomePage());
+    expect(screen.getByRole("heading", { level: 1, name: "Headline" })).toBeVisible();
+    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "");
+  });
+
+  it("gives the sections the brand name and the banner's address", async () => {
     state.header = { name: "Grove Homes" };
     render(await HomePage());
-    expect(screen.getByTestId("browse")).toHaveAttribute("data-region", "Chennai");
     expect(screen.getByTestId("why")).toHaveAttribute("data-brand", "Find Prop");
     expect(screen.getByTestId("newest")).toHaveAttribute("data-brand", "Find Prop");
     expect(screen.getByTestId("cta")).toHaveAttribute("data-href", "/post-property");
