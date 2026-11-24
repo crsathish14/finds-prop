@@ -16,6 +16,7 @@ import {
   contextSection,
   EMI_SECTION,
   FACTS_SECTION,
+  GUEST_SECTION,
   LANGUAGE_SECTION,
   OFF_TOPIC_SECTION,
   PLACE_SECTION,
@@ -39,6 +40,11 @@ export interface SystemPromptOptions {
    * false leaves the prompt as it was before, apart from its version line.
    */
   readonly placeSearch?: boolean;
+  /**
+   * True when the customer is not signed in (ADR-198): the prompt then carries the rules for a guest's two free
+   * messages. Absent or false leaves the prompt as it was, apart from its version line.
+   */
+  readonly guest?: boolean;
   /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
   readonly pageContext?: Parameters<typeof contextSection>[0];
 }
@@ -61,6 +67,7 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     CARDS_SECTION,
     SITE_LINKS_SECTION,
     ...(options.placeSearch === true ? [PLACE_SECTION] : []),
+    ...(options.guest === true ? [GUEST_SECTION] : []),
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,
   ];

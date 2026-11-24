@@ -396,6 +396,63 @@ describe("UT-ai-system-prompt: the rules for homes near a place (ADR-142)", () =
   });
 });
 
+describe("UT-ai-system-prompt: the rules for a guest's two free messages (ADR-198)", () => {
+  const FOR_GUEST = buildSystemPrompt({ translate, guest: true });
+  const LOWER_FOR_GUEST = FOR_GUEST.toLowerCase();
+
+  it("is left out for a signed-in customer, whose prompt is then exactly what it was", () => {
+    expect(PROMPT).not.toContain("only two free messages");
+    expect(buildSystemPrompt({ translate, guest: false })).toBe(PROMPT);
+    expect(buildSystemPrompt({ translate })).toBe(PROMPT);
+  });
+
+  it("is added as one section before the confidentiality rule, and nothing else changes", () => {
+    expect(FOR_GUEST.indexOf("only two free messages")).toBeLessThan(
+      FOR_GUEST.indexOf("Confidentiality:"),
+    );
+    expect(
+      FOR_GUEST.replace(/\n\nThis customer is not signed in[\s\S]*?(?=\n\nConfidentiality:)/u, ""),
+    ).toBe(PROMPT);
+    expect(FOR_GUEST.split(SYSTEM_PROMPT_CANARY)).toHaveLength(2);
+  });
+
+  it("tells the model to search when it can, ask one question at most, and read near as the area", () => {
+    expect(LOWER_FOR_GUEST).toContain("search at once and ask nothing before it");
+    expect(LOWER_FOR_GUEST).toContain("exactly one short question");
+    expect(LOWER_FOR_GUEST).toContain("buy or rent, then the area, then bedrooms, then the budget");
+    expect(LOWER_FOR_GUEST).toContain("never put two questions in one message");
+    expect(LOWER_FOR_GUEST).toContain("read it as that area");
+    expect(LOWER_FOR_GUEST).toContain("never give the place input");
+    expect(LOWER_FOR_GUEST).toContain("do not offer the sign-in button for searching homes");
+  });
+
+  it("sits after the place rules when both are on, so the guest rule has the last word", () => {
+    const both = buildSystemPrompt({ translate, placeSearch: true, guest: true });
+    expect(both.indexOf("only two free messages")).toBeGreaterThan(
+      both.indexOf("Homes near a place:"),
+    );
+  });
+
+  it("holds no forbidden word, no provider name and no tool name, like the rest of the prompt", () => {
+    for (const pattern of AI_INTERNALS_LEAK_PATTERNS) {
+      expect(pattern.test(LOWER_FOR_GUEST), `internals pattern ${pattern}`).toBe(false);
+    }
+    expect(namesCompetitorPortal(LOWER_FOR_GUEST.replace(/[^\S\n]+/g, " "))).toBe(false);
+    for (const pattern of AI_ADVICE_PHRASE_PATTERNS) {
+      expect(pattern.test(LOWER_FOR_GUEST), `advice pattern ${pattern}`).toBe(false);
+    }
+    const words = LOWER_FOR_GUEST.split(/[^a-z0-9.]+/u).map((word) => word.replace(/\.+$/u, ""));
+    for (const forbidden of EXTRA_ARCHITECTURE_WORDS) {
+      expect(words, `word ${forbidden}`).not.toContain(forbidden);
+    }
+    const result = checkOutput(
+      FOR_GUEST.replace(SYSTEM_PROMPT_CANARY, ""),
+      evidence({ promptText: null }),
+    );
+    expect(result.summary.outcome).toBe("passed");
+  });
+});
+
 describe("UT-ai-system-prompt: the articles, questions and open jobs (ADR-143 section 6.8)", () => {
   const SECTION = PROMPT.slice(
     PROMPT.indexOf("Articles, frequently asked questions and open jobs:"),
