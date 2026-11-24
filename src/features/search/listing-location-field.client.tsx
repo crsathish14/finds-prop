@@ -39,13 +39,12 @@ function formPanel(
     idleNotices: panel.idleNotices,
     notices: state === "unavailable" ? unavailableNote : panel.notices,
     loadingRows: panel.loadingRows,
-    footer: panel.footer,
   };
 }
 
 /**
  * The location field of the post-property address step, connected (place search PR 7b, ADR-141): the place search
- * box (`GET /api/places/autocomplete?q=&source=listing_form`, the approved panel with its Ola Maps credit), the
+ * box (`GET /api/places/autocomplete?q=&source=listing_form`, the approved panel), the
  * "choose the area instead" path (suggestions of kind area only, the middle of the area, approximate), and, when
  * suggestions cannot be fetched, the site's curated localities as a plain list, so posting never stops
  * (FR-GEO-01 criterion 3, FR-GEO-02, OLA_MAPS_PLAN decision D4). It holds only what is being typed and which way

@@ -342,6 +342,7 @@
     "mailPlaceholderUnknown": "This wording uses a word in curly brackets that is not allowed here. Use only the words listed beside the boxes.",
     "mailPlaceholderMissing": "Add the enquirer name word from the list beside the boxes, so the owner can see who wrote.",
     "areaRange": "The largest area must be the same as or more than the smallest.",
+    "reraFormat": "Enter the RERA number in this format: TNRERA/29/BLG/0321/2026 or TN/35/Layout/2645/2024.",
     "coordinatesTogether": "Give both the latitude and the longitude, or leave both empty.",
     "linkTarget": "Enter a page on this site, starting with /, or a full address starting with https://",
     "localityLabelTaken": "Another row already uses this name.",
@@ -1283,11 +1284,6 @@
       "keyword": {
         "title": "Search for “{query}” as a keyword",
         "body": "Matches listings by name, street or locality text"
-      },
-      "attribution": {
-        "poweredBy": "Powered by Ola Maps",
-        "licence": "© OpenStreetMap contributors · ODbL",
-        "opensInNewTab": "(opens in a new tab)"
       }
     },
     "searchCard": {
@@ -2552,6 +2548,7 @@
         "city": "Enter the city.",
         "locality": "Enter the locality.",
         "reraNumber": "Enter the RERA number.",
+        "reraFormat": "Enter the RERA number in this format: TNRERA/29/BLG/0321/2026 or TN/35/Layout/2645/2024.",
         "reraReason": "Tell us why RERA is not applicable."
       },
       "alert": {

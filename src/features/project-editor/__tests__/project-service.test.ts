@@ -241,15 +241,23 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
 
   it("keeps the RERA number only when RERA applies and the reason only when it does not, so a leftover box never blocks a save", () => {
     const without = projectRowFrom(
-      createMyProjectSchema.parse({ ...minimal, reraApplicable: false, reraNumber: "TN/1" }),
+      createMyProjectSchema.parse({
+        ...minimal,
+        reraApplicable: false,
+        reraNumber: "TN/29/Building/0189/2023",
+      }),
     );
     expect(without.rera_number).toBeNull();
     expect(without.rera_applicable).toBe(false);
     expect(without.rera_not_applicable_reason).toBe("Below the size that needs registration.");
     const under = projectRowFrom(
-      createMyProjectSchema.parse({ ...minimal, reraApplicable: true, reraNumber: "TN/1" }),
+      createMyProjectSchema.parse({
+        ...minimal,
+        reraApplicable: true,
+        reraNumber: "TN/29/Building/0189/2023",
+      }),
     );
-    expect(under.rera_number).toBe("TN/1");
+    expect(under.rera_number).toBe("TN/29/Building/0189/2023");
     expect(under.rera_not_applicable_reason).toBeNull();
   });
 

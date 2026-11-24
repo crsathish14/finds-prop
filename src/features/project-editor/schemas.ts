@@ -23,6 +23,7 @@ import {
   PROJECT_TYPES,
   PROPERTY_TYPES,
   RERA_NUMBER_MAX,
+  RERA_NUMBER_PATTERN,
   RERA_REASON_MAX,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_MAX,
@@ -353,6 +354,9 @@ function crossRules(value: RuleInput, problems: z.RefinementCtx): void {
   }
   if (value.reraApplicable) {
     if (value.reraNumber == null) missing("reraNumber");
+    else if (!RERA_NUMBER_PATTERN.test(value.reraNumber)) {
+      problems.addIssue({ code: "custom", path: ["reraNumber"], message: "validation.reraFormat" });
+    }
   } else if (value.reraNotApplicableReason == null) {
     missing("reraNotApplicableReason");
   }

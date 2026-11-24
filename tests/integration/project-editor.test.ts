@@ -325,7 +325,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
           slug: slug("rera"),
           locality: "Integration Test Locality",
           reraApplicable: false,
-          reraNumber: "TN/1",
+          reraNumber: "TN/29/Building/0189/2023",
         }),
       );
       expect(await row(made.projectId)).toMatchObject({

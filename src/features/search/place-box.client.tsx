@@ -26,7 +26,7 @@ type PlaceBoxProps = PlaceFieldContext & {
 
 /**
  * The Locality field of the results filters (the rail and the phone sheet) as a place search box
- * (ADR-136): the suggestions, panel and credit of the place search. Picking a suggestion sets the
+ * (ADR-136): the suggestions and panel of the place search. Picking a suggestion sets the
  * locality to its name and its point; the keyword row, or Enter on typed text, sets the text alone (a
  * text match); an empty box takes the place off. If suggestions are unavailable the box is a text field
  * and Enter searches what is typed. It holds only the text in the box; the choice goes up through

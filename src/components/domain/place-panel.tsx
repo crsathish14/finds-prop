@@ -1,19 +1,17 @@
 "use client";
 
 /**
- * usePlacePanel and PlaceAttribution: the words around a place combobox (ADR-131, UX addendum ADD-07).
+ * usePlacePanel: the words around a place combobox (ADR-131, UX addendum ADD-07).
  * Purpose: one place for what the suggestion panel says in each of its states, so the results filter and the
  *   post form cannot drift apart. Owner: design system. They hold no state and fetch nothing: the host knows whether the lookup is idle, loading, answered, empty, unavailable or
  *   limited, and asks for the panel props of that state.
  * Props: usePlacePanel(state, query): state is "ready" (suggestions are listed or there is nothing to
  *   say), "loading", "empty" (the provider found nothing), "unavailable" (it could not answer) or
  *   "limited" (our own limit refused), and query is the text in the box. It returns props to spread on
- *   Combobox (labels, idleNotices, notices, fallbackOption, loadingRows, footer). PlaceAttribution has no
- *   props: it is the footer line "Powered by Ola Maps" with the OpenStreetMap licence link (the Ola
- *   terms require both to stay visible).
- * Responsive: the footer wraps onto two lines in a narrow panel.
- * Accessibility: the credit's link opens in a new tab and says so to a screen reader; notes are plain
- *   text announced politely by the combobox.
+ *   Combobox (labels, idleNotices, notices, fallbackOption, loadingRows). The panel has no provider
+ *   credit footer (owner's decision, 24 Nov 2026).
+ * Responsive: the notes wrap inside the panel at any width.
+ * Accessibility: notes are plain text announced politely by the combobox.
  * States: ready, loading, empty, unavailable, limited; idle and typing are the notes shown before three
  *   letters.
  * Dependencies: Combobox types, Icon, Link, next-intl. Tests: place-panel.test.tsx; Design Lab "Place suggestions"
@@ -23,7 +21,6 @@
  */
 import { Clock, Info, MapPin, Search, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
 import type {
   ComboboxLabels,
   ComboboxNotice,
@@ -39,30 +36,10 @@ type PlacePanelProps = {
   notices: ComboboxNotice[];
   fallbackOption?: ComboboxOption;
   loadingRows: true;
-  footer: ReactNode;
 };
 
 /** The fewest letters the lookup needs: the same three the Combobox waits for. */
 const MIN_LETTERS = 3;
-
-/** "Powered by Ola Maps" and the OpenStreetMap licence, the credit the Ola terms ask to stay visible. */
-function PlaceAttribution() {
-  const translate = useTranslations() as unknown as Translate;
-  return (
-    <>
-      <span>{translate("domain.places.attribution.poweredBy")}</span>
-      <a
-        href="https://www.openstreetmap.org/copyright"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-medium text-primary underline underline-offset-2"
-      >
-        {translate("domain.places.attribution.licence")}
-        <span className="sr-only">{translate("domain.places.attribution.opensInNewTab")}</span>
-      </a>
-    </>
-  );
-}
 
 function usePlacePanel(state: PlacePanelState, query: string): PlacePanelProps {
   const translate = useTranslations() as unknown as Translate;
@@ -122,9 +99,8 @@ function usePlacePanel(state: PlacePanelState, query: string): PlacePanelProps {
             : [],
     ...(state === "empty" || state === "unavailable" ? { fallbackOption: keyword } : {}),
     loadingRows: true,
-    footer: <PlaceAttribution />,
   };
 }
 
-export { PlaceAttribution, usePlacePanel };
+export { usePlacePanel };
 export type { PlacePanelProps, PlacePanelState };

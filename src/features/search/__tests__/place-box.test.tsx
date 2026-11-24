@@ -73,7 +73,6 @@ describe("The Locality field of the results filters is a place search box (ADR-1
     renderScreen({ listingType: "sale", place: "KK Nagar", lat: "13.0418", lng: "80.2341" });
     await userEvent.click(railBox());
     expect(screen.queryByText(places.noResults)).not.toBeInTheDocument();
-    expect(screen.queryByText(places.attribution.poweredBy)).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

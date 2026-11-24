@@ -97,7 +97,7 @@ function PlacePicker({
   const settled = pickedLabel !== null && value.trim() === pickedLabel;
   // A keyword search means nothing here (there is no search to send it to), so the keyword row is left out, and the
   // unavailable note points at the boxes below instead of at a Search button.
-  const { labels, footer, loadingRows } = panel;
+  const { labels, loadingRows } = panel;
   const notices =
     state === "unavailable"
       ? [
@@ -139,7 +139,6 @@ function PlacePicker({
           defaultOpen={defaultOpen}
           minChars={settled ? NEVER : 3}
           labels={labels}
-          footer={footer}
           loadingRows={loadingRows}
           notices={notices}
           idleNotices={settled ? [] : panel.idleNotices}
