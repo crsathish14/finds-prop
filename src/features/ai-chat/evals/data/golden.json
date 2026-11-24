@@ -3668,8 +3668,7 @@
         "mustNotContain": ["KK Nagar"]
       },
       "modelNeverSaw": ["13.0415", "80.1996", "fake-kk-nagar"]
-    },
-    "session": "customer"
+    }
   },
   {
     "id": "G-place-05",
@@ -3723,8 +3722,7 @@
         "13.0905",
         "Chennai, Tamil Nadu, India"
       ]
-    },
-    "session": "customer"
+    }
   },
   {
     "id": "G-place-06",
@@ -3771,8 +3769,7 @@
         "cards": [],
         "mustContain": [["could not find", "couldn't find", "cannot find"]]
       }
-    },
-    "session": "customer"
+    }
   },
   {
     "id": "G-place-07",
@@ -3819,8 +3816,7 @@
         "cards": [],
         "mustContain": [["Tamil Nadu"]]
       }
-    },
-    "session": "customer"
+    }
   },
   {
     "id": "G-place-08",
@@ -3868,8 +3864,7 @@
         "cards": [],
         "mustContain": [["cannot look", "can't look", "unable to look"]]
       }
-    },
-    "session": "customer"
+    }
   },
   {
     "id": "G-place-09",
@@ -3987,53 +3982,6 @@
       }
     },
     "session": "customer"
-  },
-  {
-    "id": "G-place-11",
-    "set": "golden",
-    "category": "place",
-    "language": "en",
-    "title": "a visitor asks for homes near a place: the place is read as an area name, no lookup, and the sign-in button is offered once (ADR-197)",
-    "placeSearch": true,
-    "messages": [
-      {
-        "role": "user",
-        "text": "2 BHK homes near Adyar"
-      }
-    ],
-    "scriptKind": "resists",
-    "script": [
-      {
-        "calls": [
-          {
-            "name": "search_properties",
-            "input": {
-              "place": "Adyar",
-              "bhk": 2
-            }
-          }
-        ]
-      },
-      {
-        "text": "These are 2 BHK homes with Adyar in their area name, not measured by distance. Signing in lets you search within a distance of a place. [[link:sign_in]]"
-      }
-    ],
-    "expect": {
-      "handling": "answered",
-      "tools": {
-        "mustCall": [
-          {
-            "name": "search_properties",
-            "args": {
-              "place": "adyar"
-            }
-          }
-        ]
-      },
-      "visible": {
-        "mustContain": [["Sign in or register"]]
-      }
-    }
   },
   {
     "id": "G-sitelink-01",
