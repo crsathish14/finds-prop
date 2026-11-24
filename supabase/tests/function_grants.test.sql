@@ -37,7 +37,7 @@ select is(
   || 'admin_properties, admin_set_feedback_reviewed, admin_sponsor_report, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
   || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, city_key, close_listing, current_builder_id, '
   || 'has_role, '
-  || 'has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, listed_cities, '
+  || 'has_verified_email, has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, listed_cities, '
   || 'listing_is_editable, listing_is_public, '
   || 'listing_label, live_builder_projects, live_locality_names, live_project_list, moderate_listing, moderate_project, my_builder, my_projects, my_properties, '
   || 'owns_property, '

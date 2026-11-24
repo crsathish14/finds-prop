@@ -244,6 +244,12 @@ describe("UT-listing-service: the wizard's server rules (S6-T02)", () => {
       expect(mapListingError({ code: "55000", message: "listing.not_submittable" }).code).toBe(
         "CONFLICT",
       );
+      const unverified = mapListingError({ code: "42501", message: "listing.email_required" });
+      expect(unverified.code).toBe("FORBIDDEN");
+      expect(unverified.reason).toBe("EMAIL_NOT_VERIFIED");
+      expect(mapListingError({ code: "42501", message: "listing.not_allowed" }).reason).toBe(
+        undefined,
+      );
       expect(mapListingError({ code: "42501", message: "listing.not_allowed" }).code).toBe(
         "FORBIDDEN",
       );

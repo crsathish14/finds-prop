@@ -71,7 +71,8 @@ export async function PostPropertyScreen({ draft = null }: PostPropertyScreenPro
   // Nobody signed in: the layout's gate is already sending them to sign in; read nothing for them.
   if (!(await isSignedIn())) return null;
   const email = await getEmailState();
-  if (email.kind === "none" || email.kind === "pending") {
+  // Only sending a draft needs the email (ADR-195): a listing in review, live or sent back is edited without one.
+  if (!editing && (email.kind === "none" || email.kind === "pending")) {
     return (
       <main id="main" className="flex-1">
         <Container className="py-10">
