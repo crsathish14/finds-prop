@@ -89,29 +89,28 @@ export function EmailPromptView(props: EmailPromptViewProps) {
           tone="warning"
           title={translate("pendingTitle")}
           action={
-            <div className="flex flex-wrap items-center gap-2">
-              {props.waitSeconds > 0 ? (
-                <Text as="span" variant="caption" tone="muted">
-                  {translateEmail("resendIn", { time: clock(props.waitSeconds) })}
-                </Text>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={props.busy}
-                  onClick={props.onResend}
-                >
-                  {translateEmail("resend")}
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" disabled={props.busy} onClick={props.onDifferent}>
-                {translateEmail("different")}
+            props.waitSeconds > 0 ? (
+              <Text as="span" variant="caption" tone="muted">
+                {translateEmail("resendIn", { time: clock(props.waitSeconds) })}
+              </Text>
+            ) : (
+              <Button variant="secondary" size="sm" disabled={props.busy} onClick={props.onResend}>
+                {translateEmail("resend")}
               </Button>
-            </div>
+            )
           }
         >
           {translate("pendingBody", { email: props.sentTo })}
         </Alert>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-2 px-0"
+          disabled={props.busy}
+          onClick={props.onDifferent}
+        >
+          {translateEmail("different")}
+        </Button>
         {props.failure ? (
           <Alert tone="danger" className="mt-3">
             {props.failure}
