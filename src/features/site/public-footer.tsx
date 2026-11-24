@@ -40,9 +40,15 @@ export async function PublicFooter() {
       }
       {...(footer.about ? { about: footer.about } : {})}
       navLabel={translate("site.footer.navLabel")}
-      columns={
-        footer.links.length > 0 ? [{ heading: footer.columnHeading, links: footer.links }] : []
-      }
+      columns={[
+        ...(footer.links.length > 0
+          ? [{ heading: footer.columnHeading, links: footer.links }]
+          : []),
+        ...(footer.companyLinks.length > 0
+          ? [{ heading: footer.companyHeading, links: footer.companyLinks }]
+          : []),
+      ]}
+      contactHeading={translate("site.footer.contactHeading")}
       contacts={footer.contacts.map((contact) => ({
         icon: <Icon icon={CONTACT_ICONS[contact.kind]} />,
         text: contact.text,

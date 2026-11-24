@@ -129,6 +129,7 @@ describe("IT-site-content: the admin's site content against a real database (S7-
         about: "Homes across Tamil Nadu",
         contact: { email: "hello@example.com", phone: "", address: "" },
         links: [{ label: "Contact us", href: "/contact" }],
+        companyLinks: [{ label: "Blog", href: "/blog" }],
         copyright: "© 2026",
       }),
     );
@@ -158,6 +159,7 @@ describe("IT-site-content: the admin's site content against a real database (S7-
       about: "Homes across Tamil Nadu",
       contact: { email: "hello@example.com" },
       links: [{ label: "Contact us", href: "/contact" }],
+      companyLinks: [{ label: "Blog", href: "/blog" }],
       copyright: "© 2026",
     });
     expect(merged.homepage).toEqual({

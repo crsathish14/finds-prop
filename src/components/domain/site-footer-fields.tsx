@@ -4,8 +4,8 @@
  * Purpose: what the admin types to change the footer of every public page (S7-T10, FR-ADM-10). Owner: design system.
  *   It holds no state: the page keeps the values and the errors and passes the words, already translated. An empty box
  *   is left out of the footer, or replaced by the standard line where there is one (BR-81).
- * Props: values ({ about, phone, email, address, links, copyright }; links are rows with an id the page keeps), errors
- *   (the message of each box with a problem, by box, and links by row id), onChange (the new values), linksMax,
+ * Props: values ({ about, phone, email, address, links, companyLinks, copyright }; links are rows with an id the page keeps), errors
+ *   (the message of each box with a problem, by box, and links and companyLinks by row id), onChange (the new values), linksMax, companyLinksMax,
  *   disabled (while saving), words (the headings, labels and the link list's words), className.
  * Responsive: two cards stacked one above the other; phone and email sit side by side from 768 px, and the about
  *   text and address take the full width.
@@ -34,6 +34,7 @@ type SiteFooterValues = {
   email: string;
   address: string;
   links: LinkRow[];
+  companyLinks: LinkRow[];
   copyright: string;
 };
 
@@ -41,11 +42,13 @@ type SiteFooterTextField = "about" | "phone" | "email" | "address" | "copyright"
 
 type SiteFooterErrors = Partial<Record<SiteFooterTextField, string>> & {
   links?: Record<string, LinkRowErrors>;
+  companyLinks?: Record<string, LinkRowErrors>;
 };
 
 type SiteFooterFieldsWords = {
   contact: { title: string; description: string };
   links: { title: string; description: string };
+  companyLinks: { title: string; description: string };
   about: string;
   phone: string;
   email: string;
@@ -61,6 +64,7 @@ type SiteFooterFieldsProps = {
   errors?: SiteFooterErrors;
   onChange: (values: SiteFooterValues) => void;
   linksMax: number;
+  companyLinksMax: number;
   disabled?: boolean;
   words: SiteFooterFieldsWords;
   className?: string;
@@ -73,6 +77,7 @@ function SiteFooterFields({
   errors = {},
   onChange,
   linksMax,
+  companyLinksMax,
   disabled = false,
   words,
   className,
@@ -165,6 +170,21 @@ function SiteFooterFields({
             onChange={(event) => set({ copyright: event.target.value })}
           />
         </FormField>
+      </FormSection>
+      <FormSection
+        id="footer-company-links"
+        title={words.companyLinks.title}
+        description={words.companyLinks.description}
+      >
+        <LinkListField
+          title={words.companyLinks.title}
+          links={values.companyLinks}
+          onChange={(companyLinks) => set({ companyLinks })}
+          max={companyLinksMax}
+          {...(errors.companyLinks ? { errors: errors.companyLinks } : {})}
+          disabled={disabled}
+          words={words.linkList}
+        />
       </FormSection>
     </div>
   );

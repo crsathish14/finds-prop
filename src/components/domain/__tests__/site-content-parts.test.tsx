@@ -206,6 +206,7 @@ describe("UT-site-header-fields: the Header page's boxes (S7-T10)", () => {
 const FOOTER_WORDS: SiteFooterFieldsWords = {
   contact: { title: "About and contact", description: "Shown at the bottom." },
   links: { title: "Links", description: "Shown in the footer." },
+  companyLinks: { title: "Company links", description: "Shown under Company." },
   about: "About text",
   phone: "Phone",
   email: "Email",
@@ -221,6 +222,7 @@ const FOOTER: SiteFooterValues = {
   email: "",
   address: "",
   links: [],
+  companyLinks: [],
   copyright: "",
 };
 
@@ -229,7 +231,13 @@ describe("UT-site-footer-fields: the Footer page's boxes (S7-T10)", () => {
     const [values, setValues] = useState(FOOTER);
     return (
       <>
-        <SiteFooterFields values={values} onChange={setValues} linksMax={20} words={FOOTER_WORDS} />
+        <SiteFooterFields
+          values={values}
+          onChange={setValues}
+          linksMax={18}
+          companyLinksMax={6}
+          words={FOOTER_WORDS}
+        />
         <output data-testid="copyright">{values.copyright}</output>
         <output data-testid="phone">{values.phone}</output>
       </>
@@ -251,7 +259,8 @@ describe("UT-site-footer-fields: the Footer page's boxes (S7-T10)", () => {
         values={FOOTER}
         errors={{ email: "Enter a valid email address." }}
         onChange={() => undefined}
-        linksMax={20}
+        linksMax={18}
+        companyLinksMax={6}
         words={FOOTER_WORDS}
       />,
     );

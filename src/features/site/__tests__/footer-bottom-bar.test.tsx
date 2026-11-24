@@ -62,12 +62,13 @@ describe("PublicFooter: the footer of the public pages (S4-T06)", () => {
       "Buy a home",
       "Rent a home",
       "New projects",
+      "Contact us",
+      "Post a property",
       "Blog",
       "FAQ",
       "Careers",
-      "Contact us",
-      "Post a property",
     ]);
+    expect(within(nav).getByRole("heading", { name: "Company" })).toBeInTheDocument();
     expect(within(footer).getByRole("link", { name: "Privacy" })).toHaveAttribute(
       "href",
       "/privacy",

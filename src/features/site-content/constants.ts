@@ -18,7 +18,10 @@ export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
 /** How many links the header and the footer may hold (the same limits the public side reads with). */
 export const HEADER_LINKS_MAX = 12;
-export const FOOTER_LINKS_MAX = 20;
+/** The footer shows 3 columns of 6 links at most. The public read still accepts 20, so a longer stored list stays readable. */
+export const FOOTER_LINKS_MAX = 18;
+/** The footer's Company column holds one column of 6 links at most. */
+export const FOOTER_COMPANY_LINKS_MAX = 6;
 
 /**
  * How many curated localities the admin may keep (ADD-11, owner decision 9 Nov 2026). The public side still reads up

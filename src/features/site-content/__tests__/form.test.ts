@@ -28,6 +28,7 @@ const STANDARD_HEADER: StandardHeader = {
 const STANDARD_FOOTER: StandardFooter = {
   brandName: "Find Prop",
   links: [{ label: "Contact us", href: "/contact" }],
+  companyLinks: [{ label: "Blog", href: "/blog" }],
   copyright: "© 2026 Find Prop",
 };
 
@@ -79,8 +80,15 @@ describe("UT-site-content-form: the boxes start where the page really is (S7-T10
       email: "hi@example.com",
       address: "Chennai",
       links: STANDARD_FOOTER.links,
+      companyLinks: STANDARD_FOOTER.companyLinks,
       copyright: "",
     });
+    expect(
+      footerFormOf(
+        { links: [], companyLinks: [{ label: "About us", href: "/about" }] },
+        STANDARD_FOOTER,
+      ),
+    ).toMatchObject({ companyLinks: [{ label: "About us", href: "/about" }] });
     expect(
       footerFormOf({ links: [{ label: "FAQ", href: "/faq" }], copyright: "© Me" }, STANDARD_FOOTER),
     ).toMatchObject({ links: [{ label: "FAQ", href: "/faq" }], copyright: "© Me" });
@@ -108,6 +116,7 @@ describe("UT-site-content-form: the boxes start where the page really is (S7-T10
             href: string;
           },
         ],
+        companyLinks: [],
         copyright: "© 2026",
       }).links,
     ).toEqual([{ label: "Blog", href: "https://x.test" }]);
@@ -153,12 +162,14 @@ describe("UT-site-content-payload: what a save sends (S7-T10)", () => {
         email: "a@b.co",
         address: "Here",
         links: [],
+        companyLinks: [{ label: "Blog", href: "/blog" }],
         copyright: "© X",
       }),
     ).toEqual({
       about: "Hi",
       contact: { address: "Here", email: "a@b.co", phone: "1" },
       links: [],
+      companyLinks: [{ label: "Blog", href: "/blog" }],
       copyright: "© X",
     });
   });
@@ -275,6 +286,7 @@ describe("UT-site-content-picture: the small pictures follow the same rules as t
           email: "a@b.co",
           address: "Chennai",
           links: [],
+          companyLinks: [],
           copyright: "",
         },
         STANDARD_FOOTER,
@@ -284,6 +296,7 @@ describe("UT-site-content-picture: the small pictures follow the same rules as t
       about: "About",
       contacts: ["Chennai", "+91 1", "a@b.co"],
       links: ["Contact us"],
+      companyLinks: ["Blog"],
       copyright: "© 2026 Find Prop",
     });
   });
@@ -296,6 +309,7 @@ describe("UT-site-content-picture: the small pictures follow the same rules as t
         email: "",
         address: "",
         links: [{ label: "FAQ", href: "/faq" }],
+        companyLinks: [{ label: "Careers", href: "/careers" }],
         copyright: "© Me",
       },
       STANDARD_FOOTER,
@@ -304,6 +318,7 @@ describe("UT-site-content-picture: the small pictures follow the same rules as t
       brandName: "Find Prop",
       contacts: [],
       links: ["FAQ"],
+      companyLinks: ["Careers"],
       copyright: "© Me",
     });
   });

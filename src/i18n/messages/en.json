@@ -538,6 +538,8 @@
     },
     "footer": {
       "exploreHeading": "Explore",
+      "companyHeading": "Company",
+      "contactHeading": "Contact",
       "linkBuy": "Buy a home",
       "linkRent": "Rent a home",
       "linkProjects": "New projects",
@@ -2782,6 +2784,10 @@
         "navigation": {
           "title": "Links",
           "text": "Shown in the footer, in this order. Leave the list empty to use the standard links."
+        },
+        "companyNavigation": {
+          "title": "Company links",
+          "text": "Shown in the footer under Company, in this order, in one column. Leave the list empty to use the standard links."
         },
         "about": "About text",
         "phone": "Phone",

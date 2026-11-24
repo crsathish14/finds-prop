@@ -7,6 +7,7 @@ import {
   FOOTER_ADDRESS_MAX,
   DISCLAIMER_MAX,
   FOOTER_COPYRIGHT_MAX,
+  FOOTER_COMPANY_LINKS_MAX,
   FOOTER_LINKS_MAX,
   FOOTER_PHONE_MAX,
   HEADER_LINKS_MAX,
@@ -123,6 +124,7 @@ export const footerInputSchema = z.object({
     })
     .optional(),
   links: z.array(navigationLink).max(FOOTER_LINKS_MAX),
+  companyLinks: z.array(navigationLink).max(FOOTER_COMPANY_LINKS_MAX).default([]),
   copyright: optionalLine(FOOTER_COPYRIGHT_MAX),
 });
 export type FooterInput = z.infer<typeof footerInputSchema>;
