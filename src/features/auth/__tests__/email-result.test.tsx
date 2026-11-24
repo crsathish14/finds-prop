@@ -3,6 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/i18n/messages/en.json";
+import { rememberEmailOrigin } from "@/lib/email-origin";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { EmailResultScreen } from "../email-result.client";
 import { goTo } from "../navigate";
@@ -16,6 +17,7 @@ const go = vi.mocked(goTo);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
 });
 
 describe("email result: the link worked (ADD-03 verified)", () => {
@@ -30,10 +32,19 @@ describe("email result: the link worked (ADD-03 verified)", () => {
     expect(document.body.textContent).toContain("is confirmed. You can post a property");
   });
 
-  it("offers to carry on posting, or to go to the dashboard", async () => {
+  it("goes back to posting, with the dashboard as the quiet way out, when the link was asked for while posting (ADR-195)", async () => {
+    rememberEmailOrigin("post");
     renderWithMessages(<EmailResultScreen result="verified" email="a@example.com" signedIn />);
     await userEvent.click(screen.getByRole("button", { name: words.continuePost }));
     expect(go).toHaveBeenLastCalledWith("/post-property");
+    await userEvent.click(screen.getByRole("button", { name: words.dashboard }));
+    expect(go).toHaveBeenLastCalledWith("/dashboard");
+  });
+
+  it("makes the dashboard the one main button otherwise, and does not push posting (ADR-195)", async () => {
+    renderWithMessages(<EmailResultScreen result="verified" email="a@example.com" signedIn />);
+    expect(screen.queryByRole("button", { name: words.continuePost })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: words.dashboard })).toHaveLength(1);
     await userEvent.click(screen.getByRole("button", { name: words.dashboard }));
     expect(go).toHaveBeenLastCalledWith("/dashboard");
   });

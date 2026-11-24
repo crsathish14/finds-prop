@@ -77,6 +77,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   // The email enquiries are mailed to (ADR-186) is only asked of an owner who has homes; it is private and is
   // read as the owner.
   const contactEmail = homes > 0 ? await getMyContactEmail() : null;
+  const contactCard =
+    homes > 0 ? <ContactEmail email={contactEmail} save={saveContactEmail} /> : null;
 
   return (
     <main id="main" className="flex-1 bg-canvas-sunken">
@@ -87,12 +89,19 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         counts={counts}
         emailPending={email.kind === "pending"}
         notice={
-          <>
-            {email.kind === "none" || email.kind === "pending" ? (
-              <EmailPrompt state={email} send={addEmail} resend={resendEmailLink} />
-            ) : null}
-            {homes > 0 ? <ContactEmail email={contactEmail} save={saveContactEmail} /> : null}
-          </>
+          // One address, not two (ADR-196): while the account email is being asked for or waited on, the box for
+          // the enquiries email is not shown next to it (confirming the account email fills it in). It comes
+          // back when the person puts the prompt away with "Later", and once the email is confirmed.
+          email.kind === "none" || email.kind === "pending" ? (
+            <EmailPrompt
+              state={email}
+              send={addEmail}
+              resend={resendEmailLink}
+              fallback={email.kind === "none" ? contactCard : null}
+            />
+          ) : (
+            contactCard
+          )
         }
       >
         {tab === "saved" ? (

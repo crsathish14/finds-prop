@@ -60,6 +60,7 @@ const PROMPT: EmailPromptViewProps = {
   onSubmit: NOTHING,
   onLater: NOTHING,
   onResend: NOTHING,
+  onDifferent: NOTHING,
 };
 
 function Screen({
