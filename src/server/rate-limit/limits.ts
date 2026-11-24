@@ -48,6 +48,8 @@ export const RATE_LIMITS = {
   form_submit: [{ who: "visitor_key", windowSeconds: HOUR, max: 5 }],
   /** 30 events per visitor per minute (BR-71). */
   project_event: [{ who: "visitor", windowSeconds: MINUTE, max: 30 }],
+  /** 60 views or clicks of the paid placements per visitor per minute (ADR-194). */
+  sponsor_event: [{ who: "visitor", windowSeconds: MINUTE, max: 60 }],
   /** 5 leads per visitor per hour (BR-72). */
   project_lead: [{ who: "visitor", windowSeconds: HOUR, max: 5 }],
   /** 5 codes per phone per hour and 20 per address per day (DEC-31). */

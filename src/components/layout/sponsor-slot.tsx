@@ -3,7 +3,7 @@
  * Purpose: picks the banners that qualify for a placement and layout (selectSponsors in
  *   src/lib/sponsors.ts) and renders them in SponsorFrame. Owner: design system. The ads come from
  *   the admin sponsor settings; until Stage 8 the Design Lab passes fixtures.
- * Props: ads (SponsorAd list in admin order), placement ("hero" | "results"), layout ("search_desk"
+ * Props: record (the server action that counts each ad seen and clicked, ADR-194; left out, nothing is counted), ads (SponsorAd list in admin order), placement ("hero" | "results"), layout ("search_desk"
  *   | "split", the live hero layout), defaultInfoOpen, className.
  * Responsive: see SponsorFrame. When nothing qualifies there is no frame, no label, no "your ad
  *   here" and no empty space; the page continues as if the slot did not exist.
@@ -18,9 +18,12 @@ import {
   type SponsorAd,
   type SponsorPlacement,
 } from "@/lib/sponsors";
+import type { SponsorRecorder } from "@/lib/sponsor-events";
 import { SponsorFrame } from "./sponsor-frame";
 
 type SponsorSlotProps = {
+  /** Counts the hero ads seen and clicked for the sponsor report (ADR-194); only the hero placement is counted. */
+  record?: SponsorRecorder | undefined;
   ads: SponsorAd[];
   placement: SponsorPlacement;
   layout?: HeroLayout;
@@ -29,6 +32,7 @@ type SponsorSlotProps = {
 };
 
 function SponsorSlot({
+  record,
   ads,
   placement,
   layout = "search_desk",
@@ -39,6 +43,7 @@ function SponsorSlot({
   if (sponsors.length === 0) return null;
   return (
     <SponsorFrame
+      record={placement === "hero" ? record : undefined}
       sponsors={sponsors}
       format={format}
       {...(defaultInfoOpen === undefined ? {} : { defaultInfoOpen })}

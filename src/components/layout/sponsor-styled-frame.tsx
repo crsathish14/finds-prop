@@ -6,7 +6,7 @@
  * Purpose: the platform owns the frame: the "Sponsored" label, "About this ad", the progress bars and the previous and
  *   next buttons. The ads are drawn by SponsorShowcaseCard or SponsorCinematicBanner from what the admin typed. Owner:
  *   design system. The page picks the ads (selectStyled in src/lib/sponsors.ts); with none, it shows nothing at all.
- * Props: ads (the ads ready for the style, in the admin's order), style ("showcase" | "cinematic"), defaultInfoOpen
+ * Props: record (the server action that counts each ad seen and clicked, ADR-194; left out, nothing is counted), ads (the ads ready for the style, in the admin's order), style ("showcase" | "cinematic"), defaultInfoOpen
  *   (shows "About this ad" open, for the Design Lab), className.
  * Responsive: see the two ads. All ads sit in one grid cell, so the frame is as tall as the tallest and nothing below
  *   it moves when the ads turn.
@@ -15,7 +15,7 @@
  *   (SPONSOR_ROTATION_MS), wait while the pointer is over the area or focus is inside it, and never turn by themselves
  *   for people who prefer less motion. The new position is announced only when the reader moves it by hand.
  * States: one ad (no bars, no buttons), several (turning, or waiting), each style, info open, reduced motion.
- * Dependencies: SponsorShowcaseCard, SponsorCinematicBanner, Popover, IconButton, next-intl,
+ * Dependencies: SponsorTracker, SponsorShowcaseCard, SponsorCinematicBanner, Popover, IconButton, next-intl,
  *   src/styles/sponsor-ads.css. Tests: sponsor-styled.test.tsx; Design Lab "Ads" (Styled hero ads).
  * UX reference: the sponsored banner container (ds-ads, .sp) for the label row; the owner's sponsor concepts of
  *   23 Nov 2026 (A and B) for the ads and the progress bars.
@@ -29,9 +29,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/patterns/p
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
+import type { SponsorRecorder } from "@/lib/sponsor-events";
 import { SPONSOR_ROTATION_MS, type SponsorAd, type SponsorStyle } from "@/lib/sponsors";
+import { SponsorTracker } from "./sponsor-tracker.client";
 
 type SponsorStyledFrameProps = {
+  /** Counts each ad seen and clicked for the sponsor report (ADR-194); left out, nothing is counted. */
+  record?: SponsorRecorder | undefined;
   ads: SponsorAd[];
   style: SponsorStyle;
   defaultInfoOpen?: boolean;
@@ -56,6 +60,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 function SponsorStyledFrame({
+  record,
   ads,
   style,
   defaultInfoOpen = false,
@@ -180,27 +185,29 @@ function SponsorStyledFrame({
                 active ? "opacity-100" : "pointer-events-none opacity-0",
               )}
             >
-              {style === "showcase" && ad.photo && ad.brand && ad.showcase ? (
-                <SponsorShowcaseCard
-                  ad={{ ...ad, photo: ad.photo, brand: ad.brand, showcase: ad.showcase }}
-                  words={showcaseWords}
-                  priority={index === 0}
-                  drift={active}
-                />
-              ) : null}
-              {style === "cinematic" && ad.photo && ad.brand && ad.cinematic ? (
-                <SponsorCinematicBanner
-                  ad={{ ...ad, photo: ad.photo, brand: ad.brand, cinematic: ad.cinematic }}
-                  next={
-                    several && following?.photo && following.brand
-                      ? { brand: following.brand, photo: following.photo }
-                      : undefined
-                  }
-                  words={cinematicWords}
-                  priority={index === 0}
-                  drift={active}
-                />
-              ) : null}
+              <SponsorTracker slot="hero" sponsorKey={ad.id} record={record} active={active}>
+                {style === "showcase" && ad.photo && ad.brand && ad.showcase ? (
+                  <SponsorShowcaseCard
+                    ad={{ ...ad, photo: ad.photo, brand: ad.brand, showcase: ad.showcase }}
+                    words={showcaseWords}
+                    priority={index === 0}
+                    drift={active}
+                  />
+                ) : null}
+                {style === "cinematic" && ad.photo && ad.brand && ad.cinematic ? (
+                  <SponsorCinematicBanner
+                    ad={{ ...ad, photo: ad.photo, brand: ad.brand, cinematic: ad.cinematic }}
+                    next={
+                      several && following?.photo && following.brand
+                        ? { brand: following.brand, photo: following.photo }
+                        : undefined
+                    }
+                    words={cinematicWords}
+                    priority={index === 0}
+                    drift={active}
+                  />
+                ) : null}
+              </SponsorTracker>
             </div>
           );
         })}

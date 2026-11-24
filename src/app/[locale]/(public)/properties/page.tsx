@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { PropertyCard } from "@/components/domain/property-card";
 import { FeaturedProjectCard } from "@/components/domain/featured-project-card";
+import { SponsorTracker } from "@/components/layout/sponsor-tracker.client";
 import { getSelectedCity } from "@/features/cities";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
@@ -25,7 +26,7 @@ import {
 import { isSignedOut, LoginWallScreen, loginWallMetadata } from "@/features/login-wall";
 import { pageMetadata } from "@/features/seo";
 import { getFeatureFlags, getSiteSettings, getTranslate } from "@/features/site";
-import { getFeaturedProject } from "@/features/sponsored";
+import { getFeaturedProject, trackSponsorEvent } from "@/features/sponsored";
 import { publicEnv } from "@/lib/public-env";
 import { RESULTS_SPONSOR_AFTER } from "@/lib/sponsors";
 
@@ -103,9 +104,15 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
     featured
       ? [
           ...cards.slice(0, RESULTS_SPONSOR_AFTER),
-          <div key="sponsor" className="col-span-full">
+          <SponsorTracker
+            key="sponsor"
+            className="col-span-full"
+            slot="results"
+            sponsorKey={featured.builderId}
+            record={trackSponsorEvent}
+          >
             <FeaturedProjectCard project={featured} />
-          </div>,
+          </SponsorTracker>,
           ...cards.slice(RESULTS_SPONSOR_AFTER),
         ]
       : cards;

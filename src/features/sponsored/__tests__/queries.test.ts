@@ -77,6 +77,7 @@ describe("UT-featured-project: the Featured card's project (ADR-192)", () => {
     const featured = await getFeaturedProject({ cityKey: "chennai", area: "OMR" });
     expect(db.calls).toEqual(["live_project_list", "public_project"]);
     expect(featured).toEqual({
+      builderId: BUILDER,
       href: "/projects/lake",
       name: "Lakeview Residences",
       developerName: "Sample Homes",

@@ -53,6 +53,7 @@ Part 1 is application security (authorization, secrets, abuse controls). Part 2 
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `features/forms/service` (`submitForm`, `requestUploadUrl`)            | Anonymous visitors submit forms and files; no anon INSERT grants                                                                        |
 | `features/projects/service` (`trackProjectEvent`, `submitProjectLead`) | Same, with rate limits and view de-dupe                                                                                                 |
+| `features/sponsored/service` (`trackSponsorEvent`)                     | Counts views and clicks of the paid placements (ADR-194): `record_sponsor_event()` is server-only; live sponsors only, rate limited     |
 | `features/enquiries/service` (`sendEnquiry`)                           | No client insert; `submit_enquiry` is server-only (rate limit, 24 h rule)                                                               |
 | `features/builders/service` (invite, resend, activate)                 | Auth admin API (create/confirm user), role grant                                                                                        |
 | `features/crm/service` (+ `/api/internal/crm-retry`)                   | Reads `crm_integration_secrets` (service-role only) and calls external CRMs                                                             |

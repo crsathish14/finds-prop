@@ -1618,7 +1618,8 @@
       "terms": "Terms of Use",
       "projectFields": "Project form boxes",
       "topDevelopers": "Top developers",
-      "sponsoredBuilders": "Sponsored builders"
+      "sponsoredBuilders": "Sponsored builders",
+      "sponsorReport": "Sponsor report"
     },
     "emails": {
       "metaTitle": "Emails",
@@ -4165,6 +4166,40 @@
           "edit": "Saving shows the change on the site at once when the job is open."
         }
       }
+    },
+    "sponsorReport": {
+      "metaTitle": "Sponsor report",
+      "title": "Sponsor report",
+      "description": "How many people saw and clicked each paid placement. Use it to show sponsors what they got.",
+      "period": "Period",
+      "days": "Last {count} days",
+      "range": "{from} to {to}",
+      "slots": {
+        "hero": {
+          "title": "Hero ads",
+          "text": "The ads under the search on the home page."
+        },
+        "results": {
+          "title": "Featured project card",
+          "text": "The card after the sixth result on the homes and projects lists, counted by builder or agent."
+        },
+        "spotlight": {
+          "title": "Developer spotlight",
+          "text": "The band on the home page, counted by builder or agent."
+        }
+      },
+      "columns": {
+        "sponsor": "Sponsor",
+        "views": "Views",
+        "clicks": "Clicks",
+        "rate": "Click rate"
+      },
+      "rate": "{rate}%",
+      "noRate": "–",
+      "removed": "Removed sponsor",
+      "notShown": "Not shown now",
+      "empty": "No sponsors in this placement yet.",
+      "note": "Each person is counted once a day for each sponsor they saw, and once for each they clicked. Seen means at least half of the ad was on screen for a second. Counting started when this report was added."
     },
     "sponsoredBuilders": {
       "metaTitle": "Sponsored builders",
