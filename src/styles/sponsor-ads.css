@@ -94,3 +94,20 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* The Developer spotlight (ADR-193, <DeveloperSpotlight>): a soft teal glow in the top left corner of the
+   dark band. It only decorates and does not move. */
+.spotlight-glow {
+  position: absolute;
+  z-index: -1;
+  top: -180px;
+  left: -120px;
+  width: 420px;
+  height: 420px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--c-primary) 28%, transparent),
+    transparent 65%
+  );
+}

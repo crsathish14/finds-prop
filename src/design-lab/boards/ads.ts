@@ -3,6 +3,7 @@ import { AnatomyDemo, HeroDemo } from "./ads-demos";
 import { HeroAsBuiltDemo, ResultsBannerDemo } from "./ads-demos-placements";
 import { CinematicBannerDemo, ShowcaseCardDemo, StyledFrameDemo } from "./ads-demos-styled";
 import { FeaturedProjectCardDemo } from "./ads-demos-featured";
+import { DeveloperSpotlightDemo } from "./ads-demos-spotlight";
 
 export const ADS: LabEntry[] = [
   {
@@ -67,5 +68,13 @@ export const ADS: LabEntry[] = [
       "The Featured project card (C, ADR-192): a project of a builder or agent the admin picked, after the sixth result in the homes and projects lists, across the whole row. A big photo with two more and a count, the developer's logo or initials, Sponsored, the project, the homes, the size range, the status, RERA, three highlights and the price, with Request a call back and View project. An amber ring and a Featured project ribbon set it apart. Shown with every detail and with little given.",
     sources: ["domain/featured-project-card.tsx"],
     Demo: FeaturedProjectCardDemo,
+  },
+  {
+    id: "developer-spotlight",
+    name: "Developer spotlight",
+    description:
+      "The Developer spotlight (D, ADR-193): a builder or agent the admin picked, as a dark band on the home page, one per visit. Their logo or initials, name, tagline, years, projects delivered, projects listed and launching, their website, and up to three live projects as cards that scroll sideways on phones. Shown with every detail and with little given.",
+    sources: ["domain/developer-spotlight.tsx"],
+    Demo: DeveloperSpotlightDemo,
   },
 ];

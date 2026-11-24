@@ -21,6 +21,7 @@ const state = vi.hoisted(() => ({
   eyebrow: undefined as string | undefined,
   ads: [] as unknown[],
   style: "showcase" as "showcase" | "cinematic",
+  spotlight: [] as string[],
 }));
 
 vi.mock("@/features/site", async () => ({
@@ -30,6 +31,7 @@ vi.mock("@/features/site", async () => ({
     region: state.region,
     header: state.header,
     hero: { layout: state.layout, ...(state.eyebrow ? { eyebrow: state.eyebrow } : {}) },
+    sponsored_builders: { featured: [], spotlight: state.spotlight },
   }),
   getSponsorAds: async () => state.ads,
   getSponsorStyle: async () => state.style,
@@ -44,6 +46,9 @@ vi.mock("@/features/site", async () => ({
   ).resolveHomeOrder,
 }));
 vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
+vi.mock("@/features/sponsored", () => ({
+  SpotlightSection: () => <section data-testid="spotlight" />,
+}));
 vi.mock("@/features/ai-chat", () => ({
   HomeAiSearch: () => <div data-testid="search" data-mode="ai" />,
 }));
@@ -113,7 +118,7 @@ const { default: HomePage, generateMetadata } = await import("../(public)/page")
 
 const sections = () =>
   screen
-    .queryAllByTestId(/^(explore|featured|launches|browse|newest|why|cta)$/)
+    .queryAllByTestId(/^(explore|featured|launches|spotlight|browse|newest|why|cta)$/)
     .map((node) => node.getAttribute("data-testid"));
 
 beforeEach(() => {
@@ -134,6 +139,7 @@ beforeEach(() => {
   state.layout = "search_desk";
   state.eyebrow = undefined;
   state.ads = [];
+  state.spotlight = [];
 });
 
 describe("the homepage (S4-T06)", () => {
@@ -232,6 +238,24 @@ describe("the homepage (S4-T06)", () => {
     };
     render(await HomePage());
     expect(sections()).toEqual(["cta", "why", "newest", "explore", "launches", "browse"]);
+  });
+
+  it("shows the Developer spotlight after New launches only when the admin picked someone for it (ADR-193)", async () => {
+    const view = render(await HomePage());
+    expect(screen.queryByTestId("spotlight")).not.toBeInTheDocument();
+    view.unmount();
+    state.spotlight = ["00000000-0000-4000-b000-000000000001"];
+    render(await HomePage());
+    expect(sections()).toEqual([
+      "explore",
+      "featured",
+      "launches",
+      "spotlight",
+      "browse",
+      "newest",
+      "why",
+      "cta",
+    ]);
   });
 
   it("leaves out the banner when its route is switched off", async () => {

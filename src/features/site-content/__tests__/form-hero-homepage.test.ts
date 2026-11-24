@@ -170,6 +170,7 @@ describe("homepage section order (CR plan 5)", () => {
       "featured",
       "discovery",
       "newLaunches",
+      "spotlight",
       "projectTypes",
       "newest",
       "whyUs",

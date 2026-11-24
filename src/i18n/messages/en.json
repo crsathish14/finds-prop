@@ -1560,6 +1560,15 @@
       "change": "Change",
       "cancel": "Cancel"
     },
+    "developerSpotlight": {
+      "sponsored": "Sponsored",
+      "label": "Developer spotlight",
+      "years": "Years",
+      "delivered": "Delivered",
+      "listed": "Listed",
+      "launching": "Launching",
+      "website": "Visit website"
+    },
     "featuredProject": {
       "ribbon": "Featured project",
       "sponsored": "Sponsored",
@@ -3029,6 +3038,10 @@
           "newest": {
             "label": "Newest listings",
             "hint": "Shown when there are new listings. Has no switch."
+          },
+          "spotlight": {
+            "label": "Developer spotlight",
+            "hint": "Shown when you pick developers on the Sponsored builders page. Has no switch."
           },
           "drag": "Drag {section}",
           "moveUp": "Move {section} up",
