@@ -113,6 +113,7 @@ export async function getFeaturedProject({
 
     const images = project.images ?? [];
     return {
+      builderId: project.builders.id,
       href: `/projects/${project.slug}`,
       name: project.name,
       developerName: project.builders.name,

@@ -20,6 +20,7 @@ import {
   yearsSince,
   type SpotlightCandidate,
 } from "./spotlight";
+import type { SpotlightData } from "./types";
 
 /** The public projects of the home page, as `home_developers()` gives them: only the slug and the builder count here. */
 const rowSchema = z.object({ slug: z.string().min(1), builder_id: z.string().min(1) });
@@ -169,7 +170,7 @@ async function readDetails(
  * chance for each visit (with one, that one), and drawn from what they uploaded. With nobody picked nothing is read. A
  * failed read is logged and gives null, so the home page is never broken by the spotlight.
  */
-export async function getSpotlight(cityKey?: string): Promise<DeveloperSpotlightData | null> {
+export async function getSpotlight(cityKey?: string): Promise<SpotlightData | null> {
   try {
     const settings = await getSiteSettings();
     const picked = settings.sponsored_builders.spotlight.slice(0, SPONSORED_BUILDERS_MAX);
@@ -182,7 +183,11 @@ export async function getSpotlight(cityKey?: string): Promise<DeveloperSpotlight
     const details = await readDetails(chosen.builderId, chosen.slugs);
     if (!details) return null;
     const { startedYear, ...shown } = details;
-    return { ...shown, years: yearsSince(startedYear, new Date().getFullYear()) };
+    return {
+      ...shown,
+      builderId: chosen.builderId,
+      years: yearsSince(startedYear, new Date().getFullYear()),
+    };
   } catch (error) {
     unstable_rethrow(error);
     logger.error("the developer spotlight could not be read", {});

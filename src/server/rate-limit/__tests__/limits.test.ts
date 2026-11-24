@@ -31,6 +31,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "project_event",
         "project_lead",
         "project_save",
+        "sponsor_event",
         "staff_sign_in",
         "upload_url",
       ].sort(),
@@ -41,6 +42,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["form_submit", [{ who: "visitor_key", windowSeconds: 3600, max: 5 }]], // BR-61
     ["project_event", [{ who: "visitor", windowSeconds: 60, max: 30 }]], // BR-71
     ["project_lead", [{ who: "visitor", windowSeconds: 3600, max: 5 }]], // BR-72
+    ["sponsor_event", [{ who: "visitor", windowSeconds: 60, max: 60 }]], // ADR-194
     ["otp_verify", [{ who: "key", windowSeconds: 3600, max: 10 }]],
     ["enquiry", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["enquiry_mail", [{ who: "key", windowSeconds: 86400, max: 20 }]], // ADR-188

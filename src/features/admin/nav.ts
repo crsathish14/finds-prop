@@ -154,6 +154,12 @@ export function buildAdminNav(
           icon: "builders",
         },
         {
+          key: "sponsor-report",
+          href: "/admin/sponsor-report",
+          label: translate("admin.nav.sponsorReport"),
+          icon: "insights",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),

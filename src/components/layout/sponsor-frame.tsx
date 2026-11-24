@@ -8,7 +8,7 @@
  *   (Embla carousel), and the previous and next buttons or a swipe move them by hand. Only the
  *   banner picture moves: the frame (border, corners, shadow), the label row and the pager stay
  *   where they are. Owner: design system.
- * Props: sponsors and format (from selectSponsors, src/lib/sponsors.ts), defaultInfoOpen (shows
+ * Props: record (the server action that counts each ad seen and clicked, ADR-194; left out, nothing is counted), sponsors and format (from selectSponsors, src/lib/sponsors.ts), defaultInfoOpen (shows
  *   "About this ad" open, for the Design Lab), className. The first picture loads at once (it is
  *   above the fold); the others load straight after at low priority, so a banner is never empty
  *   when it slides in.
@@ -24,7 +24,7 @@
  * States: one banner (still, no pager), several banners (rotating, or still), contain (shown whole
  *   on a neutral ground), info open, a picture that fails to load is removed, and if all fail the
  *   whole slot disappears.
- * Dependencies: embla-carousel-react and its autoplay plugin, next/image getImageProps, Popover,
+ * Dependencies: SponsorTracker, embla-carousel-react and its autoplay plugin, next/image getImageProps, Popover,
  *   IconButton, next-intl.
  * Tests: sponsor.test.tsx; Design Lab "Sponsor slot" (S2-T07).
  * UX reference: ds-ads, sponsored banner container (c-cards.css .sp). The rotation is an owner
@@ -41,8 +41,12 @@ import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
 import { SPONSOR_ROTATION_MS, type SelectedSponsor, type SponsorFormat } from "@/lib/sponsors";
+import type { SponsorRecorder } from "@/lib/sponsor-events";
+import { SponsorTracker } from "./sponsor-tracker.client";
 
 type SponsorFrameProps = {
+  /** Counts each hero ad seen and clicked for the sponsor report (ADR-194); left out, nothing is counted. */
+  record?: SponsorRecorder | undefined;
   sponsors: SelectedSponsor[];
   format: SponsorFormat;
   defaultInfoOpen?: boolean;
@@ -83,6 +87,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 type SlideProps = {
+  record?: SponsorRecorder | undefined;
   sponsor: SelectedSponsor;
   format: SponsorFormat;
   first: boolean;
@@ -94,6 +99,7 @@ type SlideProps = {
 };
 
 function Slide({
+  record,
   sponsor,
   format,
   first,
@@ -137,36 +143,50 @@ function Slide({
       inert={!active}
       className="h-full min-w-0 flex-[0_0_100%]"
     >
-      {/* eslint-disable-next-line react/jsx-no-target-blank -- rel is set below to sponsored noopener (R-FE-14, R-FE-15) */}
-      <a
-        href={sponsor.href}
-        target="_blank"
-        rel="sponsored noopener"
-        aria-label={`${sponsor.alt} ${newTab}`}
-        // The focus ring is drawn around the fixed frame (it would be clipped here), see FRAME below.
-        className={cn(
-          "block size-full outline-none",
-          sponsor.fit === "contain" ? "bg-canvas-sunken" : "bg-surface",
-        )}
+      <SponsorTracker
+        slot="hero"
+        sponsorKey={sponsor.id}
+        record={record}
+        active={active}
+        className="size-full"
       >
-        <picture>
-          <source media="(min-width: 1024px)" srcSet={desktop.srcSet ?? desktop.src} />
-          <img
-            {...compact}
-            alt=""
-            onError={() => onFailed(sponsor.id)}
-            className={cn(
-              "block size-full object-center",
-              sponsor.fit === "contain" ? "object-contain" : "object-cover",
-            )}
-          />
-        </picture>
-      </a>
+        {/* eslint-disable-next-line react/jsx-no-target-blank -- rel is set below to sponsored noopener (R-FE-14, R-FE-15) */}
+        <a
+          href={sponsor.href}
+          target="_blank"
+          rel="sponsored noopener"
+          aria-label={`${sponsor.alt} ${newTab}`}
+          // The focus ring is drawn around the fixed frame (it would be clipped here), see FRAME below.
+          className={cn(
+            "block size-full outline-none",
+            sponsor.fit === "contain" ? "bg-canvas-sunken" : "bg-surface",
+          )}
+        >
+          <picture>
+            <source media="(min-width: 1024px)" srcSet={desktop.srcSet ?? desktop.src} />
+            <img
+              {...compact}
+              alt=""
+              onError={() => onFailed(sponsor.id)}
+              className={cn(
+                "block size-full object-center",
+                sponsor.fit === "contain" ? "object-contain" : "object-cover",
+              )}
+            />
+          </picture>
+        </a>
+      </SponsorTracker>
     </div>
   );
 }
 
-function SponsorFrame({ sponsors, format, defaultInfoOpen = false, className }: SponsorFrameProps) {
+function SponsorFrame({
+  record,
+  sponsors,
+  format,
+  defaultInfoOpen = false,
+  className,
+}: SponsorFrameProps) {
   const translate = useTranslations("sponsor");
   const [failed, setFailed] = useState<string[]>([]);
   const visible = sponsors.filter((sponsor) => !failed.includes(sponsor.id));
@@ -302,6 +322,7 @@ function SponsorFrame({ sponsors, format, defaultInfoOpen = false, className }: 
               {visible.map((sponsor, index) => (
                 <Slide
                   key={sponsor.id}
+                  record={record}
                   sponsor={sponsor}
                   format={format}
                   first={sponsor.id === first.id}

@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { DeveloperSpotlight } from "@/components/domain/developer-spotlight";
 import { HomeSection } from "@/components/domain/home-section";
+import { SponsorTracker } from "@/components/layout/sponsor-tracker.client";
 import { getSelectedCity } from "@/features/cities";
+import { trackSponsorEvent } from "./actions";
 import { getSpotlight } from "./spotlight-queries";
 
 const HEADING_ID = "developer-spotlight-name";
@@ -14,7 +16,9 @@ async function SpotlightForCity() {
   if (!developer) return null;
   return (
     <HomeSection labelledBy={`${EYEBROW_ID} ${HEADING_ID}`}>
-      <DeveloperSpotlight developer={developer} headingId={HEADING_ID} eyebrowId={EYEBROW_ID} />
+      <SponsorTracker slot="spotlight" sponsorKey={developer.builderId} record={trackSponsorEvent}>
+        <DeveloperSpotlight developer={developer} headingId={HEADING_ID} eyebrowId={EYEBROW_ID} />
+      </SponsorTracker>
     </HomeSection>
   );
 }

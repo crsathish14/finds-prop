@@ -53,6 +53,7 @@ vi.mock("@/features/site", async () => ({
 vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
 vi.mock("@/features/sponsored", () => ({
   SpotlightSection: () => <section data-testid="spotlight" />,
+  trackSponsorEvent: async () => ({ ok: true }),
 }));
 vi.mock("@/features/ai-chat", () => ({
   HomeAiSearch: () => <div data-testid="search" data-mode="ai" />,

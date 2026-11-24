@@ -57,8 +57,8 @@ export const ADS: LabEntry[] = [
     id: "sponsor-styled-frame",
     name: "Styled hero ads",
     description:
-      "The hero ads in the style the admin chose, in the platform's frame: Sponsored, About this ad, the progress bars and the previous and next buttons. The ads turn when the bar is full and wait while the pointer or focus is on them. Shown for the Showcase and the Cinematic style with three ads, and one ad with About this ad open.",
-    sources: ["layout/sponsor-styled-frame.tsx"],
+      "The hero ads in the style the admin chose, in the platform's frame: Sponsored, About this ad, the progress bars and the previous and next buttons. The ads turn when the bar is full and wait while the pointer or focus is on them. Shown for the Showcase and the Cinematic style with three ads, and one ad with About this ad open. Each ad sits in a SponsorTracker, which counts it seen and clicked for the sponsor report (ADR-194); it draws nothing and counts nothing here, as the Lab hands it no action.",
+    sources: ["layout/sponsor-styled-frame.tsx", "layout/sponsor-tracker.client.tsx"],
     Demo: StyledFrameDemo,
   },
   {

@@ -575,6 +575,34 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"sponsor_seen": {
+                  Row: {
+                    "day": string,"kind": string,"slot": string,"sponsor_key": string,"visitor_hash": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day": string,"kind": string,"slot": string,"sponsor_key": string,"visitor_hash": string
+                  }
+                  Update: {
+                    "day"?: string,"kind"?: string,"slot"?: string,"sponsor_key"?: string,"visitor_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"sponsor_stats": {
+                  Row: {
+                    "clicks": number,"day": string,"slot": string,"sponsor_key": string,"views": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "clicks"?: number,"day": string,"slot": string,"sponsor_key": string,"views"?: number
+                  }
+                  Update: {
+                    "clicks"?: number,"day"?: string,"slot"?: string,"sponsor_key"?: string,"views"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"user_roles": {
                   Row: {
                     "created_at": string,"id": string,"role": Database["public"]['Enums']["app_role"],"user_id": string
@@ -793,6 +821,11 @@ isOneToOne: false
       } },
 "admin_set_feedback_reviewed":
 { Args: { "p_id": string,"p_reviewed": boolean }; Returns: boolean
+                           },
+"admin_sponsor_report":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "clicks": number,"slot": string,"sponsor_key": string,"views": number
+            }[]
                            },
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -1112,6 +1145,9 @@ isOneToOne: false
                            },
 "record_places_call":
 { Args: { "p_api": string,"p_caller": string,"p_outcome": string }; Returns: undefined
+                           },
+"record_sponsor_event":
+{ Args: { "p_key": string,"p_kind": string,"p_slot": string,"p_visitor_hash": string }; Returns: boolean
                            },
 "reorder_faqs":
 { Args: { "p_category": string,"p_ids": (string)[] }; Returns: number

@@ -49,6 +49,7 @@ describe("UT-admin-nav: the sidebar as data (S6-T04)", () => {
       "/admin/homepage",
       "/admin/top-developers",
       "/admin/sponsored-builders",
+      "/admin/sponsor-report",
       "/admin/footer",
       "/admin/disclaimers",
       "/admin/privacy",

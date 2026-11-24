@@ -17,7 +17,7 @@ import { SponsorStyledFrame } from "@/components/layout/sponsor-styled-frame";
 import { HomeAiSearch } from "@/features/ai-chat";
 import { ConversationalLive, HeroLabPreview, HeroLabSections } from "@/features/hero-lab";
 import { SEARCH_PATH } from "@/features/search";
-import { SpotlightSection } from "@/features/sponsored";
+import { SpotlightSection, trackSponsorEvent } from "@/features/sponsored";
 import { pageMetadata } from "@/features/seo";
 import { resolveHero, selectStyled } from "@/lib/sponsors";
 import { designLabEnabled } from "@/server/env";
@@ -77,10 +77,10 @@ export default async function HomePage() {
   const styled = selectStyled(ads, style);
   const stripSponsor = split ? (
     arrangement.sponsors.length > 0 ? (
-      <SponsorSlot ads={ads} placement="hero" layout="split" />
+      <SponsorSlot ads={ads} placement="hero" layout="split" record={trackSponsorEvent} />
     ) : undefined
   ) : styled.length > 0 ? (
-    <SponsorStyledFrame ads={styled} style={style} />
+    <SponsorStyledFrame ads={styled} style={style} record={trackSponsorEvent} />
   ) : undefined;
 
   // The hero for the city in the header: the headline names it (buildHero), and the hero is the
