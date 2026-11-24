@@ -139,6 +139,17 @@ describe("UT-ai-endpoint: a normal message", () => {
     expect(harness.usage[0]).toMatchObject({ caller: "signed_in", userId: SIGNED_IN.userId });
   });
 
+  it("gives the guest rules to an anonymous caller's prompt and never to a signed-in caller's (ADR-200)", async () => {
+    const anonymous = createHarness({ script: [textTurn("Hello there, how can I help?")] });
+    await readEvents(await handleAiChat(chatRequest(say("hello there")), anonymous.deps));
+    expect(anonymous.provider.calls[0]?.system).toContain("only two free messages");
+
+    const signedIn = createHarness({ script: [textTurn("Hello there, how can I help?")] });
+    signedIn.session = SIGNED_IN;
+    await readEvents(await handleAiChat(chatRequest(say("hello there")), signedIn.deps));
+    expect(signedIn.provider.calls[0]?.system).not.toContain("only two free messages");
+  });
+
   it("records the visitor hash of an anonymous caller and never one for a signed-in caller", async () => {
     const anonymous = createHarness({ script: [textTurn("Hello there, how can I help?")] });
     await readEvents(await handleAiChat(chatRequest(say("hello there")), anonymous.deps));
@@ -782,7 +793,7 @@ describe("UT-ai-endpoint: the rules for places in the prompt (ADR-142)", () => {
     );
     expect(on.provider.calls[0]?.system).toContain("Homes near a place");
     expect(on.provider.calls[0]?.system).toBe(
-      buildSystemPrompt({ translate: words, placeSearch: true }),
+      buildSystemPrompt({ translate: words, placeSearch: true, guest: true }),
     );
   });
 });

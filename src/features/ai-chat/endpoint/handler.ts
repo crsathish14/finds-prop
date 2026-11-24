@@ -140,6 +140,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
       ...(deps.placeSearch === true ? { placeSearch: true } : {}),
+      ...(session === null ? { guest: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
     });
     const conversation = [...history, { role: "user" as const, text: latest.text }];

@@ -802,6 +802,88 @@
     "session": "customer"
   },
   {
+    "id": "G-guest-01",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "a visitor asks only for flats: one short question for the most useful missing detail, and no search yet (ADR-200)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Show me flats"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Happy to help. Are you looking to buy or to rent?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["buy or"]]
+      }
+    }
+  },
+  {
+    "id": "G-guest-02",
+    "set": "golden",
+    "category": "search",
+    "language": "en",
+    "title": "a visitor asks for homes near an area: the area is searched by name, with no place, and one question follows for the missing detail (ADR-200)",
+    "placeSearch": true,
+    "messages": [
+      {
+        "role": "user",
+        "text": "2 BHK near Adyar"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "bhk": 2,
+              "locality": "Adyar"
+            }
+          }
+        ]
+      },
+      {
+        "text": "I found a 2 BHK apartment for rent in Adyar at ₹35,000/mo, 1,100 sq ft. [[home:v4g8k3ls]] Are you looking to rent, or would you rather buy?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 35000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "locality": "adyar",
+              "place": null
+            }
+          }
+        ]
+      },
+      "visible": {
+        "showsCards": ["home:v4g8k3ls"]
+      }
+    }
+  },
+  {
     "id": "G-property-01",
     "set": "golden",
     "category": "property",

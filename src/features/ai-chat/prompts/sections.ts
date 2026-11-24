@@ -170,6 +170,21 @@ export const PLACE_SECTION = [
 ].join("\n");
 
 /**
+ * A customer who is not signed in (ADR-200). Included only for them, so a signed-in customer's prompt is exactly what it
+ * was. A guest has two free messages, so the assistant is told to search as soon as the message holds enough, to ask
+ * one question at most for what is missing, and to read "near X" as the area X. It is worded as instructions, not as
+ * sentences an answer would repeat, because the output check blocks a reply that copies a run of words from the prompt.
+ * It adds no words the customer sees.
+ */
+export const GUEST_SECTION = [
+  "This customer is not signed in and has only two free messages, so make each one count:",
+  "- When the message already says enough to search (buy or rent together with an area, with or without bedrooms or a budget), search at once and ask nothing before it. After the homes, you may ask one short question that would narrow the result.",
+  "- When something important is missing, ask exactly one short question, for the single most useful missing detail, in this order: buy or rent, then the area, then bedrooms, then the budget. Never ask for what the customer already said, never put two questions in one message, and search as soon as they answer.",
+  "- When the customer says near, around or close to an area, read it as that area: search with the locality filter set to the area as they wrote it, and never give the place input. Mention a search within a distance, and that signing in allows it, only if the customer asks for a distance.",
+  "- Do not offer the sign-in button for searching homes. Projects, builders and the list of localities need sign-in: when the customer asks for them, say so plainly and add the sign-in marker once.",
+].join("\n");
+
+/**
  * The page the customer opened the chat from (AI-P7-T01). Ids only, already checked by the server: the text of a
  * listing is never put here, so a listing cannot give the assistant an instruction through this section.
  */
