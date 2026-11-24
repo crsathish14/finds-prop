@@ -33,6 +33,7 @@ const HEADER: HeaderFormValues = {
 const STANDARD_FOOTER: StandardFooter = {
   brandName: "Find Prop",
   links: [{ label: "Contact us", href: "/contact" }],
+  companyLinks: [{ label: "Blog", href: "/blog" }],
   copyright: "© 2026 Find Prop",
 };
 const FOOTER = {
@@ -41,6 +42,7 @@ const FOOTER = {
   email: "",
   address: "",
   links: STANDARD_FOOTER.links,
+  companyLinks: STANDARD_FOOTER.companyLinks,
   copyright: "",
 };
 
@@ -184,7 +186,10 @@ describe("UT-footer-form: the Footer page (S7-T10)", () => {
   it("opens with the standard links and the contact boxes empty, with Footer as the current tab", () => {
     open();
     expect(screen.getByRole("heading", { level: 1, name: "Footer" })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Label 1" })).toHaveValue("Contact us");
+    const links = within(screen.getByRole("group", { name: "Links" }));
+    expect(links.getByRole("textbox", { name: "Label 1" })).toHaveValue("Contact us");
+    const company = within(screen.getByRole("group", { name: "Company links" }));
+    expect(company.getByRole("textbox", { name: "Label 1" })).toHaveValue("Blog");
     expect(screen.getByRole("textbox", { name: /Phone/ })).toHaveValue("");
     expect(
       within(screen.getByRole("navigation", { name: "Site content" })).getByRole("link", {
@@ -213,6 +218,7 @@ describe("UT-footer-form: the Footer page (S7-T10)", () => {
       about: "",
       contact: { address: "", email: "hello@example.com", phone: "" },
       links: [{ label: "Contact us", href: "/contact" }],
+      companyLinks: [{ label: "Blog", href: "/blog" }],
       copyright: "",
     });
     await waitFor(() =>
@@ -235,7 +241,11 @@ describe("UT-footer-form: the Footer page (S7-T10)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("2 things need attention");
     expect(screen.getByRole("textbox", { name: /Email/ })).toBeInvalid();
-    expect(screen.getByRole("textbox", { name: "Label 1" })).toBeInvalid();
+    expect(
+      within(screen.getByRole("group", { name: "Links" })).getByRole("textbox", {
+        name: "Label 1",
+      }),
+    ).toBeInvalid();
     expect(screen.getByText(en.validation.emailInvalid)).toBeInTheDocument();
   });
 });

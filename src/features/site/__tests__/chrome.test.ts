@@ -155,16 +155,38 @@ describe("UT-site-chrome: footer", () => {
       "Buy a home",
       "Rent a home",
       "New projects",
-      "Blog",
-      "FAQ",
-      "Careers",
       "Contact us",
       "Post a property",
     ]);
+    expect(footer.companyHeading).toBe("Company");
+    expect(footer.companyLinks.map((link) => link.label)).toEqual(["Blog", "FAQ", "Careers"]);
     expect(footer.legalLinks.map((link) => link.href)).toEqual(["/privacy", "/terms"]);
     expect(footer.copyright).toBe("© 2026 findsprop");
     expect(footer.about).toBeUndefined();
     expect(footer.contacts).toEqual([]);
+  });
+
+  it("uses the saved Company links, and leaves out a link whose module is off", () => {
+    const saved = {
+      ...SITE_DEFAULTS,
+      footer: {
+        links: [],
+        companyLinks: [
+          { label: "About us", href: "/about" },
+          { label: "Our blog", href: "/blog" },
+        ],
+      },
+    };
+    expect(
+      buildFooter(saved, flagsOff, translate, year).companyLinks.map((link) => link.label),
+    ).toEqual(["About us", "Our blog"]);
+    expect(
+      buildFooter(saved, flagsOff, translate, year, {
+        blog: false,
+        faq: true,
+        careers: true,
+      }).companyLinks.map((link) => link.label),
+    ).toEqual(["About us"]);
   });
 
   it("brings the AI search link back when its flag is on", () => {
@@ -468,7 +490,7 @@ describe("UT-site-chrome: content module switches (ADR-143)", () => {
       )?.label,
     ).toBe("FAQ");
     expect(
-      buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).links.find(
+      buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).companyLinks.find(
         (link) => link.href === "/faq",
       )?.label,
     ).toBe("FAQ");
@@ -493,11 +515,11 @@ describe("UT-site-chrome: the Blog link follows the Blog module's switch (ADR-14
     const find = (links: { label: string; href: string }[]) =>
       links.find((link) => link.href === "/blog")?.label;
     expect(find(buildHeader(SITE_DEFAULTS.header, flagsOff, translate).links)).toBe("Blog");
-    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).links)).toBe("Blog");
+    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026).companyLinks)).toBe("Blog");
     expect(find(buildHeader(SITE_DEFAULTS.header, flagsOff, translate, blogOff).links)).toBe(
       undefined,
     );
-    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026, blogOff).links)).toBe(
+    expect(find(buildFooter(SITE_DEFAULTS, flagsOff, translate, 2026, blogOff).companyLinks)).toBe(
       undefined,
     );
   });

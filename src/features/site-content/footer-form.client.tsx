@@ -11,7 +11,7 @@ import {
 } from "@/components/domain/site-footer-fields";
 import { SiteFooterPreview } from "@/components/domain/site-footer-preview";
 import { Alert } from "@/components/patterns/alert";
-import { FOOTER_LINKS_MAX } from "./constants";
+import { FOOTER_COMPANY_LINKS_MAX, FOOTER_LINKS_MAX } from "./constants";
 import {
   footerPayloadOf,
   footerPictureOf,
@@ -46,6 +46,7 @@ const startOf = (initial: FooterFormValues): SiteFooterValues => ({
   email: initial.email,
   address: initial.address,
   links: linkRowsOf(initial.links, "link"),
+  companyLinks: linkRowsOf(initial.companyLinks, "company"),
   copyright: initial.copyright,
 });
 
@@ -81,6 +82,10 @@ export function FooterForm({ initial, standard, save }: FooterFormProps) {
       title: translate("footer.navigation.title"),
       description: translate("footer.navigation.text"),
     },
+    companyLinks: {
+      title: translate("footer.companyNavigation.title"),
+      description: translate("footer.companyNavigation.text"),
+    },
     about: translate("footer.about"),
     phone: translate("footer.phone"),
     email: translate("footer.email"),
@@ -90,7 +95,7 @@ export function FooterForm({ initial, standard, save }: FooterFormProps) {
     linkList: linkWords,
   };
 
-  const found = footerProblemsOf(problems, values.links);
+  const found = footerProblemsOf(problems, values.links, values.companyLinks);
   const count = Object.keys(problems).length;
   const picture = footerPictureOf(values, standard);
 
@@ -108,6 +113,7 @@ export function FooterForm({ initial, standard, save }: FooterFormProps) {
             {...(picture.about ? { about: picture.about } : {})}
             contacts={picture.contacts}
             links={picture.links}
+            companyLinks={picture.companyLinks}
             copyright={picture.copyright}
           />
         }
@@ -137,6 +143,7 @@ export function FooterForm({ initial, standard, save }: FooterFormProps) {
           errors={found}
           onChange={setValues}
           linksMax={FOOTER_LINKS_MAX}
+          companyLinksMax={FOOTER_COMPANY_LINKS_MAX}
           disabled={flow.saving}
           words={words}
         />

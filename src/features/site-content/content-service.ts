@@ -89,6 +89,7 @@ export function footerValue(input: FooterInput): Record<string, unknown> {
     about: input.about,
     contact: Object.keys(contact).length > 0 ? contact : null,
     links: input.links.map((link) => ({ label: link.label, href: link.href })),
+    companyLinks: input.companyLinks.map((link) => ({ label: link.label, href: link.href })),
     copyright: input.copyright,
   });
 }

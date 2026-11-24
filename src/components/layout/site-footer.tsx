@@ -7,7 +7,7 @@
  *   address, phone and email lines), contactHeading (a small heading over the contact lines, phones only), disclaimer (plain text the super admin writes, shown above the legal line; none
  *   when empty), legal ({ copyright, links }), navLabel (required, already-
  *   translated, names the link columns), className.
- * Link columns: each group's links are spread over up to 3 columns of at most 6 links (spread-links.ts); links past
+ * Link columns: each group's links are spread over up to 3 columns of at most 6 links (src/lib/spread-links.ts); links past
  *   the 18th are not shown.
  * Responsive: one column on phones, links in one list and the contact lines set apart under a rule and a heading;
  *   brand, links and contact side by side from 768 px.
@@ -21,7 +21,7 @@ import type { ReactNode } from "react";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
 import { Container } from "./container";
-import { spreadLinks } from "./spread-links";
+import { spreadLinks } from "@/lib/spread-links";
 
 type FooterLink = { label: string; href: string; external?: boolean; newTabLabel?: string };
 type FooterColumn = { heading: string; links: FooterLink[] };
@@ -44,6 +44,9 @@ const SUBLIST_GRID = {
   2: "md:grid-cols-2",
   3: "md:grid-cols-3",
 } as const;
+
+/** A group with more columns gets more of the width, so a 3-column Explore and a 1-column Company line up evenly. */
+const GROUP_WIDTH = { 1: "md:flex-[1]", 2: "md:flex-[2]", 3: "md:flex-[3]" } as const;
 
 const LINK_STYLES =
   "inline-flex items-center gap-2 py-2 text-body font-medium text-on-dark/90 no-underline hover:text-on-dark hover:underline hover:underline-offset-4";
@@ -74,7 +77,7 @@ function SiteFooter({
   return (
     <footer data-slot="site-footer" className={cn("on-dark bg-dark text-on-dark", className)}>
       <Container className="pt-10 pb-6 md:pt-14 md:pb-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.2fr_2.6fr_1.2fr] md:gap-10">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_3.4fr_1.2fr] md:gap-10">
           <div>
             {logo}
             {about ? (
@@ -86,7 +89,13 @@ function SiteFooter({
               const sublists = spreadLinks(column.links);
               const gridClass = SUBLIST_GRID[Math.max(1, sublists.length) as 1 | 2 | 3];
               return (
-                <div key={column.heading} className="md:flex-1">
+                <div
+                  key={column.heading}
+                  className={cn(
+                    "md:min-w-0",
+                    GROUP_WIDTH[Math.max(1, sublists.length) as 1 | 2 | 3],
+                  )}
+                >
                   <h2 className="mb-3 text-overline text-on-dark-accent">{column.heading}</h2>
                   <div className={cn("grid grid-cols-1 gap-x-6", gridClass)}>
                     {sublists.map((sublist) => (

@@ -37,6 +37,8 @@ const footerSchema = z.object({
     })
     .optional(),
   links: z.array(navigationLink).max(20),
+  /** The Company column (owner change, 26 Nov 2026): at most 6 links, one column. Absent in rows saved before it existed. */
+  companyLinks: z.array(navigationLink).max(6).optional(),
   copyright: z.string().max(200).optional(),
 });
 

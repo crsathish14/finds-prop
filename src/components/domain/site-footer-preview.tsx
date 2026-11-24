@@ -21,6 +21,7 @@ type SiteFooterPreviewProps = {
   about?: string;
   contacts: readonly string[];
   links: readonly string[];
+  companyLinks?: readonly string[];
   copyright: string;
   className?: string;
 };
@@ -30,6 +31,7 @@ function SiteFooterPreview({
   about,
   contacts,
   links,
+  companyLinks = [],
   copyright,
   className,
 }: SiteFooterPreviewProps) {
@@ -53,6 +55,13 @@ function SiteFooterPreview({
       {links.length > 0 ? (
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small font-medium text-on-dark/90">
           {links.map((label, index) => (
+            <li key={`${index}-${label}`}>{label}</li>
+          ))}
+        </ul>
+      ) : null}
+      {companyLinks.length > 0 ? (
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small font-medium text-on-dark/90">
+          {companyLinks.map((label, index) => (
             <li key={`${index}-${label}`}>{label}</li>
           ))}
         </ul>

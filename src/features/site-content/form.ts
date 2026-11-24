@@ -173,6 +173,7 @@ export function headerPictureOf(
 export interface StandardFooter {
   brandName: string;
   links: FormLink[];
+  companyLinks: FormLink[];
   copyright: string;
 }
 
@@ -180,9 +181,15 @@ export interface StandardFooter {
 export function standardFooterOf(model: {
   brandName: string;
   links: readonly FormLink[];
+  companyLinks: readonly FormLink[];
   copyright: string;
 }): StandardFooter {
-  return { brandName: model.brandName, links: linksOf(model.links), copyright: model.copyright };
+  return {
+    brandName: model.brandName,
+    links: linksOf(model.links),
+    companyLinks: linksOf(model.companyLinks),
+    copyright: model.copyright,
+  };
 }
 
 export interface FooterFormValues {
@@ -191,6 +198,7 @@ export interface FooterFormValues {
   email: string;
   address: string;
   links: FormLink[];
+  companyLinks: FormLink[];
   copyright: string;
 }
 
@@ -205,6 +213,11 @@ export function footerFormOf(
     email: saved.contact?.email ?? "",
     address: saved.contact?.address ?? "",
     links: linksOf(saved.links.length > 0 ? saved.links : standard.links),
+    companyLinks: linksOf(
+      saved.companyLinks && saved.companyLinks.length > 0
+        ? saved.companyLinks
+        : standard.companyLinks,
+    ),
     copyright: saved.copyright ?? "",
   };
 }
@@ -215,12 +228,14 @@ export function footerPayloadOf(values: {
   email: string;
   address: string;
   links: readonly FormLink[];
+  companyLinks: readonly FormLink[];
   copyright: string;
 }): Record<string, unknown> {
   return {
     about: values.about,
     contact: { address: values.address, email: values.email, phone: values.phone },
     links: linksOf(values.links),
+    companyLinks: linksOf(values.companyLinks),
     copyright: values.copyright,
   };
 }
@@ -232,13 +247,16 @@ export interface FooterProblems {
   address?: string;
   copyright?: string;
   links?: Record<string, LinkRowProblems>;
+  companyLinks?: Record<string, LinkRowProblems>;
 }
 
 export function footerProblemsOf(
   problems: Problems,
   rows: readonly { id: string }[],
+  companyRows: readonly { id: string }[] = [],
 ): FooterProblems {
   const links = linkProblemsOf("links", problems, rows);
+  const companyLinks = linkProblemsOf("companyLinks", problems, companyRows);
   const one = (box: "about" | "phone" | "email" | "address" | "copyright") => {
     const message =
       box === "about" || box === "copyright" ? problems[box] : problems[`contact.${box}`];
@@ -251,6 +269,7 @@ export function footerProblemsOf(
     ...one("phone"),
     ...one("copyright"),
     ...(Object.keys(links).length > 0 ? { links } : {}),
+    ...(Object.keys(companyLinks).length > 0 ? { companyLinks } : {}),
   };
 }
 
@@ -259,6 +278,7 @@ export interface FooterPicture {
   about?: string;
   contacts: string[];
   links: string[];
+  companyLinks: string[];
   copyright: string;
 }
 
@@ -270,12 +290,16 @@ export function footerPictureOf(
     email: string;
     address: string;
     links: readonly FormLink[];
+    companyLinks: readonly FormLink[];
     copyright: string;
   },
   standard: StandardFooter,
 ): FooterPicture {
   const about = values.about.trim();
   const typedLinks = values.links
+    .filter((link) => filled(link.label))
+    .map((link) => link.label.trim());
+  const typedCompany = values.companyLinks
     .filter((link) => filled(link.label))
     .map((link) => link.label.trim());
   return {
@@ -285,6 +309,10 @@ export function footerPictureOf(
       .map((line) => line.trim())
       .filter(Boolean),
     links: values.links.length > 0 ? typedLinks : standard.links.map((link) => link.label),
+    companyLinks:
+      values.companyLinks.length > 0
+        ? typedCompany
+        : standard.companyLinks.map((link) => link.label),
     copyright: values.copyright.trim() || standard.copyright,
   };
 }

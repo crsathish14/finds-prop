@@ -63,6 +63,8 @@ export type FooterModel = {
   about?: string;
   columnHeading: string;
   links: FooterLinkModel[];
+  companyHeading: string;
+  companyLinks: FooterLinkModel[];
   contacts: FooterContactModel[];
   legalLinks: { label: string; href: string }[];
   copyright: string;
@@ -177,11 +179,17 @@ function defaultFooterLinks(translate: Translate): { label: string; href: string
     { label: translate("site.footer.linkRent"), href: "/properties" },
     { label: translate("site.footer.linkProjects"), href: "/projects" },
     { label: translate("site.footer.linkAiSearch"), href: AI_SEARCH_PATH },
+    { label: translate("site.footer.linkContact"), href: "/contact" },
+    { label: translate("site.footer.linkPost"), href: "/post-property" },
+  ];
+}
+
+/** What the Company column shows when the content team has saved no links for it (BR-81). */
+function defaultCompanyLinks(translate: Translate): { label: string; href: string }[] {
+  return [
     { label: translate("site.footer.linkBlog"), href: "/blog" },
     { label: translate("site.footer.linkFaq"), href: "/faq" },
     { label: translate("site.footer.linkCareers"), href: "/careers" },
-    { label: translate("site.footer.linkContact"), href: "/contact" },
-    { label: translate("site.footer.linkPost"), href: "/post-property" },
   ];
 }
 
@@ -215,24 +223,32 @@ export function buildFooter(
 ): FooterModel {
   const { footer } = settings;
   const brandName = resolveBrandName(settings.header, translate);
-  const source = footer.links.length > 0 ? footer.links : defaultFooterLinks(translate);
-  const links = source
-    .filter((link) => isRouteEnabled(link.href, flags, modules))
-    .map((link): FooterLinkModel => {
-      if (link.href.startsWith("/")) return { label: link.label, href: link.href };
-      return {
-        label: link.label,
-        href: link.href,
-        external: true,
-        newTabLabel: translate("common.opensInNewTab"),
-      };
-    });
+  const toModel = (link: { label: string; href: string }): FooterLinkModel => {
+    if (link.href.startsWith("/")) return { label: link.label, href: link.href };
+    return {
+      label: link.label,
+      href: link.href,
+      external: true,
+      newTabLabel: translate("common.opensInNewTab"),
+    };
+  };
+  const shown = (
+    saved: readonly { label: string; href: string }[] | undefined,
+    standard: { label: string; href: string }[],
+  ) =>
+    (saved && saved.length > 0 ? saved : standard)
+      .filter((link) => isRouteEnabled(link.href, flags, modules))
+      .map(toModel);
+  const links = shown(footer.links, defaultFooterLinks(translate));
+  const companyLinks = shown(footer.companyLinks, defaultCompanyLinks(translate));
 
   return {
     brandName,
     ...(footer.about ? { about: footer.about } : {}),
     columnHeading: translate("site.footer.exploreHeading"),
     links,
+    companyHeading: translate("site.footer.companyHeading"),
+    companyLinks,
     contacts: buildFooterContacts(footer),
     legalLinks: [
       { label: translate("site.footer.privacy"), href: "/privacy" },

@@ -66,6 +66,7 @@ export type { HeaderFormProps } from "./header-form.client";
 export {
   DEFAULT_LOCALITY_RADIUS_KM,
   EDITABLE_SETTINGS,
+  FOOTER_COMPANY_LINKS_MAX,
   FOOTER_LINKS_MAX,
   HEADER_LINKS_MAX,
   HERO_LAYOUTS,

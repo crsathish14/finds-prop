@@ -83,7 +83,7 @@ describe("UT-site-content-service: what is stored (S7-T10)", () => {
     const empty = footerValue(
       footerInputSchema.parse({ contact: { address: "", email: "", phone: "" }, links: [] }),
     );
-    expect(empty).toEqual({ links: [] });
+    expect(empty).toEqual({ links: [], companyLinks: [] });
     const some = footerValue(
       footerInputSchema.parse({
         about: "About us",
@@ -96,6 +96,7 @@ describe("UT-site-content-service: what is stored (S7-T10)", () => {
       about: "About us",
       contact: { email: "hello@example.com" },
       links: [{ label: "Contact us", href: "/contact" }],
+      companyLinks: [],
       copyright: "© 2026",
     });
   });

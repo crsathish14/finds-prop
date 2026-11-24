@@ -70,6 +70,7 @@ const FOOTER_WORDS: SiteFooterFieldsWords = {
     description: "Shown at the bottom of every page. An empty box is left out.",
   },
   links: { title: "Links", description: "Shown in the footer, in this order." },
+  companyLinks: { title: "Company links", description: "Shown under Company." },
   about: "About text",
   phone: "Phone",
   email: "Email",
@@ -117,6 +118,7 @@ const FOOTER_FILLED: SiteFooterValues = {
   email: "hello@findprop.example",
   address: "Chennai, Tamil Nadu",
   links: [row("f1", "Contact us", "/contact"), row("f2", "Builder sign in", "/builder/login")],
+  companyLinks: [row("c1", "Blog", "/blog"), row("c2", "FAQ", "/faq")],
   copyright: "© 2026 findsprop",
 };
 
@@ -126,6 +128,7 @@ const FOOTER_STANDARD: SiteFooterValues = {
   email: "",
   address: "",
   links: [],
+  companyLinks: [],
   copyright: "",
 };
 
@@ -225,7 +228,8 @@ function FooterPage({ initial, errors }: { initial: SiteFooterValues; errors?: S
         values={values}
         {...(errors ? { errors } : {})}
         onChange={setValues}
-        linksMax={20}
+        linksMax={18}
+        companyLinksMax={6}
         words={FOOTER_WORDS}
       />
     </SiteContentLayout>
