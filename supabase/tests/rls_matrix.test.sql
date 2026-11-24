@@ -201,6 +201,8 @@ insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe'
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
 insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
 insert into public.places_usage_daily (day, api, caller, outcome, calls) values (current_date, 'matrix_probe', 'search_box', 'ok', 1);
+insert into public.sponsor_stats (day, slot, sponsor_key, views, clicks) values (current_date, 'hero', 'matrix_probe', 1, 0);
+insert into public.sponsor_seen (day, slot, sponsor_key, kind, visitor_hash) values (current_date, 'hero', 'matrix_probe', 'view', repeat('a', 40));
 insert into public.cities (key, name) values ('matrixprobe', 'Matrix Probe');
 insert into public.builder_feedback (builder_id, message) values ('00000000-0000-4000-b000-000000000001', 'matrix probe');
 
@@ -238,6 +240,8 @@ insert into exp_grants values
   ('public_rate_limits', '', '', 'S,I,U,D,T'),
   ('saved_properties', '', 'S,I,D', 'S,I,U,D,T'),
   ('site_settings', 'S', 'S,I,U', 'S,I,U,D,T'),
+  ('sponsor_seen', '', '', 'S,I,U,D,T'),
+  ('sponsor_stats', '', '', 'S,I,U,D,T'),
   ('user_roles', '', 'S,I,U,D', 'S,I,U,D,T');
 
 create function pg_temp.privileges(who text, tbl text) returns text
@@ -288,6 +292,8 @@ insert into probe values
   ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
   ('ai_usage_events', 'x1', 'request_id = ''matrix_probe'''),
   ('places_usage_daily', 'x1', 'api = ''matrix_probe'''),
+  ('sponsor_stats', 'x1', 'sponsor_key = ''matrix_probe'''),
+  ('sponsor_seen', 'x1', 'sponsor_key = ''matrix_probe'''),
   ('builder_feedback', 'x1', 'message = ''matrix probe'''),
   ('cities', 'x1', 'key = ''matrixprobe''');
 
@@ -349,6 +355,8 @@ from (values
   ('public_rate_limits', array['', '', '', '', '', '', '']),
   ('ai_usage_events', array['', '', '', '', '', '', '']),
   ('places_usage_daily', array['', '', '', '', '', '', '']),
+  ('sponsor_stats', array['', '', '', '', '', '', '']),
+  ('sponsor_seen', array['', '', '', '', '', '', '']),
   ('builder_feedback', array['', '', '', '', '', '', '']),
   ('cities', array['x1', 'x1', 'x1', 'x1', 'x1', 'x1', 'x1'])
 ) as x(t, by_who)

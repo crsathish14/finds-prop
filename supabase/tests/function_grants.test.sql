@@ -34,7 +34,7 @@ select is(
   || 'admin_feedback_list, admin_forms, admin_listing_counts, '
   || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
   || 'admin_projects, '
-  || 'admin_properties, admin_set_feedback_reviewed, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
+  || 'admin_properties, admin_set_feedback_reviewed, admin_sponsor_report, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
   || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, city_key, close_listing, current_builder_id, '
   || 'has_role, '
   || 'has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, listed_cities, '
