@@ -1,6 +1,6 @@
 # ADR-190 · Sponsor hero styles: live on the home page
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" to this change on 24 Nov 2026 after being told the ad space stays empty until a sponsor is completed; the new words await approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" to this change on 24 Nov 2026 after being told the ad space stays empty until a sponsor is completed; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-182 (the data), ADR-187 (the parts), ADR-189 (the admin's choice and fields), ADR-045 and ADR-038 (the banner area)
 - Class: C2 (a deviation from the approved UX: the hero ad was a picture strip). No migration, no dependency.
@@ -17,7 +17,7 @@ The admin can now choose the hero ad style and fill each sponsor's details (ADR-
 - **The admin's Hero page preview** draws a small picture of the first ready ad in the chosen style (the photo beside the project and price for the Showcase; the headline on the photo for the Cinematic banner) for Search Desk and Conversational, and says "No ad ready" when sponsors exist but none is complete. The warning under the layout cards counts the sponsors not ready for the style and says what to fill in. Split's preview and warning are unchanged.
 - The results page keeps its picture strip until the Featured project card replaces it (sponsor ads plan, PR 6). The Design Lab's hero lab keeps the picture strip in its comparisons.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `admin.siteContent.sponsors.preview.noneReady` "No ad ready"; `layout.noneTextStyle`, `layout.someTitleStyle`, `layout.someTextStyle` (the warnings about a style's details).
 

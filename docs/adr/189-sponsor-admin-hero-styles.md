@@ -1,6 +1,6 @@
 # ADR-189 · Sponsor hero styles: the admin's choice and fields
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words await the owner's approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-182 (the stored data), ADR-187 (the parts that draw it), ADR-105 and ADR-115 (the sponsor manager on the Hero page)
 - Class: C2 (a deviation from the approved admin-sponsors screen). No migration, no dependency.
@@ -16,7 +16,7 @@ The owner decided that the admin chooses one hero ad style for the whole site, t
 - **Hero ad fields** (new part `SponsorAdFields`) between the Active switch and the banner pictures: the developer or brand, the one photo (a picture slot at 16:9, checked in the browser by the server's own photo rule and uploaded with the sponsor's other pictures), and the Showcase and Cinematic boxes, each style in its own group with its required boxes marked and the style the site shows now marked "Shown now". Every box is optional when saving; only a line that is too long is refused. The draft, the payload and the server's problems carry the new fields.
 - **The list**: the first readiness column now says whether the sponsor is ready for the chosen style ("Hero ad"); a sponsor that can show nowhere (not ready for the style, and no banner pair) is "Needs images", as before.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 Under `admin.siteContent.sponsors`: the link choice ("Where a click goes", "Our project", "Another website", "Project", "Choose a project", the hint and the "no project is live" line), the column "Hero ad", the style switch ("Hero ad style", "Showcase", "Cinematic" and its line), the hero ad section (its title and line, "Developer or brand" and hint, "Shown now", "Photo" and its note), the Showcase and Cinematic boxes with their placeholders, and the photo's weight line.
 

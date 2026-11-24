@@ -1,6 +1,6 @@
 # ADR-194 · The sponsor report: views and clicks of the paid placements
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign, "views/clicks report in the admin"; the owner said "Start PR 8" on 24 Nov 2026; the new words await approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign, "views/clicks report in the admin"; the owner said "Start PR 8" on 24 Nov 2026; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-26
 - Related: ADR-190 (the hero ads), ADR-192 (the Featured project card), ADR-193 (the Developer spotlight), ADR-191 (the picks), BR-75 (the visitor hash), ADR-124 (retention)
 - Class: C2 (a new table, a counting action open to visitors, a new admin page). No dependency.
@@ -18,7 +18,7 @@ The owner wants a report of how many people saw and clicked each paid placement,
 - **The report** (`/admin/sponsor-report`, in the admin menu after Sponsored builders): the last 7, 30 or 90 days (`?days=`, 30 by default) and the days they cover; for each placement a table of sponsors with views, clicks and click rate (clicks per hundred views). Every sponsor shown now has a row, with zeros until counted; a sponsor no longer shown that was counted in the period follows, marked "Not shown now" (a deleted ad is "Removed sponsor"). Read as the admin, never cached.
 - Not in this change: counting enquiries that came from a sponsor (the plan's `ref=sponsor` mark on an enquiry). Clicks on "Request a call back" are counted as clicks.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `admin.nav.sponsorReport`: "Sponsor report". `admin.sponsorReport.*`: "Sponsor report"; "How many people saw and clicked each paid placement. Use it to show sponsors what they got."; "Period"; "Last {count} days"; "{from} to {to}"; "Hero ads", "The ads under the search on the home page."; "Featured project card", "The card after the sixth result on the homes and projects lists, counted by builder or agent."; "Developer spotlight", "The band on the home page, counted by builder or agent."; "Sponsor", "Views", "Clicks", "Click rate", "{rate}%", "–"; "Removed sponsor"; "Not shown now"; "No sponsors in this placement yet."; the note on how people are counted.
 

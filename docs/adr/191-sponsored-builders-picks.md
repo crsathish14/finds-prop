@@ -1,6 +1,6 @@
 # ADR-191 · Sponsored builders: who the Featured card and the Developer Spotlight draw from
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words await the owner's approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-179 (builder spotlight fields), the Top developers page (the same pattern), ADR-182 to ADR-190 (the hero ad)
 - Class: C2 (a new admin page outside the approved UX). No migration, no dependency.
@@ -15,7 +15,7 @@ The owner decided that the Featured project card in the results (concept C) and 
 - **A new admin page, Sponsored builders** (`/admin/sponsored-builders`, in the menu beside Top developers): two lists, the Featured project card and the Developer spotlight, each with the picked builders and agents (their type beside the name) and the active ones to add, a limit of 10, and the page's Save bar (Discard puts both back). Only active builders and agents can be picked; one picked earlier who is no longer active is named as such and can be removed. The action `saveSponsoredBuilders` follows the other settings: super admin only, the `admin_edit` limit, the site settings cache tag.
 - The public readers that turn the picks into a card and a band, with only live projects, come with those parts (the next changes of the sponsor ads plan).
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `admin.nav.sponsoredBuilders` and `admin.sponsoredBuilders.*`: the page's title and description, the two places' titles and lines, the counts, the empty and full messages, Builder and Agent, Add and Remove, and the saved message.
 
