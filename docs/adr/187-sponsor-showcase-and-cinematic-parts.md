@@ -1,6 +1,6 @@
 # ADR-187 · Sponsor hero styles: the Showcase card, the Cinematic banner and their frame
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the designs were approved on the concepts page, the new words await the owner's approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the designs were approved on the concepts page, the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-182 (the data these parts draw), ADR-038 (rotation), ADR-045 (the sponsored banner frame)
 - Class: C2 (a deviation from the approved UX: the hero ad was a picture strip). No migration, no dependency.
@@ -17,7 +17,7 @@ ADR-182 stored what the admin types for the two hero ad styles. This change adds
 - **Motion** lives in `src/styles/sponsor-ads.css`: the slow photo drift, the bars, the gold line, all transform, opacity or stroke only. Pointer over the ads or focus inside them pauses the bar and the drift. With reduced motion nothing moves and the ads never turn by themselves.
 - **Links:** one of our projects opens in the same tab; another site opens in a new tab with `rel="sponsored noopener"` and the new-tab notice read by screen readers.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `sponsor.viewProject` "View project", `sponsor.priceList` "Get price list", `sponsor.rera` "RERA registered", `sponsor.upNext` "Up next", `sponsor.adPosition` "Ad {current} of {total}".
 

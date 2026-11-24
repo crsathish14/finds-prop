@@ -1,6 +1,6 @@
 # ADR-193 · The Developer spotlight on the home page
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" on 24 Nov 2026; the new words await approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" on 24 Nov 2026; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-191 (who it draws from), ADR-179 (builder logos and spotlight fields), ADR-192 (the Featured project card), CR plan 5 (the home section order)
 - Class: C2 (a new section of the home page, not in the approved UX). No migration, no dependency.
@@ -17,7 +17,7 @@ The owner decided that the Developer spotlight (concept D) is a new home page se
 - **The page**: the section is read behind its own Suspense boundary (the city is a cookie and the pick is per visit), so the rest of the home page stays in the static shell. It is placed only when someone is picked (the site settings say so without a request), and nothing holds its place while it is read, so a city with nothing to show leaves no gap.
 - **The admin**: the section order on the Homepage page lists "Developer spotlight", with a line saying it shows when developers are picked on the Sponsored builders page.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `domain.developerSpotlight.*`: "Sponsored", "Developer spotlight", "Years", "Delivered", "Listed", "Launching", "Visit website". `admin.siteContent.homepage.order.spotlight.*`: "Developer spotlight", "Shown when you pick developers on the Sponsored builders page. Has no switch."
 

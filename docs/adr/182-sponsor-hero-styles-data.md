@@ -1,6 +1,6 @@
 # ADR-182 · Sponsor hero styles: the data (Showcase and Cinematic)
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words await the owner's approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-045 and ADR-105 (the stored sponsors and their save), ADR-038 (rotation), ADR-179 (builder spotlight fields)
 - Class: C2. No migration (the sponsors live in the `site_settings.sponsors` JSON), no dependency, no environment change.
@@ -20,7 +20,7 @@ This change is the data only: what is stored, what the save accepts and checks, 
 - **What the public side reads:** `toSponsorAds` takes the new fields, builds the photo's address from our own bucket, and gives a style's words only when the ones it needs are all there. `readyFor(ad, style)` says whether an ad has the photo, the brand and the style's words; `selectStyled(ads, style)` gives the active hero ads that are ready, in order (picture-only ads are left out). `getSponsorStyle()` reads the style.
 - **The editor's read side** (`sponsorEditViewsOf`) reads the new fields too, so a sponsor that links to a project (and has no address) is not dropped from the admin screen.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `validation.sponsorProjectMissing`: "Choose a project that buyers can see on the site."
 

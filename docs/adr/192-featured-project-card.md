@@ -1,6 +1,6 @@
 # ADR-192 · The Featured project card in the homes and projects lists
 
-- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" on 24 Nov 2026; the new words await approval).
+- Status: Accepted (owner decisions of 23 Nov 2026 on the sponsor ads redesign; the owner said "Start" on 24 Nov 2026; the new words were approved by the owner on 24 Nov 2026 ("approved")).
 - Date: 2026-11-25
 - Related: ADR-191 (who it draws from), ADR-179 (builder logos), ADR-045 (the banner in the results it replaces), ADR-171 (login wall)
 - Class: C2 (a deviation from the approved UX: the results had a picture strip). No migration, no dependency.
@@ -16,7 +16,7 @@ The owner decided that the Featured project card (concept C) replaces the pictur
 - **Placement**: after the sixth home on `/properties` (the searched locality or place is the area) and after the sixth project on `/projects`, only when a card can show: no empty row and no gap. The picture strip is no longer shown in the results. The page reads for each request (the address or `connection()` first), so the chance is the visit's own.
 - The logo bucket's name moves to `src/lib/storage-url.ts` beside the project bucket, so the reader does not import the builders feature.
 
-## Words (new, awaiting the owner's approval)
+## Words (new, approved by the owner on 24 Nov 2026)
 
 `domain.featuredProject.*`: "Featured project", "Sponsored", "{sizes} BHK", "{from} to {to}", "Possession {date}", "RERA registered", "+{count} photos", "Request a call back", "View project".
 
