@@ -32,6 +32,8 @@ type ConversationalHeroProps = {
   prompt: string;
   trust?: readonly string[] | undefined;
   sponsor?: ReactNode;
+  /** True when the sponsor brings its own frame (the styled hero ads, ADR-190): no white box is drawn round it. */
+  sponsorBare?: boolean;
   children: ReactNode;
   titleAs?: "h1" | "h2" | "h3";
   id?: string;
@@ -56,6 +58,7 @@ function ConversationalHero({
   prompt,
   trust,
   sponsor,
+  sponsorBare = false,
   children,
   titleAs = "h1",
   id = TITLE_ID,
@@ -124,7 +127,11 @@ function ConversationalHero({
         ) : null}
         {sponsor ? (
           <div
-            className="hl-late mx-auto mt-8 max-w-(--w-sponsor-strip) md:mt-10 md:rounded-xl md:border md:border-line md:bg-surface md:p-4 md:shadow-card"
+            className={cn(
+              "hl-late mx-auto mt-8 max-w-(--w-sponsor-strip) md:mt-10",
+              !sponsorBare &&
+                "md:rounded-xl md:border md:border-line md:bg-surface md:p-4 md:shadow-card",
+            )}
             style={entranceOrder(8)}
           >
             {sponsor}

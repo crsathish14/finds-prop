@@ -306,11 +306,7 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
       expect(adsOf([bare])[0]).not.toHaveProperty("strip");
     });
 
-    it("shows the first sponsor that can show in the layout, in the admin's order", () => {
-      const view = heroViewOf([bare, strips, both], "search_desk");
-      expect(view.coverage.shown).toEqual(["a", "b"]);
-      expect(view.banner?.desktop).toBe(`${SUPABASE}/sponsors/a/sd.webp`);
-      expect(view.first).toEqual({ advertiser: "Advertiser a", shown: 2 });
+    it("shows the first sponsor that can show in Split, in the admin's order", () => {
       expect(heroViewOf([strips, both], "split").first).toEqual({
         advertiser: "Advertiser b",
         shown: 1,
@@ -412,5 +408,48 @@ describe("UT-sponsor-draft: the hero ad fields (ADR-189)", () => {
       boxes: { projectSlug: "Choose a project", "showcase.price": "Too long" },
       slots: { photo: "Too small" },
     });
+  });
+});
+
+describe("UT-sponsor-draft: the preview under the search bar (ADR-190)", () => {
+  const ready = (id: string, extra: Partial<SponsorDraft> = {}) =>
+    sponsor(id, {
+      brand: `Brand ${id}`,
+      showcase: {
+        project: `Project ${id}`,
+        locality: "OMR",
+        homes: "2 BHK",
+        size: "",
+        possession: "",
+        price: "₹78 L",
+        rera: "",
+      },
+      cinematic: { eyebrow: "", headline: `Headline ${id}`, line: "", button: "Explore" },
+      pictures: { photo: stored(`sponsors/${id}/photo.jpg`, 2000, 1125) },
+      ...extra,
+    });
+
+  it("shows the first sponsor ready for the chosen style, and counts the picture-only ones as missing", () => {
+    const pictureOnly = sponsor("p", { pictures: withStrip("p") });
+    const view = heroViewOf([pictureOnly, ready("a"), ready("b")], "search_desk", "cinematic");
+    expect(view.banner).toBeNull();
+    expect(view.styled?.id).toBe("a");
+    expect(view.style).toBe("cinematic");
+    expect(view.coverage).toMatchObject({ active: 3, shown: ["a", "b"], missing: 1 });
+    expect(view.first).toEqual({ advertiser: "Advertiser a", shown: 2 });
+    expect(layoutWarningOf(view.coverage, view.style)).toEqual({
+      kind: "some_missing",
+      format: "strip",
+      missing: 1,
+      active: 3,
+      style: "cinematic",
+    });
+  });
+
+  it("says no ad is ready when sponsors exist but none has the style's details", () => {
+    const view = heroViewOf([sponsor("p", { pictures: withStrip("p") })], "conversational");
+    expect(view).toMatchObject({ banner: null, reason: "none_ready", style: "showcase" });
+    expect(view.styled).toBeUndefined();
+    expect(heroViewOf([], "search_desk").reason).toBe("no_sponsors");
   });
 });

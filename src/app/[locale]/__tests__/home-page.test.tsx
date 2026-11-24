@@ -20,6 +20,7 @@ const state = vi.hoisted(() => ({
   layout: "search_desk" as "search_desk" | "split" | "conversational",
   eyebrow: undefined as string | undefined,
   ads: [] as unknown[],
+  style: "showcase" as "showcase" | "cinematic",
 }));
 
 vi.mock("@/features/site", async () => ({
@@ -31,6 +32,7 @@ vi.mock("@/features/site", async () => ({
     hero: { layout: state.layout, ...(state.eyebrow ? { eyebrow: state.eyebrow } : {}) },
   }),
   getSponsorAds: async () => state.ads,
+  getSponsorStyle: async () => state.style,
   getFeatureFlags: () => ({ aiSearch: state.aiSearch, mapView: false, pgListings: false }),
   buildHero: () => ({ title: "Headline", subtitle: "Line" }),
   isRouteEnabled: () => state.postEnabled,
@@ -59,13 +61,31 @@ vi.mock("@/components/layout/sponsor-slot", () => ({
     />
   ),
 }));
+vi.mock("@/components/layout/sponsor-styled-frame", () => ({
+  SponsorStyledFrame: (props: { ads: { id: string }[]; style: string }) => (
+    <aside
+      data-testid="styled-ads"
+      data-style={props.style}
+      data-ids={props.ads.map((ad) => ad.id).join(",")}
+    />
+  ),
+}));
 // ConversationalLive is an async server component (its own test renders it); here it is a stand-in
 // that shows what the page hands it.
 vi.mock("@/features/hero-lab", () => ({
   HeroLabPreview: () => null,
   HeroLabSections: () => null,
-  ConversationalLive: (props: { aiSearch: boolean; sponsor?: ReactNode; subtitle?: string }) => (
-    <section data-slot="home-hero" data-layout="conversational">
+  ConversationalLive: (props: {
+    aiSearch: boolean;
+    sponsor?: ReactNode;
+    sponsorBare?: boolean;
+    subtitle?: string;
+  }) => (
+    <section
+      data-slot="home-hero"
+      data-layout="conversational"
+      data-sponsor-bare={props.sponsorBare ? "yes" : "no"}
+    >
       <div data-testid="search" data-mode={props.aiSearch ? "ai" : "keyword"} />
       <p>home.hero.trust.compare</p>
       {props.sponsor}
@@ -88,7 +108,7 @@ vi.mock("@/features/home", () => ({
   CtaSection: (props: { href: string }) => <section data-testid="cta" data-href={props.href} />,
 }));
 
-const { SAMPLE_AD_A } = await import("@/lib/sponsors.fixtures");
+const { SAMPLE_AD_A, STYLED_AD_A, STYLED_AD_B } = await import("@/lib/sponsors.fixtures");
 const { default: HomePage, generateMetadata } = await import("../(public)/page");
 
 const sections = () =>
@@ -97,6 +117,7 @@ const sections = () =>
     .map((node) => node.getAttribute("data-testid"));
 
 beforeEach(() => {
+  state.style = "showcase";
   state.homepage = {
     showFeatured: true,
     showProjectTypes: true,
@@ -252,12 +273,23 @@ describe("the homepage banner area (S4-T07)", () => {
     );
   });
 
-  it("puts the strip under the search bar in Search Desk when a banner qualifies", async () => {
+  it("puts the ads ready for the chosen style under the search bar in Search Desk (ADR-190)", async () => {
+    state.ads = [SAMPLE_AD_A, STYLED_AD_A, STYLED_AD_B];
+    state.style = "cinematic";
+    render(await HomePage());
+    const styled = screen.getByTestId("styled-ads");
+    expect(styled).toHaveAttribute("data-style", "cinematic");
+    // the picture-only ad is not ready for a style and is left out until the admin completes it
+    expect(styled).toHaveAttribute("data-ids", "styled-a,styled-b");
+    expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
+    expect(screen.getByTestId("search")).toBeInTheDocument();
+  });
+
+  it("shows no ad and leaves no gap when only picture-only ads are stored (ADR-190)", async () => {
     state.ads = [SAMPLE_AD_A];
     render(await HomePage());
-    expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "search_desk");
-    expect(screen.getByTestId("sponsor")).toHaveAttribute("data-placement", "hero");
-    expect(screen.getByTestId("search")).toBeInTheDocument();
+    expect(screen.queryByTestId("styled-ads")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
   });
 
   it("is Split, with the search bar, the panel, the trust lines and the eyebrow, when Split is chosen and a panel banner qualifies", async () => {
@@ -290,10 +322,10 @@ describe("the homepage banner area (S4-T07)", () => {
 });
 
 describe("the Conversational hero on the live homepage (ADR-177)", () => {
-  it("is shown to everyone when it is chosen: the joined keyword bar, the trust lines and the strip", async () => {
+  it("is shown to everyone when it is chosen: the joined keyword bar, the trust lines and the styled ads", async () => {
     state.layout = "conversational";
     state.eyebrow = "Chennai · Homes, plots & new projects";
-    state.ads = [SAMPLE_AD_A];
+    state.ads = [STYLED_AD_A];
     render(await HomePage());
     expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute(
       "data-layout",
@@ -301,7 +333,12 @@ describe("the Conversational hero on the live homepage (ADR-177)", () => {
     );
     expect(screen.getAllByTestId("search")).toHaveLength(1);
     expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "keyword");
-    expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "conversational");
+    expect(screen.getByTestId("styled-ads")).toHaveAttribute("data-style", "showcase");
+    // the styled ads bring their own frame: no white box round them
+    expect(document.querySelector("[data-slot=home-hero]")).toHaveAttribute(
+      "data-sponsor-bare",
+      "yes",
+    );
     expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
     // the admin's eyebrow belongs to Split; the prompt pill leads here
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
@@ -315,11 +352,12 @@ describe("the Conversational hero on the live homepage (ADR-177)", () => {
     expect(screen.getByTestId("search")).toHaveAttribute("data-mode", "ai");
   });
 
-  it("leaves no ad and no gap when no strip ad qualifies, and does not fall back to Search Desk", async () => {
+  it("leaves no ad and no gap when no ad is ready for the style, and does not fall back to Search Desk", async () => {
     state.layout = "conversational";
-    state.ads = [];
+    state.ads = [SAMPLE_AD_A];
     render(await HomePage());
     expect(screen.queryByTestId("sponsor")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("styled-ads")).not.toBeInTheDocument();
     const hero = document.querySelector("[data-slot=home-hero]");
     expect(hero).toHaveAttribute("data-layout", "conversational");
     expect(hero?.querySelectorAll("aside")).toHaveLength(0);

@@ -2921,7 +2921,8 @@
           "noneTitle": "No banner is shown",
           "noneText": "Visitors see the search bar and then the next section. No frame, label or gap.",
           "phoneNote": "The phone image is used below 1024 px. Nothing is stretched.",
-          "caption": "{name} · first of {count} active"
+          "caption": "{name} · first of {count} active",
+          "noneReady": "No ad ready"
         },
         "layout": {
           "live": "Live layout: {layout}. Changes apply on the next page load after you save.",
@@ -2931,7 +2932,10 @@
           "noneTextSplit": "Visitors will see the Search Desk homepage without a banner until a sponsor supplies the {format} format.",
           "noneTextSearchDesk": "Visitors will see the homepage without a banner until a sponsor supplies the {format} format.",
           "someTitle": "{missing, plural, one {# of {active} sponsors doesn't have the {layout} format} other {# of {active} sponsors don't have the {layout} format}}",
-          "someText": "{missing, plural, one {It won't be shown} other {They won't be shown}} while {layout} is live. Add a {format} image to {missing, plural, one {it} other {each}} in Sponsors below."
+          "someText": "{missing, plural, one {It won't be shown} other {They won't be shown}} while {layout} is live. Add a {format} image to {missing, plural, one {it} other {each}} in Sponsors below.",
+          "noneTextStyle": "Visitors will see the homepage without an ad until a sponsor has its {style} details filled in.",
+          "someTitleStyle": "{missing, plural, one {# of {active} sponsors isn't ready for the {style} style} other {# of {active} sponsors aren't ready for the {style} style}}",
+          "someTextStyle": "{missing, plural, one {It won't be shown} other {They won't be shown}} under the search bar. Add the photo, the brand and the {style} words to {missing, plural, one {it} other {each}} in Sponsors below."
         },
         "ad": {
           "title": "Hero ad",

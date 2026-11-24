@@ -1,5 +1,11 @@
 import { heroCoverage, type HeroCoverage } from "@/lib/sponsor-coverage";
-import { readyFor, type SponsorAd, type SponsorFit, type SponsorStyle } from "@/lib/sponsors";
+import {
+  readyFor,
+  selectStyled,
+  type SponsorAd,
+  type SponsorFit,
+  type SponsorStyle,
+} from "@/lib/sponsors";
 import {
   SPONSORS_MAX,
   SPONSOR_ADVERTISER_MAX,
@@ -473,17 +479,56 @@ export function adsOf(drafts: readonly SponsorDraft[]): SponsorAd[] {
 
 export interface HeroSponsorView {
   coverage: HeroCoverage;
-  /** The banner the preview draws: the first sponsor that can show in this layout. */
+  /** The banner the preview draws in Split: the first sponsor with a panel. */
   banner: { desktop: string; phone: string; alt: string } | null;
-  /** Why there is no banner, for the preview's label. */
-  reason?: "no_sponsors" | "none_eligible";
+  /** The ad the preview draws under the search bar (ADR-190): the first sponsor ready for the chosen style. */
+  styled?: SponsorAd;
+  /** The style the coverage was counted for (Search Desk and Conversational only). */
+  style?: SponsorStyle;
+  /** Why there is no ad, for the preview's label. */
+  reason?: "no_sponsors" | "none_eligible" | "none_ready";
   /** The advertiser of the first sponsor shown, and how many can show. */
   first?: { advertiser: string; shown: number };
 }
 
-/** What the live preview and the layout note say, worked out with the public site's own rules (`heroCoverage`). */
-export function heroViewOf(drafts: readonly SponsorDraft[], layout: HeroLayout): HeroSponsorView {
+/**
+ * What the live preview and the layout note say, worked out with the public site's own rules. Under the search bar
+ * (Search Desk, Conversational) the ads are the ones ready for the chosen style (`selectStyled`, ADR-190); Split keeps
+ * its picture panel (`heroCoverage`).
+ */
+export function heroViewOf(
+  drafts: readonly SponsorDraft[],
+  layout: HeroLayout,
+  style: SponsorStyle = "showcase",
+): HeroSponsorView {
   const ads = adsOf(drafts);
+  if (layout !== "split") {
+    const ready = selectStyled(ads, style);
+    const active = ads.filter((ad) => ad.active).length;
+    const coverage: HeroCoverage = {
+      format: "strip",
+      active,
+      shown: ready.map((ad) => ad.id),
+      missing: Math.max(0, active - ready.length),
+    };
+    const styled = ready[0];
+    const draft = drafts.find((one) => one.id === styled?.id);
+    if (!styled || !draft) {
+      return {
+        coverage,
+        banner: null,
+        style,
+        reason: drafts.length === 0 ? "no_sponsors" : "none_ready",
+      };
+    }
+    return {
+      coverage,
+      banner: null,
+      styled,
+      style,
+      first: { advertiser: draft.advertiser, shown: ready.length },
+    };
+  }
   const coverage = heroCoverage(ads, layout);
   const firstId = coverage.shown[0];
   const ad = ads.find((one) => one.id === firstId);
@@ -504,13 +549,26 @@ export function heroViewOf(drafts: readonly SponsorDraft[], layout: HeroLayout):
 }
 
 export type LayoutWarning =
-  | { kind: "none_can_show"; format: SponsorFormat }
-  | { kind: "some_missing"; format: SponsorFormat; missing: number; active: number };
+  | { kind: "none_can_show"; format: SponsorFormat; style?: SponsorStyle }
+  | {
+      kind: "some_missing";
+      format: SponsorFormat;
+      missing: number;
+      active: number;
+      style?: SponsorStyle;
+    };
 
-/** The warning under the layout cards, or `null` when every active sponsor can show (or none is active). */
-export function layoutWarningOf(coverage: HeroCoverage): LayoutWarning | null {
+/**
+ * The warning under the layout cards, or `null` when every active sponsor can show (or none is active). With a style
+ * (Search Desk, Conversational, ADR-190) it is about the style's details, not a picture format.
+ */
+export function layoutWarningOf(
+  coverage: HeroCoverage,
+  style?: SponsorStyle,
+): LayoutWarning | null {
+  const about = style ? { style } : {};
   if (coverage.active > 0 && coverage.shown.length === 0) {
-    return { kind: "none_can_show", format: coverage.format };
+    return { kind: "none_can_show", format: coverage.format, ...about };
   }
   if (coverage.missing > 0) {
     return {
@@ -518,6 +576,7 @@ export function layoutWarningOf(coverage: HeroCoverage): LayoutWarning | null {
       format: coverage.format,
       missing: coverage.missing,
       active: coverage.active,
+      ...about,
     };
   }
   return null;

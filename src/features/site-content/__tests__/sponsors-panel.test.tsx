@@ -310,12 +310,15 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     expect(screen.getByText(/You can keep up to 10 sponsors/)).toBeInTheDocument();
   });
 
-  it("draws the first sponsor's banner in the preview and warns when the layout needs another format", async () => {
+  it("warns when no sponsor is ready for the style under the search bar, and draws the panel in Split", async () => {
     setup([view("a", "Alpha"), view("b", "Beta", "panel")]);
-    expect(screen.getByText("Alpha · first of 1 active")).toBeInTheDocument();
     expect(screen.getByText(/Live layout: Search Desk/)).toBeInTheDocument();
+    // Picture-only sponsors are not shown under the search bar until their Showcase details are in (ADR-190).
+    expect(screen.getByText("No sponsor can be shown in Search Desk")).toBeInTheDocument();
     expect(
-      screen.getByText("1 of 2 sponsors doesn't have the Search Desk format"),
+      screen.getByText(
+        "Visitors will see the homepage without an ad until a sponsor has its Showcase details filled in.",
+      ),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("radio", { name: /Split/ }));
     expect(screen.getByText("Beta · first of 1 active")).toBeInTheDocument();
