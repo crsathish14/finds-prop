@@ -75,4 +75,30 @@ describe("UT-site-hero-text: the words of the homepage hero (S4-T06, DEC-14)", (
     expect(hero.title).toBe("Find the place that fits your life in Madurai.");
     expect(hero.emphasis).toBe("Madurai");
   });
+
+  it("names the city the visitor chose in place of the site's region (owner, 24 Nov)", () => {
+    expect(buildHero(settings({ region: { name: "Chennai" } }), translate, "Madurai")).toEqual({
+      title: "Find the place that fits your life in Madurai.",
+      emphasis: "Madurai",
+      subtitle: "Shortlist, compare and enquire directly.",
+    });
+  });
+
+  it("keeps a headline written in the site content, even when a city is chosen", () => {
+    const hero = buildHero(
+      settings({ hero: { title: "Homes across Tamil Nadu" } }),
+      translate,
+      "Madurai",
+    );
+    expect(hero).toEqual({
+      title: "Homes across Tamil Nadu",
+      subtitle: "Shortlist, compare and enquire directly.",
+    });
+  });
+
+  it("ignores a blank chosen city and falls back to the site's region", () => {
+    expect(buildHero(settings({ region: { name: "Chennai" } }), translate, "  ")).toMatchObject({
+      emphasis: "Chennai",
+    });
+  });
 });
