@@ -9,7 +9,7 @@
 
 The owner wants the person who posted a home to be told by email when someone enquires (ADR-181). A home owner signs in by phone and has no email on the account, so there is nowhere to send it. Project leads already have `builders.email`. Homes need an address kept for this one purpose.
 
-This is **not** the sign-in email of `FLAG_CUSTOMER_EMAIL` (ADD-03): that flag, `getEmailState` and the steps in `src/features/auth` are untouched. The two can differ, and this address is never used to sign in.
+This is **not** the sign-in email of `FLAG_CUSTOMER_EMAIL` (ADD-03): that flag, `getEmailState` and the steps in `src/features/auth` are untouched. The two can differ, and this address is never used to sign in. **Amended 26 Nov 2026 (ADR-196):** once `FLAG_CUSTOMER_EMAIL` is on, a confirmed account email is copied into this column when it is empty, so a customer who verified an email has one address, not two. They can still change it on the dashboard card, and a chosen address is never overwritten. The address remains unverified in the sense of this ADR when typed by hand.
 
 ## Decision
 
