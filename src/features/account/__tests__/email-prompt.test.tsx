@@ -53,6 +53,8 @@ describe("EmailPrompt: the card for someone with no email (ADD-03)", () => {
     type("priya@example.com");
     await submit();
     expect(send).toHaveBeenCalledWith({ email: "priya@example.com" });
+    // Asked for from the dashboard, so the "Email verified" page offers the dashboard (ADR-195).
+    expect(window.localStorage.getItem("findsprop:email-origin:v1")).toBe("dashboard");
     expect(screen.getByText(words.pendingTitle)).toBeInTheDocument();
     expect(
       screen.getByText("We sent a link to priya@example.com. Open it to finish."),
@@ -151,6 +153,35 @@ describe("EmailPrompt: the card for someone with no email (ADD-03)", () => {
   });
 });
 
+describe("EmailPrompt: the card that follows it (ADR-195)", () => {
+  const next = <p>the next card</p>;
+
+  it("shows the fallback only once Later has put the prompt away", () => {
+    renderWithMessages(
+      <EmailPrompt state={{ kind: "none" }} send={vi.fn()} resend={vi.fn()} fallback={next} />,
+    );
+    expect(screen.queryByText("the next card")).toBeNull();
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: words.later }));
+    });
+    expect(screen.getByText("the next card")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: words.send })).toBeNull();
+  });
+
+  it("does not show the fallback while the reminder is on screen", () => {
+    window.localStorage.setItem(STORAGE_KEY, "1");
+    renderWithMessages(
+      <EmailPrompt
+        state={{ kind: "pending", email: "priya@example.com" }}
+        send={vi.fn()}
+        resend={vi.fn()}
+        fallback={next}
+      />,
+    );
+    expect(screen.queryByText("the next card")).toBeNull();
+  });
+});
+
 describe("EmailPrompt: the reminder for a link that was sent", () => {
   it("shows when the server already knows a link was sent, and cannot be dismissed", () => {
     window.localStorage.setItem(STORAGE_KEY, "1");
@@ -164,6 +195,24 @@ describe("EmailPrompt: the reminder for a link that was sent", () => {
     expect(screen.getByText(words.pendingTitle)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: words.later })).toBeNull();
     expect(screen.getByRole("button", { name: authWords.resend })).toBeEnabled();
+  });
+
+  it("offers a different email, which goes back to the field started from the address sent", async () => {
+    const send = vi.fn(async (input: { email: string }) => sentOk(input.email));
+    renderWithMessages(
+      <EmailPrompt
+        state={{ kind: "pending", email: "priya@exmaple.com" }}
+        send={send}
+        resend={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: authWords.different }));
+    expect(screen.queryByText(words.pendingTitle)).toBeNull();
+    expect(screen.getByLabelText(authWords.label)).toHaveValue("priya@exmaple.com");
+    type("priya@example.com");
+    await submit();
+    expect(send).toHaveBeenCalledWith({ email: "priya@example.com" });
+    expect(screen.getByText(words.pendingTitle)).toBeInTheDocument();
   });
 
   it("sends the link again to the same address and then waits", async () => {
@@ -240,6 +289,7 @@ describe("EmailPromptView: the states the Design Lab draws", () => {
     onSubmit: vi.fn(),
     onLater: vi.fn(),
     onResend: vi.fn(),
+    onDifferent: vi.fn(),
   };
 
   it("disables the field and shows Sending link while a request is on its way", () => {

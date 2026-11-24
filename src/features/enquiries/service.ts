@@ -48,8 +48,8 @@ const mailRowSchema = z.object({
 
 /**
  * Reads what the mail about a stored enquiry needs (ADR-188), with the service role because the poster's private
- * contact email is readable only by its owner and the admin (ADR-186) and this runs after the visitor's request has
- * ended. It is the same allow-listed module as the write above, and the only caller is the enquiry action's
+ * address (the contact email, or failing that the confirmed account email, ADR-198) is readable only by its owner
+ * and the admin and this runs after the visitor's request has ended. It is the same allow-listed module as the write above, and the only caller is the enquiry action's
  * `after()`. The event holds the enquiry's id; the name, the optional email, the home and the owner's address are
  * read here. The phone and the message are not selected at all. Answers null for an event of another kind and for an
  * enquiry or home that is gone; throws when the database cannot be read (the notifier logs the code and goes on).
@@ -67,15 +67,13 @@ export function createEnquiryMailFinder(requestId: string): EnquiryMailFinder {
     const row = mailRowSchema.safeParse(data);
     if (!row.success || !row.data.properties) return null;
     const home = row.data.properties;
-    const owner = await client
-      .from("profiles")
-      .select("contact_email")
-      .eq("id", home.owner_id)
-      .maybeSingle();
+    // The contact email the poster chose, else their confirmed account email, else nothing (ADR-198). Both are
+    // private, so one server-only function answers instead of two table reads.
+    const owner = await client.rpc("poster_mail_address", { p_owner: home.owner_id });
     if (owner.error) throw new ActionError("INTERNAL", "The poster could not be read for the mail");
     return {
       posterId: home.owner_id,
-      posterEmail: owner.data?.contact_email ?? null,
+      posterEmail: typeof owner.data === "string" && owner.data !== "" ? owner.data : null,
       enquirerName: row.data.name,
       enquirerEmail: row.data.email,
       title: home.title,

@@ -1118,6 +1118,9 @@ isOneToOne: false
 "owns_property":
 { Args: { "target_property": string }; Returns: boolean
                            },
+"poster_mail_address":
+{ Args: { "p_owner": string }; Returns: string
+                           },
 "project_is_live":
 { Args: { "target_project": string }; Returns: boolean
                            },

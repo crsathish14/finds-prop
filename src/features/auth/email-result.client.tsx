@@ -2,12 +2,13 @@
 
 import { Check, Clock } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
+import { readEmailOrigin, serverEmailOrigin, subscribeEmailOrigin } from "@/lib/email-origin";
 import type { EmailResult } from "@/lib/url/email-result";
 import { AuthFrame } from "./auth-frame";
 import { EmailStep } from "./email-step.client";
@@ -31,6 +32,10 @@ export function EmailResultScreen({ result, email, signedIn }: EmailResultProps)
   const translate = useTranslations("auth.email");
   const [asking, setAsking] = useState(false);
   const verified = result === "verified";
+  // Back to where the link was asked for (ADR-195): posting only when it was asked for while posting; otherwise
+  // the dashboard, which is also where a link opened on another device lands.
+  const origin = useSyncExternalStore(subscribeEmailOrigin, readEmailOrigin, serverEmailOrigin);
+  const backToPosting = origin === "post";
 
   if (asking) {
     return (
@@ -66,9 +71,9 @@ export function EmailResultScreen({ result, email, signedIn }: EmailResultProps)
             variant="accent"
             size="lg"
             className="w-full"
-            onClick={() => goTo("/post-property")}
+            onClick={() => goTo(backToPosting ? "/post-property" : "/dashboard")}
           >
-            {translate("continuePost")}
+            {translate(backToPosting ? "continuePost" : "dashboard")}
           </Button>
         ) : (
           <Button
@@ -80,11 +85,13 @@ export function EmailResultScreen({ result, email, signedIn }: EmailResultProps)
             {translate("newLink")}
           </Button>
         )}
-        <div className="text-center">
-          <Button variant="ghost" onClick={() => goTo("/dashboard")}>
-            {translate("dashboard")}
-          </Button>
-        </div>
+        {!verified || backToPosting ? (
+          <div className="text-center">
+            <Button variant="ghost" onClick={() => goTo("/dashboard")}>
+              {translate("dashboard")}
+            </Button>
+          </div>
+        ) : null}
       </div>
     </AuthFrame>
   );
