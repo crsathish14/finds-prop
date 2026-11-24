@@ -1559,6 +1559,17 @@
       "saving": "Saving email",
       "change": "Change",
       "cancel": "Cancel"
+    },
+    "featuredProject": {
+      "ribbon": "Featured project",
+      "sponsored": "Sponsored",
+      "bhk": "{sizes} BHK",
+      "areaRange": "{from} to {to}",
+      "possession": "Possession {date}",
+      "rera": "RERA registered",
+      "morePhotos": "+{count} photos",
+      "callBack": "Request a call back",
+      "view": "View project"
     }
   },
   "admin": {

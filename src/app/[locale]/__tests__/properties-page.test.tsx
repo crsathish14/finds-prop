@@ -16,13 +16,14 @@ vi.mock("@/features/site", () => ({
   getTranslate: async () => translate,
   getSiteSettings: async () => ({ region: {}, homepage: { localities: [] } }),
   getFeatureFlags: () => ({ aiSearch: false }),
-  getSponsorAds: async () => [],
 }));
 vi.mock("@/lib/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" },
 }));
 vi.mock("@/components/domain/property-card", () => ({ PropertyCard: () => null }));
-vi.mock("@/components/layout/sponsor-slot", () => ({ SponsorSlot: () => null }));
+vi.mock("@/components/domain/featured-project-card", () => ({ FeaturedProjectCard: () => null }));
+vi.mock("@/features/sponsored", () => ({ getFeaturedProject: async () => null }));
+vi.mock("@/features/cities", () => ({ getSelectedCity: async () => ({ key: "chennai" }) }));
 vi.mock("@/features/compare", () => ({ CompareCardToggle: () => null }));
 vi.mock("@/features/home", () => ({ toPropertyCard: () => ({}) }));
 
