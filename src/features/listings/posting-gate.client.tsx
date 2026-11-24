@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/components/ui/link";
 import { failureText, type Translator } from "@/i18n/failure-text";
+import { rememberEmailOrigin } from "@/lib/email-origin";
 import type { ActionResult } from "@/types/action";
 
 type EmailLinkAction = (input: {
@@ -98,6 +99,7 @@ export function PostingGate({ pendingEmail, send, resend, browseHref }: PostingG
     }
     setProblem(null);
     setFailure(null);
+    rememberEmailOrigin("post");
     startTransition(async () => {
       const result = await send({ email: value });
       if (result.ok) {
@@ -126,6 +128,16 @@ export function PostingGate({ pendingEmail, send, resend, browseHref }: PostingG
       if (result.code === "RATE_LIMITED" && result.retryAfter) startCooldown(result.retryAfter);
       setFailure(failureText(translateAll, result));
     });
+  }
+
+  /** A mistyped address: back to the field, started from what was sent so only the slip needs fixing. */
+  function chooseAnother() {
+    if (busy) return;
+    setValue(sentTo ?? "");
+    setSentTo(null);
+    setProblem(null);
+    setFailure(null);
+    setResent(false);
   }
 
   const waitSeconds = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
@@ -164,6 +176,9 @@ export function PostingGate({ pendingEmail, send, resend, browseHref }: PostingG
               {email("resend")}
             </Button>
           )}
+          <Button type="button" variant="ghost" disabled={busy} onClick={chooseAnother}>
+            {email("different")}
+          </Button>
         </div>
       </GateCard>
     );

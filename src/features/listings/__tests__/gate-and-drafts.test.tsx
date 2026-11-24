@@ -71,6 +71,8 @@ describe("PostingGate: verify your email to post a property (S6-T02, ADD-03)", (
     fireEvent.click(screen.getByRole("button", { name: "Send verification link" }));
     expect(await screen.findByRole("status")).toHaveTextContent("Check your email");
     expect(send).toHaveBeenCalledWith({ email: "priya@example.com" });
+    // The "Email verified" page takes the person back to posting (ADR-195).
+    expect(window.localStorage.getItem("findsprop:email-origin:v1")).toBe("post");
     expect(screen.getByText(/We sent a link to priya@example.com/)).toBeVisible();
     expect(
       screen.getByText("This page updates by itself once the email is verified."),
@@ -83,6 +85,19 @@ describe("PostingGate: verify your email to post a property (S6-T02, ADD-03)", (
     expect(screen.getByRole("status")).toHaveTextContent("Check your email");
     window.dispatchEvent(new Event("focus"));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+  });
+
+  it("lets a mistyped address be fixed: Use a different email goes back to the field, started from what was sent", async () => {
+    const { send } = open({ pendingEmail: "priya@exmaple.com" });
+    fireEvent.click(screen.getByRole("button", { name: "Use a different email" }));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByLabelText("Email address")).toHaveValue("priya@exmaple.com");
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "priya@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send verification link" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("Check your email");
+    expect(send).toHaveBeenCalledWith({ email: "priya@example.com" });
   });
 
   it("does not say why an address cannot be used, only that it could not", async () => {

@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
   useTransition,
   type FormEvent,
+  type ReactNode,
 } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { failureText, type Translator } from "@/i18n/failure-text";
+import { rememberEmailOrigin } from "@/lib/email-origin";
 import type { ActionResult } from "@/types/action";
 import {
   readDismissed,
@@ -63,6 +65,8 @@ export type EmailPromptViewProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onLater: () => void;
   onResend: () => void;
+  /** "Use a different email" (pending): back to the field to fix a mistyped address. */
+  onDifferent: () => void;
 };
 
 /**
@@ -85,15 +89,25 @@ export function EmailPromptView(props: EmailPromptViewProps) {
           tone="warning"
           title={translate("pendingTitle")}
           action={
-            props.waitSeconds > 0 ? (
-              <Text as="span" variant="caption" tone="muted">
-                {translateEmail("resendIn", { time: clock(props.waitSeconds) })}
-              </Text>
-            ) : (
-              <Button variant="secondary" size="sm" disabled={props.busy} onClick={props.onResend}>
-                {translateEmail("resend")}
+            <div className="flex flex-wrap items-center gap-2">
+              {props.waitSeconds > 0 ? (
+                <Text as="span" variant="caption" tone="muted">
+                  {translateEmail("resendIn", { time: clock(props.waitSeconds) })}
+                </Text>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={props.busy}
+                  onClick={props.onResend}
+                >
+                  {translateEmail("resend")}
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" disabled={props.busy} onClick={props.onDifferent}>
+                {translateEmail("different")}
               </Button>
-            )
+            </div>
           }
         >
           {translate("pendingBody", { email: props.sentTo })}
@@ -181,6 +195,11 @@ export function EmailPromptView(props: EmailPromptViewProps) {
 type EmailPromptProps = {
   /** What the server found: no address (the prompt) or a link already sent (the reminder). */
   state: { kind: "none" } | { kind: "pending"; email: string };
+  /**
+   * Shown in place of the prompt once "Later" has hidden it, so the card that follows (the private email for
+   * enquiries) is not lost when this one is put away. It is not shown while the prompt or the reminder is.
+   */
+  fallback?: ReactNode;
   /** The server action that attaches an address and has the link sent (`addEmail`). */
   send: EmailLinkAction;
   /** The server action that sends the link again (`resendEmailLink`). */
@@ -193,7 +212,7 @@ type EmailPromptProps = {
  * reminder stays until the address is confirmed. Sending and resending are the S3-T09 actions, which
  * check the sign-in, the verified phone and the hourly limit on the server.
  */
-export function EmailPrompt({ state, send, resend }: EmailPromptProps) {
+export function EmailPrompt({ state, send, resend, fallback = null }: EmailPromptProps) {
   const translateAll = useTranslations() as unknown as Translator;
   const dismissed = useSyncExternalStore(subscribeDismissed, readDismissed, serverDismissed);
   const [value, setValue] = useState("");
@@ -232,6 +251,7 @@ export function EmailPrompt({ state, send, resend }: EmailPromptProps) {
     }
     setProblem(null);
     setFailure(null);
+    rememberEmailOrigin("dashboard");
     startTransition(async () => {
       const result = await send({ email: value });
       if (result.ok) {
@@ -262,7 +282,17 @@ export function EmailPrompt({ state, send, resend }: EmailPromptProps) {
     });
   }
 
-  if (sentTo === null && dismissed) return null;
+  /** A mistyped address: back to the field, started from what was sent so only the slip needs fixing. */
+  function chooseAnother() {
+    if (busy) return;
+    setValue(sentTo ?? "");
+    setSentTo(null);
+    setProblem(null);
+    setFailure(null);
+    setResent(false);
+  }
+
+  if (sentTo === null && dismissed) return fallback;
   return (
     <EmailPromptView
       mode={sentTo === null ? "prompt" : "pending"}
@@ -280,6 +310,7 @@ export function EmailPrompt({ state, send, resend }: EmailPromptProps) {
       onSubmit={submit}
       onLater={writeDismissed}
       onResend={sendAgain}
+      onDifferent={chooseAnother}
     />
   );
 }

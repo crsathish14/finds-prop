@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const visitor = vi.hoisted(() => ({
@@ -86,8 +86,11 @@ vi.mock("@/features/account", async () => {
     ContactEmail: (props: { email: string | null }) => (
       <p data-testid="contact-email">{props.email ?? "none"}</p>
     ),
-    EmailPrompt: (props: { state: { kind: string } }) => (
-      <p data-testid="prompt">{props.state.kind}</p>
+    EmailPrompt: (props: { state: { kind: string }; fallback?: React.ReactNode }) => (
+      <div>
+        <p data-testid="prompt">{props.state.kind}</p>
+        {props.fallback ? <div data-testid="prompt-fallback">{props.fallback}</div> : null}
+      </div>
     ),
     TabEmpty: (props: { tab: string; browseHref: string; postHref: string }) => (
       <p data-testid="empty">{`${props.tab} ${props.browseHref} ${props.postHref}`}</p>
@@ -239,9 +242,30 @@ describe("the email for enquiries (ADR-186)", () => {
     expect(visitor.contactReads).toBe(0);
   });
 
-  it("sits beside the sign-in email prompt, not instead of it", async () => {
+  // One address, not two (ADR-196): the box for enquiries is not drawn next to the account email prompt.
+  it("is held back by the prompt for the account email, and handed to it for when Later puts it away", async () => {
     await open();
     expect(screen.getByTestId("prompt")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("prompt-fallback")).getByTestId("contact-email"),
+    ).toBeInTheDocument();
+  });
+
+  it("is not drawn at all while a link is waiting to be used", async () => {
+    visitor.email = { kind: "pending", email: "priya@example.com" };
+    await open();
+    expect(screen.getByTestId("prompt")).toBeInTheDocument();
+    expect(screen.queryByTestId("contact-email")).toBeNull();
+  });
+
+  it("is drawn on its own once the account email is confirmed or cannot be read", async () => {
+    visitor.email = { kind: "verified", email: "priya@example.com" };
+    await open();
+    expect(screen.queryByTestId("prompt")).toBeNull();
+    expect(screen.getByTestId("contact-email")).toBeInTheDocument();
+    cleanup();
+    visitor.email = { kind: "unknown" };
+    await open();
     expect(screen.getByTestId("contact-email")).toBeInTheDocument();
   });
 });

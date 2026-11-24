@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { failureText, type Translator } from "@/i18n/failure-text";
+import { originOfPath, rememberEmailOrigin } from "@/lib/email-origin";
 import { addEmail, resendEmailLink } from "./actions";
 import { goTo } from "./navigate";
 import { marker, withLinks } from "./with-links";
@@ -77,6 +78,7 @@ export function EmailStep({ redirectTo }: EmailStepProps) {
     }
     setProblem(null);
     setFailure(null);
+    rememberEmailOrigin(originOfPath(redirectTo));
     startTransition(async () => {
       const result = await addEmail({ email });
       if (result.ok) {
