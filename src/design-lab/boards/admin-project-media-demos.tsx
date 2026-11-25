@@ -126,11 +126,13 @@ function LiveMedia({
   videos = [],
   locked = false,
   disabled = false,
+  reduce,
 }: {
   initial: Record<ProjectMediaGroupName, MediaItem[]>;
   videos?: string[];
   locked?: boolean;
   disabled?: boolean;
+  reduce?: ProjectMediaProps["reduce"];
 }) {
   const [items, setItems] = useState(initial);
   const [links, setLinks] = useState(videos);
@@ -154,6 +156,7 @@ function LiveMedia({
           locked={locked}
           disabled={disabled}
           words={MEDIA_WORDS}
+          {...(reduce ? { reduce } : {})}
           onFiles={(group, files) =>
             setItems((now) => ({
               ...now,
@@ -195,6 +198,25 @@ export function ProjectMediaDemo() {
       </Specimen>
       <Specimen label="Files on their way: one uploading, one being removed, one too large (with a very long name) and a brochure that is not a PDF">
         <LiveMedia initial={BUSY} />
+      </Specimen>
+      <Specimen label="A picture over 10 MB: not refused. The question to lower its quality sits under its group (nothing is lowered here)">
+        <LiveMedia
+          initial={FILLED}
+          reduce={{
+            group: "floorPlans",
+            flow: {
+              prompt: {
+                state: "offer",
+                fileName: "two-bhk-plan.png",
+                bytes: 12.4 * 1024 * 1024,
+                limitBytes: 10 * 1024 * 1024,
+              },
+              onReduce: () => undefined,
+              onUse: () => undefined,
+              onChooseAnother: () => undefined,
+            },
+          }}
+        />
       </Specimen>
       <Specimen label="Saving: every box is off">
         <LiveMedia

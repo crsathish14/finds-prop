@@ -9,7 +9,9 @@
  * Props: groups (images, floorPlans, elevations, plotImages and brochure, each { items: MediaItem[], error? }),
  *   videos (the https links), videosError, onFiles (group, files), onRemove (group, id), onVideosChange (links),
  *   locked (the project is not saved yet, so it has no folder: every box is off and a note says why), disabled
- *   (while saving), words (the notes, each group's label and hint, the file words, the video words), className.
+ *   (while saving), words (the notes, each group's label and hint, the file words, the video words), reduce (for a
+ *   group whose picture is over its limit and waits for the admin's answer: what `useImageReduce` gives, drawn under
+ *   that group; "Choose another" runs the page's handler and then opens the group's file picker again), className.
  * Limits shown: up to 20 files in each image group, one brochure, up to 5 video links; the picker offers JPG,
  *   PNG and WEBP for the image groups and PDF for the brochure. The page still checks the type and the size
  *   (10 MB), and the bucket does too.
@@ -21,6 +23,8 @@
  *   (S7-T02).
  * UX reference: admin-project-form screen, Media section (.drop, .photos, brochure row, video chips).
  */
+import { useRef } from "react";
+import { ImageReduceFlow, type ImageReduceFlowProps } from "@/components/domain/image-reduce-flow";
 import { Alert } from "@/components/patterns/alert";
 import {
   MediaGroupField,
@@ -49,6 +53,8 @@ type ProjectMediaProps = {
   onFiles: (group: ProjectMediaGroupName, files: File[]) => void;
   onRemove: (group: ProjectMediaGroupName, id: string) => void;
   onVideosChange: (videos: string[]) => void;
+  /** The group whose picture waits for an answer, and the question to draw under it. */
+  reduce?: { group: ProjectMediaGroupName; flow: Omit<ImageReduceFlowProps, "className"> };
   locked?: boolean;
   disabled?: boolean;
   words: ProjectMediaWords;
@@ -76,12 +82,21 @@ function ProjectMedia({
   onFiles,
   onRemove,
   onVideosChange,
+  reduce,
   locked = false,
   disabled = false,
   words,
   className,
 }: ProjectMediaProps) {
   const off = disabled || locked;
+  // Each group's file input, so "Choose another" can open the right picker again.
+  const inputs = {
+    images: useRef<HTMLInputElement>(null),
+    floorPlans: useRef<HTMLInputElement>(null),
+    elevations: useRef<HTMLInputElement>(null),
+    plotImages: useRef<HTMLInputElement>(null),
+    brochure: useRef<HTMLInputElement>(null),
+  };
   return (
     <div data-slot="project-media" className={cn("flex min-w-0 flex-col gap-6", className)}>
       {locked ? <Alert tone="info">{words.locked}</Alert> : null}
@@ -89,19 +104,30 @@ function ProjectMedia({
         const group = groups[name];
         const text = words.groups[name];
         return (
-          <MediaGroupField
-            key={name}
-            label={text.label}
-            {...(text.hint ? { hint: text.hint } : {})}
-            {...(group.error ? { error: group.error } : {})}
-            items={group.items}
-            max={max}
-            accept={accept}
-            onFiles={(files) => onFiles(name, files)}
-            onRemove={(id) => onRemove(name, id)}
-            disabled={off}
-            words={words.files}
-          />
+          <div key={name} className="flex min-w-0 flex-col gap-3">
+            <MediaGroupField
+              label={text.label}
+              {...(text.hint ? { hint: text.hint } : {})}
+              {...(group.error ? { error: group.error } : {})}
+              items={group.items}
+              max={max}
+              accept={accept}
+              onFiles={(files) => onFiles(name, files)}
+              onRemove={(id) => onRemove(name, id)}
+              disabled={off}
+              words={words.files}
+              inputRef={inputs[name]}
+            />
+            {reduce?.group === name ? (
+              <ImageReduceFlow
+                {...reduce.flow}
+                onChooseAnother={() => {
+                  reduce.flow.onChooseAnother();
+                  inputs[name].current?.click();
+                }}
+              />
+            ) : null}
+          </div>
         );
       })}
       <TagListField
