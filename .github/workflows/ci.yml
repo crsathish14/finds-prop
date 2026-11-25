@@ -1,6 +1,8 @@
 # CI: the authoritative quality gates (docs/engineering/quality-gates.md, section 7).
 # Properties: least-privilege permissions, third-party actions pinned by commit SHA, concurrency
 # cancels superseded runs, no secrets, installs with --ignore-scripts, no pull_request_target.
+# A job that fails cancels the rest of its run, so the other jobs stop spending minutes; all-checks-passed
+# still runs and reports the failure.
 name: CI
 
 on:
@@ -30,6 +32,9 @@ jobs:
   changes:
     name: changes (which jobs are needed)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 5
     outputs:
       db: ${{ steps.decide.outputs.db }}
@@ -47,10 +52,20 @@ jobs:
         run: node scripts/ci-changes.mjs
         env:
           CI_BEFORE_SHA: ${{ github.event.before }}
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
 
   static:
     name: static (format, lint, types, policy)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -68,6 +83,13 @@ jobs:
       - name: Unused code report (G-18, report only until Stage 3)
         run: npx knip
         continue-on-error: true
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
 
   pr-policy:
     name: pr-policy (title, template, gate changes)
@@ -77,6 +99,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,10 +110,20 @@ jobs:
           node-version-file: .nvmrc
       # The script reads the pull request text from the event file as data; nothing is interpolated into a shell.
       - run: node scripts/check-pr.mjs
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
 
   unit:
     name: unit (Vitest)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -102,12 +135,22 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run test
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
 
   db:
     name: db (migrations, pgTAP, types)
     needs: changes
     if: needs.changes.outputs.db == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,6 +191,13 @@ jobs:
       # leaves its data behind in this throwaway database.
       - name: Search performance (S4-SPK-01)
         run: docker exec -i supabase_db_findsprop psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -v p95_limit=100 -v runs=200 < supabase/perf/search-spike.sql
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
       - if: always()
         run: supabase stop --no-backup
 
@@ -156,6 +206,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.integration == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -173,6 +226,13 @@ jobs:
       # The tests read the stack's address and keys from `supabase status` themselves (H3-T01).
       - name: Integration tests (H3-T01)
         run: npm run test:integration
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
       - if: always()
         run: supabase stop --no-backup
 
@@ -181,6 +241,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -202,6 +265,13 @@ jobs:
         # 1440 px. Full-page screenshots go into the report for the owner to look at; they are not
         # compared with stored images (ADR-145); see docs/engineering/testing.md.
         run: npm run test:ds
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -214,6 +284,9 @@ jobs:
   security:
     name: security (audit, secrets)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # only the "Stop the rest of this run" step uses the token
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -235,6 +308,13 @@ jobs:
           tar -xzf gitleaks.tar.gz gitleaks
       - name: Secret scan (G-12)
         run: ./gitleaks detect --redact --no-banner --config .gitleaks.toml
+      - name: Stop the rest of this run (a job failed, so the others would only spend minutes)
+        if: failure()
+        run: gh run cancel "$RUN_ID" --repo "$REPO" || echo "Could not cancel the run (read-only token, for example a fork or Dependabot pull request)."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
 
   all-checks-passed:
     name: all-checks-passed
