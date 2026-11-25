@@ -39,10 +39,10 @@ export async function getMyProfile(): Promise<MyProfileView | null> {
   }
   const row = mine.data[0];
   if (!row) return null;
+  // Through `my_projects()`, not the table: `moderation` and `published` are not readable on the table (ADR-017), so a
+  // filter on them there is refused and the whole page failed. The function returns only the builder's own projects.
   const live = await supabase
-    .from("projects")
-    .select("id", { count: "exact", head: true })
-    .eq("builder_id", row.id)
+    .rpc("my_projects", undefined, { count: "exact", head: true })
     .eq("moderation", "approved")
     .eq("published", true);
   if (live.error) {
