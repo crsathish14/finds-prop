@@ -351,12 +351,14 @@ describe("UT-site-previews: the drawings beside the boxes (S7-T10)", () => {
     );
     const drawing = container.querySelector("[data-slot='site-header-preview']");
     expect(drawing).toHaveAttribute("aria-hidden", "true");
-    expect(drawing?.textContent).toBe("Find PropBuyRentPost property");
+    expect(drawing?.querySelector("img")).toHaveAttribute("alt", "Find Prop");
+    expect(drawing?.textContent).toBe("BuyRentPost property");
   });
 
   it("draws no button when there is none", () => {
     const { container } = render(<SiteHeaderPreview brandName="Find Prop" links={[]} />);
-    expect(container.textContent).toBe("Find Prop");
+    expect(container.querySelector("img")).toHaveAttribute("alt", "Find Prop");
+    expect(container.textContent).toBe("");
   });
 
   it("draws the footer with only the lines it has", () => {

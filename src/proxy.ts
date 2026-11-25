@@ -80,6 +80,6 @@ export const config = {
   // language prefix, so the language rewrite would send them to /en/robots.txt, which does not exist.
   // Route handlers under /api run the proxy too, so they get a request id.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
