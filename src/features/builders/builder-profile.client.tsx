@@ -12,6 +12,7 @@ import {
 } from "@/components/domain/builder-form";
 import { BuilderLogoField } from "@/components/domain/builder-logo-field";
 import { DeveloperCard } from "@/components/domain/developer-card";
+import { ImageReduceFlow } from "@/components/domain/image-reduce-flow";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
@@ -20,6 +21,7 @@ import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-tex
 import { notify } from "@/lib/notify";
 import { publicEnv } from "@/lib/public-env";
 import { publicStorageUrl } from "@/lib/storage-url";
+import { useImageReduce } from "@/lib/use-image-reduce";
 import type { ActionResult } from "@/types/action";
 import { BUILDER_LOGO_BUCKET, BUILDER_LOGO_BYTES_MAX, BUILDER_LOGO_TYPES } from "./constants";
 import { initialsOf, isFormField, valuesOf } from "./form";
@@ -77,16 +79,11 @@ export function BuilderProfile({
     }
   };
 
-  const chooseLogo = async (file: File) => {
-    setLogoError(undefined);
-    if (!(BUILDER_LOGO_TYPES as readonly string[]).includes(file.type)) {
-      setLogoError(translate("logo.wrongType"));
-      return;
-    }
-    if (file.size > BUILDER_LOGO_BYTES_MAX) {
-      setLogoError(translate("logo.tooHeavy"));
-      return;
-    }
+  const logoInput = useRef<HTMLInputElement>(null);
+  // A logo over its limit is not refused: the person may lower its quality to fit (the hidden data is taken out first).
+  const reducer = useImageReduce({ limitBytes: BUILDER_LOGO_BYTES_MAX });
+
+  const uploadLogo = async (file: File) => {
     setUploading(true);
     try {
       const path = logoPathFor(profile.id, file, crypto.randomUUID());
@@ -100,6 +97,16 @@ export function BuilderProfile({
     } finally {
       setUploading(false);
     }
+  };
+
+  const chooseLogo = async (file: File) => {
+    setLogoError(undefined);
+    if (!(BUILDER_LOGO_TYPES as readonly string[]).includes(file.type)) {
+      setLogoError(translate("logo.wrongType"));
+      return;
+    }
+    const refused = await reducer.choose(file, (ready) => void uploadLogo(ready));
+    if (refused !== null) setLogoError(translate("logo.wrongType"));
   };
 
   const removeLogo = () => {
@@ -164,6 +171,12 @@ export function BuilderProfile({
         logoPath: logoPath ?? "",
       });
       if (!result.ok) {
+        // The server read the new logo back and refused it: said under the logo, where the builder can act on it.
+        const logoProblem = result.fieldErrors?.logoPath?.[0];
+        if (logoProblem) {
+          setLogoError(fieldErrorText(everything, logoProblem));
+          return;
+        }
         if (!showFieldErrors(result)) {
           notify.error(failureText(everything, result));
           router.refresh();
@@ -219,8 +232,18 @@ export function BuilderProfile({
                 uploading: translate("logo.uploading"),
                 alt: translate("logo.alt"),
               }}
+              inputRef={logoInput}
               onFile={(file) => void chooseLogo(file)}
               onRemove={removeLogo}
+            />
+            <ImageReduceFlow
+              prompt={reducer.prompt}
+              onReduce={() => void reducer.reduce()}
+              onUse={reducer.use}
+              onChooseAnother={() => {
+                reducer.dismiss();
+                logoInput.current?.click();
+              }}
             />
             <BuilderForm
               mode="edit"

@@ -260,6 +260,14 @@ function evaluateGh(tokens, context = {}) {
   if (area === "secret" || area === "variable")
     return deny("Secrets and variables are managed by the owner.");
   if (area === "api") {
+    // ADR-201: only the owner approves the `production` environment. Refused in any form, even
+    // one that would slip past the write-method check below.
+    if (args.some((token) => /pending_deployments|deployment_protection_rule/i.test(token)))
+      return deny(
+        "Approving or rejecting a production deployment is the owner's decision, made on GitHub (ADR-201).",
+      );
+    if (args.some((token) => /^(-X|--method=)(POST|PUT|PATCH|DELETE)$/i.test(token)))
+      return deny("gh api with a write method changes GitHub state and is not allowed.");
     const method = args.find(
       (token, index) =>
         (args[index - 1] === "-X" || args[index - 1] === "--method") &&

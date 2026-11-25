@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkPictureClean } from "@/lib/image-hidden-data";
 import { ActionError } from "@/server/actions/normalise-error";
 import type { Database } from "@/types/database.types";
 import { mapBuilderError } from "./builder-service";
+import { BUILDER_LOGO_BUCKET } from "./constants";
 import type { UpdateMyProfileInput } from "./schemas";
 
 /**
@@ -25,6 +27,15 @@ export async function saveMyProfile(
       fieldErrors: { logoPath: [{ key: "validation.invalid" }] },
     });
   }
+  // A logo that is new is read back from the bucket: the browser takes its hidden data out before it sends it, so one
+  // that still has some did not come through the page. The logo already on record is not read again.
+  if (input.logoPath) {
+    const current = await client.from("builders").select("logo_path").eq("id", builderId);
+    if (current.error) throw mapBuilderError(current.error);
+    if (current.data[0]?.logo_path !== input.logoPath) {
+      await checkNewLogo(client, input.logoPath);
+    }
+  }
   const saved = await client
     .from("builders")
     .update({
@@ -44,4 +55,17 @@ export async function saveMyProfile(
   if (saved.error) throw mapBuilderError(saved.error);
   if (saved.data.length === 0) throw new ActionError("NOT_FOUND", "The builder was not found");
   return { builderId };
+}
+
+/** Reads a new logo back from the logo bucket (the builder's own client may read its own folder) and checks it. */
+async function checkNewLogo(client: SupabaseClient<Database>, path: string): Promise<void> {
+  const file = await client.storage.from(BUILDER_LOGO_BUCKET).download(path);
+  const refuse = (key: string) =>
+    new ActionError("VALIDATION", "The logo could not be accepted", {
+      fieldErrors: { logoPath: [{ key }] },
+    });
+  if (file.error || !file.data) throw refuse("validation.invalid");
+  const clean = checkPictureClean(new Uint8Array(await file.data.arrayBuffer()));
+  if (clean === "hidden") throw refuse("validation.logoHidden");
+  if (clean === "broken") throw refuse("validation.invalid");
 }

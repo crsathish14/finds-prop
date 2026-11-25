@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pictureFile } from "../../../../tests/image-files";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { BuilderProfileActions } from "../builder-profile.client";
@@ -11,6 +12,14 @@ const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/lib/notify", () => ({ notify: toast }));
+// A stand-in for the browser's own decoding and encoding: a picture "weighs" 100,000 bytes times the quality.
+vi.mock("@/lib/image-browser", () => ({
+  browserImageDeps: {
+    decode: async () => ({ width: 100, height: 100, close: () => undefined }),
+    encode: async (_picture: unknown, _size: unknown, type: string, quality: number) =>
+      new Blob([new Uint8Array(Math.round(quality * 100_000))], { type }),
+  },
+}));
 
 const { BuilderProfile } = await import("../builder-profile.client");
 
@@ -66,11 +75,8 @@ function open(
   return actions;
 }
 
-const picture = (type: string, size = 2000) => {
-  const file = new File(["x"], "logo", { type });
-  Object.defineProperty(file, "size", { value: size });
-  return file;
-};
+const picture = (type: "image/png" | "image/jpeg" | "image/webp", dataBytes = 2000) =>
+  pictureFile(type, dataBytes, "logo");
 
 const chooseFile = (file: File) => {
   const input = document.querySelector<HTMLInputElement>('input[type="file"]');
@@ -186,14 +192,89 @@ describe("BuilderProfile: the Developer Spotlight fields and the logo (ADR-179)"
     );
   });
 
-  it("refuses a picture of the wrong type or too heavy before uploading it", async () => {
+  it("refuses a picture of the wrong type before uploading it", async () => {
     const storage = fakeStorage();
     open(undefined, { storage });
-    chooseFile(picture("image/svg+xml"));
+    chooseFile(new File(["<svg/>"], "logo.svg", { type: "image/svg+xml" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(words.logo.wrongType);
-    chooseFile(picture("image/webp", 2 * 1048576));
-    expect(await screen.findByRole("alert")).toHaveTextContent(words.logo.tooHeavy);
     expect(storage.uploaded).toEqual([]);
+  });
+
+  it("refuses a file that says it is a picture but is not one", async () => {
+    const storage = fakeStorage();
+    open(undefined, { storage });
+    chooseFile(new File(["<svg/>"], "logo.png", { type: "image/png" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(words.logo.wrongType);
+    expect(storage.uploaded).toEqual([]);
+  });
+
+  it("takes the hidden data out of a logo before uploading it", async () => {
+    const storage = fakeStorage();
+    open(undefined, { storage });
+    const withComment = pictureFile("image/jpeg", 2000, "logo.jpg");
+    const bytes = new Uint8Array(await withComment.arrayBuffer());
+    const secret = new TextEncoder().encode("GPS-SECRET");
+    const comment = new Uint8Array([0xff, 0xfe, 0x00, secret.length + 2, ...secret]);
+    const marked = new File([bytes.slice(0, 2), comment, bytes.slice(2)], "logo.jpg", {
+      type: "image/jpeg",
+    });
+    chooseFile(marked);
+    await waitFor(() => expect(storage.upload).toHaveBeenCalled());
+    const sent = vi.mocked(storage.upload).mock.calls[0]?.[1] as File;
+    expect(sent.size).toBe(withComment.size);
+    expect(new TextDecoder().decode(await sent.arrayBuffer())).not.toContain("GPS-SECRET");
+  });
+
+  it("offers to lower the quality of a logo that is still too heavy, and uploads nothing yet", async () => {
+    const storage = fakeStorage();
+    open(undefined, { storage });
+    chooseFile(picture("image/png", 2 * 1048576));
+    expect(await screen.findByText(en.imageReduce.offer.title)).toBeVisible();
+    expect(screen.getByText(/but it is 2 MB and the limit is 1 MB/)).toBeVisible();
+    expect(storage.uploaded).toEqual([]);
+  });
+
+  it("lowers the quality when asked, shows the result, and uploads it as a WebP once the person uses it", async () => {
+    const storage = fakeStorage();
+    const actions = open(undefined, { storage });
+    chooseFile(picture("image/png", 2 * 1048576));
+    fireEvent.click(await screen.findByRole("button", { name: en.imageReduce.reduce }));
+    expect(await screen.findByText(en.imageReduce.ready.title)).toBeVisible();
+    expect(storage.uploaded).toEqual([]);
+    fireEvent.click(screen.getByRole("button", { name: en.imageReduce.use }));
+    await waitFor(() => expect(storage.uploaded).toHaveLength(1));
+    expect(storage.uploaded[0]).toMatch(new RegExp(`^${PROFILE.id}/logo-.+\.webp$`));
+    expect(screen.queryByText(en.imageReduce.ready.title)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: words.save }));
+    await waitFor(() =>
+      expect(actions.save).toHaveBeenCalledWith(
+        expect.objectContaining({ logoPath: storage.uploaded[0] }),
+      ),
+    );
+  });
+
+  it("uploads nothing when the person chooses another file instead", async () => {
+    const storage = fakeStorage();
+    open(undefined, { storage });
+    chooseFile(picture("image/jpeg", 2 * 1048576));
+    fireEvent.click(await screen.findByRole("button", { name: en.imageReduce.chooseAnother }));
+    expect(screen.queryByText(en.imageReduce.offer.title)).toBeNull();
+    expect(storage.uploaded).toEqual([]);
+  });
+
+  it("puts the server's refusal of a new logo under the logo, not in a toast", async () => {
+    const storage = fakeStorage();
+    const save = vi.fn(async () => ({
+      ok: false as const,
+      code: "VALIDATION" as const,
+      fieldErrors: { logoPath: [{ key: "validation.logoHidden" }] },
+    }));
+    open(save, { storage });
+    chooseFile(picture("image/png"));
+    await waitFor(() => expect(storage.uploaded).toHaveLength(1));
+    fireEvent.click(screen.getByRole("button", { name: words.save }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.validation.logoHidden);
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
   it("says so when the upload fails, and keeps no logo", async () => {

@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CategoryView } from "@/features/content-categories";
 import en from "@/i18n/messages/en.json";
+import { pictureFile } from "../../../../tests/image-files";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import { BlogAdminBoard, type BlogBoardActions } from "../blog-admin-board.client";
 import { BlogCategoriesPanel, type BlogCategoriesActions } from "../blog-categories-panel.client";
@@ -319,7 +320,10 @@ function choose(container: HTMLElement, file: File) {
   fireEvent.change(input, { target: { files: [file] } });
 }
 
-const PNG = () => new File(["png"], "house.png", { type: "image/png" });
+/** A chosen picture is read before it is kept, so the page takes it a moment after the choice. */
+const kept = () => waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
+
+const PNG = () => pictureFile("image/png", 8, "house.png");
 
 describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
   beforeEach(() => {
@@ -436,19 +440,49 @@ describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
     expect(actions.update).not.toHaveBeenCalled();
   });
 
-  it("refuses a picture of the wrong kind or weight at once, without sending anything", () => {
+  it("refuses a picture of the wrong kind at once, without sending anything", async () => {
     const { container, storage } = editor({ post: STORED });
     fireEvent.click(screen.getByRole("button", { name: words.form.cover.replace }));
     choose(container, new File(["<svg/>"], "x.svg", { type: "image/svg+xml" }));
-    expect(notice.error).toHaveBeenLastCalledWith(en.validation.blogImageType);
+    await waitFor(() => expect(notice.error).toHaveBeenLastCalledWith(en.validation.blogImageType));
     fireEvent.click(screen.getByRole("button", { name: words.form.cover.replace }));
-    const heavy = new File(["x"], "big.png", { type: "image/png" });
-    Object.defineProperty(heavy, "size", { value: BLOG_IMAGE_MAX_BYTES + 1 });
-    choose(container, heavy);
-    expect(notice.error).toHaveBeenLastCalledWith(
-      en.validation.blogImageSize.replace("{maximum}", "500"),
-    );
+    choose(container, new File(["<svg/>"], "x.png", { type: "image/png" }));
+    await waitFor(() => expect(notice.error).toHaveBeenCalledTimes(2));
     expect(storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("offers to lower the quality of a picture that is still too heavy, and sends nothing", async () => {
+    const { container, storage } = editor({ post: STORED });
+    fireEvent.click(screen.getByRole("button", { name: words.form.cover.replace }));
+    choose(container, pictureFile("image/png", BLOG_IMAGE_MAX_BYTES + 1000, "big.png"));
+    expect(await screen.findByText(en.imageReduce.offer.title)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: en.imageReduce.reduce })).toBeInTheDocument();
+    expect(notice.error).not.toHaveBeenCalled();
+    expect(storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("takes the hidden data out of a picture that is within the limit before it is kept", async () => {
+    const { container, actions, storage } = editor({
+      post: { ...STORED, coverPath: null, coverUrl: null, coverAlt: null },
+    });
+    fireEvent.click(screen.getByRole("button", { name: words.form.cover.choose }));
+    const clean = PNG();
+    const bytes = new Uint8Array(await clean.arrayBuffer());
+    // A text chunk (a camera or editor note) between the header and the picture.
+    const note = new TextEncoder().encode("tEXtComment GPS-SECRET");
+    const chunk = new Uint8Array([0, 0, 0, note.length - 4, ...note, 0, 0, 0, 0]);
+    const marked = new File([bytes.slice(0, 33), chunk, bytes.slice(33)], "house.png", {
+      type: "image/png",
+    });
+    choose(container, marked);
+    fireEvent.change(await screen.findByLabelText(words.form.cover.alt), {
+      target: { value: "A house" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: words.form.save }));
+    await waitFor(() => expect(actions.setCover).toHaveBeenCalled());
+    const sent = vi.mocked(storage.upload).mock.calls[0]?.[1] as File;
+    expect(sent.size).toBe(clean.size);
+    expect(new TextDecoder().decode(await sent.arrayBuffer())).not.toContain("GPS-SECRET");
   });
 
   it("holds a chosen cover in the browser until Save, then sends it to the article's folder and sets it with its description", async () => {
@@ -457,6 +491,7 @@ describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: words.form.cover.choose }));
     choose(container, PNG());
+    await kept();
     expect(storage.upload).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText(words.form.cover.alt), { target: { value: "A house" } });
     fireEvent.click(screen.getByRole("button", { name: words.form.save }));
@@ -475,6 +510,7 @@ describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: words.form.cover.choose }));
     choose(container, PNG());
+    await kept();
     fireEvent.click(screen.getByRole("button", { name: words.form.save }));
     await waitFor(() =>
       expect(screen.getByLabelText(words.form.cover.alt)).toHaveAttribute("aria-invalid", "true"),
@@ -488,6 +524,7 @@ describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
     fireEvent.click(screen.getByRole("button", { name: words.editor.add.image }));
     fireEvent.click(screen.getByRole("button", { name: /^Choose picture/ }));
     choose(container, PNG());
+    await kept();
     fireEvent.change(screen.getByLabelText(words.editor.imageAlt), { target: { value: "A flat" } });
     fireEvent.click(screen.getByRole("button", { name: words.form.save }));
     await waitFor(() => expect(actions.update).toHaveBeenCalled());
@@ -509,6 +546,7 @@ describe("BlogEditor (ADR-143, ADR-144): the article page", () => {
     fireEvent.click(screen.getByRole("button", { name: words.editor.add.image }));
     fireEvent.click(screen.getByRole("button", { name: /^Choose picture/ }));
     choose(container, PNG());
+    await kept();
     fireEvent.change(screen.getByLabelText(words.editor.imageAlt), { target: { value: "A flat" } });
     fireEvent.click(screen.getByRole("button", { name: words.form.save }));
     await waitFor(() => expect(notice.error).toHaveBeenCalledWith(words.uploadFailed));

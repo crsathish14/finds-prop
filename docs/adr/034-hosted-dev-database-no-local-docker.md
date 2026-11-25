@@ -37,3 +37,5 @@ Point 2 changed: **migrations reach `findsprop-dev` only through the `db-deploy.
 **Amended 7 Nov 2026 (S5 close-out):** the fictional seed (`supabase/seed.sql`) may be loaded on `findsprop-dev` by the owner on request, so the screens and flows can be tried with data. It is pasted into the dashboard's SQL editor by the owner (not applied by `db-deploy`, which still applies migrations only, and not by hand with `link` or `push`), and `supabase/seed-remove.sql` takes it out again. Agents still never touch the hosted project. Runbook: `docs/runbooks/dev-seed.md`.
 
 **Amended 25 Nov 2026 (owner decision):** CI no longer runs on a push to `develop` (`docs/engineering/quality-gates.md` §7, "Pull requests only"). `db-deploy.yml` therefore waits for the CI result of the pull request that was merged as the commit, not of the commit itself, and applies nothing for a commit that no merged pull request into `develop` produced.
+
+**Production (25 Nov 2026):** migrations reach production through `release-prod.yml`, with the owner's approval and a backup first; see ADR-201.

@@ -1,4 +1,5 @@
 import { readImageInfo } from "@/features/site-content";
+import { checkPictureClean } from "@/lib/image-hidden-data";
 import { ActionError } from "@/server/actions/normalise-error";
 import {
   BLOG_IMAGE_MAX_BYTES,
@@ -258,7 +259,7 @@ export async function createPostFromMarkdown(
 
 type ImageProblem = { key: string; values?: Record<string, number> };
 
-/** Reads one new picture back from the bucket and checks it. `null` means it is fine. */
+/** Reads one new picture back from the bucket and checks it, its hidden data included. `null` means it is fine. */
 async function inspect(store: BlogStore, path: string): Promise<ImageProblem | null> {
   const bytes = await store.fetchImage(path);
   if (!bytes) return { key: "validation.blogImageMissing" };
@@ -270,6 +271,10 @@ async function inspect(store: BlogStore, path: string): Promise<ImageProblem | n
   if (info.width > BLOG_IMAGE_MAX_SIDE || info.height > BLOG_IMAGE_MAX_SIDE) {
     return { key: "validation.blogImageTooLarge", values: { maximum: BLOG_IMAGE_MAX_SIDE } };
   }
+  // The browser takes the hidden data out before it sends a picture; one that still has some did not come through the page.
+  const clean = checkPictureClean(bytes);
+  if (clean === "hidden") return { key: "validation.blogImageHidden" };
+  if (clean === "broken") return { key: "validation.blogImageType" };
   return null;
 }
 

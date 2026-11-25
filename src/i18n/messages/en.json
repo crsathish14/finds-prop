@@ -350,6 +350,8 @@
     "sponsorImageMissing": "We could not find this picture. Choose it again.",
     "sponsorImageType": "Use a JPG, PNG or WEBP picture.",
     "sponsorImageSize": "This picture is too heavy. The limit is {maximum} KB.",
+    "sponsorImageHidden": "This picture still has hidden data, such as where it was taken. Choose it again on this page.",
+    "logoHidden": "This logo still has hidden data, such as where it was taken. Upload it again on this page.",
     "sponsorImageSmall": "This picture is too small. Supply at least {width} × {height} pixels.",
     "sponsorImageShape": "This picture is the wrong shape for its slot. Supply one that is close to the slot's shape.",
     "sponsorProjectMissing": "Choose a project that buyers can see on the site.",
@@ -363,6 +365,7 @@
     "blogImageMissing": "We could not find this picture. Choose it again.",
     "blogImageType": "Use a JPG, PNG or WEBP picture.",
     "blogImageSize": "This picture is too heavy. The limit is {maximum} KB.",
+    "blogImageHidden": "This picture still has hidden data, such as where it was taken. Choose it again on this page.",
     "blogImageTooLarge": "This picture is too large. Use one no more than {maximum} pixels on its longest side.",
     "blogImagePlace": "This picture is not stored with this article. Add it again.",
     "blogLinkLabel": "The words of a link must be 1 to 160 characters, with no [ ] ( ) in them.",
@@ -396,10 +399,44 @@
     "perSqft": "{price} per sq.ft",
     "area": "{value} sq.ft",
     "acres": "{value} acres",
+    "fileKilobytes": "{value} KB",
+    "fileMegabytes": "{value} MB",
     "today": "Today",
     "daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
     "monthsAgo": "{count, plural, one {# month ago} other {# months ago}}",
     "yearsAgo": "{count, plural, one {# year ago} other {# years ago}}"
+  },
+  "imageReduce": {
+    "reduce": "Reduce quality",
+    "use": "Use this picture",
+    "chooseAnother": "Choose another",
+    "previewAlt": "The picture after its quality was lowered",
+    "offer": {
+      "title": "This picture is still too heavy",
+      "text": "The hidden data is already removed, but it is {size} and the limit is {limit}. Lower its quality to fit?"
+    },
+    "working": {
+      "title": "Lowering the quality",
+      "text": "This takes a few seconds."
+    },
+    "ready": {
+      "title": "Quality lowered",
+      "text": "Now {after}, down from {before}. The picture keeps its size in pixels. Look at it, then use it or choose another."
+    },
+    "failed": {
+      "cannotFit": {
+        "title": "This picture cannot be made light enough",
+        "text": "Even at the lowest quality we allow it is {smallest}, and the limit is {limit}. Choose a lighter picture."
+      },
+      "noEncoder": {
+        "title": "This browser cannot lower the quality of this picture",
+        "text": "Choose another file, or open the page in a different browser."
+      },
+      "other": {
+        "title": "This picture could not be made lighter",
+        "text": "Choose another file."
+      }
+    }
   },
   "status": {
     "listing": {
@@ -4341,7 +4378,6 @@
         "uploading": "Uploading",
         "alt": "Your company logo",
         "wrongType": "Use a JPG, PNG or WEBP picture.",
-        "tooHeavy": "This picture is too heavy. The limit is 1 MB.",
         "failed": "The logo could not be uploaded. Try again."
       }
     },

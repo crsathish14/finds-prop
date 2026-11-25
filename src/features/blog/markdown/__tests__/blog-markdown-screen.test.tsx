@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pictureFile } from "../../../../../tests/image-files";
 import { renderWithMessages } from "../../../../../tests/render-intl";
 import type { BlogStorage } from "../../blog-storage";
 import { BlogMarkdownScreen, type BlogMarkdownActions } from "../blog-markdown-screen.client";
@@ -174,7 +175,7 @@ Before.
       fireEvent.click(screen.getByRole("button", { name: `Choose a picture for ${id}` }));
       const chooser = document.querySelector<HTMLInputElement>('input[type="file"]');
       fireEvent.change(chooser as HTMLInputElement, {
-        target: { files: [new File(["x"], `${id}.png`, { type: "image/png" })] },
+        target: { files: [pictureFile("image/png", 8, `${id}.png`)] },
       });
       await screen.findByLabelText(`What ${id} shows`);
     }
