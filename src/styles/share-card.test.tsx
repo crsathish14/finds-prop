@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import fs from "node:fs";
 import path from "node:path";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SHARE_CARD_COLORS, ShareCard } from "./share-card";
 
@@ -19,17 +19,12 @@ describe("UT-share-card: the default share image's colours", () => {
     });
   });
 
-  it("draws the name, with its last word set apart, and the tagline it is given", () => {
+  it("draws the wordmark, named for the site, and the tagline it is given", () => {
     const { container } = render(
-      <ShareCard name="Find Prop" tagline="Find homes in Tamil Nadu." />,
+      <ShareCard name="findsprop" tagline="Find homes in Tamil Nadu." />,
     );
-    expect(container.textContent).toContain("Find");
-    expect(container.querySelector("span")?.textContent).toBe("Prop");
+    expect(screen.getByRole("img", { name: "findsprop" })).toBeInTheDocument();
+    expect(container.querySelectorAll("svg path")).toHaveLength(2);
     expect(container.textContent).toContain("Find homes in Tamil Nadu.");
-  });
-
-  it("draws the arch mark", () => {
-    const { container } = render(<ShareCard name="Find Prop" tagline="Tagline" />);
-    expect(container.querySelector("svg path")).not.toBeNull();
   });
 });

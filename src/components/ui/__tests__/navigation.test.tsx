@@ -133,10 +133,25 @@ describe("Link", () => {
 });
 
 describe("Logo, ArchMark, ArchIllustration, SkipLink, VisuallyHidden", () => {
-  it("sets the last word of the brand name in bold", () => {
-    render(<Logo name="Find Prop" />);
-    expect(screen.getByText("Prop").tagName).toBe("B");
-    expect(screen.getByText(/Find/)).toBeInTheDocument();
+  it("shows the full logo, with the brand name as its alt text", () => {
+    render(<Logo name="findsprop" />);
+    expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
+      "src",
+      "/brand/findsprop-logo.svg",
+    );
+  });
+
+  it("picks the white logo on dark and the compact wordmark when asked", () => {
+    const { rerender } = render(<Logo name="findsprop" tone="on-dark" />);
+    expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
+      "src",
+      "/brand/findsprop-logo-white.svg",
+    );
+    rerender(<Logo name="findsprop" variant="wordmark" />);
+    expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
+      "src",
+      "/brand/findsprop-wordmark.svg",
+    );
   });
 
   it("hides the mark from screen readers unless it has a title", () => {

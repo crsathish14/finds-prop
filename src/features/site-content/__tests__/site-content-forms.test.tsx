@@ -91,15 +91,19 @@ describe("UT-header-form: the Header page (S7-T10)", () => {
 
   it("draws the picture from the boxes as they are typed", async () => {
     open();
-    expect(picture("site-header-preview")?.textContent).toBe(
-      "Find PropBuy a homeNew projectsPost property",
+    expect(picture("site-header-preview")?.querySelector("img")).toHaveAttribute(
+      "alt",
+      "Find Prop",
     );
+    expect(picture("site-header-preview")?.textContent).toBe("Buy a homeNew projectsPost property");
     await userEvent.type(screen.getByRole("textbox", { name: /Site name/ }), "Kadal Homes");
     await userEvent.clear(screen.getByRole("textbox", { name: "Label 2" }));
     await userEvent.type(screen.getByRole("textbox", { name: "Label 2" }), "Plots");
-    expect(picture("site-header-preview")?.textContent).toBe(
-      "Kadal HomesBuy a homePlotsPost property",
+    expect(picture("site-header-preview")?.querySelector("img")).toHaveAttribute(
+      "alt",
+      "Kadal Homes",
     );
+    expect(picture("site-header-preview")?.textContent).toBe("Buy a homePlotsPost property");
   });
 
   it("sends exactly what is in the boxes, then says so and reads the page again", async () => {
