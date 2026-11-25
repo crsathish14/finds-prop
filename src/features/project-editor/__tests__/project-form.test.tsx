@@ -2,6 +2,7 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { pictureFile } from "../../../../tests/image-files";
 import { renderWithMessages } from "../../../../tests/render-intl";
 import en from "@/i18n/messages/en.json";
 import type { ActionResult } from "@/types/action";
@@ -14,6 +15,14 @@ const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/lib/notify", () => ({ notify: toast }));
+// A stand-in for the browser's own decoding and encoding: a picture "weighs" 100,000 bytes times the quality it is saved at.
+vi.mock("@/lib/image-browser", () => ({
+  browserImageDeps: {
+    decode: async () => ({ width: 100, height: 100, close: () => undefined }),
+    encode: async (_picture: unknown, _size: unknown, type: string, quality: number) =>
+      new Blob([new Uint8Array(Math.round(quality * 100_000))], { type }),
+  },
+}));
 
 const { ProjectForm } = await import("../project-form.client");
 
@@ -144,11 +153,7 @@ async function fillRequired({ admin }: { admin: boolean }) {
 }
 const fileInput = (group: string) =>
   screen.getByRole("group", { name: group }).querySelector("input[type=file]") as HTMLInputElement;
-const png = (name = "plan.png", size = 1000) => {
-  const file = new File(["x"], name, { type: "image/png" });
-  Object.defineProperty(file, "size", { value: size });
-  return file;
-};
+const png = (name = "plan.png", dataBytes = 8) => pictureFile("image/png", dataBytes, name);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -432,21 +437,88 @@ describe("ProjectForm: a saved project, for the admin (S7-T02, part C)", () => {
     expect((save.mock.calls[0]?.[0] as Record<string, unknown>).floorPlans).toEqual([path]);
   });
 
-  it("refuses a file of the wrong type or over 10 MB before sending it, and does not save it", async () => {
+  it("refuses a file that is not a picture of a kind the site takes before sending it, and does not save it", async () => {
     const { save, storage } = open({ project: saved });
     const pdf = new File(["x"], "plan.pdf", { type: "application/pdf" });
     fireEvent.change(fileInput("Elevations"), { target: { files: [pdf] } });
+    // A file that says it is a PNG but is not one is refused too: only its own bytes count.
     fireEvent.change(fileInput("Plot images"), {
-      target: { files: [png("huge.png", 11 * 1024 * 1024)] },
+      target: { files: [new File(["<svg/>"], "plan.png", { type: "image/png" })] },
     });
-    expect(await screen.findByText(words.media.errors.type)).toBeVisible();
-    expect(screen.getByText("Too large. The most is 10 MB.")).toBeVisible();
+    await waitFor(() => expect(screen.getAllByText(words.media.errors.type)).toHaveLength(2));
     expect(storage.upload).not.toHaveBeenCalled();
     await userEvent.click(saveButton());
     await waitFor(() => expect(save).toHaveBeenCalled());
     const sent = save.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(sent.elevations).toEqual([]);
     expect(sent.plotImages).toEqual([]);
+  });
+
+  it("refuses a brochure over 10 MB, as before", async () => {
+    const { storage } = open({ project: saved });
+    const brochure = new File(["x"], "brochure.pdf", { type: "application/pdf" });
+    Object.defineProperty(brochure, "size", { value: 11 * 1024 * 1024 });
+    fireEvent.change(fileInput("Brochure (PDF)"), { target: { files: [brochure] } });
+    expect(await screen.findByText("Too large. The most is 10 MB.")).toBeVisible();
+    expect(storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("takes the hidden data out of a picture before it is sent", async () => {
+    const { storage } = open({ project: saved });
+    const clean = pictureFile("image/jpeg", 50, "front.jpg");
+    const bytes = new Uint8Array(await clean.arrayBuffer());
+    const secret = new TextEncoder().encode("GPS-SECRET");
+    const comment = new Uint8Array([0xff, 0xfe, 0x00, secret.length + 2, ...secret]);
+    const marked = new File([bytes.slice(0, 2), comment, bytes.slice(2)], "front.jpg", {
+      type: "image/jpeg",
+    });
+    fireEvent.change(fileInput("Elevations"), { target: { files: [marked] } });
+    await waitFor(() => expect(storage.upload).toHaveBeenCalledTimes(1));
+    const [, sent] = (storage.upload as Mock).mock.calls[0] as [string, File];
+    expect(sent.size).toBe(clean.size);
+    expect(new TextDecoder().decode(await sent.arrayBuffer())).not.toContain("GPS-SECRET");
+  });
+
+  it("offers to lower the quality of a picture over 10 MB, and sends nothing yet", async () => {
+    const { storage } = open({ project: saved });
+    fireEvent.change(fileInput("Plot images"), {
+      target: { files: [png("huge.png", 11 * 1024 * 1024)] },
+    });
+    expect(await screen.findByText(en.imageReduce.offer.title)).toBeVisible();
+    expect(screen.getByText(/the limit is 10 MB/)).toBeVisible();
+    expect(storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("lowers the quality when asked, and sends the lowered picture once it is used", async () => {
+    const { save, storage } = open({ project: saved });
+    fireEvent.change(fileInput("Plot images"), {
+      target: { files: [png("huge.png", 11 * 1024 * 1024)] },
+    });
+    await userEvent.click(await screen.findByRole("button", { name: en.imageReduce.reduce }));
+    expect(await screen.findByText(en.imageReduce.ready.title)).toBeVisible();
+    expect(storage.upload).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: en.imageReduce.use }));
+    await waitFor(() => expect(storage.upload).toHaveBeenCalledTimes(1));
+    const [path, sent] = (storage.upload as Mock).mock.calls[0] as [string, File];
+    expect(path).toMatch(new RegExp(`^${PROJECT_ID}/[0-9a-f]{8}-huge\.webp$`));
+    expect(sent.type).toBe("image/webp");
+    await userEvent.click(saveButton());
+    await waitFor(() => expect(save).toHaveBeenCalled());
+    expect((save.mock.calls[0]?.[0] as Record<string, unknown>).plotImages).toEqual([path]);
+  });
+
+  it("leaves a heavy picture out when the admin chooses another, and goes on with the rest", async () => {
+    const { storage } = open({ project: saved });
+    fireEvent.change(fileInput("Plot images"), {
+      target: { files: [png("huge.png", 11 * 1024 * 1024), png("small.png")] },
+    });
+    await userEvent.click(
+      await screen.findByRole("button", { name: en.imageReduce.chooseAnother }),
+    );
+    await waitFor(() => expect(storage.upload).toHaveBeenCalledTimes(1));
+    const [path] = (storage.upload as Mock).mock.calls[0] as [string, File];
+    expect(path).toMatch(/small\.png$/);
+    expect(screen.queryByText(en.imageReduce.offer.title)).toBeNull();
   });
 
   it("shows an upload that failed on its tile and does not send it", async () => {

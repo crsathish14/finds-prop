@@ -9,7 +9,8 @@
  * Props: label, items ({ id, name, kind: image | file, previewUrl?, stage: uploading, removing, done or error,
  *   error? (already translated) }), max (the most files; 1 makes it a single-file field), accept (the file types the
  *   picker offers), onFiles, onRemove (id), hint, error (for the group), disabled, words ({ add, remove(name),
- *   uploading, removing, full }, already translated), className.
+ *   uploading, removing, full }, already translated), inputRef (the page's own handle on the file input, so it can open
+ *   the picker again, as "Choose another" does after a picture was too heavy), className.
  * Responsive: two tiles to a line on a phone, three from 768 px, four from 1100 px of screen; names are cut with
  *   an ellipsis.
  * Accessibility: the group is named by its label; the last tile is one labelled file input, so it works by
@@ -22,7 +23,7 @@
  */
 import { CircleAlert, FileText, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useId, useState, type DragEvent } from "react";
+import { useId, useState, type DragEvent, type RefObject } from "react";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
@@ -63,6 +64,8 @@ type MediaGroupFieldProps = {
   error?: string;
   disabled?: boolean;
   words: MediaGroupWords;
+  /** The page's own handle on the file input, to open the picker from outside. */
+  inputRef?: RefObject<HTMLInputElement | null>;
   className?: string;
 };
 
@@ -148,6 +151,7 @@ function MediaGroupField({
   error,
   disabled = false,
   words,
+  inputRef,
   className,
 }: MediaGroupFieldProps) {
   const inputId = useId();
@@ -216,6 +220,7 @@ function MediaGroupField({
               <Icon icon={Upload} size="lg" className="text-primary" />
               <span className="text-small font-semibold text-ink">{words.add}</span>
               <input
+                ref={inputRef}
                 id={inputId}
                 type="file"
                 accept={accept}

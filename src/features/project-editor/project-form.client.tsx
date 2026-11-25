@@ -27,7 +27,9 @@ import { Select } from "@/components/ui/select";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
+import { QUALITY_FLOOR_DETAILED } from "@/lib/image-reduce";
 import { notify } from "@/lib/notify";
+import { useImageReduce } from "@/lib/use-image-reduce";
 import { publicEnv } from "@/lib/public-env";
 import type { ActionResult } from "@/types/action";
 import { MEDIA_MAX, TREND_MONTHS_MAX } from "./constants";
@@ -42,6 +44,7 @@ import { priceTypesFor, propertyTypesFor } from "./rules";
 import {
   EMPTY_PROJECT_VALUES,
   MEDIA_GROUPS,
+  MEDIA_MAX_BYTES,
   MEDIA_MAX_MEGABYTES,
   appliesOf,
   errorFieldOf,
@@ -66,6 +69,9 @@ import type { ProjectDone } from "./project-service";
 import type { BuilderOption, FormOption, ProjectEditView } from "./view";
 
 type Failure = Extract<ActionResult<unknown>, { ok: false }>;
+
+/** What becomes of a chosen picture before it is sent: the file to send, left out by the admin, or not a picture the site takes. */
+type PreparedAnswer = { kind: "file"; file: File } | { kind: "skipped" } | { kind: "refused" };
 
 export type ProjectFormProps = {
   /** Who is editing: the admin (the Builder and Enquiry form boxes, price trends) or a builder (the approval warning). */
@@ -161,6 +167,18 @@ export function ProjectForm({
   const router = useRouter();
   const storageRef = useRef<MediaStorage | null>(givenStorage ?? null);
   const storage = () => (storageRef.current ??= createMediaStorage());
+  // A picture over the limit is not refused: the admin may lower its quality to fit (the hidden data is taken out first).
+  const reducer = useImageReduce({ limitBytes: MEDIA_MAX_BYTES });
+  const planReducer = useImageReduce({
+    limitBytes: MEDIA_MAX_BYTES,
+    qualityFloor: QUALITY_FLOOR_DETAILED,
+  });
+  const [deciding, setDeciding] = useState<ProjectMediaGroupName | null>(null);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const waiting = useRef<{
+    source: typeof reducer;
+    resolve: (answer: PreparedAnswer) => void;
+  } | null>(null);
 
   const projectId = project?.id ?? null;
   const admin = scope === "admin";
@@ -228,11 +246,66 @@ export function ProjectForm({
       [group]: now[group].flatMap((item) => (item.id === id ? (next ? [next] : []) : [item])),
     }));
 
+  /**
+   * A picture goes through two steps before it is sent: its hidden data comes out, and one still over the limit is
+   * not refused but waits for the admin's answer to "lower the quality to fit?". Floor plans keep a higher quality floor
+   * so their text stays readable. The answer is the file to send, "skipped" (the admin chose another), or "refused".
+   */
+  const prepare = (group: ProjectMediaGroupName, file: File): Promise<PreparedAnswer> => {
+    const run = () =>
+      new Promise<PreparedAnswer>((resolve) => {
+        const source = group === "floorPlans" ? planReducer : reducer;
+        waiting.current = { source, resolve };
+        setDeciding(group);
+        void source
+          .choose(file, (ready) => {
+            waiting.current = null;
+            setDeciding(null);
+            resolve({ kind: "file", file: ready });
+          })
+          .then((refused) => {
+            if (refused === null) return;
+            waiting.current = null;
+            setDeciding(null);
+            resolve({ kind: "refused" });
+          });
+      });
+    // One picture is decided at a time, also when files are chosen in two groups together: the next waits its turn.
+    const turn = queue.current.then(run);
+    queue.current = turn.then(
+      () => undefined,
+      () => undefined,
+    );
+    return turn;
+  };
+
   const addFiles = async (group: ProjectMediaGroupName, files: File[]) => {
     if (projectId === null) return;
     const max = group === "brochure" ? 1 : MEDIA_MAX;
     const used = media[group].filter((item) => item.stage !== "error").length;
-    for (const file of files.slice(0, Math.max(0, max - used))) {
+    for (const picked of files.slice(0, Math.max(0, max - used))) {
+      let file = picked;
+      if (group !== "brochure") {
+        const answer = await prepare(group, picked);
+        if (answer.kind === "skipped") continue;
+        if (answer.kind === "refused") {
+          setMedia((now) => ({
+            ...now,
+            [group]: [
+              ...now[group],
+              {
+                id: nextId(),
+                name: picked.name,
+                kind: "image",
+                stage: "error",
+                error: translate("media.errors.type"),
+              },
+            ],
+          }));
+          continue;
+        }
+        file = answer.file;
+      }
       const id = nextId();
       const kind = file.type.startsWith("image/") ? "image" : "file";
       const problem = fileProblem(file, group);
@@ -802,6 +875,27 @@ export function ProjectForm({
               locked={projectId === null}
               disabled={saving}
               words={mediaWords}
+              {...(deciding
+                ? {
+                    reduce: {
+                      group: deciding,
+                      flow: {
+                        prompt: (deciding === "floorPlans" ? planReducer : reducer).prompt,
+                        onReduce: () =>
+                          void (deciding === "floorPlans" ? planReducer : reducer).reduce(),
+                        onUse: (deciding === "floorPlans" ? planReducer : reducer).use,
+                        onChooseAnother: () => {
+                          // The picture is left out; the group's own picker opens again.
+                          const open = waiting.current;
+                          waiting.current = null;
+                          open?.source.dismiss();
+                          open?.resolve({ kind: "skipped" });
+                          setDeciding(null);
+                        },
+                      },
+                    },
+                  }
+                : {})}
               onFiles={(group, files) => void addFiles(group, files)}
               onRemove={removeFile}
               onVideosChange={setVideos}
