@@ -14,6 +14,7 @@ import { Icon } from "@/components/ui/icon";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { notify } from "@/lib/notify";
+import { useImageReduce } from "@/lib/use-image-reduce";
 import type { SponsorStyle } from "@/lib/sponsors";
 import type { ActionResult } from "@/types/action";
 import {
@@ -47,6 +48,7 @@ import {
   type ImageInfo,
   type SlotProblem,
 } from "./sponsor-rules";
+import { SPONSOR_IMAGE_MAX_BYTES, SPONSOR_PHOTO_MAX_BYTES } from "./constants";
 import { createSponsorStorage, type SponsorStorage } from "./sponsor-storage";
 import { checkPicture, chosenPictureOf, newSponsorId, uploadChosen } from "./sponsor-upload";
 import type { SponsorEditView } from "./sponsor-view";
@@ -138,6 +140,9 @@ export function useSponsors({
   const [rejections, setRejections] = useState<Partial<Record<PictureKey, Rejection>>>({});
   const [checking, setChecking] = useState<readonly PictureKey[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
+  // A picture over its limit is not refused: the admin may lower its quality to fit. One slot is decided at a time.
+  const reducer = useImageReduce({ limitBytes: SPONSOR_IMAGE_MAX_BYTES });
+  const [deciding, setDeciding] = useState<PictureKey | null>(null);
 
   /* ---- sending ---- */
 
@@ -352,35 +357,90 @@ export function useSponsors({
     });
   };
 
+  /** The banner pictures and the ad photo have their own weight limits. */
+  const limitOf = (key: PictureKey) =>
+    key === "photo" ? SPONSOR_PHOTO_MAX_BYTES : SPONSOR_IMAGE_MAX_BYTES;
+
+  /** Shows why a file cannot go in its slot. */
+  const reject = (
+    key: PictureKey,
+    file: File,
+    check: Extract<Awaited<ReturnType<typeof checkPicture>>, { ok: false }>,
+  ) => {
+    const url = check.problem === "shape" ? URL.createObjectURL(file) : undefined;
+    setRejections((previous) => ({
+      ...previous,
+      [key]: {
+        problem: check.problem,
+        info: check.info,
+        bytes: check.bytes,
+        fileName: file.name,
+        ...(url ? { url } : {}),
+      },
+    }));
+  };
+
+  /** A picture that is clean and within its limit: checked once more with every rule, then put in its slot. */
+  const finish = async (key: PictureKey, file: File) => {
+    const check = await checkPicture(file, key);
+    clearNote(key);
+    dropPicture(key);
+    setDeciding(null);
+    if (!check.ok) {
+      reject(key, file, check);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const chosen = chosenPictureOf(file, check, url);
+    setWork((previous) =>
+      previous ? { ...previous, pictures: { ...previous.pictures, [key]: chosen } } : previous,
+    );
+  };
+
   const pick = async (key: PictureKey, file: File) => {
     setChecking((previous) => [...previous, key]);
+    reducer.dismiss();
+    setDeciding(null);
     try {
-      const check = await checkPicture(file, key);
-      clearNote(key);
-      dropPicture(key);
-      if (check.ok) {
-        const url = URL.createObjectURL(file);
-        const chosen = chosenPictureOf(file, check, url);
-        setWork((previous) =>
-          previous ? { ...previous, pictures: { ...previous.pictures, [key]: chosen } } : previous,
-        );
+      // The kind, size in pixels and shape come first: a picture that is too small or the wrong shape is refused
+      // before anyone is asked to lower its quality.
+      const check = await checkPicture(file, key, { ignoreWeight: true });
+      if (!check.ok) {
+        clearNote(key);
+        dropPicture(key);
+        reject(key, file, check);
         return;
       }
-      const url = check.problem === "shape" ? URL.createObjectURL(file) : undefined;
-      setRejections((previous) => ({
-        ...previous,
-        [key]: {
-          problem: check.problem,
-          info: check.info,
-          bytes: check.bytes,
-          fileName: file.name,
-          ...(url ? { url } : {}),
-        },
-      }));
+      // Then the hidden data comes out; a picture still over its limit waits for the admin's answer in its slot.
+      setDeciding(key);
+      const refused = await reducer.choose(file, (ready) => void finish(key, ready), limitOf(key));
+      if (refused !== null) {
+        setDeciding(null);
+        clearNote(key);
+        dropPicture(key);
+        reject(key, file, { ok: false, problem: "type", info: null, bytes: file.size });
+      }
     } finally {
       setChecking((previous) => previous.filter((one) => one !== key));
     }
   };
+
+  /** The question a slot shows while its picture is over the limit and waits for the admin's answer. */
+  const pictureProps = (key: PictureKey) =>
+    deciding === key
+      ? {
+          reduce: {
+            prompt: reducer.prompt,
+            onReduce: () => void reducer.reduce(),
+            onUse: reducer.use,
+            // The slot opens its own file picker after this.
+            onChooseAnother: () => {
+              reducer.dismiss();
+              setDeciding(null);
+            },
+          },
+        }
+      : {};
 
   const rejectionNote = (key: PictureKey, rejection: Rejection): Note => {
     const status = words.slotStatus;
@@ -437,6 +497,7 @@ export function useSponsors({
       ratio: shown,
       words: words.slotWords,
       onFile: (file: File) => void pick(key, file),
+      ...pictureProps(key),
     };
     if (checking.includes(key)) return { ...base, state: "checking" as const };
     if (rejection) {
@@ -497,6 +558,7 @@ export function useSponsors({
       ratio: { width: 16, height: 9 },
       words: words.slotWords,
       onFile: (file: File) => void pick(key, file),
+      ...pictureProps(key),
     };
     if (checking.includes(key)) return { ...base, state: "checking" };
     if (rejection) {

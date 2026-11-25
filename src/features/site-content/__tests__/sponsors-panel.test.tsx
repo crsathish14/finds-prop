@@ -15,6 +15,18 @@ const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/lib/notify", () => ({ notify: toast }));
+// A stand-in for the browser's own decoding and encoding: the picture keeps its size in pixels (1048 × 988, as the
+// pictures in these tests) and "weighs" 100,000 bytes times the quality it is saved at.
+vi.mock("@/lib/image-browser", async () => {
+  const { webpLossy } = await import("./sponsor-fixtures");
+  return {
+    browserImageDeps: {
+      decode: async () => ({ width: 1048, height: 988, close: () => undefined }),
+      encode: async (_picture: unknown, _size: unknown, type: string, quality: number) =>
+        new Blob([webpLossy(1048, 988, Math.round(quality * 100_000)) as BlobPart], { type }),
+    },
+  };
+});
 
 const { HeroForm } = await import("../hero-form.client");
 
@@ -172,15 +184,56 @@ describe("UT-sponsors-panel: the sponsor manager on the Hero page (S7-T11)", () 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
-  it("refuses a file that is not a picture, a heavy one and a small one, in the slot, with the reason", async () => {
+  it("refuses a file that is not a picture and a small one, in the slot, with the reason", async () => {
     setup();
     await userEvent.click(addButton());
     await choose("Strip · desktop", notAPicture(), "banner.svg");
     expect(await within(drawer()).findByText(words.slot.typeTitle)).toBeInTheDocument();
     await choose("Strip · phone", png(300, 150));
     expect(await within(drawer()).findByText(words.slot.smallTitle)).toBeInTheDocument();
+  });
+
+  it("refuses a picture that is too small before asking anyone to lower its quality", async () => {
+    setup();
+    await userEvent.click(addButton());
+    await choose("Strip · phone", png(300, 150, 200 * 1024));
+    expect(await within(drawer()).findByText(words.slot.smallTitle)).toBeInTheDocument();
+    expect(within(drawer()).queryByText(en.imageReduce.offer.title)).not.toBeInTheDocument();
+  });
+
+  it("offers to lower the quality of a heavy picture, in its slot, and sends nothing yet", async () => {
+    const { upload } = setup();
+    await userEvent.click(addButton());
     await choose("Panel · desktop", png(1048, 988, 160 * 1024));
-    expect(await within(drawer()).findByText(/Rejected: 160 KB is too large/)).toBeInTheDocument();
+    expect(await within(drawer()).findByText(en.imageReduce.offer.title)).toBeInTheDocument();
+    expect(within(drawer()).getByText(/the limit is 150 KB/)).toBeInTheDocument();
+    expect(within(drawer()).queryByText(/is too large/)).not.toBeInTheDocument();
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it("lowers the quality when asked, shows the result, and puts the picture in its slot once it is used", async () => {
+    const { upload } = setup();
+    await userEvent.click(addButton());
+    await choose("Panel · desktop", png(1048, 988, 160 * 1024));
+    await userEvent.click(
+      await within(drawer()).findByRole("button", { name: en.imageReduce.reduce }),
+    );
+    expect(await within(drawer()).findByText(en.imageReduce.ready.title)).toBeInTheDocument();
+    await userEvent.click(within(drawer()).getByRole("button", { name: en.imageReduce.use }));
+    expect(await within(drawer()).findByText(words.slot.fills)).toBeInTheDocument();
+    expect(within(drawer()).queryByText(en.imageReduce.ready.title)).not.toBeInTheDocument();
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it("keeps nothing when the admin chooses another picture instead", async () => {
+    setup();
+    await userEvent.click(addButton());
+    await choose("Panel · desktop", png(1048, 988, 160 * 1024));
+    await userEvent.click(
+      await within(drawer()).findByRole("button", { name: en.imageReduce.chooseAnother }),
+    );
+    expect(within(drawer()).queryByText(en.imageReduce.offer.title)).not.toBeInTheDocument();
+    expect(within(drawer()).queryByText(words.slot.fills)).not.toBeInTheDocument();
   });
 
   it("asks for the other picture when a format has only one", async () => {

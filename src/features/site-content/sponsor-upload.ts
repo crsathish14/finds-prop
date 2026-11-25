@@ -35,19 +35,26 @@ export type PictureCheck =
 /**
  * Whether a chosen file can go in a slot: a PNG, JPEG or WebP by its own first bytes (a name or a declared type proves
  * nothing), no heavier than the limit, at least twice the slot and close enough to its shape. Reads only the start of
- * the file.
+ * the file. With `ignoreWeight` the weight is left out of the question: the page asks it first for the other rules, so a
+ * picture that is too small or the wrong shape is refused before anyone is asked to lower its quality; the weight is
+ * then dealt with by the "lower the quality to fit?" prompt, and the file it gives is checked again with the weight.
  */
-export async function checkPicture(file: File, key: PictureKey): Promise<PictureCheck> {
+export async function checkPicture(
+  file: File,
+  key: PictureKey,
+  options: { ignoreWeight?: boolean } = {},
+): Promise<PictureCheck> {
   const head = new Uint8Array(await file.slice(0, HEADER_BYTES).arrayBuffer());
   const info = readImageInfo(head);
+  const weight = options.ignoreWeight ? 0 : file.size;
   // The Showcase and Cinematic photo has its own rule (ADR-182): large and landscape; the styles crop it, so it fills.
   if (key === "photo") {
-    const problem = photoProblem(info, file.size);
+    const problem = photoProblem(info, weight);
     if (problem !== null || !info)
       return { ok: false, problem: problem ?? "type", info, bytes: file.size };
     return { ok: true, info, bytes: file.size, fit: "cover" };
   }
-  const problem = slotProblem(slotOf(key), info, file.size);
+  const problem = slotProblem(slotOf(key), info, weight);
   if (problem !== null || !info)
     return { ok: false, problem: problem ?? "type", info, bytes: file.size };
   const fit = slotFit(slotOf(key), info);

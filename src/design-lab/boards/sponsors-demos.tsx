@@ -168,6 +168,42 @@ export function SponsorSlotDemo() {
           />
         </Cell>
       </Specimen>
+      <Specimen label="Too heavy: not refused. The question to lower the quality sits under the slot, then the result to accept (nothing is lowered here)">
+        <div className="grid w-full gap-4 md:grid-cols-2">
+          <SponsorImageSlot
+            {...slot(PANEL_DESKTOP, "empty", {
+              reduce: {
+                prompt: {
+                  state: "offer",
+                  fileName: "panel.png",
+                  bytes: 412 * 1024,
+                  limitBytes: 150 * 1024,
+                },
+                onReduce: NOTHING,
+                onUse: NOTHING,
+                onChooseAnother: NOTHING,
+              },
+            })}
+          />
+          <SponsorImageSlot
+            {...slot(PANEL_DESKTOP, "empty", {
+              reduce: {
+                prompt: {
+                  state: "ready",
+                  fileName: "panel.png",
+                  bytes: 412 * 1024,
+                  limitBytes: 150 * 1024,
+                  reducedBytes: 141 * 1024,
+                  previewUrl: PANEL_DESKTOP.sample,
+                },
+                onReduce: NOTHING,
+                onUse: NOTHING,
+                onChooseAnother: NOTHING,
+              },
+            })}
+          />
+        </div>
+      </Specimen>
       <Specimen label="Refused: not a picture the site takes (the file name shows in the box), too small, too heavy">
         <div className="grid w-full gap-4 md:grid-cols-2">
           <SponsorImageSlot

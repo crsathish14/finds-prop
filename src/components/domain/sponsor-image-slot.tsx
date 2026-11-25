@@ -10,7 +10,9 @@
  *   state ("empty" | "filled" | "near" | "rejected" | "checking"), image ({ src, alt } for the preview), fileName (shown
  *   in the box when a refused file has no picture), status ({ title, text }: the line under the preview), words (all
  *   already translated: dropTitle, dropText, choose, replace, remove, chooseAnother, keep, checking, previewAlt),
- *   accept, onFile, onRemove, onKeep, disabled, className.
+ *   accept, onFile, onRemove, onKeep, disabled, reduce (the "lower the quality to fit?" question for a picture over its limit,
+ *   drawn under the buttons: what `useImageReduce` gives, its answers, and "Choose another" runs the page's own
+ *   handler and then opens this slot's file picker again), className.
  * Responsive: fills its column; the preview keeps the slot's shape at every width, so nothing is stretched.
  * Accessibility: the empty preview is the file picker's label (keyboard and screen reader work, not only dragging);
  *   the status is text with an icon, never colour alone: "Fills the slot" is read politely, a refusal is an alert; each
@@ -22,6 +24,7 @@
 import { CircleAlert, CircleCheck, CircleX, FileImage, Upload } from "lucide-react";
 import Image from "next/image";
 import { useId, useRef, useState, type DragEvent } from "react";
+import { ImageReduceFlow, type ImageReduceFlowProps } from "@/components/domain/image-reduce-flow";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
@@ -54,6 +57,8 @@ type SponsorImageSlotProps = {
   onRemove?: () => void;
   onKeep?: () => void;
   disabled?: boolean;
+  /** A picture over its limit waiting for the admin's answer; drawn under the buttons. */
+  reduce?: Omit<ImageReduceFlowProps, "className">;
   className?: string;
 };
 
@@ -77,6 +82,7 @@ function SponsorImageSlot({
   onRemove,
   onKeep,
   disabled = false,
+  reduce,
   className,
 }: SponsorImageSlotProps) {
   const inputId = useId();
@@ -262,6 +268,15 @@ function SponsorImageSlot({
           </Button>
         ) : null}
       </div>
+      {reduce ? (
+        <ImageReduceFlow
+          {...reduce}
+          onChooseAnother={() => {
+            reduce.onChooseAnother();
+            choose();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

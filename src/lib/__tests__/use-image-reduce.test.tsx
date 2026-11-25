@@ -168,4 +168,25 @@ describe("UT-use-image-reduce: a picture that is still too heavy", () => {
     unmount();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:lowered");
   });
+
+  it("uses the limit given with a file instead of the box's own, for the question and for the lowering", async () => {
+    const ready = vi.fn();
+    const { result } = renderHook(() => useImageReduce({ limitBytes: LIMIT, deps: browser() }));
+    // 100 KB is over the box's own limit but within the limit given for this file: it goes straight on.
+    await act(async () => {
+      await result.current.choose(pictureFile("image/jpeg", 100_000, "photo.jpg"), ready, 200_000);
+    });
+    expect(ready).toHaveBeenCalledTimes(1);
+    expect(result.current.prompt).toBeNull();
+    // Over the given limit: asked with that limit, and lowered to fit it (90,000 fits 100,000 only at quality 0.9).
+    const second = vi.fn();
+    await act(async () => {
+      await result.current.choose(pictureFile("image/jpeg", 300_000, "photo.jpg"), second, 90_000);
+    });
+    expect(result.current.prompt).toMatchObject({ state: "offer", limitBytes: 90_000 });
+    await act(async () => {
+      await result.current.reduce();
+    });
+    expect(result.current.prompt).toMatchObject({ state: "ready", reducedBytes: 90_000 });
+  });
 });
