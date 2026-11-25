@@ -41,7 +41,7 @@ function SiteFooterPreview({
       data-slot="site-footer-preview"
       className={cn("on-dark flex flex-col gap-3 rounded-xl bg-dark p-4 text-on-dark", className)}
     >
-      <Logo name={brandName} tone="on-dark" />
+      <Logo name={brandName} tone="on-dark" variant="full" />
       {about ? <p className="text-small whitespace-pre-line text-on-dark-muted">{about}</p> : null}
       {contacts.length > 0 ? (
         <ul className="flex flex-col gap-1 text-small text-on-dark/90">

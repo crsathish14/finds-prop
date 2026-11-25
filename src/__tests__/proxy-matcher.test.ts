@@ -24,13 +24,21 @@ describe("UT-proxy-matcher: which requests get the language rewrite and the sess
     }
   });
 
-  it("leaves robots.txt and sitemap.xml alone: they have no language prefix, so a rewrite would 404 them", () => {
+  it("leaves robots.txt, sitemap.xml and the web manifest alone: they have no language prefix, so a rewrite would 404 them", () => {
     expect(runsFor("/robots.txt")).toBe(false);
     expect(runsFor("/sitemap.xml")).toBe(false);
+    expect(runsFor("/manifest.webmanifest")).toBe(false);
   });
 
   it("leaves static files and images alone, the share image among them", () => {
-    for (const path of ["/_next/static/a.js", "/favicon.ico", "/share-image.png", "/logo.svg"]) {
+    for (const path of [
+      "/_next/static/a.js",
+      "/favicon.ico",
+      "/share-image.png",
+      "/logo.svg",
+      "/icons/icon-192.png",
+      "/brand/findsprop-wordmark.svg",
+    ]) {
       expect(runsFor(path), path).toBe(false);
     }
   });
