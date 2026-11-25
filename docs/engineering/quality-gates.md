@@ -6,11 +6,11 @@ Gates `G-01` to `G-21`, the local layers `L-01` to `L-04`, the npm scripts, the 
 
 ## 1. Enforcement tiers and local commands
 
-| Tier                                 | Runs                                        | Purpose                                                                                 |
-| ------------------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| T1 CI and branch protection          | On every PR and push to `develop` or `main` | Authoritative signal; GitHub does not enforce it while no branch rules are set (DEC-36) |
-| T2 Local: `npm run check`, git hooks | Before commit and before pushing            | Fast feedback; a subset of T1                                                           |
-| T3 Agent guardrails                  | While an agent works                        | Prevent unrecoverable actions (`06`)                                                    |
+| Tier                                 | Runs                                 | Purpose                                                                                 |
+| ------------------------------------ | ------------------------------------ | --------------------------------------------------------------------------------------- |
+| T1 CI and branch protection          | On every PR into `develop` or `main` | Authoritative signal; GitHub does not enforce it while no branch rules are set (DEC-36) |
+| T2 Local: `npm run check`, git hooks | Before commit and before pushing     | Fast feedback; a subset of T1                                                           |
+| T3 Agent guardrails                  | While an agent works                 | Prevent unrecoverable actions (`06`)                                                    |
 
 `package.json` scripts (names are the contract; flags are internal). All scripts are Node-based and run on Windows, macOS and Linux with no POSIX-only syntax.
 
@@ -181,6 +181,8 @@ Workflow jobs follow plan 09 §4. New gates are added to existing jobs; one job 
 **Skipping jobs (owner decision, 7 Nov 2026: private-repo CI minutes would cost about $140 to $190 a month).** To save CI minutes, `db`, `integration` and `build` run only when a changed file can affect them (`scripts/lib/ci-paths.mjs`). A skipped job is not a passed gate: no gate is weakened, because a job that is not needed has nothing to check. `static`, `unit`, `security` and `pr-policy` always run. Everything runs when `.github/`, `package.json`, `package-lock.json` or `.nvmrc` changes, when the change is aimed at `main` or pushed to `main`, and when the changed files cannot be read. `all-checks-passed` treats a skipped job as fine and still fails on any failed or cancelled job, including `changes`.
 
 **Stop on the first failure (owner decision, 25 Nov 2026: do not spend minutes on a run that has already failed).** Every job except `all-checks-passed` ends with a step that runs only when that job failed and cancels the whole run with `gh run cancel`, so the jobs still running stop. For that one step each job's token has `actions: write`; the token is passed to that step alone (checkout keeps `persist-credentials: false`). A fork or Dependabot pull request gets a read-only token, so the cancel fails quietly and the run continues as before. `all-checks-passed` still runs and fails, because it fails on any failed or cancelled job. After a flaky failure, re-run all jobs.
+
+**Pull requests only (owner decision, 25 Nov 2026: no duplicate runs).** CI runs on pull requests into `develop` and `main`, not on pushes. A push to either branch is the merge of a pull request that already ran, so a second run on it only repeated the work (a release PR from `develop` showed every job twice). The release PR into `main` still runs every job, so it remains the one full run on exactly what goes to production. `db-deploy.yml` now reads `all-checks-passed` of the pull request merged as the `develop` commit and applies nothing for a commit that no merged pull request produced. The trade-off: after a merge nothing re-tests `develop` as a whole, so two PRs that pass on their own but clash together show up at the next PR or the release PR.
 
 Properties kept from plan 09 §4: least-privilege `permissions`, third-party actions pinned by commit SHA, concurrency cancels superseded runs, no secrets for fork pull requests, no `pull_request_target` with secrets. Budget: `static` plus `unit` under 6 minutes; if exceeded, split the job before adding gates.
 

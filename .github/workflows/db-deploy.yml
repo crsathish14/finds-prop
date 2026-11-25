@@ -1,7 +1,7 @@
 # Applies the committed migrations to the hosted dev database (findsprop-dev).
 # Decision: ADR-034, amended 1 Nov 2026. Migrations reach dev only through this workflow, never
 # through `supabase db push` on a machine. Staging and production stay CI-only from `main`.
-# Properties: runs only from `develop`, waits for the CI result of the same commit, least-privilege
+# Properties: runs only from `develop`, waits for the CI result of the pull request merged as this commit, least-privilege
 # permissions, third-party actions pinned by commit SHA, the one secret lives in the `dev`
 # environment and is exposed only to the steps that need it, never printed.
 name: Deploy database to dev
@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
   checks: read
+  pull-requests: read
 
 # One deploy at a time; a newer run waits and applies everything the older one would have.
 concurrency:
@@ -44,18 +45,29 @@ jobs:
         run: node scripts/check-migrations.mjs
         env:
           CI: "true"
-      - name: Wait for the CI result of this commit
+      # CI runs on pull requests only (ci.yml), so this reads the result of the pull request that was
+      # merged as this commit. A commit that did not come from a merged pull request is not applied.
+      - name: Wait for the CI result of the merged pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          pull=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "develop" and .merge_commit_sha == $ENV.GITHUB_SHA)] | if length == 0 then "" else (.[0].number | tostring) + " " + .[0].head.sha end')
+          if [ -z "${pull}" ]; then
+            echo "No merged pull request into develop produced ${GITHUB_SHA}; nothing was applied."
+            exit 1
+          fi
+          number="${pull%% *}"
+          head="${pull##* }"
+          echo "Commit ${GITHUB_SHA} is the merge of pull request #${number} (head ${head})."
           for attempt in $(seq 1 60); do
-            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/check-runs?per_page=100" \
-              --jq '[.check_runs[] | select(.name == "all-checks-passed")] | if length == 0 then "missing" else (.[0].status + ":" + (.[0].conclusion // "")) end')
-            echo "CI state for ${GITHUB_SHA}: ${state} (attempt ${attempt})"
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${head}/check-runs?check_name=all-checks-passed&per_page=100" \
+              --jq '.check_runs | sort_by(.started_at) | if length == 0 then "missing" else (last.status + ":" + (last.conclusion // "")) end')
+            echo "CI state for pull request #${number}: ${state} (attempt ${attempt})"
             case "${state}" in
               completed:success) exit 0 ;;
-              completed:*) echo "CI did not pass for this commit; nothing was applied."; exit 1 ;;
+              completed:*) echo "CI did not pass for pull request #${number}; nothing was applied."; exit 1 ;;
             esac
             sleep 30
           done
