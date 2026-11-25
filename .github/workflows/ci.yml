@@ -3,12 +3,13 @@
 # cancels superseded runs, no secrets, installs with --ignore-scripts, no pull_request_target.
 # A job that fails cancels the rest of its run, so the other jobs stop spending minutes; all-checks-passed
 # still runs and reports the failure.
+# Runs on pull requests only (owner decision, 25 Nov 2026): a push to develop or main is the merge of a
+# pull request that already ran here, so running again would only repeat it. db-deploy.yml reads the
+# merged pull request's result instead.
 name: CI
 
 on:
   pull_request:
-    branches: [develop, main]
-  push:
     branches: [develop, main]
 
 permissions:

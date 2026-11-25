@@ -4,7 +4,7 @@ Migrations reach `findsprop-dev` only through the workflow `.github/workflows/db
 
 ## When it runs
 
-- Automatically after a merge to `develop` that changes `supabase/migrations/`. It first waits for the CI result (`all-checks-passed`) of the same commit and applies nothing if CI failed.
+- Automatically after a merge to `develop` that changes `supabase/migrations/`. It first waits for the CI result (`all-checks-passed`) of the pull request that was merged as that commit (CI runs on pull requests only since 25 Nov 2026) and applies nothing if CI failed or no merged pull request produced the commit.
 - By hand, to retry after a failed run: Actions, "Deploy database to dev", Run workflow, branch `develop`. It refuses any other branch.
 
 ## What it does
