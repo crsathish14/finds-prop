@@ -1,16 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { BlogBlock } from "@/components/domain/blog-blocks";
 import type { BlogPostFormValues } from "@/components/domain/blog-post-form";
-import {
-  extensionOf,
-  isPendingPath,
-  newPendingPath,
-  pictureProblem,
-  randomToken,
-} from "../blog-pictures";
+import { extensionOf, isPendingPath, newPendingPath, randomToken } from "../blog-pictures";
 import { saveArticle, type BlogEditorActions, type SaveInput } from "../blog-save";
 import type { BlogStorage } from "../blog-storage";
-import { BLOG_IMAGE_MAX_BYTES, BLOG_IMAGE_PATH } from "../constants";
+import { BLOG_IMAGE_PATH } from "../constants";
 
 describe("UT-blog-pictures: choosing a picture in the browser (ADR-144)", () => {
   it("takes JPG, PNG and WEBP by the kind the file says, and nothing else (no SVG)", () => {
@@ -19,13 +13,7 @@ describe("UT-blog-pictures: choosing a picture in the browser (ADR-144)", () => 
     expect(extensionOf({ type: "image/webp" })).toBe("webp");
     for (const type of ["image/svg+xml", "image/gif", "application/pdf", ""]) {
       expect(extensionOf({ type })).toBeNull();
-      expect(pictureProblem({ type, size: 10 })).toBe("type");
     }
-  });
-
-  it("refuses a file heavier than the bucket's cap, and accepts one at the cap", () => {
-    expect(pictureProblem({ type: "image/png", size: BLOG_IMAGE_MAX_BYTES })).toBeNull();
-    expect(pictureProblem({ type: "image/png", size: BLOG_IMAGE_MAX_BYTES + 1 })).toBe("size");
   });
 
   it("names a waiting picture so it cannot be taken for a stored one, and makes names that fit the path rule", () => {

@@ -6,7 +6,8 @@ import {
   type MarkdownCreateResult,
 } from "@/components/domain/blog-markdown-flow";
 import { BlogMethodChooser } from "@/components/domain/blog-markdown-flow-chooser";
-import { extensionOf, pictureProblem, PICTURE_ACCEPT } from "@/features/blog/blog-pictures";
+import { extensionOf, PICTURE_ACCEPT } from "@/features/blog/blog-pictures";
+import { BLOG_IMAGE_MAX_BYTES } from "@/features/blog/constants";
 import { buildAiPrompt } from "@/features/blog/markdown/ai-prompt";
 import { convertMarkdown } from "@/features/blog/markdown/convert";
 import { Text } from "@/components/ui/text";
@@ -14,7 +15,7 @@ import { Specimen } from "../frame";
 
 const PICTURE_RULES = {
   accept: PICTURE_ACCEPT,
-  problem: pictureProblem,
+  limitBytes: BLOG_IMAGE_MAX_BYTES,
   extension: extensionOf,
   maximumKb: 500,
 };
