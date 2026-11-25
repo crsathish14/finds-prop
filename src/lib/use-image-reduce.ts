@@ -13,7 +13,8 @@ import { QUALITY_FLOOR, type ReduceDeps } from "./image-reduce";
  *  - `reduce` lowers the quality ("working"), then shows the result ("ready") for the person to judge, or says it could not
  *    be done ("failed");
  *  - `use` hands the lowered picture to `onReady`; `dismiss` forgets everything (also when the person chooses another file).
- * The file is never sent anywhere here: `onReady` is the box's own upload.
+ * The file is never sent anywhere here: `onReady` is the box's own upload. A box whose pictures have different limits
+ * (the sponsors' banner and photo) gives the limit of the one being chosen as the third argument of `choose`.
  */
 
 export type ImagePrompt =
@@ -39,7 +40,7 @@ export type ImagePrompt =
     };
 
 export type UseImageReduceOptions = {
-  /** The most the file may weigh, in bytes. */
+  /** The most a file may weigh, in bytes (a box with two limits says the other one when it calls `choose`). */
   limitBytes: number;
   /** The lowest quality to go to (`QUALITY_FLOOR` unless the pictures have fine detail). */
   qualityFloor?: number;
@@ -59,6 +60,8 @@ export function useImageReduce({
   const lowered = useRef<File | null>(null);
   const whenReady = useRef<((file: File) => void) | null>(null);
   const address = useRef<string | null>(null);
+  /** The limit of the picture being decided: the box's own, or the one given when it was chosen. */
+  const limit = useRef(limitBytes);
   /** Counts the walks, so an answer that arrives after the person moved on is ignored. */
   const walk = useRef(0);
 
@@ -85,11 +88,14 @@ export function useImageReduce({
   const choose = async (
     file: File,
     onReady: (file: File) => void,
+    limitOverride?: number,
   ): Promise<StripProblem | null> => {
     forget();
     setPrompt(null);
     const mine = walk.current;
-    const prepared = await prepareChosenImage(file, limitBytes);
+    limit.current = limitOverride ?? limitBytes;
+    const limitNow = limit.current;
+    const prepared = await prepareChosenImage(file, limitNow);
     if (mine !== walk.current) return null;
     if (prepared.kind === "refused") return prepared.reason;
     if (prepared.kind === "fits") {
@@ -98,7 +104,7 @@ export function useImageReduce({
     }
     cleaned.current = prepared.file;
     whenReady.current = onReady;
-    setPrompt({ state: "offer", fileName: file.name, bytes: prepared.bytes, limitBytes });
+    setPrompt({ state: "offer", fileName: file.name, bytes: prepared.bytes, limitBytes: limitNow });
     return null;
   };
 
@@ -106,9 +112,13 @@ export function useImageReduce({
     const source = cleaned.current;
     if (!source) return;
     const mine = walk.current;
-    const base = { fileName: source.name, bytes: source.size, limitBytes };
+    const base = { fileName: source.name, bytes: source.size, limitBytes: limit.current };
     setPrompt({ state: "working", ...base });
-    const result = await reduceChosenImage(source, { limitBytes, qualityFloor }, deps);
+    const result = await reduceChosenImage(
+      source,
+      { limitBytes: limit.current, qualityFloor },
+      deps,
+    );
     if (mine !== walk.current) return;
     if (!result.ok) {
       const reason =

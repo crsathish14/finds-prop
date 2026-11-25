@@ -20,29 +20,41 @@ const le16 = (value: number) => [value & 255, (value >>> 8) & 255];
 const le24 = (value: number) => [value & 255, (value >>> 8) & 255, (value >>> 16) & 255];
 const text = (value: string) => Array.from(value).map((letter) => letter.charCodeAt(0));
 
+/**
+ * A whole PNG (the signature, the header, one data chunk of filler and the end), `total` bytes long or a little more:
+ * the site takes the hidden data out of a picture before it reads it, and refuses a file that is cut short.
+ */
 export function png(width: number, height: number, total = 64): Uint8Array {
-  return pad(
-    [
-      0x89,
-      0x50,
-      0x4e,
-      0x47,
-      0x0d,
-      0x0a,
-      0x1a,
-      0x0a,
-      ...be32(13),
-      ...text("IHDR"),
-      ...be32(width),
-      ...be32(height),
-      8,
-      6,
-      0,
-      0,
-      0,
-    ],
-    total,
-  );
+  const head = [
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a,
+    ...be32(13),
+    ...text("IHDR"),
+    ...be32(width),
+    ...be32(height),
+    8,
+    6,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  ];
+  const end = [...be32(0), ...text("IEND"), 0, 0, 0, 0];
+  const filler = Math.max(0, total - head.length - 12 - end.length);
+  const out = new Uint8Array(head.length + 12 + filler + end.length);
+  out.set(head, 0);
+  out.set([...be32(filler), ...text("IDAT")], head.length);
+  out.set(end, head.length + 8 + filler + 4);
+  return out;
 }
 
 export function jpeg(width: number, height: number, total = 64): Uint8Array {
