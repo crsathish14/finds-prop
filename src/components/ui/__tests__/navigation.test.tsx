@@ -133,24 +133,24 @@ describe("Link", () => {
 });
 
 describe("Logo, ArchMark, ArchIllustration, SkipLink, VisuallyHidden", () => {
-  it("shows the wordmark, with the brand name as its alt text", () => {
+  it("shows the full logo, with the brand name as its alt text", () => {
     render(<Logo name="findsprop" />);
     expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
       "src",
-      "/brand/findsprop-wordmark.svg",
+      "/brand/findsprop-logo.svg",
     );
   });
 
-  it("picks the white wordmark on dark and the full logo for the footer", () => {
+  it("picks the white logo on dark and the compact wordmark when asked", () => {
     const { rerender } = render(<Logo name="findsprop" tone="on-dark" />);
     expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
       "src",
-      "/brand/findsprop-wordmark-white.svg",
+      "/brand/findsprop-logo-white.svg",
     );
-    rerender(<Logo name="findsprop" tone="on-dark" variant="full" />);
+    rerender(<Logo name="findsprop" variant="wordmark" />);
     expect(screen.getByRole("img", { name: "findsprop" })).toHaveAttribute(
       "src",
-      "/brand/findsprop-logo-white.svg",
+      "/brand/findsprop-wordmark.svg",
     );
   });
 
