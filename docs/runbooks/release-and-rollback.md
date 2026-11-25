@@ -10,6 +10,8 @@
 4. Backup confirmed; reviewer approves `production` environment.
 5. Migrate → deploy → smoke → monitor 30 minutes → announce.
 
+Steps 4 and 5 are automated by `.github/workflows/release-prod.yml` (ADR-201): on the merge into `main` it waits for the owner's approval of `production` when the release has migrations, makes an encrypted backup, migrates, then deploys through the Vercel deploy hook and runs the smoke check. How to approve, retry and restore: `docs/runbooks/prod-database-deploy.md`.
+
 ### 8.2 Rollback decision tree
 
 | Symptom                                      | Action                                                                                                                                   |
