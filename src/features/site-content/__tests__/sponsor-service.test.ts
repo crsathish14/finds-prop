@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ActionError } from "@/server/actions/normalise-error";
 import { sponsorsInputSchema, type SponsorsInput } from "../sponsor-schemas";
 import { saveSponsorsContent, type SponsorStore } from "../sponsor-service";
+import { withHiddenData } from "../../../../tests/image-files";
 import { jpeg, notAPicture, png, webpLossless } from "./sponsor-fixtures";
 
 const ID = "ad-one";
@@ -357,6 +358,30 @@ describe("UT-sponsors-save: the Showcase and Cinematic fields (ADR-182)", () => 
       });
       expect(calls.written).toEqual([]);
     }
+  });
+
+  it("refuses a picture that still has hidden data, naming the picture, and writes nothing", async () => {
+    const { store, calls } = standIn({
+      files: { ...GOOD_FILES, [path("sd.png")]: withHiddenData(png(1940, 180, 90_000)) },
+    });
+    await expect(
+      saveSponsorsContent(
+        store,
+        input([
+          base({
+            strip: { desktop: path("sd.png"), compact: path("sc.jpg") },
+            panel: { desktop: path("pd.webp"), compact: path("pc.png") },
+          }),
+        ]),
+      ),
+    ).rejects.toMatchObject({
+      fieldErrors: {
+        "sponsors.0.strip.desktop": [
+          expect.objectContaining({ key: "validation.sponsorImageHidden" }),
+        ],
+      },
+    });
+    expect(calls.written).toEqual([]);
   });
 
   it("links to a live project by its slug, and refuses one buyers cannot see", async () => {

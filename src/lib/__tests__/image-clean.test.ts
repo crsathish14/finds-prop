@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pictureFile } from "../../../tests/image-files";
 import { prepareChosenImage, reduceChosenImage } from "../image-clean";
+import { checkPictureClean } from "../image-hidden-data";
 import type { ReduceDeps } from "../image-reduce";
 
 /** A stand-in browser: a picture "weighs" 100,000 bytes times the quality it is saved at. */
@@ -91,5 +92,29 @@ describe("UT-image-clean: step 2, the quality", () => {
       browser,
     );
     expect(result).toEqual({ ok: false, reason: "cannot_fit", smallestBytes: 75_000 });
+  });
+
+  it("takes the hidden data out of the lowered picture too, so the server accepts what is sent", async () => {
+    // A stand-in encoder that, like some browsers, leaves a comment of its own in the JPEG it makes.
+    const note = new TextEncoder().encode("ENCODER-NOTE");
+    const noisy: ReduceDeps = {
+      decode: browser.decode,
+      encode: async (_picture, _size, type, quality) => {
+        const size = Math.round(quality * 100_000);
+        const body = pictureFile("image/jpeg", size).slice();
+        const bytes = new Uint8Array(await body.arrayBuffer());
+        const comment = new Uint8Array([0xff, 0xfe, 0x00, note.length + 2, ...note]);
+        return new Blob([bytes.slice(0, 2), comment, bytes.slice(2)], { type });
+      },
+    };
+    const file = pictureFile("image/jpeg", 300_000, "front.jpg");
+    const result = await reduceChosenImage(file, { limitBytes: 80_000, qualityFloor: 0.75 }, noisy);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const stored = new Uint8Array(await result.file.arrayBuffer());
+    expect(checkPictureClean(stored)).toBe("clean");
+    expect(new TextDecoder().decode(stored)).not.toContain("ENCODER-NOTE");
+    expect(result.bytes).toBe(result.file.size);
+    expect(result.file.size).toBeLessThanOrEqual(80_000);
   });
 });

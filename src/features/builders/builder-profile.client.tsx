@@ -171,6 +171,12 @@ export function BuilderProfile({
         logoPath: logoPath ?? "",
       });
       if (!result.ok) {
+        // The server read the new logo back and refused it: said under the logo, where the builder can act on it.
+        const logoProblem = result.fieldErrors?.logoPath?.[0];
+        if (logoProblem) {
+          setLogoError(fieldErrorText(everything, logoProblem));
+          return;
+        }
         if (!showFieldErrors(result)) {
           notify.error(failureText(everything, result));
           router.refresh();

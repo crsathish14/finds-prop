@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { pngWithSize, withHiddenData } from "../../../../tests/image-files";
 import { ActionError } from "@/server/actions/normalise-error";
 import type { Json } from "@/types/database.types";
 import {
@@ -24,15 +25,8 @@ const COVER = `blog/${POST}/cover-1.webp`;
 const PICTURE = `blog/${POST}/living-room.png`;
 const FOREIGN = `blog/${OTHER}/living-room.png`;
 
-/** The first bytes of a PNG of the given pixel size, padded to `total` bytes. */
-function png(width: number, height: number, total = 200): Uint8Array {
-  const bytes = new Uint8Array(total);
-  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
-  const view = new DataView(bytes.buffer);
-  view.setUint32(16, width);
-  view.setUint32(20, height);
-  return bytes;
-}
+/** A whole PNG of the given pixel size, padded to `total` bytes (the server also checks that it is whole and clean). */
+const png = pngWithSize;
 
 const paragraph: Block = { type: "paragraph", text: "Some words." };
 const picture = (path: string): Block => ({ type: "image", path, alt: "A room" });
@@ -243,6 +237,18 @@ describe("UT-blog-service: saving the editor", () => {
     expect(huge.fieldErrors).toEqual({
       body: [{ key: "validation.blogImageTooLarge", values: { maximum: 6000 } }],
     });
+  });
+
+  it("refuses a picture that still has hidden data, or that is cut short, and writes nothing", async () => {
+    const hidden = harness({ files: { [PICTURE]: withHiddenData(png(1200, 800)) } });
+    const refused = await failure(savePost(hidden.store, editor({ body: [picture(PICTURE)] })));
+    expect(refused.fieldErrors).toEqual({ body: [{ key: "validation.blogImageHidden" }] });
+    expect(hidden.calls.patches).toEqual([]);
+
+    const cut = harness({ files: { [PICTURE]: png(1200, 800).slice(0, 60) } });
+    const broken = await failure(savePost(cut.store, editor({ body: [picture(PICTURE)] })));
+    expect(broken.fieldErrors).toEqual({ body: [{ key: "validation.blogImageType" }] });
+    expect(cut.calls.patches).toEqual([]);
   });
 
   it("refuses another article's picture before reading anything or writing", async () => {

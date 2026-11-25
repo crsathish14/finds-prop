@@ -433,6 +433,21 @@ export function stripHiddenData(bytes: Uint8Array): StripResult {
   return refuse("type");
 }
 
+/**
+ * What the server asks of a picture it has read back from storage (image clean-up, step 6): has the hidden data been
+ * taken out? The browser does it before upload, so a picture that went through the site's own page is `clean`: stripping
+ * it again removes nothing. `hidden` means something would still be taken out (a camera block, GPS, comments,
+ * thumbnails, trailing data), so the file did not come through the page, or the browser was bypassed. `broken` is a file
+ * that cannot be read as a whole still picture (cut short, an animation, or not a picture of a kind the site takes).
+ */
+export type PictureCleanliness = "clean" | "hidden" | "broken";
+
+export function checkPictureClean(bytes: Uint8Array): PictureCleanliness {
+  const result = stripHiddenData(bytes);
+  if (!result.ok) return "broken";
+  return result.removedBytes === 0 ? "clean" : "hidden";
+}
+
 export type StripFileResult =
   { ok: true; file: File; removedBytes: number } | { ok: false; reason: StripProblem };
 
