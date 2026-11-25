@@ -180,6 +180,8 @@ Workflow jobs follow plan 09 §4. New gates are added to existing jobs; one job 
 
 **Skipping jobs (owner decision, 7 Nov 2026: private-repo CI minutes would cost about $140 to $190 a month).** To save CI minutes, `db`, `integration` and `build` run only when a changed file can affect them (`scripts/lib/ci-paths.mjs`). A skipped job is not a passed gate: no gate is weakened, because a job that is not needed has nothing to check. `static`, `unit`, `security` and `pr-policy` always run. Everything runs when `.github/`, `package.json`, `package-lock.json` or `.nvmrc` changes, when the change is aimed at `main` or pushed to `main`, and when the changed files cannot be read. `all-checks-passed` treats a skipped job as fine and still fails on any failed or cancelled job, including `changes`.
 
+**Stop on the first failure (owner decision, 25 Nov 2026: do not spend minutes on a run that has already failed).** Every job except `all-checks-passed` ends with a step that runs only when that job failed and cancels the whole run with `gh run cancel`, so the jobs still running stop. For that one step each job's token has `actions: write`; the token is passed to that step alone (checkout keeps `persist-credentials: false`). A fork or Dependabot pull request gets a read-only token, so the cancel fails quietly and the run continues as before. `all-checks-passed` still runs and fails, because it fails on any failed or cancelled job. After a flaky failure, re-run all jobs.
+
 Properties kept from plan 09 §4: least-privilege `permissions`, third-party actions pinned by commit SHA, concurrency cancels superseded runs, no secrets for fork pull requests, no `pull_request_target` with secrets. Budget: `static` plus `unit` under 6 minutes; if exceeded, split the job before adding gates.
 
 ### 7.1 Branch protection and rulesets (T1)
@@ -200,6 +202,8 @@ Properties kept from plan 09 §4: least-privilege `permissions`, third-party act
 | Environments                   | `dev` (no approval)                                                         | `production` (required reviewer)                  | plan 09 §5                                        |
 
 **Not in force (decision `DEC-36`, 31 Oct 2026).** The owner chose not to set branch rules, so the table above is the target, not the current setting. CI still runs on every PR and push, but GitHub does not block a failing PR, a direct push to `develop` or `main`, or a force push. Until rules are set these are held by discipline (R-GIT-01), the agent deny rules and `L-03`, and the owner merging only green PRs. Revisit when a second maintainer joins and before launch.
+
+**Minimum rules in force (owner decision, 25 Nov 2026).** Two repository rulesets now hold part of the table: "Protect main" blocks deletion and force pushes on `main` and requires `all-checks-passed` (so a red PR, or a PR to `main` from any branch other than `develop`, cannot be merged, and a direct push needs a commit that already passed); "Protect develop" blocks deletion and force pushes on `develop`. No bypass list. Pull request required, up-to-date branches, merge method, linear history and conversation resolution are still not enforced.
 
 ---
 
