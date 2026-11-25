@@ -56,10 +56,24 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          earlier=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/release-prod.yml/runs?per_page=2" \
-            --jq '[.workflow_runs[] | select(.id != ($ENV.GITHUB_RUN_ID | tonumber))] | length')
-          if [ "${earlier}" = "0" ]; then
-            echo "This workflow has never run before: this first run only looks."
+          # Look-only until the owner has once been shown the dry run: an earlier run whose dry-run
+          # step succeeded, or any earlier successful run (a look-only run always ends in failure, so
+          # a success means the look already happened). The step name must match the migrate job's.
+          runs="repos/${GITHUB_REPOSITORY}/actions/workflows/release-prod.yml/runs"
+          looked=$(gh api "${runs}?status=success&per_page=1" --jq '.workflow_runs | length')
+          if [ "${looked}" = "0" ]; then
+            for id in $(gh api "${runs}?per_page=30" \
+              --jq '.workflow_runs[] | select(.id != ($ENV.GITHUB_RUN_ID | tonumber)) | .id'); do
+              shown=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs?per_page=10" \
+                --jq '[.jobs[].steps[]? | select(.name == "Show the migrations prod is missing (dry run)" and .conclusion == "success")] | length')
+              if [ "${shown}" != "0" ]; then
+                looked=1
+                break
+              fi
+            done
+          fi
+          if [ "${looked}" = "0" ]; then
+            echo "No earlier run has shown the dry run yet: this run only looks."
             echo "first_run=true" >> "$GITHUB_OUTPUT"
             echo "migrations=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -99,11 +113,13 @@ jobs:
       checks: read
       pull-requests: read
     env:
-      # true only for a real run: not a look-only run started by hand, and not the very first run.
+      # true only for a real run: not a look-only run started by hand, and not a run before the first look.
       APPLY: ${{ needs.check.outputs.first_run != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
     steps:
+      # Full history, so G-13 can compare with the previous main (HEAD^1, the last release).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -126,7 +142,7 @@ jobs:
             exit 1
           fi
       - name: Migrations policy (G-13)
-        run: node scripts/check-migrations.mjs
+        run: node scripts/check-migrations.mjs --base HEAD^1
         env:
           CI: "true"
       - name: Check that this commit is a release pull request with green CI
@@ -192,7 +208,7 @@ jobs:
       - name: First run only looks
         if: needs.check.outputs.first_run == 'true'
         run: |
-          echo "This is the first release run, so it only showed the list above and changed nothing."
+          echo "No earlier run has shown the dry run, so this one only showed the list above and changed nothing."
           echo "Read the list (docs/runbooks/prod-database-deploy.md), then start this workflow by hand"
           echo "from main with dry_run unticked. This run stops here so production is not deployed yet."
           exit 1

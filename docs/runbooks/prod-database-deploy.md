@@ -21,7 +21,7 @@ A release without migrations skips step 2 and needs no click.
 
 ## The first run (look only)
 
-The first run of the workflow, on the release that adds it, prints the migrations prod is missing (step "Show the migrations prod is missing") and then stops on purpose, so production is not deployed yet. Read the list:
+Until one run has shown the dry run (step "Show the migrations prod is missing" passed in an earlier run), every run prints the migrations prod is missing and then stops on purpose, so production is not deployed yet. A run that failed before the dry run does not count. Read the list:
 
 - **Empty, or a few recent files**: start the workflow by hand: Actions → "Release to production" → Run workflow → branch `main`, **untick `dry_run`** → approve. It backs up, applies, and deploys.
 - **Every file, although prod already has the tables**: prod was set up outside the migration history. **Do not apply.** Applying would fail or damage data. Production keeps running the previous version. A separate repair plan (`supabase migration repair`) is needed first.
