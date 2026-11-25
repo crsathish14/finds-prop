@@ -1,0 +1,239 @@
+# Releases `main` to production: database migrations first, then the Vercel deploy (ADR-201).
+# Vercel no longer deploys `main` by itself (vercel.json); this workflow calls its deploy hook.
+# Order: check -> migrate (only when there are new migrations, after the owner approves the
+# `production` environment, with an encrypted backup first) -> deploy -> smoke check.
+# Properties: runs only from `main`, least-privilege permissions, third-party actions pinned by
+# commit SHA, secrets exposed only to the steps that need them and never printed, one run at a time.
+# On GitHub Free a PRIVATE repository ignores environments (no approval, no environment secrets):
+# the migrate job then has no database secret and stops, so nothing is applied and nothing deployed.
+name: Release to production
+
+on:
+  push:
+    branches: [main]
+  # By hand, from `main`: a look-only dry run (the default), or a full run after a failure.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show the migrations prod is missing; change nothing and do not deploy"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# One release at a time; a newer run waits and then releases the newest `main`.
+concurrency:
+  group: release-prod
+  cancel-in-progress: false
+
+env:
+  PROD_URL: https://findsprop.com
+
+jobs:
+  check:
+    name: check for new migrations
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      migrations: ${{ steps.changes.outputs.migrations }}
+      first_run: ${{ steps.changes.outputs.first_run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Compares with the commit of the last successful release run, not only this push, so a
+      # migration whose release failed earlier is still counted as new.
+      - name: Find migrations added since the last successful release
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          earlier=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/release-prod.yml/runs?per_page=2" \
+            --jq '[.workflow_runs[] | select(.id != ($ENV.GITHUB_RUN_ID | tonumber))] | length')
+          if [ "${earlier}" = "0" ]; then
+            echo "This workflow has never run before: this first run only looks."
+            echo "first_run=true" >> "$GITHUB_OUTPUT"
+            echo "migrations=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "first_run=false" >> "$GITHUB_OUTPUT"
+          if [ "${EVENT}" = "workflow_dispatch" ]; then
+            echo "Started by hand: the migrate job runs."
+            echo "migrations=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          last=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/release-prod.yml/runs?branch=main&event=push&status=success&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // empty')
+          if [ -z "${last}" ]; then
+            echo "No earlier successful release on a merge: the migrate job runs to be safe."
+            echo "migrations=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed=$(git diff --name-only "${last}" "${GITHUB_SHA}" -- supabase/migrations/)
+          if [ -n "${changed}" ]; then
+            echo "New migrations since ${last}:"
+            echo "${changed}"
+            echo "migrations=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new migrations since ${last}; deploying without a database step."
+            echo "migrations=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  migrate:
+    name: apply migrations to prod (needs the owner's approval)
+    needs: check
+    if: needs.check.outputs.migrations == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
+    env:
+      # true only for a real run: not a look-only run started by hand, and not the very first run.
+      APPLY: ${{ needs.check.outputs.first_run != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.122.0
+      - name: Stop if the prod secrets are missing (fail closed)
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.PROD_BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "PROD_DATABASE_URL is not set in the production environment (or the repository is private on GitHub Free, which ignores environment secrets). Nothing was applied."
+            exit 1
+          fi
+          if [ "${APPLY}" = "true" ] && [ "${#BACKUP_PASSPHRASE}" -lt 20 ]; then
+            echo "PROD_BACKUP_PASSPHRASE is missing or shorter than 20 characters, so no backup can be made. Nothing was applied."
+            exit 1
+          fi
+      - name: Migrations policy (G-13)
+        run: node scripts/check-migrations.mjs
+        env:
+          CI: "true"
+      - name: Check that this commit is a release pull request with green CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pull=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "main" and .merge_commit_sha == $ENV.GITHUB_SHA)] | if length == 0 then "" else (.[0].number | tostring) + " " + .[0].head.sha end')
+          if [ -z "${pull}" ]; then
+            echo "No merged pull request into main produced ${GITHUB_SHA}; nothing was applied."
+            exit 1
+          fi
+          number="${pull%% *}"
+          head="${pull##* }"
+          state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${head}/check-runs?check_name=all-checks-passed&per_page=100" \
+            --jq '.check_runs | sort_by(.started_at) | if length == 0 then "missing" else (last.status + ":" + (last.conclusion // "")) end')
+          echo "Release pull request #${number} (head ${head}): all-checks-passed is ${state}."
+          if [ "${state}" != "completed:success" ]; then
+            echo "CI did not pass for the release pull request; nothing was applied."
+            exit 1
+          fi
+      - name: Show the migrations prod is missing (dry run)
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: supabase db push --db-url "$DATABASE_URL" --dry-run
+      - name: Back up prod and encrypt the copy
+        if: env.APPLY == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.PROD_BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "${RUNNER_TEMP}/backup"
+          cd "${RUNNER_TEMP}/backup"
+          supabase db dump --db-url "$DATABASE_URL" --role-only -f roles.sql
+          supabase db dump --db-url "$DATABASE_URL" -f schema.sql
+          supabase db dump --db-url "$DATABASE_URL" --data-only --use-copy -f data.sql
+          tar -cf backup.tar roles.sql schema.sql data.sql
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 --output "prod-backup-${GITHUB_RUN_ID}.tar.gpg" backup.tar
+          rm -f roles.sql schema.sql data.sql backup.tar
+          ls -l
+      # Encrypted, because on a public repository any signed-in GitHub user can download artifacts.
+      - name: Keep the encrypted backup for 14 days
+        if: env.APPLY == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: prod-backup-${{ github.run_id }}
+          path: ${{ runner.temp }}/backup/prod-backup-${{ github.run_id }}.tar.gpg
+          retention-days: 14
+          if-no-files-found: error
+      - name: Apply the migrations
+        if: env.APPLY == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: supabase db push --db-url "$DATABASE_URL"
+      - name: Show the applied migrations
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: supabase migration list --db-url "$DATABASE_URL"
+      - name: First run only looks
+        if: needs.check.outputs.first_run == 'true'
+        run: |
+          echo "This is the first release run, so it only showed the list above and changed nothing."
+          echo "Read the list (docs/runbooks/prod-database-deploy.md), then start this workflow by hand"
+          echo "from main with dry_run unticked. This run stops here so production is not deployed yet."
+          exit 1
+
+  deploy:
+    name: deploy production on Vercel and smoke check
+    needs: [check, migrate]
+    if: >-
+      always() &&
+      needs.check.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
+      !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions: {}
+    steps:
+      - name: Ask Vercel to build and publish main
+        env:
+          DEPLOY_HOOK: ${{ secrets.VERCEL_PROD_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DEPLOY_HOOK}" ]; then
+            echo "VERCEL_PROD_DEPLOY_HOOK is not set as a repository secret; production was not deployed."
+            exit 1
+          fi
+          curl -fsS -m 30 -X POST "${DEPLOY_HOOK}" -o /dev/null
+          echo "Vercel accepted the deploy request for ${GITHUB_SHA}."
+      - name: Wait until production serves this commit, then check the home page
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 40); do
+            commit=$(curl -fsS -m 10 "${PROD_URL}/api/health" 2>/dev/null | jq -r '.commit // empty' 2>/dev/null || true)
+            echo "Production serves ${commit:-an unknown commit} (attempt ${attempt})."
+            if [ "${commit}" = "${GITHUB_SHA}" ]; then
+              status=$(curl -sS -m 20 -o /dev/null -w '%{http_code}' "${PROD_URL}/")
+              echo "Home page answered ${status}."
+              if [ "${status}" = "200" ]; then exit 0; fi
+              echo "The new version is live but the home page did not answer 200. Roll back from Vercel if it stays down (docs/runbooks/release-and-rollback.md)."
+              exit 1
+            fi
+            sleep 30
+          done
+          echo "Production did not serve ${GITHUB_SHA} within 20 minutes. Check the deployment in Vercel."
+          exit 1

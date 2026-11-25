@@ -2,6 +2,8 @@
 
 Migrations reach `findsprop-dev` only through the workflow `.github/workflows/db-deploy.yml` (ADR-034, amended 1 Nov 2026). Nobody runs `supabase link` or `supabase db push` by hand, and agents never do.
 
+Production has its own workflow and runbook: `prod-database-deploy.md` (ADR-201).
+
 ## When it runs
 
 - Automatically after a merge to `develop` that changes `supabase/migrations/`. It first waits for the CI result (`all-checks-passed`) of the pull request that was merged as that commit (CI runs on pull requests only since 25 Nov 2026) and applies nothing if CI failed or no merged pull request produced the commit.

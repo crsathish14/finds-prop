@@ -184,6 +184,8 @@ Workflow jobs follow plan 09 §4. New gates are added to existing jobs; one job 
 
 **Pull requests only (owner decision, 25 Nov 2026: no duplicate runs).** CI runs on pull requests into `develop` and `main`, not on pushes. A push to either branch is the merge of a pull request that already ran, so a second run on it only repeated the work (a release PR from `develop` showed every job twice). The release PR into `main` still runs every job, so it remains the one full run on exactly what goes to production. `db-deploy.yml` now reads `all-checks-passed` of the pull request merged as the `develop` commit and applies nothing for a commit that no merged pull request produced. The trade-off: after a merge nothing re-tests `develop` as a whole, so two PRs that pass on their own but clash together show up at the next PR or the release PR.
 
+**Production release (ADR-201, 25 Nov 2026).** `release-prod.yml` runs on the merge into `main`. It applies migrations to prod only after the owner approves the `production` environment, and only for a commit whose release pull request has a green `all-checks-passed`. It deploys through the Vercel deploy hook only after the migration passes or is not needed, then smoke-checks `/api/health` and the home page. Vercel no longer deploys `main` by itself (`vercel.json`).
+
 Properties kept from plan 09 §4: least-privilege `permissions`, third-party actions pinned by commit SHA, concurrency cancels superseded runs, no secrets for fork pull requests, no `pull_request_target` with secrets. Budget: `static` plus `unit` under 6 minutes; if exceeded, split the job before adding gates.
 
 ### 7.1 Branch protection and rulesets (T1)
