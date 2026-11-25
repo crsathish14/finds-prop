@@ -481,12 +481,12 @@ export function IconsDemo() {
             <Logo name="findsprop" tone="on-dark" />
           </Stage>
         </Specimen>
-        <Specimen label='Logo variant="full"'>
-          <Logo name="findsprop" variant="full" />
+        <Specimen label='Logo variant="wordmark"'>
+          <Logo name="findsprop" variant="wordmark" />
         </Specimen>
-        <Specimen label='Logo variant="full" tone="on-dark"'>
+        <Specimen label='Logo variant="wordmark" tone="on-dark"'>
           <Stage tone="dark" className="p-3">
-            <Logo name="findsprop" tone="on-dark" variant="full" />
+            <Logo name="findsprop" tone="on-dark" variant="wordmark" />
           </Stage>
         </Specimen>
         <Specimen label="ArchIllustration (empty states)">
