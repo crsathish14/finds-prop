@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stripHiddenData, stripHiddenDataFromFile } from "../image-hidden-data";
+import { checkPictureClean, stripHiddenData, stripHiddenDataFromFile } from "../image-hidden-data";
 
 type Part = Uint8Array | readonly number[] | string;
 
@@ -515,5 +515,123 @@ describe("UT-image-hidden-data: other files", () => {
       new File(["hello"], "note.png", { type: "image/png" }),
     );
     expect(result).toEqual({ ok: false, reason: "type" });
+  });
+});
+
+describe("UT-image-hidden-data: what the server asks of a stored picture", () => {
+  const jfif = [0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0];
+  const scan = [0xff, 0xda, 0x00, 0x08, 1, 1, 0, 0, 0x3f, 0, 0x12, 0x34, 0xff, 0xd9];
+  const le32 = (value: number) => [value & 255, (value >>> 8) & 255, (value >>> 16) & 255, 0];
+  const webpChunk = (name: string, data: number[]) => [
+    ...name.split("").map((letter) => letter.charCodeAt(0)),
+    ...le32(data.length),
+    ...data,
+    ...(data.length % 2 ? [0] : []),
+  ];
+  const riff = (...chunks: number[][]) => {
+    const body = [..."WEBP"].map((letter) => letter.charCodeAt(0)).concat(chunks.flat());
+    return Uint8Array.from([
+      ...[..."RIFF"].map((letter) => letter.charCodeAt(0)),
+      ...le32(body.length),
+      ...body,
+    ]);
+  };
+
+  it("calls a picture the browser's own encoders make clean, so the page's uploads are never refused", () => {
+    // A JPEG from a canvas: a JFIF header, tables and the picture, nothing else.
+    expect(checkPictureClean(Uint8Array.from([0xff, 0xd8, ...jfif, ...scan]))).toBe("clean");
+    // A JPEG with a colour profile (kept on purpose).
+    const profile = [
+      0xff,
+      0xe2,
+      0x00,
+      0x14,
+      ...[..."ICC_PROFILE"].map((letter) => letter.charCodeAt(0)),
+      0,
+      1,
+      1,
+      9,
+      9,
+      9,
+      9,
+    ];
+    expect(checkPictureClean(Uint8Array.from([0xff, 0xd8, ...jfif, ...profile, ...scan]))).toBe(
+      "clean",
+    );
+    // A plain lossy WebP and one with transparency (an extended header, an alpha chunk, the picture).
+    expect(
+      checkPictureClean(riff(webpChunk("VP8 ", [0, 0, 0, 0x9d, 1, 0x2a, 4, 0, 4, 0, 5, 6]))),
+    ).toBe("clean");
+    expect(
+      checkPictureClean(
+        riff(
+          webpChunk("VP8X", [0x10, 0, 0, 0, 3, 0, 0, 3, 0, 0]),
+          webpChunk("ALPH", [1, 2, 3, 4, 5]),
+          webpChunk("VP8 ", [0, 0, 0, 0x9d, 1, 0x2a, 4, 0, 4, 0, 5, 6]),
+        ),
+      ),
+    ).toBe("clean");
+  });
+
+  it("calls a picture clean after the site has cleaned it, whatever it had before", () => {
+    const dirty = Uint8Array.from([
+      0xff,
+      0xd8,
+      ...jfif,
+      0xff,
+      0xfe,
+      0x00,
+      0x04,
+      65,
+      66,
+      ...scan,
+      1,
+      2,
+      3,
+    ]);
+    expect(checkPictureClean(dirty)).toBe("hidden");
+    const result = stripHiddenData(dirty);
+    if (!result.ok) throw new Error("expected a clean picture");
+    expect(checkPictureClean(result.bytes)).toBe("clean");
+  });
+
+  it("says hidden for a picture that still has a camera block, a comment or a note after it", () => {
+    const camera = [
+      0xff,
+      0xe1,
+      0x00,
+      0x10,
+      ...[..."Exif"].map((letter) => letter.charCodeAt(0)),
+      0,
+      0,
+      0x4d,
+      0x4d,
+      0,
+      0x2a,
+      0,
+      0,
+      0,
+      8,
+    ];
+    expect(checkPictureClean(Uint8Array.from([0xff, 0xd8, ...jfif, ...camera, ...scan]))).toBe(
+      "hidden",
+    );
+    expect(
+      checkPictureClean(Uint8Array.from([0xff, 0xd8, ...jfif, ...scan, 0x47, 0x50, 0x53])),
+    ).toBe("hidden");
+    expect(
+      checkPictureClean(
+        riff(
+          webpChunk("VP8 ", [0, 0, 0, 0x9d, 1, 0x2a, 4, 0, 4, 0]),
+          webpChunk("EXIF", [1, 2, 3, 4]),
+        ),
+      ),
+    ).toBe("hidden");
+  });
+
+  it("says broken for a file that is cut short, an animation or not a picture", () => {
+    expect(checkPictureClean(Uint8Array.from([0xff, 0xd8, ...jfif]))).toBe("broken");
+    expect(checkPictureClean(new TextEncoder().encode("<svg/>"))).toBe("broken");
+    expect(checkPictureClean(riff(webpChunk("ANMF", [1])))).toBe("broken");
   });
 });

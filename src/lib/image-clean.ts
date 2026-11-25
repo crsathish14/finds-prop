@@ -62,13 +62,14 @@ export async function reduceChosenImage(
     deps,
   );
   if (!result.ok) return result;
-  return {
-    ok: true,
-    bytes: result.bytes,
-    originalBytes: result.originalBytes,
-    file: new File([result.blob], renamedFor(file.name, result.mime), {
-      type: result.mime,
-      lastModified: file.lastModified,
-    }),
-  };
+  const lowered = new File([result.blob], renamedFor(file.name, result.mime), {
+    type: result.mime,
+    lastModified: file.lastModified,
+  });
+  // The browser's own encoder may add a little of its own (a colour profile it keeps, but also, in some browsers, a
+  // note of its own): the lowered picture goes through the hidden-data step too, so what is sent is what the server
+  // accepts. If it cannot be read again the picture is left as the encoder made it.
+  const cleaned = await stripHiddenDataFromFile(lowered);
+  const final = cleaned.ok ? cleaned.file : lowered;
+  return { ok: true, bytes: final.size, originalBytes: result.originalBytes, file: final };
 }

@@ -1,16 +1,26 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/types/database.types";
+import { pictureFile, withHiddenData } from "../../../../tests/image-files";
 import { saveMyProfile } from "../profile-service";
 
 const BUILDER = "00000000-0000-4000-b000-000000000001";
 
 type Answer = { data: { id: string }[] | null; error: { code?: string; message?: string } | null };
 
-/** A stand-in for the signed-in builder's client: what `my_builder()` finds, and what the update answers. */
-function clientWith(options: { mine?: Answer; saved?: Answer }) {
+/**
+ * A stand-in for the signed-in builder's client: what `my_builder()` finds, the logo on record, the files in the logo
+ * bucket (by path), and what the update answers.
+ */
+function clientWith(options: {
+  mine?: Answer;
+  saved?: Answer;
+  currentLogo?: string | null;
+  files?: Record<string, Uint8Array>;
+}) {
   const written: Record<string, unknown>[] = [];
   const filters: [string, unknown][] = [];
+  const downloaded: string[] = [];
   const mine = options.mine ?? { data: [{ id: BUILDER }], error: null };
   const saved = options.saved ?? { data: [{ id: BUILDER }], error: null };
   const client = {
@@ -18,6 +28,10 @@ function clientWith(options: { mine?: Answer; saved?: Answer }) {
       select: () => Promise.resolve(name === "my_builder" ? mine : { data: null, error: null }),
     }),
     from: () => ({
+      select: () => ({
+        eq: () =>
+          Promise.resolve({ data: [{ logo_path: options.currentLogo ?? null }], error: null }),
+      }),
       update: (row: Record<string, unknown>) => {
         written.push(row);
         return {
@@ -28,9 +42,23 @@ function clientWith(options: { mine?: Answer; saved?: Answer }) {
         };
       },
     }),
+    storage: {
+      from: () => ({
+        download: async (path: string) => {
+          downloaded.push(path);
+          const found = options.files?.[path];
+          return found
+            ? { data: new Blob([found as BlobPart]), error: null }
+            : { data: null, error: { message: "not found" } };
+        },
+      }),
+    },
   } as unknown as SupabaseClient<Database>;
-  return { client, written, filters };
+  return { client, written, filters, downloaded };
 }
+
+const NEW_LOGO = `${BUILDER}/logo-1.webp`;
+const cleanLogo = async () => new Uint8Array(await pictureFile("image/webp", 20).arrayBuffer());
 
 describe("UT-builder-profile-service: saving the builder's own profile (S7-T03)", () => {
   it("writes only the profile columns to the builder's own record, a blank box as null", async () => {
@@ -60,7 +88,7 @@ describe("UT-builder-profile-service: saving the builder's own profile (S7-T03)"
   });
 
   it("saves the spotlight fields and a logo from the builder's own folder (ADR-179)", async () => {
-    const { client, written } = clientWith({});
+    const { client, written } = clientWith({ files: { [NEW_LOGO]: await cleanLogo() } });
     await saveMyProfile(client, {
       name: "Kadal Homes",
       tagline: "Homes by the sea",
@@ -74,6 +102,45 @@ describe("UT-builder-profile-service: saving the builder's own profile (S7-T03)"
       projects_delivered: 18,
       logo_path: `${BUILDER}/logo-1.webp`,
     });
+  });
+
+  it("reads a new logo back from the bucket and refuses one that still has hidden data, writing nothing", async () => {
+    const dirty = withHiddenData(new Uint8Array(await pictureFile("image/png", 20).arrayBuffer()));
+    const { client, written, downloaded } = clientWith({ files: { [NEW_LOGO]: dirty } });
+    await expect(
+      saveMyProfile(client, { name: "Kadal Homes", logoPath: NEW_LOGO }),
+    ).rejects.toMatchObject({
+      code: "VALIDATION",
+      fieldErrors: { logoPath: [{ key: "validation.logoHidden" }] },
+    });
+    expect(downloaded).toEqual([NEW_LOGO]);
+    expect(written).toEqual([]);
+  });
+
+  it("refuses a logo that is not in the bucket or cannot be read as a picture, writing nothing", async () => {
+    const missing = clientWith({ files: {} });
+    await expect(
+      saveMyProfile(missing.client, { name: "Kadal Homes", logoPath: NEW_LOGO }),
+    ).rejects.toMatchObject({ fieldErrors: { logoPath: [{ key: "validation.invalid" }] } });
+    const notAPicture = clientWith({ files: { [NEW_LOGO]: new TextEncoder().encode("<svg/>") } });
+    await expect(
+      saveMyProfile(notAPicture.client, { name: "Kadal Homes", logoPath: NEW_LOGO }),
+    ).rejects.toMatchObject({ fieldErrors: { logoPath: [{ key: "validation.invalid" }] } });
+    expect(missing.written).toEqual([]);
+    expect(notAPicture.written).toEqual([]);
+  });
+
+  it("does not read the logo on record again when it is saved unchanged", async () => {
+    const { client, written, downloaded } = clientWith({ currentLogo: NEW_LOGO, files: {} });
+    await saveMyProfile(client, { name: "Kadal Homes", logoPath: NEW_LOGO });
+    expect(downloaded).toEqual([]);
+    expect(written[0]).toMatchObject({ logo_path: NEW_LOGO });
+  });
+
+  it("does not read anything for a profile saved with no logo", async () => {
+    const { client, downloaded } = clientWith({});
+    await saveMyProfile(client, { name: "Kadal Homes" });
+    expect(downloaded).toEqual([]);
   });
 
   it("refuses a logo from another builder's folder and writes nothing", async () => {

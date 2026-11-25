@@ -1,4 +1,5 @@
 import { SITE_SETTING_SCHEMAS, toSponsorAds, toSponsorStyle } from "@/features/site";
+import { checkPictureClean } from "@/lib/image-hidden-data";
 import type { SponsorStyle } from "@/lib/sponsors";
 import { ActionError } from "@/server/actions/normalise-error";
 import { SPONSOR_IMAGE_MAX_KB, SPONSOR_PHOTO_MAX_KB } from "./constants";
@@ -123,6 +124,10 @@ async function inspect(
       ? photoProblem(info, bytes.byteLength)
       : slotProblem(use, info, bytes.byteLength);
   if (problem === null && info) {
+    // The browser takes the hidden data out before it sends a picture; one that still has some did not come through the page.
+    const clean = checkPictureClean(bytes);
+    if (clean === "hidden") return { problem: { key: "validation.sponsorImageHidden" } };
+    if (clean === "broken") return { problem: { key: PROBLEM_KEY.type } };
     return { picture: { path, width: info.width, height: info.height, bytes: bytes.byteLength } };
   }
   const minimum = use === "photo" ? PHOTO_RULE.minimum : SLOT_SIZES[use.format][use.device].minimum;

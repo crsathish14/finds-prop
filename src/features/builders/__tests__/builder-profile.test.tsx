@@ -262,6 +262,21 @@ describe("BuilderProfile: the Developer Spotlight fields and the logo (ADR-179)"
     expect(storage.uploaded).toEqual([]);
   });
 
+  it("puts the server's refusal of a new logo under the logo, not in a toast", async () => {
+    const storage = fakeStorage();
+    const save = vi.fn(async () => ({
+      ok: false as const,
+      code: "VALIDATION" as const,
+      fieldErrors: { logoPath: [{ key: "validation.logoHidden" }] },
+    }));
+    open(save, { storage });
+    chooseFile(picture("image/png"));
+    await waitFor(() => expect(storage.uploaded).toHaveLength(1));
+    fireEvent.click(screen.getByRole("button", { name: words.save }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.validation.logoHidden);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
   it("says so when the upload fails, and keeps no logo", async () => {
     open(undefined, { storage: fakeStorage(false) });
     chooseFile(picture("image/jpeg"));

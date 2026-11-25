@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { pngWithSize } from "../../../../../tests/image-files";
 import { createDefineAction, type ActionDeps } from "@/server/actions/define-action";
 import { ActionError } from "@/server/actions/normalise-error";
 import type { SessionView } from "@/server/auth/session";
@@ -85,17 +86,8 @@ function harness(options: { session?: SessionView | null } = {}) {
   };
 }
 
-/** The first bytes of a PNG of the given pixel size, padded to `total` bytes. */
-function png(width: number, height: number, total = 200): Uint8Array {
-  const bytes = new Uint8Array(total);
-  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  const view = new DataView(bytes.buffer);
-  view.setUint32(8, 13);
-  bytes.set([0x49, 0x48, 0x44, 0x52], 12);
-  view.setUint32(16, width);
-  view.setUint32(20, height);
-  return bytes;
-}
+/** A whole PNG of the given pixel size, padded to `total` bytes (the server also checks that it is whole and clean). */
+const png = pngWithSize;
 
 function storeOf(options: { takenSlugs?: string[]; files?: Record<string, Uint8Array> } = {}) {
   const inserted: NewPostRow[] = [];
