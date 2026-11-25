@@ -5,6 +5,7 @@ import {
   ImageReducePrompt,
   type ImageReducePromptWords,
 } from "@/components/patterns/image-reduce-prompt";
+import { ImageReduceFlow } from "@/components/domain/image-reduce-flow";
 import { Button } from "@/components/ui/button";
 import { Column, Specimen } from "../frame";
 
@@ -94,6 +95,23 @@ export function ImageReducePromptDemo() {
           state="failed"
           {...NO_ENCODER}
           words={WORDS}
+          onChooseAnother={NOTHING}
+          className="w-full"
+        />
+      </Specimen>
+      <Specimen
+        label="As a form draws it: ImageReduceFlow, with the site's words and the sizes written by the site"
+        className="w-full"
+      >
+        <ImageReduceFlow
+          prompt={{
+            state: "offer",
+            fileName: "front.jpg",
+            bytes: 2.3 * 1024 * 1024,
+            limitBytes: 500 * 1024,
+          }}
+          onReduce={NOTHING}
+          onUse={NOTHING}
           onChooseAnother={NOTHING}
           className="w-full"
         />

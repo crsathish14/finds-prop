@@ -6,6 +6,7 @@ import {
   formatAcres,
   formatArea,
   formatDate,
+  formatFileSize,
   formatTime,
   formatListedAgo,
   formatMonth,
@@ -112,5 +113,21 @@ describe("UT-format: acres and months", () => {
   });
   it("gives nothing for text that is not a day", () => {
     expect(formatMonth("en", "soon")).toBe("");
+  });
+});
+
+describe("UT-format: file sizes", () => {
+  it("writes whole kilobytes below 1 MB", () => {
+    expect(formatFileSize(translate, "en", 430 * 1024)).toBe("430 KB");
+    expect(formatFileSize(translate, "en", 150 * 1024)).toBe("150 KB");
+    expect(formatFileSize(translate, "en", 600)).toBe("1 KB");
+  });
+  it("writes megabytes with one decimal from 1 MB, and drops a zero decimal", () => {
+    expect(formatFileSize(translate, "en", 2.3 * 1024 * 1024)).toBe("2.3 MB");
+    expect(formatFileSize(translate, "en", 10 * 1024 * 1024)).toBe("10 MB");
+    expect(formatFileSize(translate, "en", 1024 * 1024)).toBe("1 MB");
+  });
+  it("never writes 1,024 KB: the last kilobytes below a megabyte round up to it", () => {
+    expect(formatFileSize(translate, "en", 1024 * 1024 - 100)).toBe("1 MB");
   });
 });
