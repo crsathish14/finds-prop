@@ -1,9 +1,20 @@
 // @vitest-environment jsdom
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { pictureFile } from "../../../../tests/image-files";
 import { renderWithMessages } from "../../../../tests/render-intl";
+import en from "@/i18n/messages/en.json";
 import { BlogMarkdownFlow, type MarkdownPreview } from "../blog-markdown-flow";
 import { BlogMethodChooser } from "../blog-markdown-flow-chooser";
+
+// A stand-in for the browser's own decoding and encoding: a picture "weighs" 100,000 bytes times the quality.
+vi.mock("@/lib/image-browser", () => ({
+  browserImageDeps: {
+    decode: async () => ({ width: 100, height: 100, close: () => undefined }),
+    encode: async (_picture: unknown, _size: unknown, type: string, quality: number) =>
+      new Blob([new Uint8Array(Math.round(quality * 100_000))], { type }),
+  },
+}));
 
 const NONE: MarkdownPreview = {
   blocks: [],
@@ -17,12 +28,7 @@ const NONE: MarkdownPreview = {
 
 const PICTURE_RULES = {
   accept: "image/png,image/jpeg,image/webp",
-  problem: (file: File) =>
-    !["image/png", "image/jpeg", "image/webp"].includes(file.type)
-      ? ("type" as const)
-      : file.size > 500 * 1024
-        ? ("size" as const)
-        : null,
+  limitBytes: 500 * 1024,
   extension: (file: File) => (file.type === "image/jpeg" ? "jpg" : null),
   maximumKb: 500,
 };
@@ -330,7 +336,7 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     expect(screen.getByText(/nothing shows there/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/What IMAGE-1 shows/)).not.toBeInTheDocument();
 
-    const file = new File(["x"], "gate.jpg", { type: "image/jpeg" });
+    const file = pictureFile("image/jpeg", 8, "gate.jpg");
     fireEvent.click(screen.getByRole("button", { name: "Choose a picture for IMAGE-1" }));
     const chooser = document.querySelector<HTMLInputElement>('input[type="file"]');
     fireEvent.change(chooser as HTMLInputElement, { target: { files: [file] } });
@@ -344,7 +350,9 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1));
     expect(onCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        pictures: [{ slot: "IMAGE-1", file, extension: "jpg", alt: "The gate at dusk" }],
+        pictures: [
+          { slot: "IMAGE-1", file: expect.any(File), extension: "jpg", alt: "The gate at dusk" },
+        ],
       }),
     );
     // The preview was asked for the picture at its place, with the description the admin typed.
@@ -353,7 +361,7 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     });
   });
 
-  it("refuses a picture of the wrong kind or size at once, and one with no description", async () => {
+  it("refuses a picture of the wrong kind at once, and one with no description", async () => {
     URL.createObjectURL = vi.fn(() => "blob:chosen");
     const { onCreate } = setup();
     paste("PICS");
@@ -368,21 +376,63 @@ describe("BlogMarkdownFlow: the paste screen (ADR-172)", () => {
     });
     expect(await screen.findByRole("alert")).toHaveTextContent(/JPG, PNG or WEBP/i);
 
-    const big = new File(["x"], "big.jpg", { type: "image/jpeg" });
-    Object.defineProperty(big, "size", { value: 600 * 1024 });
+    // A file that says it is a JPEG but is not one is refused too: only its own bytes count.
     choose();
-    fireEvent.change(chooser() as HTMLInputElement, { target: { files: [big] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent(/500 KB/);
+    fireEvent.change(chooser() as HTMLInputElement, {
+      target: { files: [new File(["<svg/>"], "x.jpg", { type: "image/jpeg" })] },
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(/JPG, PNG or WEBP/i);
 
     choose();
     fireEvent.change(chooser() as HTMLInputElement, {
-      target: { files: [new File(["x"], "ok.jpg", { type: "image/jpeg" })] },
+      target: { files: [pictureFile("image/jpeg", 8, "ok.jpg")] },
     });
     fireEvent.change(await screen.findByLabelText("What IMAGE-1 shows"), { target: { value: "" } });
     fireEvent.change(field("Author name"), { target: { value: "Asha Rao" } });
     fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
     expect(await screen.findByText("Say what each chosen picture shows.")).toBeInTheDocument();
     expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  it("offers to lower the quality of a picture still over the limit, at its own place, and keeps it only once used", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:chosen");
+    setup();
+    paste("PICS");
+    await screen.findByText("IMAGE-1 (line 3)");
+    fireEvent.click(screen.getByRole("button", { name: "Choose a picture for IMAGE-1" }));
+    fireEvent.change(
+      document.querySelector<HTMLInputElement>('input[type="file"]') as HTMLInputElement,
+      {
+        target: { files: [pictureFile("image/jpeg", 700 * 1024, "big.jpg")] },
+      },
+    );
+    expect(await screen.findByText(en.imageReduce.offer.title)).toBeInTheDocument();
+    expect(screen.queryByLabelText("What IMAGE-1 shows")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: en.imageReduce.reduce }));
+    expect(await screen.findByText(en.imageReduce.ready.title)).toBeInTheDocument();
+    expect(screen.queryByLabelText("What IMAGE-1 shows")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: en.imageReduce.use }));
+    expect(await screen.findByLabelText("What IMAGE-1 shows")).toBeInTheDocument();
+    expect(screen.queryByText(en.imageReduce.ready.title)).not.toBeInTheDocument();
+  });
+
+  it("keeps nothing when the person chooses another file instead", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:chosen");
+    setup();
+    paste("PICS");
+    await screen.findByText("IMAGE-1 (line 3)");
+    fireEvent.click(screen.getByRole("button", { name: "Choose a picture for IMAGE-1" }));
+    fireEvent.change(
+      document.querySelector<HTMLInputElement>('input[type="file"]') as HTMLInputElement,
+      {
+        target: { files: [pictureFile("image/jpeg", 700 * 1024, "big.jpg")] },
+      },
+    );
+    fireEvent.click(await screen.findByRole("button", { name: en.imageReduce.chooseAnother }));
+    expect(screen.queryByText(en.imageReduce.offer.title)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("What IMAGE-1 shows")).not.toBeInTheDocument();
   });
 
   it("links back to the choice", () => {

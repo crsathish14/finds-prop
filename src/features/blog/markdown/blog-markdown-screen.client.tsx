@@ -8,8 +8,8 @@ import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-tex
 import { notify } from "@/lib/notify";
 import type { ActionResult } from "@/types/action";
 import { createBlogStorage, type BlogStorage } from "../blog-storage";
-import { extensionOf, pictureProblem, PICTURE_ACCEPT, randomToken } from "../blog-pictures";
-import { BLOG_IMAGE_MAX_KB, blogImageFolder } from "../constants";
+import { extensionOf, PICTURE_ACCEPT, randomToken } from "../blog-pictures";
+import { BLOG_IMAGE_MAX_BYTES, BLOG_IMAGE_MAX_KB, blogImageFolder } from "../constants";
 import { ADMIN_BLOG_NEW_PATH, adminBlogEditPath } from "../page-params";
 import type { PostDone } from "../post-service";
 import { buildAiPrompt } from "./ai-prompt";
@@ -18,7 +18,7 @@ import { convertMarkdown } from "./convert";
 /** What a picture file may be on the paste screen: the same rules the block editor uses. */
 const PICTURE_RULES = {
   accept: PICTURE_ACCEPT,
-  problem: pictureProblem,
+  limitBytes: BLOG_IMAGE_MAX_BYTES,
   extension: extensionOf,
   maximumKb: BLOG_IMAGE_MAX_KB,
 };

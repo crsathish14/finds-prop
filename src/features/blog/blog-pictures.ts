@@ -1,9 +1,8 @@
-import { BLOG_IMAGE_MAX_BYTES } from "./constants";
-
 /**
- * Choosing a picture in the Blog editor (ADR-144). The browser checks what it can see at once (the kind the file says it
- * is, and its weight), so the admin is told before anything is sent; the save action still reads every new file back
- * from the bucket and decides from the file's own bytes. No framework code, so it is tested on its own.
+ * Choosing a picture in the Blog editor (ADR-144). The kinds the bucket takes and the names a waiting picture gets. The
+ * picture itself is judged when it is chosen, from its own bytes: its hidden data is taken out and one over the limit is
+ * offered a lower quality (`use-image-reduce.ts`); the save action still reads every new file back from the bucket and
+ * decides again. No framework code, so it is tested on its own.
  */
 
 /** The kinds the bucket takes (no SVG), and the ending each is stored with. */
@@ -30,12 +29,6 @@ export function newPendingPath(token: string, extension: string): string {
 /** The ending a file is stored with, or null when its kind is not one the bucket takes. */
 export function extensionOf(file: Pick<File, "type">): string | null {
   return EXTENSIONS[file.type] ?? null;
-}
-
-/** Why a chosen file cannot be used, or null when it can. */
-export function pictureProblem(file: Pick<File, "type" | "size">): "type" | "size" | null {
-  if (extensionOf(file) === null) return "type";
-  return file.size > BLOG_IMAGE_MAX_BYTES ? "size" : null;
 }
 
 /** A short random name (letters and digits only, so a stored name always fits the path rule). */

@@ -45,9 +45,11 @@ import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Textarea } from "@/components/ui/textarea";
 import type { Translator } from "@/i18n/failure-text";
 import { cn } from "@/lib/cn";
+import { useImageReduce } from "@/lib/use-image-reduce";
 import { BlogArticleHeader } from "./blog-article-header";
 import { BlogBlocks, type BlogBlock } from "./blog-blocks";
 import { BlogLinkTextField } from "./blog-link-text-field";
+import { ImageReduceFlow } from "./image-reduce-flow";
 
 /** A copy of a record without one key. */
 const without = <Value,>(record: Record<string, Value>, key: string): Record<string, Value> =>
@@ -88,12 +90,15 @@ type MarkdownPreview = {
 /** A picture the admin chose for a place; its file waits in the browser until the page sends it. */
 type MarkdownChosenPicture = { slot: string; file: File; extension: string; alt: string };
 
-/** What a picture file may be; the feature knows the rules, the screen only asks. */
+/**
+ * What a picture file may be; the feature knows the rules, the screen only asks. A picture is cleaned of its hidden data
+ * first; one still over `limitBytes` is not refused: the admin is asked whether to lower its quality to fit.
+ */
 type MarkdownPictureRules = {
   /** The file chooser's `accept` list. */
   accept: string;
-  /** Why a file cannot be used, or null. */
-  problem: (file: File) => "type" | "size" | null;
+  /** The most a picture may weigh, in bytes. */
+  limitBytes: number;
   /** The ending the file is stored with, or null when it is not a kind the bucket takes. */
   extension: (file: File) => string | null;
   /** The weight limit, in KB, said in the words. */
@@ -216,6 +221,9 @@ function BlogMarkdownFlow({
   const fileId = useId();
   const aiTitleId = useId();
   const choosing = useRef<string | null>(null);
+  // A picture over the limit is not refused: the admin may lower its quality to fit. One place is decided at a time.
+  const reducer = useImageReduce({ limitBytes: pictureRules.limitBytes });
+  const [deciding, setDeciding] = useState<string | null>(null);
   // The browser's addresses of the chosen files, noted when they are made (never during a render) and given back on leaving.
   const addresses = useRef<string[]>([]);
   useEffect(
@@ -275,20 +283,11 @@ function BlogMarkdownFlow({
     document.getElementById(fileId)?.click();
   };
 
-  const picked = (file: File | undefined) => {
-    const id = choosing.current;
-    choosing.current = null;
-    if (!file || !id) return;
-    const problem = pictureRules.problem(file);
+  /** Keeps a picture that is clean and within the limit for a place. */
+  const accept = (file: File, id: string) => {
     const extension = pictureRules.extension(file);
-    if (problem !== null || extension === null) {
-      setSlotErrors((now) => ({
-        ...now,
-        [id]:
-          problem === "size"
-            ? translate("validation.blogImageSize", { maximum: pictureRules.maximumKb })
-            : translate("validation.blogImageType"),
-      }));
+    if (extension === null) {
+      setSlotErrors((now) => ({ ...now, [id]: translate("validation.blogImageType") }));
       return;
     }
     const url = URL.createObjectURL(file);
@@ -297,6 +296,22 @@ function BlogMarkdownFlow({
     setChosen((now) => ({ ...now, [id]: { file, extension, alt, url } }));
     setSlotErrors((now) => without(now, id));
     setErrors({});
+  };
+
+  const picked = async (file: File | undefined) => {
+    const id = choosing.current;
+    choosing.current = null;
+    if (!file || !id) return;
+    setDeciding(id);
+    setSlotErrors((now) => without(now, id));
+    const refused = await reducer.choose(file, (ready) => {
+      setDeciding(null);
+      accept(ready, id);
+    });
+    if (refused !== null) {
+      setDeciding(null);
+      setSlotErrors((now) => ({ ...now, [id]: translate("validation.blogImageType") }));
+    }
   };
 
   const warningText = (note: MarkdownNote): string => {
@@ -498,7 +513,7 @@ function BlogMarkdownFlow({
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   event.target.value = "";
-                  picked(file);
+                  void picked(file);
                 }}
               />
               <ul className="flex flex-col gap-4">
@@ -579,6 +594,18 @@ function BlogMarkdownFlow({
                         <Text variant="small" role="alert" className="text-danger">
                           {failure}
                         </Text>
+                      ) : null}
+                      {deciding === slot.id ? (
+                        <ImageReduceFlow
+                          prompt={reducer.prompt}
+                          onReduce={() => void reducer.reduce()}
+                          onUse={reducer.use}
+                          onChooseAnother={() => {
+                            reducer.dismiss();
+                            setDeciding(null);
+                            choose(slot.id);
+                          }}
+                        />
                       ) : null}
                     </li>
                   );
