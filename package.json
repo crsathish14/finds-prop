@@ -71,7 +71,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.3",
     "eslint-plugin-boundaries": "7.4.0",
-    "jsdom": "29.1.1",
+    "jsdom": "31.0.1",
     "knip": "6.44.0",
     "lefthook": "2.2.2",
     "prettier": "3.9.10",
