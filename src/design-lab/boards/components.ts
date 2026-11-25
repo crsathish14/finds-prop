@@ -14,6 +14,7 @@ import {
   AvatarDemo,
   SortableDemo,
 } from "./components-demos";
+import { ImageReducePromptDemo } from "./image-reduce-demos";
 
 export const COMPONENTS: LabEntry[] = [
   {
@@ -82,6 +83,14 @@ export const COMPONENTS: LabEntry[] = [
       "Drop area and file picker with progress, errors, a cover tag and named remove buttons. Interface only.",
     sources: ["patterns/upload-zone.tsx"],
     Demo: UploadDemo,
+  },
+  {
+    id: "image-reduce-prompt",
+    name: "Image size prompt",
+    description:
+      "What an upload box shows when a picture is still over its limit after the hidden data was removed: ask to lower the quality, work, show the result to accept, or ask for another file. Interface only. The first specimen walks through the flow; the rest show each state.",
+    sources: ["patterns/image-reduce-prompt.tsx"],
+    Demo: ImageReducePromptDemo,
   },
   {
     id: "ai-cta",
