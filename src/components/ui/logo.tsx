@@ -6,7 +6,7 @@
  *   tone ("default" for light surfaces | "on-dark" for dark surfaces), variant ("full", the name with the tagline and ".com", the default | "wordmark", the compact
  *   name without them),
  *   className.
- * Responsive: one fixed height (40 px) with the width following the picture; 44 px minimum height so
+ * Responsive: one fixed height (30 px) with the width following the picture; 44 px minimum height so
  *   the link around it is a good touch target.
  * Accessibility: the name is the picture's alt text.
  * States: none. Dependencies: next/image, cn.
@@ -53,7 +53,7 @@ function Logo({ name, tone = "default", variant = "full", className }: LogoProps
         alt={name}
         unoptimized
         loading="eager"
-        className="h-10 w-auto max-w-none"
+        className="h-7.5 w-auto max-w-none"
       />
     </span>
   );
