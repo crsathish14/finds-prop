@@ -5,7 +5,8 @@
  *   no logo the box shows the company's initials, as the spotlight does.
  * Props: initials (the letters shown with no logo), src (the logo's address, or null), state ("idle" | "uploading"),
  *   error (a sentence under the box, or nothing), words ({ title, hint, choose, replace, remove, uploading, alt }, all
- *   already translated), accept, onFile, onRemove, disabled, className.
+ *   already translated), accept, onFile, onRemove, disabled, inputRef (so the page can open the file picker again, for
+ *   "Choose another" after a picture was too heavy), className.
  * Responsive: the square sits beside the words and buttons, which wrap under it on a narrow screen.
  * Accessibility: the file picker is a real input reached by its button; the buttons name what they do; the error is an
  *   alert with an icon, never colour alone; while uploading the box is marked busy and nothing can be pressed.
@@ -15,7 +16,7 @@
  *   concept (sponsor ads plan, 23 Nov 2026).
  */
 import { CircleX, Upload } from "lucide-react";
-import { useId, useRef } from "react";
+import { useId, useRef, type RefObject } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
@@ -40,6 +41,8 @@ type BuilderLogoFieldProps = {
   onFile: (file: File) => void;
   onRemove: () => void;
   disabled?: boolean;
+  /** The page's own handle on the file input, to open the picker from outside. */
+  inputRef?: RefObject<HTMLInputElement | null>;
   className?: string;
 };
 
@@ -53,10 +56,12 @@ function BuilderLogoField({
   onFile,
   onRemove,
   disabled = false,
+  inputRef,
   className,
 }: BuilderLogoFieldProps) {
   const inputId = useId();
-  const input = useRef<HTMLInputElement>(null);
+  const ownInput = useRef<HTMLInputElement>(null);
+  const input = inputRef ?? ownInput;
   const busy = state === "uploading";
   const locked = disabled || busy;
 

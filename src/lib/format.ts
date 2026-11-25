@@ -50,6 +50,14 @@ export function formatArea(translate: Translate, locale: string, sqft: number): 
   return translate("format.area", { value: number(locale, sqft) });
 }
 
+/** A file's weight in a sentence: whole kilobytes below 1 MB ("430 KB"), megabytes with one decimal above ("2.3 MB"). */
+export function formatFileSize(translate: Translate, locale: string, bytes: number): string {
+  const kilobytes = Math.max(1, Math.round(bytes / 1024));
+  if (kilobytes < 1024)
+    return translate("format.fileKilobytes", { value: number(locale, kilobytes) });
+  return translate("format.fileMegabytes", { value: number(locale, bytes / (1024 * 1024), 1) });
+}
+
 /** The calendar year in India right now, for a copyright line. */
 export function calendarYear(date: Date): number {
   return Number(

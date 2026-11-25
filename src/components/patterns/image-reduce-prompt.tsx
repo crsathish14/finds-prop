@@ -63,7 +63,7 @@ type ImageReducePromptProps = {
   onUse?: () => void;
   onChooseAnother?: () => void;
   ref?: Ref<HTMLDivElement>;
-  className?: string;
+  className?: string | undefined;
 };
 
 function ImageReducePrompt({

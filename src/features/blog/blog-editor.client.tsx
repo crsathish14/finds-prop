@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { BlogArticleHeader } from "@/components/domain/blog-article-header";
 import { BlogBlocks, type BlogBlock } from "@/components/domain/blog-blocks";
 import { BlogPostForm, type BlogPostFormValues } from "@/components/domain/blog-post-form";
+import { ImageReduceFlow } from "@/components/domain/image-reduce-flow";
 import { ProjectSaveBar } from "@/components/domain/project-save-bar";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -17,13 +18,8 @@ import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-tex
 import { notify } from "@/lib/notify";
 import { publicEnv } from "@/lib/public-env";
 import { publicStorageUrl } from "@/lib/storage-url";
-import {
-  extensionOf,
-  newPendingPath,
-  PICTURE_ACCEPT,
-  pictureProblem,
-  randomToken,
-} from "./blog-pictures";
+import { useImageReduce } from "@/lib/use-image-reduce";
+import { extensionOf, newPendingPath, PICTURE_ACCEPT, randomToken } from "./blog-pictures";
 import {
   saveArticle,
   type BlogEditorActions,
@@ -31,7 +27,7 @@ import {
   type SaveResult,
 } from "./blog-save";
 import { createBlogStorage, type BlogStorage } from "./blog-storage";
-import { BLOG_IMAGE_BUCKET, BLOG_IMAGE_MAX_KB } from "./constants";
+import { BLOG_IMAGE_BUCKET, BLOG_IMAGE_MAX_BYTES } from "./constants";
 import { ADMIN_BLOG_PATH, adminBlogEditPath } from "./page-params";
 import { slugFromTitle } from "./slug";
 import type { AdminBlogPostView } from "./view";
@@ -154,19 +150,13 @@ export function BlogEditor({
     document.getElementById(fileId)?.click();
   };
 
-  const picked = (file: File | undefined) => {
-    const place = target.current;
-    target.current = null;
-    if (!file || !place) return;
-    const problem = pictureProblem(file);
-    if (problem !== null) {
-      notify.error(
-        problem === "type"
-          ? everything("validation.blogImageType")
-          : everything("validation.blogImageSize", { maximum: BLOG_IMAGE_MAX_KB }),
-      );
-      return;
-    }
+  type Place = { kind: "cover" } | { kind: "image"; index: number };
+  // A picture over the limit is not refused: the person may lower its quality to fit (the hidden data is taken out first).
+  const reducer = useImageReduce({ limitBytes: BLOG_IMAGE_MAX_BYTES });
+  /** Where the picture being decided will go, kept so "Choose another" opens the picker for the same place. */
+  const deciding = useRef<Place | null>(null);
+
+  const accept = (file: File, place: Place) => {
     const extension = extensionOf(file) as string;
     const path = newPendingPath(randomToken(), extension);
     const url = URL.createObjectURL(file);
@@ -184,6 +174,15 @@ export function BlogEditor({
     }
     setErrors({});
     setBlockErrors({});
+  };
+
+  const picked = async (file: File | undefined) => {
+    const place = target.current;
+    target.current = null;
+    if (!file || !place) return;
+    deciding.current = place;
+    const refused = await reducer.choose(file, (ready) => accept(ready, place));
+    if (refused !== null) notify.error(everything("validation.blogImageType"));
   };
 
   const showFailure = (result: Extract<SaveResult, { ok: false }>) => {
@@ -294,7 +293,17 @@ export function BlogEditor({
           onChange={(event) => {
             const file = event.target.files?.[0];
             event.target.value = "";
-            picked(file);
+            void picked(file);
+          }}
+        />
+        <ImageReduceFlow
+          prompt={reducer.prompt}
+          onReduce={() => void reducer.reduce()}
+          onUse={reducer.use}
+          onChooseAnother={() => {
+            reducer.dismiss();
+            target.current = deciding.current;
+            document.getElementById(fileId)?.click();
           }}
         />
         {previewing ? (

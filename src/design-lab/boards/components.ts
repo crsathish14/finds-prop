@@ -89,7 +89,7 @@ export const COMPONENTS: LabEntry[] = [
     name: "Image size prompt",
     description:
       "What an upload box shows when a picture is still over its limit after the hidden data was removed: ask to lower the quality, work, show the result to accept, or ask for another file. Interface only. The first specimen walks through the flow; the rest show each state.",
-    sources: ["patterns/image-reduce-prompt.tsx"],
+    sources: ["patterns/image-reduce-prompt.tsx", "domain/image-reduce-flow.tsx"],
     Demo: ImageReducePromptDemo,
   },
   {
