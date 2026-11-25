@@ -35,7 +35,7 @@ export async function PublicFooter() {
           aria-label={translate("site.header.homeLabel", { brandName: footer.brandName })}
           className="no-underline"
         >
-          <Logo name={footer.brandName} tone="on-dark" variant="full" />
+          <Logo name={footer.brandName} tone="on-dark" />
         </Link>
       }
       {...(footer.about ? { about: footer.about } : {})}
