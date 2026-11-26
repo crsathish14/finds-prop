@@ -3,7 +3,7 @@
 -- projects, lists the commonest localities, leaves builders and agents with nothing live off the home list, and agent_contact()
 -- gives the phone only to a signed-in caller with a verified phone. Fictional data only.
 begin;
-select plan(10);
+select plan(14);
 
 insert into auth.users (id, email, email_confirmed_at, phone, phone_confirmed_at) values
   ('00000000-0000-4000-8000-0000000000e1', 'agent1@example.test', now(), '919100000011', now()),
@@ -68,6 +68,28 @@ select is(
 select throws_ok(
   $$select public.agent_contact('00000000-0000-4000-b000-0000000000e1')$$,
   '42501', null, 'a visitor cannot ask for the phone'
+);
+
+-- agent_listings(): up to six newest approved homes and the live projects of one active agent, for visitors.
+select is(
+  (select jsonb_array_length(public.agent_listings('00000000-0000-4000-b000-0000000000e1') -> 'homes')),
+  2,
+  'DB-FN-agent-listings: the agent''s two approved homes are listed, the draft is not'
+);
+select is(
+  (select public.agent_listings('00000000-0000-4000-b000-0000000000e1') -> 'homes' -> 0 ->> 'locality'),
+  'Adyar',
+  'a home carries what its card draws'
+);
+select ok(
+  not (public.agent_listings('00000000-0000-4000-b000-0000000000e1') -> 'homes' -> 0) ? 'owner_id'
+    and not (public.agent_listings('00000000-0000-4000-b000-0000000000e1') -> 'homes' -> 0) ? 'address',
+  'no owner and no street address in what a visitor reads'
+);
+select is(
+  (select public.agent_listings('00000000-0000-4000-b000-0000000000e3')::text),
+  '{"homes": [], "projects": []}',
+  'a builder is not an agent: nothing is listed'
 );
 
 reset role;
