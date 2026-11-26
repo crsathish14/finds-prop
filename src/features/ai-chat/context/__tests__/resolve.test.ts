@@ -10,7 +10,15 @@ vi.mock("@/features/projects", () => ({
 // UT-ai-page-context (ADR-128 section 10, AI-P7-T01): the context ids are checked on the server against what is
 // listed now. Every id here is made up.
 
-const OPEN_HOMES = ["k3m9p2xw", "b4c5d6e7", "h2j3k4m5", "n6p7q8r9"];
+const OPEN_HOMES = [
+  "k3m9p2xw",
+  "b4c5d6e7",
+  "h2j3k4m5",
+  "n6p7q8r9",
+  "s2t3u4v5",
+  "w6x7y8z9",
+  "a2b3c4d5",
+];
 const OPEN_PROJECTS = ["green-park-residency"];
 
 function reads(): ContextReads & { calls: string[] } {
@@ -38,13 +46,27 @@ describe("resolveContext: what the last answer showed (ADR-180)", () => {
     ).toEqual({ shownHomes: ["b4c5d6e7", "k3m9p2xw"] });
   });
 
-  it("keeps at most three, each once, and only things that look like ids", async () => {
+  it("keeps at most six, each once, and only things that look like ids", async () => {
     expect(
       await resolveContext(
-        { shownHomes: ["k3m9p2xw", "K3M9P2XW", "b4c5d6e7", "h2j3k4m5", "n6p7q8r9", "not an id"] },
+        {
+          shownHomes: [
+            "k3m9p2xw",
+            "K3M9P2XW",
+            "not an id",
+            "b4c5d6e7",
+            "h2j3k4m5",
+            "n6p7q8r9",
+            "s2t3u4v5",
+            "w6x7y8z9",
+            "a2b3c4d5",
+          ],
+        },
         reads(),
       ),
-    ).toEqual({ shownHomes: ["k3m9p2xw", "b4c5d6e7", "h2j3k4m5"] });
+    ).toEqual({
+      shownHomes: ["k3m9p2xw", "b4c5d6e7", "h2j3k4m5", "n6p7q8r9", "s2t3u4v5", "w6x7y8z9"],
+    });
   });
 
   it("keeps shown projects that are open, for a signed-in customer only", async () => {

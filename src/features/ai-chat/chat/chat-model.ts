@@ -1,6 +1,7 @@
 import type { ChatContext } from "../context/page-context";
 import { z } from "zod";
 import {
+  AI_CHAT_STATE_MAX_CHARACTERS,
   AI_MAX_CARDS_PER_ANSWER,
   AI_MAX_SOURCES_PER_ANSWER,
   AI_MAX_HISTORY_ANSWER_CHARACTERS,
@@ -12,8 +13,8 @@ import { confirmCardSchema } from "../confirm/confirm-card";
 /**
  * What the chat island keeps: the conversation, the unsent draft and whether the sign-in gate was shown. The
  * conversation lives in `sessionStorage` (ADR-128 section 10, the ADR-057 idea) so it survives the trip to sign in.
- * It holds the visitor's words and the assistant's checked answer, plus the references of the cards. Never a tool
- * result, a token or an id of the visitor: a confirm card (which holds a signed proposal and the customer's own name
+ * It holds the visitor's words and the assistant's checked answer, plus the references of the cards, and the signed
+ * requirements state (ADR-206: filters and listing ids, no person). Never a tool result, a proposal or an id of the visitor: a confirm card (which holds a signed proposal and the customer's own name
  * and phone) lives in memory only and is left out of what is kept (`forStorage`). Anything read back from storage is checked again, because the browser
  * can hold anything: a value that does not fit is dropped and the chat starts empty.
  */
@@ -55,6 +56,8 @@ const assistantEntrySchema = z.object({
     .array(z.object({ text: z.string().max(80), href: z.string().max(80) }))
     .max(2)
     .optional(),
+  /** The "See all" link of a home search (ADR-206): the results page with the same filters, built by the server. */
+  seeAll: z.object({ text: z.string().max(80), href: z.string().max(400) }).optional(),
   /** The pages a content answer drew on (the "Sources" row), built by the server (`source-links.ts`). */
   sources: z.array(sourceSchema).max(AI_MAX_SOURCES_PER_ANSWER).optional(),
   /** The confirm card of a propose tool, in memory only (never kept in the tab: it holds a signed proposal). */
@@ -88,6 +91,11 @@ const storedShellSchema = z.object({
   gate: z.boolean(),
   /** Whether the visitor was signed in when this was kept: a transcript kept while signed in is not shown to the next visitor of the tab. */
   account: z.boolean(),
+  /**
+   * The requirements state the server signed for this chat (ADR-206), sent back with the next message. It holds the
+   * search filters and listing ids only, never a person, and the server ignores it unless its signature verifies.
+   */
+  state: z.string().max(AI_CHAT_STATE_MAX_CHARACTERS).optional(),
 });
 
 export type ChatEntry = z.infer<typeof chatEntrySchema>;
@@ -102,6 +110,7 @@ export type StoredChat = {
   draft: string;
   gate: boolean;
   account: boolean;
+  state?: string | undefined;
 };
 
 export const STORAGE_KEY = "findsprop:ai-chat:v1";
@@ -123,6 +132,7 @@ function withoutConfirmCard(entry: AssistantEntry): AssistantEntry {
     notes: entry.notes,
     references: entry.references,
     ...(entry.links === undefined ? {} : { links: entry.links }),
+    ...(entry.seeAll === undefined ? {} : { seeAll: entry.seeAll }),
     ...(entry.sources === undefined ? {} : { sources: entry.sources }),
     ...(entry.replies === undefined ? {} : { replies: entry.replies }),
     replaced: entry.replaced,
@@ -292,6 +302,12 @@ export function safeHref(href: string | undefined): string | undefined {
     return code <= 0x1f || code === 0x7f || character === "\\";
   });
   return href.startsWith("/") && !href.startsWith("//") && !unsafe ? href : undefined;
+}
+
+/** A "See all" link is drawn only when it is the results page (ADR-206), with or without its filters. */
+export function isSeeAllPath(href: string): boolean {
+  const safe = safeHref(href);
+  return safe !== undefined && (safe === "/properties" || safe.startsWith("/properties?"));
 }
 
 /**

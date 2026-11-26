@@ -25,6 +25,8 @@ import {
   SCOPE_SECTION,
   SITE_LINKS_SECTION,
 } from "./sections";
+import type { ChatState } from "../state/chat-state";
+import { requirementsSection } from "./requirements";
 import { SYSTEM_PROMPT_CANARY, SYSTEM_PROMPT_VERSION } from "./version";
 
 export interface SystemPromptOptions {
@@ -47,6 +49,8 @@ export interface SystemPromptOptions {
   readonly guest?: boolean;
   /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
   readonly pageContext?: Parameters<typeof contextSection>[0];
+  /** The requirements state the browser sent back, checked by its signature (ADR-206); absent or null means none. */
+  readonly requirements?: ChatState | null;
 }
 
 /** The whole system prompt for one customer message. */
@@ -73,6 +77,8 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
   ];
   const where = options.pageContext === undefined ? null : contextSection(options.pageContext);
   if (where !== null) sections.splice(sections.length - 2, 0, where);
+  const current = requirementsSection(options.requirements ?? null);
+  if (current !== null) sections.splice(sections.length - 2, 0, current);
   if (options.addInjectionReminder === true) sections.push(INJECTION_REMINDER_INSTRUCTION);
   return sections.join("\n\n");
 }

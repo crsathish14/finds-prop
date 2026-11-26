@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
+import { AI_SEARCH_PAGE_SIZE } from "@/config/ai";
 import { AS_OF_TEXT, injected, projectListItem, READ_AT, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-projects-search (ADR-128 section 5.1): `search_projects` over the projects page's own cached
@@ -43,6 +43,7 @@ vi.mock("@/features/projects", async () => {
 
 const { toPortableJsonSchema } = await import("@/server/ai");
 const { runTool } = await import("../run");
+const { createTurnMemory } = await import("../../state/memory");
 const { searchProjectsInputSchema, searchProjectsOutputSchema, searchProjectsTool } =
   await import("../search-projects");
 
@@ -54,7 +55,7 @@ const NO_FILTERS = {
   maxPrice: null,
   preferLocalities: null,
   preferAmenities: null,
-  limit: null,
+  page: null,
 };
 const search = (filters: Record<string, unknown> = {}) =>
   runTool(
@@ -126,9 +127,9 @@ describe("UT-ai-tool-projects-search: the input", () => {
       [
         "bhk",
         "city",
-        "limit",
         "locality",
         "maxPrice",
+        "page",
         "preferAmenities",
         "preferLocalities",
         "status",
@@ -147,8 +148,7 @@ describe("UT-ai-tool-projects-search: the input", () => {
     ["half a bedroom", { bhk: 2.5 }],
     ["a negative price", { maxPrice: -1 }],
     ["a price above twelve digits", { maxPrice: 1_000_000_000_000 }],
-    ["a limit of eleven", { limit: 11 }],
-    ["a limit of zero", { limit: 0 }],
+    ["a page this tool does not have", { page: "previous" }],
     ["a locality over 80 characters", { locality: "x".repeat(81) }],
     ["a missing field", { status: undefined }],
   ])("refuses %s and reads nothing", async (_case, filters) => {
@@ -242,6 +242,7 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
         asOf: AS_OF_TEXT,
         total: 1,
         searchedAll: true,
+        shownSoFar: 1,
         projects: [
           {
             slug: "kadal-vista",
@@ -254,6 +255,7 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
             matchReasons: [],
             missedPreferences: [],
             lowestPriceOfMatches: true,
+            seenBefore: false,
             untrustedText: {
               name: "Kadal Vista",
               developerName: "Kadal Homes",
@@ -312,20 +314,22 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
   });
 
   it("names every project it gives, and no other, in the references", async () => {
-    const outcome = await search({ limit: 2 });
-    expect(outcome.status === "ok" && outcome.references).toEqual([
-      { kind: "project", slug: "kadal-vista" },
-      { kind: "project", slug: "plot-gardens" },
-    ]);
+    const outcome = await search();
+    const slugs = outcome.status === "ok" ? outcome.output : null;
+    expect(outcome.status === "ok" && outcome.references).toEqual(
+      ((slugs as { projects: { slug: string }[] } | null)?.projects ?? []).map((project) => ({
+        kind: "project",
+        slug: project.slug,
+      })),
+    );
   });
 
-  it("gives the number that match in all, though fewer are returned", async () => {
-    const outcome = await search({ limit: 1 });
-    expect(outcome).toMatchObject({ status: "ok", output: { total: 4 } });
-    expect(await projectsFor({ limit: 1 })).toHaveLength(1);
+  it("gives the number that match in all, and how many it has shown", async () => {
+    const outcome = await search();
+    expect(outcome).toMatchObject({ status: "ok", output: { total: 4, shownSoFar: 4 } });
   });
 
-  it("gives at most ten projects, though the list holds more", async () => {
+  it("gives one page of at most six projects, though the list holds more, and the next six on page next", async () => {
     getProjects.mockResolvedValue({
       status: "ok",
       projects: Array.from({ length: 25 }, (_, index) =>
@@ -335,10 +339,27 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
     });
     const outcome = await search();
     expect(outcome).toMatchObject({ status: "ok", output: { total: 25 } });
-    expect(outcome.status === "ok" && outcome.references).toHaveLength(MAX_TOOL_RESULT_ITEMS);
+    expect(outcome.status === "ok" && outcome.references).toHaveLength(AI_SEARCH_PAGE_SIZE);
     expect(
       searchProjectsOutputSchema.safeParse(outcome.status === "ok" ? outcome.output : null).success,
     ).toBe(true);
+    const memory = createTurnMemory(null);
+    const context = { ...TOOL_CONTEXT, search: memory };
+    const pages: string[][] = [];
+    for (const page of [null, "next", "next", "next", "next"]) {
+      const result = await runTool(
+        [searchProjectsTool],
+        { name: "search_projects", input: { ...NO_FILTERS, page } },
+        context,
+      );
+      pages.push(
+        result.status === "ok"
+          ? (result.output as { projects: { slug: string }[] }).projects.map((item) => item.slug)
+          : [],
+      );
+    }
+    expect(pages.map((page) => page.length)).toEqual([6, 6, 6, 6, 1]);
+    expect(new Set(pages.flat()).size).toBe(25);
   });
 
   it("says when the list it searched was at its size limit", async () => {

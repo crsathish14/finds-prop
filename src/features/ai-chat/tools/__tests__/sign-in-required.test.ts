@@ -56,7 +56,7 @@ const NO_FILTERS = {
   preferAmenities: null,
   preferFurnishing: null,
   sort: null,
-  limit: null,
+  page: null,
 };
 
 const CASES = [
@@ -72,7 +72,7 @@ const CASES = [
       maxPrice: null,
       preferLocalities: null,
       preferAmenities: null,
-      limit: null,
+      page: null,
     },
   ],
   ["list_localities", listLocalitiesTool, { search: null }],

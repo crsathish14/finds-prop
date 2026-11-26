@@ -267,7 +267,7 @@ const VALID_INPUTS: Record<string, unknown> = {
     preferAmenities: null,
     preferFurnishing: null,
     sort: null,
-    limit: null,
+    page: null,
   },
   get_property: { homeId: "k3x9a2bd" },
   list_localities: { search: null },
@@ -279,7 +279,7 @@ const VALID_INPUTS: Record<string, unknown> = {
     maxPrice: null,
     preferLocalities: null,
     preferAmenities: null,
-    limit: null,
+    page: null,
   },
   get_project: { slug: "kadal-vista" },
   get_builder: { builderId: null, name: "Kadal Homes" },
@@ -790,8 +790,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    // Homes, localities, projects, unit sizes and builder projects (10 each), the compared homes (3), the seven content hits and the seven open jobs, each cut to 5.
-    expect(lists.map((list) => list.length)).toEqual([10, 10, 10, 10, 10, 3, 5, 5]);
+    // Homes and projects (one page of 6 each, ADR-206), localities, unit sizes and builder projects (10 each), the compared homes (3), the seven content hits and the seven open jobs, each cut to 5.
+    expect(lists.map((list) => list.length)).toEqual([6, 10, 6, 10, 10, 3, 5, 5]);
   });
 
   it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {

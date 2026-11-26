@@ -116,6 +116,32 @@ describe("UT-ai-fixed-cost: what every model call carries", () => {
       placeSearch: true,
       addInjectionReminder: true,
       pageContext: { home: "k3x9a2bd", project: "kadal-vista", compare: ["a1", "b2", "c3"] },
+      // The Current search section (ADR-206) with a full home search and the most offers it keeps.
+      requirements: {
+        search: {
+          tool: "search_properties",
+          filters: {
+            listingType: "sale",
+            propertyType: "apartment",
+            bhk: 3,
+            minPrice: 5_000_000,
+            maxPrice: 8_000_000,
+            city: "Chennai",
+            locality: "Velachery",
+            keyword: "lake view",
+            label: null,
+            preferLocalities: ["Adyar", "Guindy"],
+            preferAmenities: ["swimming pool", "gym", "power backup"],
+            preferFurnishing: "semi",
+            sort: null,
+          },
+          shown: Array.from({ length: 24 }, (_, index) => `home${index}`),
+          total: 120,
+          place: false,
+        },
+        seen: [],
+        offered: Array.from({ length: 10 }, (_, index) => `home:k3x9a2b${index}`),
+      },
     });
     expect(promptCharacters).toBeLessThan(PROMPT_CHARACTER_CEILING);
     expect(longest.length).toBeLessThan(PROMPT_CHARACTER_CEILING + 2_800);

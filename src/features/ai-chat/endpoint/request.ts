@@ -12,7 +12,10 @@ import {
  * instead of being passed on to the model. The server alone makes tool calls and tool results.
  *
  * Zod only, no framework imports (the feature schema rule). Keys the top-level object does not know are dropped.
- * `context` (AI-P7-T01) is the one extra key: public ids of the page the chat was opened from, never listing data.
+ * `context` (AI-P7-T01) is one extra key: public ids of the page the chat was opened from, never listing data.
+ * `state` and `more` (ADR-206) are the other two: the requirements state the server signed for this chat, sent back as
+ * it came (checked by its signature, ignored when it does not verify), and `more: true` when the customer pressed the
+ * Show more button (the next page is then served from the state, without the model, when the state allows it).
  */
 
 const customerMessage = z.strictObject({
@@ -31,6 +34,10 @@ export const chatRequestSchema = z
     // The page the chat was opened from: ids only, and not checked here. The handler checks every id against what is
     // listed now and drops what does not fit (`context/resolve.ts`); a wrong shape is no context, never a refusal.
     context: z.unknown().optional(),
+    // Not checked here: `state/chat-state.ts` checks the size and the signature, and a token that fails is no state.
+    state: z.unknown().optional(),
+    // Anything but true is no Show more press: the message is then answered as any other.
+    more: z.unknown().optional(),
     messages: z
       .array(z.discriminatedUnion("role", [customerMessage, assistantMessage]))
       .min(1)

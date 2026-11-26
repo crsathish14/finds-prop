@@ -4517,6 +4517,15 @@
       "enquireProject": "Enquire about this project",
       "siteVisit": "Book a site visit"
     },
+    "more": {
+      "homes": "{count, plural, one {Here is one more home} other {Here are # more homes}} that match your search ({shown} of {total} shown so far).",
+      "projects": "{count, plural, one {Here is one more project} other {Here are # more projects}} that match your search ({shown} of {total} shown so far).",
+      "none": "That is every match for this search. Tell me what to change and I will look again."
+    },
+    "seeAll": {
+      "counted": "See all {total} matching homes",
+      "plain": "See all matching homes"
+    },
     "returnedTitle": "You're signed in",
     "returnedBody": "Your conversation is back. We kept what you typed.",
     "thread": {

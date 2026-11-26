@@ -9,6 +9,8 @@ import { readRequestId } from "@/server/request-id";
 import type { ConfirmCard } from "../confirm/confirm-card";
 import type { ChatContext } from "../context/page-context";
 import { resolveContext } from "../context/resolve";
+import { readChatState } from "../state/chat-state";
+import { createTurnMemory, type TurnMemory } from "../state/memory";
 import { INPUT_MESSAGE_KEYS, type InputCheckResult } from "../guards/input";
 import { buildSystemPrompt } from "../prompts/system-prompt";
 import { SYSTEM_PROMPT_VERSION } from "../prompts/version";
@@ -22,6 +24,7 @@ import {
   notFoundResponse,
   serverErrorResponse,
 } from "./responses";
+import { canShowMore, showMoreEvents, type ShowMoreState } from "./show-more";
 import { runTurn, FALLBACK_HREF, type TurnSummary } from "./turn";
 import type { ChatDeps, ChatUsageRecord } from "./types";
 
@@ -129,6 +132,19 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       );
     }
 
+    // The requirements state (ADR-206): checked by its signature; one that does not verify is no state at all.
+    const state = readChatState(parsed.request.state);
+    // The Show more button with a remembered search: the next page with no model call, so it counts toward the short
+    // limit only, like a refusal (it spends neither a free message nor the daily budget).
+    if (parsed.request.more === true && canShowMore(state, deps.tools)) {
+      const limited = await spend(REFUSAL_LIMITS);
+      if (limited !== null) return limited;
+      const signedIn = session !== null;
+      return streamResponse(requestId, deps, () =>
+        moreEvents(deps, requestId, state, signedIn, usage, inputTags),
+      );
+    }
+
     // A server that is not set up must not spend a visitor's free message, so the provider is made before the limits.
     const provider = deps.createProvider();
     const limited = await spend();
@@ -142,7 +158,9 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       ...(deps.placeSearch === true ? { placeSearch: true } : {}),
       ...(session === null ? { guest: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
+      requirements: state,
     });
+    const memory = createTurnMemory(state);
     const conversation = [...history, { role: "user" as const, text: latest.text }];
     return streamResponse(requestId, deps, (stop) =>
       answerEvents({
@@ -157,6 +175,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
         usage,
         stop,
         session,
+        memory,
       }),
     );
   } catch (error) {
@@ -251,6 +270,35 @@ async function* refusalEvents(
   }
 }
 
+/** The next page of the remembered search, from the Show more button: no model call, one fixed line and the cards. */
+async function* moreEvents(
+  deps: ChatDeps,
+  requestId: string,
+  state: ShowMoreState,
+  signedIn: boolean,
+  usage: UsageWriter,
+  inputTags: ChatUsageRecord["inputTags"],
+): AsyncGenerator<ChatStreamEvent> {
+  let outcome: ChatOutcome = "error";
+  let toolsRan: readonly string[] = [];
+  try {
+    yield { type: "start", requestId };
+    const more = showMoreEvents({ tools: deps.tools, translate: deps.translate, signedIn, state });
+    while (true) {
+      const next = await more.next();
+      if (next.done) {
+        outcome = next.value.outcome;
+        toolsRan = next.value.toolsRan;
+        break;
+      }
+      yield next.value;
+    }
+    yield { type: "done", outcome };
+  } finally {
+    await usage(outcome, { inputTags, toolsRan });
+  }
+}
+
 interface AnswerInput {
   readonly deps: ChatDeps;
   readonly requestId: string;
@@ -265,6 +313,8 @@ interface AnswerInput {
   readonly stop: AbortController;
   /** The caller of this request, from the verified token (null for a visitor): who a confirm card is built for. */
   readonly session: SessionView | null;
+  /** The requirements state of this message (ADR-206). */
+  readonly memory: TurnMemory;
 }
 
 /** The confirm card for an offer; a failure gives no card (the answer stands alone) and never an error. */
@@ -312,6 +362,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       messages: input.conversation,
       customerMessage: latest.text,
       signedIn: input.session !== null,
+      memory: input.memory,
       signal,
       timeLimit,
       ...(deps.confirmCard === undefined

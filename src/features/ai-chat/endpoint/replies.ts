@@ -30,8 +30,19 @@ export interface ReplyItem {
 /** Tools whose answers get no buttons: the answer is a sum or a comparison, not a list to act on. */
 const NO_REPLY_TOOLS = ["calculate_emi", "compare_properties"] as const;
 
-function item(key: keyof typeof REPLY_MESSAGE_KEYS, translate: Translate): ReplyItem {
+/** One button: its stable name and its fixed words. */
+export function replyItem(key: keyof typeof REPLY_MESSAGE_KEYS, translate: Translate): ReplyItem {
   return { key, text: translate(REPLY_MESSAGE_KEYS[key]) };
+}
+
+/**
+ * What the chat remembers that changes the buttons (ADR-206). `more`: whether the current search has matches it has not
+ * shown yet (absent when no search ran this message: then a list keeps Show more, as before). `offered`: whether an
+ * enquiry or a site visit was already offered for a record (`home:ID`, `project:SLUG`), so it is offered once.
+ */
+export interface ReplyMemory {
+  readonly more?: boolean;
+  readonly offered?: (key: string) => boolean;
 }
 
 /** The lookups of one home or one project the customer asked about: only after one of them is an enquiry offered. */
@@ -45,7 +56,11 @@ const DETAIL_TOOLS = ["get_property", "get_project"] as const;
  * An enquiry or a site visit is offered only after the customer looked at one home or one project in detail (ADR-204):
  * a list of search results gets ways to keep looking (compare, show more, similar homes, an EMI sum), never an enquiry.
  */
-export function pickReplies(agent: AgentDone, translate: Translate): ReplyItem[] {
+export function pickReplies(
+  agent: AgentDone,
+  translate: Translate,
+  memory: ReplyMemory = {},
+): ReplyItem[] {
   if (agent.outcome !== "answered" || agent.offers.length > 0) return [];
   if (NO_REPLY_TOOLS.some((name) => agent.toolsRan.includes(name))) return [];
   const homes = new Set<string>();
@@ -55,15 +70,25 @@ export function pickReplies(agent: AgentDone, translate: Translate): ReplyItem[]
     else if (reference.kind === "project") projects.add(reference.slug);
   }
   const detail = DETAIL_TOOLS.some((name) => agent.toolsRan.includes(name));
+  const offered = (key: string) => memory.offered?.(key) ?? false;
+  const showMore = memory.more === false ? [] : [replyItem("showMore", translate)];
   if (projects.size === 0 && homes.size === 1) {
-    const keepLooking = [item("workOutEmi", translate), item("similarHomes", translate)];
-    return detail ? [item("enquireHome", translate), ...keepLooking] : keepLooking;
+    const keepLooking = [replyItem("workOutEmi", translate), replyItem("similarHomes", translate)];
+    const [homeId] = homes;
+    return detail && !offered(`home:${homeId}`)
+      ? [replyItem("enquireHome", translate), ...keepLooking]
+      : keepLooking;
   }
   if (projects.size === 0 && homes.size > 1) {
-    return [item("compareHomes", translate), item("showMore", translate)];
+    return [replyItem("compareHomes", translate), ...showMore];
   }
   if (homes.size === 0 && projects.size === 1 && detail) {
-    return [item("enquireProject", translate), item("siteVisit", translate)];
+    const [slug] = projects;
+    return offered(`project:${slug}`)
+      ? []
+      : [replyItem("enquireProject", translate), replyItem("siteVisit", translate)];
   }
+  // Several projects of a search: Show more when the search has more (ADR-206).
+  if (homes.size === 0 && projects.size > 1 && memory.more === true) return showMore;
   return [];
 }

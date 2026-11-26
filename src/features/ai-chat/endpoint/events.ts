@@ -5,7 +5,8 @@ import type { CardReference, SourceReference } from "../tools/types";
  * What the endpoint streams (ADR-128 section 4, "stream: text deltas, cards, ..."). The body is newline-delimited
  * JSON (`application/x-ndjson`): one event per line, each a complete JSON object, in this order:
  *
- *   start, then any of status / notice / text / card / source / link / confirm / replies, then exactly one done.
+ *   start, then any of status / notice / text / card / source / link / confirm / replies / see_all / state, then exactly
+ *   one done.
  *
  * `replace` swaps the whole message for a fixed line (a blocked answer, or a turn that could not finish); nothing
  * but `done` follows it. Every sentence is fixed wording from `en.json` that the server has already turned into
@@ -44,6 +45,16 @@ export type ChatStreamEvent =
       readonly type: "replies";
       readonly items: readonly { readonly key: string; readonly text: string }[];
     }
+  /**
+   * The "See all" link under a home search (ADR-206): the results page with the search's filters, built by the server
+   * (`state/see-all.ts`); the words are fixed wording from `en.json`.
+   */
+  | { readonly type: "see_all"; readonly text: string; readonly href: string }
+  /**
+   * The requirements state for the next message (ADR-206): a token signed by the server, sent back as it is with the next
+   * message. It holds filters and listing ids only, never a person; the browser cannot read or change what it means.
+   */
+  | { readonly type: "state"; readonly token: string }
   /** A fixed note beside the answer: "I removed personal details", the cap note, the disclaimer. */
   | { readonly type: "notice"; readonly key: string; readonly text: string }
   /** Swap the message for this line. `href` is a link built by code (the fixed fallback offers the search page). */

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
+import { AI_SEARCH_PAGE_SIZE } from "@/config/ai";
 import { AS_OF_TEXT, injected, listingRow, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-search (ADR-128 section 5.1): `search_properties` over the results page's own cached read.
@@ -39,6 +39,7 @@ const { toPortableJsonSchema } = await import("@/server/ai");
 const { runTool } = await import("../run");
 const { searchPropertiesInputSchema, searchPropertiesOutputSchema, searchPropertiesTool } =
   await import("../search-properties");
+const { createTurnMemory } = await import("../../state/memory");
 
 /** An input with nothing asked for: every field is required, so "not asked" is null. */
 const NOTHING = {
@@ -55,7 +56,7 @@ const NOTHING = {
   preferAmenities: null,
   preferFurnishing: null,
   sort: null,
-  limit: null,
+  page: null,
 };
 
 const search = (input: Record<string, unknown>) =>
@@ -98,7 +99,7 @@ describe("UT-ai-tool-search: the input", () => {
         type: ["string", "null"],
         enum: ["newest", "price_asc", "price_desc", "area_desc", null],
       },
-      limit: { type: ["integer", "null"] },
+      page: { type: ["string", "null"], enum: ["next", null] },
     });
   });
 
@@ -121,8 +122,7 @@ describe("UT-ai-tool-search: the input", () => {
     ["a keyword of more than 120 characters", { keyword: "k".repeat(121) }, "keyword"],
     ["a label this site does not have", { label: "luxury" }, "label"],
     ["an order this site does not have", { sort: "cheapest" }, "sort"],
-    ["a limit of nothing", { limit: 0 }, "limit"],
-    ["a limit above ten", { limit: 11 }, "limit"],
+    ["a page this tool does not have", { page: "previous" }, "page"],
   ])("refuses %s, names the field, and reads nothing", async (_case, change, field) => {
     const outcome = await search({ ...NOTHING, ...change });
     expect(outcome).toMatchObject({ status: "error", code: "invalid_input", fields: [field] });
@@ -130,10 +130,10 @@ describe("UT-ai-tool-search: the input", () => {
   });
 
   it("refuses a call that leaves a field out", async () => {
-    const withoutLimit = Object.fromEntries(
-      Object.entries(NOTHING).filter(([field]) => field !== "limit"),
+    const withoutPage = Object.fromEntries(
+      Object.entries(NOTHING).filter(([field]) => field !== "page"),
     );
-    expect(await search(withoutLimit)).toMatchObject({ code: "invalid_input", fields: ["limit"] });
+    expect(await search(withoutPage)).toMatchObject({ code: "invalid_input", fields: ["page"] });
   });
 
   it.each([
@@ -142,7 +142,7 @@ describe("UT-ai-tool-search: the input", () => {
     ["the highest price the address reads", { maxPrice: 999_999_999_999 }],
     ["a locality of exactly 80 characters", { locality: "v".repeat(80) }],
     ["a keyword of exactly 120 characters", { keyword: "k".repeat(120) }],
-    ["one home", { limit: 1 }],
+    ["the next page", { page: "next" }],
   ])("accepts %s", async (_case, change) => {
     expect(await search({ ...NOTHING, ...change })).toMatchObject({ status: "ok" });
   });
@@ -176,7 +176,7 @@ describe("UT-ai-tool-search: the read", () => {
       preferAmenities: null,
       preferFurnishing: null,
       sort: "price_asc",
-      limit: 5,
+      page: null,
     });
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
       {
@@ -391,28 +391,17 @@ describe("UT-ai-tool-search: the result", () => {
     expect(outcome.content).not.toContain("bathrooms");
   });
 
-  it("never gives more than ten homes, even if the read gave more", async () => {
+  it("gives one page of six homes, even if the read gave more", async () => {
     const many = Array.from("abcdefghjkmnpqr", (letter) =>
       listingRow({ short_id: letter.repeat(8), title: `Home ${letter}` }),
     );
     expect(many).toHaveLength(15);
     getSearchResults.mockResolvedValue(found(many, 240));
     const outcome = await search(NOTHING);
-    expect(MAX_TOOL_RESULT_ITEMS).toBe(10);
-    expect(outcome).toMatchObject({ status: "ok", output: { total: 240 } });
-    expect(outcome.status === "ok" ? outcome.references : []).toHaveLength(10);
-    expect(JSON.parse(outcome.content).homes).toHaveLength(10);
-  });
-
-  it("gives fewer homes when fewer are asked for, and keeps the total", async () => {
-    const three = ["aaaaaaaa", "bbbbbbbb", "cccccccc"].map((short_id) => listingRow({ short_id }));
-    getSearchResults.mockResolvedValue(found(three, 3));
-    const outcome = await search({ ...NOTHING, limit: 2 });
-    expect(JSON.parse(outcome.content)).toMatchObject({
-      total: 3,
-      homes: [{ homeId: "aaaaaaaa" }, { homeId: "bbbbbbbb" }],
-    });
-    expect(outcome.status === "ok" ? outcome.references : []).toHaveLength(2);
+    expect(AI_SEARCH_PAGE_SIZE).toBe(6);
+    expect(outcome).toMatchObject({ status: "ok", output: { total: 240, shownSoFar: 6 } });
+    expect(outcome.status === "ok" ? outcome.references : []).toHaveLength(6);
+    expect(JSON.parse(outcome.content).homes).toHaveLength(6);
   });
 
   it("gives an empty list and a total of nothing when no home matches", async () => {
@@ -421,7 +410,7 @@ describe("UT-ai-tool-search: the result", () => {
       status: "ok",
       output: { total: 0, homes: [] },
       references: [],
-      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"homes":[],"slightlyAboveBudget":null}`,
+      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"shownSoFar":0,"homes":[],"slightlyAboveBudget":null}`,
     });
   });
 
@@ -573,5 +562,75 @@ describe("UT-ai-tool-search: the ranking (ADR-205)", () => {
   it("never tells the model a home is featured", async () => {
     const outcome = await search({ ...NOTHING });
     expect(outcome.status === "ok" && outcome.content).not.toMatch(/featured|sponsor|promot/iu);
+  });
+});
+
+describe("UT-ai-tool-search-paging: one page at a time, never the same home twice (ADR-206)", () => {
+  const homes = Array.from("abcdefghjkmnpqr", (letter) =>
+    listingRow({ short_id: letter.repeat(8), title: `Home ${letter}` }),
+  );
+  const pageIds = (content: string): string[] =>
+    (JSON.parse(content) as { homes: { homeId: string }[] }).homes.map((home) => home.homeId);
+
+  it("gives the next six with page next and the same filters, then the rest, with no repeat", async () => {
+    getSearchResults.mockResolvedValue(found(homes, 15));
+    const memory = createTurnMemory(null);
+    const context = { ...TOOL_CONTEXT, search: memory };
+    const run = (input: Record<string, unknown>) =>
+      runTool([searchPropertiesTool], { name: "search_properties", input }, context);
+    const first = await run({ ...NOTHING, bhk: 2 });
+    const second = await run({ ...NOTHING, bhk: 2, page: "next" });
+    const third = await run({ ...NOTHING, bhk: 2, page: "next" });
+    const ids = [first, second, third].map((outcome) => pageIds(outcome.content));
+    expect(ids.map((page) => page.length)).toEqual([6, 6, 3]);
+    expect(new Set(ids.flat()).size).toBe(15);
+    expect(JSON.parse(third.content)).toMatchObject({ total: 15, shownSoFar: 15 });
+    expect(memory.current()).toMatchObject({ tool: "search_properties", total: 15 });
+    expect(memory.current()?.shown).toHaveLength(15);
+  });
+
+  it("starts the ranking again when a filter changes, and marks the homes seen before", async () => {
+    getSearchResults.mockResolvedValue(found(homes, 15));
+    const memory = createTurnMemory(null);
+    const context = { ...TOOL_CONTEXT, search: memory };
+    const run = (input: Record<string, unknown>) =>
+      runTool([searchPropertiesTool], { name: "search_properties", input }, context);
+    const first = await run({ ...NOTHING, bhk: 2 });
+    expect(
+      (JSON.parse(first.content) as { homes: { seenBefore: boolean }[] }).homes.every(
+        (home) => !home.seenBefore,
+      ),
+    ).toBe(true);
+    const changed = await run({ ...NOTHING, bhk: 3, page: "next" });
+    expect(pageIds(changed.content)).toEqual(pageIds(first.content));
+    expect(
+      (JSON.parse(changed.content) as { homes: { seenBefore: boolean }[] }).homes.every(
+        (home) => home.seenBefore,
+      ),
+    ).toBe(true);
+    expect(JSON.parse(changed.content)).toMatchObject({ shownSoFar: 6 });
+  });
+
+  it("treats the same filters written in other case or spacing as the same search", async () => {
+    getSearchResults.mockResolvedValue(found(homes, 15));
+    const memory = createTurnMemory(null);
+    const context = { ...TOOL_CONTEXT, search: memory };
+    const run = (input: Record<string, unknown>) =>
+      runTool([searchPropertiesTool], { name: "search_properties", input }, context);
+    const first = await run({ ...NOTHING, city: "Chennai", preferAmenities: ["pool", "gym"] });
+    const next = await run({
+      ...NOTHING,
+      city: " chennai ",
+      preferAmenities: ["Gym", "Pool"],
+      page: "next",
+    });
+    expect(pageIds(next.content).some((id) => pageIds(first.content).includes(id))).toBe(false);
+  });
+
+  it("without a memory, page next is a first page", async () => {
+    getSearchResults.mockResolvedValue(found(homes, 15));
+    const next = await search({ ...NOTHING, page: "next" });
+    expect(pageIds(next.content)).toHaveLength(6);
+    expect(JSON.parse(next.content)).toMatchObject({ shownSoFar: 6 });
   });
 });

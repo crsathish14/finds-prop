@@ -65,6 +65,35 @@ describe("the cards under an answer (AI-P5-T02)", () => {
     expect(cards).toHaveLength(1);
   });
 
+  it("shows no Featured badge in the chat, on a home or a project (ADR-206)", async () => {
+    reads.property.mockResolvedValue({
+      status: "found",
+      property: propertyData({ shortId: "k3x9a2bd", slug: "two-bhk", label: "featured" }),
+      readAt: "2026-11-14T00:00:00.000Z",
+    });
+    reads.project.mockResolvedValue({
+      status: "found",
+      project: projectData({ slug: "kadal-vista", featured: true }),
+      readAt: "2026-11-14T00:00:00.000Z",
+    });
+    const [home, project] = await readChatCards([
+      { kind: "home", homeId: "k3x9a2bd", slug: "two-bhk" },
+      { kind: "project", slug: "kadal-vista" },
+    ]);
+    expect(home?.kind === "home" && home.card.label).toBeNull();
+    expect(project?.kind === "project" && project.card.featured).toBe(false);
+  });
+
+  it("keeps a home's Prime or budget label", async () => {
+    reads.property.mockResolvedValue({
+      status: "found",
+      property: propertyData({ shortId: "k3x9a2bd", slug: "two-bhk", label: "prime" }),
+      readAt: "2026-11-14T00:00:00.000Z",
+    });
+    const [home] = await readChatCards([{ kind: "home", homeId: "k3x9a2bd", slug: "two-bhk" }]);
+    expect(home?.kind === "home" && home.card.label).toBe("prime");
+  });
+
   it("leaves out a home or a project that is not there any more", async () => {
     reads.property.mockResolvedValue({ status: "missing", readAt: "2026-11-14T00:00:00.000Z" });
     reads.project.mockResolvedValue({ status: "missing", readAt: "2026-11-14T00:00:00.000Z" });
@@ -81,17 +110,19 @@ describe("the card request (AI-P5-T02)", () => {
   const home = { kind: "home", homeId: "k3x9a2bd", slug: "two-bhk" };
   const project = { kind: "project", slug: "kadal-vista" };
 
-  it("accepts up to three references", () => {
-    expect(readChatCardsInputSchema.safeParse({ references: [home, project, home] }).success).toBe(
-      true,
-    );
+  it("accepts up to six references", () => {
+    expect(
+      readChatCardsInputSchema.safeParse({
+        references: [home, project, home, project, home, project],
+      }).success,
+    ).toBe(true);
     expect(readChatCardsInputSchema.safeParse({ references: [] }).success).toBe(true);
   });
 
-  it("refuses more than three, a bad id, a bad slug and any other kind", () => {
+  it("refuses more than six, a bad id, a bad slug and any other kind", () => {
     const refused = (references: unknown) =>
       readChatCardsInputSchema.safeParse({ references }).success === false;
-    expect(refused([home, home, home, home])).toBe(true);
+    expect(refused(Array.from({ length: 7 }, () => home))).toBe(true);
     expect(refused([{ ...home, homeId: "not-an-id" }])).toBe(true);
     expect(refused([{ kind: "project", slug: "Has Spaces" }])).toBe(true);
     expect(refused([{ kind: "builder", slug: "kadal-homes" }])).toBe(true);

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MAX_TOOL_RESULT_ITEMS } from "@/config/ai";
+import { AI_SEARCH_PAGE_SIZE } from "@/config/ai";
 import { injected, keysIn, listingRow, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-search-place (ADR-142): the place-aware `search_properties`. The place lookup and the results read are
@@ -49,7 +49,7 @@ const NOTHING = {
   preferAmenities: null,
   preferFurnishing: null,
   sort: null,
-  limit: null,
+  page: null,
   place: null,
   radiusKm: null,
 };
@@ -273,21 +273,21 @@ describe("UT-ai-tool-search-place: a place that is found", () => {
     expect(result.place.nearbyHomes).toBe(0);
   });
 
-  it("holds the homes to the limit asked for, inside ones first", async () => {
+  it("gives the inside homes first, then the ones further out, in one page", async () => {
     getSearchResults
       .mockResolvedValueOnce(found(homesAt([1.2, 3.6])))
       .mockResolvedValueOnce(found([...homesAt([1.2, 3.6]), ...homesAt([7.4, 11.9, 14.1], "b")]));
-    const result = output(await search({ ...NOTHING, place: "KK Nagar", limit: 3 }));
-    expect(result.homes.map((home) => home.nearby)).toEqual([false, false, true]);
-    expect(result.place.nearbyHomes).toBe(1);
+    const result = output(await search({ ...NOTHING, place: "KK Nagar" }));
+    expect(result.homes.map((home) => home.nearby)).toEqual([false, false, true, true, true]);
+    expect(result.place.nearbyHomes).toBe(3);
   });
 
-  it("never gives more than ten homes", async () => {
+  it("never gives more than one page of six homes", async () => {
     getSearchResults.mockResolvedValue(
       found(homesAt(Array.from({ length: 15 }, (_, index) => index / 3)), 15),
     );
     const result = output(await search({ ...NOTHING, place: "KK Nagar" }));
-    expect(result.homes).toHaveLength(MAX_TOOL_RESULT_ITEMS);
+    expect(result.homes).toHaveLength(AI_SEARCH_PAGE_SIZE);
   });
 
   it("answers 'unavailable' when the read fails, like the plain tool", async () => {

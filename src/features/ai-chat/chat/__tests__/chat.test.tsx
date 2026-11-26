@@ -392,14 +392,16 @@ describe("sending a message and reading the answer (AI-P5-T02)", () => {
     });
   });
 
-  it("draws no more than three cards", async () => {
+  it("draws no more than six cards", async () => {
     fetchMock.mockResolvedValueOnce(
       answered(
         "Many.",
-        ["aaaaaaaa", "bbbbbbbb", "cccccccc", "dddddddd"].map((homeId) => ({
-          type: "card" as const,
-          reference: { kind: "home" as const, homeId, slug: "x" },
-        })),
+        ["aaaaaaaa", "bbbbbbbb", "cccccccc", "dddddddd", "eeeeeeee", "ffffffff", "gggggggg"].map(
+          (homeId) => ({
+            type: "card" as const,
+            reference: { kind: "home" as const, homeId, slug: "x" },
+          }),
+        ),
       ),
     );
     renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
@@ -409,7 +411,7 @@ describe("sending a message and reading the answer (AI-P5-T02)", () => {
     await screen.findByText("Many.");
     await waitFor(() => expect(cards.read).toHaveBeenCalled());
     const request = cards.read.mock.calls.at(-1)?.[0] as { references: unknown[] };
-    expect(request.references).toHaveLength(3);
+    expect(request.references).toHaveLength(6);
   });
 });
 
@@ -944,5 +946,84 @@ describe("the ticked homes travel with the message (AI chat compare)", () => {
     expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)).context).toEqual({
       compare: ["k3x9a2bd", "m4y8b3ce"],
     });
+  });
+});
+
+describe("the requirements state and Show more (ADR-206)", () => {
+  it("sends the state back, marks a press of Show more, and keeps the state in the tab", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        answered("Six homes.", [
+          { type: "replies", items: [{ key: "showMore", text: words.replies.showMore }] },
+          { type: "state", token: "signed.state-one" },
+        ]),
+      )
+      .mockResolvedValueOnce(answered("Six more."));
+    renderWithMessages(<ChatIsland signedIn={true} controls={controls} />);
+    await ready();
+    const user = await type("2 BHK homes");
+    await user.click(sendButton());
+    await screen.findByText("Six homes.");
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty("state");
+    await waitFor(() => expect(stored()?.state).toBe("signed.state-one"));
+    await user.click(await screen.findByRole("button", { name: words.replies.showMore }));
+    await screen.findByText("Six more.");
+    const second = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
+    expect(second).toMatchObject({ state: "signed.state-one", more: true });
+  });
+
+  it("does not mark a typed message as a press of Show more", async () => {
+    fetchMock
+      .mockResolvedValueOnce(answered("Six homes.", [{ type: "state", token: "signed.state-one" }]))
+      .mockResolvedValueOnce(answered("Sure."));
+    renderWithMessages(<ChatIsland signedIn={true} controls={controls} />);
+    await ready();
+    const user = await type("2 BHK homes");
+    await user.click(sendButton());
+    await screen.findByText("Six homes.");
+    await user.type(box(), "show more");
+    await user.click(sendButton());
+    await screen.findByText("Sure.");
+    const second = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
+    expect(second).toMatchObject({ state: "signed.state-one" });
+    expect(second).not.toHaveProperty("more");
+  });
+
+  it("draws the See all link under the cards, only to the results page", async () => {
+    cards.read.mockResolvedValue({ ok: true, data: [] });
+    fetchMock.mockResolvedValueOnce(
+      answered("Six homes.", [
+        { type: "card", reference: { kind: "home", homeId: "k3x9a2bd", slug: "flat" } },
+        { type: "see_all", text: "See all 45 matching homes", href: "/properties?bhk=2" },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={true} controls={controls} />);
+    await ready();
+    const user = await type("2 BHK homes");
+    await user.click(sendButton());
+    const link = await screen.findByRole("link", { name: "See all 45 matching homes" });
+    expect(link).toHaveAttribute("href", "/properties?bhk=2");
+  });
+
+  it("draws no See all link that leads anywhere but the results page", async () => {
+    fetchMock.mockResolvedValueOnce(
+      answered("Six homes.", [
+        { type: "card", reference: { kind: "home", homeId: "k3x9a2bd", slug: "flat" } },
+        { type: "see_all", text: "See all", href: "//elsewhere.example/properties" },
+        { type: "see_all", text: "See all", href: "/auth?redirect=x" },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={true} controls={controls} />);
+    await ready();
+    const user = await type("2 BHK homes");
+    await user.click(sendButton());
+    await screen.findByText("Six homes.");
+    expect(screen.queryByRole("link", { name: "See all" })).not.toBeInTheDocument();
   });
 });

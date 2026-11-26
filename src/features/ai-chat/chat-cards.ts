@@ -44,11 +44,13 @@ export async function readChatCards(
       if (reference.kind === "home") {
         const result = await getProperty(reference.homeId);
         if (result.status !== "found") return null;
+        const card = toSavedCard(result.property, { translate, supabaseUrl });
         return {
           kind: "home",
           key: `home:${result.property.shortId}`,
           shortId: result.property.shortId,
-          card: toSavedCard(result.property, { translate, supabaseUrl }),
+          // The chat shows no promotion (owner, 26 Nov 2026, ADR-206): the Featured badge is left off here only.
+          card: card.label === "featured" ? { ...card, label: null } : card,
         };
       }
       const result = await getProject(reference.slug);
@@ -69,7 +71,8 @@ export async function readChatCards(
             bhkOptions: project.bhkOptions,
             locality: project.locality,
             coverPath: project.images[0] ?? null,
-            featured: project.featured,
+            // The chat shows no promotion (owner, 26 Nov 2026, ADR-206): no Featured badge on a card in the chat.
+            featured: false,
           },
           supabaseUrl,
         ),

@@ -248,8 +248,7 @@
             "input": {
               "listingType": "sale",
               "bhk": 2,
-              "sort": "price_asc",
-              "limit": 1
+              "sort": "price_asc"
             }
           }
         ]
@@ -277,7 +276,7 @@
         ]
       },
       "visible": {
-        "cards": ["home:t2e6h9jq"]
+        "cards": ["home:t2e6h9jq", "home:y7k3p6qv", "home:m4y8b3ce"]
       }
     },
     "session": "customer"
@@ -3567,7 +3566,13 @@
         ]
       },
       "visible": {
-        "cards": ["home:m4y8b3ce", "home:y7k3p6qv", "home:v4g8k3ls"],
+        "cards": [
+          "home:m4y8b3ce",
+          "home:y7k3p6qv",
+          "home:v4g8k3ls",
+          "home:t2e6h9jq",
+          "home:p6a2d5ek"
+        ],
         "showsCards": ["home:m4y8b3ce", "home:y7k3p6qv"],
         "mustContain": [["further out", "farther"]]
       },
@@ -3628,7 +3633,14 @@
         ]
       },
       "visible": {
-        "cards": ["home:p6a2d5ek", "home:n5z7c4dh", "home:v4g8k3ls"],
+        "cards": [
+          "home:p6a2d5ek",
+          "home:n5z7c4dh",
+          "home:v4g8k3ls",
+          "home:s9d5g8hp",
+          "home:t2e6h9jq",
+          "home:k3x9a2bd"
+        ],
         "showsCards": ["home:p6a2d5ek"],
         "mustContain": [["no homes within", "none within"]]
       },
@@ -3696,7 +3708,7 @@
         ]
       },
       "visible": {
-        "cards": ["home:k3x9a2bd", "home:x6j2n5pu", "home:n5z7c4dh"],
+        "cards": ["home:k3x9a2bd", "home:x6j2n5pu", "home:n5z7c4dh", "home:s9d5g8hp"],
         "showsCards": ["home:k3x9a2bd", "home:x6j2n5pu"]
       },
       "modelNeverSaw": ["12.9791", "80.2212", "fake-velachery", "Chennai, Tamil Nadu, India"]

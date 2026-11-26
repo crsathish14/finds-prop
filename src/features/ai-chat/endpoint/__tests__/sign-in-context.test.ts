@@ -53,6 +53,13 @@ describe("UT-ai-endpoint-sign-in: what the tools are told about the customer", (
       }),
     );
     expect(seen[0]?.["signedIn"]).toBe(true);
-    expect(Object.keys(seen[0] ?? {}).sort()).toEqual(["locale", "signedIn", "translate"]);
+    // The search memory (ADR-206) holds listing ids only; nothing names the customer.
+    expect(Object.keys(seen[0] ?? {}).sort()).toEqual([
+      "locale",
+      "search",
+      "signedIn",
+      "translate",
+    ]);
+    expect(JSON.stringify(seen[0])).not.toContain(SIGNED_IN.userId);
   });
 });
