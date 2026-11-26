@@ -127,14 +127,14 @@ isOneToOne: false
                   ]
                 },"builder_research_pages": {
                   Row: {
-                    "body": string,"builder_id": string,"links": Json,"page_key": string,"read_at": string,"title": string,"url": string
+                    "body": string,"builder_id": string,"links": NonNullable<Json>,"page_key": string,"read_at": string,"title": string,"url": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: string,"builder_id": string,"links"?: Json,"page_key": string,"read_at"?: string,"title"?: string,"url": string
+                    "body"?: string,"builder_id": string,"links"?: NonNullable<Json>,"page_key": string,"read_at"?: string,"title"?: string,"url": string
                   }
                   Update: {
-                    "body"?: string,"builder_id"?: string,"links"?: Json,"page_key"?: string,"read_at"?: string,"title"?: string,"url"?: string
+                    "body"?: string,"builder_id"?: string,"links"?: NonNullable<Json>,"page_key"?: string,"read_at"?: string,"title"?: string,"url"?: string
                   }
                   Relationships: [
                     {
