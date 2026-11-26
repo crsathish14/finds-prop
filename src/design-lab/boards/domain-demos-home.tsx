@@ -102,7 +102,7 @@ export function ConversationalHeroDemo() {
           emphasis="Chennai"
           subtitle="Shortlist, compare and enquire directly."
           prompt="Ask in your own words"
-          trust={["Approved listings only", "Enquire directly", "Compare up to 3 homes"]}
+          trust={["Approved listings only", "Enquire directly", "Ask AI about any home"]}
           sponsor={<StripSample />}
         >
           <HomeSearchBarHost appearance="joined" examples={requests} suggestions={requests} />

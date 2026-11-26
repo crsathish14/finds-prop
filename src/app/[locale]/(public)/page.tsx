@@ -109,7 +109,7 @@ export default async function HomePage() {
             ? [
                 translate("home.hero.trust.approved"),
                 translate("home.hero.trust.enquire"),
-                translate("home.hero.trust.compare"),
+                translate("home.hero.trust.ai"),
               ]
             : undefined
         }
