@@ -239,10 +239,12 @@ function HomeSearchBar({
           <span
             id={suggestionsId}
             data-slot="home-search-suggestions-label"
-            className="inline-flex h-(--size-chip-sm) shrink-0 items-center rounded-pill bg-canvas-sunken px-3 text-caption font-semibold text-muted select-none"
+            className="inline-flex h-(--size-chip-sm) shrink-0 items-center rounded-pill border-[length:var(--bw-field)] border-dashed border-line-strong bg-canvas-sunken px-3 text-caption font-semibold text-muted select-none"
           >
             {translate("suggestions")}
           </span>
+          {/* Phones: "Try" sits alone on the first row so every row of chips starts at the same left edge. */}
+          <span aria-hidden="true" className="basis-full @md:hidden" />
           {suggestions.map((suggestion) => (
             <Chip
               key={suggestion}
