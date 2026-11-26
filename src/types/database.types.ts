@@ -105,6 +105,46 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"builder_research_links": {
+                  Row: {
+                    "builder_id": string,"created_at": string,"position": number,"topic": string,"updated_at": string,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "builder_id": string,"created_at"?: string,"position": number,"topic": string,"updated_at"?: string,"url": string
+                  }
+                  Update: {
+                    "builder_id"?: string,"created_at"?: string,"position"?: number,"topic"?: string,"updated_at"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "builder_research_links_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"builder_research_reads": {
+                  Row: {
+                    "builder_id": string,"created_at": string,"id": number,"kind": string,"ok": boolean,"problem": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "builder_id": string,"created_at"?: string,"id"?: never,"kind": string,"ok": boolean,"problem"?: string | null,"url": string
+                  }
+                  Update: {
+                    "builder_id"?: string,"created_at"?: string,"id"?: never,"kind"?: string,"ok"?: boolean,"problem"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "builder_research_reads_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"builders": {
                   Row: {
                     "active": boolean,"contact_person": string | null,"created_at": string,"description": string | null,"email": string,"established_year": number | null,"id": string,"invited_at": string | null,"kind": string,"logo_path": string | null,"logo_url": string | null,"name": string,"onboarded_at": string | null,"phone": string | null,"projects_delivered": number | null,"tagline": string | null,"updated_at": string,"user_id": string | null,"website": string | null
@@ -1166,6 +1206,9 @@ isOneToOne: false
               "allowed": boolean,"retry_after": number
             }[]
                            },
+"record_builder_research_read":
+{ Args: { "p_builder": string,"p_kind": string,"p_ok": boolean,"p_problem"?: string,"p_url": string }; Returns: undefined
+                           },
 "record_crm_delivery":
 { Args: { "p_attempt": number,"p_http_status"?: number,"p_integration_name": string,"p_lead_id"?: string,"p_next_retry"?: string,"p_ok": boolean,"p_snippet"?: string,"p_submission": string }; Returns: string
                            },
@@ -1187,6 +1230,21 @@ isOneToOne: false
 "run_retention":
 { Args: { "p_batch"?: number,"p_max_batches"?: number }; Returns: Json
                            },
+"save_builder_research_links":
+{ Args: { "p_builder": string,"p_links": Json }; Returns: {
+              "builder_id": string,
+"created_at": string,
+"position": number,
+"topic": string,
+"updated_at": string,
+"url": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "builder_research_links"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "save_crm_integration":
 { Args: { "p_integration"?: string,"p_secrets"?: Json,"p_values": Json }; Returns: string
                            },
