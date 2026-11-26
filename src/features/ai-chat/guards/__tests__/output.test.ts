@@ -373,6 +373,9 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
     const second = { kind: "home", homeId: "m4y8b3ce", slug: "second-home" } as const;
     const third = { kind: "home", homeId: "n5z7c4dh", slug: "third-home" } as const;
     const fourth = { kind: "home", homeId: "p6a2d5ek", slug: "fourth-home" } as const;
+    const fifth = { kind: "home", homeId: "q7b2e6fm", slug: "fifth-home" } as const;
+    const sixth = { kind: "home", homeId: "r8c3f7gn", slug: "sixth-home" } as const;
+    const seventh = { kind: "home", homeId: "s9d4g8hp", slug: "seventh-home" } as const;
 
     it("draws a card for every record the tools returned, with no marker, after the text", () => {
       const result = checkOutput("I found two homes for you.", {
@@ -402,10 +405,10 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
     it("stops at the cap, markers first and then the tool order", () => {
       const result = checkOutput("Here they are. [[home:p6a2d5ek]]", {
         ...evidence(),
-        references: [HOME_REFERENCE, second, third, fourth],
+        references: [HOME_REFERENCE, second, third, fourth, fifth, sixth, seventh],
         automaticCards: true,
       });
-      expect(cardsOf(result.events)).toEqual([fourth, HOME_REFERENCE, second]);
+      expect(cardsOf(result.events)).toEqual([fourth, HOME_REFERENCE, second, third, fifth, sixth]);
       expect(cardsOf(result.events)).toHaveLength(AI_MAX_CARDS_PER_ANSWER);
     });
 

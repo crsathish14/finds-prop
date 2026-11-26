@@ -26,6 +26,37 @@ export interface ToolContext {
   readonly translate: Translate;
   /** The language the numbers and dates are written in. */
   readonly locale: string;
+  /**
+   * What the chat remembers about its searches (ADR-206): the ids the current search already showed, so a next page
+   * repeats none, and the homes and projects shown earlier in the chat. Absent means nothing is remembered (a test, an
+   * eval): every search is a first page. It names no person: only listing ids.
+   */
+  readonly search?: SearchMemory;
+}
+
+/** The two searches whose results are paged (ADR-206). */
+export type PagedSearchName = "search_properties" | "search_projects";
+
+/** One page a search gave, as the chat remembers it. */
+export interface SearchPage {
+  readonly tool: PagedSearchName;
+  /** The tool's input without its page. */
+  readonly filters: Readonly<Record<string, unknown>>;
+  /** Every id this search has given so far, in the ranked order (the earlier pages first). */
+  readonly shown: readonly string[];
+  /** How many match in all. */
+  readonly total: number;
+  /** True for a search around a place. */
+  readonly place: boolean;
+}
+
+export interface SearchMemory {
+  /** The ids the remembered search already gave, when it is this tool with these filters; otherwise none. */
+  shownBefore(tool: PagedSearchName, filters: Readonly<Record<string, unknown>>): readonly string[];
+  /** Whether this home (homeId) or project (slug) was shown earlier in the chat. */
+  seenBefore(tool: PagedSearchName, id: string): boolean;
+  /** Remembers the page a search gave: the last one of the message becomes the current search. */
+  record(page: SearchPage): void;
 }
 
 /**

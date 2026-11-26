@@ -15,8 +15,12 @@ import type { ConfirmCard } from "../confirm/confirm-card";
 import { SITE_LINKS } from "../site-links";
 import { sourceHref } from "../source-links";
 import type { ProposalOffer } from "../tools/proposal-offer";
+import { signChatState } from "../state/chat-state";
+import type { TurnMemory } from "../state/memory";
+import { offerKey, offeredByReplies } from "../state/offers";
+import { seeAllLink } from "../state/see-all";
 import { pickReplies } from "./replies";
-import type { AnyAiChatTool } from "../tools/types";
+import type { AnyAiChatTool, CardReference } from "../tools/types";
 import type { ChatOutcome, ChatStreamEvent } from "./events";
 
 /**
@@ -54,6 +58,11 @@ export interface TurnInput {
    * not throw; a null answer means no card.
    */
   readonly confirmCard?: (offer: ProposalOffer) => Promise<ConfirmCard | null>;
+  /**
+   * The requirements state of this message (ADR-206): the search tools read and record their pages through it, and the
+   * answer hands the next state on in a `state` event. Absent means no state (the tests of the older parts).
+   */
+  readonly memory?: TurnMemory;
 }
 
 /** What the usage step needs after the turn. `agent` is null only if the loop ended without its `done` event. */
@@ -149,7 +158,12 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     tools: input.tools,
     system: input.system,
     messages: input.messages,
-    context: { translate, locale: "en", signedIn: input.signedIn },
+    context: {
+      translate,
+      locale: "en",
+      signedIn: input.signedIn,
+      ...(input.memory === undefined ? {} : { search: input.memory }),
+    },
     signal: input.signal,
     timeLimit: input.timeLimit,
   })) {
@@ -220,17 +234,37 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
   // The confirm card of a propose tool, after the checked answer: the last offer of this message, and only when
   // the answer was let through (a replaced answer sends nothing but `done`).
   const offer = agent.offers.at(-1);
+  const { memory } = input;
   if (offer !== undefined && input.confirmCard !== undefined) {
     const card = await input.confirmCard(offer);
-    if (card !== null) yield { type: "confirm", card };
+    if (card !== null) {
+      yield { type: "confirm", card };
+      const key = offerKey(offer);
+      if (key !== null) memory?.offer([key]);
+    }
   }
 
-  // The reply buttons come last, only after an answer that was let through, and never beside a confirm card.
-  const replies = pickReplies(agent, translate);
+  // The reply buttons come last, only after an answer that was let through, and never beside a confirm card. They
+  // follow what the chat remembers (ADR-206): Show more only while the search has more, an offer once per record.
+  const current = memory?.searched() === true ? memory.current() : null;
+  const replies = pickReplies(agent, translate, {
+    ...(current === null ? {} : { more: current.total > current.shown.length }),
+    ...(memory === undefined ? {} : { offered: (key: string) => memory.wasOffered(key) }),
+  });
   if (replies.length > 0) yield { type: "replies", items: replies };
+  const cards = agent.references.filter(
+    (reference): reference is CardReference =>
+      reference.kind === "home" || reference.kind === "project",
+  );
+  memory?.offer(offeredByReplies(replies, cards));
+  const link = current === null || agent.offers.length > 0 ? null : seeAllLink(current, translate);
+  if (link !== null) yield { type: "see_all", text: link.text, href: link.href };
 
   if (agent.noticeKey !== null && agent.outcome === "limit") {
     yield { type: "notice", key: agent.noticeKey, text: translate(agent.noticeKey) };
   }
+  // The state for the next message, only after an answer that was let through.
+  const token = memory === undefined ? null : signChatState(memory.next());
+  if (token !== null) yield { type: "state", token };
   return { outcome: agent.outcome, agent, output };
 }

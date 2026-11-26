@@ -316,16 +316,16 @@ describe("UT-ai-chat-context-field: what the last answer showed (ADR-180)", () =
     expect(shownRecords([])).toEqual({ homes: [], projects: [] });
   });
 
-  it("sends the shown ids beside the page's context, ids only and at most three of each", () => {
+  it("sends the shown ids beside the page's context, ids only and at most six of each", () => {
     expect(
       contextField({ home: "p6a2d5ej" }, [], {
-        homes: ["a", "b", "c", "d"],
+        homes: ["a", "b", "c", "d", "e", "f", "g"],
         projects: ["kadal-vista"],
       }),
     ).toEqual({
       context: {
         home: "p6a2d5ej",
-        shownHomes: ["a", "b", "c"],
+        shownHomes: ["a", "b", "c", "d", "e", "f"],
         shownProjects: ["kadal-vista"],
       },
     });

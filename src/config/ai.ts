@@ -29,8 +29,24 @@ export const TOOL_TIMEOUT_MS = 3000;
  */
 export const AI_PROVIDER_IDLE_TIMEOUT_MS = 20_000;
 
-/** The most home and project cards the page draws under one answer (UX addendum decision 5). */
-export const AI_MAX_CARDS_PER_ANSWER = 3;
+/**
+ * The most home and project cards the page draws under one answer: six (owner, 26 Nov 2026, plan K.5; it was three,
+ * UX addendum decision 5). It is also one page of search results (`AI_SEARCH_PAGE_SIZE`), so Show more brings the next six.
+ */
+export const AI_MAX_CARDS_PER_ANSWER = 6;
+
+/** How many homes or projects one search gives the model and the cards: one page of the ranked list (ADR-206). */
+export const AI_SEARCH_PAGE_SIZE = AI_MAX_CARDS_PER_ANSWER;
+
+/**
+ * The requirements state of the chat (ADR-206): a token the server signs and the browser sends back with the next
+ * message. How long it stays good, in seconds (a chat lives in one browser tab); the most homes and projects it
+ * remembers as already shown, and the most offers; and the longest token the endpoint reads, in characters.
+ */
+export const AI_CHAT_STATE_LIFETIME_SECONDS = 12 * 60 * 60;
+export const AI_CHAT_STATE_MAX_SEEN = 200;
+export const AI_CHAT_STATE_MAX_OFFERED = 10;
+export const AI_CHAT_STATE_MAX_CHARACTERS = 32_000;
 
 /** The longest customer message the assistant accepts, in characters. */
 export const MAX_INPUT_CHARACTERS = 1000;

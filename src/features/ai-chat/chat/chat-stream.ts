@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AI_CHAT_STATE_MAX_CHARACTERS } from "@/config/ai";
 import { confirmCardSchema } from "../confirm/confirm-card";
 
 /**
@@ -34,6 +35,12 @@ const eventSchema = z.discriminatedUnion("type", [
     type: z.literal("replies"),
     items: z.array(z.object({ key: z.string().max(40), text: z.string().max(80) })).max(3),
   }),
+  z.object({
+    type: z.literal("see_all"),
+    text: z.string().max(80),
+    href: z.string().max(400),
+  }),
+  z.object({ type: z.literal("state"), token: z.string().max(AI_CHAT_STATE_MAX_CHARACTERS) }),
   z.object({ type: z.literal("notice"), key: z.string(), text: z.string() }),
   z.object({
     type: z.literal("replace"),

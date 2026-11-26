@@ -110,3 +110,34 @@ describe("UT-ai-replies: pickReplies", () => {
     }
   });
 });
+
+describe("UT-ai-replies: what the chat remembers (ADR-206)", () => {
+  const withMemory = (agent: AgentDone, memory: Parameters<typeof pickReplies>[2]) =>
+    pickReplies(agent, translate, memory).map((reply) => reply.key);
+
+  it("offers Show more only while the search has matches it has not shown", () => {
+    const several = done({ references: [HOME, SECOND_HOME] });
+    expect(withMemory(several, { more: true })).toEqual(["compareHomes", "showMore"]);
+    expect(withMemory(several, { more: false })).toEqual(["compareHomes"]);
+  });
+
+  it("offers Show more under several projects of a search that has more", () => {
+    const projects = done({
+      references: [PROJECT, { kind: "project", slug: "kadal-bay" }],
+      toolsRan: ["search_projects"],
+    });
+    expect(withMemory(projects, { more: true })).toEqual(["showMore"]);
+    expect(withMemory(projects, { more: false })).toEqual([]);
+  });
+
+  it("offers an enquiry or a site visit once for each home or project", () => {
+    const offered = (key: string) => key === "home:k3x9a2bd" || key === "project:kadal-vista";
+    expect(withMemory(done({ toolsRan: ["get_property"] }), { offered })).toEqual([
+      "workOutEmi",
+      "similarHomes",
+    ]);
+    expect(
+      withMemory(done({ references: [PROJECT], toolsRan: ["get_project"] }), { offered }),
+    ).toEqual([]);
+  });
+});

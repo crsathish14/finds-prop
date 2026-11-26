@@ -35,6 +35,7 @@ import {
   EMPTY_CHAT,
   buildHistory,
   contextField,
+  isSeeAllPath,
   messageTime,
   sentenceParts,
   shownRecords,
@@ -78,6 +79,8 @@ type LiveAnswer = {
   sources: ChatSource[];
   /** The reply buttons the server offered under this answer. */
   replies: { key: string; text: string }[];
+  /** The "See all" link of a home search (ADR-206). */
+  seeAll: { text: string; href: string } | undefined;
   replaced: boolean;
   href: string | undefined;
 };
@@ -97,6 +100,7 @@ const NO_ANSWER: Omit<LiveAnswer, "id"> = {
   links: [],
   sources: [],
   replies: [],
+  seeAll: undefined,
   replaced: false,
   href: undefined,
 };
@@ -171,7 +175,7 @@ function answerParts(
   entry: Pick<
     AssistantEntry,
     "text" | "notes" | "references" | "links" | "sources" | "replaced" | "href" | "confirm"
-  >,
+  > & { seeAll?: { text: string; href: string } | undefined },
   filtersLabel: string,
   sourcesLabel: string,
   streaming: boolean,
@@ -210,6 +214,13 @@ function answerParts(
               references={entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER)}
               controls={controls}
             />
+          ) : null}
+          {entry.seeAll !== undefined && isSeeAllPath(entry.seeAll.href) ? (
+            <p className="@xl:col-span-2" data-slot="chat-see-all">
+              <Link href={entry.seeAll.href} variant="arrow">
+                {entry.seeAll.text}
+              </Link>
+            </p>
           ) : null}
           {entry.confirm ? (
             <div className="@xl:col-span-2">
@@ -258,6 +269,8 @@ export function ChatIsland({
     tickedRef.current = ids;
   }, []);
   const abort = useRef<AbortController | null>(null);
+  // The requirements state the server signed (ADR-206): sent back with the next message, kept with the conversation.
+  const chatState = useRef<string | undefined>(undefined);
   const problemRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -282,6 +295,7 @@ export function ChatIsland({
       stored = EMPTY_CHAT;
       saveChat(storage, EMPTY_CHAT);
     }
+    chatState.current = stored.state;
     /* eslint-disable react-hooks/set-state-in-effect -- the browser's storage can only be read after hydration */
     setEntries(stored.entries);
     setDraft(stored.draft);
@@ -322,7 +336,14 @@ export function ChatIsland({
 
   useEffect(() => {
     if (!ready) return;
-    saveChat(browserStorage(), { version: 1, entries, draft, gate, account: signedIn });
+    saveChat(browserStorage(), {
+      version: 1,
+      entries,
+      draft,
+      gate,
+      account: signedIn,
+      ...(chatState.current === undefined ? {} : { state: chatState.current }),
+    });
   }, [ready, entries, draft, gate, signedIn]);
 
   useEffect(() => () => abort.current?.abort(), []);
@@ -384,7 +405,7 @@ export function ChatIsland({
     problem?.kind === "unavailable";
 
   const run = useCallback(
-    async (text: string, before: readonly ChatEntry[], userId: string) => {
+    async (text: string, before: readonly ChatEntry[], userId: string, more = false) => {
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
@@ -395,6 +416,7 @@ export function ChatIsland({
         references: [],
         sources: [],
         replies: [],
+        seeAll: undefined,
       };
       setLive({ ...answer });
       setProblem(null);
@@ -426,6 +448,9 @@ export function ChatIsland({
           body: JSON.stringify({
             messages: buildHistory(before, text),
             ...contextField(context, tickedRef.current, shownRecords(before)),
+            ...(chatState.current === undefined ? {} : { state: chatState.current }),
+            // The Show more button asks for the next page of the same search, served without the model (ADR-206).
+            ...(more ? { more: true } : {}),
           }),
           signal: controller.signal,
         });
@@ -454,6 +479,10 @@ export function ChatIsland({
             ) {
               answer.sources.push({ kind: event.kind, title: event.title, href: event.href });
             }
+          } else if (event.type === "see_all") {
+            if (isSeeAllPath(event.href)) answer.seeAll = { text: event.text, href: event.href };
+          } else if (event.type === "state") {
+            chatState.current = event.token;
           } else if (event.type === "replies") {
             answer.replies = event.items.slice(0, 3);
           } else if (event.type === "confirm") {
@@ -475,6 +504,7 @@ export function ChatIsland({
             answer.links = [];
             answer.sources = [];
             answer.replies = [];
+            answer.seeAll = undefined;
             answer.confirm = undefined;
             answer.replaced = true;
             answer.href = event.href;
@@ -496,6 +526,7 @@ export function ChatIsland({
             ...(answer.links.length === 0 ? {} : { links: answer.links }),
             ...(answer.sources.length === 0 ? {} : { sources: answer.sources }),
             ...(answer.replies.length === 0 ? {} : { replies: answer.replies }),
+            ...(answer.seeAll === undefined ? {} : { seeAll: answer.seeAll }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),
@@ -532,7 +563,7 @@ export function ChatIsland({
   }, [ready, run, focusComposer]);
 
   /** Sends a message: the box's own words, or the words of a reply button (which are the same as typing them). */
-  function sendText(text: string, keepDraft = false) {
+  function sendText(text: string, keepDraft = false, more = false) {
     if (text === "" || busy || limited || gate) return;
     const userId = newId();
     const before = entries;
@@ -541,7 +572,7 @@ export function ChatIsland({
     setReturned(false);
     // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
     focusComposer();
-    void run(text, before, userId);
+    void run(text, before, userId, more);
   }
 
   function send() {
@@ -552,7 +583,14 @@ export function ChatIsland({
   function keepMessage(message: string) {
     saveDraft(CONFIRM_DRAFT_NAME, window.location.pathname, { message });
     // The chat's own copy of the transcript is written now, because the page is about to be left.
-    saveChat(browserStorage(), { version: 1, entries, draft, gate, account: signedIn });
+    saveChat(browserStorage(), {
+      version: 1,
+      entries,
+      draft,
+      gate,
+      account: signedIn,
+      ...(chatState.current === undefined ? {} : { state: chatState.current }),
+    });
   }
 
   function retry() {
@@ -705,7 +743,7 @@ export function ChatIsland({
               <Chip
                 type="button"
                 className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
-                onClick={() => sendText(reply.text, true)}
+                onClick={() => sendText(reply.text, true, reply.key === "showMore")}
               >
                 {reply.text}
               </Chip>

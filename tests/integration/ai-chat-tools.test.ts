@@ -60,7 +60,7 @@ const NO_PROJECT_FILTERS = {
   maxPrice: null,
   preferLocalities: null,
   preferAmenities: null,
-  limit: null,
+  page: null,
 };
 
 const NO_FILTERS = {
@@ -77,7 +77,7 @@ const NO_FILTERS = {
   preferAmenities: null,
   preferFurnishing: null,
   sort: null,
-  limit: null,
+  page: null,
 };
 
 /** Eight characters from the alphabet a home's short id uses (no 0, 1, i, l or o). */
@@ -441,6 +441,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         total: 0,
         ranked: true,
         rankedAll: true,
+        shownSoFar: 0,
         homes: [],
         slightlyAboveBudget: null,
       });
@@ -571,7 +572,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         maxPrice: 6_000_000,
         preferLocalities: null,
         preferAmenities: null,
-        limit: null,
+        page: null,
       });
       expect(result).toMatchObject({
         total: 1,
@@ -598,7 +599,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         maxPrice: null,
         preferLocalities: null,
         preferAmenities: null,
-        limit: null,
+        page: null,
       });
       expect(none.result).toMatchObject({ total: 0, projects: [] });
     });
