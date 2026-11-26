@@ -21,7 +21,7 @@
  * Accessibility: a form named "Property search" (role search); the box has its own label (visually hidden, the
  *   placeholder is only a hint). The AI button carries the AI motion (AiCta "pill"); it keeps its own name. The
  *   typed hint never runs for people who prefer reduced motion, stops while the tab is hidden, while the box has
- *   focus and once anything is typed; the chips are a group named by their visible "Try" label.
+ *   focus and once anything is typed; the chips are a group named "Try" for screen readers (no visible label, owner, 26 Nov 2026).
  * States: empty, filled, hover and focus (on the box), AI and keyword.
  * Dependencies: Input, Button, Icon, AiCta, AiSparkle, next-intl.
  * Tests: home-search-bar.test.tsx; Design Lab "Domain" (Home search bar).
@@ -165,7 +165,6 @@ function HomeSearchBar({
     examples ?? [],
     Boolean(examples?.length) && motionAllowed && !focused && text === "",
   );
-  const suggestionsId = `${ids}-suggestions`;
 
   return (
     <div
@@ -232,19 +231,9 @@ function HomeSearchBar({
         <div
           data-slot="home-search-suggestions"
           role="group"
-          aria-labelledby={suggestionsId}
+          aria-label={translate("suggestions")}
           className="mt-3 flex flex-wrap items-center gap-2"
         >
-          {/* "Try" is a greyed, non-clickable chip in line with the suggestion chips (owner, 26 Nov 2026). */}
-          <span
-            id={suggestionsId}
-            data-slot="home-search-suggestions-label"
-            className="inline-flex h-(--size-chip-sm) shrink-0 items-center rounded-pill border-[length:var(--bw-field)] border-dashed border-line-strong bg-canvas-sunken px-3 text-caption font-semibold text-muted select-none"
-          >
-            {translate("suggestions")}
-          </span>
-          {/* Phones: "Try" sits alone on the first row so every row of chips starts at the same left edge. */}
-          <span aria-hidden="true" className="basis-full @md:hidden" />
           {suggestions.map((suggestion) => (
             <Chip
               key={suggestion}
