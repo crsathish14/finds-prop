@@ -42,7 +42,7 @@ select is(
   || 'listing_label, live_builder_projects, live_locality_names, live_project_list, moderate_listing, moderate_project, my_builder, my_projects, my_properties, '
   || 'owns_property, '
   || 'project_is_live, project_is_mine, public_agents, public_project, public_project_form, public_property, reorder_faqs, '
-  || 'save_crm_integration, '
+  || 'save_builder_research_links, save_crm_integration, '
   || 'save_project_price_trends, search_blog_posts, search_faqs, search_job_postings, search_properties, '
   || 'set_contact_email, set_listing_location, sitemap_entries, '
   || 'storage_builder_logo_path_ok, storage_listing_path_ok, storage_project_path_ok, submit_builder_feedback, '
@@ -71,7 +71,8 @@ select is(
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
        'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files',
-       'guest_search_properties', 'poster_mail_address', 'apply_featured_dates'
+       'guest_search_properties', 'poster_mail_address', 'apply_featured_dates',
+       'record_builder_research_read'
      )
      and not has_function_privilege('service_role', proc.oid, 'execute')),
   '',
@@ -88,7 +89,8 @@ select is(
        'submit_enquiry', 'submit_project_lead', 'track_project_event', 'record_crm_delivery',
        'claim_crm_deliveries', 'finalize_listing_media', 'orphan_listing_photos', 'arm_crm_retry',
        'disarm_crm_retry', 'arm_media_sweep', 'disarm_media_sweep', 'record_places_call', 'orphan_blog_files',
-       'guest_search_properties', 'poster_mail_address', 'apply_featured_dates'
+       'guest_search_properties', 'poster_mail_address', 'apply_featured_dates',
+       'record_builder_research_read'
      )
      and (has_function_privilege('anon', proc.oid, 'execute')
           or has_function_privilege('authenticated', proc.oid, 'execute'))),
