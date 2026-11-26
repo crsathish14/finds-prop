@@ -103,8 +103,8 @@ const toolListCharacters = JSON.stringify(definitions).length;
 const promptCharacters = buildSystemPrompt({ translate }).length;
 
 describe("UT-ai-fixed-cost: what every model call carries", () => {
-  it("serves the fourteen tools, three of them the content tools", () => {
-    expect(definitions).toHaveLength(14);
+  it("serves the fifteen tools, three of them the content tools", () => {
+    expect(definitions).toHaveLength(15);
     for (const name of CONTENT_TOOL_NAMES) {
       expect(definitions.map((definition) => definition.name)).toContain(name);
     }

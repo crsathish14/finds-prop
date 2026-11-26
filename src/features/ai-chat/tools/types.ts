@@ -57,6 +57,8 @@ export interface SearchMemory {
   seenBefore(tool: PagedSearchName, id: string): boolean;
   /** Remembers the page a search gave: the last one of the message becomes the current search. */
   record(page: SearchPage): void;
+  /** The chat's current search (the last one recorded, or the one the browser sent back), or null. */
+  current(): SearchPage | null;
 }
 
 /**

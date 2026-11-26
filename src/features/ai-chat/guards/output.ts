@@ -32,6 +32,8 @@
  * 7. Number grounding: SHADOW MODE. Figures that no tool result or customer message holds are counted and logged;
  *    nothing is changed or blocked until the offline evals show an acceptable false-positive rate.
  * 8. Format: Markdown and HTML are removed, silently.
+ * 9. Honest claims (ADR-207): a sentence that calls a record the cheapest, the largest or the best without a tool
+ *    result of this turn that backs it is taken out of the answer (its cards stay) and counted (`claim_unbacked`).
  *
  * Nothing here stores, logs or returns the text it matched, only rule tags and counts (R-BE-10). Every sentence a
  * customer reads that this file chooses is an `en.json` key; the endpoint turns a key into text with `translate`.
@@ -71,6 +73,7 @@ import {
 import { stripFormat } from "./output-format";
 import { countUngroundedFigures, withAsciiDigits } from "./number-grounding";
 import { findContacts } from "./personal-data";
+import { claimsBacked } from "./superlatives";
 
 export type { OutputEvidenceInput } from "./output-evidence";
 
@@ -97,6 +100,7 @@ export type OutputTag =
   | "unknown_reference"
   | "advice_phrase"
   | "format_stripped"
+  | "claim_unbacked"
   | "check_failed";
 
 /** The rules that stop an answer. The others only change it or count it. */
@@ -379,9 +383,13 @@ function checkSegment(
   const stripped = stripFormat(resolved.text);
   if (stripped.changed) tags.push("format_stripped");
 
+  // An unbacked "cheapest", "largest" or "best" is not said; the cards the sentence named are still drawn.
+  const backed = claimsBacked(checkableText(resolved.text), resolved.cards, evidence.claims);
+  if (!backed) tags.push("claim_unbacked");
+
   return {
     kind: "pass",
-    text: stripped.text,
+    text: backed ? stripped.text : "",
     cards: resolved.cards,
     sources: resolved.sources,
     links: resolved.links,

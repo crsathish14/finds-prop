@@ -217,8 +217,8 @@ export const getProjectTool: AiChatTool<GetProjectInput, GetProjectOutput> = {
   kind: "read",
   description: [
     `Get the public details of one new-build project listed on ${ASSISTANT_BRAND_NAME}, by the slug a search result gave.`,
-    "`status` is `found` with the project, or `not_found`: no project with that slug was listed when it was read (it may be unpublished, or the slug may be wrong). `asOf` is when it was read: it is for you only, so never write it in your answer; when availability matters say it may have changed since.",
-    "`unitsByBhk` counts the units of each BHK size by state (available, hold, sold, blocked). It counts only the first `unitsGrouped` units of the project's `unitCount`: when `unitsGrouped` is less than `unitCount` say the counts are partial. `unitsAvailable` counts every unit.",
+    "`status` is `found`, or `not_found` (unpublished, or a wrong slug). `asOf` is when it was read: it is for you only, so never write it in your answer; when availability matters say it may have changed since.",
+    "`unitsByBhk` counts units by BHK and state over the first `unitsGrouped` of `unitCount`: when fewer, say the counts are partial. `unitsAvailable` counts every unit.",
     "`possession` is the month homes are handed over. `reraApplicable` says whether the project is under RERA; the number, when there is one, is `untrustedText.reraNumber`, and why it is not under RERA, when the developer said, is `untrustedText.reraNotApplicableReason`. `propertyType` and the area range (`areaMinSqft` to `areaMaxSqft`, in square feet) say what kind of property it is and how big. `pricePerSqftByMonth` is the last months of price per sq ft, oldest first.",
     "Quote `priceText` exactly as written: it says what the price means (a rate per sq ft, a basic price, an all inclusive price, or a rent per month). The prices in whole rupees are for comparing, and only prices of the same type compare.",
     "`contactPhone` is the developer's public number for this project: it may be given to the customer, and no other phone number may. `builderId` is for get_builder.",

@@ -6626,5 +6626,57 @@
         ]
       }
     }
+  },
+  {
+    "id": "G-compare-projects-01",
+    "set": "golden",
+    "category": "compare",
+    "language": "en",
+    "title": "two projects compared, the cheaper one named as the result marks it",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Compare Kadal Vista and Velan Gardens for me"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "compare_projects",
+            "input": {
+              "slugs": ["kadal-vista", "velan-gardens"]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Velan Gardens is the cheapest of the two, at ₹48 L basic price. [[project:velan-gardens]] Kadal Vista is at ₹78 L basic price. [[project:kadal-vista]]"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "rupees": 4800000
+        },
+        {
+          "rupees": 7800000
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "compare_projects"
+          }
+        ]
+      },
+      "visible": {
+        "mustContain": [["cheapest"]],
+        "showsCards": ["project:velan-gardens", "project:kadal-vista"]
+      }
+    },
+    "session": "customer"
   }
 ]

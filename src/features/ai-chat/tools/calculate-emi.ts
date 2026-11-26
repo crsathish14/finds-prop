@@ -269,7 +269,6 @@ export const calculateEmiTool: AiChatTool<CalculateEmiInput, CalculateEmiOutput>
   kind: "read",
   description: [
     `Work out a home loan for a customer of ${ASSISTANT_BRAND_NAME}: use it for every EMI, loan or affordability figure, and never calculate one yourself.`,
-    "mode `emi` gives the monthly EMI, total interest and total payable for a price (with a down payment) or for a loan amount. mode `affordability` gives the largest loan and price a monthly budget supports.",
     "Give null for every value the customer did not give: the result then uses an example down payment, rate and term and lists them in `assumptions.exampleValuesUsed`. State the assumptions with the figures.",
     "Every result is an example, not a bank offer: say `note` with the figures, and never present the rate as a lender's current rate.",
     "Quote the `…Text` fields exactly as written; `monthlyEmiRupees` is the same EMI in whole rupees.",
