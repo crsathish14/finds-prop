@@ -114,7 +114,7 @@ describe("HomeHero: the sponsored banner and the Split layout (S4-T07)", () => {
         emphasis="Chennai"
         subtitle="Shortlist, compare and enquire directly."
         eyebrow="Chennai · Homes, plots & new projects"
-        trust={["Approved listings only", "Enquire directly", "Compare up to 3 homes"]}
+        trust={["Approved listings only", "Enquire directly", "Ask AI about any home"]}
         sponsor={<aside aria-label="Sponsored panel">panel</aside>}
       >
         <form aria-label="Search card">card</form>
@@ -129,7 +129,7 @@ describe("HomeHero: the sponsored banner and the Split layout (S4-T07)", () => {
       within(section)
         .getAllByRole("listitem")
         .map((item) => item.textContent),
-    ).toEqual(["Approved listings only", "Enquire directly", "Compare up to 3 homes"]);
+    ).toEqual(["Approved listings only", "Enquire directly", "Ask AI about any home"]);
     expect(within(section).getByLabelText("Sponsored panel")).toBeInTheDocument();
     expect(within(section).getByRole("form", { name: "Search card" })).toBeInTheDocument();
   });

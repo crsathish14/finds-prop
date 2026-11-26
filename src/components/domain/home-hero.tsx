@@ -30,7 +30,7 @@
  *   a longer or shorter headline wraps well too. The line is 16 px on a phone (UX 15 px), and the
  *   gaps follow the 4 px scale (UX 10 px and 22 px).
  */
-import { MapPin, MessageCircle, ShieldCheck, Columns2, type LucideIcon } from "lucide-react";
+import { MapPin, MessageCircle, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Container } from "@/components/layout/container";
 import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
@@ -51,7 +51,7 @@ type HomeHeroProps = {
   trust?: readonly string[] | undefined;
 };
 
-const TRUST_ICONS: readonly LucideIcon[] = [ShieldCheck, MessageCircle, Columns2];
+const TRUST_ICONS: readonly LucideIcon[] = [ShieldCheck, MessageCircle, Sparkles];
 
 const TITLE_ID = "home-hero-title";
 

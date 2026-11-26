@@ -29,7 +29,7 @@ describe("UT-conversational-hero: the Conversational homepage hero (ADR-177)", (
     renderWithMessages(
       hero({
         subtitle: "Shortlist, compare and enquire directly.",
-        trust: ["Approved listings only", "Enquire directly", "Compare up to 3 homes"],
+        trust: ["Approved listings only", "Enquire directly", "Ask AI about any home"],
         sponsor: <aside aria-label="Sponsored strip">strip</aside>,
       }),
     );

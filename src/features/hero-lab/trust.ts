@@ -1,4 +1,4 @@
-import { Columns2, MessageCircle, ShieldCheck, type LucideIcon } from "lucide-react";
+import { MessageCircle, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Translate } from "@/lib/format";
 
@@ -18,7 +18,7 @@ export type HeroVariantProps = {
 };
 
 export type TrustPoint = {
-  key: "approved" | "enquire" | "compare";
+  key: "approved" | "enquire" | "ai";
   icon: LucideIcon;
   /** The live hero's short line ("Approved listings only"). */
   line: string;
@@ -38,9 +38,9 @@ export function trustPoints(translate: Translate): TrustPoint[] {
       line: translate("home.hero.trust.enquire"),
     },
     {
-      key: "compare",
-      icon: Columns2,
-      line: translate("home.hero.trust.compare"),
+      key: "ai",
+      icon: Sparkles,
+      line: translate("home.hero.trust.ai"),
     },
   ];
 }
