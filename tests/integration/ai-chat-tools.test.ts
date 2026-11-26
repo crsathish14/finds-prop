@@ -436,7 +436,14 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         locality: LOCALITY,
         listingType: "rent",
       });
-      expect(result).toEqual({ asOf: expect.any(String), total: 0, homes: [] });
+      expect(result).toEqual({
+        asOf: expect.any(String),
+        total: 0,
+        ranked: true,
+        rankedAll: true,
+        homes: [],
+        slightlyAboveBudget: null,
+      });
     });
   });
 
