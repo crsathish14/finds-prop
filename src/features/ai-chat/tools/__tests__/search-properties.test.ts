@@ -7,6 +7,14 @@ import { AS_OF_TEXT, injected, listingRow, READ_AT, stringsIn, TOOL_CONTEXT } fr
 
 const getSearchResults = vi.fn();
 const error = vi.fn();
+const getHomeExtras = vi.fn();
+
+// The ranking's own reads (ADR-205): the homes' amenities and furnishing, stood in for here.
+vi.mock("../../ranking/reads.server", () => ({
+  getHomeExtras,
+  getProjectExtras: vi.fn(),
+  getPromotionLists: vi.fn(),
+}));
 
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The search feature is stood in for by its read (a stand-in) and its real defaults.
@@ -43,6 +51,9 @@ const NOTHING = {
   locality: null,
   keyword: null,
   label: null,
+  preferLocalities: null,
+  preferAmenities: null,
+  preferFurnishing: null,
   sort: null,
   limit: null,
 };
@@ -60,6 +71,7 @@ const found = (homes = [listingRow()], total = homes.length) => ({
 beforeEach(() => {
   vi.clearAllMocks();
   getSearchResults.mockResolvedValue(found());
+  getHomeExtras.mockResolvedValue(new Map());
 });
 
 describe("UT-ai-tool-search: the input", () => {
@@ -142,7 +154,7 @@ describe("UT-ai-tool-search: the read", () => {
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
       {
         sort: "newest",
-        show: 10,
+        show: 120,
         view: "grid",
       },
       { guest: false },
@@ -160,13 +172,16 @@ describe("UT-ai-tool-search: the read", () => {
       locality: "Velachery",
       keyword: "lake view",
       label: "prime",
+      preferLocalities: null,
+      preferAmenities: null,
+      preferFurnishing: null,
       sort: "price_asc",
       limit: 5,
     });
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
       {
         sort: "price_asc",
-        show: 10,
+        show: 120,
         view: "grid",
         listingType: "rent",
         propertyType: "villa",
@@ -186,7 +201,7 @@ describe("UT-ai-tool-search: the read", () => {
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
       {
         sort: "newest",
-        show: 10,
+        show: 120,
         view: "grid",
         locality: "Adyar",
       },
@@ -255,7 +270,7 @@ describe("UT-ai-tool-search: a city given as a locality (ADR-178)", () => {
   it("tells the model a city goes in the city filter, not the locality", () => {
     const shape = searchPropertiesInputSchema.shape;
     expect(shape.locality.description).toContain("put a city in `city`");
-    expect(shape.city.description).toContain("A neighbourhood is not a city");
+    expect(shape.city.description).toContain("a neighbourhood goes in `locality`");
   });
 });
 
@@ -263,7 +278,7 @@ describe("UT-ai-tool-search: the city filter (ADR-204)", () => {
   it("sends the city to the search's own city filter, as a city key", async () => {
     await search({ ...NOTHING, bhk: 3, city: " Chennai " });
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
-      { sort: "newest", show: 10, view: "grid", bhk: 3 },
+      { sort: "newest", show: 120, view: "grid", bhk: 3 },
       { guest: false, city: "chennai" },
     );
   });
@@ -271,7 +286,7 @@ describe("UT-ai-tool-search: the city filter (ADR-204)", () => {
   it("sends no city filter for a city with no Latin letter or digit in it", async () => {
     await search({ ...NOTHING, city: "சென்னை" });
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
-      { sort: "newest", show: 10, view: "grid" },
+      { sort: "newest", show: 120, view: "grid" },
       { guest: false },
     );
   });
@@ -281,7 +296,7 @@ describe("UT-ai-tool-search: the city filter (ADR-204)", () => {
     const outcome = await search({ ...NOTHING, city: "OMR" });
     expect(getSearchResults).toHaveBeenCalledTimes(2);
     expect(getSearchResults.mock.calls[1]).toEqual([
-      { sort: "newest", show: 10, view: "grid", keyword: "OMR" },
+      { sort: "newest", show: 120, view: "grid", keyword: "OMR" },
       { guest: false },
     ]);
     expect(outcome.status === "ok" ? (outcome.output as { total: number }).total : 0).toBe(1);
@@ -291,7 +306,7 @@ describe("UT-ai-tool-search: the city filter (ADR-204)", () => {
     getSearchResults.mockResolvedValueOnce(found([], 0)).mockResolvedValueOnce(found());
     await search({ ...NOTHING, city: "Chennai", locality: "Thoraipakkam" });
     expect(getSearchResults.mock.calls[1]).toEqual([
-      { sort: "newest", show: 10, view: "grid", keyword: "Thoraipakkam" },
+      { sort: "newest", show: 120, view: "grid", keyword: "Thoraipakkam" },
       { guest: false, city: "chennai" },
     ]);
   });
@@ -319,8 +334,13 @@ describe("UT-ai-tool-search: the result", () => {
             areaSqft: 1420,
             priceRupees: 12_500_000,
             priceText: "₹1.25 Cr",
-            label: "featured",
+            // The chat never says a home is featured (owner, 26 Nov 2026): the label is only a price band.
+            label: null,
             listedAgo: "3 days ago",
+            matchReasons: ["listed in the last week"],
+            missedPreferences: [],
+            lowestPriceOfMatches: true,
+            largestOfMatches: true,
             untrustedText: {
               title: "3 BHK apartment with clubhouse",
               locality: "Velachery",
@@ -401,7 +421,7 @@ describe("UT-ai-tool-search: the result", () => {
       status: "ok",
       output: { total: 0, homes: [] },
       references: [],
-      content: `{"asOf":"${AS_OF_TEXT}","total":0,"homes":[]}`,
+      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"homes":[],"slightlyAboveBudget":null}`,
     });
   });
 
@@ -467,5 +487,91 @@ describe("UT-ai-tool-search: the result", () => {
       searchPropertiesOutputSchema.safeParse(outcome.status === "ok" ? outcome.output : null)
         .success,
     ).toBe(true);
+  });
+});
+
+describe("UT-ai-tool-search: the ranking (ADR-205)", () => {
+  it("ranks the home with the preferred amenity first, reading amenities only when one is preferred", async () => {
+    getSearchResults.mockResolvedValue(
+      found([
+        listingRow({ short_id: "no-pool1", label: null }),
+        listingRow({ short_id: "pool0001", label: null }),
+      ]),
+    );
+    await search({ ...NOTHING });
+    expect(getHomeExtras).not.toHaveBeenCalled();
+    getHomeExtras.mockResolvedValue(
+      new Map([
+        ["no-pool1", { amenities: ["Gym"], furnishing: null }],
+        ["pool0001", { amenities: ["Swimming pool"], furnishing: null }],
+      ]),
+    );
+    const outcome = await search({ ...NOTHING, preferAmenities: ["swimming pool"] });
+    expect(getHomeExtras).toHaveBeenCalledWith(["no-pool1", "pool0001"]);
+    const homes =
+      outcome.status === "ok"
+        ? (outcome.output as { homes: { homeId: string; matchReasons: string[] }[] }).homes
+        : [];
+    expect(homes.map((home) => home.homeId)).toEqual(["pool0001", "no-pool1"]);
+    expect(homes[0]?.matchReasons).toContain("has swimming pool");
+  });
+
+  it("keeps the order the customer asked for, and says so", async () => {
+    getSearchResults.mockResolvedValue(
+      found([
+        listingRow({ short_id: "cheap0001", price: 5_000_000 }),
+        listingRow({ short_id: "dear00001", price: 9_000_000 }),
+      ]),
+    );
+    const outcome = await search({ ...NOTHING, sort: "price_asc" });
+    expect(outcome).toMatchObject({
+      status: "ok",
+      output: { ranked: false, homes: [{ homeId: "cheap0001" }, { homeId: "dear00001" }] },
+    });
+  });
+
+  it("offers one featured home at most 10% over the maximum apart, and never as a match", async () => {
+    const near = listingRow({ short_id: "near0001", price: 8_500_000, label: "featured" });
+    getSearchResults
+      .mockResolvedValueOnce(
+        found([listingRow({ short_id: "match001", price: 7_000_000, label: null })]),
+      )
+      .mockResolvedValueOnce(found([near]));
+    const outcome = await search({ ...NOTHING, maxPrice: 8_000_000 });
+    expect(getSearchResults).toHaveBeenCalledTimes(2);
+    expect(getSearchResults.mock.calls[1]?.[0]).toMatchObject({
+      minPrice: 8_000_001,
+      maxPrice: 8_800_000,
+      label: "featured",
+      sort: "price_asc",
+    });
+    expect(outcome).toMatchObject({
+      status: "ok",
+      output: {
+        total: 1,
+        homes: [{ homeId: "match001" }],
+        slightlyAboveBudget: { homeId: "near0001", label: null },
+      },
+    });
+    expect(
+      outcome.status === "ok" &&
+        outcome.references.map((reference) => "homeId" in reference && reference.homeId),
+    ).toEqual(["match001", "near0001"]);
+  });
+
+  it("looks for no home above the budget without a maximum, with a label, or for a guest", async () => {
+    await search({ ...NOTHING });
+    await search({ ...NOTHING, maxPrice: 8_000_000, label: "budget" });
+    await runTool(
+      [searchPropertiesTool],
+      { name: "search_properties", input: { ...NOTHING, maxPrice: 8_000_000 } },
+      { ...TOOL_CONTEXT, signedIn: false },
+    );
+    expect(getSearchResults).toHaveBeenCalledTimes(3);
+  });
+
+  it("never tells the model a home is featured", async () => {
+    const outcome = await search({ ...NOTHING });
+    expect(outcome.status === "ok" && outcome.content).not.toMatch(/featured|sponsor|promot/iu);
   });
 });

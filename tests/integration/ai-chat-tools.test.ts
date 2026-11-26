@@ -58,6 +58,8 @@ const NO_PROJECT_FILTERS = {
   status: null,
   bhk: null,
   maxPrice: null,
+  preferLocalities: null,
+  preferAmenities: null,
   limit: null,
 };
 
@@ -71,6 +73,9 @@ const NO_FILTERS = {
   locality: null,
   keyword: null,
   label: null,
+  preferLocalities: null,
+  preferAmenities: null,
+  preferFurnishing: null,
   sort: null,
   limit: null,
 };
@@ -431,7 +436,14 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         locality: LOCALITY,
         listingType: "rent",
       });
-      expect(result).toEqual({ asOf: expect.any(String), total: 0, homes: [] });
+      expect(result).toEqual({
+        asOf: expect.any(String),
+        total: 0,
+        ranked: true,
+        rankedAll: true,
+        homes: [],
+        slightlyAboveBudget: null,
+      });
     });
   });
 
@@ -557,6 +569,8 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         status: "under_construction",
         bhk: 2,
         maxPrice: 6_000_000,
+        preferLocalities: null,
+        preferAmenities: null,
         limit: null,
       });
       expect(result).toMatchObject({
@@ -582,6 +596,8 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         status: "new_launch",
         bhk: null,
         maxPrice: null,
+        preferLocalities: null,
+        preferAmenities: null,
         limit: null,
       });
       expect(none.result).toMatchObject({ total: 0, projects: [] });

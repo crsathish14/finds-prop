@@ -45,6 +45,9 @@ const NOTHING = {
   locality: null,
   keyword: null,
   label: null,
+  preferLocalities: null,
+  preferAmenities: null,
+  preferFurnishing: null,
   sort: null,
   limit: null,
   place: null,
@@ -144,7 +147,7 @@ describe("UT-ai-tool-search-place: without a place", () => {
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
       {
         sort: "newest",
-        show: 10,
+        show: 120,
         view: "grid",
         locality: "Adyar",
       },
@@ -175,7 +178,7 @@ describe("UT-ai-tool-search-place: a place that is found", () => {
     expect(placeLookup).toHaveBeenCalledExactlyOnceWith("KK Nagar");
     expect(getSearchResults).toHaveBeenCalledExactlyOnceWith({
       sort: "distance",
-      show: 10,
+      show: 120,
       view: "grid",
       listingType: "rent",
       bhk: 2,
