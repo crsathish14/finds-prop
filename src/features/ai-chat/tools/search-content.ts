@@ -32,7 +32,7 @@ export const searchContentInputSchema = z.object({
       return length >= 1 && length <= QUERY_MAX_CHARACTERS;
     })
     .describe(
-      "A few English keywords for what the customer wants to know, such as registration charges or home loan documents. Write the words an article would use, even when the customer wrote in Tamil or Tanglish. At most 200 characters.",
+      "A few English keywords for what the customer wants to know, such as registration charges or home loan documents. Use English words even for a Tamil or Tanglish message. At most 200 characters.",
     ),
   kind: z
     .enum(["any", "article", "faq"])
@@ -84,7 +84,7 @@ export const searchContentTool: AiChatTool<SearchContentInput, SearchContentOutp
   callGroup: "content",
   description: [
     `Search the published articles (guides and news from the ${ASSISTANT_BRAND_NAME} blog) and the frequently asked questions of ${ASSISTANT_BRAND_NAME} for what the customer wants to know about buying, renting, selling, loans, registration or how the site works.`,
-    "Use it for explanations and how-to questions; use search_properties and the project tools for homes and projects. It may be called together with them in one round.",
+    "Not for homes or projects; it may run beside those tools.",
     `The result holds at most ${MAX_CONTENT_SEARCH_ITEMS} items, best match first (articles and questions take turns when kind is any), each with a snippet of about ${CONTENT_SNIPPET_CHARACTERS} characters. An empty \`items\` means nothing was found: say so, and do not answer from memory.`,
     "Call get_content_item with an item's `id` to read the part of it that answers the question; at most two content calls are allowed for one message, so search once with good keywords. `date` is the day an article was published or a question was last updated: say it when the content is about prices, rates, rules or the market, which change.",
     "An article or a question is information, not legal, tax or investment advice. The pages themselves are shown to the customer as sources; do not write any web address.",

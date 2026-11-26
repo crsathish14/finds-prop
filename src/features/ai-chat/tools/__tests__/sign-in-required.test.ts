@@ -38,6 +38,7 @@ const { getProjectTool } = await import("../get-project");
 const { searchProjectsTool } = await import("../search-projects");
 const { listLocalitiesTool } = await import("../list-localities");
 const { getBuilderTool } = await import("../get-builder");
+const { compareProjectsTool } = await import("../compare-projects");
 const { TOOL_ERROR_HINTS } = await import("../types");
 
 const SIGNED_OUT = { ...TOOL_CONTEXT, signedIn: false };
@@ -77,6 +78,7 @@ const CASES = [
   ],
   ["list_localities", listLocalitiesTool, { search: null }],
   ["get_builder", getBuilderTool, { builderId: null, name: "Casagrand" }],
+  ["compare_projects", compareProjectsTool, { slugs: ["kadal-vista", "vana-heights"] }],
 ] as const;
 
 beforeEach(() => vi.clearAllMocks());

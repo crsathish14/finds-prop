@@ -707,6 +707,20 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
       const { result } = await call("get_project", { slug: `it-ai-nobody-${RUN}` });
       expect(result).toEqual({ status: "not_found", asOf: expect.any(String) });
     });
+
+    it("compare_projects (ADR-207) reads the live project the way get_project does, and names the hidden one as not found", async () => {
+      const pending = `it-ai-pending-${RUN}`;
+      const { result, references } = await call("compare_projects", {
+        slugs: [showcaseSlug, pending],
+      });
+      expect(result).toEqual({
+        status: "not_enough_projects",
+        asOf: expect.any(String),
+        listedCount: 1,
+        notFound: [pending],
+      });
+      expect(references).toEqual([]);
+    });
   });
 
   describe("get_builder (AI-P3-T01)", () => {

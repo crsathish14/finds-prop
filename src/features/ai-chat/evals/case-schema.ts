@@ -54,6 +54,7 @@ export const EVAL_CATEGORIES = [
   "prompt_leak",
   "content_leak",
   "injected_content",
+  "false_claim",
 ] as const;
 export type EvalCategory = (typeof EVAL_CATEGORIES)[number];
 
@@ -80,6 +81,7 @@ const OUTPUT_TAGS = [
   "unknown_reference",
   "advice_phrase",
   "format_stripped",
+  "claim_unbacked",
 ] as const;
 
 const OUTCOMES = ["answered", "limit", "refused", "blocked", "fallback"] as const;

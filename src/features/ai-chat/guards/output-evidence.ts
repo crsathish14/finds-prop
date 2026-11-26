@@ -11,6 +11,7 @@ import { AI_LINK_TLDS, AI_PROMPT_COPY_RUN_WORDS } from "@/config/ai";
 import type { ToolReference } from "../tools/types";
 import { UNTRUSTED_TEXT_KEY } from "../tools/untrusted";
 import { groundingFigures } from "./number-grounding";
+import { buildClaimEvidence, type ClaimEvidence } from "./superlatives";
 
 export interface OutputEvidenceInput {
   /** The text of every tool result of this turn, exactly as the model received it (JSON). */
@@ -44,6 +45,8 @@ export interface OutputEvidence {
   readonly canaryCompact: string | null;
   /** Every run of `AI_PROMPT_COPY_RUN_WORDS` words of the system prompt, as one lower-case string. */
   readonly promptRuns: ReadonlySet<string>;
+  /** What backs a cheapest, largest or best claim this turn (ADR-207). */
+  readonly claims: ClaimEvidence;
 }
 
 /** The canary is only used if it is long enough not to match ordinary text by chance. */
@@ -209,5 +212,6 @@ export function buildEvidence(input: OutputEvidenceInput): OutputEvidence {
     figures,
     canaryCompact,
     promptRuns,
+    claims: buildClaimEvidence(input.toolResults, input.customerMessage),
   };
 }

@@ -766,3 +766,29 @@ describe("site-link markers", () => {
     expect(summary.outcome).toBe("blocked");
   });
 });
+
+describe("UT-ai-output-claims: an unbacked cheapest, largest or best is not said (ADR-207)", () => {
+  it("takes out the sentence, keeps its card and the rest, and counts it", () => {
+    const { events, summary } = checkOutput(
+      "Kadal Vista is the best project in Chennai. [[project:kadal-vista]] It is near the beach.",
+      evidence(),
+    );
+    expect(textOf(events)).not.toMatch(/best/i);
+    expect(textOf(events)).toContain("It is near the beach.");
+    expect(events).toContainEqual({ type: "card", reference: PROJECT_REFERENCE });
+    expect(summary.outcome).toBe("passed");
+    expect(summary.tags).toContain("claim_unbacked");
+  });
+
+  it("lets a cheapest through when the result marks that home as the lowest price", () => {
+    const backed = JSON.stringify({
+      homes: [{ homeId: "k3x9a2bd", lowestPriceOfMatches: true, largestOfMatches: false }],
+    });
+    const { events, summary } = checkOutput(
+      "This is the cheapest of the matches. [[home:k3x9a2bd]]",
+      evidence({ toolResults: [backed] }),
+    );
+    expect(textOf(events)).toContain("cheapest");
+    expect(summary.tags).not.toContain("claim_unbacked");
+  });
+});

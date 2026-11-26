@@ -33,7 +33,7 @@ export const searchJobsInputSchema = z.object({
     .nullable()
     .refine((value) => value === null || value.trim().length <= QUERY_MAX_CHARACTERS)
     .describe(
-      "A few English keywords for the job the customer wants, such as site engineer or accounts, or null to list the open jobs. Write the words a job posting would use, even when the customer wrote in Tamil or Tanglish. At most 200 characters.",
+      "A few English keywords for the job the customer wants, such as site engineer or accounts, or null to list the open jobs. Use English words even for a Tamil or Tanglish message. At most 200 characters.",
     ),
   department: z
     .string()
