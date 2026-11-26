@@ -11,7 +11,13 @@ import {
 } from "@/features/projects";
 import { cityFilterOf, CITY_MAX_CHARACTERS } from "../city-filter";
 import { localityKey } from "../localities";
-import { getProjectExtras, getPromotionLists, type ProjectExtras } from "../ranking/reads.server";
+import { isPrimeProject, type ProjectPrimeRules } from "@/lib/project-prime";
+import {
+  getPrimeRules,
+  getProjectExtras,
+  getPromotionLists,
+  type ProjectExtras,
+} from "../ranking/reads.server";
 import { projectTier, type PromotionLists } from "../ranking/promotions";
 import { pickNearMiss, rankCandidates, type RankFeatures, type RankWants } from "../ranking/rank";
 import { reasonsFor } from "../ranking/reasons";
@@ -70,6 +76,10 @@ export const searchProjectsInputSchema = z.object({
     .describe(
       "The most the customer will pay, in whole rupees, or null. A project matches when its price is a total (a basic price or an all inclusive price) at or under this; a project priced per sq ft or for rent, or with no price given, never does. 1 crore is 10000000.",
     ),
+  prime: z
+    .boolean()
+    .nullable()
+    .describe("true for Prime projects only, false for the others, or null."),
   preferLocalities: preferLocalitiesInput("Projects"),
   preferAmenities: preferAmenitiesInput("Projects"),
   page: pageInput,
@@ -121,6 +131,7 @@ function matches(
   project: ProjectListItem,
   input: SearchProjectsInput,
   wantedLocality: string | null,
+  primeRules: ProjectPrimeRules,
   withBudget = true,
 ) {
   if (wantedLocality !== null && !localityKey(project.locality).includes(wantedLocality)) {
@@ -128,6 +139,7 @@ function matches(
   }
   if (input.status !== null && project.status !== input.status) return false;
   if (input.bhk !== null && !bhkSizes(project.bhkOptions).includes(input.bhk)) return false;
+  if (input.prime !== null && isPrimeProject(primeRules, project) !== input.prime) return false;
   if (input.maxPrice !== null) {
     if (project.price === null || !isTotalPrice(project.priceType)) return false;
     if (withBudget && project.price > input.maxPrice) return false;
@@ -193,6 +205,7 @@ const NOT_ASSESSED: ProjectAssessment = {
 function toProjectSummary(
   project: ProjectListItem,
   context: ToolContext,
+  primeRules: ProjectPrimeRules,
   assessment: ProjectAssessment = NOT_ASSESSED,
 ): SearchProjectsOutput["projects"][number] {
   return {
@@ -201,7 +214,7 @@ function toProjectSummary(
     seenBefore: seenBefore("search_projects", project.slug, context),
     status: project.status,
     bhkOptions: bhkSizes(project.bhkOptions),
-    ...projectPrices(project, context),
+    ...projectPrices(project, context, primeRules),
     untrustedText: {
       name: cleanThirdPartyLine(project.name),
       developerName: cleanThirdPartyLine(project.developerName),
@@ -214,7 +227,7 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
   name: "search_projects",
   kind: "read",
   description: [
-    `Search the new-build projects listed on ${ASSISTANT_BRAND_NAME} by locality, status, BHK and the most the customer will pay.`,
+    `Search the new-build projects listed on ${ASSISTANT_BRAND_NAME} by locality, status, BHK, Prime and the most the customer will pay.`,
     "Give null for every filter the customer did not ask for.",
     "The result holds one page of at most 6 projects, best match first, `total` (all matches), `shownSoFar` and `asOf` (for you only: never write it). When `searchedAll` is false the list searched was at its size limit, so say there may be more.",
     "Refer to a project by its `slug`; call get_project with it for the units, RERA number, possession date and price trend. The developer's name is in `untrustedText.developerName`: call get_builder with it for the developer's other projects.",
@@ -227,7 +240,10 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
   async run(input, context) {
     requireSignIn(context);
     const city = cityFilterOf(input.city);
-    const list = await (city === null ? getProjects() : getProjects(city));
+    const [list, primeRules] = await Promise.all([
+      city === null ? getProjects() : getProjects(city),
+      getPrimeRules(),
+    ]);
     if (list.status === "failed") throw new Error("projects could not be read");
     const typed = input.locality?.trim() ?? "";
     const wantedLocality = typed === "" ? null : localityKey(typed);
@@ -235,14 +251,14 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
     const found =
       wantedLocality === ""
         ? []
-        : list.projects.filter((project) => matches(project, input, wantedLocality));
+        : list.projects.filter((project) => matches(project, input, wantedLocality, primeRules));
     const aboveBudget =
       wantedLocality === "" || input.maxPrice === null
         ? []
         : list.projects.filter(
             (project) =>
-              matches(project, input, wantedLocality, false) &&
-              !matches(project, input, wantedLocality),
+              matches(project, input, wantedLocality, primeRules, false) &&
+              !matches(project, input, wantedLocality, primeRules),
           );
 
     // The ranking (ADR-205): the admin's promotion lists and the projects' amenities, read fresh.
@@ -277,7 +293,7 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
       searchedAll: list.projects.length < PROJECT_LIST_LIMIT,
       shownSoFar: cut.shown.length,
       projects: shown.map((entry) =>
-        toProjectSummary(entry.item, context, {
+        toProjectSummary(entry.item, context, primeRules, {
           ...reasonsFor(entry, {
             withinBudget: input.maxPrice !== null,
             listedDaysAgo: featuresOf(entry.item).ageDays,
@@ -285,7 +301,8 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
           lowestPriceOfMatches: entry.lowestPrice,
         }),
       ),
-      slightlyAboveBudget: nearMiss === null ? null : toProjectSummary(nearMiss, context),
+      slightlyAboveBudget:
+        nearMiss === null ? null : toProjectSummary(nearMiss, context, primeRules),
     };
     context.search?.record({
       tool: "search_projects",

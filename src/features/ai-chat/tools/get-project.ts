@@ -12,6 +12,8 @@ import {
   type UnitStatus,
 } from "@/features/projects";
 import { formatAcres, formatPerSqft, formatPrice } from "@/lib/format";
+import type { ProjectPrimeRules } from "@/lib/project-prime";
+import { getPrimeRules } from "../ranking/reads.server";
 import { asOfText } from "./as-of";
 import { countedBedrooms } from "./home-facts";
 import { publicPhone } from "./public-contacts";
@@ -164,6 +166,7 @@ function cleanedList(items: readonly string[]): string[] {
 function toProjectDetail(
   project: ProjectData,
   context: ToolContext,
+  primeRules: ProjectPrimeRules,
 ): z.infer<typeof projectDetailSchema> {
   const description =
     project.description === null ? null : cleanThirdPartyText(project.description);
@@ -172,7 +175,7 @@ function toProjectDetail(
     slug: project.slug,
     builderId: project.developer.id,
     status: project.status,
-    ...projectPrices(project, context),
+    ...projectPrices(project, context, primeRules),
     bhkOptions: bhkSizes(project.bhkOptions),
     landAreaText:
       project.landAreaAcres !== null && project.landAreaAcres > 0
@@ -228,14 +231,17 @@ export const getProjectTool: AiChatTool<GetProjectInput, GetProjectOutput> = {
   output: getProjectOutputSchema,
   async run(input, context) {
     requireSignIn(context);
-    const result = await getProject(tidySlug(input.slug));
+    const [result, primeRules] = await Promise.all([
+      getProject(tidySlug(input.slug)),
+      getPrimeRules(),
+    ]);
     const asOf = asOfText(result.readAt, context);
     if (result.status === "missing") {
       return { output: { status: "not_found", asOf }, references: [] };
     }
     const { project } = result;
     return {
-      output: { status: "found", asOf, project: toProjectDetail(project, context) },
+      output: { status: "found", asOf, project: toProjectDetail(project, context, primeRules) },
       references: [{ kind: "project", slug: project.slug }],
     };
   },

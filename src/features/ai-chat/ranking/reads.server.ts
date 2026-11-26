@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
+import { PROJECT_PRIME_DEFAULTS, type ProjectPrimeRules } from "@/lib/project-prime";
 import { logger } from "@/server/logger";
 import { createServerSupabase } from "@/server/supabase/server";
 import { NO_PROMOTIONS, type PromotionLists } from "./promotions";
@@ -31,6 +32,22 @@ export async function getPromotionLists(): Promise<PromotionLists> {
     unstable_rethrow(error);
     logger.warn("promotion lists could not be read, ranking without them", {});
     return NO_PROMOTIONS;
+  }
+}
+
+/**
+ * The super admin's Prime project amounts (ADR-208), read from the site settings like the promotion lists, so a saved
+ * change reaches the next search. The settings read already falls back to the built-in amounts when the table cannot
+ * be read; anything else failing gives the built-in amounts too, never an error.
+ */
+export async function getPrimeRules(): Promise<ProjectPrimeRules> {
+  try {
+    const { getSiteSettings } = await import("@/features/site");
+    return (await getSiteSettings()).project_prime;
+  } catch (error) {
+    unstable_rethrow(error);
+    logger.warn("prime amounts could not be read, using the built-in ones", {});
+    return PROJECT_PRIME_DEFAULTS;
   }
 }
 

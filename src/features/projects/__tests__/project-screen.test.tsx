@@ -252,6 +252,15 @@ describe("ProjectScreen: the project page (S4-T09)", () => {
     expect(within(aside).getByText("Under construction")).toBeInTheDocument();
   });
 
+  it("shows the Prime badge in the side card only for a Prime project (ADR-208)", () => {
+    const { unmount } = renderScreen(project(), { prime: true });
+    const aside = screen.getByRole("complementary", { name: words.aside.label });
+    expect(within(aside).getByText(en.domain.projectCard.prime)).toBeInTheDocument();
+    unmount();
+    renderScreen(project());
+    expect(screen.queryByText(en.domain.projectCard.prime)).not.toBeInTheDocument();
+  });
+
   it("leaves out every section the developer left empty, with no blank or zero drawn", () => {
     const { container } = renderScreen(sparse());
     expect(screen.getByRole("heading", { level: 1, name: "Kadal Vista" })).toBeInTheDocument();

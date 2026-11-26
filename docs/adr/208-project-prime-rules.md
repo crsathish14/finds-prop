@@ -22,5 +22,7 @@ Prime existed only for homes, as a price label worked out in the database (`list
 ## Consequences
 
 - Every settings read now also returns `project_prime` (the built-in amounts by default).
+- `search_projects` takes a required `prime` input (true: Prime only, false: the others, null: any) and every project the assistant reads (`search_projects`, `get_project`, `compare_projects`) carries a `prime` fact. The tool list is 27,972 of its 28,000-character ceiling after this; the system prompt is unchanged.
+- The chat's project cards show the Prime badge (it is a fact, not a promotion, so ADR-206's "no Featured badge in the chat" does not apply). The Developer Spotlight and the Featured project card do not show it.
 - The home Prime label stays as it is, in the database, with its fixed amounts.
 - Changing a price type later means adding it to `PRIME_RULE_OF_PRICE_TYPE`; a test keeps that list equal to the project price types.

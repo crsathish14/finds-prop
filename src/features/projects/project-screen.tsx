@@ -144,6 +144,8 @@ type ProjectScreenProps = {
   mobileEnquiry?: ReactNode;
   /** The extra boxes the super admin added, with this project's answers (the page works them out, ADR-168). */
   extras?: readonly { id: string; label: string; value: string }[];
+  /** Prime under the admin's current amounts (ADR-208): the page works it out from the site settings. */
+  prime?: boolean;
   /** Design Lab only: several screens on one board need a lower heading level. */
   titleAs?: "h1" | "h2";
 };
@@ -164,6 +166,7 @@ export function ProjectScreen({
   actions,
   mobileEnquiry,
   extras = [],
+  prime = false,
   titleAs = "h1",
 }: ProjectScreenProps) {
   const ids = useId();
@@ -189,6 +192,9 @@ export function ProjectScreen({
   const newTab = translate("common.opensInNewTab");
   const featuredBadge = project.featured ? (
     <Badge tone="featured">{translate("domain.projectCard.featured")}</Badge>
+  ) : null;
+  const primeBadge = prime ? (
+    <Badge tone="prime">{translate("domain.projectCard.prime")}</Badge>
   ) : null;
   const statusBadge =
     project.status === null ? null : (
@@ -269,7 +275,8 @@ export function ProjectScreen({
     if (date !== "") asideParts.push(translate("projects.page.aside.possession", { date }));
   }
   const price = priceText();
-  const hasPriceCard = price !== null || featuredBadge !== null || statusBadge !== null;
+  const hasPriceCard =
+    price !== null || featuredBadge !== null || primeBadge !== null || statusBadge !== null;
 
   const gallery =
     photos.length === 0 ? null : (
@@ -573,9 +580,10 @@ export function ProjectScreen({
                 data-slot="project-price-card"
                 className="rounded-xl border border-line bg-surface p-6 pb-5"
               >
-                {featuredBadge === null && statusBadge === null ? null : (
+                {featuredBadge === null && primeBadge === null && statusBadge === null ? null : (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {featuredBadge}
+                    {primeBadge}
                     {statusBadge}
                   </div>
                 )}

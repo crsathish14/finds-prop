@@ -71,6 +71,7 @@ const CASES = [
       status: null,
       bhk: null,
       maxPrice: null,
+      prime: null,
       preferLocalities: null,
       preferAmenities: null,
       page: null,

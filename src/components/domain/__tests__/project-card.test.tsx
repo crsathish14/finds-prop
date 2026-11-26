@@ -32,6 +32,14 @@ describe("ProjectCard: one project in a grid (S4-T01)", () => {
     expect(screen.getByText(words.status.underConstruction)).toBeInTheDocument();
   });
 
+  it("shows the Prime badge only for a Prime project (ADR-208)", () => {
+    const { unmount } = renderWithMessages(<ProjectCard project={{ ...project, prime: true }} />);
+    expect(screen.getByText(words.prime)).toBeInTheDocument();
+    unmount();
+    renderWithMessages(<ProjectCard project={project} />);
+    expect(screen.queryByText(words.prime)).not.toBeInTheDocument();
+  });
+
   it("shows the locality alone when the project has no city", () => {
     renderWithMessages(<ProjectCard project={{ ...project, city: "" }} />);
     expect(screen.getByText("OMR Navalur")).toBeInTheDocument();
