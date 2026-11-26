@@ -125,6 +125,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"builder_research_pages": {
+                  Row: {
+                    "body": string,"builder_id": string,"links": Json,"page_key": string,"read_at": string,"title": string,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body"?: string,"builder_id": string,"links"?: Json,"page_key": string,"read_at"?: string,"title"?: string,"url": string
+                  }
+                  Update: {
+                    "body"?: string,"builder_id"?: string,"links"?: Json,"page_key"?: string,"read_at"?: string,"title"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "builder_research_pages_builder_id_fkey"
+      columns: ["builder_id"]
+isOneToOne: false
+      referencedRelation: "builders"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"builder_research_reads": {
                   Row: {
                     "builder_id": string,"created_at": string,"id": number,"kind": string,"ok": boolean,"problem": string | null,"url": string

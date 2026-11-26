@@ -211,6 +211,9 @@ insert into public.builder_research_links (builder_id, position, url, topic) val
 insert into public.builder_research_reads (builder_id, url, kind, ok) values
   ('00000000-0000-4000-b000-000000000001', 'https://matrix-a.example/read', 'read', true),
   ('00000000-0000-4000-b000-000000000002', 'https://matrix-b.example/read', 'read', true);
+insert into public.builder_research_pages (builder_id, page_key, url) values
+  ('00000000-0000-4000-b000-000000000001', 'matrix-a.example/copy', 'https://matrix-a.example/copy'),
+  ('00000000-0000-4000-b000-000000000002', 'matrix-b.example/copy', 'https://matrix-b.example/copy');
 
 -- Layer 1: the privileges each role holds on each table (S select, I insert, U update, D delete, T truncate; select,
 -- insert and update count when held on any column, as the column grants are).
@@ -223,6 +226,7 @@ insert into exp_grants values
   ('builder_feedback', '', '', 'S,I,U,D,T'),
   ('builder_research_links', '', 'S', 'S,I,U,D,T'),
   ('builder_research_reads', '', 'S', 'S,I,U,D,T'),
+  ('builder_research_pages', '', 'S,D', 'S,I,U,D,T'),
   ('builders', 'S', 'S,U', 'S,I,U,D,T'),
   ('cities', 'S', 'S', 'S,I,U,D,T'),
   ('content_categories', 'S', 'S,I,U,D', 'S,I,U,D,T'),
@@ -307,6 +311,8 @@ insert into probe values
   ('builder_research_links', 'k2', 'url = ''https://matrix-b.example/about'''),
   ('builder_research_reads', 'k1', 'url = ''https://matrix-a.example/read'''),
   ('builder_research_reads', 'k2', 'url = ''https://matrix-b.example/read'''),
+  ('builder_research_pages', 'k1', 'url = ''https://matrix-a.example/copy'''),
+  ('builder_research_pages', 'k2', 'url = ''https://matrix-b.example/copy'''),
   ('cities', 'x1', 'key = ''matrixprobe''');
 
 create function pg_temp.sees(who text, tbl text) returns text
@@ -372,6 +378,7 @@ from (values
   ('builder_feedback', array['', '', '', '', '', '', '']),
   ('builder_research_links', array['', '', '', 'k1', 'k2', '', 'k1,k2']),
   ('builder_research_reads', array['', '', '', 'k1', 'k2', '', 'k1,k2']),
+  ('builder_research_pages', array['', '', '', 'k1', 'k2', '', 'k1,k2']),
   ('cities', array['x1', 'x1', 'x1', 'x1', 'x1', 'x1', 'x1'])
 ) as x(t, by_who)
 cross join unnest(array['anon', 'ca', 'cb', 'ba', 'bb', 'bc', 'ad']) with ordinality as r(who, n);
@@ -571,7 +578,13 @@ insert into exp_write (label, who, stmt, expected) values
   ('form_submissions: the admin cannot delete a submission', 'ad', $q$delete from public.form_submissions$q$, 'no'),
   ('crm_api_logs: the admin cannot change a log line', 'ad', $q$update public.crm_api_logs set outcome = 'failed'$q$, 'no'),
   ('audit_log: the admin cannot delete an entry', 'ad', $q$delete from public.audit_log$q$, 'no'),
-  ('crm_integration_secrets: the admin cannot read them to change them', 'ad', $q$update public.crm_integration_secrets set api_key = 'x'$q$, 'no');
+  ('crm_integration_secrets: the admin cannot read them to change them', 'ad', $q$update public.crm_integration_secrets set api_key = 'x'$q$, 'no'),
+  -- builder_research_pages: "Read again" deletes a builder's own saved copies; only the server writes them
+  ('builder_research_pages: a builder deletes its own copies', 'ba', $q$delete from public.builder_research_pages where url = 'https://matrix-a.example/copy'$q$, 'yes'),
+  ('builder_research_pages: another builder cannot', 'bb', $q$delete from public.builder_research_pages where url = 'https://matrix-a.example/copy'$q$, 'no'),
+  ('builder_research_pages: a customer cannot', 'ca', $q$delete from public.builder_research_pages where url = 'https://matrix-a.example/copy'$q$, 'no'),
+  ('builder_research_pages: the admin deletes a builder''s copies', 'ad', $q$delete from public.builder_research_pages where url = 'https://matrix-a.example/copy'$q$, 'yes'),
+  ('builder_research_pages: a builder cannot write a copy', 'ba', $q$update public.builder_research_pages set body = 'x' where url = 'https://matrix-a.example/copy'$q$, 'no');
 
 select plan((
   (select count(*) from exp_grants) * 3
