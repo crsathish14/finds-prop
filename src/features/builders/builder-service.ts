@@ -7,8 +7,8 @@ import type { InviteBuilderInput, UpdateBuilderInput } from "./schemas";
  * and the auth service so they can be tested with a stand-in. The real store is in `service.ts` (on the
  * service-role allow-list). Builders and agents sign in with Google only (ADR-010), so an invitation is an account
  * that already exists with a confirmed email, the builder role and the builder record; when the person later
- * signs in with Google on that address, Supabase links it to this account. Nothing is emailed in v1 (DEC-27): the
- * admin passes the sign-in address on. The database keeps the rules that must not be walked around (the reserved
+ * signs in with Google on that address, Supabase links it to this account. The person is greeted by email with the
+ * sign-in address (ADR-203, which replaced "nothing is emailed", DEC-27); the admin can still pass the address on. The database keeps the rules that must not be walked around (the reserved
  * admin addresses are refused, one record per email, only the admin or the system changes the account columns).
  */
 
@@ -32,6 +32,17 @@ export interface BuilderState {
   active: boolean;
   /** True once the person has signed in at all (Google, through the account made for them). */
   signedIn: boolean;
+  /** What the greeting mail needs: the name, the login email and whether this is a builder or an agent. */
+  name: string;
+  email: string;
+  kind: BuilderKind;
+}
+
+/** What the greeting mail is written from (ADR-203). */
+export interface InvitationMailFacts {
+  name: string;
+  email: string;
+  kind: BuilderKind;
 }
 
 /** Calls made with the service role, after the caller was checked to be the super admin. */
@@ -133,20 +144,24 @@ export async function inviteBuilder(
 }
 
 /**
- * "Resend invitation": nothing is emailed in v1, so this stamps the invitation as sent again and lets the screen show
- * the sign-in address once more. Only a builder who has not signed in yet and is active can be re-invited.
+ * "Resend invitation": stamps the invitation as sent again and gives back what the greeting mail needs, so the action
+ * can mail it again and the screen can show the sign-in address once more. Only a builder who has not signed in yet
+ * and is active can be re-invited.
  */
 export async function resendInvitation(
   store: BuilderStore,
   parameters: { builderId: string },
-): Promise<{ builderId: string }> {
+): Promise<{ builderId: string; mail: InvitationMailFacts }> {
   const found = await store.readBuilder(parameters.builderId);
   if (!found) throw new ActionError("NOT_FOUND", "The builder was not found");
   if (!found.active || found.signedIn) {
     throw new ActionError("CONFLICT", "The builder is not waiting for an invitation");
   }
   await store.stampInvitation(parameters.builderId);
-  return { builderId: parameters.builderId };
+  return {
+    builderId: parameters.builderId,
+    mail: { name: found.name, email: found.email, kind: found.kind },
+  };
 }
 
 /** Activates or deactivates a builder. Builders are never deleted (DEC-28); a deactivated one loses the portal. */

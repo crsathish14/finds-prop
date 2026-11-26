@@ -365,7 +365,7 @@ function InviteOpener() {
         closeLabel="Close"
         description={
           done
-            ? "Nothing is emailed. Pass this address on to them."
+            ? "We have emailed them this address. You can also copy it and pass it on."
             : "They sign in with Google, so no password is needed."
         }
         footer={

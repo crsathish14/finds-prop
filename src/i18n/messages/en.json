@@ -1994,7 +1994,7 @@
       "address": {
         "title": "Sign-in address",
         "invitedTitle": "Builder invited",
-        "text": "Nothing is emailed. Pass this address on to them.",
+        "text": "We have emailed them this address. You can also copy it and pass it on.",
         "ask": "Ask {email} to sign in with Google using that same email.",
         "label": "Sign-in address",
         "copy": "Copy address",
