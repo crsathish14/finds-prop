@@ -18,6 +18,9 @@ export const agentRowSchema = z.object({
 
 export type AgentRow = z.infer<typeof agentRowSchema>;
 
+/** An agent as the cached reads give it: the row, and the whole years of experience worked out when it was read. */
+export type AgentView = AgentRow & { years: number | null };
+
 /** The input of the reveal action: the agent's id, a UUID, and nothing else (the caller is the session). */
 export const revealContactSchema = z.object({ agentId: z.uuid() });
 

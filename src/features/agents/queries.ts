@@ -6,19 +6,26 @@ import { listingRowSchema, type ListingRow } from "@/features/search";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { logger } from "@/server/logger";
 import { createPublicSupabase } from "@/server/supabase/public";
-import { agentRowSchema, type AgentRow } from "./schemas";
+import { agentRowSchema, type AgentView } from "./schemas";
+import { yearsOfExperience } from "./view";
 
 /** At most this many agents on the home page. */
 export const HOME_AGENTS_MAX = 12;
 
-function parseRows(data: unknown, section: string): AgentRow[] {
+/**
+ * Checks the rows and works out each agent's years of experience. The year is read here, inside the cached reads: the
+ * current time cannot be read while a page is prerendered, and a cached value is allowed to hold it.
+ */
+function parseRows(data: unknown, section: string): AgentView[] {
   const rows: unknown[] = Array.isArray(data) ? data : [];
-  const agents: AgentRow[] = [];
+  const agents: AgentView[] = [];
+  const year = new Date().getFullYear();
   let skipped = 0;
   for (const row of rows) {
     const parsed = agentRowSchema.safeParse(row);
-    if (parsed.success) agents.push(parsed.data);
-    else skipped += 1;
+    if (parsed.success) {
+      agents.push({ ...parsed.data, years: yearsOfExperience(parsed.data.established_year, year) });
+    } else skipped += 1;
   }
   if (skipped > 0) {
     logger.warn("agents skipped, they do not match the expected shape", { section, skipped });
@@ -32,7 +39,7 @@ function parseRows(data: unknown, section: string): AgentRow[] {
  * localities; never a phone or an email), cached for minutes and refreshed with the home page's listings and projects. A
  * failed read is logged by its code only and the section is left out.
  */
-export async function getHomeAgents(): Promise<AgentRow[]> {
+export async function getHomeAgents(): Promise<AgentView[]> {
   "use cache";
   cacheTag(CACHE_TAGS.listings, CACHE_TAGS.homeProjects);
   cacheLife("minutes");
@@ -49,7 +56,7 @@ export async function getHomeAgents(): Promise<AgentRow[]> {
 }
 
 /** One agent's page data, or null when the id is no active agent (or the read failed, which is logged by its code). */
-export async function getAgent(id: string): Promise<AgentRow | null> {
+export async function getAgent(id: string): Promise<AgentView | null> {
   "use cache";
   cacheTag(CACHE_TAGS.listings, CACHE_TAGS.homeProjects);
   cacheLife("minutes");

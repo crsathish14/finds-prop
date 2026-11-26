@@ -45,7 +45,7 @@ export default async function AgentPage({ params }: PageProps) {
   return (
     <main id="main" className="flex-1">
       <AgentProfile
-        agent={toAgentCard(agent, publicEnv.NEXT_PUBLIC_SUPABASE_URL, new Date().getFullYear())}
+        agent={toAgentCard(agent, publicEnv.NEXT_PUBLIC_SUPABASE_URL)}
         about={agent.description}
         contact={
           <RevealContact

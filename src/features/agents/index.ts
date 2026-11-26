@@ -12,4 +12,4 @@ export { AgentProfile } from "./agent-profile";
 export { revealAgentContact } from "./actions";
 export { RevealContact } from "./reveal-contact.client";
 export { agentPath, AGENTS_PATH, isAgentId, toAgentCard, yearsOfExperience } from "./view";
-export { agentRowSchema, type AgentRow } from "./schemas";
+export { agentRowSchema, type AgentRow, type AgentView } from "./schemas";
