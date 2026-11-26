@@ -58,6 +58,20 @@ describe("UT-moderation-view: queue rows as view models (S6-T04)", () => {
     expect(items[0]?.photos[1]?.url).toContain("two%20file.jpg");
   });
 
+  it("reads the Featured dates (ADR-210), and a database without them as none", () => {
+    const dated = toQueueItems(
+      [row({ featured_from: "2026-12-01", featured_until: "2026-12-31" })],
+      SUPABASE,
+    );
+    expect(dated.items[0]).toMatchObject({
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    const older = toQueueItems([row()], SUPABASE);
+    expect(older.skipped).toBe(0);
+    expect(older.items[0]).toMatchObject({ featuredFrom: null, featuredUntil: null });
+  });
+
   it("keeps a listing with no owner name, no email and no photos", () => {
     const { items } = toQueueItems(
       [row({ owner_name: null, owner_email: null, photos: [], amenities: null })],

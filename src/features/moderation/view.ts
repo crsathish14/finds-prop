@@ -29,6 +29,9 @@ export interface QueueItem {
   shortId: string;
   status: ListingStatus;
   featured: boolean;
+  /** The first and last day of its Featured (ADR-210), `YYYY-MM-DD`, or null for none. */
+  featuredFrom: string | null;
+  featuredUntil: string | null;
   listingType: QueueKind | null;
   /** Kept as the database holds it: the drawer prints it through the site's own list. */
   propertyType: string | null;
@@ -89,6 +92,9 @@ const rowSchema = z.object({
   short_id: z.string(),
   status: z.enum(LISTING_STATUSES),
   featured: z.boolean(),
+  // Optional so a database without the dates yet (ADR-210) still shows its queue.
+  featured_from: z.string().nullable().optional(),
+  featured_until: z.string().nullable().optional(),
   listing_type: z.string().nullable(),
   property_type: z.string().nullable(),
   title: z.string().nullable(),
@@ -159,6 +165,8 @@ export function toQueueItems(
       shortId: listing.short_id,
       status: listing.status,
       featured: listing.featured,
+      featuredFrom: listing.featured_from ?? null,
+      featuredUntil: listing.featured_until ?? null,
       listingType: known(QUEUE_KINDS, listing.listing_type),
       propertyType: listing.property_type,
       title: listing.title,

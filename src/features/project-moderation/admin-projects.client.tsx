@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, XCircle } from "lucide-react";
+import { Star, Trash2, XCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,14 +15,26 @@ import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
-import { failureText, type Translator } from "@/i18n/failure-text";
+import {
+  NO_DATES,
+  PromotionDatesFields,
+  PromotionStatusTag,
+  type PromotionDatesValue,
+} from "@/features/promotion-dates";
+import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { formatPrice } from "@/lib/format";
 import { notify } from "@/lib/notify";
+import {
+  endsBeforeStart,
+  featuredPromotion,
+  hasFeaturedDays,
+  promotionStatus,
+} from "@/lib/promotion-dates";
 import { publicEnv } from "@/lib/public-env";
 import { PROJECT_BUCKET, publicStorageUrl } from "@/lib/storage-url";
 import type { ActionResult } from "@/types/action";
 import type { ProjectDecision } from "./constants";
-import type { AdminProjectRow } from "./view";
+import { featureChoices, type AdminProjectRow } from "./view";
 
 /** The words that say what the one price means ("{price} per sq ft"); a price type this page does not know is shown without them. */
 const PRICE_TYPE_KEYS: Record<string, string> = {
@@ -41,11 +53,15 @@ type AdminProjectsProps = {
     moderate: (input: {
       projectId: string;
       decision: ProjectDecision;
+      featuredFrom?: string;
+      featuredUntil?: string;
     }) => Promise<ActionResult<unknown>>;
     remove: (input: { projectId: string }) => Promise<ActionResult<unknown>>;
   };
   /** The address of the storage service, for the covers; defaults to the project's own. */
   mediaBaseUrl?: string;
+  /** Today's India date, from the server, for the Scheduled, Running or Ended tag of a Featured with dates (ADR-210). */
+  today: string;
 };
 
 type Tab = "all" | "pending" | "approved" | "rejected" | "draft";
@@ -70,8 +86,10 @@ export function AdminProjects({
   truncated = false,
   actions,
   mediaBaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+  today,
 }: AdminProjectsProps) {
   const translate = useTranslations("admin.projects");
+  const datesWords = useTranslations("admin.promotionDates");
   const everything = useTranslations() as unknown as Translator;
   const locale = useLocale();
   const router = useRouter();
@@ -83,6 +101,9 @@ export function AdminProjects({
   const [deleting, setDeleting] = useState<AdminProjectRow | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [blockedId, setBlockedId] = useState<string | null>(null);
+  const [featuring, setFeaturing] = useState<AdminProjectRow | null>(null);
+  const [featureDates, setFeatureDates] = useState<PromotionDatesValue>(NO_DATES);
+  const [featureError, setFeatureError] = useState<string | undefined>(undefined);
 
   const count = (state: Tab) =>
     state === "all" ? rows.length : rows.filter((row) => stateOf(row.moderation) === state).length;
@@ -127,16 +148,42 @@ export function AdminProjects({
     router.refresh();
   };
 
-  const decide = async (row: AdminProjectRow, decision: ProjectDecision) => {
+  /**
+   * Makes one decision. A feature sends only the days that are filled in; it closes its dialog when it works, and
+   * keeps it open with the error under the end date when the database refuses the days.
+   */
+  const decide = async (
+    row: AdminProjectRow,
+    decision: ProjectDecision,
+    dates: PromotionDatesValue = NO_DATES,
+  ) => {
     const key = `${row.id}:${decision}`;
     if (busy) return;
     setBusy(key);
     try {
-      const result = await actions.moderate({ projectId: row.id, decision });
+      const result = await actions.moderate({
+        projectId: row.id,
+        decision,
+        ...(decision === "feature" && dates.startsOn !== ""
+          ? { featuredFrom: dates.startsOn }
+          : {}),
+        ...(decision === "feature" && dates.endsOn !== "" ? { featuredUntil: dates.endsOn } : {}),
+      });
       if (!result.ok) {
+        const field =
+          decision === "feature"
+            ? (result.fieldErrors?.["featuredUntil"]?.[0] ??
+              result.fieldErrors?.["featuredFrom"]?.[0])
+            : undefined;
+        if (field) {
+          setFeatureError(fieldErrorText(everything, field));
+          return;
+        }
+        if (decision === "feature") setFeaturing(null);
         reportFailure(result);
         return;
       }
+      if (decision === "feature") setFeaturing(null);
       const done: Record<ProjectDecision, string> = {
         approve: translate("toast.approve", { name: row.name }),
         reject: translate("toast.reject", { name: row.name }),
@@ -150,6 +197,27 @@ export function AdminProjects({
     } finally {
       setBusy(null);
     }
+  };
+
+  /** Feature asks for its dates first; a project that already has dates opens with them filled in. */
+  const openFeature = (row: AdminProjectRow) => {
+    setFeatureDates({ startsOn: row.featuredFrom ?? "", endsOn: row.featuredUntil ?? "" });
+    setFeatureError(undefined);
+    setFeaturing(row);
+  };
+
+  const confirmFeature = () => {
+    if (!featuring) return;
+    const typed = {
+      ...(featureDates.startsOn === "" ? {} : { startsOn: featureDates.startsOn }),
+      ...(featureDates.endsOn === "" ? {} : { endsOn: featureDates.endsOn }),
+    };
+    if (endsBeforeStart(typed)) {
+      setFeatureError(everything("validation.promotionDatesOrder"));
+      return;
+    }
+    setFeatureError(undefined);
+    void decide(featuring, "feature", featureDates);
   };
 
   const remove = async (row: AdminProjectRow) => {
@@ -215,16 +283,12 @@ export function AdminProjects({
         icon: "edit",
         href: `/admin/projects/${row.id}`,
       },
-      ...(state === "approved"
-        ? [
-            {
-              id: row.featured ? "unfeature" : "feature",
-              label: row.featured ? translate("menu.unfeature") : translate("menu.feature"),
-              icon: "star" as const,
-              onSelect: () => void decide(row, row.featured ? "unfeature" : "feature"),
-            },
-          ]
-        : []),
+      ...featureChoices(row).map((choice) => ({
+        id: choice,
+        label: choice === "feature" ? translate("menu.feature") : translate("menu.unfeature"),
+        icon: "star" as const,
+        onSelect: () => (choice === "feature" ? openFeature(row) : void decide(row, choice)),
+      })),
       ...(live
         ? [
             {
@@ -273,6 +337,9 @@ export function AdminProjects({
             </Badge>
           ) : null}
           {row.featured ? <Badge tone="featured">{translate("badges.featured")}</Badge> : null}
+          {hasFeaturedDays(row) ? (
+            <PromotionStatusTag status={promotionStatus(featuredPromotion(row), today)} />
+          ) : null}
         </>
       ),
       actions: main,
@@ -368,6 +435,32 @@ export function AdminProjects({
         loading={busy !== null && deleting !== null && busy === `${deleting.id}:delete`}
         onConfirm={() => (deleting ? void remove(deleting) : undefined)}
       />
+      <ConfirmDialog
+        open={featuring !== null}
+        onOpenChange={(open) => {
+          if (!open && busy === null) setFeaturing(null);
+        }}
+        tone="info"
+        icon={<Icon icon={Star} size="lg" />}
+        title={translate("menu.feature")}
+        description={datesWords("note")}
+        confirmLabel={translate("menu.feature")}
+        cancelLabel={translate("cancel")}
+        loading={featuring !== null && busy === `${featuring.id}:feature`}
+        onConfirm={confirmFeature}
+      >
+        <PromotionDatesFields
+          value={featureDates}
+          onChange={(value) => {
+            setFeatureDates(value);
+            setFeatureError(undefined);
+          }}
+          today={today}
+          disabled={featuring !== null && busy === `${featuring.id}:feature`}
+          errors={{ endsOn: featureError }}
+          {...(featuring ? { subject: featuring.name } : {})}
+        />
+      </ConfirmDialog>
     </>
   );
 }

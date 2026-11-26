@@ -13,6 +13,76 @@ describe("UT-moderation-schemas: the decision (S6-T04)", () => {
     },
   );
 
+  it("accepts a feature with a start date, an end date, both, or blanks (ADR-210)", () => {
+    expect(
+      moderateListingSchema.parse({
+        decision: "feature",
+        listingId: LISTING,
+        featuredFrom: "2026-12-01",
+        featuredUntil: "2026-12-31",
+      }),
+    ).toEqual({
+      decision: "feature",
+      listingId: LISTING,
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    expect(
+      moderateListingSchema.parse({
+        decision: "feature",
+        listingId: LISTING,
+        featuredFrom: "",
+        featuredUntil: "  ",
+      }),
+    ).toEqual({ decision: "feature", listingId: LISTING });
+    expect(
+      moderateListingSchema.safeParse({
+        decision: "feature",
+        listingId: LISTING,
+        featuredFrom: "2026-12-01",
+        featuredUntil: "2026-12-01",
+      }).success,
+    ).toBe(true);
+  });
+
+  it.each(["2026-02-30", "2026-13-01", "01-12-2026", "tomorrow", 20261201])(
+    "refuses a feature date that is not a real day: %j",
+    (day) => {
+      const parsed = moderateListingSchema.safeParse({
+        decision: "feature",
+        listingId: LISTING,
+        featuredFrom: day,
+      });
+      expect(parsed.success).toBe(false);
+    },
+  );
+
+  it("refuses an end date before the start date, on the end date, with the approved words", () => {
+    const parsed = moderateListingSchema.safeParse({
+      decision: "feature",
+      listingId: LISTING,
+      featuredFrom: "2026-12-10",
+      featuredUntil: "2026-12-09",
+    });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ["featuredUntil"],
+        message: "validation.promotionDatesOrder",
+      }),
+    ]);
+  });
+
+  it("drops dates sent with any decision but a feature", () => {
+    expect(
+      moderateListingSchema.parse({
+        decision: "unfeature",
+        listingId: LISTING,
+        featuredFrom: "2026-12-01",
+      }),
+    ).toEqual({ decision: "unfeature", listingId: LISTING });
+  });
+
   it("drops a reason sent with an approval, so it can never be stored", () => {
     const parsed = moderateListingSchema.parse({
       decision: "approve",

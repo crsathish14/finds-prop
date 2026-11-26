@@ -6,7 +6,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/server/supabase/server", () => ({ createServerSupabase: vi.fn() }));
 
 const { readAdminProjects } = await import("../queries");
-const { toAdminProjectRows } = await import("../view");
+const { featureChoices, toAdminProjectRows } = await import("../view");
 const { PROJECT_LIST_MAX } = await import("../constants");
 
 const ROW = {
@@ -47,6 +47,8 @@ describe("UT-project-moderation-view: the admin's rows (S7-T04)", () => {
           moderation: "pending",
           published: false,
           featured: false,
+          featuredFrom: null,
+          featuredUntil: null,
           builderId: ROW.builder_id,
           builderName: "Kadal Homes",
           leads: 3,
@@ -55,6 +57,29 @@ describe("UT-project-moderation-view: the admin's rows (S7-T04)", () => {
       skipped: 0,
     });
   });
+
+  it("reads the Featured dates (ADR-210), and a database without them as none", () => {
+    const { projects } = toAdminProjectRows([
+      { ...ROW, featured_from: "2026-12-01", featured_until: null },
+    ]);
+    expect(projects[0]).toMatchObject({ featuredFrom: "2026-12-01", featuredUntil: null });
+  });
+
+  it.each([
+    ["pending", false, null, null, []],
+    ["approved", false, null, null, ["feature"]],
+    ["approved", true, null, null, ["unfeature"]],
+    ["approved", false, "2999-01-01", null, ["feature", "unfeature"]],
+    ["approved", false, null, "2020-01-31", ["feature", "unfeature"]],
+    ["rejected", false, "2020-01-01", null, []],
+  ] as const)(
+    "a %s project (featured: %s, from %s, until %s) offers %j in its menu",
+    (moderation, featured, featuredFrom, featuredUntil, choices) => {
+      expect(featureChoices({ moderation, featured, featuredFrom, featuredUntil })).toEqual(
+        choices,
+      );
+    },
+  );
 
   it("keeps an empty price and picture as none", () => {
     const { projects } = toAdminProjectRows([

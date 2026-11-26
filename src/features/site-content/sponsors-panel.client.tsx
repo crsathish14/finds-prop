@@ -54,7 +54,7 @@ import { createSponsorStorage, type SponsorStorage } from "./sponsor-storage";
 import { checkPicture, chosenPictureOf, newSponsorId, uploadChosen } from "./sponsor-upload";
 import type { SponsorEditView } from "./sponsor-view";
 import { useSponsorWords } from "./sponsor-words.client";
-import { PromotionDatesFields, PromotionDatesNote } from "./promotion-dates-fields.client";
+import { PromotionDatesFields, PromotionDatesNote } from "@/features/promotion-dates";
 
 /**
  * The sponsor manager of the Hero page (S7-T11, FR-ADM-11): the list, the Add and Edit drawer, the Delete question.

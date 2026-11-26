@@ -27,6 +27,8 @@ const item = (id: string, extra: Partial<QueueItem> = {}): QueueItem => ({
   shortId: `short${id.slice(-1)}`,
   status: "pending",
   featured: false,
+  featuredFrom: null,
+  featuredUntil: null,
   listingType: "sale",
   propertyType: "villa",
   title: `Villa number ${id.slice(-1)}`,
@@ -58,6 +60,9 @@ const item = (id: string, extra: Partial<QueueItem> = {}): QueueItem => ({
 /** The title of a row as shown in the list (the buttons repeat it as hidden text for screen readers). */
 const titleCells = (number: number) =>
   screen.queryAllByText(`Villa number ${number}`, { selector: "p" });
+
+const TODAY = "2026-11-26";
+const dates = en.admin.promotionDates;
 
 const COUNTS: QueueCounts = { pending: 14, approved: 196, rejected: 9, closed: 29, total: 248 };
 
@@ -91,10 +96,18 @@ function open(
       counts={COUNTS}
       localities={options.localities ?? ["Adyar", "Velachery"]}
       actions={{ moderate: moderate as ListingsBoardActions["moderate"], loadMore }}
+      today={TODAY}
     />,
   );
   return { moderate, loadMore };
 }
+
+/** The Feature button inside the dates dialog (the row's own button repeats the title for screen readers). */
+const featureButton = () =>
+  within(screen.getByRole("alertdialog")).getByRole("button", { name: words.actions.feature });
+
+const typeDay = (label: string, day: string) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { value: day } });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -180,12 +193,137 @@ describe("ListingsBoard: decisions (S6-T04)", () => {
       moderate,
     });
     fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+    // Feature asks for its dates first; with both boxes empty it works as before.
+    expect(moderate).not.toHaveBeenCalled();
+    fireEvent.click(featureButton());
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(moderate).toHaveBeenCalledWith({ decision: "feature", listingId: ID_1 });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
     expect(screen.getByText(words.featured)).toBeVisible();
     expect(
       screen.getByRole("button", { name: "Remove from featured Villa number 1" }),
     ).toBeVisible();
+  });
+
+  it("sends the typed dates with Feature (ADR-210) and tags a listing whose start is ahead as Scheduled", async () => {
+    const moderate = vi.fn(async () => decided("approved", false));
+    open({
+      filters: { tab: "approved" },
+      items: [item(ID_1, { status: "approved" })],
+      moderate,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+    const dialog = screen.getByRole("alertdialog");
+    expect(within(dialog).getByText(dates.note)).toBeVisible();
+    typeDay(`${dates.startsOn}, Villa number 1`, "2026-12-01");
+    typeDay(`${dates.endsOn}, Villa number 1`, "2026-12-31");
+    fireEvent.click(featureButton());
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(moderate).toHaveBeenCalledWith({
+      decision: "feature",
+      listingId: ID_1,
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    // Not featured yet: the tag says Scheduled, and both choices stay on the row.
+    expect(screen.queryByText(words.featured)).toBeNull();
+    expect(screen.getByText(dates.status.scheduled)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Feature Villa number 1" })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Remove from featured Villa number 1" }),
+    ).toBeVisible();
+  });
+
+  it("refuses an end date before the start date in the dialog, without calling the action", () => {
+    const moderate = vi.fn(async () => decided("approved", true));
+    open({
+      filters: { tab: "approved" },
+      items: [item(ID_1, { status: "approved" })],
+      moderate,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+    typeDay(`${dates.startsOn}, Villa number 1`, "2026-12-10");
+    typeDay(`${dates.endsOn}, Villa number 1`, "2026-12-09");
+    fireEvent.click(featureButton());
+    expect(moderate).not.toHaveBeenCalled();
+    expect(screen.getByText(en.validation.promotionDatesOrder)).toBeVisible();
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+  });
+
+  it("keeps the dialog and shows the error under the end date when the server refuses the dates", async () => {
+    const moderate = vi.fn(async () => ({
+      ok: false as const,
+      code: "VALIDATION" as const,
+      fieldErrors: { featuredUntil: [{ key: "validation.promotionDatesOrder" }] },
+    }));
+    open({
+      filters: { tab: "approved" },
+      items: [item(ID_1, { status: "approved" })],
+      moderate,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+    typeDay(`${dates.endsOn}, Villa number 1`, "2026-12-09");
+    fireEvent.click(featureButton());
+    expect(await screen.findByText(en.validation.promotionDatesOrder)).toBeVisible();
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("closes the dialog from Cancel without deciding", () => {
+    const moderate = vi.fn(async () => decided("approved", true));
+    open({
+      filters: { tab: "approved" },
+      items: [item(ID_1, { status: "approved" })],
+      moderate,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: words.reject.cancel }),
+    );
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(moderate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Running", { featured: true, featuredFrom: "2026-11-01", featuredUntil: null }],
+    ["Ended", { featured: false, featuredFrom: "2026-10-01", featuredUntil: "2026-10-31" }],
+  ] as const)(
+    "tags a listing whose Featured is %s and opens Feature with its dates filled in",
+    (tag, state) => {
+      open({ filters: { tab: "approved" }, items: [item(ID_1, { status: "approved", ...state })] });
+      expect(screen.getByText(tag)).toBeVisible();
+      expect(
+        screen.getByRole("button", { name: "Remove from featured Villa number 1" }),
+      ).toBeVisible();
+      fireEvent.click(screen.getByRole("button", { name: "Feature Villa number 1" }));
+      expect(screen.getByLabelText(`${dates.startsOn}, Villa number 1`)).toHaveValue(
+        state.featuredFrom,
+      );
+      expect(screen.getByLabelText(`${dates.endsOn}, Villa number 1`)).toHaveValue(
+        state.featuredUntil ?? "",
+      );
+    },
+  );
+
+  it("removes from featured a listing that has ended, which clears its tag", async () => {
+    const moderate = vi.fn(async () => decided("approved", false));
+    open({
+      filters: { tab: "approved" },
+      items: [
+        item(ID_1, {
+          status: "approved",
+          featuredFrom: "2026-10-01",
+          featuredUntil: "2026-10-31",
+        }),
+      ],
+      moderate,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Remove from featured Villa number 1" }));
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(moderate).toHaveBeenCalledWith({ decision: "unfeature", listingId: ID_1 });
+    expect(screen.queryByText(dates.status.ended)).toBeNull();
+    expect(screen.getByRole("button", { name: "Feature Villa number 1" })).toBeVisible();
   });
 
   it("says another admin decided first, and reads the page again", async () => {

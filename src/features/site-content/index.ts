@@ -53,14 +53,6 @@ export type {
 } from "./sponsored-builders-form.client";
 export { ProjectPrimeForm } from "./project-prime-form.client";
 export type { ProjectPrimeFormProps, ProjectPrimeFormValues } from "./project-prime-form.client";
-export { NO_DATES, statusOfTyped, typedDatesOf } from "./promotion-dates-form";
-export type { PromotionDatesValue } from "./promotion-dates-form";
-export {
-  PromotionDatesFields,
-  PromotionDatesNote,
-  PromotionStatusTag,
-} from "./promotion-dates-fields.client";
-export type { PromotionDatesFieldsProps } from "./promotion-dates-fields.client";
 export { TopDevelopersForm } from "./top-developers-form.client";
 export type { TopDeveloperOption, TopDevelopersFormProps } from "./top-developers-form.client";
 export { LegalForm } from "./legal-form.client";

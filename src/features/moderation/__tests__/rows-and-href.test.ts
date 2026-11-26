@@ -20,30 +20,62 @@ describe("UT-moderation-rows: which tab a listing belongs on (S6-T04)", () => {
   });
 });
 
+const NO_DAYS = { featuredFrom: null, featuredUntil: null };
+
 describe("UT-moderation-rows: what a decision leaves behind", () => {
   it("approving makes it approved and keeps the featured flag", () => {
-    expect(afterDecision("approve", { status: "pending", featured: false })).toEqual({
+    expect(afterDecision("approve", { status: "pending", featured: false, ...NO_DAYS })).toEqual({
       status: "approved",
       featured: false,
+      ...NO_DAYS,
     });
   });
 
   it("rejecting makes it rejected and never featured", () => {
-    expect(afterDecision("reject", { status: "pending", featured: false })).toEqual({
+    expect(afterDecision("reject", { status: "pending", featured: false, ...NO_DAYS })).toEqual({
       status: "rejected",
       featured: false,
+      ...NO_DAYS,
     });
   });
 
   it("featuring and removing from featured change only the flag", () => {
-    expect(afterDecision("feature", { status: "approved", featured: false })).toEqual({
+    expect(afterDecision("feature", { status: "approved", featured: false, ...NO_DAYS })).toEqual({
       status: "approved",
       featured: true,
+      ...NO_DAYS,
     });
-    expect(afterDecision("unfeature", { status: "approved", featured: true })).toEqual({
+    expect(afterDecision("unfeature", { status: "approved", featured: true, ...NO_DAYS })).toEqual({
       status: "approved",
       featured: false,
+      ...NO_DAYS,
     });
+  });
+
+  it("featuring with dates (ADR-210) takes the switch the database answered and the days sent", () => {
+    expect(
+      afterDecision(
+        "feature",
+        { status: "approved", featured: false, ...NO_DAYS },
+        { featured: false, featuredFrom: "2026-12-01", featuredUntil: "2026-12-31" },
+      ),
+    ).toEqual({
+      status: "approved",
+      featured: false,
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+  });
+
+  it("removing from featured also clears the days", () => {
+    expect(
+      afterDecision("unfeature", {
+        status: "approved",
+        featured: false,
+        featuredFrom: "2026-01-01",
+        featuredUntil: "2026-01-31",
+      }),
+    ).toEqual({ status: "approved", featured: false, ...NO_DAYS });
   });
 
   it.each([
@@ -54,7 +86,24 @@ describe("UT-moderation-rows: what a decision leaves behind", () => {
     ["sold", false, []],
     ["rented", false, []],
   ] as const)("a %s listing (featured: %s) offers %j", (status, featured, decisions) => {
-    expect(decisionsFor(status, featured)).toEqual(decisions);
+    expect(decisionsFor(status, { featured, ...NO_DAYS })).toEqual(decisions);
+  });
+
+  it.each([
+    ["scheduled", { featured: false, featuredFrom: "2999-01-01", featuredUntil: null }],
+    ["running", { featured: true, featuredFrom: "2020-01-01", featuredUntil: null }],
+    ["ended", { featured: false, featuredFrom: null, featuredUntil: "2020-01-31" }],
+  ] as const)(
+    "an approved listing whose Featured is %s offers Feature (new dates) and Remove from featured",
+    (_status, state) => {
+      expect(decisionsFor("approved", state)).toEqual(["feature", "unfeature"]);
+    },
+  );
+
+  it("a pending listing with old dates still offers only approve and reject", () => {
+    expect(
+      decisionsFor("pending", { featured: false, featuredFrom: "2020-01-01", featuredUntil: null }),
+    ).toEqual(["approve", "reject"]);
   });
 });
 

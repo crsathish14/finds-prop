@@ -10,6 +10,7 @@ const { applyDecision, mapModerationError, removeProject } = await import("../mo
 const { projectModerationStore } = await import("../service");
 
 const PROJECT = "00000000-0000-4000-c000-000000000001";
+const NO_DAYS = { featuredFrom: null, featuredUntil: null };
 
 describe("UT-project-moderation-service: the database's answers as action errors (S7-T04)", () => {
   it.each([
@@ -23,6 +24,7 @@ describe("UT-project-moderation-service: the database's answers as action errors
     [{ message: "project.not_allowed" }, "FORBIDDEN"],
     [{ code: "42501" }, "FORBIDDEN"],
     [{ message: "project.bad_action" }, "VALIDATION"],
+    [{ message: "project.bad_dates", code: "22023" }, "VALIDATION"],
     [{ code: "22023" }, "VALIDATION"],
     [{ code: "XX000", message: "boom" }, "INTERNAL"],
     [{}, "INTERNAL"],
@@ -50,8 +52,42 @@ describe("UT-project-moderation-service: the database's answers as action errors
       { decide, remove: vi.fn() },
       { projectId: PROJECT, decision: "approve" },
     );
-    expect(decide).toHaveBeenCalledWith(PROJECT, "approve");
+    expect(decide).toHaveBeenCalledWith(PROJECT, "approve", NO_DAYS);
     expect(done.moderation).toBe("approved");
+  });
+
+  it("puts the database's end-before-start refusal on the end date, with the approved words", () => {
+    expect(mapModerationError({ message: "project.bad_dates", code: "22023" }).fieldErrors).toEqual(
+      {
+        featuredUntil: [{ key: "validation.promotionDatesOrder" }],
+      },
+    );
+  });
+
+  it("passes a feature's dates to the store (ADR-210), and drops dates sent with another decision", async () => {
+    const decide = vi.fn(async () => ({
+      projectId: PROJECT,
+      slug: "kadal-vista",
+      moderation: "approved",
+      published: true,
+      featured: false,
+    }));
+    const store = { decide, remove: vi.fn() };
+    await applyDecision(store, {
+      projectId: PROJECT,
+      decision: "feature",
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    await applyDecision(store, {
+      projectId: PROJECT,
+      decision: "publish",
+      featuredFrom: "2026-12-01",
+    });
+    expect(decide.mock.calls).toEqual([
+      [PROJECT, "feature", { featuredFrom: "2026-12-01", featuredUntil: "2026-12-31" }],
+      [PROJECT, "publish", NO_DAYS],
+    ]);
   });
 
   it("passes a delete to the store", async () => {
@@ -73,7 +109,7 @@ describe("UT-project-moderation-store: the calls made as the admin (S7-T04)", ()
   it("calls moderate_project and gives back the project as it is now", async () => {
     const rpc = vi.fn(async () => ({ data: [decided], error: null }));
     const store = projectModerationStore({ rpc } as unknown as SupabaseClient<Database>);
-    expect(await store.decide(PROJECT, "publish")).toEqual({
+    expect(await store.decide(PROJECT, "publish", NO_DAYS)).toEqual({
       projectId: PROJECT,
       slug: "kadal-vista",
       moderation: "approved",
@@ -86,10 +122,37 @@ describe("UT-project-moderation-store: the calls made as the admin (S7-T04)", ()
     });
   });
 
+  it("sends only the dates that are given, as p_featured_from and p_featured_until", async () => {
+    const rpc = vi.fn(async () => ({ data: [decided], error: null }));
+    const store = projectModerationStore({ rpc } as unknown as SupabaseClient<Database>);
+    await store.decide(PROJECT, "feature", { featuredFrom: "2026-12-01", featuredUntil: null });
+    await store.decide(PROJECT, "feature", {
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    expect(rpc.mock.calls).toEqual([
+      [
+        "moderate_project",
+        { p_project: PROJECT, p_action: "feature", p_featured_from: "2026-12-01" },
+      ],
+      [
+        "moderate_project",
+        {
+          p_project: PROJECT,
+          p_action: "feature",
+          p_featured_from: "2026-12-01",
+          p_featured_until: "2026-12-31",
+        },
+      ],
+    ]);
+  });
+
   it("throws the database's refusal as an action error", async () => {
     const rpc = vi.fn(async () => ({ data: null, error: { code: "55000", message: "x" } }));
     const store = projectModerationStore({ rpc } as unknown as SupabaseClient<Database>);
-    const failure = await store.decide(PROJECT, "approve").catch((error: unknown) => error);
+    const failure = await store
+      .decide(PROJECT, "approve", NO_DAYS)
+      .catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(ActionError);
     expect(failure).toMatchObject({ code: "CONFLICT" });
   });

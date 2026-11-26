@@ -10,8 +10,13 @@ import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import type { Problems } from "./form";
-import { PromotionDatesFields, PromotionDatesNote } from "./promotion-dates-fields.client";
-import { datesOf, NO_DATES, type PromotionDatesValue } from "./promotion-dates-form";
+import {
+  datesOf,
+  NO_DATES,
+  PromotionDatesFields,
+  PromotionDatesNote,
+  type PromotionDatesValue,
+} from "@/features/promotion-dates";
 import {
   useSaveFlow,
   useScrollToProblems,

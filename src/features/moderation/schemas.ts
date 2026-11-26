@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { checkFeaturedOrder, featuredDay } from "@/lib/featured-dates-input";
 import {
   DEFAULT_TAB,
   LOCALITY_FILTER_MAX,
@@ -27,16 +28,24 @@ const reason = z.preprocess(
 );
 
 /**
- * One decision on one listing. Approve, feature and remove from featured need only the listing; a rejection
- * also needs its reason, which the owner will read. The decision picks the rule, so a reason sent with an
- * approval is not part of the input at all (it is dropped, never stored).
+ * One decision on one listing. Approve and remove from featured need only the listing; a rejection also needs its
+ * reason, which the owner will read; a feature may carry its first and last day (ADR-210), both optional. The
+ * decision picks the rule, so a reason or a day sent with another decision is not part of the input at all (it is
+ * dropped, never stored).
  */
 export const moderateListingSchema = z.discriminatedUnion(
   "decision",
   [
     z.object({ decision: z.literal("approve"), listingId }),
     z.object({ decision: z.literal("reject"), listingId, reason }),
-    z.object({ decision: z.literal("feature"), listingId }),
+    z
+      .object({
+        decision: z.literal("feature"),
+        listingId,
+        featuredFrom: featuredDay,
+        featuredUntil: featuredDay,
+      })
+      .superRefine(checkFeaturedOrder),
     z.object({ decision: z.literal("unfeature"), listingId }),
   ],
   { error: "validation.invalid" },

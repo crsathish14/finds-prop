@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { getBuilderOverview } from "@/features/builders";
+import { typedDatesOf } from "@/features/promotion-dates";
 import { getTranslate } from "@/features/site";
 import { indiaToday } from "@/lib/india-days";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
-import {
-  getSiteContent,
-  saveTopDevelopers,
-  TopDevelopersForm,
-  typedDatesOf,
-} from "@/features/site-content";
+import { getSiteContent, saveTopDevelopers, TopDevelopersForm } from "@/features/site-content";
 
 // The portal layout already says the page is never indexed.
 export async function generateMetadata(): Promise<Metadata> {

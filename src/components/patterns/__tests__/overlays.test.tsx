@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Settings, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -156,6 +156,16 @@ describe("ConfirmDialog", () => {
   it("focuses the safe button first when the action is destructive", () => {
     render(<ConfirmDialog open onOpenChange={vi.fn()} onConfirm={vi.fn()} {...base} />);
     expect(screen.getByRole("button", { name: "Keep listing" })).toHaveFocus();
+  });
+
+  it("shows a few fields between its description and its buttons when given them", () => {
+    render(
+      <ConfirmDialog open tone="info" onOpenChange={vi.fn()} onConfirm={vi.fn()} {...base}>
+        <p>The start and end dates go here.</p>
+      </ConfirmDialog>,
+    );
+    const dialog = screen.getByRole("alertdialog", { name: "Delete this listing?" });
+    expect(within(dialog).getByText("The start and end dates go here.")).toBeVisible();
   });
 
   it("focuses the confirm button first for a plain confirmation", () => {
