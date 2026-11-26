@@ -37,19 +37,12 @@
  */
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Children,
-  isValidElement,
-  useCallback,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { Children, isValidElement, useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { SectionHead } from "./section-head";
 
 type ScrollRowProps = {
@@ -70,24 +63,8 @@ const MIN_FILL = 0.15;
 const GLIDE_DURATION = 25;
 /** One line of a mouse wheel that reports lines (Firefox) is about this many pixels. */
 const LINE_HEIGHT = 16;
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 /** Below the width where the Previous and Next buttons show (768 px). */
 const PHONE = "(max-width: 767px)";
-
-function subscribeToMotionPreference(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-/** True when the visitor has asked their device for less motion. False while the page is built. */
-function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(
-    subscribeToMotionPreference,
-    () => window.matchMedia(REDUCED_MOTION).matches,
-    () => false,
-  );
-}
 
 function ScrollRow({ title, description, as, id, label, children, className }: ScrollRowProps) {
   const translate = useTranslations();
