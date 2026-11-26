@@ -84,6 +84,12 @@ export function buildAdminNav(
           icon: "projects",
         },
         {
+          key: "primeProjects",
+          href: "/admin/prime-projects",
+          label: translate("admin.nav.primeProjects"),
+          icon: "projects",
+        },
+        {
           key: "builders",
           href: "/admin/builders",
           label: translate("admin.nav.builders"),

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 import { HOME_SECTION_KEYS } from "@/lib/home-sections";
+import { PROJECT_PRIME_AMOUNT_MAX } from "@/lib/project-prime";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
@@ -284,6 +285,33 @@ export const topDevelopersInputSchema = z.object({
     .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
 });
 export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;
+
+/**
+ * One Prime amount as typed (ADR-208): an empty box is null (no project priced that way is Prime), otherwise a whole
+ * number of rupees from 1 to twelve digits. Commas and spaces between the digits are allowed and dropped.
+ */
+const primeAmountInput = z.preprocess(
+  (typed) => {
+    if (isBlank(typed)) return null;
+    if (typeof typed !== "string") return typed;
+    const digits = typed.replace(/[,\s]/g, "");
+    return /^\d+$/.test(digits) ? Number(digits) : typed;
+  },
+  z
+    .int({ error: "validation.wholeRupees" })
+    .min(1, { error: "validation.wholeRupees" })
+    .max(PROJECT_PRIME_AMOUNT_MAX, { error: "validation.wholeRupees" })
+    .nullable(),
+);
+
+/** The four Prime project amounts (ADR-208). All four are sent; an empty one is saved as null. */
+export const projectPrimeInputSchema = z.object({
+  ratePerSqft: primeAmountInput,
+  totalPrice: primeAmountInput,
+  rentPerMonth: primeAmountInput,
+  rentPerSqftMonth: primeAmountInput,
+});
+export type ProjectPrimeInput = z.infer<typeof projectPrimeInputSchema>;
 
 /** One sponsored slot's builders and agents: at most 10, each once, each a real id. */
 const sponsoredList = z

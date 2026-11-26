@@ -13,6 +13,7 @@ export const EDITABLE_SETTINGS = [
   "project_fields",
   "top_developers",
   "sponsored_builders",
+  "project_prime",
 ] as const;
 export type EditableSetting = (typeof EDITABLE_SETTINGS)[number];
 
