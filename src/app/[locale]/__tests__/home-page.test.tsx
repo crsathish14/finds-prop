@@ -98,7 +98,7 @@ vi.mock("@/features/hero-lab", () => ({
       data-sponsor-bare={props.sponsorBare ? "yes" : "no"}
     >
       <div data-testid="search" data-mode={props.aiSearch ? "ai" : "keyword"} />
-      <p>home.hero.trust.compare</p>
+      <p>home.hero.trust.ai</p>
       {props.sponsor}
     </section>
   ),
@@ -356,7 +356,7 @@ describe("the homepage banner area (S4-T07)", () => {
     expect(screen.getByTestId("search")).toBeInTheDocument();
     expect(screen.getByTestId("sponsor")).toHaveAttribute("data-layout", "split");
     expect(screen.getByText("Chennai · Homes, plots & new projects")).toBeInTheDocument();
-    expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
+    expect(screen.getByText("home.hero.trust.ai")).toBeInTheDocument();
   });
 
   it("falls back to Search Desk with nothing in the banner position when Split is chosen but no panel banner qualifies", async () => {
@@ -372,7 +372,7 @@ describe("the homepage banner area (S4-T07)", () => {
     expect(screen.getByTestId("search")).toBeInTheDocument();
     // the eyebrow and the trust lines belong to Split only
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
-    expect(screen.queryByText("home.hero.trust.compare")).not.toBeInTheDocument();
+    expect(screen.queryByText("home.hero.trust.ai")).not.toBeInTheDocument();
   });
 });
 
@@ -394,7 +394,7 @@ describe("the Conversational hero on the live homepage (ADR-177)", () => {
       "data-sponsor-bare",
       "yes",
     );
-    expect(screen.getByText("home.hero.trust.compare")).toBeInTheDocument();
+    expect(screen.getByText("home.hero.trust.ai")).toBeInTheDocument();
     // the admin's eyebrow belongs to Split; the prompt pill leads here
     expect(screen.queryByText("Chennai · Homes, plots & new projects")).not.toBeInTheDocument();
     expect(screen.queryByTestId("hero-lab")).not.toBeInTheDocument();
