@@ -10,6 +10,7 @@ import {
   saveHeroConfig,
   saveHomepageConfig,
   saveProjectFieldsConfig,
+  saveProjectPrimeConfig,
   saveSponsorsConfig,
   saveSponsoredBuildersConfig,
   saveTopDevelopersConfig,
@@ -22,6 +23,7 @@ import {
   saveHeroContent,
   saveHomepageContent,
   saveProjectFieldsContent,
+  saveProjectPrimeContent,
   saveSponsoredBuildersContent,
   saveTopDevelopersContent,
 } from "./content-service";
@@ -114,6 +116,17 @@ export const saveProjectFields = defineAction({
     if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
     const done = await saveProjectFieldsContent(await createContentStore(), input);
     log.info("site content saved", { setting: done.key, count: input.fields.length });
+    return done;
+  },
+});
+
+/** Saves the Prime project amounts (ADR-208): every project's Prime tag follows them from the next read. */
+export const saveProjectPrime = defineAction({
+  ...saveProjectPrimeConfig,
+  handler: async ({ input, session, log }) => {
+    if (!session) throw new ActionError("UNAUTHENTICATED", "Signing in is required.");
+    const done = await saveProjectPrimeContent(await createContentStore(), input);
+    log.info("site content saved", { setting: done.key });
     return done;
   },
 });
