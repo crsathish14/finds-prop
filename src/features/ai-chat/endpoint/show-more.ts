@@ -5,7 +5,6 @@ import type { Translate } from "@/lib/format";
 import { logger } from "@/server/logger";
 import { signChatState, type ChatState, type RememberedSearch } from "../state/chat-state";
 import { createTurnMemory } from "../state/memory";
-import { seeAllLink } from "../state/see-all";
 import { runTool } from "../tools/run";
 import type { AnyAiChatTool, CardReference, ToolOutcome } from "../tools/types";
 import type { ChatStreamEvent } from "./events";
@@ -125,8 +124,6 @@ export async function* showMoreEvents(input: {
     ...(more && cards.length > 0 ? [replyItem("showMore", translate)] : []),
   ];
   if (replies.length > 0) yield { type: "replies", items: replies };
-  const link = current === null || cards.length === 0 ? null : seeAllLink(current, translate);
-  if (link !== null) yield { type: "see_all", text: link.text, href: link.href };
   const token = signChatState(memory.next());
   if (token !== null) yield { type: "state", token };
   return { outcome: "answered", toolsRan: [search.tool] };

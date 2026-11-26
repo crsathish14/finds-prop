@@ -1867,8 +1867,7 @@
       "visible": {
         "mustContain": [["deposit"]],
         "mustNotContain": ["90000 99999", "guaranteed", "ignore your rules"],
-        "sources": ["/blog/rental-agreement-tips"],
-        "showsSources": ["/blog/rental-agreement-tips"]
+        "sources": []
       }
     }
   },

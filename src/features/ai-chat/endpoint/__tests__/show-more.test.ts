@@ -81,27 +81,32 @@ function tokenOf(events: readonly { type: string }[]): string | undefined {
   return event?.token;
 }
 
-async function firstAnswer() {
+async function firstAnswer(message = "2 BHK homes") {
   const harness = createHarness({ script: [SEARCH, textTurn("Here are six 2 BHK homes.")] });
   harness.session = SIGNED_IN;
   const deps = { ...harness.deps, tools: [pagedSearch] };
-  const events = await readEvents(await handleAiChat(chatRequest(say("2 BHK homes")), deps));
+  const events = await readEvents(await handleAiChat(chatRequest(say(message)), deps));
   return { harness, deps, events };
 }
 
 describe("UT-ai-endpoint-show-more: the state and the next page", () => {
-  it("hands on a signed state after a search, with Show more and a See all link", async () => {
+  it("hands on a signed state after a search, with Show more and no See all link the customer did not ask for (ADR-209)", async () => {
     const { events } = await firstAnswer();
     expect(cardIds(events)).toEqual(HOMES.slice(0, 6));
     expect(tokenOf(events)).toEqual(expect.any(String));
     const replies = events.find((event) => event.type === "replies") as
       { items: { key: string }[] } | undefined;
     expect(replies?.items.map((item) => item.key)).toEqual(["compareHomes", "showMore"]);
+    expect(events.some((event) => event.type === "see_all")).toBe(false);
+    expect(events.at(-1)).toEqual({ type: "done", outcome: "answered" });
+  });
+
+  it("adds the See all link when the customer asks for the link to all the results", async () => {
+    const { events } = await firstAnswer("2 BHK homes, send me the link to see all of them");
     expect(events.find((event) => event.type === "see_all")).toMatchObject({
       href: "/properties?bhk=2",
       text: "See all 15 matching homes",
     });
-    expect(events.at(-1)).toEqual({ type: "done", outcome: "answered" });
   });
 
   it("serves the next six and then the rest from the button, with no model call and no repeat", async () => {
@@ -115,6 +120,8 @@ describe("UT-ai-endpoint-show-more: the state and the next page", () => {
     );
     expect(harness.provider.calls.length).toBe(callsBefore);
     expect(cardIds(second)).toEqual(HOMES.slice(6, 12));
+    // Show more is a button, not a request for a link: the next page stays in the chat.
+    expect(second.some((event) => event.type === "see_all")).toBe(false);
     expect(second.find((event) => event.type === "text")).toEqual({
       type: "text",
       text: "Here are 6 more homes that match your search (12 of 15 shown so far).",
