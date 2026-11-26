@@ -21,6 +21,8 @@ export type ProjectListItem = {
   slug: string;
   name: string;
   developerName: string;
+  /** The developer's id, for the AI search's promotion order (ADR-205); absent where the list item is made by hand. */
+  builderId?: string;
   status: ProjectStatus | null;
   /** Sale or rent; only a commercial project has one. */
   offerType: OfferType | null;

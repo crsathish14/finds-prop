@@ -158,6 +158,7 @@ describe("UT-project-queries: the list of projects", () => {
           slug: "kadal-vista",
           name: "Kadal Vista",
           developerName: "Kadal Homes",
+          builderId: "b1",
           status: "under_construction",
           offerType: null,
           price: 7_800_000,

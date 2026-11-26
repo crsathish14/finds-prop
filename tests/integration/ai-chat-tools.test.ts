@@ -58,6 +58,8 @@ const NO_PROJECT_FILTERS = {
   status: null,
   bhk: null,
   maxPrice: null,
+  preferLocalities: null,
+  preferAmenities: null,
   limit: null,
 };
 
@@ -71,6 +73,9 @@ const NO_FILTERS = {
   locality: null,
   keyword: null,
   label: null,
+  preferLocalities: null,
+  preferAmenities: null,
+  preferFurnishing: null,
   sort: null,
   limit: null,
 };
@@ -581,6 +586,8 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         status: "new_launch",
         bhk: null,
         maxPrice: null,
+        preferLocalities: null,
+        preferAmenities: null,
         limit: null,
       });
       expect(none.result).toMatchObject({ total: 0, projects: [] });

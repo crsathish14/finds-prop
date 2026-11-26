@@ -7,6 +7,22 @@ import { AS_OF_TEXT, injected, projectListItem, READ_AT, TOOL_CONTEXT } from "./
 
 const getProjects = vi.fn();
 const error = vi.fn();
+const getPromotionLists = vi.fn();
+const getProjectExtras = vi.fn();
+
+// The ranking's own reads (ADR-205): the admin's promotion lists and the projects' amenities, stood in for here.
+vi.mock("../../ranking/reads.server", () => ({
+  getPromotionLists,
+  getProjectExtras,
+  getHomeExtras: vi.fn(),
+}));
+
+const NO_PROMOTIONS = {
+  sponsoredBuilders: new Set<string>(),
+  sponsoredProjects: new Set<string>(),
+  spotlightBuilders: new Set<string>(),
+  topBuilders: new Set<string>(),
+};
 
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The projects feature is stood in for by its read (a stand-in) and its real page rules.
@@ -36,6 +52,8 @@ const NO_FILTERS = {
   status: null,
   bhk: null,
   maxPrice: null,
+  preferLocalities: null,
+  preferAmenities: null,
   limit: null,
 };
 const search = (filters: Record<string, unknown> = {}) =>
@@ -92,10 +110,12 @@ const PROJECTS = [
 beforeEach(() => {
   vi.clearAllMocks();
   getProjects.mockResolvedValue({ status: "ok", projects: PROJECTS, readAt: READ_AT });
+  getPromotionLists.mockResolvedValue(NO_PROMOTIONS);
+  getProjectExtras.mockResolvedValue(new Map());
 });
 
 describe("UT-ai-tool-projects-search: the input", () => {
-  it("is called search_projects, is a read tool, and takes the six filters, each required", () => {
+  it("is called search_projects, is a read tool, and takes the six filters and two preferences, each required", () => {
     expect(searchProjectsTool.name).toBe("search_projects");
     expect(searchProjectsTool.kind).toBe("read");
     const schema = toPortableJsonSchema(searchProjectsInputSchema) as {
@@ -103,7 +123,16 @@ describe("UT-ai-tool-projects-search: the input", () => {
       required: string[];
     };
     expect(Object.keys(schema.properties).sort()).toEqual(
-      ["bhk", "city", "limit", "locality", "maxPrice", "status"].sort(),
+      [
+        "bhk",
+        "city",
+        "limit",
+        "locality",
+        "maxPrice",
+        "preferAmenities",
+        "preferLocalities",
+        "status",
+      ].sort(),
     );
     expect([...schema.required].sort()).toEqual(Object.keys(schema.properties).sort());
   });
@@ -130,12 +159,13 @@ describe("UT-ai-tool-projects-search: the input", () => {
 });
 
 describe("UT-ai-tool-projects-search: the filters", () => {
-  it("gives every project when nothing is asked for, in the order the page lists them", async () => {
+  it("gives every project when nothing is asked for, best match first (ADR-205)", async () => {
+    // All four are featured, so the order is the relevance (the one with no price is the least complete), then the slug.
     expect(await slugsFor({})).toEqual([
       "kadal-vista",
+      "plot-gardens",
       "velan-heights",
       "no-price-yet",
-      "plot-gardens",
     ]);
   });
 
@@ -187,7 +217,7 @@ describe("UT-ai-tool-projects-search: the filters", () => {
     });
     expect(await slugsFor({ maxPrice: 999_999_999_999 })).toEqual(["a-total"]);
     expect(await slugsFor({ maxPrice: 3_000 })).toEqual([]);
-    expect(await slugsFor({})).toEqual(["by-the-sqft", "office-for-rent", "a-total"]);
+    expect((await slugsFor({})).sort()).toEqual(["a-total", "by-the-sqft", "office-for-rent"]);
   });
 
   it("combines every filter", async () => {
@@ -221,6 +251,9 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
             priceText: "₹78 L basic price",
             priceType: "basic",
             offerType: null,
+            matchReasons: [],
+            missedPreferences: [],
+            lowestPriceOfMatches: true,
             untrustedText: {
               name: "Kadal Vista",
               developerName: "Kadal Homes",
@@ -228,6 +261,7 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
             },
           },
         ],
+        slightlyAboveBudget: null,
       },
       references: [{ kind: "project", slug: "kadal-vista" }],
       content: expect.any(String),
@@ -281,7 +315,7 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
     const outcome = await search({ limit: 2 });
     expect(outcome.status === "ok" && outcome.references).toEqual([
       { kind: "project", slug: "kadal-vista" },
-      { kind: "project", slug: "velan-heights" },
+      { kind: "project", slug: "plot-gardens" },
     ]);
   });
 
@@ -378,5 +412,119 @@ describe("UT-ai-tool-projects-search: when the read fails", () => {
     const outcome = await search();
     expect(outcome).toMatchObject({ status: "error", code: "unavailable" });
     expect(outcome.content).not.toContain("the database said no");
+  });
+});
+
+describe("UT-ai-tool-projects-search: the ranking (ADR-205)", () => {
+  const regular = (slug: string, builderId: string, price: number) =>
+    projectListItem({
+      slug,
+      builderId,
+      price,
+      priceType: "basic",
+      featured: false,
+      locality: "OMR",
+    });
+
+  it("puts the promotion tiers in order among the matches: sponsored, featured, spotlight, top, the rest", async () => {
+    getProjects.mockResolvedValue({
+      status: "ok",
+      projects: [
+        regular("plain", "b-plain", 7_000_000),
+        regular("top-one", "b-top", 7_100_000),
+        regular("spot-one", "b-spot", 7_200_000),
+        { ...regular("featured-one", "b-other", 7_300_000), featured: true },
+        regular("sponsored-one", "b-sponsor", 7_400_000),
+      ],
+      readAt: READ_AT,
+    });
+    getPromotionLists.mockResolvedValue({
+      ...NO_PROMOTIONS,
+      sponsoredBuilders: new Set(["b-sponsor"]),
+      spotlightBuilders: new Set(["b-spot", "b-sponsor"]),
+      topBuilders: new Set(["b-top", "b-sponsor"]),
+    });
+    expect(await slugsFor({ maxPrice: 8_000_000 })).toEqual([
+      "sponsored-one",
+      "featured-one",
+      "spot-one",
+      "top-one",
+      "plain",
+    ]);
+  });
+
+  it("never shows a sponsored project over the budget as a match, and offers it apart when it is at most 10% over", async () => {
+    getProjects.mockResolvedValue({
+      status: "ok",
+      projects: [
+        regular("sponsored-a", "b-sponsor", 12_000_000),
+        { ...regular("featured-b", "b-other", 7_500_000), featured: true },
+        regular("spotlight-c", "b-spot", 7_800_000),
+        regular("regular-d", "b-plain", 7_200_000),
+        regular("sponsored-e", "b-sponsor", 8_500_000),
+      ],
+      readAt: READ_AT,
+    });
+    getPromotionLists.mockResolvedValue({
+      ...NO_PROMOTIONS,
+      sponsoredBuilders: new Set(["b-sponsor"]),
+      spotlightBuilders: new Set(["b-spot"]),
+    });
+    const outcome = await search({ maxPrice: 8_000_000 });
+    if (outcome.status !== "ok") throw new Error("the search failed");
+    const output = outcome.output as {
+      total: number;
+      projects: Summary[];
+      slightlyAboveBudget: Summary | null;
+    };
+    expect(output.projects.map((project) => project.slug)).toEqual([
+      "featured-b",
+      "spotlight-c",
+      "regular-d",
+    ]);
+    expect(output.total).toBe(3);
+    // 1.2 Cr is 50% over: never offered. 85 L is 6.25% over: offered apart, once.
+    expect(output.slightlyAboveBudget).toMatchObject({ slug: "sponsored-e" });
+    expect(outcome.references.map((reference) => "slug" in reference && reference.slug)).toEqual([
+      "featured-b",
+      "spotlight-c",
+      "regular-d",
+      "sponsored-e",
+    ]);
+  });
+
+  it("ranks a project with the preferred amenities first, keeps the others, and says why in plain facts", async () => {
+    getProjects.mockResolvedValue({
+      status: "ok",
+      projects: [regular("no-pool", "b-1", 7_000_000), regular("with-pool", "b-2", 7_000_000)],
+      readAt: READ_AT,
+    });
+    getProjectExtras.mockResolvedValue(
+      new Map([
+        ["no-pool", { amenities: ["Gym"], createdAt: null, areaMinSqft: null }],
+        ["with-pool", { amenities: ["Swimming pool", "Gym"], createdAt: null, areaMinSqft: null }],
+      ]),
+    );
+    const projects = await projectsFor({ preferAmenities: ["pool"] });
+    expect(projects.map((project) => project.slug)).toEqual(["with-pool", "no-pool"]);
+    expect(projects[0]).toMatchObject({ matchReasons: ["has pool"], missedPreferences: [] });
+    expect(projects[1]).toMatchObject({ matchReasons: [], missedPreferences: ["pool not listed"] });
+  });
+
+  it("never names a promotion in what the model reads", async () => {
+    getPromotionLists.mockResolvedValue({
+      ...NO_PROMOTIONS,
+      sponsoredProjects: new Set(["kadal-vista"]),
+    });
+    const outcome = await search({ maxPrice: 9_000_000 });
+    expect(outcome.status === "ok" && outcome.content).not.toMatch(
+      /sponsor|spotlight|promot|tier/iu,
+    );
+  });
+
+  it("still answers, unranked by promotion, when the promotion lists cannot be read", async () => {
+    getPromotionLists.mockResolvedValue(NO_PROMOTIONS);
+    getProjectExtras.mockResolvedValue(new Map());
+    expect(await slugsFor({})).toHaveLength(4);
   });
 });

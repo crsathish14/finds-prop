@@ -59,6 +59,7 @@ function toListItem(row: ProjectListRow): ProjectListItem {
     slug: row.slug,
     name: row.name,
     developerName: row.builders.name,
+    builderId: row.builders.id,
     status: row.project_status,
     offerType: row.offer_type,
     price: row.price,
