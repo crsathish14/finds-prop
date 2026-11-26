@@ -833,6 +833,9 @@ isOneToOne: false
 "agent_contact":
 { Args: { "p_id": string }; Returns: string
                            },
+"agent_listings":
+{ Args: { "p_id": string }; Returns: Json
+                           },
 "apply_featured_dates":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },

@@ -20,7 +20,6 @@ export async function HomeAgentsSection() {
   const agents = await getHomeAgents();
   if (agents.length === 0) return null;
   const translate = await getTranslate();
-  const year = new Date().getFullYear();
   return (
     <HomeSection labelledBy={AGENTS_TITLE} spacing="tight">
       <ScrollRow
@@ -32,7 +31,7 @@ export async function HomeAgentsSection() {
         {agents.map((agent) => (
           <AgentCard
             key={agent.id}
-            agent={toAgentCard(agent, publicEnv.NEXT_PUBLIC_SUPABASE_URL, year)}
+            agent={toAgentCard(agent, publicEnv.NEXT_PUBLIC_SUPABASE_URL)}
             contact={
               <RevealContact
                 agentId={agent.id}

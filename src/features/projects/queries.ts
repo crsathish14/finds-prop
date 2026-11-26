@@ -106,6 +106,24 @@ async function readProjects(
   return { projects, readAt };
 }
 
+/**
+ * Turns the project rows of a read into list items (the same rows and rules as the list), skipping and counting
+ * any that do not fit. Used by the pages that show a few projects of one developer, such as an agent's page.
+ */
+export function parseProjectListItems(rows: unknown, section: string): ProjectListItem[] {
+  const items: ProjectListItem[] = [];
+  let skipped = 0;
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const parsed = projectListRowSchema.safeParse(row);
+    if (parsed.success) items.push(toListItem(parsed.data));
+    else skipped += 1;
+  }
+  if (skipped > 0) {
+    logger.warn("projects skipped, they do not match the expected shape", { section, skipped });
+  }
+  return items;
+}
+
 /** The public projects (of one city when a key is given), or a failure with no detail (the page offers Try again). */
 export async function getProjects(cityKey?: string): Promise<ProjectList> {
   try {
