@@ -4846,7 +4846,9 @@
         "title": "Agent not found",
         "body": "This agent is not listed, or the address is wrong.",
         "all": "Browse homes"
-      }
+      },
+      "homes": "Homes by this agent",
+      "projects": "Projects by this agent"
     }
   }
 }

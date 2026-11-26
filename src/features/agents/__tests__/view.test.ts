@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { agentPath, agentPhoto, isAgentId, toAgentCard, yearsOfExperience } from "../view";
-import type { AgentRow } from "../schemas";
+import type { AgentView } from "../schemas";
 
-const row: AgentRow = {
+const row: AgentView = {
   id: "00000000-0000-4000-b000-0000000000e1",
   name: "Meena Realty",
   tagline: null,
@@ -12,6 +12,7 @@ const row: AgentRow = {
   established_year: 2012,
   listing_count: 0,
   localities: [],
+  years: 14,
 };
 const SUPABASE = "https://example.supabase.test";
 
@@ -34,11 +35,11 @@ describe("agent view", () => {
   });
 
   it("leaves a zero count out of the card and points to the agent's page", () => {
-    const card = toAgentCard(row, SUPABASE, 2026);
+    const card = toAgentCard(row, SUPABASE);
     expect(card.listings).toBeNull();
     expect(card.years).toBe(14);
     expect(card.profileHref).toBe(agentPath(row.id));
-    expect(toAgentCard({ ...row, listing_count: 3 }, SUPABASE, 2026).listings).toBe(3);
+    expect(toAgentCard({ ...row, listing_count: 3 }, SUPABASE).listings).toBe(3);
   });
 
   it("accepts only an id shaped like a UUID", () => {
