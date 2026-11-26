@@ -81,6 +81,11 @@
       "title": "Want to sell or rent your property?",
       "description": "Post your property free. Your listing is reviewed, then goes live.",
       "action": "Post your property free"
+    },
+    "agents": {
+      "title": "Recommended agents",
+      "description": "Agents who know their localities well.",
+      "label": "Recommended agents"
     }
   },
   "heroLab": {
@@ -1616,6 +1621,14 @@
       "morePhotos": "+{count} photos",
       "callBack": "Request a call back",
       "view": "View project"
+    },
+    "agentCard": {
+      "badge": "Agent",
+      "experience": "Experience",
+      "years": "{count, plural, one {# year} other {# years}}",
+      "listings": "Listings",
+      "works": "Works in",
+      "viewProfile": "View profile"
     }
   },
   "admin": {
@@ -4799,6 +4812,27 @@
         "backCareers": "Back to the jobs",
         "home": "Home",
         "careers": "Careers"
+      }
+    }
+  },
+  "agents": {
+    "contact": {
+      "show": "Show contact",
+      "showFor": "Show contact for {name}",
+      "signInNote": "Sign in with your phone to see the number.",
+      "signIn": "Sign in",
+      "none": "This agent has no number to show.",
+      "wait": "Too many numbers shown today. Please try again tomorrow.",
+      "failed": "Could not show the number. Please try again."
+    },
+    "page": {
+      "localities": "Where they work",
+      "browse": "Browse homes",
+      "metaFallback": "{name} is a recommended agent on findsprop. See their experience, listings and localities.",
+      "notFound": {
+        "title": "Agent not found",
+        "body": "This agent is not listed, or the address is wrong.",
+        "all": "Browse homes"
       }
     }
   }

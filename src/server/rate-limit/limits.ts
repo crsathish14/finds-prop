@@ -77,6 +77,8 @@ export const RATE_LIMITS = {
    * enquiry itself is untouched.
    */
   enquiry_mail: [{ who: "key", windowSeconds: DAY, max: 20 }],
+  /** 30 agent phone numbers shown per signed-in user per day (recommended agents, 26 Nov 2026). */
+  contact_reveal: [{ who: "user", windowSeconds: DAY, max: 30 }],
   /** 10 listings created per user per day (DEC-26). */
   listing_create: [{ who: "user", windowSeconds: DAY, max: 10 }],
   /** 30 upload addresses per user per hour. */
