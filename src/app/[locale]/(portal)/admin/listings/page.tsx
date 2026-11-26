@@ -9,6 +9,7 @@ import {
   queueFilterSchema,
 } from "@/features/moderation";
 import { getTranslate } from "@/features/site";
+import { indiaToday } from "@/lib/india-days";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -33,6 +34,8 @@ export default async function ListingsPage({ searchParams }: PageProps) {
     getQueueCounts(),
     getQueueLocalities(),
   ]);
+  // Today in India, for the Scheduled, Running or Ended tag of a Featured with dates (ADR-210).
+  const today = indiaToday(new Date());
   return (
     <ListingsScreen
       filters={filters}
@@ -40,6 +43,7 @@ export default async function ListingsPage({ searchParams }: PageProps) {
       counts={counts}
       localities={localities}
       actions={{ moderate: moderateListing, loadMore: loadMoreListings }}
+      today={today}
     />
   );
 }

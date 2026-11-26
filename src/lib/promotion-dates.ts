@@ -48,3 +48,22 @@ export function compactDates(dates: PromotionDates): PromotionDates {
     ...(dates.endsOn === undefined ? {} : { endsOn: dates.endsOn }),
   };
 }
+
+/** A home's or a project's Featured days as the admin lists hold them (ADR-210): `YYYY-MM-DD`, or null for none. */
+export interface FeaturedDays {
+  readonly featuredFrom: string | null;
+  readonly featuredUntil: string | null;
+}
+
+/** True when a Featured has a first or a last day. */
+export function hasFeaturedDays(days: FeaturedDays): boolean {
+  return days.featuredFrom !== null || days.featuredUntil !== null;
+}
+
+/** A Featured's days as promotion dates, for its Scheduled, Running or Ended tag. */
+export function featuredPromotion(days: FeaturedDays): PromotionDates {
+  return {
+    ...(days.featuredFrom === null ? {} : { startsOn: days.featuredFrom }),
+    ...(days.featuredUntil === null ? {} : { endsOn: days.featuredUntil }),
+  };
+}

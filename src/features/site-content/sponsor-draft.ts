@@ -1,6 +1,6 @@
 import { dayNumber } from "@/lib/india-days";
 import { endsBeforeStart } from "@/lib/promotion-dates";
-import { statusOfTyped } from "./promotion-dates-form";
+import { statusOfTyped } from "@/features/promotion-dates";
 import { heroCoverage, type HeroCoverage } from "@/lib/sponsor-coverage";
 import {
   readyFor,

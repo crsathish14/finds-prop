@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleX } from "lucide-react";
+import { CircleX, Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -8,6 +8,7 @@ import { ListingQueue, type QueueAction, type QueueRow } from "@/components/doma
 import { ListingReview, ReviewFacts, type ReviewSpec } from "@/components/domain/listing-review";
 import { RejectListingDialog } from "@/components/domain/reject-listing-dialog";
 import { EmptyState } from "@/components/patterns/empty-state";
+import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { ShowMore } from "@/components/patterns/show-more";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/patterns/tabs";
@@ -15,9 +16,21 @@ import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { Select } from "@/components/ui/select";
 import { PROPERTY_TYPES, PROPERTY_TYPE_WORDS, type PropertyType } from "@/config/search-options";
+import {
+  NO_DATES,
+  PromotionDatesFields,
+  PromotionStatusTag,
+  type PromotionDatesValue,
+} from "@/features/promotion-dates";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { formatArea, formatDate, formatPrice, formatRent, formatTime } from "@/lib/format";
 import { notify } from "@/lib/notify";
+import {
+  endsBeforeStart,
+  featuredPromotion,
+  hasFeaturedDays,
+  promotionStatus,
+} from "@/lib/promotion-dates";
 import type { ActionResult } from "@/types/action";
 import { QUEUE_TABS, REASON_MAX, type Decision, type QueueTab } from "./constants";
 import { queueHref } from "./href";
@@ -40,6 +53,8 @@ type ListingsBoardProps = {
   counts: QueueCounts;
   localities: string[];
   actions: ListingsBoardActions;
+  /** Today's India date, from the server, for the Scheduled, Running or Ended tag (ADR-210). */
+  today: string;
 };
 
 type Failure = Extract<ActionResult<unknown>, { ok: false }>;
@@ -71,8 +86,10 @@ export function ListingsBoard({
   counts,
   localities,
   actions,
+  today,
 }: ListingsBoardProps) {
   const translate = useTranslations("admin.listings");
+  const datesWords = useTranslations("admin.promotionDates");
   const everything = useTranslations() as unknown as Translator;
   const locale = useLocale();
   const router = useRouter();
@@ -82,14 +99,17 @@ export function ListingsBoard({
   const [laterCursor, setLaterCursor] = useState<string | null>(null);
   const [loadedMore, setLoadedMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [changes, setChanges] = useState<Record<string, Pick<QueueItem, "status" | "featured">>>(
-    {},
-  );
+  const [changes, setChanges] = useState<
+    Record<string, Pick<QueueItem, "status" | "featured" | "featuredFrom" | "featuredUntil">>
+  >({});
   const [working, setWorking] = useState<{ id: string; decision: Decision } | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState<string | undefined>(undefined);
+  const [featureId, setFeatureId] = useState<string | null>(null);
+  const [featureDates, setFeatureDates] = useState<PromotionDatesValue>(NO_DATES);
+  const [featureError, setFeatureError] = useState<string | undefined>(undefined);
 
   // The page can be read again while rows from "Show more" are on screen, so a row is never drawn twice.
   const everyRow = uniqueById([...items, ...more]).map((item) => ({
@@ -124,21 +144,45 @@ export function ListingsBoard({
     }
   };
 
+  /** What a decision sends: a rejection its reason, a feature only the days that are filled in. */
+  const inputOf = (
+    item: QueueItem,
+    decision: Decision,
+    why: string | undefined,
+    dates: PromotionDatesValue,
+  ): ModerateListingInput => {
+    if (decision === "reject") return { decision, listingId: item.id, reason: why ?? "" };
+    if (decision === "feature") {
+      return {
+        decision,
+        listingId: item.id,
+        ...(dates.startsOn === "" ? {} : { featuredFrom: dates.startsOn }),
+        ...(dates.endsOn === "" ? {} : { featuredUntil: dates.endsOn }),
+      };
+    }
+    return { decision, listingId: item.id };
+  };
+
   /** Makes one decision. Returns what went wrong, or null when it worked. */
   const decide = async (
     item: QueueItem,
     decision: Decision,
     why?: string,
+    dates: PromotionDatesValue = NO_DATES,
   ): Promise<Failure | null> => {
     setWorking({ id: item.id, decision });
-    const result = await actions.moderate(
-      decision === "reject"
-        ? { decision, listingId: item.id, reason: why ?? "" }
-        : { decision, listingId: item.id },
-    );
+    const result = await actions.moderate(inputOf(item, decision, why, dates));
     setWorking(null);
     if (result.ok) {
-      setChanges((previous) => ({ ...previous, [item.id]: afterDecision(decision, item) }));
+      const featured = {
+        featured: result.data.featured,
+        featuredFrom: dates.startsOn === "" ? null : dates.startsOn,
+        featuredUntil: dates.endsOn === "" ? null : dates.endsOn,
+      };
+      setChanges((previous) => ({
+        ...previous,
+        [item.id]: afterDecision(decision, item, featured),
+      }));
       decisionToast(decision);
       router.refresh();
       return null;
@@ -188,6 +232,40 @@ export function ListingsBoard({
     const field = failure.fieldErrors?.["reason"]?.[0];
     if (field) setReasonError(fieldErrorText(everything, field));
     else reportFailure(failure);
+  };
+
+  /** Feature asks for its dates first; a listing that already has dates opens with them filled in. */
+  const openFeature = (item: QueueItem) => {
+    setFeatureDates({ startsOn: item.featuredFrom ?? "", endsOn: item.featuredUntil ?? "" });
+    setFeatureError(undefined);
+    setFeatureId(item.id);
+  };
+
+  const confirmFeature = async () => {
+    const item = everyRow.find((candidate) => candidate.id === featureId);
+    if (!item) return;
+    const typed = {
+      ...(featureDates.startsOn === "" ? {} : { startsOn: featureDates.startsOn }),
+      ...(featureDates.endsOn === "" ? {} : { endsOn: featureDates.endsOn }),
+    };
+    if (endsBeforeStart(typed)) {
+      setFeatureError(everything("validation.promotionDatesOrder"));
+      return;
+    }
+    setFeatureError(undefined);
+    const failure = await decide(item, "feature", undefined, featureDates);
+    if (!failure) {
+      setFeatureId(null);
+      return;
+    }
+    const field =
+      failure.fieldErrors?.["featuredUntil"]?.[0] ?? failure.fieldErrors?.["featuredFrom"]?.[0];
+    if (field) {
+      setFeatureError(fieldErrorText(everything, field));
+      return;
+    }
+    setFeatureId(null);
+    reportFailure(failure);
   };
 
   const showMore = async () => {
@@ -243,6 +321,9 @@ export function ListingsBoard({
     <>
       <StatusBadge kind="listing" status={STATUS_OF[item.status]} />
       {item.featured ? <Badge tone="featured">{translate("featured")}</Badge> : null}
+      {hasFeaturedDays(item) ? (
+        <PromotionStatusTag status={promotionStatus(featuredPromotion(item), today)} />
+      ) : null}
     </>
   );
 
@@ -250,7 +331,11 @@ export function ListingsBoard({
     const base = {
       id: decision,
       forName: titleOf(item),
-      onClick: () => (decision === "reject" ? openReject(item) : void act(item, decision)),
+      onClick: () => {
+        if (decision === "reject") openReject(item);
+        else if (decision === "feature") openFeature(item);
+        else void act(item, decision);
+      },
       pending: working?.id === item.id && working.decision === decision,
     };
     if (decision === "approve") {
@@ -288,7 +373,7 @@ export function ListingsBoard({
       : {}),
     actions: [
       reviewAction(item),
-      ...decisionsFor(item.status, item.featured).map((decision) => actionFor(item, decision)),
+      ...decisionsFor(item.status, item).map((decision) => actionFor(item, decision)),
     ],
   });
 
@@ -353,6 +438,7 @@ export function ListingsBoard({
 
   const reviewItem = everyRow.find((candidate) => candidate.id === reviewId) ?? null;
   const rejectItem = everyRow.find((candidate) => candidate.id === rejectId) ?? null;
+  const featureItem = everyRow.find((candidate) => candidate.id === featureId) ?? null;
   const filtered = Boolean(filters.locality ?? filters.kind);
   const total = countForTab(counts, filters.tab);
 
@@ -546,7 +632,7 @@ export function ListingsBoard({
               ),
             },
           ]}
-          actions={decisionsFor(reviewItem.status, reviewItem.featured).map((decision) =>
+          actions={decisionsFor(reviewItem.status, reviewItem).map((decision) =>
             actionFor(reviewItem, decision),
           )}
         />
@@ -576,6 +662,33 @@ export function ListingsBoard({
         onConfirm={() => void confirmReject()}
         loading={working?.decision === "reject"}
       />
+
+      <ConfirmDialog
+        open={featureItem !== null}
+        onOpenChange={(open) => {
+          if (!open && working === null) setFeatureId(null);
+        }}
+        tone="info"
+        icon={<Icon icon={Star} size="lg" />}
+        title={translate("actions.feature")}
+        description={datesWords("note")}
+        confirmLabel={translate("actions.feature")}
+        cancelLabel={translate("reject.cancel")}
+        onConfirm={() => void confirmFeature()}
+        loading={working?.decision === "feature"}
+      >
+        <PromotionDatesFields
+          value={featureDates}
+          onChange={(value) => {
+            setFeatureDates(value);
+            setFeatureError(undefined);
+          }}
+          today={today}
+          disabled={working?.decision === "feature"}
+          errors={{ endsOn: featureError }}
+          {...(featureItem ? { subject: titleOf(featureItem) } : {})}
+        />
+      </ConfirmDialog>
     </>
   );
 }

@@ -18,10 +18,26 @@ export interface DecisionResult {
   featured: boolean;
 }
 
+/** A feature's first and last day (ADR-210), `YYYY-MM-DD`; null is no day. */
+export interface FeaturedDates {
+  featuredFrom: string | null;
+  featuredUntil: string | null;
+}
+
+export const NO_FEATURED_DATES: FeaturedDates = { featuredFrom: null, featuredUntil: null };
+
 /** Calls made as the signed-in admin. */
 export interface ModerationStore {
-  /** Calls `moderate_listing`. Throws the database's failure through `mapModerationError`. */
-  decide(listingId: string, decision: Decision, reason: string | null): Promise<DecisionResult>;
+  /**
+   * Calls `moderate_listing`; the dates are sent only for a feature. Throws the database's failure through
+   * `mapModerationError`.
+   */
+  decide(
+    listingId: string,
+    decision: Decision,
+    reason: string | null,
+    dates: FeaturedDates,
+  ): Promise<DecisionResult>;
 }
 
 /** What the database says when a call fails. */
@@ -56,6 +72,12 @@ export function mapModerationError(failure: DatabaseFailure): ActionError {
   if (message === "listing.not_allowed" || code === "42501") {
     return new ActionError("FORBIDDEN", "You don't have permission to do that.");
   }
+  // Checked before the code: a bad pair of dates and a bad decision share 22023.
+  if (message === "listing.bad_dates") {
+    return new ActionError("VALIDATION", "The end date comes before the start date", {
+      fieldErrors: { featuredUntil: [{ key: "validation.promotionDatesOrder" }] },
+    });
+  }
   if (message === "listing.bad_action" || code === "22023") {
     return new ActionError("VALIDATION", "The decision is not one of the known ones", {
       fieldErrors: { decision: [{ key: "validation.invalid" }] },
@@ -64,7 +86,10 @@ export function mapModerationError(failure: DatabaseFailure): ActionError {
   return new ActionError("INTERNAL", "The decision could not be saved");
 }
 
-/** Makes one decision. Only a rejection carries a reason; the database refuses a wrong state. */
+/**
+ * Makes one decision. Only a rejection carries a reason and only a feature carries dates (none means from now until
+ * removed, as before); the database refuses a wrong state.
+ */
 export async function decideListing(
   store: ModerationStore,
   input: ModerateListingInput,
@@ -73,5 +98,11 @@ export async function decideListing(
     input.listingId,
     input.decision,
     input.decision === "reject" ? input.reason : null,
+    input.decision === "feature"
+      ? {
+          featuredFrom: input.featuredFrom ?? null,
+          featuredUntil: input.featuredUntil ?? null,
+        }
+      : NO_FEATURED_DATES,
   );
 }

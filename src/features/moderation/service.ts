@@ -17,11 +17,13 @@ export async function createModerationStore(): Promise<ModerationStore> {
 /** The same store for any client that acts as the admin (the integration tests sign in and pass theirs). */
 export function moderationStore(supabase: SupabaseClient<Database>): ModerationStore {
   return {
-    async decide(listingId, decision, reason) {
+    async decide(listingId, decision, reason, dates) {
       const { data, error } = await supabase.rpc("moderate_listing", {
         p_listing: listingId,
         p_action: decision,
         ...(reason !== null ? { p_reason: reason } : {}),
+        ...(dates.featuredFrom !== null ? { p_featured_from: dates.featuredFrom } : {}),
+        ...(dates.featuredUntil !== null ? { p_featured_until: dates.featuredUntil } : {}),
       });
       const row = data?.[0];
       if (error || !row) throw mapModerationError(error ?? {});

@@ -12,6 +12,8 @@ type ListingsScreenProps = {
   counts: QueueCounts;
   localities: string[];
   actions: ListingsBoardActions;
+  /** Today's India date, read by the page, for the Featured tags (ADR-210). */
+  today: string;
 };
 
 /**
@@ -26,6 +28,7 @@ export function ListingsScreen({
   counts,
   localities,
   actions,
+  today,
 }: ListingsScreenProps) {
   const translate = useTranslations("admin.listings");
   return (
@@ -44,6 +47,7 @@ export function ListingsScreen({
         counts={counts}
         localities={localities}
         actions={actions}
+        today={today}
       />
     </div>
   );

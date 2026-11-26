@@ -25,10 +25,28 @@ export interface ProjectRemoved {
   slug: string;
 }
 
+/** A feature's first and last day (ADR-210), `YYYY-MM-DD`; null is no day. */
+export interface ProjectFeaturedDates {
+  featuredFrom: string | null;
+  featuredUntil: string | null;
+}
+
+export const NO_PROJECT_FEATURED_DATES: ProjectFeaturedDates = {
+  featuredFrom: null,
+  featuredUntil: null,
+};
+
 /** Calls made as the signed-in admin. */
 export interface ProjectModerationStore {
-  /** Calls `moderate_project`. Throws the database's failure through `mapModerationError`. */
-  decide(projectId: string, decision: ProjectDecision): Promise<ProjectDecided>;
+  /**
+   * Calls `moderate_project`; the dates are sent only for a feature. Throws the database's failure through
+   * `mapModerationError`.
+   */
+  decide(
+    projectId: string,
+    decision: ProjectDecision,
+    dates: ProjectFeaturedDates,
+  ): Promise<ProjectDecided>;
   /** Deletes the project. Throws the database's failure through `mapModerationError`. */
   remove(projectId: string): Promise<ProjectRemoved>;
 }
@@ -63,6 +81,12 @@ export function mapModerationError(failure: DatabaseFailure): ActionError {
   if (message === "project.not_allowed" || code === "42501") {
     return new ActionError("FORBIDDEN", "You don't have permission to do that.");
   }
+  // Checked before the code: a bad pair of dates and a bad decision share 22023.
+  if (message === "project.bad_dates") {
+    return new ActionError("VALIDATION", "The end date comes before the start date", {
+      fieldErrors: { featuredUntil: [{ key: "validation.promotionDatesOrder" }] },
+    });
+  }
   if (message === "project.bad_action" || code === "22023") {
     return new ActionError("VALIDATION", "The decision is not one of the known ones", {
       fieldErrors: { decision: [{ key: "validation.invalid" }] },
@@ -71,12 +95,24 @@ export function mapModerationError(failure: DatabaseFailure): ActionError {
   return new ActionError("INTERNAL", "The decision could not be saved");
 }
 
-/** Makes one decision. The database refuses a wrong state. */
+/**
+ * Makes one decision. Only a feature carries dates (none means from now until removed, as before); dates sent with
+ * any other decision are dropped. The database refuses a wrong state.
+ */
 export function applyDecision(
   store: ProjectModerationStore,
   input: ModerateProjectInput,
 ): Promise<ProjectDecided> {
-  return store.decide(input.projectId, input.decision);
+  return store.decide(
+    input.projectId,
+    input.decision,
+    input.decision === "feature"
+      ? {
+          featuredFrom: input.featuredFrom ?? null,
+          featuredUntil: input.featuredUntil ?? null,
+        }
+      : NO_PROJECT_FEATURED_DATES,
+  );
 }
 
 /** Deletes a project. The database refuses it while the project has leads. */

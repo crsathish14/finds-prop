@@ -18,10 +18,12 @@ export async function createProjectModerationStore(): Promise<ProjectModerationS
 /** The same store for any client that acts as the admin (the integration tests sign in and pass theirs). */
 export function projectModerationStore(supabase: SupabaseClient<Database>): ProjectModerationStore {
   return {
-    async decide(projectId, decision) {
+    async decide(projectId, decision, dates) {
       const { data, error } = await supabase.rpc("moderate_project", {
         p_project: projectId,
         p_action: decision,
+        ...(dates.featuredFrom !== null ? { p_featured_from: dates.featuredFrom } : {}),
+        ...(dates.featuredUntil !== null ? { p_featured_until: dates.featuredUntil } : {}),
       });
       const row = data?.[0];
       if (error || !row) throw mapModerationError(error ?? {});

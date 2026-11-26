@@ -6,6 +6,7 @@ import {
   moderateProject,
 } from "@/features/project-moderation";
 import { getTranslate } from "@/features/site";
+import { indiaToday } from "@/lib/india-days";
 
 // The portal layout already says the page is never indexed.
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,11 +21,14 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function AdminProjectsPage() {
   const { projects, truncated } = await getAdminProjects();
+  // Today in India, for the Scheduled, Running or Ended tag of a Featured with dates (ADR-210).
+  const today = indiaToday(new Date());
   return (
     <AdminProjects
       rows={projects}
       truncated={truncated}
       actions={{ moderate: moderateProject, remove: deleteProject }}
+      today={today}
     />
   );
 }

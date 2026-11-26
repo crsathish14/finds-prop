@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { checkFeaturedOrder, featuredDay } from "@/lib/featured-dates-input";
 import { PROJECT_DECISIONS } from "./constants";
 
 /**
@@ -8,11 +9,18 @@ import { PROJECT_DECISIONS } from "./constants";
  */
 const projectId = z.uuid({ error: "validation.invalid" }).transform((value) => value.toLowerCase());
 
-/** One decision on one project. The decision picks the rule; the database holds which state each one needs. */
-export const moderateProjectSchema = z.object({
-  projectId,
-  decision: z.enum(PROJECT_DECISIONS, { error: "validation.invalid" }),
-});
+/**
+ * One decision on one project. The decision picks the rule; the database holds which state each one needs. A feature
+ * may carry its first and last day (ADR-210), both optional; the service sends them only with a feature.
+ */
+export const moderateProjectSchema = z
+  .object({
+    projectId,
+    decision: z.enum(PROJECT_DECISIONS, { error: "validation.invalid" }),
+    featuredFrom: featuredDay,
+    featuredUntil: featuredDay,
+  })
+  .superRefine(checkFeaturedOrder);
 export type ModerateProjectInput = z.infer<typeof moderateProjectSchema>;
 
 export const deleteProjectSchema = z.object({ projectId });

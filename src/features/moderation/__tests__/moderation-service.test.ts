@@ -4,6 +4,7 @@ import { decideListing, mapModerationError, type ModerationStore } from "../mode
 
 const LISTING = "00000000-0000-4000-9000-000000000001";
 const done = { listingId: LISTING, shortId: "abcd2345", status: "approved", featured: false };
+const NO_DAYS = { featuredFrom: null, featuredUntil: null };
 
 describe("UT-moderation-service: the database's answers as action errors (S6-T04)", () => {
   it.each([
@@ -45,11 +46,39 @@ describe("UT-moderation-service: the database's answers as action errors (S6-T04
     await decideListing(store, { decision: "feature", listingId: LISTING });
     await decideListing(store, { decision: "unfeature", listingId: LISTING });
     expect(decide.mock.calls).toEqual([
-      [LISTING, "reject", "No photos of the home."],
-      [LISTING, "approve", null],
-      [LISTING, "feature", null],
-      [LISTING, "unfeature", null],
+      [LISTING, "reject", "No photos of the home.", NO_DAYS],
+      [LISTING, "approve", null, NO_DAYS],
+      [LISTING, "feature", null, NO_DAYS],
+      [LISTING, "unfeature", null, NO_DAYS],
     ]);
+  });
+
+  it("sends a feature's dates (ADR-210), and none with any other decision", async () => {
+    const decide = vi.fn<ModerationStore["decide"]>().mockResolvedValue(done);
+    const store: ModerationStore = { decide };
+    await decideListing(store, {
+      decision: "feature",
+      listingId: LISTING,
+      featuredFrom: "2026-12-01",
+      featuredUntil: "2026-12-31",
+    });
+    await decideListing(store, {
+      decision: "feature",
+      listingId: LISTING,
+      featuredUntil: "2026-12-31",
+    });
+    expect(decide.mock.calls).toEqual([
+      [LISTING, "feature", null, { featuredFrom: "2026-12-01", featuredUntil: "2026-12-31" }],
+      [LISTING, "feature", null, { featuredFrom: null, featuredUntil: "2026-12-31" }],
+    ]);
+  });
+
+  it("puts the database's end-before-start refusal on the end date, with the approved words", () => {
+    const error = mapModerationError({ message: "listing.bad_dates", code: "22023" });
+    expect(error.code).toBe("VALIDATION");
+    expect(error.fieldErrors).toEqual({
+      featuredUntil: [{ key: "validation.promotionDatesOrder" }],
+    });
   });
 
   it("lets the database's refusal through unchanged", async () => {

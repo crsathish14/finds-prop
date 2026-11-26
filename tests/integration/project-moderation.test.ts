@@ -166,6 +166,34 @@ describe("IT-project-moderation: the admin's projects and decisions against a re
       expect(await row(project.id)).toMatchObject({ moderation: "approved", published: false });
     });
 
+    it("features with dates (ADR-210): a start ahead keeps it off, removing clears the dates", async () => {
+      const project = await newProject({ moderation: "approved" });
+      const scheduled = await applyDecision(store(staff), {
+        projectId: project.id,
+        decision: "feature",
+        featuredFrom: "2999-01-01",
+        featuredUntil: "2999-01-31",
+      });
+      expect(scheduled.featured).toBe(false);
+      expect(await row(project.id)).toMatchObject({
+        featured: false,
+        featured_from: "2999-01-01",
+        featured_until: "2999-01-31",
+      });
+      const running = await applyDecision(store(staff), {
+        projectId: project.id,
+        decision: "feature",
+        featuredUntil: "2999-01-31",
+      });
+      expect(running.featured).toBe(true);
+      await applyDecision(store(staff), { projectId: project.id, decision: "unfeature" });
+      expect(await row(project.id)).toMatchObject({
+        featured: false,
+        featured_from: null,
+        featured_until: null,
+      });
+    });
+
     it("says conflict when the project is not in the state the decision needs, and changes nothing", async () => {
       const pending = await newProject();
       const approved = await newProject({ moderation: "approved" });

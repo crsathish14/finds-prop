@@ -7,7 +7,8 @@
  *   to let the trigger open it and the buttons close it), tone ("danger" default | "warning" | "info"), icon (an Icon element),
  *   title (names the thing, e.g. "Delete this listing?"), description (the consequence),
  *   confirmLabel and cancelLabel (all already-translated), onConfirm, loading (while it works),
- *   trigger (optional element that opens it).
+ *   trigger (optional element that opens it), children (optional: a few fields between the description and the
+ *   buttons, such as the start and end dates of a Feature, ADR-210).
  * Responsive: a centred card up to 480 px wide; on phones the buttons stack with confirm on top;
  *   Cancel stays first in the reading order.
  * Accessibility: role alertdialog. For a danger or warning tone the Cancel button gets focus first,
@@ -45,6 +46,7 @@ type ConfirmDialogProps = {
   onConfirm: () => void;
   loading?: boolean;
   trigger?: ReactNode;
+  children?: ReactNode;
 };
 
 function ConfirmDialog({
@@ -59,6 +61,7 @@ function ConfirmDialog({
   onConfirm,
   loading = false,
   trigger,
+  children,
 }: ConfirmDialogProps) {
   const safeFirst = tone !== "info";
   const confirmButton = (
@@ -92,6 +95,7 @@ function ConfirmDialog({
             <AlertDialog.Description className="mt-2 text-body text-muted">
               {description}
             </AlertDialog.Description>
+            {children ? <div className="mt-4">{children}</div> : null}
             <div className="mt-6 flex flex-col-reverse gap-3 md:flex-row md:justify-end">
               <AlertDialog.Cancel asChild>
                 <Button variant="secondary">{cancelLabel}</Button>

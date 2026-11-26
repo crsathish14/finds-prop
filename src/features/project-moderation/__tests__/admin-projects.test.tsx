@@ -14,6 +14,12 @@ vi.mock("@/lib/notify", () => ({ notify: toast }));
 const { AdminProjects } = await import("../admin-projects.client");
 
 const words = en.admin.projects;
+const dates = en.admin.promotionDates;
+const TODAY = "2026-11-26";
+
+/** The Feature button inside the dates dialog. */
+const featureButton = () =>
+  within(screen.getByRole("alertdialog")).getByRole("button", { name: words.menu.feature });
 
 const project = (name: string, extra: Partial<AdminProjectRow> = {}): AdminProjectRow => ({
   id: `00000000-0000-4000-b000-${name.replace(/\D/g, "").padStart(12, "0")}`,
@@ -26,6 +32,8 @@ const project = (name: string, extra: Partial<AdminProjectRow> = {}): AdminProje
   moderation: "pending",
   published: false,
   featured: false,
+  featuredFrom: null,
+  featuredUntil: null,
   builderId: "00000000-0000-4000-b000-0000000000b1",
   builderName: "Kadal Homes",
   leads: 0,
@@ -54,7 +62,13 @@ function open(props: Partial<Props> = {}) {
   };
   const rows = props.rows ?? [WAITING, REJECTED, HIDDEN, LIVE];
   const view = renderWithMessages(
-    <AdminProjects {...props} rows={rows} actions={actions} mediaBaseUrl="https://media.test" />,
+    <AdminProjects
+      today={TODAY}
+      {...props}
+      rows={rows}
+      actions={actions}
+      mediaBaseUrl="https://media.test"
+    />,
   );
   return { actions, view, rows };
 }
@@ -190,9 +204,13 @@ describe("AdminProjects: the admin's Projects page (S7-T04)", () => {
       `/admin/projects/${HIDDEN.id}`,
     );
     fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.feature }));
+    // Feature asks for its dates first; with both boxes empty it works as before.
+    expect(actions.moderate).not.toHaveBeenCalled();
+    fireEvent.click(featureButton());
     await waitFor(() =>
       expect(actions.moderate).toHaveBeenCalledWith({ projectId: HIDDEN.id, decision: "feature" }),
     );
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
   });
 
   it("offers Remove from featured and View live for a featured, live project, and no Feature for a pending one", async () => {
@@ -207,6 +225,103 @@ describe("AdminProjects: the admin's Projects page (S7-T04)", () => {
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
     const pending = await openMenu("Project 1");
     expect(within(pending).queryByRole("menuitem", { name: words.menu.feature })).toBeNull();
+  });
+
+  it("sends the typed dates with Feature (ADR-210), then closes the dialog", async () => {
+    const { actions } = open();
+    const menu = await openMenu("Project 3");
+    fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.feature }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(dates.note)).toBeVisible();
+    fireEvent.change(screen.getByLabelText(`${dates.startsOn}, Project 3`), {
+      target: { value: "2026-12-01" },
+    });
+    fireEvent.change(screen.getByLabelText(`${dates.endsOn}, Project 3`), {
+      target: { value: "2026-12-31" },
+    });
+    // The typed start is ahead, so the dialog's own tag says Scheduled.
+    expect(within(dialog).getByText(dates.status.scheduled)).toBeVisible();
+    fireEvent.click(featureButton());
+    await waitFor(() =>
+      expect(actions.moderate).toHaveBeenCalledWith({
+        projectId: HIDDEN.id,
+        decision: "feature",
+        featuredFrom: "2026-12-01",
+        featuredUntil: "2026-12-31",
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(router.refresh).toHaveBeenCalled();
+  });
+
+  it("refuses an end date before the start date in the dialog, without calling the action", async () => {
+    const { actions } = open();
+    const menu = await openMenu("Project 3");
+    fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.feature }));
+    await screen.findByRole("alertdialog");
+    fireEvent.change(screen.getByLabelText(`${dates.startsOn}, Project 3`), {
+      target: { value: "2026-12-10" },
+    });
+    fireEvent.change(screen.getByLabelText(`${dates.endsOn}, Project 3`), {
+      target: { value: "2026-12-09" },
+    });
+    fireEvent.click(featureButton());
+    expect(screen.getByText(en.validation.promotionDatesOrder)).toBeVisible();
+    expect(actions.moderate).not.toHaveBeenCalled();
+  });
+
+  it("keeps the dialog with the error under the end date when the server refuses the dates", async () => {
+    const moderate = vi.fn(async () => ({
+      ok: false as const,
+      code: "VALIDATION" as const,
+      fieldErrors: { featuredUntil: [{ key: "validation.promotionDatesOrder" }] },
+    }));
+    open({ actions: { moderate, remove: vi.fn() } });
+    const menu = await openMenu("Project 3");
+    fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.feature }));
+    await screen.findByRole("alertdialog");
+    fireEvent.click(featureButton());
+    expect(await screen.findByText(en.validation.promotionDatesOrder)).toBeVisible();
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Scheduled", { featured: false, featuredFrom: "2026-12-01", featuredUntil: null }],
+    ["Running", { featured: true, featuredFrom: "2026-11-01", featuredUntil: "2026-12-31" }],
+    ["Ended", { featured: false, featuredFrom: null, featuredUntil: "2026-10-31" }],
+  ] as const)(
+    "tags a project whose Featured is %s, offers both Feature and Remove from featured, and opens Feature filled in",
+    async (tag, state) => {
+      const dated = project("Project 5", { moderation: "approved", published: true, ...state });
+      const { actions } = open({ rows: [dated] });
+      expect(within(rowOf("Project 5")).getByText(tag)).toBeVisible();
+      const menu = await openMenu("Project 5");
+      expect(within(menu).getByRole("menuitem", { name: words.menu.unfeature })).toBeVisible();
+      fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.feature }));
+      await screen.findByRole("alertdialog");
+      expect(screen.getByLabelText(`${dates.startsOn}, Project 5`)).toHaveValue(
+        state.featuredFrom ?? "",
+      );
+      expect(screen.getByLabelText(`${dates.endsOn}, Project 5`)).toHaveValue(
+        state.featuredUntil ?? "",
+      );
+      expect(actions.moderate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("removes from featured a project that has ended", async () => {
+    const ended = project("Project 5", {
+      moderation: "approved",
+      featuredFrom: "2026-10-01",
+      featuredUntil: "2026-10-31",
+    });
+    const { actions } = open({ rows: [ended] });
+    const menu = await openMenu("Project 5");
+    fireEvent.click(within(menu).getByRole("menuitem", { name: words.menu.unfeature }));
+    await waitFor(() =>
+      expect(actions.moderate).toHaveBeenCalledWith({ projectId: ended.id, decision: "unfeature" }),
+    );
   });
 
   it("disables Delete for a project with leads and says how many", async () => {

@@ -24,6 +24,7 @@ const { ActionError } = await import("@/server/actions/normalise-error");
 const { loadSessionView } = await import("@/server/auth/get-session-view");
 const { assertAdmin } = await import("@/server/auth/guards");
 
+const NO_DATES = { featuredFrom: null, featuredUntil: null };
 const RUN = randomUUID().slice(0, 8);
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
 const madeUpShortId = () =>
@@ -170,6 +171,60 @@ describe("IT-actions-listing and IT-AUTHZ-admin: the admin's queue and decisions
       expect((await row(listing.id)).featured).toBe(false);
     });
 
+    it("features with dates (ADR-210): a start ahead keeps it off, an ended window keeps it off, removing clears the dates", async () => {
+      const listing = await newListing("approved");
+      const scheduled = await decideListing(store(staff), {
+        decision: "feature",
+        listingId: listing.id,
+        featuredFrom: "2999-01-01",
+      });
+      expect(scheduled).toMatchObject({ status: "approved", featured: false });
+      expect(await row(listing.id)).toMatchObject({
+        featured: false,
+        featured_from: "2999-01-01",
+        featured_until: null,
+      });
+      // Feature again to change the dates: a window that is over.
+      await decideListing(store(staff), {
+        decision: "feature",
+        listingId: listing.id,
+        featuredFrom: "2020-01-01",
+        featuredUntil: "2020-01-31",
+      });
+      expect(await row(listing.id)).toMatchObject({
+        featured: false,
+        featured_from: "2020-01-01",
+        featured_until: "2020-01-31",
+      });
+      // Running: started in the past, no end.
+      const running = await decideListing(store(staff), {
+        decision: "feature",
+        listingId: listing.id,
+        featuredFrom: "2020-01-01",
+      });
+      expect(running.featured).toBe(true);
+      await decideListing(store(staff), { decision: "unfeature", listingId: listing.id });
+      expect(await row(listing.id)).toMatchObject({
+        featured: false,
+        featured_from: null,
+        featured_until: null,
+      });
+    });
+
+    it("answers VALIDATION on the end date when the database gets an end before the start", async () => {
+      // The schema stops this before it gets here; the database holds the rule for any other caller.
+      const listing = await newListing("approved");
+      const error = await failureOf(() =>
+        store(staff).decide(listing.id, "feature", null, {
+          featuredFrom: "2030-02-10",
+          featuredUntil: "2030-02-01",
+        }),
+      );
+      expect(error.code).toBe("VALIDATION");
+      expect(error.fieldErrors).toHaveProperty("featuredUntil");
+      expect(await row(listing.id)).toMatchObject({ featured: false, featured_from: null });
+    });
+
     it("answers CONFLICT when the listing is not in the state the decision needs", async () => {
       const decided = await newListing("pending");
       await decideListing(store(staff), { decision: "approve", listingId: decided.id });
@@ -211,7 +266,9 @@ describe("IT-actions-listing and IT-AUTHZ-admin: the admin's queue and decisions
       // The schema stops this before it gets here; the database holds the rule for any other caller.
       const listing = await newListing("pending");
       for (const reason of [null, "   ", "a".repeat(501)]) {
-        const error = await failureOf(() => store(staff).decide(listing.id, "reject", reason));
+        const error = await failureOf(() =>
+          store(staff).decide(listing.id, "reject", reason, NO_DATES),
+        );
         expect(error.code).toBe("VALIDATION");
         expect(error.fieldErrors).toHaveProperty("reason");
       }
@@ -223,7 +280,9 @@ describe("IT-actions-listing and IT-AUTHZ-admin: the admin's queue and decisions
     const decisionsRefused = async (user: TestUser) => {
       const listing = await newListing("pending");
       for (const decision of ["approve", "reject", "feature", "unfeature"] as const) {
-        const error = await failureOf(() => store(user).decide(listing.id, decision, "No."));
+        const error = await failureOf(() =>
+          store(user).decide(listing.id, decision, "No.", NO_DATES),
+        );
         expect(error.code).toBe("FORBIDDEN");
       }
       expect((await row(listing.id)).status).toBe("pending");
