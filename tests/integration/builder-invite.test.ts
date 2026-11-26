@@ -96,7 +96,7 @@ describe("IT-builder-invite: inviting a builder against a real database (S7-T05)
       .eq("user_id", account?.id ?? "");
     expect(roles.data?.map((row) => row.role).sort()).toEqual(["builder", "customer"]);
     // Nobody has signed in yet.
-    expect(await store.readBuilder(builderId)).toEqual({
+    expect(await store.readBuilder(builderId)).toMatchObject({
       id: builderId,
       active: true,
       signedIn: false,

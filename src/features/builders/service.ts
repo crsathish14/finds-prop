@@ -57,18 +57,25 @@ export function builderStore(client: SupabaseClient<Database>): BuilderStore {
     async readBuilder(builderId) {
       const { data, error } = await client
         .from("builders")
-        .select("id, active, user_id")
+        .select("id, active, user_id, name, email, kind")
         .eq("id", builderId)
         .maybeSingle();
       if (error) throw mapBuilderError(error);
       if (!data) return null;
-      if (!data.user_id) return { id: data.id, active: data.active, signedIn: false };
+      // The column is text with a check for these two values; anything else cannot be stored.
+      const facts = {
+        name: data.name,
+        email: data.email,
+        kind: data.kind === "agent" ? ("agent" as const) : ("builder" as const),
+      };
+      if (!data.user_id) return { id: data.id, active: data.active, signedIn: false, ...facts };
       const account = await client.auth.admin.getUserById(data.user_id);
       if (account.error) throw mapBuilderError({ code: account.error.code });
       return {
         id: data.id,
         active: data.active,
         signedIn: Boolean(account.data.user?.last_sign_in_at),
+        ...facts,
       };
     },
 

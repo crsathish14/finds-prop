@@ -95,7 +95,7 @@ export const ADMIN: LabEntry[] = [
     id: "sign-in-address",
     name: "Sign-in address",
     description:
-      "The address an invited builder signs in at, with a Copy address button that says Copied for a few seconds. Nothing is emailed in v1, so the admin passes this on. A normal address and a very long one on a narrow card.",
+      "The address an invited builder signs in at, with a Copy address button that says Copied for a few seconds. The invited person is also emailed this address, and the admin can pass it on too. A normal address and a very long one on a narrow card.",
     sources: ["domain/sign-in-address.tsx"],
     Demo: SignInAddressDemo,
   },

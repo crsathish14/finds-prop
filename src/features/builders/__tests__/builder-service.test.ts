@@ -34,6 +34,9 @@ function store(overrides: Partial<BuilderStore> = {}) {
       id: BUILDER,
       active: true,
       signedIn: false,
+      name: "Kadal Homes",
+      email: "sales@kadalhomes.example",
+      kind: "builder",
     })),
     stampInvitation: vi.fn(async () => void calls.push("stampInvitation")),
     setActive: vi.fn(async () => true),
@@ -98,7 +101,10 @@ describe("UT-builder-service: inviting a builder, the saga (S7-T05, ADR-010)", (
 describe("UT-builder-service: resending an invitation (S7-T05)", () => {
   it("stamps the invitation again for an active builder who has not signed in", async () => {
     const { made } = store();
-    expect(await resendInvitation(made, { builderId: BUILDER })).toEqual({ builderId: BUILDER });
+    expect(await resendInvitation(made, { builderId: BUILDER })).toEqual({
+      builderId: BUILDER,
+      mail: { name: "Kadal Homes", email: "sales@kadalhomes.example", kind: "builder" },
+    });
     expect(made.stampInvitation).toHaveBeenCalledWith(BUILDER);
   });
 
@@ -111,10 +117,18 @@ describe("UT-builder-service: resending an invitation (S7-T05)", () => {
   });
 
   it.each([
-    ["has signed in already", { id: BUILDER, active: true, signedIn: true }],
-    ["is inactive", { id: BUILDER, active: false, signedIn: false }],
+    ["has signed in already", { active: true, signedIn: true }],
+    ["is inactive", { active: false, signedIn: false }],
   ])("refuses a builder who %s", async (_why, state) => {
-    const { made } = store({ readBuilder: vi.fn(async () => state) });
+    const { made } = store({
+      readBuilder: vi.fn(async () => ({
+        id: BUILDER,
+        name: "Kadal Homes",
+        email: "sales@kadalhomes.example",
+        kind: "builder" as const,
+        ...state,
+      })),
+    });
     await expect(resendInvitation(made, { builderId: BUILDER })).rejects.toMatchObject({
       code: "CONFLICT",
     });
