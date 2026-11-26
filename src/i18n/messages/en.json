@@ -389,6 +389,7 @@
     "rangeOrder": "The largest value must be the same as or more than the smallest.",
     "crmUrlNotAllowed": "Must be https and a public address.",
     "locationOutOfRegion": "That place is outside Tamil Nadu. Choose a place in Tamil Nadu.",
+    "wholeRupees": "Enter a whole number of rupees, or leave it empty.",
     "blogMarkdownRefused": "The pasted text cannot be made into an article. Check the notes beside the preview."
   },
   "format": {
@@ -1652,6 +1653,7 @@
       "privacy": "Privacy Policy",
       "terms": "Terms of Use",
       "projectFields": "Project form boxes",
+      "primeProjects": "Prime projects",
       "topDevelopers": "Top developers",
       "sponsoredBuilders": "Sponsored builders",
       "sponsorReport": "Sponsor report"
@@ -2620,6 +2622,33 @@
         "createdBuilder": {
           "text": "{name} is waiting for approval. You can now add its images, floor plans and brochure."
         }
+      }
+    },
+    "projectPrime": {
+      "metaTitle": "Prime projects",
+      "title": "Prime projects",
+      "description": "Set the price at which a project counts as Prime. A project is Prime when its price is at or above the amount for its price type. A change applies to every project at once. Leave an amount empty and no project with that price type is Prime.",
+      "fields": {
+        "ratePerSqft": {
+          "label": "Rate per sq ft (sale)",
+          "hint": "Rupees per sq ft, such as 12000."
+        },
+        "totalPrice": {
+          "label": "Total price (basic or all inclusive)",
+          "hint": "Rupees, such as 15000000 for ₹1.5 crore."
+        },
+        "rentPerMonth": {
+          "label": "Rent per month",
+          "hint": "Rupees a month, such as 60000."
+        },
+        "rentPerSqftMonth": {
+          "label": "Rent per sq ft per month",
+          "hint": "Rupees per sq ft a month."
+        }
+      },
+      "saved": {
+        "title": "Prime amounts saved",
+        "text": "Every project now follows these amounts."
       }
     },
     "projectFields": {

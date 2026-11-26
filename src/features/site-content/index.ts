@@ -6,6 +6,7 @@ export {
   saveHero,
   saveHomepage,
   saveProjectFields,
+  saveProjectPrime,
   saveSponsoredBuilders,
   saveSponsors,
   saveTopDevelopers,
@@ -18,6 +19,7 @@ export {
   saveHeroConfig,
   saveHomepageConfig,
   saveProjectFieldsConfig,
+  saveProjectPrimeConfig,
   saveSponsoredBuildersConfig,
   saveSponsorsConfig,
   saveTopDevelopersConfig,
@@ -49,6 +51,8 @@ export type {
   SponsoredBuilderOption,
   SponsoredBuildersFormProps,
 } from "./sponsored-builders-form.client";
+export { ProjectPrimeForm } from "./project-prime-form.client";
+export type { ProjectPrimeFormProps, ProjectPrimeFormValues } from "./project-prime-form.client";
 export { TopDevelopersForm } from "./top-developers-form.client";
 export type { TopDeveloperOption, TopDevelopersFormProps } from "./top-developers-form.client";
 export { LegalForm } from "./legal-form.client";
@@ -82,6 +86,7 @@ export {
   heroInputSchema,
   homepageInputSchema,
   projectFieldsInputSchema,
+  projectPrimeInputSchema,
   sponsoredBuildersInputSchema,
   topDevelopersInputSchema,
 } from "./schemas";
@@ -93,6 +98,7 @@ export type {
   HeroInput,
   HomepageInput,
   ProjectFieldsInput,
+  ProjectPrimeInput,
   TopDevelopersInput,
 } from "./schemas";
 export { sponsorsInputSchema } from "./sponsor-schemas";

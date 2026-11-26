@@ -11,6 +11,7 @@ import {
   saveHeroConfig,
   saveHomepageConfig,
   saveProjectFieldsConfig,
+  saveProjectPrimeConfig,
   saveSponsorsConfig,
 } from "../action-config";
 
@@ -68,6 +69,7 @@ function harness(options: { session?: SessionView | null; rateLimited?: boolean 
     modules: define({ ...saveContentModulesConfig, handler }),
     disclaimers: define({ ...saveDisclaimersConfig, handler }),
     projectFields: define({ ...saveProjectFieldsConfig, handler }),
+    projectPrime: define({ ...saveProjectPrimeConfig, handler }),
   };
 }
 
@@ -85,12 +87,28 @@ const validFooter = { links: [] };
 const validSponsors = { sponsors: [] };
 const validDisclaimers = { footer: "Prices are indicative.", aiSearch: "" };
 const validProjectFields = { fields: [] };
+const validProjectPrime = {
+  ratePerSqft: "",
+  totalPrice: "15000000",
+  rentPerMonth: "60,000",
+  rentPerSqftMonth: null,
+};
 const validModules = { blog: true, faq: false, careers: true };
 
 describe("UT-site-content-actions: who may edit the site content, and what it refreshes (S7-T10)", () => {
-  it("lets a super admin save any of the eight: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
-    const { header, hero, homepage, footer, sponsors, modules, disclaimers, projectFields, calls } =
-      harness();
+  it("lets a super admin save any of the nine: the admin_edit limit, the handler, the site content tag, no audit call (the database audits)", async () => {
+    const {
+      header,
+      hero,
+      homepage,
+      footer,
+      sponsors,
+      modules,
+      disclaimers,
+      projectFields,
+      projectPrime,
+      calls,
+    } = harness();
     expect((await header(validHeader)).ok).toBe(true);
     expect((await hero(validHero)).ok).toBe(true);
     expect((await homepage(validHomepage)).ok).toBe(true);
@@ -99,8 +117,9 @@ describe("UT-site-content-actions: who may edit the site content, and what it re
     expect((await modules(validModules)).ok).toBe(true);
     expect((await disclaimers(validDisclaimers)).ok).toBe(true);
     expect((await projectFields(validProjectFields)).ok).toBe(true);
+    expect((await projectPrime(validProjectPrime)).ok).toBe(true);
     const one = ["rateLimit:admin_edit", "handler", "invalidate:site-settings"];
-    expect(calls).toEqual([...one, ...one, ...one, ...one, ...one, ...one, ...one, ...one]);
+    expect(calls).toEqual(Array.from({ length: 9 }, () => one).flat());
   });
 
   it.each([
@@ -108,13 +127,16 @@ describe("UT-site-content-actions: who may edit the site content, and what it re
     ["a customer", customer, "FORBIDDEN"],
     ["a builder", builder, "FORBIDDEN"],
   ] as const)("refuses %s before anything runs, on every action", async (_who, session, code) => {
-    const { header, hero, homepage, footer, sponsors, modules, calls } = harness({ session });
+    const { header, hero, homepage, footer, sponsors, modules, projectPrime, calls } = harness({
+      session,
+    });
     expect(await header(validHeader)).toMatchObject({ ok: false, code });
     expect(await hero(validHero)).toMatchObject({ ok: false, code });
     expect(await homepage(validHomepage)).toMatchObject({ ok: false, code });
     expect(await footer(validFooter)).toMatchObject({ ok: false, code });
     expect(await sponsors(validSponsors)).toMatchObject({ ok: false, code });
     expect(await modules(validModules)).toMatchObject({ ok: false, code });
+    expect(await projectPrime(validProjectPrime)).toMatchObject({ ok: false, code });
     expect(calls).toEqual([]);
   });
 

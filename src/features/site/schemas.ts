@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
+import { PROJECT_PRIME_AMOUNT_MAX } from "@/lib/project-prime";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 
 /**
@@ -158,6 +159,18 @@ const sponsoredBuildersSchema = z.object({
   spotlight: z.array(z.uuid()).max(SPONSORED_BUILDERS_MAX),
 });
 
+/**
+ * The Prime project amounts (ADR-208): one per kind of project price, in whole rupees; null means no project priced that
+ * way is Prime. The rule itself is in `lib/project-prime.ts`.
+ */
+const primeAmount = z.int().min(1).max(PROJECT_PRIME_AMOUNT_MAX).nullable();
+const projectPrimeSchema = z.object({
+  ratePerSqft: primeAmount,
+  totalPrice: primeAmount,
+  rentPerMonth: primeAmount,
+  rentPerSqftMonth: primeAmount,
+});
+
 export const SITE_SETTING_SCHEMAS = {
   header: headerSchema,
   footer: footerSchema,
@@ -170,6 +183,7 @@ export const SITE_SETTING_SCHEMAS = {
   project_fields: projectFieldsSchema,
   top_developers: topDevelopersSchema,
   sponsored_builders: sponsoredBuildersSchema,
+  project_prime: projectPrimeSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof SITE_SETTING_SCHEMAS;

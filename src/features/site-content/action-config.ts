@@ -7,6 +7,7 @@ import {
   heroInputSchema,
   homepageInputSchema,
   projectFieldsInputSchema,
+  projectPrimeInputSchema,
   sponsoredBuildersInputSchema,
   topDevelopersInputSchema,
 } from "./schemas";
@@ -95,6 +96,15 @@ export const saveDisclaimersConfig = {
 export const saveProjectFieldsConfig = {
   name: "saveProjectFields",
   input: projectFieldsInputSchema,
+  auth: { role: "super_admin" as const },
+  rateLimit: { scope: "admin_edit" as const },
+  invalidate: () => tagsAfterSiteSettingsChange(),
+};
+
+/** The Prime project amounts (ADR-208): one row of `site_settings`, so the same limits and cache tag as the other settings. */
+export const saveProjectPrimeConfig = {
+  name: "saveProjectPrime",
+  input: projectPrimeInputSchema,
   auth: { role: "super_admin" as const },
   rateLimit: { scope: "admin_edit" as const },
   invalidate: () => tagsAfterSiteSettingsChange(),

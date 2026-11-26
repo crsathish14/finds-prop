@@ -10,6 +10,7 @@ import type {
   HeroInput,
   HomepageInput,
   ProjectFieldsInput,
+  ProjectPrimeInput,
   SponsoredBuildersInput,
 } from "./schemas";
 
@@ -197,6 +198,22 @@ export function saveProjectFieldsContent(
   input: ProjectFieldsInput,
 ): Promise<ContentDone> {
   return publish(store, "project_fields", projectFieldsValue(input));
+}
+
+/**
+ * Saves the Prime project amounts (ADR-208). Every amount is written, an empty one as null, so a cleared amount stays
+ * cleared instead of falling back to the built-in one.
+ */
+export function saveProjectPrimeContent(
+  store: ContentStore,
+  input: ProjectPrimeInput,
+): Promise<ContentDone> {
+  return publish(store, "project_prime", {
+    ratePerSqft: input.ratePerSqft,
+    totalPrice: input.totalPrice,
+    rentPerMonth: input.rentPerMonth,
+    rentPerSqftMonth: input.rentPerSqftMonth,
+  });
 }
 
 /** Saves the chosen developers of the home page, in order. */

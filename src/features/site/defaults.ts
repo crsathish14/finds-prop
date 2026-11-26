@@ -1,3 +1,4 @@
+import { PROJECT_PRIME_DEFAULTS } from "@/lib/project-prime";
 import type { SiteSettings } from "./schemas";
 
 /**
@@ -31,4 +32,6 @@ export const SITE_DEFAULTS: SiteSettings = {
   top_developers: { builderIds: [] },
   // No builder is picked for the Featured card or the Developer Spotlight until the admin picks one (ADR-191).
   sponsored_builders: { featured: [], spotlight: [] },
+  // The Prime project amounts the owner chose (ADR-208) until the super admin saves others.
+  project_prime: { ...PROJECT_PRIME_DEFAULTS },
 };
