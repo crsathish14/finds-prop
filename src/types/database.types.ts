@@ -830,6 +830,9 @@ isOneToOne: false
 "adopt_verified_email_as_contact":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"agent_contact":
+{ Args: { "p_id": string }; Returns: string
+                           },
 "arm_crm_retry":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -921,12 +924,6 @@ isOneToOne: false
                            },
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
-                           },
-"agent_contact":
-{ Args: { "p_id": string }; Returns: string
-                           },
-"public_agents":
-{ Args: { "p_id"?: string,"p_limit"?: number }; Returns: Json
                            },
 "home_developers":
 { Args: { "p_city"?: string }; Returns: Json
@@ -1132,6 +1129,9 @@ isOneToOne: false
                            },
 "project_is_mine":
 { Args: { "target_project": string }; Returns: boolean
+                           },
+"public_agents":
+{ Args: { "p_id"?: string,"p_limit"?: number }; Returns: Json
                            },
 "public_project":
 { Args: { "p_slug": string }; Returns: Json
