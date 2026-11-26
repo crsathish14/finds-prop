@@ -18,7 +18,7 @@
  * Tests: conversational-hero.test.tsx; Design Lab "Domain" (Conversational hero).
  * UX reference: none; the owner's hero lab of 23 Nov 2026 (layout C), a deviation from the approved UX (ADR-177).
  */
-import { Columns2, MessageCircle, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { MessageCircle, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Container } from "@/components/layout/container";
 import { Heading, TitleWithEmphasis } from "@/components/ui/heading";
@@ -40,7 +40,7 @@ type ConversationalHeroProps = {
   className?: string;
 };
 
-const TRUST_ICONS: readonly LucideIcon[] = [ShieldCheck, MessageCircle, Columns2];
+const TRUST_ICONS: readonly LucideIcon[] = [ShieldCheck, MessageCircle, Sparkles];
 
 const TITLE_ID = "home-hero-title";
 

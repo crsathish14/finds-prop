@@ -17,7 +17,7 @@ import {
 import { HomeSearchBarHost } from "./domain-demos-search";
 
 const FRAME = "w-full rounded-xl border border-line bg-canvas";
-const TRUST = ["Approved listings only", "Enquire directly", "Compare up to 3 homes"];
+const TRUST = ["Approved listings only", "Enquire directly", "Ask AI about any home"];
 
 /**
  * The real homepage hero (S4-T07) with the banner area: Search Desk with the strip under the card, Split
