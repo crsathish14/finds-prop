@@ -39,6 +39,7 @@ const NOTHING = {
   bhk: null,
   minPrice: null,
   maxPrice: null,
+  city: null,
   locality: null,
   keyword: null,
   label: null,
@@ -155,6 +156,7 @@ describe("UT-ai-tool-search: the read", () => {
       bhk: 3,
       minPrice: 20_000,
       maxPrice: 60_000,
+      city: null,
       locality: "Velachery",
       keyword: "lake view",
       label: "prime",
@@ -250,9 +252,52 @@ describe("UT-ai-tool-search: a city given as a locality (ADR-178)", () => {
     expect(failed.status === "ok" ? (failed.output as { total: number }).total : -1).toBe(0);
   });
 
-  it("tells the model a city goes in the keyword, not the locality", () => {
+  it("tells the model a city goes in the city filter, not the locality", () => {
     const shape = searchPropertiesInputSchema.shape;
-    expect(shape.locality.description).toContain("put a city in `keyword`");
+    expect(shape.locality.description).toContain("put a city in `city`");
+    expect(shape.city.description).toContain("A neighbourhood is not a city");
+  });
+});
+
+describe("UT-ai-tool-search: the city filter (ADR-204)", () => {
+  it("sends the city to the search's own city filter, as a city key", async () => {
+    await search({ ...NOTHING, bhk: 3, city: " Chennai " });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      { sort: "newest", show: 10, view: "grid", bhk: 3 },
+      { guest: false, city: "chennai" },
+    );
+  });
+
+  it("sends no city filter for a city with no Latin letter or digit in it", async () => {
+    await search({ ...NOTHING, city: "சென்னை" });
+    expect(getSearchResults).toHaveBeenCalledExactlyOnceWith(
+      { sort: "newest", show: 10, view: "grid" },
+      { guest: false },
+    );
+  });
+
+  it("tries a city that found nothing once as a keyword, without the city filter", async () => {
+    getSearchResults.mockResolvedValueOnce(found([], 0)).mockResolvedValueOnce(found());
+    const outcome = await search({ ...NOTHING, city: "OMR" });
+    expect(getSearchResults).toHaveBeenCalledTimes(2);
+    expect(getSearchResults.mock.calls[1]).toEqual([
+      { sort: "newest", show: 10, view: "grid", keyword: "OMR" },
+      { guest: false },
+    ]);
+    expect(outcome.status === "ok" ? (outcome.output as { total: number }).total : 0).toBe(1);
+  });
+
+  it("keeps the city when a locality inside it found nothing and is tried as a keyword", async () => {
+    getSearchResults.mockResolvedValueOnce(found([], 0)).mockResolvedValueOnce(found());
+    await search({ ...NOTHING, city: "Chennai", locality: "Thoraipakkam" });
+    expect(getSearchResults.mock.calls[1]).toEqual([
+      { sort: "newest", show: 10, view: "grid", keyword: "Thoraipakkam" },
+      { guest: false, city: "chennai" },
+    ]);
+  });
+
+  it("refuses a city longer than 80 characters", async () => {
+    expect(await search({ ...NOTHING, city: "c".repeat(81) })).toMatchObject({ status: "error" });
   });
 });
 

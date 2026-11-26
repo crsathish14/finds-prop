@@ -81,11 +81,11 @@ describe("UT-ai-endpoint: a normal message", () => {
       type: "card",
       reference: { kind: "home", homeId: HOME_ID, slug: "test-flat" },
     });
-    // One home was shown, so the server offers the three fixed buttons for one home (ADR-175).
+    // One home was shown by a lookup that is not a detail lookup, so the server offers the fixed buttons for one home
+    // without an enquiry (ADR-175, ADR-204).
     expect(events.at(-2)).toEqual({
       type: "replies",
       items: [
-        { key: "enquireHome", text: words("ai.replies.enquireHome") },
         { key: "workOutEmi", text: words("ai.replies.workOutEmi") },
         { key: "similarHomes", text: words("ai.replies.similarHomes") },
       ],

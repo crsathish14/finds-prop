@@ -5780,7 +5780,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "one specific home: a plus point from the result and an offer to enquire",
+    "title": "a search with one result: a plus point from the result, a narrowing question, no enquiry offer (ADR-204)",
     "messages": [
       {
         "role": "user",
@@ -5803,7 +5803,7 @@
         ]
       },
       {
-        "text": "I found one 3 BHK home in Velachery: a 1,420 sq ft apartment for ₹1.25 Cr, and it has a clubhouse. [[home:k3x9a2bd]] Shall I prepare an enquiry for it?"
+        "text": "I found one 3 BHK home in Velachery: a 1,420 sq ft apartment for ₹1.25 Cr, and it has a clubhouse. [[home:k3x9a2bd]] Would you like me to look in nearby areas too?"
       }
     ],
     "expect": {
@@ -5830,8 +5830,9 @@
       },
       "visible": {
         "cards": ["home:k3x9a2bd"],
-        "mustContain": [["enquiry", "enquire"]],
         "mustNotMatch": [
+          "enquir",
+          "site visit",
           "hurry",
           "only \\d+ left",
           "few left",
@@ -5853,7 +5854,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "several homes: an offer to enquire about any of them",
+    "title": "several homes: the total, the best few, a narrowing question, no enquiry offer (ADR-204)",
     "messages": [
       {
         "role": "user",
@@ -5874,7 +5875,7 @@
         ]
       },
       {
-        "text": "I found two homes in Velachery. The first has a clubhouse and the second is near the lake. [[home:k3x9a2bd]] [[home:m4y8b3ce]] Shall I prepare an enquiry about either of them?"
+        "text": "I found two homes in Velachery. The first has a clubhouse and the second is near the lake. [[home:k3x9a2bd]] [[home:m4y8b3ce]] What budget and how many bedrooms do you have in mind?"
       }
     ],
     "expect": {
@@ -5889,8 +5890,10 @@
       },
       "visible": {
         "cards": ["home:k3x9a2bd", "home:m4y8b3ce"],
-        "mustContain": [["enquiry", "enquire"]],
+        "mustContain": [["two homes", "2 homes"]],
         "mustNotMatch": [
+          "enquir",
+          "site visit",
           "hurry",
           "only \\d+ left",
           "few left",
@@ -6327,7 +6330,7 @@
         ]
       },
       {
-        "text": "I found one 2 BHK in Adyar for ₹35,000/mo: fully furnished, 1,100 sq ft. [[home:v4g8k3ls]] Shall I prepare an enquiry for it?"
+        "text": "I found one 2 BHK in Adyar for ₹35,000/mo: fully furnished, 1,100 sq ft. [[home:v4g8k3ls]] Would you like me to look in nearby areas too?"
       }
     ],
     "expect": {
@@ -6354,6 +6357,7 @@
           "which area",
           "what area",
           "which locality",
+          "enquir",
           "\\b(i|we)(['’]ve| have)? sent\\b",
           "(has|have) been sent",
           "was sent",

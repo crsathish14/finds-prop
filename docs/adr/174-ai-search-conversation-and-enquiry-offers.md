@@ -1,6 +1,6 @@
 # ADR-174 · AI search conversation and enquiry offers
 
-- Status: Accepted (the owner agreed the plan on 23 Nov 2026 and answered six questions; the customer-facing wording below is **draft and waits for the owner's approval**).
+- Status: Accepted, partly changed by ADR-204 (no enquiry offer after a list). The owner agreed the plan on 23 Nov 2026 and answered six questions; the customer-facing wording below is **draft and waits for the owner's approval**.
 - Date: 2026-11-23
 - Amends: ADR-128 (the system prompt rules), ADR-143 (nothing changes for articles and jobs)
 - Related: the propose tools (`propose_enquiry`, `propose_site_visit`), the confirm card

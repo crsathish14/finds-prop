@@ -48,6 +48,7 @@ const NO_FILTERS = {
   bhk: null,
   minPrice: null,
   maxPrice: null,
+  city: null,
   locality: null,
   keyword: null,
   label: null,
@@ -60,7 +61,7 @@ const CASES = [
   [
     "search_projects",
     searchProjectsTool,
-    { locality: null, status: null, bhk: null, maxPrice: null, limit: null },
+    { city: null, locality: null, status: null, bhk: null, maxPrice: null, limit: null },
   ],
   ["list_localities", listLocalitiesTool, { search: null }],
   ["get_builder", getBuilderTool, { builderId: null, name: "Casagrand" }],

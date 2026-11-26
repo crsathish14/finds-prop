@@ -41,6 +41,7 @@ const NOTHING = {
   bhk: null,
   minPrice: null,
   maxPrice: null,
+  city: null,
   locality: null,
   keyword: null,
   label: null,

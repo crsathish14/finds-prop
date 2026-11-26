@@ -548,8 +548,13 @@ describe("UT-ai-system-prompt: talking with the customer and offering an enquiry
     expect(LOWER_SECTION).toContain("never ask again for something the customer already said");
   });
 
-  it("offers an enquiry after showing homes, once for each, and prepares it only on a yes", () => {
-    expect(LOWER_SECTION).toContain("offer to prepare an enquiry");
+  it("never offers an enquiry after a list, only on interest in one home or project, once, and prepares it only on a yes (ADR-204)", () => {
+    expect(LOWER_SECTION).toContain(
+      "after a list of homes or projects, do not offer an enquiry or a site visit",
+    );
+    expect(LOWER_SECTION).toContain("shows interest in one particular home or project");
+    expect(LOWER_SECTION).not.toContain("when you have shown homes, offer");
+    expect(LOWER_SECTION).not.toContain("end every answer with one clear next step");
     expect(LOWER_SECTION).toContain("offer an enquiry once for each home or project");
     expect(LOWER_SECTION).toContain("do not offer it again");
     expect(LOWER_SECTION).toContain("a typed yes only makes you prepare the card");
@@ -581,7 +586,8 @@ describe("UT-ai-system-prompt: talking with the customer and offering an enquiry
     }
     expect(LOWER_PROMPT).toContain("no legal, tax, loan or investment advice");
     expect(LOWER_PROMPT).toContain("never say or suggest that anything was sent");
-    expect(LOWER_PROMPT).toContain("at most three homes at a time");
+    expect(LOWER_PROMPT).not.toContain("at most three homes at a time");
+    expect(LOWER_PROMPT).toContain("say how many match in all");
   });
 
   it("is not a sentence a good answer would repeat: ordinary offers pass the output check", () => {
