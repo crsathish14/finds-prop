@@ -180,7 +180,7 @@ function ScrollRow({ title, description, as, id, label, children, className }: S
       <div ref={viewport} className="-mx-(--gutter) overflow-hidden pt-1 pb-3">
         <ul
           aria-label={label}
-          className="flex cursor-grab touch-pan-y touch-pinch-zoom gap-4 ps-gutter active:cursor-grabbing"
+          className="flex cursor-grab touch-pan-y touch-pinch-zoom gap-4 ps-(--gutter) active:cursor-grabbing"
         >
           {cards.map((card) => (
             // Children.toArray gives every element a key, so the cards keep their identity. The
