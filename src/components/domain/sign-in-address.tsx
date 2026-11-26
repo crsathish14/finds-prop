@@ -2,8 +2,8 @@
 
 /**
  * SignInAddress: the address an invited builder signs in at, with a button to copy it.
- * Purpose: after the admin invites a builder (S7-T05), nothing is emailed (DEC-27), so the admin passes the address
- *   on; this shows it and copies it. Owner: design system. It holds only whether the address was just copied: the
+ * Purpose: after the admin invites a builder (S7-T05), the person is emailed the address (ADR-203) and the admin can
+ *   pass it on too; this shows it and copies it. Owner: design system. It holds only whether the address was just copied: the
  *   page passes the words, already translated.
  * Props: label (names the address), address, copyLabel ("Copy address"), copiedLabel ("Copied"), hint (a line under
  *   it, such as who it is for), className.

@@ -92,6 +92,10 @@ The status codes follow Resend's documentation; none of these cases has been tri
 
 To see what Resend itself did with a mail, open Resend, **Emails**: it lists each mail with its status (delivered, bounced, and so on) for the retention period below. That page shows addresses; treat it as personal data.
 
+## The builder greeting mail (ADR-203)
+
+The same sender and settings also send one more mail: when the super admin adds a builder or an agent (Admin, Builders, New builder), or clicks **Resend invitation**, the person gets a greeting at their login email with the sign-in address and the kind of account (Builder or Agent). The wording is in code (`src/features/builders/invitation-mail.ts`), not on the Emails screen. On dev and staging it only reaches addresses on `MAIL_DEV_ALLOWLIST`. Log lines (route `builder-invitation-mail`): `invitation mail handed to the sender` (not proof of delivery), `invitation mail skipped: the address is not on the test list`, `invitation mail not sent` (with `errorCode`). No line holds an address or text.
+
 ## Limits
 
 | Limit                                     | Value                                                                                                                                                                  |

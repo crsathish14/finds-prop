@@ -69,8 +69,8 @@ type FormErrors = Partial<Record<BuilderFormField, string>>;
 /**
  * The admin's Builders page (S7-T05, FR-ADM-04): the heading with New builder, the table, and the drawers and
  * question that go with it. It calls the four actions it is given and keeps nothing the server does not also know:
- * after each change the page is read again. Nothing is emailed (DEC-27), so after inviting (and after "Resend
- * invitation") the drawer shows the sign-in address for the admin to copy and pass on.
+ * after each change the page is read again. The person is emailed the greeting by the action (ADR-203); after inviting (and
+ * after "Resend invitation") the drawer shows the sign-in address too, for the admin to copy and pass on.
  */
 export function BuildersBoard({ builders, now, actions }: BuildersBoardProps) {
   const translate = useTranslations("admin.builders");
