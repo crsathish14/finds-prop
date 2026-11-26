@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithMessages } from "../../../../tests/render-intl";
@@ -13,20 +13,71 @@ const PHOTOS: GalleryPhoto[] = [
   { src: "/e.jpg", alt: "The view from the balcony" },
 ];
 
-const scrollTo = vi.fn();
-
-beforeEach(() => {
-  scrollTo.mockClear();
-  Element.prototype.scrollTo = scrollTo as unknown as typeof Element.prototype.scrollTo;
+/**
+ * jsdom lays nothing out, so Embla is replaced by a stand-in the tests can drive: it knows which photo it
+ * is on, moves when the gallery asks, and tells the gallery about it ("select") as Embla does.
+ */
+const embla = vi.hoisted(() => {
+  const handlers = new Map<string, Set<() => void>>();
+  const state = { selected: 0, options: null as Record<string, unknown> | null };
+  const scrollTo = vi.fn();
+  const api = {
+    on(event: string, handler: () => void) {
+      handlers.set(event, (handlers.get(event) ?? new Set()).add(handler));
+      return api;
+    },
+    off(event: string, handler: () => void) {
+      handlers.get(event)?.delete(handler);
+      return api;
+    },
+    selectedScrollSnap: () => state.selected,
+    scrollTo,
+  };
+  function emit(event: string) {
+    handlers.get(event)?.forEach((handler) => handler());
+  }
+  return {
+    api,
+    state,
+    scrollTo,
+    emit,
+    /** A swipe, or a glide that has arrived: the photo showing is now this one. */
+    settleOn(index: number) {
+      state.selected = index;
+      emit("select");
+    },
+    reset() {
+      handlers.clear();
+      state.selected = 0;
+      state.options = null;
+      scrollTo.mockReset();
+      scrollTo.mockImplementation((index: number) => {
+        state.selected = index;
+        emit("select");
+      });
+    },
+  };
 });
+
+vi.mock("embla-carousel-react", () => ({
+  default: (options: Record<string, unknown>) => {
+    embla.state.options = options;
+    // The photo asked for first is where it starts.
+    if (typeof options.startIndex === "number" && embla.state.selected === 0) {
+      embla.state.selected = options.startIndex;
+    }
+    return [() => {}, embla.api];
+  },
+}));
+
+beforeEach(() => embla.reset());
 afterEach(() => vi.restoreAllMocks());
 
-/** jsdom lays nothing out, so the picture area's width is set by hand. */
-function sizeViewport(width = 600) {
-  const viewport = document.querySelector<HTMLElement>("[tabindex='0']");
-  if (!viewport) throw new Error("no picture area");
-  Object.defineProperty(viewport, "clientWidth", { configurable: true, value: width });
-  return viewport;
+/** The picture area, which takes focus. */
+function viewport() {
+  const node = document.querySelector<HTMLElement>("[tabindex='0']");
+  if (!node) throw new Error("no picture area");
+  return node;
 }
 
 const count = (text: string) => screen.getByText(text);
@@ -79,20 +130,18 @@ describe("PropertyGallery: the photos of one home (S4-T01)", () => {
     expect(count("3 / 5")).toBeInTheDocument();
   });
 
-  it("shows the next photo when Next is pressed, and scrolls the picture area to it", async () => {
+  it("shows the next photo when Next is pressed, and glides the carousel to it", async () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    sizeViewport(600);
     await userEvent.click(screen.getByRole("button", { name: "Next photo" }));
     expect(count("2 / 5")).toBeInTheDocument();
-    expect(scrollTo).toHaveBeenLastCalledWith({ left: 600, behavior: "smooth" });
+    expect(embla.scrollTo).toHaveBeenLastCalledWith(1);
     await userEvent.click(screen.getByRole("button", { name: "Previous photo" }));
     expect(count("1 / 5")).toBeInTheDocument();
-    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: "smooth" });
+    expect(embla.scrollTo).toHaveBeenLastCalledWith(0);
   });
 
   it("disables Previous on the first photo and Next on the last", async () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    sizeViewport();
     expect(screen.getByRole("button", { name: "Previous photo" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next photo" })).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "Photo 5" }));
@@ -102,16 +151,14 @@ describe("PropertyGallery: the photos of one home (S4-T01)", () => {
 
   it("shows the photo of a thumbnail that is pressed", async () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    sizeViewport(500);
     await userEvent.click(screen.getByRole("button", { name: "Photo 4: Kitchen" }));
     expect(count("4 / 5")).toBeInTheDocument();
-    expect(scrollTo).toHaveBeenLastCalledWith({ left: 1500, behavior: "smooth" });
+    expect(embla.scrollTo).toHaveBeenLastCalledWith(3);
   });
 
   it("changes the photo with the left and right arrow keys and stops at the ends", async () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    const viewport = sizeViewport();
-    viewport.focus();
+    viewport().focus();
     await userEvent.keyboard("{ArrowRight}{ArrowRight}");
     expect(count("3 / 5")).toBeInTheDocument();
     await userEvent.keyboard("{ArrowLeft}{ArrowLeft}{ArrowLeft}");
@@ -120,41 +167,34 @@ describe("PropertyGallery: the photos of one home (S4-T01)", () => {
     expect(count("1 / 5")).toBeInTheDocument();
   });
 
-  it("follows a swipe: the photo showing is the one the picture area is scrolled to", () => {
+  it("follows a swipe: the photo showing is the one the carousel settles on", () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    const viewport = sizeViewport(400);
-    viewport.scrollLeft = 800;
-    fireEvent.scroll(viewport);
+    act(() => embla.settleOn(2));
     expect(count("3 / 5")).toBeInTheDocument();
-    viewport.scrollLeft = 1190;
-    fireEvent.scroll(viewport);
+    act(() => embla.settleOn(3));
     expect(count("4 / 5")).toBeInTheDocument();
   });
 
-  it("does not jump through the photos in between while a press is scrolling to one", async () => {
-    renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    const viewport = sizeViewport(400);
-    await userEvent.click(screen.getByRole("button", { name: "Photo 5" }));
-    viewport.scrollLeft = 400;
-    fireEvent.scroll(viewport);
-    expect(count("5 / 5")).toBeInTheDocument();
-    viewport.scrollLeft = 1600;
-    fireEvent.scroll(viewport);
-    expect(count("5 / 5")).toBeInTheDocument();
-    // Arrived: a later swipe is followed again.
-    viewport.scrollLeft = 400;
-    fireEvent.scroll(viewport);
-    expect(count("2 / 5")).toBeInTheDocument();
+  it("starts on the photo asked for, and lets the carousel drag only when there are several photos", () => {
+    const view = renderWithMessages(<PropertyGallery photos={PHOTOS} startIndex={2} />);
+    expect(embla.state.options).toMatchObject({ startIndex: 2, watchDrag: true, duration: 25 });
+    view.unmount();
+    renderWithMessages(<PropertyGallery photos={PHOTOS.slice(0, 1)} />);
+    expect(embla.state.options).toMatchObject({ watchDrag: false });
   });
 
-  it("scrolls without animation when the visitor asks for less motion", async () => {
+  it("glides without animation when the visitor asks for less motion", () => {
     vi.spyOn(window, "matchMedia").mockImplementation(
-      (query) => ({ matches: true, media: query }) as MediaQueryList,
+      (query) =>
+        ({
+          matches: true,
+          media: query,
+          addEventListener() {},
+          removeEventListener() {},
+        }) as unknown as MediaQueryList,
     );
     renderWithMessages(<PropertyGallery photos={PHOTOS} />);
-    sizeViewport(600);
-    await userEvent.click(screen.getByRole("button", { name: "Next photo" }));
-    expect(scrollTo).toHaveBeenLastCalledWith({ left: 600, behavior: "auto" });
+    expect(embla.state.options).toMatchObject({ duration: 0 });
   });
 
   it("announces the count politely", () => {
@@ -171,6 +211,7 @@ describe("PropertyGallery: the photos of one home (S4-T01)", () => {
     const view = renderWithMessages(<PropertyGallery photos={PHOTOS} startIndex={99} />);
     expect(count("5 / 5")).toBeInTheDocument();
     view.unmount();
+    embla.reset();
     renderWithMessages(<PropertyGallery photos={PHOTOS} startIndex={-3} />);
     expect(count("1 / 5")).toBeInTheDocument();
   });
@@ -218,9 +259,9 @@ describe("PropertyGallery: one photo and none (S4-T01)", () => {
 
   it("does not move on an arrow key when there is only one photo", async () => {
     renderWithMessages(<PropertyGallery photos={PHOTOS.slice(0, 1)} />);
-    sizeViewport().focus();
+    viewport().focus();
     await userEvent.keyboard("{ArrowRight}");
-    expect(scrollTo).not.toHaveBeenCalled();
+    expect(embla.scrollTo).not.toHaveBeenCalled();
   });
 });
 

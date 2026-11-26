@@ -4,19 +4,20 @@
  * Purpose: sells the developer's brand: their logo (or initials), name, tagline, how long they have built, how many
  *   projects they delivered, how many they list and launch on findsprop, a link to their website, and up to three of
  *   their live projects as small cards. Everything comes from what they uploaded; the admin only picks them.
- *   "Sponsored" says it is paid for. Owner: design system. It holds no state and fetches nothing: the page decides
+ *   "Sponsored" says it is paid for. Owner: design system. It holds no state of its own (the sideways cards are SpotlightProjects, an Embla carousel) and fetches nothing: the page decides
  *   which developer it is (one per visit) and where it goes.
  * Props: developer (DeveloperSpotlightData: name, logo, about, years, delivered, listed, launching, website, projects:
  *   up to three of { href, name, locality, bedrooms, priceRupees, priceType, status, cover }), headingId (the id of the
  *   name, so the section around can be named by it), eyebrowId (the id of the "Developer spotlight" line), className.
- * Responsive: on phones the developer sits above the projects, which scroll sideways one card at a time; from 768 px
+ * Responsive: on phones the developer sits above the projects, which scroll sideways one card at a time, each settling in the centre (the first and last stay at the ends, with the
+ *   band's padding); from 768 px
  *   the projects are three in a row; from 1024 px the developer sits beside them.
  * Accessibility: the name is a heading; the figures are a description list (the label read with its number); each
  *   project card is one link named by its heading; the pictures only decorate (empty alt text); the website link says
  *   it opens in a new tab and is marked sponsored. The card lift on hover is left out with reduced motion.
  * States: every detail, little given (no logo: initials; no tagline or figures: left out, never blank or zero), one
  *   project, a project with no cover (the dark ground shows), a long name.
- * Dependencies: next/image, NextLink, Icon, format helpers, next-intl. Tests: developer-spotlight.test.tsx; Design Lab
+ * Dependencies: next/image, NextLink, Icon, SpotlightProjects (the moving cards), format helpers, next-intl. Tests: developer-spotlight.test.tsx; Design Lab
  *   "Ads" (Developer spotlight).
  * UX reference: none in the approved UX; the owner's sponsor concepts of 23 Nov 2026 (concept D).
  */
@@ -27,6 +28,7 @@ import NextLink from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { formatPrice, type Translate } from "@/lib/format";
+import { SpotlightProjects } from "./spotlight-projects.client";
 
 type SpotlightPriceType =
   "per_sqft" | "basic" | "all_inclusive" | "rent_per_month" | "rent_per_sqft_month";
@@ -116,42 +118,40 @@ function ProjectCard({
       : amount;
   }
   return (
-    <li className="w-[72%] shrink-0 snap-start md:w-auto">
-      <NextLink
-        href={project.href}
-        className="group flex h-full flex-col overflow-hidden rounded-lg border border-dark-line bg-dark-hover transition-[transform,border-color] duration-(--dur-fast) hover:border-on-dark-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-on-dark motion-safe:hover:-translate-y-1"
-      >
-        <div className="relative aspect-4/3 bg-dark-active">
-          {project.cover ? (
-            <Image
-              src={project.cover}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 20vw, (min-width: 768px) 30vw, 70vw"
-              unoptimized={isDrawing(project.cover)}
-              className="object-cover"
-            />
-          ) : null}
-          {project.status ? (
-            <span className="absolute top-2 left-2 rounded-pill bg-surface px-2 py-1 text-caption font-bold text-ink">
-              {translate(STATUS_KEYS[project.status])}
-            </span>
-          ) : null}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
-          <h3 className="truncate text-title-sm text-on-dark">{project.name}</h3>
-          <p className="flex min-w-0 items-center gap-1 text-caption text-on-dark-muted">
-            <Icon icon={MapPin} size="sm" className="shrink-0" />
-            <span className="truncate">
-              {homes ? `${project.locality} · ${homes}` : project.locality}
-            </span>
-          </p>
-          {price ? (
-            <p className="text-small font-bold text-on-dark-accent tabular-nums">{price}</p>
-          ) : null}
-        </div>
-      </NextLink>
-    </li>
+    <NextLink
+      href={project.href}
+      className="group flex h-full flex-col overflow-hidden rounded-lg border border-dark-line bg-dark-hover transition-[transform,border-color] duration-(--dur-fast) hover:border-on-dark-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-on-dark motion-safe:hover:-translate-y-1"
+    >
+      <div className="relative aspect-4/3 bg-dark-active">
+        {project.cover ? (
+          <Image
+            src={project.cover}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 20vw, (min-width: 768px) 30vw, 70vw"
+            unoptimized={isDrawing(project.cover)}
+            className="object-cover"
+          />
+        ) : null}
+        {project.status ? (
+          <span className="absolute top-2 left-2 rounded-pill bg-surface px-2 py-1 text-caption font-bold text-ink">
+            {translate(STATUS_KEYS[project.status])}
+          </span>
+        ) : null}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
+        <h3 className="truncate text-title-sm text-on-dark">{project.name}</h3>
+        <p className="flex min-w-0 items-center gap-1 text-caption text-on-dark-muted">
+          <Icon icon={MapPin} size="sm" className="shrink-0" />
+          <span className="truncate">
+            {homes ? `${project.locality} · ${homes}` : project.locality}
+          </span>
+        </p>
+        {price ? (
+          <p className="text-small font-bold text-on-dark-accent tabular-nums">{price}</p>
+        ) : null}
+      </div>
+    </NextLink>
   );
 }
 
@@ -240,7 +240,7 @@ function DeveloperSpotlight({
         ) : null}
       </div>
       {projects.length > 0 ? (
-        <ul className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
+        <SpotlightProjects>
           {projects.map((project) => (
             <ProjectCard
               key={project.href}
@@ -249,7 +249,7 @@ function DeveloperSpotlight({
               locale={locale}
             />
           ))}
-        </ul>
+        </SpotlightProjects>
       ) : null}
     </div>
   );

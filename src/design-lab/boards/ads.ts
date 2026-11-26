@@ -74,7 +74,7 @@ export const ADS: LabEntry[] = [
     name: "Developer spotlight",
     description:
       "The Developer spotlight (D, ADR-193): a builder or agent the admin picked, as a dark band on the home page, one per visit. Their logo or initials, name, tagline, years, projects delivered, projects listed and launching, their website, and up to three live projects as cards that scroll sideways on phones. Shown with every detail and with little given.",
-    sources: ["domain/developer-spotlight.tsx"],
+    sources: ["domain/developer-spotlight.tsx", "domain/spotlight-projects.client.tsx"],
     Demo: DeveloperSpotlightDemo,
   },
 ];

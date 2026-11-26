@@ -10,6 +10,8 @@
  *   bleed (true by default: on a phone the block runs edge to edge; false keeps it inside the page's
  *   padding), sizes (next/image `sizes` of the main picture), priority (load the first photo at once;
  *   set it on the page's main gallery), className.
+ * Movement: an Embla carousel, so it glides and settles the same way as the home rows: a swipe or a drag
+ *   settles on one photo, and Previous, Next, a thumbnail and the arrow keys glide to one.
  * Responsive: from 768 px the picture is 16 : 10 with 24 px corners, with Previous and Next buttons
  *   over it, the count "2 / 6" and a strip of six thumbnails per row under it. Below 768 px the
  *   picture is 4 : 3 and runs edge to edge; the buttons and thumbnails are hidden, the visitor swipes,
@@ -23,26 +25,21 @@
  * States: several photos, one photo, no photo (the illustrated tile), a photo that fails to load (the
  *   tile in its place), at the first and the last photo, with and without badges, bleed and not
  *   (PropertyGallerySkeleton while loading).
- * Dependencies: CardCover, IconButton, Icon, Skeleton, next-intl, cn.
+ * Dependencies: CardCover, IconButton, Icon, Skeleton, embla-carousel-react, next-intl, cn.
  * Tests: property-gallery.test.tsx, keyboard.spec.ts; Design Lab "Domain" (S4-T01).
  * UX reference: property and project screens, gallery (c-cards.css .gallery, fp.js FP.gallery);
  *   interaction-specifications, Gallery. The UX has no full-screen viewer or zoom, so none is built.
  *   The UX draws the arrows enabled; here they are disabled at the ends, as the scrolling row's are.
  */
+import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Image as ImageGlyph } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { CardCover } from "./property-card-controls.client";
 
 type GalleryPhoto = {
@@ -65,8 +62,8 @@ type PropertyGalleryProps = {
 
 const MAIN_SIZES = "(min-width: 1100px) 60vw, (min-width: 768px) 90vw, 100vw";
 const THUMB_SIZES = "(min-width: 1100px) 10vw, 15vw";
-/** How long a press of Previous, Next or a thumbnail may take to arrive before the scroll position is trusted again. */
-const SETTLE_MS = 700;
+/** Embla's own default easing time; 0 when the visitor asks for less motion. */
+const GLIDE_DURATION = 25;
 
 /** A key that stays the same for the same photo in the same place. */
 function photoKey(index: number, photo: GalleryPhoto): string {
@@ -89,39 +86,30 @@ function PropertyGallery({
   const translate = useTranslations("domain.gallery");
   const count = photos.length;
   const many = count > 1;
-  const [active, setActive] = useState(() => clamp(startIndex, count));
-  const viewport = useRef<HTMLDivElement>(null);
-  // The photo a press is scrolling to; scroll events on the way there are not photos the visitor chose.
-  const target = useRef<number | null>(null);
-  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const first = clamp(startIndex, count);
+  const [viewport, carousel] = useEmblaCarousel({
+    startIndex: first,
+    watchDrag: many,
+    duration: reducedMotion ? 0 : GLIDE_DURATION,
+  });
+  const [active, setActive] = useState(first);
 
   const showPhoto = useCallback(
-    (index: number) => {
-      const node = viewport.current;
-      const next = clamp(index, count);
-      setActive(next);
-      if (!node) return;
-      target.current = next;
-      if (settle.current) clearTimeout(settle.current);
-      settle.current = setTimeout(() => {
-        target.current = null;
-      }, SETTLE_MS);
-      const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      node.scrollTo({ left: next * node.clientWidth, behavior: calm ? "auto" : "smooth" });
-    },
-    [count],
+    (index: number) => carousel?.scrollTo(clamp(index, count)),
+    [carousel, count],
   );
 
-  function onScroll() {
-    const node = viewport.current;
-    if (!node || node.clientWidth === 0) return;
-    const shown = clamp(Math.round(node.scrollLeft / node.clientWidth), count);
-    if (target.current !== null) {
-      if (shown === target.current) target.current = null;
-      return;
-    }
-    setActive(shown);
-  }
+  // Swipes, buttons, thumbnails and keys all end in Embla's "select": the photo showing is the one it settles on.
+  useEffect(() => {
+    if (!carousel) return;
+    const update = () => setActive(clamp(carousel.selectedScrollSnap(), count));
+    update();
+    carousel.on("select", update).on("reInit", update);
+    return () => {
+      carousel.off("select", update).off("reInit", update);
+    };
+  }, [carousel, count]);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (!many) return;
@@ -133,23 +121,6 @@ function PropertyGallery({
       showPhoto(active - 1);
     }
   }
-
-  // A turned or resized screen changes the width of a slide; keep the same photo in view.
-  useEffect(() => {
-    function keepInView() {
-      const node = viewport.current;
-      if (node) node.scrollTo({ left: active * node.clientWidth, behavior: "auto" });
-    }
-    window.addEventListener("resize", keepInView);
-    return () => window.removeEventListener("resize", keepInView);
-  }, [active]);
-
-  useEffect(
-    () => () => {
-      if (settle.current) clearTimeout(settle.current);
-    },
-    [],
-  );
 
   const slides = count > 0 ? photos : [null];
 
@@ -169,32 +140,30 @@ function PropertyGallery({
       >
         <div
           ref={viewport}
-          onScroll={onScroll}
           onKeyDown={onKeyDown}
-          // The area scrolls, so it must take focus for a keyboard user; the arrow keys move the photo.
+          // The area moves, so it must take focus for a keyboard user; the arrow keys move the photo.
           tabIndex={0}
-          className={cn(
-            "flex h-full snap-x snap-mandatory [scrollbar-width:none] focus-visible:-outline-offset-3 [&::-webkit-scrollbar]:hidden",
-            many ? "overflow-x-auto" : "overflow-x-hidden",
-          )}
+          className="h-full overflow-hidden focus-visible:-outline-offset-3"
         >
-          {slides.map((photo, index) => (
-            <div
-              key={photo ? photoKey(index, photo) : "none"}
-              role="group"
-              aria-roledescription={translate("slideKind")}
-              aria-label={translate("slide", { number: index + 1, total: Math.max(count, 1) })}
-              aria-hidden={many && index !== active ? true : undefined}
-              className="relative h-full w-full flex-none snap-start"
-            >
-              <CardCover
-                src={photo?.src}
-                alt={photo?.alt ?? ""}
-                sizes={sizes}
-                priority={priority && index === clamp(startIndex, count)}
-              />
-            </div>
-          ))}
+          <div className="flex h-full touch-pan-y touch-pinch-zoom">
+            {slides.map((photo, index) => (
+              <div
+                key={photo ? photoKey(index, photo) : "none"}
+                role="group"
+                aria-roledescription={translate("slideKind")}
+                aria-label={translate("slide", { number: index + 1, total: Math.max(count, 1) })}
+                aria-hidden={many && index !== active ? true : undefined}
+                className="relative h-full w-full min-w-0 flex-none"
+              >
+                <CardCover
+                  src={photo?.src}
+                  alt={photo?.alt ?? ""}
+                  sizes={sizes}
+                  priority={priority && index === first}
+                />
+              </div>
+            ))}
+          </div>
         </div>
         {badges ? (
           <div className="pointer-events-none absolute top-4 left-4 z-10 flex flex-wrap gap-2">
