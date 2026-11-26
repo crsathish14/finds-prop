@@ -52,7 +52,14 @@ const CONTEXT = {
   signedIn: true,
 };
 
-const NO_PROJECT_FILTERS = { locality: null, status: null, bhk: null, maxPrice: null, limit: null };
+const NO_PROJECT_FILTERS = {
+  city: null,
+  locality: null,
+  status: null,
+  bhk: null,
+  maxPrice: null,
+  limit: null,
+};
 
 const NO_FILTERS = {
   listingType: null,
@@ -60,6 +67,7 @@ const NO_FILTERS = {
   bhk: null,
   minPrice: null,
   maxPrice: null,
+  city: null,
   locality: null,
   keyword: null,
   label: null,
@@ -568,6 +576,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         ],
       });
       const none = await call("search_projects", {
+        city: null,
         locality: PROJECT_LOCALITY,
         status: "new_launch",
         bhk: null,
