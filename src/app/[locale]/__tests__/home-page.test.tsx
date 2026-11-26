@@ -50,6 +50,7 @@ vi.mock("@/features/site", async () => ({
     }
   ).resolveHomeOrder,
 }));
+vi.mock("@/features/agents", () => ({ HomeAgentsSection: () => null }));
 vi.mock("@/features/search", () => ({ SEARCH_PATH: "/properties" }));
 vi.mock("@/features/sponsored", () => ({
   SpotlightSection: () => <section data-testid="spotlight" />,

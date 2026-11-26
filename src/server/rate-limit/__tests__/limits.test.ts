@@ -19,6 +19,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
         "admin_edit",
         "builder_edit",
         "builder_feedback",
+        "contact_reveal",
         "email_link",
         "enquiry",
         "enquiry_mail",
@@ -46,6 +47,7 @@ describe("UT-rate-limit: the closed list (plan 07 section 11)", () => {
     ["otp_verify", [{ who: "key", windowSeconds: 3600, max: 10 }]],
     ["enquiry", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["enquiry_mail", [{ who: "key", windowSeconds: 86400, max: 20 }]], // ADR-188
+    ["contact_reveal", [{ who: "user", windowSeconds: 86400, max: 30 }]],
     ["listing_create", [{ who: "user", windowSeconds: 86400, max: 10 }]],
     ["upload_url", [{ who: "user", windowSeconds: 3600, max: 30 }]],
     ["admin_decision", [{ who: "user", windowSeconds: 3600, max: 120 }]],

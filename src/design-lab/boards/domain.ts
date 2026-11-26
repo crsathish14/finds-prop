@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
+import { AgentCardDemo } from "./domain-demos-agents";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import {
   EnquiryCardDemo,
@@ -65,6 +66,14 @@ export const DOMAIN: LabEntry[] = [
       "A developer's monogram in green, copper or sand, name, project count, introduction and two project thumbnails. Only a name, long text, a missing picture and loading.",
     sources: ["domain/developer-card.tsx"],
     Demo: DeveloperCardDemo,
+  },
+  {
+    id: "agent-card",
+    name: "Agent card",
+    description:
+      "A recommended agent: photo (initials when missing) across a tinted band, name, tagline, years of experience, live listings, up to three localities, a contact control slot and a link to their page. Missing facts are left out; long text is cut; hover lifts the card; loading.",
+    sources: ["domain/agent-card.tsx"],
+    Demo: AgentCardDemo,
   },
   {
     id: "locality-tile",

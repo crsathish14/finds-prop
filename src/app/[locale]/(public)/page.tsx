@@ -12,6 +12,7 @@ import {
   CityNewLaunchesSection,
   WhySection,
 } from "@/features/home";
+import { HomeAgentsSection } from "@/features/agents";
 import { SponsorSlot } from "@/components/layout/sponsor-slot";
 import { SponsorStyledFrame } from "@/components/layout/sponsor-styled-frame";
 import { HomeAiSearch } from "@/features/ai-chat";
@@ -126,7 +127,13 @@ export default async function HomePage() {
   const sections: Record<HomeSectionKey, ReactNode> = {
     discovery: homepage.showDiscovery ? <ExploreSection localities={homepage.localities} /> : null,
     featured: homepage.showFeatured ? <CityFeaturedSection /> : null,
-    newLaunches: <CityNewLaunchesSection />,
+    // Recommended agents sit with the developers (no section switch of their own; they show when an agent has something live).
+    newLaunches: (
+      <>
+        <CityNewLaunchesSection />
+        <HomeAgentsSection />
+      </>
+    ),
     // The Developer spotlight (ADR-193): only when the admin picked a builder or agent for it; one per visit.
     spotlight: settings.sponsored_builders.spotlight.length > 0 ? <SpotlightSection /> : null,
     projectTypes: homepage.showProjectTypes ? (

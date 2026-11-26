@@ -922,6 +922,12 @@ isOneToOne: false
 "has_verified_phone":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"agent_contact":
+{ Args: { "p_id": string }; Returns: string
+                           },
+"public_agents":
+{ Args: { "p_id"?: string,"p_limit"?: number }; Returns: Json
+                           },
 "home_developers":
 { Args: { "p_city"?: string }; Returns: Json
                            },
