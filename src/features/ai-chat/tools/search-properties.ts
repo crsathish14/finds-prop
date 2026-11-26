@@ -19,6 +19,7 @@ import {
   type ListingRow,
   type SearchParams,
 } from "@/features/search";
+import { cityFilterOf, CITY_MAX_CHARACTERS } from "../city-filter";
 import { asOfText } from "./as-of";
 import {
   countedBedrooms,
@@ -94,9 +95,13 @@ const baseInputShape = {
   maxPrice: rupees(
     "The highest price in whole rupees (a monthly rent for homes to rent), or null. 1 crore is 10000000.",
   ),
+  city: shortText(
+    CITY_MAX_CHARACTERS,
+    "The city the customer wants, such as Chennai, Coimbatore or Madurai, or null. A neighbourhood is not a city: put it in `locality`. At most 80 characters.",
+  ),
   locality: shortText(
     LOCALITY_MAX_CHARACTERS,
-    "Part or all of a locality (neighbourhood) name as it is listed, such as Velachery, or null. A city such as Chennai or Coimbatore is not a locality: put a city in `keyword`. Take the spelling from list_localities when unsure. At most 80 characters.",
+    "Part or all of a locality (neighbourhood) name as it is listed, such as Velachery, or null. A city such as Chennai or Coimbatore is not a locality: put a city in `city`. Take the spelling from list_localities when unsure. At most 80 characters.",
   ),
   keyword: shortText(
     KEYWORD_MAX_CHARACTERS,
@@ -237,21 +242,31 @@ function given(text: string | null): string | null {
 }
 
 /**
- * The search for these filters, with one second try. A customer who asks for homes "in Chennai" gets a city put in the
- * locality filter by the model, and no home has a locality called Chennai (the city is a separate field), so the first
- * read finds nothing although the city has homes (ADR-178). When a locality alone found nothing, the same words are
- * tried once as a keyword, which reads the title, the locality and the city. Both reads are the cached public search.
+ * The search for these filters, with one second try. The city goes to the search's own city filter (ADR-204). A
+ * customer who asks for homes "in Chennai" may still get a city put in the locality filter by the model, and no home
+ * has a locality called Chennai (the city is a separate field), so the first read finds nothing although the city has
+ * homes (ADR-178). When a locality found nothing, the same words are tried once as a keyword, which reads the title,
+ * the locality and the city. In the same way, when a city found nothing (a neighbourhood taken for a city), its words
+ * are tried once as a keyword without the city filter. Every read is the public search.
  */
 async function searchHomes(input: SearchPropertiesInput, context: ToolContext) {
-  const guest = { guest: !context.signedIn };
-  const first = await getSearchResults(toSearchParams(input), guest);
-  const locality = given(input.locality);
-  if (first.status === "failed" || first.total > 0 || locality === null) return first;
+  const guest = !context.signedIn;
+  const city = cityFilterOf(input.city);
+  const read = (filters: SearchPropertiesInput, cityKey: string | null) =>
+    getSearchResults(
+      toSearchParams(filters),
+      cityKey === null ? { guest } : { guest, city: cityKey },
+    );
+  const first = await read(input, city);
+  if (first.status === "failed" || first.total > 0) return first;
   if (given(input.keyword) !== null) return first;
-  const second = await getSearchResults(
-    toSearchParams({ ...input, locality: null, keyword: locality }),
-    guest,
-  );
+  const locality = given(input.locality);
+  const typedCity = city === null ? null : given(input.city);
+  if (locality === null && typedCity === null) return first;
+  const second =
+    locality !== null
+      ? await read({ ...input, locality: null, keyword: locality }, city)
+      : await read({ ...input, keyword: typedCity }, null);
   return second.status === "failed" ? first : second;
 }
 

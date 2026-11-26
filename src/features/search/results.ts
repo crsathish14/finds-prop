@@ -47,12 +47,16 @@ function ageInDays(publishedAt: string | null, now: number): number | null {
 async function readResults(
   params: SearchParams,
   guest: boolean,
+  city: string | undefined,
 ): Promise<Extract<SearchResults, { status: "ok" }>> {
+  // The city is not part of the results page's address (the page's city comes from the header picker); only the AI
+  // assistant passes one (ADR-204), as the city key `search_properties(p_city)` compares by.
+  const args = { ...toSearchRpcArgs(params), ...(city === undefined ? {} : { p_city: city }) };
   // A guest (the assistant's visitor who is not signed in) gets at most ten homes through the server-only function; a
   // signed-in visitor reads with their own session. The pages never ask for a guest read.
   const { data, error } = guest
-    ? await guestSearchHomes(toSearchRpcArgs(params))
-    : await (await createServerSupabase()).rpc("search_properties", toSearchRpcArgs(params));
+    ? await guestSearchHomes(args)
+    : await (await createServerSupabase()).rpc("search_properties", args);
   if (error) {
     logger.error("search results could not be read", { errorCode: error.code });
     throw new Error("search results could not be read");
@@ -82,10 +86,10 @@ async function readResults(
 /** One page of results, or a failure with no detail (the page offers Try again with the filters kept). */
 export async function getSearchResults(
   params: SearchParams,
-  options: { guest?: boolean } = {},
+  options: { guest?: boolean; city?: string } = {},
 ): Promise<SearchResults> {
   try {
-    return await readResults(params, options.guest === true);
+    return await readResults(params, options.guest === true, options.city);
   } catch (error) {
     // The prerender signal and redirects are Next.js control flow, not failures of the read.
     unstable_rethrow(error);

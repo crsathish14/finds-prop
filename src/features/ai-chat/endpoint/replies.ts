@@ -14,7 +14,6 @@ export const REPLY_MESSAGE_KEYS = {
   enquireHome: "ai.replies.enquireHome",
   workOutEmi: "ai.replies.workOutEmi",
   similarHomes: "ai.replies.similarHomes",
-  enquireOne: "ai.replies.enquireOne",
   compareHomes: "ai.replies.compareHomes",
   showMore: "ai.replies.showMore",
   enquireProject: "ai.replies.enquireProject",
@@ -35,10 +34,16 @@ function item(key: keyof typeof REPLY_MESSAGE_KEYS, translate: Translate): Reply
   return { key, text: translate(REPLY_MESSAGE_KEYS[key]) };
 }
 
+/** The lookups of one home or one project the customer asked about: only after one of them is an enquiry offered. */
+const DETAIL_TOOLS = ["get_property", "get_project"] as const;
+
 /**
  * The buttons for a finished answer, from the records the tools returned this turn: one home, several homes, or one
  * project. No buttons for a turn that ended with a proposal (the customer sees the confirm card), for an answer
  * that was cut short, for an EMI sum or a comparison, for several projects, or for a mix of homes and projects.
+ *
+ * An enquiry or a site visit is offered only after the customer looked at one home or one project in detail (ADR-204):
+ * a list of search results gets ways to keep looking (compare, show more, similar homes, an EMI sum), never an enquiry.
  */
 export function pickReplies(agent: AgentDone, translate: Translate): ReplyItem[] {
   if (agent.outcome !== "answered" || agent.offers.length > 0) return [];
@@ -49,21 +54,15 @@ export function pickReplies(agent: AgentDone, translate: Translate): ReplyItem[]
     if (reference.kind === "home") homes.add(reference.homeId);
     else if (reference.kind === "project") projects.add(reference.slug);
   }
+  const detail = DETAIL_TOOLS.some((name) => agent.toolsRan.includes(name));
   if (projects.size === 0 && homes.size === 1) {
-    return [
-      item("enquireHome", translate),
-      item("workOutEmi", translate),
-      item("similarHomes", translate),
-    ];
+    const keepLooking = [item("workOutEmi", translate), item("similarHomes", translate)];
+    return detail ? [item("enquireHome", translate), ...keepLooking] : keepLooking;
   }
   if (projects.size === 0 && homes.size > 1) {
-    return [
-      item("enquireOne", translate),
-      item("compareHomes", translate),
-      item("showMore", translate),
-    ];
+    return [item("compareHomes", translate), item("showMore", translate)];
   }
-  if (homes.size === 0 && projects.size === 1) {
+  if (homes.size === 0 && projects.size === 1 && detail) {
     return [item("enquireProject", translate), item("siteVisit", translate)];
   }
   return [];

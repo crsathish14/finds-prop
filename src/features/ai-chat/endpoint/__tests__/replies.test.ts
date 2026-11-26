@@ -36,28 +36,34 @@ function done(overrides: Partial<AgentDone>): AgentDone {
 const keys = (agent: AgentDone) => pickReplies(agent, translate).map((reply) => reply.key);
 
 describe("UT-ai-replies: pickReplies", () => {
-  it("offers three buttons for one home: enquire, EMI, similar homes", () => {
-    expect(keys(done({}))).toEqual(["enquireHome", "workOutEmi", "similarHomes"]);
-  });
-
-  it("offers enquire, compare and show more for several homes, counting one home once", () => {
-    expect(keys(done({ references: [HOME, SECOND_HOME] }))).toEqual([
-      "enquireOne",
-      "compareHomes",
-      "showMore",
-    ]);
-    expect(keys(done({ references: [HOME, HOME] }))).toEqual([
+  it("offers enquire, EMI and similar homes for one home the customer looked at in detail", () => {
+    expect(keys(done({ toolsRan: ["get_property"] }))).toEqual([
       "enquireHome",
       "workOutEmi",
       "similarHomes",
     ]);
   });
 
-  it("offers enquire and a site visit for one project", () => {
-    expect(keys(done({ references: [PROJECT], toolsRan: ["search_projects"] }))).toEqual([
+  it("never offers an enquiry under search results (ADR-204): one home gets EMI and similar homes", () => {
+    expect(keys(done({}))).toEqual(["workOutEmi", "similarHomes"]);
+    expect(keys(done({ references: [HOME, HOME] }))).toEqual(["workOutEmi", "similarHomes"]);
+  });
+
+  it("offers compare and show more for several homes, and no enquiry, even after a detail lookup", () => {
+    expect(keys(done({ references: [HOME, SECOND_HOME] }))).toEqual(["compareHomes", "showMore"]);
+    expect(
+      keys(
+        done({ references: [HOME, SECOND_HOME], toolsRan: ["search_properties", "get_property"] }),
+      ),
+    ).toEqual(["compareHomes", "showMore"]);
+  });
+
+  it("offers enquire and a site visit for one project looked at in detail, and nothing for one search result", () => {
+    expect(keys(done({ references: [PROJECT], toolsRan: ["get_project"] }))).toEqual([
       "enquireProject",
       "siteVisit",
     ]);
+    expect(keys(done({ references: [PROJECT], toolsRan: ["search_projects"] }))).toEqual([]);
   });
 
   it("offers nothing when nothing was found, for several projects, or for a mix of homes and projects", () => {
@@ -80,7 +86,10 @@ describe("UT-ai-replies: pickReplies", () => {
 
   it("takes every button's words from en.json, in at most three buttons, short enough to be a chip", () => {
     for (const references of [[HOME], [HOME, SECOND_HOME], [PROJECT]] as const) {
-      const replies = pickReplies(done({ references: [...references] }), translate);
+      const replies = pickReplies(
+        done({ references: [...references], toolsRan: ["get_property", "get_project"] }),
+        translate,
+      );
       expect(replies.length).toBeGreaterThan(0);
       expect(replies.length).toBeLessThanOrEqual(3);
       for (const reply of replies) {

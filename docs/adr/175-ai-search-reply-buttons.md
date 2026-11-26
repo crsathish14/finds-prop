@@ -1,6 +1,6 @@
 # ADR-175 · AI search reply buttons
 
-- Status: Accepted (the owner agreed on 23 Nov 2026 that the chat shows reply buttons under answers; the button wording below is **draft and waits for the owner's approval**).
+- Status: Accepted, partly changed by ADR-204 (no Enquire button under a list). (The owner agreed on 23 Nov 2026 that the chat shows reply buttons under answers; the button wording below is **draft and waits for the owner's approval**).
 - Date: 2026-11-23
 - Related: ADR-174 (conversation and enquiry offers), ADR-128 (the endpoint and the stream)
 - Class: C1. A new stream event and a small screen change in the AI search only (`/ai-search` and the chat opened from the home page AI search bar). No migration, no dependency, no change to what the assistant may do.

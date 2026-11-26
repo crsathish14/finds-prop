@@ -32,8 +32,11 @@ const documentSchema = z.object({
 /** The cache tag the admin actions refresh when a project is approved, published or changed. */
 export const PROJECTS_TAG = CACHE_TAGS.projects;
 
-/** The most projects the list reads. The UX has no paging; this is far above what the site will hold. */
-export const PROJECT_LIST_LIMIT = 60;
+/**
+ * The most projects the list reads: the most `live_project_list()` gives (120). The UX has no paging. It was 60 until
+ * dev held 65 live projects, so the AI assistant, which filters this list, could never find 5 of them (ADR-204).
+ */
+export const PROJECT_LIST_LIMIT = 120;
 
 /**
  * What the projects page shows: the projects, or a failure. A failure carries no detail, since the

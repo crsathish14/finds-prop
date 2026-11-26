@@ -30,7 +30,14 @@ const { runTool } = await import("../run");
 const { searchProjectsInputSchema, searchProjectsOutputSchema, searchProjectsTool } =
   await import("../search-projects");
 
-const NO_FILTERS = { locality: null, status: null, bhk: null, maxPrice: null, limit: null };
+const NO_FILTERS = {
+  city: null,
+  locality: null,
+  status: null,
+  bhk: null,
+  maxPrice: null,
+  limit: null,
+};
 const search = (filters: Record<string, unknown> = {}) =>
   runTool(
     [searchProjectsTool],
@@ -88,7 +95,7 @@ beforeEach(() => {
 });
 
 describe("UT-ai-tool-projects-search: the input", () => {
-  it("is called search_projects, is a read tool, and takes the five filters, each required", () => {
+  it("is called search_projects, is a read tool, and takes the six filters, each required", () => {
     expect(searchProjectsTool.name).toBe("search_projects");
     expect(searchProjectsTool.kind).toBe("read");
     const schema = toPortableJsonSchema(searchProjectsInputSchema) as {
@@ -96,7 +103,7 @@ describe("UT-ai-tool-projects-search: the input", () => {
       required: string[];
     };
     expect(Object.keys(schema.properties).sort()).toEqual(
-      ["bhk", "limit", "locality", "maxPrice", "status"].sort(),
+      ["bhk", "city", "limit", "locality", "maxPrice", "status"].sort(),
     );
     expect([...schema.required].sort()).toEqual(Object.keys(schema.properties).sort());
   });
@@ -309,6 +316,21 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
       readAt: READ_AT,
     });
     expect(await search()).toMatchObject({ status: "ok", output: { searchedAll: false } });
+  });
+
+  it("reads the projects of the city asked for, as a city key, and every city without one (ADR-204)", async () => {
+    getProjects.mockResolvedValue({ status: "ok", projects: PROJECTS, readAt: READ_AT });
+    await search({ city: " Coimbatore " });
+    expect(getProjects).toHaveBeenLastCalledWith("coimbatore");
+    await search({ city: null });
+    expect(getProjects).toHaveBeenLastCalledWith();
+    // A name with no Latin letter or digit in it cannot be a listed city: the search runs without a city.
+    await search({ city: "சென்னை" });
+    expect(getProjects).toHaveBeenLastCalledWith();
+  });
+
+  it("refuses a city longer than 80 characters", async () => {
+    expect(await search({ city: "x".repeat(81) })).toMatchObject({ status: "error" });
   });
 
   it("gives an empty list, not an error, when no project is listed", async () => {
