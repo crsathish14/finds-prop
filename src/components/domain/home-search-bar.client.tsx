@@ -235,8 +235,12 @@ function HomeSearchBar({
           aria-labelledby={suggestionsId}
           className="mt-3 flex flex-wrap items-center gap-2"
         >
-          {/* The label takes a row of its own, so every line of chips starts at the same left edge (mobile). */}
-          <span id={suggestionsId} className="basis-full text-caption font-semibold text-muted">
+          {/* "Try" is a greyed, non-clickable chip in line with the suggestion chips (owner, 26 Nov 2026). */}
+          <span
+            id={suggestionsId}
+            data-slot="home-search-suggestions-label"
+            className="inline-flex h-(--size-chip-sm) shrink-0 items-center rounded-pill bg-canvas-sunken px-3 text-caption font-semibold text-muted select-none"
+          >
             {translate("suggestions")}
           </span>
           {suggestions.map((suggestion) => (

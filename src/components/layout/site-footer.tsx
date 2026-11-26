@@ -147,7 +147,7 @@ function SiteFooter({
         {disclaimer ? (
           <p
             data-slot="site-footer-disclaimer"
-            className="mt-10 max-w-[90ch] text-small whitespace-pre-line text-on-dark-muted"
+            className="mt-10 text-small whitespace-pre-line text-on-dark-muted"
           >
             {disclaimer}
           </p>
