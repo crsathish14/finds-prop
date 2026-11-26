@@ -82,8 +82,12 @@ declare
   link_host text;
   place smallint := 0;
 begin
+  -- coalesce: for someone who is not a builder `current_builder_id()` is null, and a null comparison must refuse.
   if (select auth.uid()) is null
-    or not (p_builder = (select public.current_builder_id()) or (select public.is_super_admin()))
+    or not (
+      coalesce(p_builder = (select public.current_builder_id()), false)
+      or coalesce((select public.is_super_admin()), false)
+    )
   then
     raise exception 'research.not_allowed' using errcode = '42501';
   end if;
