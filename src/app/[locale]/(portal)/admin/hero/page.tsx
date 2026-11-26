@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslate } from "@/features/site";
 import { getHeroPage, HeroForm, saveHero, saveSponsors } from "@/features/site-content";
+import { indiaToday } from "@/lib/india-days";
 
 // The portal layout already says the page is never indexed.
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,6 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function HeroPage() {
   const { initial, standard, sponsors, sponsorStyle, projects } = await getHeroPage();
+  // The sponsors' Scheduled and Ended tags say where each stands today (ADR-210).
+  const today = indiaToday(new Date());
   return (
     <HeroForm
       key={JSON.stringify(initial)}
@@ -27,6 +30,7 @@ export default async function HeroPage() {
       sponsorStyle={sponsorStyle}
       projects={projects}
       saveSponsors={saveSponsors}
+      today={today}
     />
   );
 }

@@ -53,6 +53,8 @@ export type HeroFormProps = {
   saveSponsors: SaveSponsors;
   /** Where sponsor pictures are sent; the real bucket unless a test gives its own. */
   storage?: SponsorStorage;
+  /** Today's India date, for the sponsors' Scheduled and Ended tags (ADR-210). */
+  today?: string;
 };
 
 const NO_PROBLEMS: Problems = {};
@@ -73,6 +75,7 @@ export function HeroForm({
   projects = [],
   saveSponsors,
   storage,
+  today,
 }: HeroFormProps) {
   const translate = useTranslations("admin.siteContent");
   const frame = useSiteContentFrame("hero");
@@ -88,6 +91,7 @@ export function HeroForm({
     projects,
     save: saveSponsors,
     ...(storage ? { storage } : {}),
+    ...(today ? { today } : {}),
   });
   const alertAt = useScrollToProblems(problems);
 

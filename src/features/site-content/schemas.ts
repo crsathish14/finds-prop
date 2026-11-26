@@ -2,6 +2,8 @@ import { z } from "zod";
 import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 import { HOME_SECTION_KEYS } from "@/lib/home-sections";
 import { PROJECT_PRIME_AMOUNT_MAX } from "@/lib/project-prime";
+import { dayNumber } from "@/lib/india-days";
+import { endsBeforeStart } from "@/lib/promotion-dates";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 import {
   FOOTER_ABOUT_MAX,
@@ -277,12 +279,39 @@ export const contentModulesInputSchema = z.object({
 });
 export type ContentModulesInput = z.infer<typeof contentModulesInputSchema>;
 
+/**
+ * A promotion's first and last day as typed in two date boxes (ADR-210): an empty box is no day, anything else must be a
+ * real calendar day, and the last day may not come before the first (the error sits on the end date's box).
+ */
+const promotionDay = z.preprocess(
+  (typed) => (isBlank(typed) ? undefined : typed),
+  z
+    .string({ error: "validation.invalid" })
+    .refine((day) => dayNumber(day) !== null, { error: "validation.invalid" })
+    .optional(),
+);
+export const promotionDatesInput = z
+  .object({ startsOn: promotionDay, endsOn: promotionDay })
+  .superRefine((dates, context) => {
+    if (endsBeforeStart(dates)) {
+      context.addIssue({
+        code: "custom",
+        path: ["endsOn"],
+        message: "validation.promotionDatesOrder",
+      });
+    }
+  });
+export type PromotionDatesInput = z.infer<typeof promotionDatesInput>;
+const datesByIdInput = z.record(z.uuid({ error: "validation.invalid" }), promotionDatesInput);
+
 /** The chosen developers of the home page, in order: at most 10, each once, each a real id. The whole list is sent. */
 export const topDevelopersInputSchema = z.object({
   builderIds: z
     .array(z.uuid({ error: "validation.invalid" }))
     .max(TOP_DEVELOPERS_MAX, { error: "validation.invalid" })
     .refine((ids) => new Set(ids).size === ids.length, { error: "validation.invalid" }),
+  /** Each chosen developer's first and last day (ADR-210), by id; none means it runs until removed. */
+  dates: datesByIdInput.optional(),
 });
 export type TopDevelopersInput = z.infer<typeof topDevelopersInputSchema>;
 
@@ -323,5 +352,8 @@ const sponsoredList = z
 export const sponsoredBuildersInputSchema = z.object({
   featured: sponsoredList,
   spotlight: sponsoredList,
+  /** Each pick's first and last day in that slot (ADR-210), by id. */
+  featuredDates: datesByIdInput.optional(),
+  spotlightDates: datesByIdInput.optional(),
 });
 export type SponsoredBuildersInput = z.infer<typeof sponsoredBuildersInputSchema>;

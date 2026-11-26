@@ -6,7 +6,8 @@ import {
   SPONSOR_HREF_MAX,
 } from "./constants";
 import { SPONSOR_STYLES } from "@/lib/sponsors";
-import { optionalLine, requiredLine, tidy } from "./schemas";
+import { endsBeforeStart } from "@/lib/promotion-dates";
+import { optionalLine, promotionDatesInput, requiredLine, tidy } from "./schemas";
 import { SPONSOR_SLOTS } from "./sponsor-rules";
 
 /**
@@ -133,6 +134,9 @@ const sponsorFields = z.object({
   photo: picturePath,
   showcase,
   cinematic,
+  /** The first and last day the ad runs (ADR-210); empty boxes mean from now and until removed. */
+  startsOn: promotionDatesInput.shape.startsOn,
+  endsOn: promotionDatesInput.shape.endsOn,
 });
 
 const sponsor = z.preprocess(sortLink, sponsorFields);
@@ -150,6 +154,13 @@ export const sponsorsInputSchema = z.object({
           context.addIssue({ code: "custom", message: "validation.invalid", path: [index, "id"] });
         }
         seen.add(item.id);
+        if (endsBeforeStart(item)) {
+          context.addIssue({
+            code: "custom",
+            message: "validation.promotionDatesOrder",
+            path: [index, "endsOn"],
+          });
+        }
         if (item.photo !== undefined && !item.photo.startsWith(`sponsors/${item.id}/`)) {
           context.addIssue({
             code: "custom",

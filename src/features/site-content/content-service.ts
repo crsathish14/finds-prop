@@ -1,5 +1,6 @@
 import { ActionError } from "@/server/actions/normalise-error";
 import { SITE_SETTING_SCHEMAS } from "@/features/site";
+import { compactDates, type PromotionDates } from "@/lib/promotion-dates";
 import type { EditableSetting } from "./constants";
 import type {
   ContentModulesInput,
@@ -216,12 +217,33 @@ export function saveProjectPrimeContent(
   });
 }
 
-/** Saves the chosen developers of the home page, in order. */
+/**
+ * The dates kept for a list (ADR-210): only for ids still in the list, and only the days given, so a removed pick
+ * leaves no dates behind and an undated pick stores nothing.
+ */
+export function datesFor(
+  ids: readonly string[],
+  dates: Readonly<Record<string, PromotionDates>> | undefined,
+): Record<string, PromotionDates> {
+  const kept: Record<string, PromotionDates> = {};
+  for (const id of ids) {
+    const given = dates?.[id];
+    if (given === undefined) continue;
+    const compact = compactDates(given);
+    if (Object.keys(compact).length > 0) kept[id] = compact;
+  }
+  return kept;
+}
+
+/** Saves the chosen developers of the home page, in order, with their dates (ADR-210). */
 export function saveTopDevelopersContent(
   store: ContentStore,
   input: TopDevelopersInput,
 ): Promise<ContentDone> {
-  return publish(store, "top_developers", { builderIds: input.builderIds });
+  return publish(store, "top_developers", {
+    builderIds: input.builderIds,
+    dates: datesFor(input.builderIds, input.dates),
+  });
 }
 
 /** Saves the builders and agents picked for the Featured card and the Developer Spotlight (ADR-191). */
@@ -232,6 +254,8 @@ export function saveSponsoredBuildersContent(
   return publish(store, "sponsored_builders", {
     featured: input.featured,
     spotlight: input.spotlight,
+    featuredDates: datesFor(input.featured, input.featuredDates),
+    spotlightDates: datesFor(input.spotlight, input.spotlightDates),
   });
 }
 

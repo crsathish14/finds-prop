@@ -11,7 +11,15 @@ import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import type { SponsoredSlot } from "@/lib/sponsored-builders";
-import { useSaveFlow, useSiteContentFrame, type SaveContent } from "./save-flow.client";
+import type { Problems } from "./form";
+import { PromotionDatesFields, PromotionDatesNote } from "./promotion-dates-fields.client";
+import { datesOf, NO_DATES, type PromotionDatesValue } from "./promotion-dates-form";
+import {
+  useSaveFlow,
+  useScrollToProblems,
+  useSiteContentFrame,
+  type SaveContent,
+} from "./save-flow.client";
 
 export type SponsoredBuilderOption = {
   id: string;
@@ -26,12 +34,20 @@ export type SponsoredBuildersFormProps = {
   options: readonly SponsoredBuilderOption[];
   /** The ids saved today for each slot. */
   initial: Readonly<Record<SponsoredSlot, readonly string[]>>;
+  /** Each pick's saved first and last day in each slot (ADR-210), by id. */
+  initialDates: Readonly<Record<SponsoredSlot, Readonly<Record<string, PromotionDatesValue>>>>;
+  /** Today's India date, for the Scheduled, Running and Ended tags. */
+  today: string;
   /** The most each slot holds. */
   max: number;
   save: SaveContent;
 };
 
 type Picks = Record<SponsoredSlot, string[]>;
+type Dates = Record<SponsoredSlot, Record<string, PromotionDatesValue>>;
+
+const DATE_KEYS = { featured: "featuredDates", spotlight: "spotlightDates" } as const;
+const NO_PROBLEMS: Problems = {};
 
 /**
  * The super admin's "Sponsored builders" page (ADR-191): which builders and agents the Featured project card in the
@@ -39,7 +55,14 @@ type Picks = Record<SponsoredSlot, string[]>;
  * shown comes from what each builder or agent uploaded, and each visit shows a different one of the picked. Both lists
  * are saved together with the page's Save bar; Discard puts them back.
  */
-export function SponsoredBuildersForm({ options, initial, max, save }: SponsoredBuildersFormProps) {
+export function SponsoredBuildersForm({
+  options,
+  initial,
+  initialDates,
+  today,
+  max,
+  save,
+}: SponsoredBuildersFormProps) {
   const translate = useTranslations("admin.sponsoredBuilders");
   const frame = useSiteContentFrame("sponsored_builders");
   const flow = useSaveFlow(save, {
@@ -51,12 +74,27 @@ export function SponsoredBuildersForm({ options, initial, max, save }: Sponsored
     spotlight: [...initial.spotlight],
   });
   const [picks, setPicks] = useState<Picks>(start);
+  const startDates = (): Dates => ({
+    featured: { ...initialDates.featured },
+    spotlight: { ...initialDates.spotlight },
+  });
+  const [dates, setDates] = useState<Dates>(startDates);
+  const [problems, setProblems] = useState<Problems>(NO_PROBLEMS);
+  const alertAt = useScrollToProblems(problems);
+  const shared = useTranslations("admin.siteContent");
   const byId = new Map(options.map((option) => [option.id, option]));
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (flow.saving) return;
-    await flow.submit({ featured: picks.featured, spotlight: picks.spotlight });
+    setProblems(
+      await flow.submit({
+        featured: picks.featured,
+        spotlight: picks.spotlight,
+        featuredDates: datesOf(picks.featured, dates.featured),
+        spotlightDates: datesOf(picks.spotlight, dates.spotlight),
+      }),
+    );
   };
 
   const slot = (key: SponsoredSlot) => {
@@ -95,18 +133,36 @@ export function SponsoredBuildersForm({ options, initial, max, save }: Sponsored
               return (
                 <li
                   key={id}
-                  className="flex items-center gap-2 rounded-md border border-line bg-canvas px-3 py-2"
+                  className="flex flex-col gap-3 rounded-md border border-line bg-canvas px-3 py-2"
                 >
-                  <span className="min-w-0 flex-1 truncate text-body text-ink">{name}</span>
-                  {option ? <Badge tone="neutral">{kindLabel(option)}</Badge> : null}
-                  <IconButton
-                    type="button"
-                    aria-label={translate("remove", { name })}
+                  <div className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate text-body text-ink">{name}</span>
+                    {option ? <Badge tone="neutral">{kindLabel(option)}</Badge> : null}
+                    <IconButton
+                      type="button"
+                      aria-label={translate("remove", { name })}
+                      disabled={flow.saving}
+                      onClick={() => set(chosen.filter((other) => other !== id))}
+                    >
+                      <Icon icon={X} size="lg" />
+                    </IconButton>
+                  </div>
+                  <PromotionDatesFields
+                    value={dates[key][id] ?? NO_DATES}
+                    onChange={(value) =>
+                      setDates((previous) => ({
+                        ...previous,
+                        [key]: { ...previous[key], [id]: value },
+                      }))
+                    }
+                    today={today}
                     disabled={flow.saving}
-                    onClick={() => set(chosen.filter((other) => other !== id))}
-                  >
-                    <Icon icon={X} size="lg" />
-                  </IconButton>
+                    subject={name}
+                    errors={{
+                      startsOn: problems[`${DATE_KEYS[key]}.${id}.startsOn`],
+                      endsOn: problems[`${DATE_KEYS[key]}.${id}.endsOn`],
+                    }}
+                  />
                 </li>
               );
             })}
@@ -160,7 +216,18 @@ export function SponsoredBuildersForm({ options, initial, max, save }: Sponsored
           {translate("title")}
         </Heading>
         <p className="text-body text-muted">{translate("description", { max })}</p>
+        <PromotionDatesNote />
       </div>
+      {Object.keys(problems).length > 0 ? (
+        <div ref={alertAt} tabIndex={-1}>
+          <Alert
+            tone="danger"
+            title={shared("problems.title", { count: Object.keys(problems).length })}
+          >
+            {shared("problems.text")}
+          </Alert>
+        </div>
+      ) : null}
       <div className="grid gap-6 xl:grid-cols-2">
         {slot("featured")}
         {slot("spotlight")}
@@ -169,7 +236,11 @@ export function SponsoredBuildersForm({ options, initial, max, save }: Sponsored
         note={frame.saveNote}
         words={frame.saveWords}
         saving={flow.saving}
-        onCancel={() => setPicks(start())}
+        onCancel={() => {
+          setPicks(start());
+          setDates(startDates());
+          setProblems(NO_PROBLEMS);
+        }}
       />
     </form>
   );

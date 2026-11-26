@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 import { PROJECT_PRIME_AMOUNT_MAX } from "@/lib/project-prime";
+import { PROMOTION_DAY } from "@/lib/promotion-dates";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
 
 /**
@@ -142,11 +143,23 @@ const projectFieldsSchema = z.object({
 });
 
 /**
+ * A promotion's optional first and last day (ADR-210), India dates as `YYYY-MM-DD`, kept by id beside the list it
+ * belongs to, so a list saved before the dates is read as it was. The public read leaves out an id that is not running
+ * today (`running-promotions.ts`); the admin pages read the whole list with its dates.
+ */
+export const promotionDatesSchema = z.object({
+  startsOn: z.string().regex(PROMOTION_DAY).optional(),
+  endsOn: z.string().regex(PROMOTION_DAY).optional(),
+});
+const datesById = z.record(z.uuid(), promotionDatesSchema);
+
+/**
  * The developers the home page's "Top developers" section shows, in order (at most 10). Empty means the section picks
  * developers by itself, as before. An id that is no longer a developer with a public project is skipped when it is read.
  */
 const topDevelopersSchema = z.object({
   builderIds: z.array(z.uuid()).max(TOP_DEVELOPERS_MAX),
+  dates: datesById.optional(),
 });
 
 /**
@@ -157,6 +170,8 @@ const topDevelopersSchema = z.object({
 const sponsoredBuildersSchema = z.object({
   featured: z.array(z.uuid()).max(SPONSORED_BUILDERS_MAX),
   spotlight: z.array(z.uuid()).max(SPONSORED_BUILDERS_MAX),
+  featuredDates: datesById.optional(),
+  spotlightDates: datesById.optional(),
 });
 
 /**

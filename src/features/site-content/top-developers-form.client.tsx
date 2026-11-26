@@ -9,7 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
-import { useSaveFlow, useSiteContentFrame, type SaveContent } from "./save-flow.client";
+import type { Problems } from "./form";
+import { PromotionDatesFields, PromotionDatesNote } from "./promotion-dates-fields.client";
+import { datesOf, NO_DATES, type PromotionDatesValue } from "./promotion-dates-form";
+import {
+  useSaveFlow,
+  useScrollToProblems,
+  useSiteContentFrame,
+  type SaveContent,
+} from "./save-flow.client";
 
 export type TopDeveloperOption = {
   id: string;
@@ -23,6 +31,10 @@ export type TopDevelopersFormProps = {
   options: readonly TopDeveloperOption[];
   /** The ids saved today, in their order. */
   initial: readonly string[];
+  /** Each chosen developer's saved first and last day (ADR-210), by id. */
+  initialDates: Readonly<Record<string, PromotionDatesValue>>;
+  /** Today's India date, for the Scheduled, Running and Ended tags. */
+  today: string;
   /** The most the home page shows. */
   max: number;
   save: SaveContent;
@@ -33,7 +45,16 @@ export type TopDevelopersFormProps = {
  * `max`). The order is set with Up and Down buttons, which work from the keyboard. With none chosen the home page
  * picks developers by itself, as before. A developer with no approved, published project is skipped on the home page.
  */
-export function TopDevelopersForm({ options, initial, max, save }: TopDevelopersFormProps) {
+const NO_PROBLEMS: Problems = {};
+
+export function TopDevelopersForm({
+  options,
+  initial,
+  initialDates,
+  today,
+  max,
+  save,
+}: TopDevelopersFormProps) {
   const translate = useTranslations("admin.topDevelopers");
   const frame = useSiteContentFrame("top_developers");
   const flow = useSaveFlow(save, {
@@ -41,6 +62,12 @@ export function TopDevelopersForm({ options, initial, max, save }: TopDevelopers
     text: translate("saved.text"),
   });
   const [chosen, setChosen] = useState<string[]>(() => [...initial]);
+  const [dates, setDates] = useState<Record<string, PromotionDatesValue>>(() => ({
+    ...initialDates,
+  }));
+  const [problems, setProblems] = useState<Problems>(NO_PROBLEMS);
+  const alertAt = useScrollToProblems(problems);
+  const shared = useTranslations("admin.siteContent");
   const byId = new Map(options.map((option) => [option.id, option]));
   const available = options.filter((option) => !chosen.includes(option.id));
   const full = chosen.length >= max;
@@ -58,7 +85,7 @@ export function TopDevelopersForm({ options, initial, max, save }: TopDevelopers
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (flow.saving) return;
-    await flow.submit({ builderIds: chosen });
+    setProblems(await flow.submit({ builderIds: chosen, dates: datesOf(chosen, dates) }));
   };
 
   return (
@@ -68,7 +95,18 @@ export function TopDevelopersForm({ options, initial, max, save }: TopDevelopers
           {translate("title")}
         </Heading>
         <p className="text-body text-muted">{translate("description", { max })}</p>
+        <PromotionDatesNote />
       </div>
+      {Object.keys(problems).length > 0 ? (
+        <div ref={alertAt} tabIndex={-1}>
+          <Alert
+            tone="danger"
+            title={shared("problems.title", { count: Object.keys(problems).length })}
+          >
+            {shared("problems.text")}
+          </Alert>
+        </div>
+      ) : null}
 
       <section aria-labelledby="top-developers-chosen" className="flex flex-col gap-3">
         <h2 id="top-developers-chosen" className="text-title font-semibold text-ink">
@@ -85,34 +123,47 @@ export function TopDevelopersForm({ options, initial, max, save }: TopDevelopers
               return (
                 <li
                   key={id}
-                  className="flex items-center gap-2 rounded-md border border-line bg-surface px-3 py-2"
+                  className="flex flex-col gap-3 rounded-md border border-line bg-surface px-3 py-2"
                 >
-                  <span className="w-6 text-small text-muted">{index + 1}</span>
-                  <span className="min-w-0 flex-1 truncate text-body text-ink">{name}</span>
-                  <IconButton
-                    type="button"
-                    aria-label={translate("moveUp", { name })}
-                    disabled={flow.saving || index === 0}
-                    onClick={() => move(index, -1)}
-                  >
-                    <Icon icon={ArrowUp} size="lg" />
-                  </IconButton>
-                  <IconButton
-                    type="button"
-                    aria-label={translate("moveDown", { name })}
-                    disabled={flow.saving || index === chosen.length - 1}
-                    onClick={() => move(index, 1)}
-                  >
-                    <Icon icon={ArrowDown} size="lg" />
-                  </IconButton>
-                  <IconButton
-                    type="button"
-                    aria-label={translate("remove", { name })}
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 text-small text-muted">{index + 1}</span>
+                    <span className="min-w-0 flex-1 truncate text-body text-ink">{name}</span>
+                    <IconButton
+                      type="button"
+                      aria-label={translate("moveUp", { name })}
+                      disabled={flow.saving || index === 0}
+                      onClick={() => move(index, -1)}
+                    >
+                      <Icon icon={ArrowUp} size="lg" />
+                    </IconButton>
+                    <IconButton
+                      type="button"
+                      aria-label={translate("moveDown", { name })}
+                      disabled={flow.saving || index === chosen.length - 1}
+                      onClick={() => move(index, 1)}
+                    >
+                      <Icon icon={ArrowDown} size="lg" />
+                    </IconButton>
+                    <IconButton
+                      type="button"
+                      aria-label={translate("remove", { name })}
+                      disabled={flow.saving}
+                      onClick={() => setChosen(chosen.filter((other) => other !== id))}
+                    >
+                      <Icon icon={X} size="lg" />
+                    </IconButton>
+                  </div>
+                  <PromotionDatesFields
+                    value={dates[id] ?? NO_DATES}
+                    onChange={(value) => setDates((previous) => ({ ...previous, [id]: value }))}
+                    today={today}
                     disabled={flow.saving}
-                    onClick={() => setChosen(chosen.filter((other) => other !== id))}
-                  >
-                    <Icon icon={X} size="lg" />
-                  </IconButton>
+                    subject={name}
+                    errors={{
+                      startsOn: problems[`dates.${id}.startsOn`],
+                      endsOn: problems[`dates.${id}.endsOn`],
+                    }}
+                  />
                 </li>
               );
             })}
@@ -163,7 +214,11 @@ export function TopDevelopersForm({ options, initial, max, save }: TopDevelopers
         note={frame.saveNote}
         words={frame.saveWords}
         saving={flow.saving}
-        onCancel={() => setChosen([...initial])}
+        onCancel={() => {
+          setChosen([...initial]);
+          setDates({ ...initialDates });
+          setProblems(NO_PROBLEMS);
+        }}
       />
     </form>
   );

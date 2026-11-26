@@ -126,6 +126,8 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
         rera: "",
       },
       cinematic: { eyebrow: "", headline: "", line: "", button: "" },
+      startsOn: "",
+      endsOn: "",
       pictures: {},
     });
   });
@@ -135,6 +137,12 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
     const half = sponsor("a", { pictures: justOne("strip-desktop", withStrip("a")) });
     expect(statusOf(half, "showcase")).toBe("needs_images");
     expect(statusOf(sponsor("a", { pictures: withStrip("a") }), "showcase")).toBe("active");
+    // An active sponsor whose dates are not today is Scheduled or Ended (ADR-210).
+    const dated = (startsOn: string, endsOn: string) =>
+      sponsor("a", { pictures: withStrip("a"), startsOn, endsOn });
+    expect(statusOf(dated("2026-12-01", ""), "showcase", "2026-11-26")).toBe("scheduled");
+    expect(statusOf(dated("", "2026-11-25"), "showcase", "2026-11-26")).toBe("ended");
+    expect(statusOf(dated("2026-11-01", "2026-11-30"), "showcase", "2026-11-26")).toBe("active");
     expect(statusOf(sponsor("a", { pictures: withPanel("a"), active: false }), "showcase")).toBe(
       "inactive",
     );
@@ -255,6 +263,8 @@ describe("UT-sponsor-draft: the sponsor list the Hero page works on (S7-T11)", (
           rera: "",
         },
         cinematic: { eyebrow: "", headline: "", line: "", button: "" },
+        startsOn: "",
+        endsOn: "",
         strip: { desktop: "sponsors/a/sd.webp", compact: "sponsors/a/sp.webp" },
         panel: { desktop: "sponsors/a/pd.webp", compact: "sponsors/a/pp.webp" },
       });

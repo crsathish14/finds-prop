@@ -1,3 +1,6 @@
+import { dayNumber } from "@/lib/india-days";
+import { endsBeforeStart } from "@/lib/promotion-dates";
+import { statusOfTyped } from "./promotion-dates-form";
 import { heroCoverage, type HeroCoverage } from "@/lib/sponsor-coverage";
 import {
   readyFor,
@@ -99,6 +102,9 @@ export interface SponsorDraft {
   brand: string;
   showcase: Record<ShowcaseBox, string>;
   cinematic: Record<CinematicBox, string>;
+  /** The first and last day it runs (ADR-210), as the date boxes hold them: `YYYY-MM-DD` or empty. */
+  startsOn: string;
+  endsOn: string;
   pictures: Partial<Record<PictureKey, DraftPicture>>;
 }
 
@@ -131,6 +137,8 @@ export function draftsOf(views: readonly SponsorEditView[]): SponsorDraft[] {
       brand: view.brand ?? "",
       showcase: { ...emptyLines(SHOWCASE_BOXES), ...view.showcase },
       cinematic: { ...emptyLines(CINEMATIC_BOXES), ...view.cinematic },
+      startsOn: view.startsOn ?? "",
+      endsOn: view.endsOn ?? "",
       pictures,
     };
   });
@@ -150,6 +158,8 @@ export function emptyDraft(id: string): SponsorDraft {
     brand: "",
     showcase: emptyLines(SHOWCASE_BOXES),
     cinematic: emptyLines(CINEMATIC_BOXES),
+    startsOn: "",
+    endsOn: "",
     pictures: {},
   };
 }
@@ -171,17 +181,20 @@ export function styleReady(draft: SponsorDraft, style: SponsorStyle): boolean {
   return ad ? readyFor(ad, style) : false;
 }
 
-export type SponsorStatus = "active" | "inactive" | "needs_images";
+export type SponsorStatus = "active" | "inactive" | "needs_images" | "scheduled" | "ended";
 
 /**
  * A sponsor that can show nowhere (not ready for the hero style, and no banner pair for Split or the results) is never
- * shown, whatever its switch says.
+ * shown, whatever its switch says. A sponsor that is on but whose dates are not today is Scheduled or Ended (ADR-210).
  */
-export function statusOf(draft: SponsorDraft, style: SponsorStyle): SponsorStatus {
+export function statusOf(draft: SponsorDraft, style: SponsorStyle, today?: string): SponsorStatus {
   if (!styleReady(draft, style) && !formatReady(draft, "strip") && !formatReady(draft, "panel")) {
     return "needs_images";
   }
-  return draft.active ? "active" : "inactive";
+  if (!draft.active) return "inactive";
+  if (today === undefined) return "active";
+  const when = statusOfTyped({ startsOn: draft.startsOn, endsOn: draft.endsOn }, today);
+  return when === "running" ? "active" : when;
 }
 
 /** "3 sponsors · 2 active" needs both numbers: a sponsor counts as active when its switch is on. */
@@ -249,7 +262,9 @@ export type DraftBox =
   | "projectSlug"
   | "brand"
   | `showcase.${ShowcaseBox}`
-  | `cinematic.${CinematicBox}`;
+  | `cinematic.${CinematicBox}`
+  | "startsOn"
+  | "endsOn";
 export interface DraftProblems {
   /** A message key under `validation.*`, by box. */
   boxes: Partial<Record<DraftBox, string>>;
@@ -300,6 +315,21 @@ export function draftProblems(draft: SponsorDraft): DraftProblems {
   for (const [box, limit] of Object.entries(CINEMATIC_BOXES) as [CinematicBox, number][]) {
     if (tooLong(draft.cinematic[box], limit)) boxes[`cinematic.${box}`] = "validation.invalid";
   }
+  // The first and last day (ADR-210): each a real day or empty, and the last not before the first.
+  const day = (typed: string) => typed.trim();
+  if (day(draft.startsOn) !== "" && dayNumber(day(draft.startsOn)) === null) {
+    boxes.startsOn = "validation.invalid";
+  }
+  if (day(draft.endsOn) !== "" && dayNumber(day(draft.endsOn)) === null) {
+    boxes.endsOn = "validation.invalid";
+  } else if (
+    endsBeforeStart({
+      ...(day(draft.startsOn) === "" ? {} : { startsOn: day(draft.startsOn) }),
+      ...(day(draft.endsOn) === "" ? {} : { endsOn: day(draft.endsOn) }),
+    })
+  ) {
+    boxes.endsOn = "validation.promotionDatesOrder";
+  }
   for (const format of ["strip", "panel"] as const) {
     const desktop = `${format}-desktop` as const;
     const phone = `${format}-phone` as const;
@@ -330,6 +360,8 @@ export type SponsorPayload = {
     photo?: string;
     showcase: Record<ShowcaseBox, string>;
     cinematic: Record<CinematicBox, string>;
+    startsOn: string;
+    endsOn: string;
     strip?: { desktop?: string; compact?: string };
     panel?: { desktop?: string; compact?: string };
   }[];
@@ -355,6 +387,8 @@ export function payloadOf(drafts: readonly SponsorDraft[], style?: SponsorStyle)
         brand: draft.brand,
         showcase: { ...draft.showcase },
         cinematic: { ...draft.cinematic },
+        startsOn: draft.startsOn,
+        endsOn: draft.endsOn,
       };
       const photo = draft.pictures.photo;
       if (photo?.kind === "stored") entry.photo = photo.path;
@@ -404,7 +438,9 @@ export function serverProblemsOf(
       first === "alt" ||
       first === "href" ||
       first === "projectSlug" ||
-      first === "brand"
+      first === "brand" ||
+      first === "startsOn" ||
+      first === "endsOn"
     ) {
       entry.boxes[first] = message;
     } else if (first === "photo") {

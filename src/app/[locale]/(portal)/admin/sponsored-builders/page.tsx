@@ -4,8 +4,10 @@ import { getTranslate } from "@/features/site";
 import {
   getSiteContent,
   saveSponsoredBuilders,
+  typedDatesOf,
   SponsoredBuildersForm,
 } from "@/features/site-content";
+import { indiaToday } from "@/lib/india-days";
 import { SPONSORED_BUILDERS_MAX } from "@/lib/sponsored-builders";
 
 // The portal layout already says the page is never indexed.
@@ -30,11 +32,18 @@ export default async function SponsoredBuildersPage() {
       projects: builder.projects,
     }));
   const initial = settings.sponsored_builders;
+  // The tags say where each pick stands today (ADR-210); the page is read on every visit, so today is today.
+  const today = indiaToday(new Date());
   return (
     <SponsoredBuildersForm
       key={JSON.stringify(initial)}
       options={options}
       initial={initial}
+      initialDates={{
+        featured: typedDatesOf(initial.featuredDates),
+        spotlight: typedDatesOf(initial.spotlightDates),
+      }}
+      today={today}
       max={SPONSORED_BUILDERS_MAX}
       save={saveSponsoredBuilders}
     />

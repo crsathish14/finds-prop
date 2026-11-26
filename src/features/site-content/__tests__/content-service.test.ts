@@ -268,7 +268,9 @@ describe("UT-top-developers: the chosen developers of the home page", () => {
     const { store, writes } = fakeStore();
     const done = await saveTopDevelopersContent(store, { builderIds: [ID(2), ID(1)] });
     expect(done).toEqual({ key: "top_developers" });
-    expect(writes).toEqual([{ key: "top_developers", value: { builderIds: [ID(2), ID(1)] } }]);
+    expect(writes).toEqual([
+      { key: "top_developers", value: { builderIds: [ID(2), ID(1)], dates: {} } },
+    ]);
   });
 
   it("takes none (the home page then picks by itself) and ten, but not eleven", () => {
@@ -295,7 +297,15 @@ describe("UT-sponsored-builders: who the Featured card and the Spotlight draw fr
     });
     expect(done).toEqual({ key: "sponsored_builders" });
     expect(writes).toEqual([
-      { key: "sponsored_builders", value: { featured: [ID(2), ID(1)], spotlight: [ID(3)] } },
+      {
+        key: "sponsored_builders",
+        value: {
+          featured: [ID(2), ID(1)],
+          spotlight: [ID(3)],
+          featuredDates: {},
+          spotlightDates: {},
+        },
+      },
     ]);
   });
 

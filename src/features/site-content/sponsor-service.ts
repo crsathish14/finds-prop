@@ -229,6 +229,9 @@ export async function saveSponsorsContent(
     if (showcase) value.showcase = showcase;
     const cinematic = filledLines(sponsor.cinematic);
     if (cinematic) value.cinematic = cinematic;
+    // The first and last day it runs (ADR-210), only when given.
+    if (sponsor.startsOn !== undefined) value.startsOn = sponsor.startsOn;
+    if (sponsor.endsOn !== undefined) value.endsOn = sponsor.endsOn;
     if (sponsor.photo !== undefined) {
       const picture = pictureAt(sponsor.photo);
       if (picture) {

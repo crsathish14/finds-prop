@@ -10,7 +10,8 @@
  *   after it), words ({ ready, missing (the word for a format that is ready or not), statuses: { active, inactive,
  *   needsImages }, unnamed (the name shown for a sponsor saved without one) }), empty ({ title, text }), onMove
  *   (the row's id and "up" or "down"), headingLevel ("h2" default | "h1" | "h3"), className. A row is { id,
- *   advertiser, status ("active" | "inactive" | "needs_images"), strip and panel (true when that format has both its
+ *   advertiser, status ("active" | "inactive" | "needs_images" | "scheduled" | "ended", the last two for a sponsor
+ *   whose dates are not today, ADR-210), strip and panel (true when that format has both its
  *   pictures), moveUpLabel and moveDownLabel (the whole names of the arrows, "Move Sample Developer up"), editLabel
  *   ("Edit"), editFor (the sponsor, heard after it), onEdit, deleteLabel (the whole name, "Delete Sample
  *   Developer"), onDelete, pending }.
@@ -44,7 +45,7 @@ import { Text } from "@/components/ui/text";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { cn } from "@/lib/cn";
 
-type SponsorStatus = "active" | "inactive" | "needs_images";
+type SponsorStatus = "active" | "inactive" | "needs_images" | "scheduled" | "ended";
 
 type SponsorRow = {
   id: string;
@@ -68,7 +69,14 @@ type SponsorRow = {
 type SponsorsManagerWords = {
   ready: string;
   missing: string;
-  statuses: { active: string; inactive: string; needsImages: string };
+  statuses: {
+    active: string;
+    inactive: string;
+    needsImages: string;
+    /** A sponsor whose start date is still ahead, and one whose end date has passed (ADR-210). */
+    scheduled?: string;
+    ended?: string;
+  };
   unnamed: string;
 };
 
@@ -134,6 +142,20 @@ function StatusLabel({ status, words }: { status: SponsorStatus; words: Sponsors
     return (
       <Badge dot tone="warning">
         {words.statuses.needsImages}
+      </Badge>
+    );
+  }
+  if (status === "scheduled") {
+    return (
+      <Badge dot tone="info">
+        {words.statuses.scheduled ?? words.statuses.inactive}
+      </Badge>
+    );
+  }
+  if (status === "ended") {
+    return (
+      <Badge dot tone="neutral">
+        {words.statuses.ended ?? words.statuses.inactive}
       </Badge>
     );
   }

@@ -48,11 +48,13 @@ import {
   type ImageInfo,
   type SlotProblem,
 } from "./sponsor-rules";
+import { indiaToday } from "@/lib/india-days";
 import { SPONSOR_IMAGE_MAX_BYTES, SPONSOR_PHOTO_MAX_BYTES } from "./constants";
 import { createSponsorStorage, type SponsorStorage } from "./sponsor-storage";
 import { checkPicture, chosenPictureOf, newSponsorId, uploadChosen } from "./sponsor-upload";
 import type { SponsorEditView } from "./sponsor-view";
 import { useSponsorWords } from "./sponsor-words.client";
+import { PromotionDatesFields, PromotionDatesNote } from "./promotion-dates-fields.client";
 
 /**
  * The sponsor manager of the Hero page (S7-T11, FR-ADM-11): the list, the Add and Edit drawer, the Delete question.
@@ -109,6 +111,7 @@ export function useSponsors({
   projects = [],
   save,
   storage,
+  today,
 }: {
   sponsors: readonly SponsorEditView[];
   /** The hero ad style as saved (ADR-182). */
@@ -116,6 +119,8 @@ export function useSponsors({
   projects?: readonly SponsorProjectOption[];
   save: SaveSponsors;
   storage?: SponsorStorage;
+  /** Today's India date from the server, for the Scheduled and Ended tags (ADR-210). */
+  today?: string;
 }) {
   const words = useSponsorWords();
   const router = useRouter();
@@ -611,7 +616,7 @@ export function useSponsors({
     return {
       id: draft.id,
       advertiser: draft.advertiser.trim(),
-      status: statusOf(draft, style),
+      status: statusOf(draft, style, today),
       // The first readiness column is the hero ad in the chosen style (ADR-189).
       strip: styleReady(draft, style),
       panel: formatReady(draft, "panel"),
@@ -631,6 +636,8 @@ export function useSponsors({
   return {
     drafts,
     style,
+    // The drawer's tag; the server gives today, and a test without it reads the browser's clock.
+    today: today ?? indiaToday(new Date()),
     chooseStyle,
     photoSlot,
     projectOptions,
@@ -746,6 +753,19 @@ export function SponsorsPanel({ state }: { state: SponsorsState }) {
               disabled={state.saving}
               words={words.fields}
             />
+            <div className="mt-6 flex flex-col gap-2">
+              <PromotionDatesNote />
+              <PromotionDatesFields
+                value={{ startsOn: work.startsOn, endsOn: work.endsOn }}
+                onChange={(value) => state.setWork({ ...work, ...value })}
+                today={state.today}
+                disabled={state.saving}
+                errors={{
+                  startsOn: state.problems.boxes.startsOn,
+                  endsOn: state.problems.boxes.endsOn,
+                }}
+              />
+            </div>
           </form>
         )}
       </ManagerDrawer>

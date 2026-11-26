@@ -45,6 +45,9 @@ export interface SponsorEditView {
     Record<"project" | "locality" | "homes" | "price" | "size" | "possession" | "rera", string>
   >;
   cinematic?: Partial<Record<"eyebrow" | "headline" | "line" | "button", string>>;
+  /** The first and last day it runs (ADR-210), `YYYY-MM-DD`, when set. */
+  startsOn?: string;
+  endsOn?: string;
 }
 
 const picture = z.object({
@@ -86,6 +89,8 @@ const stored = z.object({
     "rera",
   ] as const).optional(),
   cinematic: lines(["eyebrow", "headline", "line", "button"] as const).optional(),
+  startsOn: z.string().max(10).optional().catch(undefined),
+  endsOn: z.string().max(10).optional().catch(undefined),
 });
 
 /** The filled lines of a style, or nothing. */
@@ -133,7 +138,7 @@ export function sponsorEditViewsOf(
     }
     seen.add(parsed.data.id);
     const { id, advertiser, active, alt, link, href, projectSlug, strip, panel } = parsed.data;
-    const { brand, photo } = parsed.data;
+    const { brand, photo, startsOn, endsOn } = parsed.data;
     const showcase = filled(parsed.data.showcase);
     const cinematic = filled(parsed.data.cinematic);
     sponsors.push({
@@ -150,6 +155,8 @@ export function sponsorEditViewsOf(
       ...(photo ? { photo: view(photo) } : {}),
       ...(showcase ? { showcase } : {}),
       ...(cinematic ? { cinematic } : {}),
+      ...(startsOn ? { startsOn } : {}),
+      ...(endsOn ? { endsOn } : {}),
     });
   }
   return { sponsors, skipped };
