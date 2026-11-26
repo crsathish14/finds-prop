@@ -562,6 +562,8 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         status: "under_construction",
         bhk: 2,
         maxPrice: 6_000_000,
+        preferLocalities: null,
+        preferAmenities: null,
         limit: null,
       });
       expect(result).toMatchObject({
