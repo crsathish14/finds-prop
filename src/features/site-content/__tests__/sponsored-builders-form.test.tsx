@@ -25,6 +25,8 @@ describe("SponsoredBuildersForm: who the Featured card and the Spotlight draw fr
       <SponsoredBuildersForm
         options={options}
         initial={{ featured: ["b"], spotlight: [] }}
+        initialDates={{ featured: {}, spotlight: {} }}
+        today="2026-11-26"
         max={10}
         save={vi.fn()}
       />,
@@ -43,6 +45,8 @@ describe("SponsoredBuildersForm: who the Featured card and the Spotlight draw fr
       <SponsoredBuildersForm
         options={options}
         initial={{ featured: ["a"], spotlight: ["a"] }}
+        initialDates={{ featured: {}, spotlight: {} }}
+        today="2026-11-26"
         max={10}
         save={save}
       />,
@@ -51,7 +55,12 @@ describe("SponsoredBuildersForm: who the Featured card and the Spotlight draw fr
     await userEvent.click(within(spotlight()).getByRole("button", { name: "Remove Alpha Homes" }));
     await userEvent.click(within(spotlight()).getByRole("button", { name: "Add Gamma Group" }));
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
-    expect(save).toHaveBeenCalledWith({ featured: ["a", "b"], spotlight: ["c"] });
+    expect(save).toHaveBeenCalledWith({
+      featured: ["a", "b"],
+      spotlight: ["c"],
+      featuredDates: {},
+      spotlightDates: {},
+    });
   });
 
   it("stops adding at the limit, and names one that is no longer active", () => {
@@ -59,6 +68,8 @@ describe("SponsoredBuildersForm: who the Featured card and the Spotlight draw fr
       <SponsoredBuildersForm
         options={options}
         initial={{ featured: ["a", "gone"], spotlight: [] }}
+        initialDates={{ featured: {}, spotlight: {} }}
+        today="2026-11-26"
         max={2}
         save={vi.fn()}
       />,
@@ -73,6 +84,8 @@ describe("SponsoredBuildersForm: who the Featured card and the Spotlight draw fr
       <SponsoredBuildersForm
         options={options}
         initial={{ featured: [], spotlight: [] }}
+        initialDates={{ featured: {}, spotlight: {} }}
+        today="2026-11-26"
         max={10}
         save={vi.fn()}
       />,

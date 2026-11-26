@@ -9,6 +9,7 @@ import {
   type SponsorShowcase,
   type SponsorStyle,
 } from "@/lib/sponsors";
+import { compactDates, PROMOTION_DAY } from "@/lib/promotion-dates";
 import { publicStorageUrl } from "@/lib/storage-url";
 
 /**
@@ -118,6 +119,9 @@ const adSchema = z
     photo: imageSchema.optional(),
     showcase: showcaseSchema.optional(),
     cinematic: cinematicSchema.optional(),
+    /** The ad's first and last day (ADR-210); the public read leaves out an ad that is not running today. */
+    startsOn: z.string().regex(PROMOTION_DAY).optional(),
+    endsOn: z.string().regex(PROMOTION_DAY).optional(),
   })
   .refine((ad) => (ad.link === "project" ? ad.projectSlug !== undefined : ad.href !== undefined));
 
@@ -166,7 +170,7 @@ export function toSponsorAds(
     }
     seen.add(parsed.data.id);
     const { id, active, placements, alt, link, href, projectSlug, strip, panel } = parsed.data;
-    const { brand, photo, showcase, cinematic } = parsed.data;
+    const { brand, photo, showcase, cinematic, startsOn, endsOn } = parsed.data;
     const project = link === "project" && projectSlug !== undefined ? projectSlug : null;
     const facts = showcaseOf(showcase);
     const words = cinematicOf(cinematic);
@@ -184,6 +188,9 @@ export function toSponsorAds(
       ...(photo ? { photo: toImage(supabaseUrl, photo) } : {}),
       ...(facts ? { showcase: facts } : {}),
       ...(words ? { cinematic: words } : {}),
+      ...(startsOn === undefined && endsOn === undefined
+        ? {}
+        : { dates: compactDates({ startsOn, endsOn }) }),
     });
   }
   if (skipped > 0) log?.warn("sponsored banners skipped, they do not fit", { skipped });

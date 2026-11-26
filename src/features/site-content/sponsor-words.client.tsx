@@ -15,6 +15,7 @@ import { PHOTO_RULE } from "./sponsor-rules";
  */
 export function useSponsorWords() {
   const translate = useTranslations("admin.siteContent.sponsors");
+  const dates = useTranslations("admin.promotionDates");
   const hero = useTranslations("admin.siteContent.hero");
 
   const manager = {
@@ -39,6 +40,8 @@ export function useSponsorWords() {
         active: translate("statuses.active"),
         inactive: translate("statuses.inactive"),
         needsImages: translate("statuses.needsImages"),
+        scheduled: dates("status.scheduled"),
+        ended: dates("status.ended"),
       },
       unnamed: translate("unnamed"),
     } satisfies SponsorsManagerWords,

@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { getBuilderOverview } from "@/features/builders";
 import { getTranslate } from "@/features/site";
+import { indiaToday } from "@/lib/india-days";
 import { TOP_DEVELOPERS_MAX } from "@/lib/top-developers";
-import { getSiteContent, saveTopDevelopers, TopDevelopersForm } from "@/features/site-content";
+import {
+  getSiteContent,
+  saveTopDevelopers,
+  TopDevelopersForm,
+  typedDatesOf,
+} from "@/features/site-content";
 
 // The portal layout already says the page is never indexed.
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,11 +27,14 @@ export default async function TopDevelopersPage() {
     .filter((builder) => builder.status !== "inactive")
     .map((builder) => ({ id: builder.id, name: builder.name, projects: builder.projects }));
   const initial = settings.top_developers.builderIds;
+  const today = indiaToday(new Date());
   return (
     <TopDevelopersForm
       key={JSON.stringify(initial)}
       options={options}
       initial={initial}
+      initialDates={typedDatesOf(settings.top_developers.dates)}
+      today={today}
       max={TOP_DEVELOPERS_MAX}
       save={saveTopDevelopers}
     />

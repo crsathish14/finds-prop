@@ -11,6 +11,8 @@
  *  3. Nothing left: show nothing at all (no frame, no label, no gap).
  * With several banners left they slide in turn, SPONSOR_ROTATION_MS each (SponsorFrame).
  */
+import type { PromotionDates } from "./promotion-dates";
+
 /** How long each banner stays before the next one slides in (owner decision, ADR-038). */
 export const SPONSOR_ROTATION_MS = 5000;
 
@@ -81,6 +83,8 @@ export type SponsorAd = {
   photo?: SponsorImage;
   showcase?: SponsorShowcase;
   cinematic?: SponsorCinematic;
+  /** The first and last day it runs (ADR-210), when the admin set them. */
+  dates?: PromotionDates;
 };
 
 /** True when an ad has everything the chosen style draws: the photo, the brand and that style's words. */
