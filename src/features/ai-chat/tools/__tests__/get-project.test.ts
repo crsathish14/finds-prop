@@ -17,6 +17,16 @@ const getProject = vi.fn();
 const error = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
+// The admin's Prime amounts (ADR-208): a total of ₹70 L or more counts as Prime in these tests.
+vi.mock("../../ranking/reads.server", () => ({
+  getPrimeRules: () =>
+    Promise.resolve({
+      ratePerSqft: null,
+      totalPrice: 7_000_000,
+      rentPerMonth: null,
+      rentPerSqftMonth: null,
+    }),
+}));
 // The projects feature is stood in for by its read (a stand-in) and its real page rules.
 vi.mock("@/features/projects", async () => {
   const { bhkSizes, priceOf, TREND_MONTHS } = await import("@/features/projects/view");
@@ -125,6 +135,7 @@ describe("UT-ai-tool-project: a project that is listed", () => {
           priceText: "₹78 L basic price",
           priceType: "basic",
           offerType: null,
+          prime: true,
           bhkOptions: [2, 3],
           landAreaText: "4.2 acres",
           totalUnits: 320,

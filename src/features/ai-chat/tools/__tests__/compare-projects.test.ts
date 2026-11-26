@@ -172,6 +172,7 @@ describe("UT-ai-tool-compare-projects: the fit against the chat's current projec
       filters: {
         bhk: 3,
         maxPrice: 6_000_000,
+        prime: null,
         preferLocalities: ["Navalur"],
         preferAmenities: ["pool"],
       },

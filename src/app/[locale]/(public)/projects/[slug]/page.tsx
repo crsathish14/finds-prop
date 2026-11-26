@@ -22,6 +22,7 @@ import {
 import { enquiryLinks } from "@/features/property";
 import { absoluteUrl, breadcrumbList, JsonLd, pageMetadata } from "@/features/seo";
 import { getSiteSettings, getTranslate } from "@/features/site";
+import { isPrimeProject } from "@/lib/project-prime";
 import { publicEnv } from "@/lib/public-env";
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -114,6 +115,7 @@ export default async function ProjectPage({ params }: PageProps) {
           project.extraFields,
         )}
         mobileEnquiry={<ProjectMobileBar contact={contactLinks(project.contactPhone)} />}
+        prime={isPrimeProject(settings.project_prime, project)}
       />
     </main>
   );

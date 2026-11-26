@@ -9,13 +9,23 @@ const getProjects = vi.fn();
 const error = vi.fn();
 const getPromotionLists = vi.fn();
 const getProjectExtras = vi.fn();
+const getPrimeRules = vi.fn();
 
 // The ranking's own reads (ADR-205): the admin's promotion lists and the projects' amenities, stood in for here.
 vi.mock("../../ranking/reads.server", () => ({
   getPromotionLists,
   getProjectExtras,
+  getPrimeRules,
   getHomeExtras: vi.fn(),
 }));
+
+/** The admin's Prime amounts in these tests (ADR-208): a total of ₹70 L or more, a rate of ₹2,000 per sq ft or more. */
+const PRIME_RULES = {
+  ratePerSqft: 2_000,
+  totalPrice: 7_000_000,
+  rentPerMonth: null,
+  rentPerSqftMonth: null,
+};
 
 const NO_PROMOTIONS = {
   sponsoredBuilders: new Set<string>(),
@@ -53,6 +63,7 @@ const NO_FILTERS = {
   status: null,
   bhk: null,
   maxPrice: null,
+  prime: null,
   preferLocalities: null,
   preferAmenities: null,
   page: null,
@@ -113,10 +124,11 @@ beforeEach(() => {
   getProjects.mockResolvedValue({ status: "ok", projects: PROJECTS, readAt: READ_AT });
   getPromotionLists.mockResolvedValue(NO_PROMOTIONS);
   getProjectExtras.mockResolvedValue(new Map());
+  getPrimeRules.mockResolvedValue(PRIME_RULES);
 });
 
 describe("UT-ai-tool-projects-search: the input", () => {
-  it("is called search_projects, is a read tool, and takes the six filters and two preferences, each required", () => {
+  it("is called search_projects, is a read tool, and takes the seven filters and two preferences, each required", () => {
     expect(searchProjectsTool.name).toBe("search_projects");
     expect(searchProjectsTool.kind).toBe("read");
     const schema = toPortableJsonSchema(searchProjectsInputSchema) as {
@@ -131,6 +143,7 @@ describe("UT-ai-tool-projects-search: the input", () => {
         "maxPrice",
         "page",
         "preferAmenities",
+        "prime",
         "preferLocalities",
         "status",
       ].sort(),
@@ -151,6 +164,8 @@ describe("UT-ai-tool-projects-search: the input", () => {
     ["a page this tool does not have", { page: "previous" }],
     ["a locality over 80 characters", { locality: "x".repeat(81) }],
     ["a missing field", { status: undefined }],
+    ["a missing Prime filter", { prime: undefined }],
+    ["a Prime filter that is not true or false", { prime: "yes" }],
   ])("refuses %s and reads nothing", async (_case, filters) => {
     const outcome = await search(filters);
     expect(outcome).toMatchObject({ status: "error", code: "invalid_input" });
@@ -220,6 +235,19 @@ describe("UT-ai-tool-projects-search: the filters", () => {
     expect((await slugsFor({})).sort()).toEqual(["a-total", "by-the-sqft", "office-for-rent"]);
   });
 
+  it("keeps only the Prime projects on true, and only the others on false, under the admin's current amounts (ADR-208)", async () => {
+    expect((await slugsFor({ prime: true })).sort()).toEqual(["kadal-vista", "plot-gardens"]);
+    expect((await slugsFor({ prime: false })).sort()).toEqual(["no-price-yet", "velan-heights"]);
+    getPrimeRules.mockResolvedValue({ ...PRIME_RULES, totalPrice: null });
+    expect(await slugsFor({ prime: true })).toEqual(["plot-gardens"]);
+  });
+
+  it("never ranks a Prime project higher for being Prime", async () => {
+    const all = await slugsFor({});
+    getPrimeRules.mockResolvedValue({ ...PRIME_RULES, ratePerSqft: null, totalPrice: null });
+    expect(await slugsFor({})).toEqual(all);
+  });
+
   it("combines every filter", async () => {
     expect(
       await slugsFor({
@@ -252,6 +280,7 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
             priceText: "₹78 L basic price",
             priceType: "basic",
             offerType: null,
+            prime: true,
             matchReasons: [],
             missedPreferences: [],
             lowestPriceOfMatches: true,
@@ -276,11 +305,13 @@ describe("UT-ai-tool-projects-search: what comes back", () => {
       priceRupees: 5_500_000,
       priceText: "₹55 L all inclusive",
       priceType: "all_inclusive",
+      prime: false,
     });
     expect(projects[1]).toMatchObject({
       priceRupees: null,
       priceText: null,
       priceType: null,
+      prime: false,
     });
   });
 

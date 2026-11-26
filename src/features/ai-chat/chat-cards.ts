@@ -7,7 +7,9 @@ import { getProperty } from "@/features/property";
 import { toSavedCard } from "@/features/saved";
 import messages from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
+import { PROJECT_PRIME_DEFAULTS } from "@/lib/project-prime";
 import { publicEnv } from "@/lib/public-env";
+import { getPrimeRules } from "./ranking/reads.server";
 import type { ChatCardReference } from "./schemas";
 
 /** One card the chat draws under an answer: the card's facts, and what the Compare control needs. */
@@ -39,6 +41,10 @@ export async function readChatCards(
   references: readonly ChatCardReference[],
 ): Promise<ChatCardView[]> {
   const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL;
+  // Read once for every card of the answer, and only when one of them is a project (ADR-208).
+  const primeRules = references.some((reference) => reference.kind === "project")
+    ? await getPrimeRules()
+    : null;
   const cards = await Promise.all(
     references.map(async (reference): Promise<ChatCardView | null> => {
       if (reference.kind === "home") {
@@ -75,6 +81,8 @@ export async function readChatCards(
             featured: false,
           },
           supabaseUrl,
+          // Prime is a fact about the project, not a promotion, so the chat shows its badge (ADR-208).
+          primeRules ?? PROJECT_PRIME_DEFAULTS,
         ),
       };
     }),

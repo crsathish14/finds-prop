@@ -6,7 +6,8 @@
  * Props: project (href, name, developerName, locality, city, priceRupees, priceType ("per_sqft" |
  *   "basic" | "all_inclusive" | "rent_per_month" | "rent_per_sqft_month": what the price means),
  *   offerType ("sale" | "rent", a commercial project), bedrooms (the BHK sizes on offer, such as
- *   [2, 3]), status "new_launch" | "under_construction" | "ready_to_move", featured, cover { src,
+ *   [2, 3]), status "new_launch" | "under_construction" | "ready_to_move", featured, prime (the
+ *   admin's Prime amounts, worked out by the page, ADR-208), cover { src,
  *   alt }), sizes (next/image `sizes` for this card's column), priority (first cards on the page),
  *   className. Missing facts are left out, never shown blank or as zero. The one price is shown with
  *   what it means ("₹8,500 per sq ft"); a price with no known type is shown alone.
@@ -49,6 +50,8 @@ type ProjectCardData = {
   bedrooms?: readonly number[] | null | undefined;
   status?: ProjectStatus | null | undefined;
   featured?: boolean | undefined;
+  /** Prime under the admin's current amounts (ADR-208); the page works it out. */
+  prime?: boolean | undefined;
   cover?: { src: string; alt: string } | null | undefined;
 };
 
@@ -117,10 +120,13 @@ function ProjectCard({
           sizes={sizes}
           priority={priority}
         />
-        {project.featured || project.status || project.offerType ? (
+        {project.featured || project.prime || project.status || project.offerType ? (
           <div className="pointer-events-none absolute top-3 left-3 z-10 flex flex-wrap gap-2">
             {project.featured ? (
               <Badge tone="featured">{translate("domain.projectCard.featured")}</Badge>
+            ) : null}
+            {project.prime ? (
+              <Badge tone="prime">{translate("domain.projectCard.prime")}</Badge>
             ) : null}
             {project.status ? (
               <Badge tone="outline">{translate(STATUS_KEYS[project.status])}</Badge>

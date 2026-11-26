@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { OFFER_TYPES, priceOf, PRICE_TYPES, type PriceType } from "@/features/projects";
 import { formatMonth, formatPrice } from "@/lib/format";
+import { isPrimeProject, type ProjectPrimeRules } from "@/lib/project-prime";
 import type { ToolContext } from "./types";
 
 /**
@@ -19,6 +20,8 @@ export const projectPriceShape = {
   priceText: z.string().min(1).nullable(),
   priceType: z.enum(PRICE_TYPES).nullable(),
   offerType: z.enum(OFFER_TYPES).nullable(),
+  /** True when the price is at or above the Prime amount the admin set for its price type (ADR-208). */
+  prime: z.boolean(),
 };
 
 export type ProjectPrices = {
@@ -26,6 +29,7 @@ export type ProjectPrices = {
   priceText: string | null;
   priceType: PriceType | null;
   offerType: "sale" | "rent" | null;
+  prime: boolean;
 };
 
 const PRICE_TYPE_WORDS = {
@@ -38,7 +42,8 @@ const PRICE_TYPE_WORDS = {
 
 /**
  * The price as text the way the project page writes it ("₹8,500 per sq ft", "₹85 L basic price"): only this text is
- * quoted, so the model never formats money or words the meaning itself.
+ * quoted, so the model never formats money or words the meaning itself. `prime` comes from the admin's current Prime
+ * amounts (ADR-208); it is a fact about the project, never a reason it ranks higher.
  */
 export function projectPrices(
   project: {
@@ -47,10 +52,17 @@ export function projectPrices(
     offerType: "sale" | "rent" | null;
   },
   context: ToolContext,
+  primeRules: ProjectPrimeRules,
 ): ProjectPrices {
   const price = priceOf(project);
   if (price === null) {
-    return { priceRupees: null, priceText: null, priceType: null, offerType: project.offerType };
+    return {
+      priceRupees: null,
+      priceText: null,
+      priceType: null,
+      offerType: project.offerType,
+      prime: false,
+    };
   }
   const amount = formatPrice(context.translate, context.locale, price.rupees);
   return {
@@ -61,6 +73,7 @@ export function projectPrices(
         : context.translate(PRICE_TYPE_WORDS[price.type], { price: amount }),
     priceType: price.type,
     offerType: project.offerType,
+    prime: isPrimeProject(primeRules, { price: price.rupees, priceType: price.type }),
   };
 }
 

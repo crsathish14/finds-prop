@@ -1268,6 +1268,7 @@
     },
     "projectCard": {
       "featured": "Featured",
+      "prime": "Prime",
       "status": {
         "newLaunch": "New launch",
         "underConstruction": "Under construction",

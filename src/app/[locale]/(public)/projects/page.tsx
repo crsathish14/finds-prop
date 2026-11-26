@@ -52,7 +52,7 @@ export default async function ProjectsPage() {
   const cards = projects.map((project, index) => (
     <ProjectCard
       key={project.slug}
-      project={toProjectCard(project, publicEnv.NEXT_PUBLIC_SUPABASE_URL)}
+      project={toProjectCard(project, publicEnv.NEXT_PUBLIC_SUPABASE_URL, settings.project_prime)}
       priority={index < PRIORITY_CARDS}
     />
   ));

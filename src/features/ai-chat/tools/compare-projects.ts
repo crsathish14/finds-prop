@@ -8,7 +8,9 @@ import {
   type ProjectData,
 } from "@/features/projects";
 import { formatArea, formatPerSqft, formatPrice } from "@/lib/format";
+import type { ProjectPrimeRules } from "@/lib/project-prime";
 import { hasAmenity, inPreferredLocality } from "../ranking/rank";
+import { getPrimeRules } from "../ranking/reads.server";
 import { asOfText } from "./as-of";
 import { isTotalPrice, monthText, projectPrices, projectPriceShape } from "./project-facts";
 import { requireSignIn } from "./require-sign-in";
@@ -269,12 +271,13 @@ function toColumn(
   onlyHere: readonly string[],
   wants: ReturnType<typeof wantsOf>,
   context: ToolContext,
+  primeRules: ProjectPrimeRules,
 ): ProjectColumn {
   const perSqft = perSqftOf(project);
   return {
     slug: project.slug,
     status: project.status,
-    ...projectPrices(project, context),
+    ...projectPrices(project, context, primeRules),
     pricePerSqftRupees: perSqft,
     pricePerSqftText:
       perSqft === null ? null : formatPerSqft(context.translate, context.locale, perSqft),
@@ -307,7 +310,10 @@ export const compareProjectsTool: AiChatTool<CompareProjectsInput, CompareProjec
   async run(input, context) {
     requireSignIn(context);
     const slugs = input.slugs.map(tidySlug);
-    const results = await Promise.all(slugs.map((slug) => getProject(slug)));
+    const [results, primeRules] = await Promise.all([
+      Promise.all(slugs.map((slug) => getProject(slug))),
+      getPrimeRules(),
+    ]);
     const readAt = results.map((result) => result.readAt).sort()[0] ?? new Date().toISOString();
     const asOf = asOfText(readAt, context);
     const projects = results.flatMap((result) =>
@@ -338,6 +344,7 @@ export const compareProjectsTool: AiChatTool<CompareProjectsInput, CompareProjec
             (amenities[index] ?? []).filter((item) => !common.has(item.toLowerCase())),
             wants,
             context,
+            primeRules,
           ),
         ),
         notFound,
