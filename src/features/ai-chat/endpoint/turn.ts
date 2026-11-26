@@ -14,6 +14,7 @@ import { SYSTEM_PROMPT_CANARY } from "../prompts/version";
 import type { ConfirmCard } from "../confirm/confirm-card";
 import { SITE_LINKS } from "../site-links";
 import { sourceHref } from "../source-links";
+import { askedForLink } from "./link-request";
 import type { ProposalOffer } from "../tools/proposal-offer";
 import { signChatState } from "../state/chat-state";
 import type { TurnMemory } from "../state/memory";
@@ -183,6 +184,10 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
     return { outcome: "fallback", agent, output: null };
   }
 
+  // The chat keeps the customer in the conversation (ADR-209): the See all link and the links to an article or a
+  // question come only when the customer asked for a link, a page, the source or all the results. A job's link always
+  // comes, because the job page is the only place to apply.
+  const linkAsked = askedForLink(input.customerMessage);
   let output: OutputSummary | null = null;
   let blocked = false;
   try {
@@ -216,6 +221,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       return { outcome: "fallback", agent, output };
     }
     for (const event of checked) {
+      if (event.type === "source" && event.reference.kind !== "job" && !linkAsked) continue;
       yield toStreamEvent(event, translate);
       if (event.type === "replace") {
         blocked = true;
@@ -257,7 +263,10 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       reference.kind === "home" || reference.kind === "project",
   );
   memory?.offer(offeredByReplies(replies, cards));
-  const link = current === null || agent.offers.length > 0 ? null : seeAllLink(current, translate);
+  const link =
+    current === null || agent.offers.length > 0 || !linkAsked
+      ? null
+      : seeAllLink(current, translate);
   if (link !== null) yield { type: "see_all", text: link.text, href: link.href };
 
   if (agent.noticeKey !== null && agent.outcome === "limit") {

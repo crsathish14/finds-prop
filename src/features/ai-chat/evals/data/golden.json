@@ -4370,7 +4370,7 @@
     "set": "golden",
     "category": "content",
     "language": "en",
-    "title": "registration charges: searches the Blog, reads the matching part, names the article as its source",
+    "title": "registration charges: searches the Blog, reads the matching part, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4436,8 +4436,7 @@
         "mustContain": [["sub-registrar"], ["check the current rates", "published on"]],
         "mustNotContain": ["zzhiddenmarker", "old advice", "festival"],
         "mustNotMatch": ["https?://", "www\\."],
-        "sources": ["/blog/stamp-duty-and-registration-charges"],
-        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+        "sources": []
       }
     }
   },
@@ -4446,7 +4445,7 @@
     "set": "golden",
     "category": "content",
     "language": "en",
-    "title": "how to post a property: finds the FAQ answer and names the question as its source",
+    "title": "how to post a property: finds the FAQ answer, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4489,8 +4488,7 @@
       "visible": {
         "mustContain": [["Post a property"], ["reviewed"]],
         "mustNotContain": ["zzhiddenmarker"],
-        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
-        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+        "sources": []
       }
     }
   },
@@ -4499,7 +4497,7 @@
     "set": "golden",
     "category": "content",
     "language": "tanglish",
-    "title": "Tanglish question about contacting an owner: the model searches in English keywords",
+    "title": "Tanglish question about contacting an owner: the model searches in English keywords, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4542,8 +4540,7 @@
       "visible": {
         "mustContain": [["enquiry"]],
         "mustNotMatch": ["\\d{10}", "\\+91"],
-        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
-        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+        "sources": []
       }
     }
   },
@@ -4552,7 +4549,7 @@
     "set": "golden",
     "category": "content",
     "language": "ta",
-    "title": "Tamil question about home loan papers: the model searches in English keywords and reads the part it needs",
+    "title": "Tamil question about home loan papers: the model searches in English keywords and reads the part it needs, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4612,8 +4609,7 @@
       "visible": {
         "mustContain": [["identity proof"], ["income proof"]],
         "mustNotContain": ["zzhiddenmarker"],
-        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
-        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+        "sources": []
       }
     }
   },
@@ -4671,7 +4667,7 @@
     "set": "golden",
     "category": "content",
     "language": "en",
-    "title": "a mixed question calls a content tool and the home search together: the answer holds the guide's point, the home's card and the guide as a source",
+    "title": "a mixed question calls a content tool and the home search together: the answer holds the guide's point, and the home's card, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4738,8 +4734,7 @@
         "mustContain": [["sub-registrar"]],
         "cards": ["home:m4y8b3ce"],
         "showsCards": ["home:m4y8b3ce"],
-        "sources": ["/blog/stamp-duty-and-registration-charges"],
-        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+        "sources": []
       }
     },
     "session": "customer"
@@ -4849,7 +4844,7 @@
     "set": "golden",
     "category": "content",
     "language": "tanglish",
-    "title": "Tanglish question about stamp duty: finds the guide and says to check the date",
+    "title": "Tanglish question about stamp duty: finds the guide and says to check the date, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4903,8 +4898,7 @@
       "visible": {
         "mustContain": [["published on"], ["guideline value"]],
         "mustNotContain": ["zzhiddenmarker"],
-        "sources": ["/blog/stamp-duty-and-registration-charges"],
-        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+        "sources": []
       }
     }
   },
@@ -4913,7 +4907,7 @@
     "set": "golden",
     "category": "content",
     "language": "ta",
-    "title": "Tamil question about posting a property: the model searches the FAQ in English keywords",
+    "title": "Tamil question about posting a property: the model searches the FAQ in English keywords, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -4955,8 +4949,83 @@
       },
       "visible": {
         "mustContain": [["Post a property"]],
-        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"],
-        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000001"]
+        "sources": []
+      }
+    }
+  },
+  {
+    "id": "G-content-11",
+    "set": "golden",
+    "category": "content",
+    "language": "en",
+    "title": "registration charges, and the customer asks for the link: the article is drawn as its source (ADR-209)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How are stamp duty and registration charges worked out? Send me the link to the article."
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "registration charges",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "get_content_item",
+            "input": {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "query": "registration charge"
+            }
+          }
+        ]
+      },
+      {
+        "text": "A findsprop guide says stamp duty is paid on the guideline value or on the sale price, whichever is higher, and the registration charge is paid at the sub-registrar office on the day the sale deed is registered. The rates in that guide are made-up examples, 7 percent and 2 percent, and it was published on 5 Nov 2026, so please check the current rates before you plan."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "number": 7
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content",
+            "args": {
+              "query": "registration"
+            }
+          },
+          {
+            "name": "get_content_item",
+            "args": {
+              "id": "a1000000-0000-4000-8000-000000000001"
+            }
+          }
+        ],
+        "mustNotCall": [],
+        "none": false
+      },
+      "visible": {
+        "mustContain": [["sub-registrar"], ["check the current rates", "published on"]],
+        "mustNotContain": ["zzhiddenmarker", "old advice", "festival"],
+        "mustNotMatch": ["https?://", "www\\."],
+        "sources": ["/blog/stamp-duty-and-registration-charges"],
+        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
       }
     }
   },
@@ -5328,7 +5397,7 @@
     "set": "golden",
     "category": "content",
     "language": "en",
-    "title": "documents for registration day: found from the guide, dated, and said to be general information",
+    "title": "documents for registration day: found from the guide, dated, and said to be general information, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -5386,8 +5455,7 @@
         "mustContain": [["sale deed"], ["encumbrance"], ["published on", "5 Nov"]],
         "mustNotContain": ["zzhiddenmarker"],
         "mustNotMatch": ["https?://", "www\\."],
-        "sources": ["/blog/stamp-duty-and-registration-charges"],
-        "showsSources": ["/blog/stamp-duty-and-registration-charges"]
+        "sources": []
       }
     }
   },
@@ -5396,7 +5464,7 @@
     "set": "golden",
     "category": "content",
     "language": "ta",
-    "title": "Tamil question about reaching a home's owner: answered from the FAQ without giving a number",
+    "title": "Tamil question about reaching a home's owner: answered from the FAQ without giving a number, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -5440,8 +5508,7 @@
         "mustContain": [["enquiry form"]],
         "mustNotContain": ["zzhiddenmarker"],
         "mustNotMatch": ["https?://", "\\+?\\d[\\d ]{8,}\\d"],
-        "sources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"],
-        "showsSources": ["/faq#faq-f1000000-0000-4000-8000-000000000002"]
+        "sources": []
       }
     }
   },
@@ -5450,7 +5517,7 @@
     "set": "golden",
     "category": "content",
     "language": "tanglish",
-    "title": "Tanglish question about home loan papers: finds the checklist and names it as the source",
+    "title": "Tanglish question about home loan papers: finds the checklist, no source link unless asked (ADR-209)",
     "messages": [
       {
         "role": "user",
@@ -5508,8 +5575,7 @@
         "mustContain": [["identity proof"], ["income proof"]],
         "mustNotContain": ["zzhiddenmarker"],
         "mustNotMatch": ["https?://", "www\\."],
-        "sources": ["/blog/home-loan-checklist-for-first-time-buyers"],
-        "showsSources": ["/blog/home-loan-checklist-for-first-time-buyers"]
+        "sources": []
       }
     }
   },
