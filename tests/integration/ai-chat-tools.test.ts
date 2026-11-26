@@ -557,6 +557,7 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
 
     it("applies the status, BHK and price filters in code, with money as the pages write it", async () => {
       const { result } = await call("search_projects", {
+        city: null,
         locality: PROJECT_LOCALITY,
         status: "under_construction",
         bhk: 2,
