@@ -9,7 +9,8 @@
  * Props: developer (DeveloperSpotlightData: name, logo, about, years, delivered, listed, launching, website, projects:
  *   up to three of { href, name, locality, bedrooms, priceRupees, priceType, status, cover }), headingId (the id of the
  *   name, so the section around can be named by it), eyebrowId (the id of the "Developer spotlight" line), className.
- * Responsive: on phones the developer sits above the projects, which scroll sideways one card at a time; from 768 px
+ * Responsive: on phones the developer sits above the projects, which scroll sideways one card at a time, each settling in the centre (the first and last stay at the ends, with the
+ *   band's padding); from 768 px
  *   the projects are three in a row; from 1024 px the developer sits beside them.
  * Accessibility: the name is a heading; the figures are a description list (the label read with its number); each
  *   project card is one link named by its heading; the pictures only decorate (empty alt text); the website link says
@@ -116,7 +117,7 @@ function ProjectCard({
       : amount;
   }
   return (
-    <li className="w-[72%] shrink-0 snap-start md:w-auto">
+    <li className="w-[72%] shrink-0 snap-center md:w-auto">
       <NextLink
         href={project.href}
         className="group flex h-full flex-col overflow-hidden rounded-lg border border-dark-line bg-dark-hover transition-[transform,border-color] duration-(--dur-fast) hover:border-on-dark-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-on-dark motion-safe:hover:-translate-y-1"

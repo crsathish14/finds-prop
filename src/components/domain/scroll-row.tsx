@@ -18,7 +18,8 @@
  * Responsive: cards are 300 px wide, or 78% of the screen when that is less, and a little of the
  *   next one shows so a visitor can see there is more. The row runs to the screen edge while the
  *   first card lines up with the page's side padding. On a phone the visitor swipes and the
- *   buttons are hidden; from 768 px they show beside the title.
+ *   buttons are hidden; from 768 px they show beside the title. On a phone a swipe settles on one
+ *   card and centres it (the first and last stay at the ends); from 768 px the row glides freely.
  * Progress bar: a thin bar under the row, in place of a scrollbar. It starts partly filled
  *   (MIN_FILL) and fills completely as the row reaches its end. Decorative (aria-hidden): the
  *   buttons and the list already say where the visitor is.
@@ -70,6 +71,8 @@ const GLIDE_DURATION = 25;
 /** One line of a mouse wheel that reports lines (Firefox) is about this many pixels. */
 const LINE_HEIGHT = 16;
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+/** Below the width where the Previous and Next buttons show (768 px). */
+const PHONE = "(max-width: 767px)";
 
 function subscribeToMotionPreference(onChange: () => void) {
   const query = window.matchMedia(REDUCED_MOTION);
@@ -95,6 +98,10 @@ function ScrollRow({ title, description, as, id, label, children, className }: S
     dragFree: true,
     slidesToScroll: "auto",
     duration: reducedMotion ? 0 : GLIDE_DURATION,
+    // On a phone the row settles on one card at a time and centres it, so no card is left cut off on
+    // both sides. The first and the last card stay at the row's ends (containScroll), keeping the
+    // page's side padding there.
+    breakpoints: { [PHONE]: { align: "center", dragFree: false, slidesToScroll: 1 } },
   });
   const [progress, setProgress] = useState(0);
   const [scrollable, setScrollable] = useState(false);

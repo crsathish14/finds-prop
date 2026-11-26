@@ -330,6 +330,12 @@ describe("ScrollRow: a titled row of cards that scrolls sideways (S4-T06)", () =
       </ScrollRow>,
     );
     expect(embla.state.options).toMatchObject({ dragFree: true, align: "start", duration: 25 });
+    // On a phone it settles on one card and centres it.
+    expect(embla.state.options).toMatchObject({
+      breakpoints: {
+        "(max-width: 767px)": { align: "center", dragFree: false, slidesToScroll: 1 },
+      },
+    });
     view.unmount();
 
     vi.spyOn(window, "matchMedia").mockImplementation(
