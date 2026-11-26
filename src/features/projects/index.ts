@@ -9,6 +9,7 @@ export { toProjectCard } from "./cards";
 export {
   getProject,
   getProjects,
+  parseProjectListItems,
   PROJECT_LIST_LIMIT,
   PROJECTS_TAG,
   type ProjectList,

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import {
   agentPath,
+  AgentListings,
   AgentProfile,
   getAgent,
   isAgentId,
@@ -56,6 +58,10 @@ export default async function AgentPage({ params }: PageProps) {
         translate={translate}
         homesHref={SEARCH_PATH}
       />
+      {/* Behind its own Suspense boundary: the save and compare buttons read the visitor's cookies. */}
+      <Suspense fallback={null}>
+        <AgentListings agentId={agent.id} />
+      </Suspense>
     </main>
   );
 }
