@@ -17,7 +17,8 @@ alter table public.projects
   add constraint projects_security_deposit_positive check (security_deposit is null or security_deposit > 0),
   add constraint projects_maintenance_positive check (maintenance_per_month is null or maintenance_per_month > 0),
   add constraint projects_rent_amounts_for_rent check (
-    (security_deposit is null and maintenance_per_month is null) or offer_type = 'rent'
+    -- 'is not distinct from', so an empty offer type (a residential project for sale) is refused too, not let through as unknown.
+    (security_deposit is null and maintenance_per_month is null) or offer_type is not distinct from 'rent'
   );
 
 -- A commercial project still says sale or rent; a residential one may now say rent (empty or sale is for sale).
@@ -33,8 +34,9 @@ alter table public.projects
     or price_type = 'rent_per_month'
   );
 
--- Public, like the price of the project page; written by the builder and the admin.
-grant select (security_deposit, maintenance_per_month) on table public.projects to anon, authenticated;
+-- Read by signed-in visitors like the price of the project page (the login wall, ADR-171: no project column for anon);
+-- written by the builder and the admin.
+grant select (security_deposit, maintenance_per_month) on table public.projects to authenticated;
 grant insert (security_deposit, maintenance_per_month) on table public.projects to authenticated;
 grant update (security_deposit, maintenance_per_month) on table public.projects to authenticated;
 
