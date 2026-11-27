@@ -98,7 +98,9 @@ const CONTENT_TOOL_NAMES = ["search_content", "search_jobs", "get_content_item"]
  * larger: raise the figure here in the same pull request and say why.
  */
 // Raised from 11_200 on 23 Nov 2026 (ADR-174): the conversation section adds about 2,000 characters on purpose.
-const PROMPT_CHARACTER_CEILING = 13_000;
+// Raised from 13_000 on 27 Nov 2026 (ADR-213): the greeting, answer-first and general-knowledge rules add about 1,000
+// characters on purpose; measured 13,976.
+const PROMPT_CHARACTER_CEILING = 15_000;
 // Raised from 25_000 on 23 Nov 2026 (ADR-176): the plain project enquiry is a fourteenth tool.
 // Raised from 28_000 on 27 Nov 2026 (ADR-212, owner: quality over cost): research_builder is a sixteenth tool and
 // the other tools keep their full descriptions; measured 29,417.
