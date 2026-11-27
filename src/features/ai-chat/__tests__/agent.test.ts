@@ -556,6 +556,36 @@ describe("UT-ai-agent: a tool that is too slow", () => {
     ]);
     expect(done.outcome).toBe("answered");
   });
+
+  it("waits longer for a tool that sets its own time, such as one that reads a website (ADR-211)", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const ownTime = TOOL_TIMEOUT_MS * 4;
+    const webTool: AiChatTool<z.infer<typeof delayedInput>, z.infer<typeof lookupOutput>> = {
+      ...delayedTool,
+      name: "web_read",
+      timeoutMs: ownTime,
+    };
+    const provider = createFakeAiProvider([
+      toolCallTurn([
+        { id: "call-w1", name: "web_read", input: { id: "w1", delayMs: TOOL_TIMEOUT_MS * 2 } },
+        { id: "call-w2", name: "web_read", input: { id: "w2", delayMs: ownTime * 2 } },
+      ]),
+      textTurn("Here is what their website says."),
+    ]);
+    const pending = collect(provider, { tools: [...TOOLS, webTool] });
+    await vi.waitFor(() => expect(delayedStarted).toHaveBeenCalledWith("w2"));
+    // Past the usual limit, the loop is still waiting for both.
+    await vi.advanceTimersByTimeAsync(TOOL_TIMEOUT_MS * 2);
+    expect(provider.calls).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(ownTime);
+    const { done } = await pending;
+    expect(sentResults(provider, 1)).toEqual([
+      ["call-w1", { name: "Slow w1" }],
+      ["call-w2", expect.objectContaining({ error: "timeout" })],
+    ]);
+    expect(done.outcome).toBe("answered");
+    vi.useRealTimers();
+  });
 });
 
 // ---------------------------------------------------------------- the limit table (ADR-128 section 4.5)

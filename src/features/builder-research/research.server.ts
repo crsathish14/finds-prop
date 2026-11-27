@@ -94,35 +94,34 @@ export async function researchBuilder(
     since,
   );
 
-  // The site files: saved copies, or read now and saved (an empty copy is "none").
+  // The site files: saved copies, or read now (both at once) and saved (an empty copy is "none").
   const robotsCopy = saved.get(keyOf(robotsUrl));
-  let robotsTxt: string | null;
-  if (robotsCopy !== undefined) {
-    robotsTxt = robotsCopy.body === "" ? null : robotsCopy.body;
-  } else {
-    robotsTxt = await readSiteFile("/robots.txt", website, deps.reader);
-    await deps.store.save(builderId, keyOf(robotsUrl), {
-      url: robotsUrl,
-      title: "",
-      body: (robotsTxt ?? "").slice(0, ROBOTS_MAX),
-      links: [],
-    });
-  }
-
   const sitemapCopy = saved.get(keyOf(sitemapUrl));
-  let sitemap: readonly string[];
-  if (sitemapCopy !== undefined) {
-    sitemap = sitemapCopy.links.map((link) => link.href);
-  } else {
-    const xml = await readSiteFile("/sitemap.xml", website, deps.reader);
-    sitemap = xml === null ? [] : sitemapPages(xml, website);
-    await deps.store.save(builderId, keyOf(sitemapUrl), {
-      url: sitemapUrl,
-      title: "",
-      body: "",
-      links: sitemap.map((href) => ({ href, text: "" })),
-    });
-  }
+  const [robotsTxt, sitemap] = await Promise.all([
+    (async (): Promise<string | null> => {
+      if (robotsCopy !== undefined) return robotsCopy.body === "" ? null : robotsCopy.body;
+      const read = await readSiteFile("/robots.txt", website, deps.reader);
+      await deps.store.save(builderId, keyOf(robotsUrl), {
+        url: robotsUrl,
+        title: "",
+        body: (read ?? "").slice(0, ROBOTS_MAX),
+        links: [],
+      });
+      return read;
+    })(),
+    (async (): Promise<readonly string[]> => {
+      if (sitemapCopy !== undefined) return sitemapCopy.links.map((link) => link.href);
+      const xml = await readSiteFile("/sitemap.xml", website, deps.reader);
+      const found = xml === null ? [] : sitemapPages(xml, website);
+      await deps.store.save(builderId, keyOf(sitemapUrl), {
+        url: sitemapUrl,
+        title: "",
+        body: "",
+        links: found.map((href) => ({ href, text: "" })),
+      });
+      return found;
+    })(),
+  ]);
 
   // One page: its saved copy, or read now, saved and logged. Each page is fetched at most once per question.
   const fetched = new Map<string, Promise<Got>>();
