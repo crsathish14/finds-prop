@@ -4,7 +4,7 @@
 - Date: 2026-11-27
 - Amends: ADR-148 (the project form: "a commercial project is for sale or rent, a residential one is not")
 - Related: ADR-160 (plot and villa boxes), ADR-208 (Prime amounts per price type)
-- Class: C2 (migration `20261127140000_residential_project_rent.sql`). No dependency.
+- Class: C2 (migration `20261128090000_residential_project_rent.sql`). No dependency.
 
 ## Context
 
@@ -21,7 +21,7 @@ Builders and agents also let residential projects (a block of flats, a row of vi
 ## Consequences
 
 - No existing row changes. Residential cards and pages look as they did unless a builder picks rent.
-- The production database change is run by the owner, as before (rollback script `supabase/rollbacks/20261127140000.sql`, which refuses while a residential project is for rent).
+- The production database change is run by the owner, as before (rollback script `supabase/rollbacks/20261128090000.sql`, which refuses while a residential project is for rent).
 - The assistant's rent search reads projects for rent in piece 2 of the same plan.
 
 ## Tests
