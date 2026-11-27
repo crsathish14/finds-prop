@@ -1,6 +1,6 @@
 # ADR-214 · A residential project may be for rent, with a security deposit and maintenance
 
-- Status: Accepted. Owner decision in chat on 27 Nov 2026 (`ai-chat-next-plan.md`, piece 6), approved for build the same day; the form layout draft waits for the owner's look before it ships.
+- Status: Accepted. Owner decision in chat on 27 Nov 2026 (`ai-chat-next-plan.md`, piece 6), approved for build the same day; the form and page layout and the words of its hints and error were approved by the owner on 27 Nov 2026.
 - Date: 2026-11-27
 - Amends: ADR-148 (the project form: "a commercial project is for sale or rent, a residential one is not")
 - Related: ADR-160 (plot and villa boxes), ADR-208 (Prime amounts per price type)
