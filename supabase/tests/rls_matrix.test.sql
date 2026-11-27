@@ -200,6 +200,7 @@ insert into public.internal_cron_tokens (name, token) values ('matrix_probe', re
 insert into public.idempotency_keys (scope, subject, key) values ('matrix_probe', 'x', gen_random_uuid());
 insert into public.public_rate_limits (scope, subject_hash, window_start, hits) values ('matrix_probe', 'aaaaaaaaaaaaaaaa', now(), 1);
 insert into public.ai_usage_events (request_id, occurred_at, caller, prompt_version, outcome) values ('matrix_probe', now(), 'anonymous', 'matrix', 'answered');
+insert into public.ai_web_answers (query_key, query, answer, expires_at) values ('matrix probe', 'matrix probe', 'Matrix answer', now() + interval '7 days');
 insert into public.places_usage_daily (day, api, caller, outcome, calls) values (current_date, 'matrix_probe', 'search_box', 'ok', 1);
 insert into public.sponsor_stats (day, slot, sponsor_key, views, clicks) values (current_date, 'hero', 'matrix_probe', 1, 0);
 insert into public.sponsor_seen (day, slot, sponsor_key, kind, visitor_hash) values (current_date, 'hero', 'matrix_probe', 'view', repeat('a', 40));
@@ -219,7 +220,9 @@ insert into public.builder_research_pages (builder_id, page_key, url) values
 -- insert and update count when held on any column, as the column grants are).
 create temp table exp_grants (t text primary key, anon text, authed text, service text);
 insert into exp_grants values
+  ('ai_assistant_settings', '', 'S,U', 'S,I,U,D,T'),
   ('ai_usage_events', '', '', 'S,I,U,D,T'),
+  ('ai_web_answers', '', '', 'S,I,U,D,T'),
   ('app_config', '', '', 'S,I,U,D,T'),
   ('audit_log', '', 'S', 'S'),
   ('blog_posts', 'S', 'S,I,U', 'S,I,U,D,T'),
@@ -303,6 +306,8 @@ insert into probe values
   ('app_config', 'x1', 'key = ''matrix.probe'''), ('internal_cron_tokens', 'x1', 'name = ''matrix_probe'''),
   ('idempotency_keys', 'x1', 'scope = ''matrix_probe'''), ('public_rate_limits', 'x1', 'scope = ''matrix_probe'''),
   ('ai_usage_events', 'x1', 'request_id = ''matrix_probe'''),
+  ('ai_assistant_settings', 'x1', 'id = 1'),
+  ('ai_web_answers', 'x1', 'query_key = ''matrix probe'''),
   ('places_usage_daily', 'x1', 'api = ''matrix_probe'''),
   ('sponsor_stats', 'x1', 'sponsor_key = ''matrix_probe'''),
   ('sponsor_seen', 'x1', 'sponsor_key = ''matrix_probe'''),
@@ -372,6 +377,8 @@ from (values
   ('idempotency_keys', array['', '', '', '', '', '', '']),
   ('public_rate_limits', array['', '', '', '', '', '', '']),
   ('ai_usage_events', array['', '', '', '', '', '', '']),
+  ('ai_assistant_settings', array['', '', '', '', '', '', 'x1']),
+  ('ai_web_answers', array['', '', '', '', '', '', '']),
   ('places_usage_daily', array['', '', '', '', '', '', '']),
   ('sponsor_stats', array['', '', '', '', '', '', '']),
   ('sponsor_seen', array['', '', '', '', '', '', '']),
@@ -465,6 +472,14 @@ insert into exp_write (label, who, stmt, expected) values
   ('site_settings: a visitor cannot', 'anon', $q$update public.site_settings set value = '{"matrix": 2}' where key = 'matrix_probe'$q$, 'no'),
   ('site_settings: the admin adds a setting', 'ad', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'yes'),
   ('site_settings: a builder cannot add one', 'ba', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'no'),
+  -- ai_assistant_settings (ADR-218): the admin alone reads and changes the Web search switch and the credit
+  ('ai_assistant_settings: the admin turns web search on', 'ad', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'yes'),
+  ('ai_assistant_settings: a customer cannot', 'ca', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
+  ('ai_assistant_settings: a builder cannot', 'ba', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
+  ('ai_assistant_settings: a visitor cannot', 'anon', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
+  -- ai_web_answers (ADR-218): only the server keeps the web search memory
+  ('ai_web_answers: the admin cannot plant an answer', 'ad', $q$insert into public.ai_web_answers (query_key, query, answer, expires_at) values ('planted', 'planted', 'x', now() + interval '1 day')$q$, 'no'),
+  ('ai_web_answers: a customer cannot change one', 'ca', $q$update public.ai_web_answers set answer = 'x' where query_key = 'matrix probe'$q$, 'no'),
   -- content_categories: public to read while active, the admin alone writes
   ('content_categories: the admin edits a category', 'ad', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'yes'),
   ('content_categories: a customer cannot', 'ca', $q$update public.content_categories set name = 'Matrix two' where slug = 'matrix-active'$q$, 'no'),

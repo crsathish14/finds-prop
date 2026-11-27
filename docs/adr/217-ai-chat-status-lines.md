@@ -1,6 +1,6 @@
 # ADR-217 · The chat window says what the assistant is doing
 
-- Status: Accepted. Owner decisions in chat on 27 Nov 2026 (`ai-chat-next-plan.md`, piece 4; the words approved that day). The look (the existing status line with its words swapped in place) waits for the owner's approval before this merges.
+- Status: Accepted. Owner decisions in chat on 27 Nov 2026 (`ai-chat-next-plan.md`, piece 4; the words approved that day). The look (the existing status line with its words swapped in place) was approved by the owner on 27 Nov 2026.
 - Date: 2026-11-27
 - Amends: ADR-128 section 5 (one fixed "Searching…" for every tool)
 - Related: ADR-216 (the widening steps)
