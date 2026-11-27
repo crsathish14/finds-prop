@@ -397,8 +397,10 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         ...NO_FILTERS,
         locality: LOCALITY,
       });
+      // ADR-215: a signed-in home search lists the matching live project of the locality in the same list.
       expect(result).toMatchObject({
-        total: 1,
+        total: 2,
+        projects: [{ slug: `it-ai-live-${RUN}` }],
         homes: [
           {
             homeId: homes.approved.shortId,
@@ -416,14 +418,27 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
           },
         ],
       });
-      expect(references).toEqual([
-        { kind: "home", homeId: homes.approved.shortId, slug: homes.approved.slug },
-      ]);
+      expect(references).toContainEqual({
+        kind: "home",
+        homeId: homes.approved.shortId,
+        slug: homes.approved.slug,
+      });
+      expect(references).toContainEqual({ kind: "project", slug: `it-ai-live-${RUN}` });
+      expect(references).toHaveLength(2);
     });
 
     it("finds it through the keyword too, and still not the pending or the rejected home", async () => {
       const { result } = await call("search_properties", { ...NO_FILTERS, keyword: RUN });
-      expect(result).toMatchObject({ total: 1, homes: [{ homeId: homes.approved.shortId }] });
+      expect(result).toMatchObject({ homes: [{ homeId: homes.approved.shortId }] });
+      // The live projects whose name or locality holds the words come too (ADR-215), never one that is not live.
+      const listed = (result as { projects: { slug: string }[]; total: number }).projects.map(
+        (project) => project.slug,
+      );
+      expect(listed).toContain(`it-ai-live-${RUN}`);
+      for (const kind of ["pending", "unpublished", "inactive", "builder-pending", "gone"]) {
+        expect(listed).not.toContain(`it-ai-${kind}-${RUN}`);
+      }
+      expect((result as { total: number }).total).toBe(1 + listed.length);
     });
 
     it("gives the model no owner, address, exact point or review note", async () => {
@@ -444,6 +459,8 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         rankedAll: true,
         shownSoFar: 0,
         homes: [],
+        projects: [],
+        order: [],
         slightlyAboveBudget: null,
       });
     });
