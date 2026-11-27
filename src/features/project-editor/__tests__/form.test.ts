@@ -41,6 +41,8 @@ const project: ProjectEditView = {
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",
+  securityDeposit: null,
+  maintenancePerMonth: null,
   areaMinSqft: null,
   areaMaxSqft: null,
   bhkOptions: [2, 3],
@@ -85,7 +87,8 @@ describe("UT-project-form-helpers: what the form opens with and sends (S7-T02)",
     expect(values.name).toBe("Kadal Vista");
     expect(values.price).toBe("7800000");
     expect(values.priceType).toBe("basic");
-    expect(values.offerType).toBe("");
+    // ADR-214: a residential project saved without a choice opens as for sale.
+    expect(values.offerType).toBe("sale");
     expect(values.areaMinSqft).toBe("");
     expect(values.landAreaAcres).toBe("4.2");
     expect(values.latitude).toBe("12.8451");
@@ -395,6 +398,7 @@ const complete = (overrides: Partial<ProjectFieldValues> = {}): ProjectFieldValu
   projectType: "residential",
   propertyType: "apartment",
   projectStatus: "ready_to_move",
+  offerType: "sale",
   price: "78,00,000",
   priceType: "basic",
   city: "Chennai",
@@ -408,34 +412,37 @@ describe("UT-project-form-applies: which boxes the kind of project asks for (ADR
     [
       { projectType: "residential", propertyType: "apartment", projectStatus: "ready_to_move" },
       {
-        offerType: false,
+        offerType: true,
         plotStatus: false,
         villaType: false,
         bedrooms: true,
         area: false,
         possession: false,
+        rentAmounts: false,
       },
     ],
     [
       { projectType: "residential", propertyType: "villa", projectStatus: "new_launch" },
       {
-        offerType: false,
+        offerType: true,
         plotStatus: false,
         villaType: true,
         bedrooms: true,
         area: false,
         possession: true,
+        rentAmounts: false,
       },
     ],
     [
       { projectType: "residential", propertyType: "plot", projectStatus: "under_construction" },
       {
-        offerType: false,
+        offerType: true,
         plotStatus: true,
         villaType: false,
         bedrooms: false,
         area: true,
         possession: true,
+        rentAmounts: false,
       },
     ],
     [
@@ -447,6 +454,7 @@ describe("UT-project-form-applies: which boxes the kind of project asks for (ADR
         bedrooms: false,
         area: true,
         possession: false,
+        rentAmounts: false,
       },
     ],
     [
@@ -458,6 +466,7 @@ describe("UT-project-form-applies: which boxes the kind of project asks for (ADR
         bedrooms: false,
         area: true,
         possession: true,
+        rentAmounts: false,
       },
     ],
     [
@@ -469,6 +478,7 @@ describe("UT-project-form-applies: which boxes the kind of project asks for (ADR
         bedrooms: false,
         area: false,
         possession: false,
+        rentAmounts: false,
       },
     ],
   ])("%j asks for %j", (chosen, expected) => {
@@ -489,7 +499,7 @@ describe("UT-project-form-reconcile: what a choice clears (ADR-148)", () => {
     expect(next.areaMaxSqft).toBe("");
   });
 
-  it("drops a property type that does not fit the project type, and the sale or rent choice of a residential project", () => {
+  it("drops a property type that does not fit the project type, and keeps rent per month when the project becomes residential (ADR-214)", () => {
     const next = reconcile(
       complete({
         projectType: "commercial",
@@ -502,8 +512,48 @@ describe("UT-project-form-reconcile: what a choice clears (ADR-148)", () => {
     expect(next.offerType).toBe("rent");
     expect(next.priceType).toBe("rent_per_month");
     const back = reconcile({ ...next, projectType: "residential" });
-    expect(back.offerType).toBe("");
-    expect(back.priceType).toBe("");
+    expect(back.offerType).toBe("rent");
+    expect(back.priceType).toBe("rent_per_month");
+    const perSqft = reconcile({
+      ...next,
+      priceType: "rent_per_sqft_month",
+      projectType: "residential",
+    });
+    expect(perSqft.priceType).toBe("");
+  });
+
+  it("starts a residential project as for sale, and clears the rent amounts when it is not for rent (ADR-214)", () => {
+    expect(reconcile(complete({ offerType: "" })).offerType).toBe("sale");
+    const rent = complete({
+      offerType: "rent",
+      priceType: "rent_per_month",
+      securityDeposit: "150000",
+      maintenancePerMonth: "2500",
+    });
+    expect(reconcile(rent).securityDeposit).toBe("150000");
+    expect(appliesOf(rent).rentAmounts).toBe(true);
+    const sale = reconcile({ ...rent, offerType: "sale" });
+    expect(sale.securityDeposit).toBe("");
+    expect(sale.maintenancePerMonth).toBe("");
+    expect(sale.priceType).toBe("");
+  });
+
+  it("names a rent amount that is not whole rupees, and only for a project for rent (ADR-214)", () => {
+    const rent = complete({ offerType: "rent", priceType: "rent_per_month" });
+    expect(
+      projectProblems({ ...rent, securityDeposit: "1.5" }, { needsBuilder: false }).securityDeposit,
+    ).toBe("rentAmount");
+    expect(
+      projectProblems({ ...rent, maintenancePerMonth: "abc" }, { needsBuilder: false })
+        .maintenancePerMonth,
+    ).toBe("rentAmount");
+    expect(
+      projectProblems({ ...rent, securityDeposit: "1,50,000" }, { needsBuilder: false })
+        .securityDeposit,
+    ).toBeUndefined();
+    expect(
+      projectProblems({ ...rent, offerType: "" }, { needsBuilder: false }).offerType,
+    ).toBeUndefined();
   });
 
   it("drops the price type when sale becomes rent and the other way round", () => {
@@ -512,6 +562,8 @@ describe("UT-project-form-reconcile: what a choice clears (ADR-148)", () => {
       propertyType: "office",
       offerType: "sale",
       priceType: "all_inclusive",
+      securityDeposit: "",
+      maintenancePerMonth: "",
       areaMinSqft: "500",
       areaMaxSqft: "900",
     });
@@ -564,12 +616,15 @@ describe("UT-project-form-problems: what is missing before a save is sent (ADR-1
     const commercial = {
       projectType: "commercial",
       propertyType: "office",
+      offerType: "",
       areaMinSqft: "500",
       areaMaxSqft: "900",
     };
     expect(found(commercial).offerType).toBe("offerType");
     expect(found({ ...commercial, offerType: "sale" }).offerType).toBeUndefined();
     expect(found().offerType).toBeUndefined();
+    // ADR-214: a residential project left empty is for sale, so it is never asked.
+    expect(found({ offerType: "" }).offerType).toBeUndefined();
   });
 
   it("needs a price of at least 1, written the way the server reads it", () => {

@@ -100,10 +100,11 @@ select throws_ok(
     values ('commercial-no-offer', 'commercial-no-offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 'commercial', 'office')$$,
   '23514', null, 'a commercial project is for sale or for rent'
 );
-select throws_ok(
+-- ADR-214 changed this rule: a residential project may now be for rent (projects_residential_rent.test.sql).
+select lives_ok(
   $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, offer_type)
     values ('residential-offer', 'residential-offer', '00000000-0000-4000-b000-000000000002', 'Adyar', 'residential', 'apartment', 'rent')$$,
-  '23514', null, 'a residential project has no sale or rent choice'
+  'a residential project may be for rent (ADR-214)'
 );
 select throws_ok(
   $$insert into public.projects (slug, name, builder_id, locality, project_type, property_type, area_min_sqft, area_max_sqft, bhk_options)

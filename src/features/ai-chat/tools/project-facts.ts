@@ -78,6 +78,31 @@ export function projectPrices(
 }
 
 /**
+ * A project for rent's security deposit and maintenance (ADR-214), in the page's own words ("Deposit ₹1.5 L",
+ * "Maintenance ₹2,500 per month"), so the model quotes them and never formats money; null when not given.
+ */
+export function rentAmountTexts(
+  project: { securityDeposit: number | null; maintenancePerMonth: number | null },
+  context: ToolContext,
+): { securityDepositText: string | null; maintenanceText: string | null } {
+  const money = (rupees: number) => formatPrice(context.translate, context.locale, rupees);
+  return {
+    securityDepositText:
+      project.securityDeposit === null
+        ? null
+        : context.translate("projects.page.aside.deposit", {
+            amount: money(project.securityDeposit),
+          }),
+    maintenanceText:
+      project.maintenancePerMonth === null
+        ? null
+        : context.translate("projects.page.aside.maintenance", {
+            amount: money(project.maintenancePerMonth),
+          }),
+  };
+}
+
+/**
  * True when the price is a total that can be compared with what a customer will pay: a basic price or an all
  * inclusive one. A rate per sq ft and a rent are not totals, so a search by the most a customer will pay leaves them out.
  */

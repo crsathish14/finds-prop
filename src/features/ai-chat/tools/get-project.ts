@@ -17,7 +17,7 @@ import { getPrimeRules } from "../ranking/reads.server";
 import { asOfText } from "./as-of";
 import { countedBedrooms } from "./home-facts";
 import { publicPhone } from "./public-contacts";
-import { monthText, projectPrices, projectPriceShape } from "./project-facts";
+import { monthText, projectPrices, projectPriceShape, rentAmountTexts } from "./project-facts";
 import { requireSignIn } from "./require-sign-in";
 import type { AiChatTool, ToolContext } from "./types";
 import { cleanOptionalLine, cleanThirdPartyLine, cleanThirdPartyText } from "./untrusted";
@@ -72,6 +72,9 @@ const projectDetailSchema = z.object({
   builderId: z.string().min(1),
   status: z.enum(PROJECT_STATUSES).nullable(),
   ...projectPriceShape,
+  /** A project for rent (ADR-214): the deposit and the maintenance as the page writes them, or null. */
+  securityDepositText: z.string().min(1).nullable(),
+  maintenanceText: z.string().min(1).nullable(),
   /** The BHK sizes on offer, each once, smallest first. */
   bhkOptions: z.array(z.number()),
   landAreaText: z.string().nullable(),
@@ -176,6 +179,7 @@ function toProjectDetail(
     builderId: project.developer.id,
     status: project.status,
     ...projectPrices(project, context, primeRules),
+    ...rentAmountTexts(project, context),
     bhkOptions: bhkSizes(project.bhkOptions),
     landAreaText:
       project.landAreaAcres !== null && project.landAreaAcres > 0

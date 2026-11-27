@@ -23,6 +23,8 @@ const project = (overrides: Partial<ProjectData> = {}): ProjectData => ({
   extraFields: {},
   price: 7_800_000,
   priceType: "basic",
+  securityDeposit: null,
+  maintenancePerMonth: null,
   areaMinSqft: null,
   areaMaxSqft: null,
   bhkOptions: [3, 2],
@@ -281,6 +283,24 @@ describe("ProjectScreen: the project page (S4-T09)", () => {
     expect(screen.queryByRole("complementary")).toBeNull();
     expect(container.querySelector("[data-slot=property-gallery]")).toBeNull();
     expect(container.textContent).not.toMatch(/₹0|\b0 acres|undefined|null/);
+  });
+
+  it("draws a rent project's deposit and maintenance under the price, and nothing when they are not given (ADR-214)", () => {
+    const { unmount } = renderScreen(
+      project({
+        offerType: "rent",
+        price: 28_000,
+        priceType: "rent_per_month",
+        securityDeposit: 150_000,
+        maintenancePerMonth: 2_500,
+      }),
+    );
+    const aside = screen.getByRole("complementary", { name: words.aside.label });
+    expect(within(aside).getByText(/Deposit ₹1\.5 L/u)).toBeInTheDocument();
+    expect(within(aside).getByText(/Maintenance ₹2,500 per month/u)).toBeInTheDocument();
+    unmount();
+    renderScreen(project({ price: 28_000, priceType: "rent_per_month", offerType: "rent" }));
+    expect(screen.queryByText(/Deposit/u)).toBeNull();
   });
 
   it("draws the one price with what it means, in the overview and in the price card", () => {

@@ -138,6 +138,8 @@ describe("UT-ai-tool-project: a project that is listed", () => {
           prime: true,
           bhkOptions: [2, 3],
           landAreaText: "4.2 acres",
+          maintenanceText: null,
+          securityDepositText: null,
           totalUnits: 320,
           possession: "Dec 2028",
           reraApplicable: true,

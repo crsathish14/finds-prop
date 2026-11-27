@@ -221,6 +221,8 @@ export async function getProject(slug: string): Promise<ProjectResult> {
       offerType: row.offer_type,
       price: row.price,
       priceType: row.price_type,
+      securityDeposit: row.security_deposit ?? null,
+      maintenancePerMonth: row.maintenance_per_month ?? null,
       areaMinSqft: row.area_min_sqft,
       areaMaxSqft: row.area_max_sqft,
       bhkOptions: row.bhk_options,

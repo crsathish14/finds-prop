@@ -52,6 +52,8 @@ const saved: ProjectEditView = {
   projectStatus: "under_construction",
   price: 7800000,
   priceType: "basic",
+  securityDeposit: null,
+  maintenancePerMonth: null,
   areaMinSqft: null,
   areaMaxSqft: null,
   bhkOptions: [2, 3],
@@ -240,9 +242,20 @@ describe("ProjectForm: a new project (S7-T02, part C)", () => {
     expect(screen.queryByRole("group", { name: new RegExp(words.fields.bhk) })).toBeNull();
     expect(box(words.fields.areaMin)).toBeVisible();
     expect(box(words.fields.areaMax)).toBeVisible();
+    // ADR-214: a residential project now says sale or rent too; the rent amounts show only for rent.
     expect(
-      screen.queryByRole("combobox", { name: new RegExp(`^${words.fields.offerType}`) }),
+      screen.getByRole("combobox", { name: new RegExp(`^${words.fields.offerType}`) }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("textbox", { name: startsWith(words.fields.securityDeposit) }),
     ).toBeNull();
+    await changeField(select(words.fields.offerType), "rent");
+    expect(box(words.fields.securityDeposit)).toBeVisible();
+    expect(box(words.fields.maintenancePerMonth)).toBeVisible();
+    expect(await optionTexts(select(words.fields.priceType))).toEqual([
+      words.fields.unset,
+      words.options.priceType.rentPerMonth,
+    ]);
   });
 
   it("offers the property types of the project type, and the rent price types only for a commercial project for rent", async () => {

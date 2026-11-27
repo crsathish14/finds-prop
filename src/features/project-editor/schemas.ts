@@ -39,7 +39,7 @@ import {
 } from "./constants";
 import {
   areaApplies,
-  offerTypeApplies,
+  offerTypeRequired,
   plotStatusApplies,
   villaTypeApplies,
   possessionApplies,
@@ -258,8 +258,20 @@ const projectStatus = z.preprocess(
   z.enum(PROJECT_STATUSES, { error: choiceError }),
 );
 const priceType = z.preprocess(blankToMissing, z.enum(PRICE_TYPES, { error: choiceError }));
-/** Sale or rent: asked of a commercial project only; the rule that it is given is below. */
+/** Sale or rent (ADR-214: residential too); a commercial project must give it, the rule is below. */
 const offerType = clearable(z.enum(OFFER_TYPES, { error: "validation.invalid" }));
+
+/** A rent amount in whole rupees, more than zero: the security deposit and the maintenance per month (ADR-214). */
+const rentAmount = clearable(
+  z.preprocess(
+    toNumber,
+    z
+      .number({ error: "validation.numberInvalid" })
+      .refine(Number.isInteger, { error: "validation.numberInvalid" })
+      .min(1, { error: "validation.invalid" })
+      .max(PRICE_MAX, { error: "validation.invalid" }),
+  ),
+);
 
 /** What a plot or a villa is (ADR-160): asked for that property type only; the rule that it is given is below. */
 const plotStatus = clearable(z.enum(PLOT_STATUSES, { error: "validation.invalid" }));
@@ -277,6 +289,8 @@ const fieldShape = {
   projectStatus,
   price: requiredWholeNumber(1, PRICE_MAX),
   priceType,
+  securityDeposit: rentAmount,
+  maintenancePerMonth: rentAmount,
   areaMinSqft: decimal(0.01, AREA_SQFT_MAX, 2),
   areaMaxSqft: decimal(0.01, AREA_SQFT_MAX, 2),
   bhkOptions,
@@ -332,7 +346,7 @@ function crossRules(value: RuleInput, problems: z.RefinementCtx): void {
   if (!propertyTypeFits(value.projectType, value.propertyType)) {
     problems.addIssue({ code: "custom", path: ["propertyType"], message: "validation.invalid" });
   }
-  if (offerTypeApplies(value.projectType) && value.offerType == null) missing("offerType");
+  if (offerTypeRequired(value.projectType) && value.offerType == null) missing("offerType");
   if (plotStatusApplies(value.propertyType) && value.plotStatus == null) missing("plotStatus");
   if (villaTypeApplies(value.propertyType) && value.villaType == null) missing("villaType");
   if (!priceTypesFor(value.projectType, value.offerType ?? "").includes(value.priceType)) {

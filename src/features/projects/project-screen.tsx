@@ -259,8 +259,23 @@ export function ProjectScreen({
     }
   }
 
-  // The line under the price in the side card: the sizes on offer, then when it is ready.
+  // The line under the price in the side card: a rent project's deposit and maintenance (ADR-214), the sizes on offer,
+  // then when it is ready.
   const asideParts: string[] = [];
+  if (project.securityDeposit !== null) {
+    asideParts.push(
+      translate("projects.page.aside.deposit", {
+        amount: formatPrice(words, locale, project.securityDeposit),
+      }),
+    );
+  }
+  if (project.maintenancePerMonth !== null) {
+    asideParts.push(
+      translate("projects.page.aside.maintenance", {
+        amount: formatPrice(words, locale, project.maintenancePerMonth),
+      }),
+    );
+  }
   if (sizes.length > 0) {
     asideParts.push(
       translate("projects.page.overview.bhk", {

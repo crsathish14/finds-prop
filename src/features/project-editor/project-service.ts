@@ -2,8 +2,8 @@ import { ActionError } from "@/server/actions/normalise-error";
 import {
   areaApplies,
   bedroomsApply,
-  offerTypeApplies,
   plotStatusApplies,
+  rentAmountsApply,
   possessionApplies,
   villaTypeApplies,
 } from "./rules";
@@ -35,6 +35,8 @@ export interface ProjectRow {
   villa_type?: string | null;
   price?: number | null;
   price_type?: string | null;
+  security_deposit?: number | null;
+  maintenance_per_month?: number | null;
   area_min_sqft?: number | null;
   area_max_sqft?: number | null;
   bhk_options?: number[];
@@ -155,8 +157,17 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
   if (says(failure, "projects_area_range")) {
     return onBox("areaMaxSqft", "validation.areaRange", "The largest area is below the smallest");
   }
-  if (says(failure, "projects_price_type")) {
+  if (
+    says(failure, "projects_price_type") ||
+    says(failure, "projects_residential_rent_per_month")
+  ) {
     return onBox("priceType", "validation.invalid", "That price type does not fit the project");
+  }
+  if (says(failure, "projects_security_deposit_positive")) {
+    return onBox("securityDeposit", "validation.invalid", "The security deposit is not valid");
+  }
+  if (says(failure, "projects_maintenance_positive")) {
+    return onBox("maintenancePerMonth", "validation.invalid", "The maintenance is not valid");
   }
   if (says(failure, "projects_coordinates_together")) {
     return onBox("longitude", "validation.coordinatesTogether", "Give both coordinates or none");
@@ -183,6 +194,19 @@ export function mapProjectError(failure: ProjectFailure): ActionError {
   return new ActionError("INTERNAL", "The project could not be saved");
 }
 
+/**
+ * The sale or rent choice as stored (ADR-214): a commercial project keeps what it chose; a residential one is stored
+ * as rent, or as empty for sale, as every residential project for sale already is; any other kind stores nothing.
+ */
+export function offerTypeFrom(
+  projectType: string,
+  offerType: string | null | undefined,
+): string | null {
+  if (projectType === "commercial") return offerType ?? null;
+  if (projectType === "residential") return offerType === "rent" ? "rent" : null;
+  return null;
+}
+
 type Fields = CreateMyProjectInput | UpdateMyProjectInput | CreateProjectInput | UpdateProjectInput;
 
 /** Sets a column only when the form gave a value for it (a blank box is null, which clears it). */
@@ -196,14 +220,15 @@ function put<Key extends keyof ProjectRow>(
 
 /**
  * The columns from what the form gave (ADR-148). What does not apply to this kind of project is cleared, whatever the
- * form sent: bedrooms only for a residential apartment or villa, the sale or rent choice only for a commercial
- * project, the area range only for a plot and commercial projects, the possession month only while the project is
+ * form sent: bedrooms only for a residential apartment or villa, the sale or rent choice as offerTypeFrom keeps it,
+ * the deposit and maintenance only for a project for rent (ADR-214), the area range only for a plot and commercial projects, the possession month only while the project is
  * still to be built, the RERA number only when RERA applies and the reason only when it does not (the database
  * refuses a number without RERA, so a leftover box never blocks a save).
  */
 export function projectRowFrom(
   input: Fields,
 ): ProjectRow & { name: string; slug: string; city: string; locality: string } {
+  const forRent = rentAmountsApply(input.projectType, input.offerType ?? "");
   const row: ProjectRow & { name: string; slug: string; city: string; locality: string } = {
     name: input.name,
     slug: input.slug,
@@ -213,11 +238,13 @@ export function projectRowFrom(
     project_type: input.projectType,
     property_type: input.propertyType,
     project_status: input.projectStatus,
-    offer_type: offerTypeApplies(input.projectType) ? (input.offerType ?? null) : null,
+    offer_type: offerTypeFrom(input.projectType, input.offerType),
     plot_status: plotStatusApplies(input.propertyType) ? (input.plotStatus ?? null) : null,
     villa_type: villaTypeApplies(input.propertyType) ? (input.villaType ?? null) : null,
     price: input.price,
     price_type: input.priceType,
+    security_deposit: forRent ? (input.securityDeposit ?? null) : null,
+    maintenance_per_month: forRent ? (input.maintenancePerMonth ?? null) : null,
     bhk_options: bedroomsApply(input.projectType, input.propertyType)
       ? (input.bhkOptions ?? [])
       : [],
