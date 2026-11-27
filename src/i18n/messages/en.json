@@ -4882,7 +4882,7 @@
     "save": "Save pages",
     "saving": "Saving",
     "readAgain": "Read again",
-    "readAgainHint": "The assistant keeps a copy of your pages for 7 days. Read again makes it read them fresh next time.",
+    "readAgainHint": "Changed a page on your website? Read again makes the assistant read your pages fresh next time.",
     "toast": {
       "saved": "Pages saved",
       "readAgain": "The assistant will read your pages fresh next time"
