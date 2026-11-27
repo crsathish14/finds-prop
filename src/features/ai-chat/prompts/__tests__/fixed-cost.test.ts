@@ -100,7 +100,9 @@ const CONTENT_TOOL_NAMES = ["search_content", "search_jobs", "get_content_item"]
 // Raised from 11_200 on 23 Nov 2026 (ADR-174): the conversation section adds about 2,000 characters on purpose.
 const PROMPT_CHARACTER_CEILING = 13_000;
 // Raised from 25_000 on 23 Nov 2026 (ADR-176): the plain project enquiry is a fourteenth tool.
-const TOOL_LIST_CHARACTER_CEILING = 28_000;
+// Raised from 28_000 on 27 Nov 2026 (ADR-212, owner: quality over cost): research_builder is a sixteenth tool and
+// the other tools keep their full descriptions; measured 29,417.
+const TOOL_LIST_CHARACTER_CEILING = 32_000;
 
 const definitions = toolDefinitions(AI_CHAT_TOOLS);
 const toolListCharacters = JSON.stringify(definitions).length;
