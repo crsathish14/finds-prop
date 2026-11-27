@@ -25,14 +25,36 @@ export function propertyTypeFits(projectType: string, propertyType: string): boo
   return (propertyTypesFor(projectType) as readonly string[]).includes(propertyType);
 }
 
-/** Only a commercial project says whether it is for sale or for rent. */
+/**
+ * Every project says whether it is for sale or for rent (ADR-214: a residential one may be for rent too). A residential
+ * project left empty is for sale, as every residential project was before; a commercial one must choose.
+ */
 export function offerTypeApplies(projectType: string): boolean {
+  return projectType === "commercial" || projectType === "residential";
+}
+
+/** Only a commercial project must choose sale or rent; a residential one left empty is for sale. */
+export function offerTypeRequired(projectType: string): boolean {
   return projectType === "commercial";
 }
 
-/** The price types that can be chosen: the rent ones for a commercial project for rent, the sale ones otherwise. */
+/** A residential project for rent is priced per month only (ADR-214). */
+const RESIDENTIAL_RENT_PRICE_TYPES = ["rent_per_month"] as const;
+
+/**
+ * The price types that can be chosen: the rent ones for a commercial project for rent, rent per month for a residential
+ * project for rent, the sale ones otherwise.
+ */
 export function priceTypesFor(projectType: string, offerType: string): readonly string[] {
-  return projectType === "commercial" && offerType === "rent" ? RENT_PRICE_TYPES : SALE_PRICE_TYPES;
+  if (offerType !== "rent") return SALE_PRICE_TYPES;
+  if (projectType === "commercial") return RENT_PRICE_TYPES;
+  if (projectType === "residential") return RESIDENTIAL_RENT_PRICE_TYPES;
+  return SALE_PRICE_TYPES;
+}
+
+/** A security deposit and maintenance per month are asked only of a project for rent (ADR-214). */
+export function rentAmountsApply(projectType: string, offerType: string): boolean {
+  return offerTypeApplies(projectType) && offerType === "rent";
 }
 
 /** Bedrooms are asked only for a residential apartment or villa. */

@@ -11,7 +11,9 @@ import {
   areaApplies,
   bedroomsApply,
   offerTypeApplies,
+  offerTypeRequired,
   plotStatusApplies,
+  rentAmountsApply,
   villaTypeApplies,
   possessionApplies,
   priceTypesFor,
@@ -68,6 +70,8 @@ export const EMPTY_PROJECT_VALUES: ProjectFieldValues = {
   projectStatus: "",
   price: "",
   priceType: "",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "",
   areaMaxSqft: "",
   bhkOptions: [],
@@ -101,12 +105,15 @@ export function valuesOf(project: ProjectEditView): ProjectFieldValues {
     builderId: project.builderId,
     projectType: text(project.projectType),
     propertyType: text(project.propertyType),
-    offerType: text(project.offerType),
+    // A residential project saved without a choice is for sale (ADR-214).
+    offerType: text(project.offerType) || (project.projectType === "residential" ? "sale" : ""),
     plotStatus: text(project.plotStatus),
     villaType: text(project.villaType),
     projectStatus: text(project.projectStatus),
     price: text(project.price),
     priceType: text(project.priceType),
+    securityDeposit: text(project.securityDeposit),
+    maintenancePerMonth: text(project.maintenancePerMonth),
     areaMinSqft: text(project.areaMinSqft),
     areaMaxSqft: text(project.areaMaxSqft),
     bhkOptions: project.bhkOptions,
@@ -153,6 +160,7 @@ export function appliesOf(values: ProjectFieldValues): {
   bedrooms: boolean;
   area: boolean;
   possession: boolean;
+  rentAmounts: boolean;
 } {
   return {
     offerType: offerTypeApplies(values.projectType),
@@ -161,6 +169,7 @@ export function appliesOf(values: ProjectFieldValues): {
     bedrooms: bedroomsApply(values.projectType, values.propertyType),
     area: areaApplies(values.projectType, values.propertyType),
     possession: possessionApplies(values.projectStatus),
+    rentAmounts: rentAmountsApply(values.projectType, values.offerType),
   };
 }
 
@@ -174,6 +183,8 @@ export function reconcile(values: ProjectFieldValues): ProjectFieldValues {
   const next = { ...values };
   if (!propertyTypeFits(next.projectType, next.propertyType)) next.propertyType = "";
   if (!offerTypeApplies(next.projectType)) next.offerType = "";
+  // A residential project starts as for sale; it may be changed to rent (ADR-214).
+  if (next.projectType === "residential" && next.offerType === "") next.offerType = "sale";
   if (!plotStatusApplies(next.propertyType)) next.plotStatus = "";
   if (!villaTypeApplies(next.propertyType)) next.villaType = "";
   if (!priceTypesFor(next.projectType, next.offerType).includes(next.priceType))
@@ -184,6 +195,10 @@ export function reconcile(values: ProjectFieldValues): ProjectFieldValues {
   }
   if (!bedroomsApply(next.projectType, next.propertyType)) next.bhkOptions = [];
   if (!possessionApplies(next.projectStatus)) next.possessionDate = "";
+  if (!rentAmountsApply(next.projectType, next.offerType)) {
+    next.securityDeposit = "";
+    next.maintenancePerMonth = "";
+  }
   return next;
 }
 
@@ -202,6 +217,7 @@ export type ProjectProblem =
   | "possession"
   | "price"
   | "priceType"
+  | "rentAmount"
   | "area"
   | "areaRange"
   | "reraNumber"
@@ -227,7 +243,8 @@ export function projectProblems(
   if (options.needsBuilder && values.builderId === "") found.builderId = "builder";
   if (blank(values.projectType)) found.projectType = "projectType";
   if (blank(values.propertyType)) found.propertyType = "propertyType";
-  if (applies.offerType && blank(values.offerType)) found.offerType = "offerType";
+  if (offerTypeRequired(values.projectType) && blank(values.offerType))
+    found.offerType = "offerType";
   if (applies.plotStatus && blank(values.plotStatus)) found.plotStatus = "plotStatus";
   if (applies.villaType && blank(values.villaType)) found.villaType = "villaType";
   if (blank(values.projectStatus)) found.projectStatus = "status";
@@ -235,6 +252,16 @@ export function projectProblems(
   const price = numberOf(values.price);
   if (blank(values.price) || !Number.isInteger(price) || price < 1) found.price = "price";
   if (blank(values.priceType)) found.priceType = "priceType";
+  if (applies.rentAmounts) {
+    const wholeRupees = (typed: string) => {
+      const amount = numberOf(typed);
+      return Number.isInteger(amount) && amount >= 1;
+    };
+    if (!blank(values.securityDeposit) && !wholeRupees(values.securityDeposit))
+      found.securityDeposit = "rentAmount";
+    if (!blank(values.maintenancePerMonth) && !wholeRupees(values.maintenancePerMonth))
+      found.maintenancePerMonth = "rentAmount";
+  }
   if (applies.area) {
     const low = numberOf(values.areaMinSqft);
     const high = numberOf(values.areaMaxSqft);
@@ -268,6 +295,8 @@ export const SECTION_OF: Record<ProjectFieldName, ProjectSectionId> = {
   projectStatus: "basics",
   price: "basics",
   priceType: "basics",
+  securityDeposit: "basics",
+  maintenancePerMonth: "basics",
   areaMinSqft: "basics",
   areaMaxSqft: "basics",
   bhkOptions: "basics",

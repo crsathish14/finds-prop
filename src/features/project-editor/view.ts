@@ -13,7 +13,7 @@ export interface ProjectEditView {
   projectType: string | null;
   propertyType: string | null;
   projectStatus: string | null;
-  /** Sale or rent; only a commercial project has one. */
+  /** Sale or rent; a commercial project always has one, a residential one may (ADR-214: empty is for sale). */
   offerType: string | null;
   plotStatus: string | null;
   villaType: string | null;
@@ -21,6 +21,9 @@ export interface ProjectEditView {
   extraFields: Record<string, string>;
   price: number | null;
   priceType: string | null;
+  /** Whole rupees; a project for rent only (ADR-214). */
+  securityDeposit: number | null;
+  maintenancePerMonth: number | null;
   /** The area range in square feet: a plot and every commercial project. */
   areaMinSqft: number | null;
   areaMaxSqft: number | null;
@@ -88,6 +91,8 @@ export interface ProjectDbRow {
   extra_fields?: unknown;
   price: number | null;
   price_type: string | null;
+  security_deposit?: number | null;
+  maintenance_per_month?: number | null;
   area_min_sqft: number | string | null;
   area_max_sqft: number | string | null;
   bhk_options: number[];
@@ -158,6 +163,8 @@ export function toProjectEditView(
     extraFields: extraFieldsOf(row.extra_fields),
     price: row.price,
     priceType: row.price_type,
+    securityDeposit: row.security_deposit ?? null,
+    maintenancePerMonth: row.maintenance_per_month ?? null,
     areaMinSqft: asNumber(row.area_min_sqft),
     areaMaxSqft: asNumber(row.area_max_sqft),
     bhkOptions: row.bhk_options,

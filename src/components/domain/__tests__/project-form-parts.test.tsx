@@ -187,6 +187,10 @@ const FIELD_WORDS: ProjectFieldsWords = {
   projectStatus: "Status",
   price: "Starting price",
   priceType: "Price type",
+  securityDeposit: "Security deposit",
+  securityDepositHint: "Rupees, such as 100000.",
+  maintenancePerMonth: "Maintenance per month",
+  maintenancePerMonthHint: "Rupees a month, such as 3000.",
   areaMin: "Minimum area",
   areaMax: "Maximum area",
   bhk: "BHK options",
@@ -237,6 +241,8 @@ const VALUES: ProjectFieldValues = {
   projectStatus: "",
   price: "",
   priceType: "",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "",
   areaMaxSqft: "",
   bhkOptions: [3],
@@ -268,6 +274,7 @@ const APPLIES = {
   bedrooms: true,
   area: false,
   possession: true,
+  rentAmounts: false,
 };
 
 /** The fields with their own state, as a page keeps it; the spy sees every change. */
@@ -348,6 +355,7 @@ describe("UT-project-fields: the sections of the project form (S7-T02)", () => {
           bedrooms: false,
           area: true,
           possession: false,
+          rentAmounts: false,
         }}
       />,
     );

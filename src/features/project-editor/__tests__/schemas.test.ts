@@ -368,7 +368,27 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
   it("needs sale or rent for a commercial project, and ignores it for a residential one", () => {
     expect(parse({ ...commercial, offerType: "" })).toEqual(["offerType:validation.required"]);
     expect(parse({ ...commercial, offerType: "lease" })).toEqual(["offerType:validation.invalid"]);
-    expect(parse({ ...minimal, offerType: "rent" })).toEqual([]);
+    // ADR-214: a residential project may be for rent, priced per month only; empty is for sale.
+    expect(parse({ ...minimal, offerType: "rent" })).toEqual(["priceType:validation.invalid"]);
+    expect(parse({ ...minimal, offerType: "rent", priceType: "rent_per_month" })).toEqual([]);
+    expect(parse({ ...minimal, offerType: "" })).toEqual([]);
+  });
+
+  it("takes a security deposit and maintenance in whole rupees above zero (ADR-214)", () => {
+    const rent = { ...minimal, offerType: "rent", priceType: "rent_per_month" };
+    expect(parse({ ...rent, securityDeposit: "1,50,000", maintenancePerMonth: "2500" })).toEqual(
+      [],
+    );
+    expect(parse({ ...rent, securityDeposit: "", maintenancePerMonth: "" })).toEqual([]);
+    expect(parse({ ...rent, securityDeposit: "1.5" })).toEqual([
+      "securityDeposit:validation.numberInvalid",
+    ]);
+    expect(parse({ ...rent, maintenancePerMonth: "0" })).toEqual([
+      "maintenancePerMonth:validation.invalid",
+    ]);
+    expect(parse({ ...rent, maintenancePerMonth: "abc" })).toEqual([
+      "maintenancePerMonth:validation.numberInvalid",
+    ]);
   });
 
   it("offers the sale price types for sale and the rent ones for rent", () => {
@@ -383,6 +403,9 @@ describe("UT-project-schemas: the rules between boxes (ADR-148)", () => {
       expect(parse({ ...commercial, priceType })).toEqual(["priceType:validation.invalid"]);
       expect(parse({ ...minimal, priceType })).toEqual(["priceType:validation.invalid"]);
     }
+    expect(parse({ ...minimal, offerType: "rent", priceType: "rent_per_sqft_month" })).toEqual([
+      "priceType:validation.invalid",
+    ]);
   });
 
   it("needs the smallest and the largest area for a plot and a commercial project, in order", () => {

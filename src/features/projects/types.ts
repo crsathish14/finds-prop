@@ -75,6 +75,9 @@ export type ProjectData = {
   offerType: OfferType | null;
   price: number | null;
   priceType: PriceType | null;
+  /** Whole rupees, given only by a project for rent (ADR-214). */
+  securityDeposit: number | null;
+  maintenancePerMonth: number | null;
   /** The smallest and largest area in square feet: a plot and a commercial project give them. */
   areaMinSqft: number | null;
   areaMaxSqft: number | null;

@@ -760,6 +760,8 @@
       },
       "aside": {
         "label": "Price and contact",
+        "deposit": "Deposit {amount}",
+        "maintenance": "Maintenance {amount} per month",
         "possession": "Possession {date}"
       },
       "notFound": {
@@ -2441,6 +2443,10 @@
         "projectStatus": "Status",
         "price": "Starting price (₹)",
         "priceType": "Price type",
+        "securityDeposit": "Security deposit",
+        "securityDepositHint": "Rupees, such as 100000.",
+        "maintenancePerMonth": "Maintenance per month",
+        "maintenancePerMonthHint": "Rupees a month, such as 3000.",
         "areaMin": "Minimum area (sq ft)",
         "areaMax": "Maximum area (sq ft)",
         "bhk": "BHK options",
@@ -2598,6 +2604,7 @@
         "possession": "Choose the possession month.",
         "price": "Enter the price.",
         "priceType": "Choose a price type.",
+        "rentAmount": "Enter the amount in whole rupees, such as 2500.",
         "area": "Enter the minimum and maximum area.",
         "areaRange": "The maximum area must be the same as or more than the minimum.",
         "city": "Enter the city.",

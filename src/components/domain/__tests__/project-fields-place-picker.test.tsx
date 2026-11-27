@@ -25,6 +25,10 @@ const WORDS: ProjectFieldsWords = {
   projectStatus: "Status",
   price: "Starting price",
   priceType: "Price type",
+  securityDeposit: "Security deposit",
+  securityDepositHint: "Rupees, such as 100000.",
+  maintenancePerMonth: "Maintenance per month",
+  maintenancePerMonthHint: "Rupees a month, such as 3000.",
   areaMin: "Minimum area",
   areaMax: "Maximum area",
   bhk: "BHK options",
@@ -81,6 +85,8 @@ const VALUES: ProjectFieldValues = {
   projectStatus: "",
   price: "",
   priceType: "",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "",
   areaMaxSqft: "",
   bhkOptions: [3],
@@ -112,6 +118,7 @@ const APPLIES = {
   bedrooms: true,
   area: false,
   possession: true,
+  rentAmounts: false,
 };
 
 /** A stand-in for the page's place picker: one button that reports a fixed place, so no network is involved. */

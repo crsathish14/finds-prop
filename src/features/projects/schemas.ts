@@ -71,7 +71,7 @@ export type ProjectListRow = z.infer<typeof projectListRowSchema>;
 
 /** The columns the project page reads from `projects`. */
 export const PROJECT_COLUMNS =
-  "id, slug, name, project_status, property_type, plot_status, villa_type, extra_fields, offer_type, price, price_type, area_min_sqft, area_max_sqft, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, rera_not_applicable_reason, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
+  "id, slug, name, project_status, property_type, plot_status, villa_type, extra_fields, offer_type, price, price_type, security_deposit, maintenance_per_month, area_min_sqft, area_max_sqft, bhk_options, land_area_acres, total_units, possession_date, contact_phone, locality, advantages, nearby, rera_applicable, rera_number, rera_not_applicable_reason, description, specifications, amenities, images, floor_plans, videos, brochure_path, seo_title, seo_description, featured, builders!inner(id, name)";
 
 export const projectRowSchema = z.object({
   id: z.string().min(1),
@@ -85,6 +85,9 @@ export const projectRowSchema = z.object({
   offer_type: offerTypeSchema,
   price: z.number().nonnegative().nullable(),
   price_type: priceTypeSchema,
+  // ADR-214: a project for rent may give these; a read without them is none.
+  security_deposit: z.number().int().positive().nullish().catch(null),
+  maintenance_per_month: z.number().int().positive().nullish().catch(null),
   area_min_sqft: z.number().nonnegative().nullable(),
   area_max_sqft: z.number().nonnegative().nullable(),
   bhk_options: z.array(z.number().int()),

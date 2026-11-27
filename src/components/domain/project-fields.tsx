@@ -42,7 +42,7 @@ type ProjectFieldValues = {
   builderId: string;
   projectType: string;
   propertyType: string;
-  /** "sale" or "rent"; "" for a residential project */
+  /** "sale" or "rent" (ADR-214: a residential project may be for rent too) */
   offerType: string;
   /** "investment" or "ready_to_build"; "" unless the property type is a plot */
   plotStatus: string;
@@ -51,6 +51,10 @@ type ProjectFieldValues = {
   projectStatus: string;
   price: string;
   priceType: string;
+  /** Whole rupees, or ""; only for a project for rent (ADR-214) */
+  securityDeposit: string;
+  /** Whole rupees a month, or ""; only for a project for rent (ADR-214) */
+  maintenancePerMonth: string;
   areaMinSqft: string;
   areaMaxSqft: string;
   bhkOptions: number[];
@@ -105,6 +109,10 @@ type ProjectFieldsWords = {
   projectStatus: string;
   price: string;
   priceType: string;
+  securityDeposit: string;
+  securityDepositHint: string;
+  maintenancePerMonth: string;
+  maintenancePerMonthHint: string;
   areaMin: string;
   areaMax: string;
   bhk: string;
@@ -159,6 +167,8 @@ type ProjectFieldsProps = {
     bedrooms: boolean;
     area: boolean;
     possession: boolean;
+    /** The security deposit and maintenance boxes: a project for rent only (ADR-214). */
+    rentAmounts: boolean;
   };
   amenitySuggestions?: readonly string[];
   slugLocked?: boolean;
@@ -295,6 +305,26 @@ function ProjectFields({
           <FormField label={words.priceType} required {...problem("priceType")}>
             <Select {...text("priceType")}>{choices(options.priceTypes)}</Select>
           </FormField>
+          {applies.rentAmounts ? (
+            <>
+              <FormField
+                label={words.securityDeposit}
+                hint={words.securityDepositHint}
+                {...optional}
+                {...problem("securityDeposit")}
+              >
+                <Input {...text("securityDeposit")} inputMode="numeric" autoComplete="off" />
+              </FormField>
+              <FormField
+                label={words.maintenancePerMonth}
+                hint={words.maintenancePerMonthHint}
+                {...optional}
+                {...problem("maintenancePerMonth")}
+              >
+                <Input {...text("maintenancePerMonth")} inputMode="numeric" autoComplete="off" />
+              </FormField>
+            </>
+          ) : null}
           {applies.area ? (
             <>
               <FormField label={words.areaMin} required {...problem("areaMinSqft")}>

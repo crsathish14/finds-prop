@@ -130,6 +130,8 @@ export function projectData(overrides: Partial<ProjectData> = {}): ProjectData {
     extraFields: {},
     price: 7_800_000,
     priceType: "basic",
+    securityDeposit: null,
+    maintenancePerMonth: null,
     areaMinSqft: null,
     areaMaxSqft: null,
     bhkOptions: [3, 2, 2],

@@ -58,6 +58,10 @@ const WORDS: ProjectFieldsWords = {
   projectStatus: "Status",
   price: "Starting price (₹)",
   priceType: "Price type",
+  securityDeposit: "Security deposit",
+  securityDepositHint: "Rupees, such as 100000.",
+  maintenancePerMonth: "Maintenance per month",
+  maintenancePerMonthHint: "Rupees a month, such as 3000.",
   areaMin: "Minimum area (sq ft)",
   areaMax: "Maximum area (sq ft)",
   bhk: "BHK options",
@@ -122,7 +126,7 @@ function optionsFor(values: ProjectFieldValues, builder: boolean) {
     value,
     label: labels[value] ?? value,
   });
-  const rent = values.projectType === "commercial" && values.offerType === "rent";
+  const rent = values.offerType === "rent";
   return {
     ...(builder ? {} : { builders: BUILDERS }),
     projectTypes: [
@@ -144,7 +148,9 @@ function optionsFor(values: ProjectFieldValues, builder: boolean) {
       { value: "individual", label: "Individual" },
     ],
     priceTypes: (rent
-      ? ["rent_per_month", "rent_per_sqft_month"]
+      ? values.projectType === "residential"
+        ? ["rent_per_month"]
+        : ["rent_per_month", "rent_per_sqft_month"]
       : ["per_sqft", "basic", "all_inclusive"]
     ).map(option(PRICE_TYPE_LABELS)),
     statuses: [
@@ -157,8 +163,10 @@ function optionsFor(values: ProjectFieldValues, builder: boolean) {
 
 function appliesTo(values: ProjectFieldValues) {
   const commercial = values.projectType === "commercial";
+  // ADR-214: a residential project may be for rent too; the two rent amounts show for a project for rent.
+  const offers = commercial || values.projectType === "residential";
   return {
-    offerType: commercial,
+    offerType: offers,
     plotStatus: values.propertyType === "plot",
     villaType: values.propertyType === "villa",
     bedrooms:
@@ -167,6 +175,7 @@ function appliesTo(values: ProjectFieldValues) {
     area: values.propertyType === "plot" || commercial,
     possession:
       values.projectStatus === "new_launch" || values.projectStatus === "under_construction",
+    rentAmounts: offers && values.offerType === "rent",
   };
 }
 
@@ -183,6 +192,8 @@ const EMPTY: ProjectFieldValues = {
   projectStatus: "",
   price: "",
   priceType: "",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "",
   areaMaxSqft: "",
   bhkOptions: [],
@@ -218,6 +229,8 @@ const FILLED: ProjectFieldValues = {
   projectStatus: "under_construction",
   price: "78,00,000",
   priceType: "basic",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "",
   areaMaxSqft: "",
   bhkOptions: [2, 3],
@@ -251,6 +264,8 @@ const PLOTS: ProjectFieldValues = {
   projectStatus: "ready_to_move",
   price: "2,450",
   priceType: "per_sqft",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "1200",
   areaMaxSqft: "2400",
   bhkOptions: [],
@@ -271,6 +286,8 @@ const OFFICE_FOR_RENT: ProjectFieldValues = {
   projectStatus: "new_launch",
   price: "85",
   priceType: "rent_per_sqft_month",
+  securityDeposit: "",
+  maintenancePerMonth: "",
   areaMinSqft: "500",
   areaMaxSqft: "2500",
   bhkOptions: [],

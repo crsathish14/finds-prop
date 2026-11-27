@@ -66,6 +66,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       villa_type: null,
       price: 7800000,
       price_type: "basic",
+      security_deposit: null,
+      maintenance_per_month: null,
       area_min_sqft: null,
       area_max_sqft: null,
       bhk_options: [],
@@ -74,6 +76,23 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       rera_number: null,
       rera_not_applicable_reason: "Below the size that needs registration.",
     });
+  });
+
+  it("keeps the deposit and maintenance of a residential project for rent (ADR-214)", () => {
+    const row = projectRowFrom(
+      createMyProjectSchema.parse({
+        ...minimal,
+        offerType: "rent",
+        price: "28000",
+        priceType: "rent_per_month",
+        securityDeposit: "1,50,000",
+        maintenancePerMonth: "2500",
+      }),
+    );
+    expect(row.offer_type).toBe("rent");
+    expect(row.price_type).toBe("rent_per_month");
+    expect(row.security_deposit).toBe(150000);
+    expect(row.maintenance_per_month).toBe(2500);
   });
 
   it("maps every box to its column", () => {
@@ -113,6 +132,8 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
       villa_type: null,
       price: 7800000,
       price_type: "basic",
+      security_deposit: null,
+      maintenance_per_month: null,
       area_min_sqft: null,
       area_max_sqft: null,
       bhk_options: [2, 3],
@@ -210,16 +231,19 @@ describe("UT-project-service: the columns a project form gives (S7-T02)", () => 
     });
   });
 
-  it("drops the sale or rent choice of a residential project, and the area range of an apartment", () => {
+  it("stores a residential project for sale with no choice, and drops the area range of an apartment", () => {
     const row = projectRowFrom(
       createMyProjectSchema.parse({
         ...minimal,
-        offerType: "rent",
+        offerType: "sale",
+        securityDeposit: "100000",
         areaMinSqft: "500",
         areaMaxSqft: "900",
       }),
     );
+    // ADR-214: a residential project for sale is stored with no choice, as before, and keeps no rent amount.
     expect(row.offer_type).toBeNull();
+    expect(row.security_deposit).toBeNull();
     expect(row.area_min_sqft).toBeNull();
     expect(row.area_max_sqft).toBeNull();
   });
