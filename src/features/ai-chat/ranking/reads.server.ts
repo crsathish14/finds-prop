@@ -51,6 +51,75 @@ export async function getPrimeRules(): Promise<ProjectPrimeRules> {
   }
 }
 
+/** A point on the map, in degrees. */
+export interface CentrePoint {
+  readonly lat: number;
+  readonly lng: number;
+}
+
+const projectPointSchema = z.object({
+  locality: z.string(),
+  latitude: z.number().nullable().catch(null),
+  longitude: z.number().nullable().catch(null),
+});
+
+/** The most projects a centre is worked out from. */
+const CENTRE_PROJECTS_MAX = 50;
+
+/** The text of a filter as an `ilike` pattern that matches it literally anywhere. */
+function containsPattern(text: string): string {
+  return `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+}
+
+/**
+ * The centre of a locality from what we already hold (ADR-216), never from a paid map lookup: the admin's curated
+ * localities first (the homepage list, each with its point), else the mean of the exact points of the live projects in
+ * that locality (public columns, read as the signed-in customer). `matches` decides whether a name is the locality, so the
+ * caller's spelling-proof rule is used. Null when neither holds one; a failed read is null too, never an error.
+ */
+export async function getLocalityCentre(
+  locality: string,
+  matches: (name: string) => boolean,
+): Promise<CentrePoint | null> {
+  try {
+    const { getSiteSettings } = await import("@/features/site");
+    const curated = (await getSiteSettings()).homepage.localities.find((place) =>
+      matches(place.label),
+    );
+    if (curated !== undefined) return { lat: curated.lat, lng: curated.lng };
+    const { data, error } = await (
+      await createServerSupabase()
+    )
+      .from("projects")
+      .select("locality, latitude, longitude")
+      .not("latitude", "is", null)
+      .not("longitude", "is", null)
+      .ilike("locality", containsPattern(locality.trim()))
+      .limit(CENTRE_PROJECTS_MAX);
+    if (error) {
+      logger.warn("locality centre could not be read", { errorCode: error.code });
+      return null;
+    }
+    const points = (data ?? []).flatMap((row) => {
+      const parsed = projectPointSchema.safeParse(row);
+      if (!parsed.success || !matches(parsed.data.locality)) return [];
+      const { latitude, longitude } = parsed.data;
+      return latitude === null || longitude === null ? [] : [{ lat: latitude, lng: longitude }];
+    });
+    if (points.length === 0) return null;
+    const mean = (values: number[]) =>
+      values.reduce((sum, value) => sum + value, 0) / values.length;
+    return {
+      lat: mean(points.map((point) => point.lat)),
+      lng: mean(points.map((point) => point.lng)),
+    };
+  } catch (error) {
+    unstable_rethrow(error);
+    logger.warn("locality centre could not be read", {});
+    return null;
+  }
+}
+
 /** What the ranking reads about a home besides its search row. */
 export interface HomeExtras {
   readonly amenities: readonly string[];
