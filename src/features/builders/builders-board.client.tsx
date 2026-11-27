@@ -1,6 +1,6 @@
 "use client";
 
-import { Ellipsis, Pencil, Plus, Power, RotateCw, TriangleAlert } from "lucide-react";
+import { Bot, Ellipsis, Pencil, Plus, Power, RotateCw, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -225,6 +225,12 @@ export function BuildersBoard({ builders, now, actions }: BuildersBoardProps) {
               onSelect={() => openEdit(builder)}
             >
               {translate("actions.editDetails")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              icon={<Icon icon={Bot} size="sm" />}
+              onSelect={() => router.push(`/admin/builders/${builder.id}/ai-pages`)}
+            >
+              {translate("actions.aiPages")}
             </DropdownMenuItem>
             {builder.status === "invited" ? (
               <DropdownMenuItem

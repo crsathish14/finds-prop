@@ -56,6 +56,10 @@ const EXPECTED: Record<string, Level> = {
   "auth/addEmail": "verified-phone",
   "auth/resendEmailLink": "verified-phone",
   "auth/signOut": "none",
+  "builder-research/readBuilderPagesAgain": "super_admin",
+  "builder-research/readMyPagesAgain": "builder",
+  "builder-research/saveBuilderResearchPages": "super_admin",
+  "builder-research/saveMyResearchPages": "builder",
   "builders/inviteBuilder": "super_admin",
   "builders/resendInvitation": "super_admin",
   "builders/setBuilderActive": "super_admin",
@@ -184,17 +188,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 67 super_admin, 10 builder, 22 verified-phone, 9 none, 1 user", () => {
+  it("holds the counts by level: 69 super_admin, 12 builder, 22 verified-phone, 9 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 67,
-      builder: 10,
+      super_admin: 69,
+      builder: 12,
       "verified-phone": 22,
       none: 9,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(109);
+    expect(Object.keys(table)).toHaveLength(113);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {

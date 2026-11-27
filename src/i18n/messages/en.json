@@ -1973,7 +1973,8 @@
         "resend": "Resend invitation",
         "activate": "Activate",
         "deactivate": "Deactivate",
-        "more": "More actions for {name}"
+        "more": "More actions for {name}",
+        "aiPages": "Pages for the AI assistant"
       },
       "empty": {
         "title": "No builders yet",
@@ -4849,6 +4850,48 @@
       },
       "homes": "Homes by this agent",
       "projects": "Projects by this agent"
+    }
+  },
+  "builderResearch": {
+    "title": "Pages for the AI assistant",
+    "hint": "Add up to 3 pages of your website that tell buyers about you. The assistant reads only these pages and your website's home page.",
+    "link": "Page link {number}",
+    "topic": "What is this page about?",
+    "topicPlaceholder": "Choose a topic",
+    "topics": {
+      "aboutCompany": "About the company",
+      "projects": "Projects",
+      "deliveryRecord": "Delivery record",
+      "awardsApprovals": "Awards and approvals",
+      "contact": "Contact",
+      "other": "Other"
+    },
+    "readable": "We can read this page.",
+    "problem": {
+      "notOnSite": "This page is not on your website. Use a page of {site}.",
+      "couldNotOpen": "We could not open this page. Check the address and try again.",
+      "blocked": "Your website does not allow automated reading of this page.",
+      "tooLittleText": "This page shows almost no text we can read.",
+      "notAPage": "This is not a web page, for example a PDF or a picture."
+    },
+    "websiteWarning": "We could not read your website's home page. Buyers can still see the link, but the assistant cannot use it.",
+    "later": "We could not read this page on {date}: {reason}",
+    "terms": "The findsprop assistant may read your website's home page and the pages you add here, and use what they say to answer buyers' questions about you.",
+    "noWebsite": "Add your website in the details above to add pages for the assistant.",
+    "noWebsiteSaved": "Add a website first: the pages must be on it.",
+    "save": "Save pages",
+    "saving": "Saving",
+    "readAgain": "Read again",
+    "readAgainHint": "Changed a page on your website? Read again makes the assistant read your pages fresh next time.",
+    "readAgainHintAdmin": "The assistant keeps a copy of these pages for 7 days. Read again makes it read them fresh next time.",
+    "toast": {
+      "saved": "Pages saved",
+      "readAgain": "The assistant will read your pages fresh next time"
+    },
+    "admin": {
+      "metaTitle": "Pages for the AI assistant",
+      "title": "Pages for the AI assistant: {name}",
+      "back": "Back to builders"
     }
   }
 }
