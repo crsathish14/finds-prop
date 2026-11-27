@@ -70,13 +70,13 @@ select is(
 );
 set local role authenticated;
 select lives_ok(
-  $select security_deposit, maintenance_per_month from public.projects$,
+  $$select security_deposit, maintenance_per_month from public.projects$$,
   'a signed-in visitor can read the security deposit and the maintenance per month'
 );
 reset role;
 set local role anon;
 select throws_ok(
-  $select security_deposit, maintenance_per_month from public.projects$,
+  $$select security_deposit, maintenance_per_month from public.projects$$,
   '42501', null, 'a visitor who is not signed in cannot read them (the login wall, ADR-171)'
 );
 reset role;
