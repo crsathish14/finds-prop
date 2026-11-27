@@ -31,12 +31,19 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
   const { provider, tools, system, context, signal, timeLimit } = input;
   const definitions = toolDefinitions(tools);
   const messages = [...input.messages];
-  const usage: UsageTotals = { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 };
+  const usage: UsageTotals = {
+    inputTokens: 0,
+    outputTokens: 0,
+    cachedInputTokens: 0,
+    webSearches: 0,
+  };
   const references = new Map<string, ToolReference>();
   const toolResults: string[] = [];
   const offers: ProposalOffer[] = [];
   const toolCallsPerRound: number[] = [];
   const toolsRan = new Set<string>();
+  // The tools that gave a result (not an error) in the rounds so far: the web search looks here (ADR-218).
+  const toolsAnswered = new Set<string>();
   const groupCalls: Record<string, number> = {};
   let rounds = 0;
   let callsUsed = 0;
@@ -139,6 +146,13 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         calls: round.calls,
         context: {
           ...context,
+          earlierResults: [...toolsAnswered],
+          spend: (spent) => {
+            usage.inputTokens += spent.inputTokens;
+            usage.cachedInputTokens += spent.cachedInputTokens;
+            usage.outputTokens += spent.outputTokens;
+            usage.webSearches += spent.webSearches;
+          },
           status: (messageKey) => {
             steps.push(messageKey);
             wake?.();
@@ -189,6 +203,7 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
           continue;
         }
         usefulResults = true;
+        if (toolName !== undefined) toolsAnswered.add(toolName);
         toolResults.push(outcome.content);
         const offer = toolName === undefined ? null : offerFromOutput(toolName, outcome.output);
         if (offer !== null) offers.push(offer);

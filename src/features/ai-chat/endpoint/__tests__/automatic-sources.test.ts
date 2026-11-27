@@ -25,7 +25,7 @@ function done(overrides: Partial<AgentDone>): AgentDone {
     retried: false,
     toolCallsPerRound: [1],
     toolsRan: ["search_content"],
-    usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, webSearches: 0 },
     references: [ARTICLE],
     toolResults: [],
     offers: [],

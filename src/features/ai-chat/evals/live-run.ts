@@ -19,6 +19,8 @@ export interface LiveRunInput {
   readonly tools: readonly AnyAiChatTool[];
   /** The tools of the cases that turn AI place search on (ADR-142). */
   readonly placeTools?: readonly AnyAiChatTool[];
+  /** The web search tool of the cases that offer it (ADR-218), over the made-up websites. */
+  readonly webToolFor?: () => AnyAiChatTool;
   readonly providerFor: (evalCase: EvalCase, tools: readonly AnyAiChatTool[]) => AiProvider;
   readonly model: string;
   readonly promptVersion: string;
@@ -47,6 +49,7 @@ export async function runAndReport(input: LiveRunInput): Promise<LiveRunResult> 
     mode: "live",
     tools: input.tools,
     ...(input.placeTools === undefined ? {} : { placeTools: input.placeTools }),
+    ...(input.webToolFor === undefined ? {} : { webToolFor: input.webToolFor }),
     providerFor: input.providerFor,
     onScore: (score, position, total) =>
       input.progress?.(`[${position}/${total}] ${score.id} ${score.passed ? "pass" : "FAIL"}`),

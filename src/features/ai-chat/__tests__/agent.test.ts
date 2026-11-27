@@ -278,7 +278,12 @@ describe("UT-ai-agent: a turn with a tool", () => {
     expect(done.rounds).toBe(3);
     expect(done.toolCallsPerRound).toEqual([2, 1]);
     expect(done.toolsRan).toEqual(["lookup_home", "delayed_read"]);
-    expect(done.usage).toEqual({ inputTokens: 600, outputTokens: 60, cachedInputTokens: 120 });
+    expect(done.usage).toEqual({
+      inputTokens: 600,
+      outputTokens: 60,
+      cachedInputTokens: 120,
+      webSearches: 0,
+    });
   });
 
   it("tracks every home a tool returned, each once, across rounds and calls", async () => {
@@ -950,7 +955,12 @@ describe("UT-ai-agent-limits: the provider fails mid-loop", () => {
       textTurn("Done.", { usage: { inputTokens: 40, outputTokens: 5 } }),
     ]);
     const { done } = await collect(provider);
-    expect(done.usage).toEqual({ inputTokens: 80, outputTokens: 5, cachedInputTokens: 0 });
+    expect(done.usage).toEqual({
+      inputTokens: 80,
+      outputTokens: 5,
+      cachedInputTokens: 0,
+      webSearches: 0,
+    });
   });
 });
 

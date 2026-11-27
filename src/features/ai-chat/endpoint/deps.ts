@@ -5,8 +5,9 @@ import { AI_MESSAGE_HARD_STOP_MS, AI_MESSAGE_TIME_LIMIT_MS } from "@/config/ai";
 import { getFeatureFlags } from "@/features/site";
 import messages from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
-import { chooseAiProvider } from "@/server/ai";
+import { chooseAiProvider, chooseWebSearch } from "@/server/ai";
 import { writeAiUsage } from "@/server/audit/ai-usage";
+import { SERVER_WEB_ANSWER_STORE } from "@/server/audit/web-answers";
 import { getSessionView } from "@/server/auth/get-session-view";
 import { env } from "@/server/env";
 import { logger } from "@/server/logger";
@@ -16,6 +17,7 @@ import { realContextReads } from "../context/reads";
 import { buildConfirmCard, realConfirmCardDeps } from "../confirm/build-card";
 import { createRealPlaceLookup } from "../real-place-lookup";
 import { createAiChatTools } from "../tools/registry";
+import { createSearchWebTool } from "../tools/search-web";
 import type { ChatDeps, ChatUsageRecord } from "./types";
 
 /**
@@ -42,10 +44,13 @@ const translate = createTranslator({ locale: "en", messages }) as unknown as Tra
 /**
  * The real dependencies of the endpoint. With `FLAG_AI_PLACE_SEARCH` on (and the chat itself on) the search tool takes a
  * place and the system prompt carries the rules for places (ADR-142); with it off nothing about a place reaches the
- * model, and the tool is the one that always existed. Made for one request, so the place lookup's memory is one message long.
+ * model, and the tool is the one that always existed. With the OpenAI provider the web search is added on a message
+ * whose customer is signed in while the admin's Web search switch is on (ADR-218). Made for one request, so the place lookup's memory is one message long.
  */
 export function createChatDeps(): ChatDeps {
   const placeSearch = env.FLAG_AI_SEARCH && env.FLAG_AI_PLACE_SEARCH;
+  // The web search (ADR-218): only with the OpenAI provider; offered on a message only while the admin switch is on.
+  const searcher = chooseWebSearch(env.AI_PROVIDER ?? "");
   return {
     isEnabled: () => getFeatureFlags().aiSearch,
     getSession: getSessionView,
@@ -53,6 +58,14 @@ export function createChatDeps(): ChatDeps {
     createProvider: () => chooseAiProvider(env.AI_PROVIDER ?? ""),
     tools: createAiChatTools(placeSearch ? createRealPlaceLookup() : undefined),
     ...(placeSearch ? { placeSearch } : {}),
+    ...(searcher === null
+      ? {}
+      : {
+          webSearch: {
+            tool: createSearchWebTool({ searcher, store: SERVER_WEB_ANSWER_STORE }),
+            isOn: () => SERVER_WEB_ANSWER_STORE.webSearchOn(),
+          },
+        }),
     translate,
     confirmCard: (offer, session) =>
       buildConfirmCard(offer, session, realConfirmCardDeps(translate)),

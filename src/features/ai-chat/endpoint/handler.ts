@@ -80,6 +80,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       inputTokens: 0,
       outputTokens: 0,
       cachedInputTokens: 0,
+      webSearches: 0,
       agentLimit: null,
       fallbackReason: null,
       durationMs: Date.now() - started,
@@ -152,11 +153,15 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
 
     // 6 to 9: the agent loop, the output check, the stream, usage
     const pageContext = await readPageContext(deps, parsed.request.context, session !== null);
+    const webSearch = session !== null && (await webSearchOn(deps));
+    const tools =
+      webSearch && deps.webSearch !== undefined ? [...deps.tools, deps.webSearch.tool] : deps.tools;
     const system = buildSystemPrompt({
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
       ...(deps.placeSearch === true ? { placeSearch: true } : {}),
       ...(session === null ? { guest: true } : {}),
+      ...(webSearch ? { webSearch: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
       requirements: state,
     });
@@ -169,6 +174,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
         request,
         started,
         provider,
+        tools,
         system,
         conversation,
         latest,
@@ -205,6 +211,19 @@ async function readPageContext(
   } catch (error) {
     logger.error("ai chat page context could not be read", { error });
     return null;
+  }
+}
+
+// ---------------------------------------------------------------- web search
+
+/** Whether the web search is offered for this message (ADR-218); off when there is none or the switch cannot be read. */
+async function webSearchOn(deps: ChatDeps): Promise<boolean> {
+  if (deps.webSearch === undefined) return false;
+  try {
+    return await deps.webSearch.isOn();
+  } catch (error) {
+    logger.error("ai chat web search switch could not be read", { error });
+    return false;
   }
 }
 
@@ -306,6 +325,8 @@ interface AnswerInput {
   /** When the request arrived: the time limit and the hard stop count from here, not from when the stream is built. */
   readonly started: number;
   readonly provider: AiProvider;
+  /** The tools of this message: the fixed list, with the web search when it is on for this customer (ADR-218). */
+  readonly tools: ChatDeps["tools"];
   readonly system: string;
   readonly conversation: Parameters<typeof runTurn>[0]["messages"];
   readonly latest: Exclude<InputCheckResult, { action: "refuse" }>;
@@ -356,7 +377,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
     }
     const turn = runTurn({
       provider: input.provider,
-      tools: deps.tools,
+      tools: input.tools,
       translate: deps.translate,
       system: input.system,
       messages: input.conversation,
@@ -407,6 +428,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       inputTokens: agent?.usage.inputTokens ?? 0,
       outputTokens: agent?.usage.outputTokens ?? 0,
       cachedInputTokens: agent?.usage.cachedInputTokens ?? 0,
+      webSearches: agent?.usage.webSearches ?? 0,
       agentLimit: agent?.limit ?? null,
       fallbackReason: agent?.fallbackReason ?? null,
     });

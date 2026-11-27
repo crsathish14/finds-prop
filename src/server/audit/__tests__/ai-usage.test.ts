@@ -31,6 +31,7 @@ const event: AiUsageEvent = {
   inputTokens: 900,
   outputTokens: 120,
   cachedInputTokens: 400,
+  webSearches: 1,
   agentLimit: null,
   fallbackReason: null,
   durationMs: 4200,
@@ -70,6 +71,7 @@ describe("UT-ai-usage: writeAiUsage", () => {
       input_tokens: 900,
       output_tokens: 120,
       cached_input_tokens: 400,
+      web_searches: 1,
       agent_limit: null,
       fallback_reason: null,
       duration_ms: 4200,
@@ -111,8 +113,11 @@ describe("UT-ai-usage: writeAiUsage", () => {
       rounds: 2.9,
       toolCallsPerRound: [1.5, -1],
       outputCounts: { advice_phrase: -3 },
+      webSearches: 99,
     });
     expect(insert.mock.calls[0]?.[0]).toMatchObject({
+      // The table takes 0 to 20 web searches for one message (ADR-218): a higher report is stored as 20.
+      web_searches: 20,
       input_tokens: 0,
       output_tokens: 0,
       rounds: 2,

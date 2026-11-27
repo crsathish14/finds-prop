@@ -53,15 +53,18 @@ describe("UT-ai-endpoint-sign-in: what the tools are told about the customer", (
       }),
     );
     expect(seen[0]?.["signedIn"]).toBe(true);
-    // The search memory (ADR-206) holds listing ids only, and the status callback (ADR-217) takes a line key only;
-    // nothing names the customer.
+    // The search memory (ADR-206) holds listing ids only, the status callback (ADR-217) takes a line key only, and the
+    // earlier results and the spend callback (ADR-218) are tool names and counts only; nothing names the customer.
     expect(Object.keys(seen[0] ?? {}).sort()).toEqual([
+      "earlierResults",
       "locale",
       "search",
       "signedIn",
+      "spend",
       "status",
       "translate",
     ]);
+    expect(seen[0]?.["earlierResults"]).toEqual([]);
     expect(typeof seen[0]?.["status"]).toBe("function");
     expect(JSON.stringify(seen[0])).not.toContain(SIGNED_IN.userId);
   });

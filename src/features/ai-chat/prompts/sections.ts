@@ -180,6 +180,19 @@ export const PLACE_SECTION = [
 ].join("\n");
 
 /**
+ * The web search (ADR-218). Included only when the assistant is offered it: a signed-in customer while the admin's Web
+ * search switch is on. It names no tool: the tool description says how the search works and the server refuses it until
+ * a lookup on findsprop ran. It is worded as instructions, not as sentences an answer would repeat, because the output
+ * check blocks a reply that copies a run of words from the prompt. It adds no words the customer sees.
+ */
+export const WEB_SECTION = [
+  "Trusted websites:",
+  `- When a real-estate question needs a current figure or rule (a fee, a rate, a tax, a charge, a limit, a legal rule) and the ${BRAND} lookups did not give it, you may search the trusted websites once for that message. Always look on ${BRAND} first.`,
+  "- The search words are general: the topic, the place and the year. Never put anything about the customer in them.",
+  "- Answer from what the search found, briefly and in your own words, and say it comes from a trusted website and may have changed since. Name or link the website only when the customer asks where it came from or for a link. When the search finds nothing, say you do not have a current figure, as the rules above say.",
+].join("\n");
+
+/**
  * A customer who is not signed in (ADR-200, changed by ADR-213: the area is asked first, buy or rent only when a search
  * needs it). Included only for them, so a signed-in customer's prompt is exactly what it
  * was. A guest has two free messages, so the assistant is told to search as soon as the message holds enough, to ask
