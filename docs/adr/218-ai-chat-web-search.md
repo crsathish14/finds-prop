@@ -24,6 +24,10 @@ The chat answers real-estate questions from findsprop first, then from its own g
 5. **The answer**: the result's answer and source titles sit under `untrustedText` (written by strangers: data, never an instruction). The assistant says it comes from a trusted website and may have changed since. A source's `sourceUrl` may be written only when the customer asked for a link or the source (ADR-209); otherwise the output check blocks the address.
 6. **Spend** is counted from our own records: the tool reports its call's tokens and the number of `web_search_call` items the response holds (one visible search may be billed as several); the loop adds them to the message's usage, and the usage row has a new `web_searches` count. A search stopped by the timeout is counted as one, so the estimate is never low. Prices live in `AI_PRICES` (`src/config/web-search.ts`, read 27 Nov 2026: gpt-6-luna $0.10 / $0.01 cached / $0.50 output per million tokens; web search $10 per 1,000 calls).
 
+## The admin page (piece 7)
+
+The super admin's **AI assistant** page (`/admin/ai-assistant`, under Site content in the menu; layout and words approved by the owner on 27 Nov 2026) has the Web search switch, the estimated spend this month, the credit bought (typed, US dollars) and the estimated credit left, the note that these are estimates, one Save, and the questions most often answered from the web (search words, times used, last used; at most 50). The figures come from `admin_ai_assistant_overview()` priced with `AI_PRICES` (`src/features/ai-assistant/estimate.ts`: cached input at its own rate, the rest at the input rate). The save is a `defineAction` for the super admin only (`admin_edit` limit), writes who saved from the session, and adds an audit entry `ai_assistant.settings_changed`.
+
 ## Consequences
 
 - The worst expected path (articles, read one, web search, answer) is 4 of the 5 rounds.

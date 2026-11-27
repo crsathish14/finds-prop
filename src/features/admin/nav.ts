@@ -166,6 +166,12 @@ export function buildAdminNav(
           icon: "insights",
         },
         {
+          key: "ai-assistant",
+          href: "/admin/ai-assistant",
+          label: translate("admin.nav.aiAssistant"),
+          icon: "insights",
+        },
+        {
           key: "footer",
           href: "/admin/footer",
           label: translate("admin.nav.footer"),

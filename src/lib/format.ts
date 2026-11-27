@@ -125,3 +125,17 @@ export function formatMonth(
     timeZone: "UTC",
   }).format(date);
 }
+
+/**
+ * An amount in US dollars with cents, such as "$3.48" (the admin AI assistant page, ADR-218: OpenAI bills in dollars,
+ * so its spend and credit are never turned into rupees). Digits follow the language.
+ */
+export function formatUsd(locale: string, dollars: number): string {
+  return new Intl.NumberFormat(intlLocale(locale), {
+    style: "currency",
+    currency: "USD",
+    currencyDisplay: "narrowSymbol",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(dollars);
+}

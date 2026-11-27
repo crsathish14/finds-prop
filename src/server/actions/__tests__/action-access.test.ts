@@ -50,6 +50,7 @@ function readInventory(): { table: Record<string, Level>; declared: number; unre
 const EXPECTED: Record<string, Level> = {
   "ai-chat/readChatCardsAction": "none",
   "ai-chat/confirmChatProposal": "verified-phone",
+  "ai-assistant/saveAiAssistant": "super_admin",
   "auth/sendPhoneCode": "none",
   "auth/verifyPhoneCode": "none",
   "auth/saveProfileName": "user",
@@ -188,17 +189,17 @@ describe("UT-action-access: who may call each Server Action (S8-T04, ADR-125)", 
     expect(Object.keys(table).length).toBe(declared);
   });
 
-  it("holds the counts by level: 69 super_admin, 12 builder, 22 verified-phone, 9 none, 1 user", () => {
+  it("holds the counts by level: 70 super_admin, 12 builder, 22 verified-phone, 9 none, 1 user", () => {
     const counts = { none: 0, user: 0, "verified-phone": 0, builder: 0, super_admin: 0 };
     for (const level of Object.values(table)) counts[level] += 1;
     expect(counts).toEqual({
-      super_admin: 69,
+      super_admin: 70,
       builder: 12,
       "verified-phone": 22,
       none: 9,
       user: 1,
     });
-    expect(Object.keys(table)).toHaveLength(113);
+    expect(Object.keys(table)).toHaveLength(114);
   });
 
   it("matches the written list: a new action or a changed level must be changed here on purpose", () => {
