@@ -102,6 +102,17 @@ describe("UT-builder-research-panel-screen: the pages for the AI assistant", () 
     expect(readAgain).toHaveBeenCalledWith({ builderId: BUILDER });
   });
 
+  it("tells only the admin how long the assistant keeps the pages", () => {
+    const { unmount } = renderWithMessages(
+      <ResearchPagesPanel panel={PANEL} actions={actions()} />,
+    );
+    expect(screen.getByText(words.readAgainHint)).toBeVisible();
+    expect(screen.queryByText(/7 days/)).toBeNull();
+    unmount();
+    renderWithMessages(<ResearchPagesPanel panel={PANEL} actions={actions()} viewer="admin" />);
+    expect(screen.getByText(words.readAgainHintAdmin)).toBeVisible();
+  });
+
   it("asks for a website first when there is none", () => {
     renderWithMessages(
       <ResearchPagesPanel

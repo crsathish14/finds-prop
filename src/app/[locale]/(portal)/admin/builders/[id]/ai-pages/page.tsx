@@ -46,6 +46,7 @@ export default async function BuilderAiPagesPage({ params }: PageProps) {
       <ResearchPagesPanel
         panel={panel}
         actions={{ save: saveBuilderResearchPages, readAgain: readBuilderPagesAgain }}
+        viewer="admin"
       />
     </div>
   );

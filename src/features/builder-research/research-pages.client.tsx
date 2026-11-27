@@ -57,9 +57,12 @@ function rowsOf(panel: ResearchPanelView): Row[] {
 export function ResearchPagesPanel({
   panel,
   actions,
+  viewer = "builder",
 }: {
   panel: ResearchPanelView;
   actions: ResearchPagesActions;
+  /** Who is looking: only the admin is told how long the assistant keeps its copies (the owner's rule). */
+  viewer?: "builder" | "admin";
 }) {
   const translate = useTranslations("builderResearch");
   const everything = useTranslations() as unknown as Translator;
@@ -240,7 +243,7 @@ export function ResearchPagesPanel({
             {translate("readAgain")}
           </Button>
           <Text variant="small" tone="muted">
-            {translate("readAgainHint")}
+            {translate(viewer === "admin" ? "readAgainHintAdmin" : "readAgainHint")}
           </Text>
         </div>
       </form>
