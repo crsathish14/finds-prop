@@ -120,7 +120,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "homes to buy under 70 lakh",
+    "title": "homes to buy under 70 lakh (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -165,7 +165,7 @@
         ]
       },
       "visible": {
-        "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv"]
+        "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv", "project:velan-gardens"]
       }
     },
     "session": "customer"
@@ -3692,7 +3692,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "a search answer with no marker still draws the cards",
+    "title": "a search answer with no marker still draws the cards (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -3739,7 +3739,7 @@
       },
       "visible": {
         "showsCards": ["home:t2e6h9jq"],
-        "cards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq", "project:arasu-residency"],
         "mustNotMatch": ["https?:", "/properties/"],
         "mustNotContain": ["[[home:"]
       }
@@ -3751,7 +3751,7 @@
     "set": "golden",
     "category": "followup",
     "language": "en",
-    "title": "asked for a link after a search, the assistant looks again and points to the card",
+    "title": "asked for a link after a search, the assistant looks again and points to the card (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -3803,7 +3803,7 @@
       },
       "visible": {
         "showsCards": ["home:t2e6h9jq"],
-        "cards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq", "project:arasu-residency"],
         "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }

@@ -4577,6 +4577,7 @@
     "more": {
       "homes": "{count, plural, one {Here is one more home} other {Here are # more homes}} that match your search ({shown} of {total} shown so far).",
       "projects": "{count, plural, one {Here is one more project} other {Here are # more projects}} that match your search ({shown} of {total} shown so far).",
+      "matches": "{count, plural, one {Here is one more match} other {Here are # more matches}} for your search ({shown} of {total} shown so far).",
       "none": "That is every match for this search. Tell me what to change and I will look again."
     },
     "seeAll": {

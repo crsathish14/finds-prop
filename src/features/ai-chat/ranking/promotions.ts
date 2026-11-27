@@ -30,6 +30,15 @@ export const NO_PROMOTIONS: PromotionLists = {
 };
 
 /** The best tier of one project. */
+/**
+ * Whether a project of this tier carries the Featured label on its card in the chat (ADR-215): a sponsored builder's or
+ * project, one featured in moderation, or a Spotlight builder's (the paid lists). The Top developers page is the admin's
+ * own pick, not a paid promotion, so it ranks but carries no label.
+ */
+export function carriesFeatured(tier: AiPromotionTier): boolean {
+  return tier === "sponsored" || tier === "featured" || tier === "spotlight";
+}
+
 export function projectTier(
   project: { readonly slug: string; readonly builderId: string | null; readonly featured: boolean },
   lists: PromotionLists,

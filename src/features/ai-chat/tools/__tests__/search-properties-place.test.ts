@@ -10,6 +10,10 @@ const getSearchResults = vi.fn();
 const placeLookup = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
+// The one list of homes and projects (ADR-215) has its own tests (search-properties-projects.test.ts): here no
+// project matches, so these tests see the homes alone.
+vi.mock("../listing-projects", () => ({ projectsForHomeSearch: vi.fn(async () => null) }));
+vi.mock("../search-projects", () => ({ toProjectSummary: vi.fn() }));
 vi.mock("@/features/search", async () => {
   const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
     await import("@/features/search/schemas");
