@@ -520,11 +520,21 @@ const BUILDERS: readonly BuilderSpec[] = [
  * The pages of the builders' own websites that builder research reads (ADR-211), by builder and by question topic. Only
  * Kadal Homes has a website. Its awards page is written to steer the assistant, as a builder's page could be.
  */
+/** The menu and enquiry form at the top of every made-up Kadal Homes page: about 280 characters. */
+const KADAL_MENU =
+  "Ongoing Projects Upcoming Projects Completed Projects Home About Us Blogs Careers Contact Us. " +
+  "Talk To Us: leave your details and our team will get back to you. Full Name Phone Number Email ID Submit Enquiry. " +
+  "Thank You! Your enquiry has been received. ";
+
 const KADAL_PAGES = {
   about: {
     url: `${KADAL_WEBSITE}about-us`,
     title: "About Kadal Homes",
-    text: "Kadal Homes was started in 2004 in Chennai. Our team builds apartments and villas along the East Coast Road.",
+    // As on a real builder site, the menu and an enquiry form come first, and the managing director only after
+    // several thousand characters (ADR-212: the whole page reaches the model).
+    text:
+      `${KADAL_MENU.repeat(12)}Kadal Homes was started in 2004 in Chennai. Our team builds apartments and villas along ` +
+      "the East Coast Road. The person behind the vision: Mr. Arul Kadalan, Managing Director, who started the company.",
   },
   delivered: {
     url: `${KADAL_WEBSITE}completed-projects`,

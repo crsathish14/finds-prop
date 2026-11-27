@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RESEARCH_PAGE_MAX_CHARACTERS, RESEARCH_TOOL_TIMEOUT_MS } from "@/config/ai";
+import { PAGE_TEXT_MAX } from "@/features/builder-research/page-text";
 import { injected, READ_AT, stringsIn, TOOL_CONTEXT } from "./fixtures";
 
 // UT-ai-tool-research-builder (ADR-211): `research_builder` over the builder's public profile and the builder research.
@@ -177,10 +178,25 @@ describe("UT-ai-tool-research-builder: the pages it gives the model", () => {
     }
   });
 
-  it("cuts a long page and says so, and removes characters that show nothing", async () => {
+  it("gives the model the whole page as the reader saved it, never only its beginning (ADR-212)", async () => {
+    // A page as long as the reader keeps, with the fact the customer asked about at its very end.
+    const filler = "Menu Home About Projects Contact. ".repeat(1200);
+    const text = `${filler.slice(0, PAGE_TEXT_MAX - 60)} Managing Director: Mr. Made Up Name.`;
     researchBuilder.mockResolvedValue({
       ok: true,
-      pages: [page("https://kadalhomes.example.test/", `Hid​den${"a".repeat(5000)}`)],
+      pages: [page("https://kadalhomes.example.test/about", text)],
+    });
+    const [first] = (await found()).pages;
+    expect(RESEARCH_PAGE_MAX_CHARACTERS).toBe(PAGE_TEXT_MAX);
+    expect(first?.textShortened).toBe(false);
+    expect(first?.untrustedText.text).toBe(text);
+    expect(first?.untrustedText.text.endsWith("Managing Director: Mr. Made Up Name.")).toBe(true);
+  });
+
+  it("removes characters that show nothing, and says so only when a page is longer than the reader keeps", async () => {
+    researchBuilder.mockResolvedValue({
+      ok: true,
+      pages: [page("https://kadalhomes.example.test/", `Hid​den${"a".repeat(PAGE_TEXT_MAX + 10)}`)],
     });
     const [first] = (await found()).pages;
     expect(first?.textShortened).toBe(true);
