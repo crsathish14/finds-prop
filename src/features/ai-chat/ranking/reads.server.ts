@@ -105,6 +105,9 @@ export interface ProjectExtras {
   readonly amenities: readonly string[];
   readonly createdAt: string | null;
   readonly areaMinSqft: number | null;
+  /** Residential or commercial, and the kind of property, for the one list of homes and projects (ADR-215). */
+  readonly projectType: string | null;
+  readonly propertyType: string | null;
 }
 
 const projectExtrasRowSchema = z.object({
@@ -112,6 +115,8 @@ const projectExtrasRowSchema = z.object({
   amenities: z.array(z.string()).nullable().catch(null),
   created_at: z.string().nullable().catch(null),
   area_min_sqft: z.number().nullable().catch(null),
+  project_type: z.string().nullable().catch(null),
+  property_type: z.string().nullable().catch(null),
 });
 
 /**
@@ -129,7 +134,7 @@ export async function getProjectExtras(
       await createServerSupabase()
     )
       .from("projects")
-      .select("slug, amenities, created_at, area_min_sqft")
+      .select("slug, amenities, created_at, area_min_sqft, project_type, property_type")
       .in("slug", [...slugs]);
     if (error) {
       logger.warn("project amenities could not be read, ranking without them", {
@@ -144,6 +149,8 @@ export async function getProjectExtras(
         amenities: parsed.data.amenities ?? [],
         createdAt: parsed.data.created_at,
         areaMinSqft: parsed.data.area_min_sqft,
+        projectType: parsed.data.project_type,
+        propertyType: parsed.data.property_type,
       });
     }
   } catch (error) {

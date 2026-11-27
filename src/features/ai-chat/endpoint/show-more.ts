@@ -22,6 +22,8 @@ import { FALLBACK_HREF } from "./turn";
 export const MORE_MESSAGE_KEYS = {
   homes: "ai.more.homes",
   projects: "ai.more.projects",
+  /** A page of the home search that holds homes and projects (ADR-215). */
+  matches: "ai.more.matches",
   none: "ai.more.none",
   fallback: "ai.fallback",
 } as const;
@@ -93,27 +95,28 @@ export async function* showMoreEvents(input: {
     return { outcome: "fallback", toolsRan: [search.tool] };
   }
 
-  // The cards of this page only: the slightly-above-budget home is not part of the ranked list.
+  // The cards of this page only: the slightly-above-budget home is not part of the ranked list. The home search's
+  // page may hold projects too (ADR-215).
   const homes = search.tool === "search_properties";
-  const ids = new Set(
-    homes
-      ? (page.data.homes ?? []).map((home) => home.homeId)
-      : (page.data.projects ?? []).map((project) => project.slug),
-  );
+  const homeIds = new Set((page.data.homes ?? []).map((home) => home.homeId));
+  const projectSlugs = new Set((page.data.projects ?? []).map((project) => project.slug));
   const cards = outcome.references
     .filter(
       (reference): reference is CardReference =>
-        (reference.kind === "home" && ids.has(reference.homeId)) ||
-        (reference.kind === "project" && ids.has(reference.slug)),
+        (reference.kind === "home" && homeIds.has(reference.homeId)) ||
+        (reference.kind === "project" && projectSlugs.has(reference.slug)),
     )
     .slice(0, AI_MAX_CARDS_PER_ANSWER);
   const values = { count: cards.length, shown: page.data.shownSoFar, total: page.data.total };
+  const homeCards = cards.filter((card) => card.kind === "home").length;
   const key =
     cards.length === 0
       ? MORE_MESSAGE_KEYS.none
-      : homes
-        ? MORE_MESSAGE_KEYS.homes
-        : MORE_MESSAGE_KEYS.projects;
+      : homeCards > 0 && homeCards < cards.length
+        ? MORE_MESSAGE_KEYS.matches
+        : homeCards > 0
+          ? MORE_MESSAGE_KEYS.homes
+          : MORE_MESSAGE_KEYS.projects;
   yield { type: "text", text: translate(key, values) };
   for (const reference of cards) yield { type: "card", reference };
 

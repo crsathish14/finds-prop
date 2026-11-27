@@ -39,8 +39,12 @@ export function sameFilters(
   return true;
 }
 
-/** The key a home or project is remembered by in `seen` and `offered`. */
+/**
+ * The key a home or project is remembered by in `seen` and `offered`. A project listed by the home search already
+ * carries its kind (`project:<slug>`, ADR-215) and is kept as it is.
+ */
 export function recordKey(tool: PagedSearchName, id: string): string {
+  if (id.startsWith("project:")) return id;
   return `${tool === "search_properties" ? "home" : "project"}:${id}`;
 }
 

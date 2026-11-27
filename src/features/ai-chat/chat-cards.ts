@@ -9,7 +9,8 @@ import messages from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
 import { PROJECT_PRIME_DEFAULTS } from "@/lib/project-prime";
 import { publicEnv } from "@/lib/public-env";
-import { getPrimeRules } from "./ranking/reads.server";
+import { carriesFeatured, projectTier } from "./ranking/promotions";
+import { getPrimeRules, getPromotionLists } from "./ranking/reads.server";
 import type { ChatCardReference } from "./schemas";
 
 /** One card the chat draws under an answer: the card's facts, and what the Compare control needs. */
@@ -42,9 +43,10 @@ export async function readChatCards(
 ): Promise<ChatCardView[]> {
   const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL;
   // Read once for every card of the answer, and only when one of them is a project (ADR-208).
-  const primeRules = references.some((reference) => reference.kind === "project")
-    ? await getPrimeRules()
-    : null;
+  const anyProject = references.some((reference) => reference.kind === "project");
+  const [primeRules, promotions] = anyProject
+    ? await Promise.all([getPrimeRules(), getPromotionLists()])
+    : [null, null];
   const cards = await Promise.all(
     references.map(async (reference): Promise<ChatCardView | null> => {
       if (reference.kind === "home") {
@@ -55,8 +57,8 @@ export async function readChatCards(
           kind: "home",
           key: `home:${result.property.shortId}`,
           shortId: result.property.shortId,
-          // The chat shows no promotion (owner, 26 Nov 2026, ADR-206): the Featured badge is left off here only.
-          card: card.label === "featured" ? { ...card, label: null } : card,
+          // A featured home keeps its Featured badge in the chat (ADR-215, changing ADR-206).
+          card,
         };
       }
       const result = await getProject(reference.slug);
@@ -77,8 +79,20 @@ export async function readChatCards(
             bhkOptions: project.bhkOptions,
             locality: project.locality,
             coverPath: project.images[0] ?? null,
-            // The chat shows no promotion (owner, 26 Nov 2026, ADR-206): no Featured badge on a card in the chat.
-            featured: false,
+            // A promoted project (a paying builder's, or featured in moderation) carries Featured in the chat
+            // (ADR-215, changing ADR-206). The tier is the ranking's own, from the admin's lists.
+            featured:
+              promotions !== null &&
+              carriesFeatured(
+                projectTier(
+                  {
+                    slug: project.slug,
+                    builderId: project.developer.id,
+                    featured: project.featured,
+                  },
+                  promotions,
+                ),
+              ),
           },
           supabaseUrl,
           // Prime is a fact about the project, not a promotion, so the chat shows its badge (ADR-208).

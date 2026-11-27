@@ -157,6 +157,76 @@ describe("UT-ai-endpoint-show-more: the state and the next page", () => {
     });
   });
 
+  it("serves a page of the one list with homes and projects, and says matches (ADR-215)", async () => {
+    const LIST = [...HOMES.slice(0, 7), "project:kadal-vista", "project:sea-pearl"];
+    const mixedSearch: AiChatTool<
+      z.infer<typeof searchInput>,
+      {
+        total: number;
+        shownSoFar: number;
+        homes: { homeId: string }[];
+        projects: { slug: string }[];
+      }
+    > = {
+      ...pagedSearch,
+      output: z.object({
+        total: z.number(),
+        shownSoFar: z.number(),
+        homes: z.array(z.object({ homeId: z.string() })),
+        projects: z.array(z.object({ slug: z.string() })),
+      }),
+      async run(input, context) {
+        const filters = filtersOf(input);
+        const cut = cutPage(
+          LIST,
+          (id) => id,
+          { tool: "search_properties", page: input.page, filters },
+          context,
+        );
+        context.search?.record({
+          tool: "search_properties",
+          filters,
+          shown: cut.shown,
+          total: LIST.length,
+          place: false,
+        });
+        const slug = (id: string) => id.replace("project:", "");
+        return {
+          output: {
+            total: LIST.length,
+            shownSoFar: cut.shown.length,
+            homes: cut.items
+              .filter((id) => !id.startsWith("project:"))
+              .map((homeId) => ({ homeId })),
+            projects: cut.items
+              .filter((id) => id.startsWith("project:"))
+              .map((id) => ({ slug: slug(id) })),
+          },
+          references: cut.items.map((id) =>
+            id.startsWith("project:")
+              ? { kind: "project" as const, slug: slug(id) }
+              : { kind: "home" as const, homeId: id, slug: `home-${id}` },
+          ),
+        };
+      },
+    };
+    const harness = createHarness({ script: [SEARCH, textTurn("Here are six 2 BHK homes.")] });
+    harness.session = SIGNED_IN;
+    const deps = { ...harness.deps, tools: [mixedSearch] };
+    const first = await readEvents(await handleAiChat(chatRequest(say("2 BHK homes")), deps));
+    const second = await readEvents(
+      await handleAiChat(
+        chatRequest([], { body: body("Show more", { state: tokenOf(first), more: true }) }),
+        deps,
+      ),
+    );
+    expect(second.filter((event) => event.type === "card")).toHaveLength(3);
+    expect(second.find((event) => event.type === "text")).toEqual({
+      type: "text",
+      text: "Here are 3 more matches for your search (9 of 9 shown so far).",
+    });
+  });
+
   it("puts the remembered search into the prompt when the customer types", async () => {
     const { harness, events } = await firstAnswer();
     const next = createHarness({ script: [textTurn("Sure.")] });
