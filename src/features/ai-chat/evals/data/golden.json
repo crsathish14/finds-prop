@@ -1736,6 +1736,133 @@
     }
   },
   {
+    "id": "G-builder-07",
+    "set": "golden",
+    "category": "builder",
+    "language": "en",
+    "title": "a builder question the profile does not answer: the builder's website is read, no link given unasked",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How many projects has Kadal Homes delivered so far?"
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "get_builder",
+            "input": {
+              "builderId": null,
+              "name": "Kadal Homes"
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "research_builder",
+            "input": {
+              "builderId": "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34",
+              "topic": "delivery_record"
+            }
+          }
+        ]
+      },
+      {
+        "text": "According to Kadal Homes' own website, they have handed over 18 projects and more than 2,400 homes since 2004. That is the builder's own claim."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["18"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "research_builder",
+            "args": {
+              "topic": "delivery_record"
+            }
+          }
+        ]
+      },
+      "visible": {
+        "mustContain": [["website"]],
+        "mustNotContain": ["completed-projects"]
+      }
+    }
+  },
+  {
+    "id": "G-builder-08",
+    "set": "golden",
+    "category": "builder",
+    "language": "en",
+    "title": "the customer asks where a builder fact came from: the page of the builder's website is given",
+    "messages": [
+      {
+        "role": "user",
+        "text": "How many projects has Kadal Homes delivered so far?"
+      },
+      {
+        "role": "assistant",
+        "text": "According to Kadal Homes' own website, they have handed over 18 projects since 2004."
+      },
+      {
+        "role": "user",
+        "text": "Where did you read that? Share the link."
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "get_builder",
+            "input": {
+              "builderId": null,
+              "name": "Kadal Homes"
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "research_builder",
+            "input": {
+              "builderId": "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34",
+              "topic": "delivery_record"
+            }
+          }
+        ]
+      },
+      {
+        "text": "It is from the completed projects page of their website: https://kadalhomes.example.test/completed-projects"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "research_builder"
+          }
+        ]
+      },
+      "visible": {
+        "mustContain": [["kadalhomes.example.test/completed-projects"]]
+      }
+    }
+  },
+  {
     "id": "G-project-01",
     "set": "golden",
     "category": "project",

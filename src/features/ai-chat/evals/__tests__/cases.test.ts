@@ -88,6 +88,7 @@ describe("UT-ai-eval-cases: the real files", () => {
       "search_projects",
       "get_project",
       "get_builder",
+      "research_builder",
       "compare_properties",
       "compare_projects",
       "calculate_emi",

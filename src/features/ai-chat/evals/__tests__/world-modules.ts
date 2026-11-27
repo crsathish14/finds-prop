@@ -23,6 +23,7 @@ import {
   getSearchResults,
   getSessionView,
   ownsHome,
+  researchBuilder,
   searchPublicFaqs,
 } from "../world";
 
@@ -119,4 +120,10 @@ export async function careersModule() {
 /** `@/features/site`: the one helper that says whether a content module is switched on. */
 export function siteModule() {
   return { getContentModuleOn };
+}
+
+/** `@/features/builder-research`: the research over the made-up websites (ADR-211), and the real list of topics. */
+export async function builderResearchModule() {
+  const { QUESTION_TOPICS } = await import("@/features/builder-research/topics");
+  return { QUESTION_TOPICS, researchBuilder };
 }
