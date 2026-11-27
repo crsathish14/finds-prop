@@ -16,7 +16,8 @@ import {
 } from "./agent-types";
 import { offerFromOutput, type ProposalOffer } from "./tools/proposal-offer";
 import { toolDefinitions } from "./tools/run";
-import { referenceKey, type ToolReference } from "./tools/types";
+import { referenceKey, type StatusMessageKey, type ToolReference } from "./tools/types";
+import { statusLineFor } from "./status-lines";
 
 /**
  * The agent loop (ADR-128 section 4.5), written by us, no framework. One customer message goes in; a small
@@ -126,16 +127,42 @@ export async function* runAgent(input: AgentInput): AsyncGenerator<AgentEvent, v
         round.calls.map((asked) => asked.name).filter((name) => names.includes(name)),
       );
       if (asked.size > 0)
-        yield { type: "status", messageKey: AGENT_MESSAGE_KEYS.searching, tools: [...asked] };
+        yield { type: "status", messageKey: statusLineFor([...asked]), tools: [...asked] };
 
-      const run = await runRoundCalls({
+      // A tool may report a step while it runs (ADR-217, such as the widening of a home search): each step is passed
+      // on as a status line as soon as it is reported, while the round's calls are still running.
+      const steps: StatusMessageKey[] = [];
+      let wake: (() => void) | null = null;
+      let callsDone = false;
+      const running = runRoundCalls({
         tools,
         calls: round.calls,
-        context,
+        context: {
+          ...context,
+          status: (messageKey) => {
+            steps.push(messageKey);
+            wake?.();
+          },
+        },
         budget: MAX_TOOL_CALLS_PER_MESSAGE - callsUsed,
         groupUsed: groupCalls,
         signal,
+      }).finally(() => {
+        callsDone = true;
+        wake?.();
       });
+      while (true) {
+        for (let step = steps.shift(); step !== undefined; step = steps.shift()) {
+          yield { type: "status", messageKey: step, tools: [...asked] };
+        }
+        if (callsDone) break;
+        await new Promise<void>((resolve) => {
+          wake = resolve;
+          if (callsDone || steps.length > 0) resolve();
+        });
+        wake = null;
+      }
+      const run = await running;
       callsUsed += run.attempted;
       for (const [group, used] of Object.entries(run.groupAttempts)) {
         groupCalls[group] = (groupCalls[group] ?? 0) + used;

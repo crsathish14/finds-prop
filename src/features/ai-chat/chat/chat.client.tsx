@@ -83,6 +83,8 @@ type LiveAnswer = {
   seeAll: { text: string; href: string } | undefined;
   replaced: boolean;
   href: string | undefined;
+  /** The latest status line the server sent (ADR-217), shown until the answer starts. */
+  status?: string | undefined;
 };
 
 /** What went wrong with the last message, so the notice and the composer can say it. */
@@ -461,7 +463,9 @@ export function ChatIsland({
         if (response.body === null) throw new Error("The answer has no body");
         let finished = false;
         for await (const event of readChatEvents(response.body)) {
-          if (event.type === "text") {
+          if (event.type === "status") {
+            answer.status = event.text;
+          } else if (event.type === "text") {
             answer.text += event.text;
           } else if (event.type === "card") {
             if (answer.references.length < AI_MAX_CARDS_PER_ANSWER) {
@@ -820,7 +824,17 @@ function Answer({
   return (
     <ChatAssistantMessage
       {...(streaming ? { streaming: true } : {})}
-      {...(searching ? { status: <ChatStatusLine /> } : {})}
+      {...(searching
+        ? {
+            status: (
+              <ChatStatusLine
+                {...("status" in answer && answer.status !== undefined
+                  ? { text: answer.status }
+                  : {})}
+              />
+            ),
+          }
+        : {})}
       {...(parts.cards ? { cards: parts.cards } : {})}
       {...(parts.notes ? { notes: parts.notes } : {})}
     >

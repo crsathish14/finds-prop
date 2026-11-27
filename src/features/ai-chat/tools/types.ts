@@ -32,7 +32,28 @@ export interface ToolContext {
    * eval): every search is a first page. It names no person: only listing ids.
    */
   readonly search?: SearchMemory;
+  /**
+   * Tells the chat window the step a tool has reached (ADR-217), as an `en.json` key of the status lines, such as the
+   * widening steps of a home search. Absent means nobody is listening (a test, an eval, Show more).
+   */
+  readonly status?: (messageKey: StatusMessageKey) => void;
 }
+
+/**
+ * The status lines the chat window shows while the assistant works (ADR-217, owner-approved words, English only), as
+ * `en.json` keys written out so the message check finds them.
+ */
+export const STATUS_MESSAGE_KEYS = {
+  searching: "ai.searching",
+  homes: "ai.status.homes",
+  articles: "ai.status.articles",
+  builders: "ai.status.builders",
+  web: "ai.status.web",
+  nearby: "ai.status.nearby",
+  wider: "ai.status.wider",
+  widest: "ai.status.widest",
+} as const;
+export type StatusMessageKey = (typeof STATUS_MESSAGE_KEYS)[keyof typeof STATUS_MESSAGE_KEYS];
 
 /** The two searches whose results are paged (ADR-206). */
 export type PagedSearchName = "search_properties" | "search_projects";

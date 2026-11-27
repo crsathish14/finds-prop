@@ -44,7 +44,7 @@ import {
 import { cutPage, filtersOf, pageInput, seenBefore } from "./paging";
 import type { PlaceLookup, PlaceLookupResult } from "./place-lookup";
 import { preferAmenitiesInput, preferLocalitiesInput, trimmedList } from "./preferences";
-import type { AiChatTool, ToolContext, ToolRun } from "./types";
+import { STATUS_MESSAGE_KEYS, type AiChatTool, type ToolContext, type ToolRun } from "./types";
 import { cleanOptionalLine, cleanThirdPartyLine } from "./untrusted";
 import { requireSignIn } from "./require-sign-in";
 import type { ProjectListItem } from "@/features/projects";
@@ -590,6 +590,7 @@ async function whenNothingMatches(
     if (guest || locality === null || given(input.keyword) !== null) return null;
     const centre = await getLocalityCentre(locality, sameLocality(locality));
     if (centre === null) return null;
+    context.status?.(STATUS_MESSAGE_KEYS.nearby);
     const reads = await Promise.all(
       AI_WIDEN_RADII_KM.map(async (radiusKm) => ({
         radiusKm,
@@ -606,6 +607,11 @@ async function whenNothingMatches(
       })),
     );
     const first = reads.find(({ results }) => results !== null && results.total > 0);
+    // The steps the customer sees (ADR-217): each wider circle that had to be read to find homes.
+    const [smallest, middle] = AI_WIDEN_RADII_KM;
+    const reached = first?.radiusKm ?? Math.max(...AI_WIDEN_RADII_KM);
+    if (reached > smallest) context.status?.(STATUS_MESSAGE_KEYS.wider);
+    if (reached > middle) context.status?.(STATUS_MESSAGE_KEYS.widest);
     if (first?.results == null) return null;
     return {
       radiusKm: first.radiusKm,
