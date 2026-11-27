@@ -8,7 +8,7 @@
 -- projects_offer_type_commercial, the form guard with the two new columns, and public_project() with two more keys.
 -- No row is rewritten: every residential project stays for sale.
 --
--- Rollback note: supabase/rollbacks/20261127140000.sql (reviewed, never run automatically). It refuses to run
+-- Rollback note: supabase/rollbacks/20261128090000.sql (reviewed, never run automatically). It refuses to run
 -- while a residential project is for rent, because the old check would fail on it.
 
 alter table public.projects

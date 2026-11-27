@@ -1,4 +1,4 @@
--- Rollback for 20261127140000_residential_project_rent.sql (ADR-214). Reviewed, never run automatically: a person
+-- Rollback for 20261128090000_residential_project_rent.sql (ADR-214). Reviewed, never run automatically: a person
 -- runs it, by hand, against the project that needs it, after the app no longer offers rent for a residential project.
 --
 -- It refuses to run while any residential project is for rent, because the old check would reject that row: change
