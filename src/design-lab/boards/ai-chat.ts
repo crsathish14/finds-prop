@@ -17,7 +17,7 @@ export const AI_CHAT: LabEntry[] = [
     id: "messages",
     name: "AI chat messages",
     description:
-      "The thread, the visitor's bubble, the assistant's answer with cards and notes, the Searching… line, the streaming caret and the fixed notes (cap note, disclaimer, personal details removed).",
+      "The thread, the visitor's bubble, the assistant's answer with cards and notes, the status line (Searching…, or the step the assistant has reached), the streaming caret and the fixed notes (cap note, disclaimer, personal details removed).",
     sources: [
       "domain/chat-thread.tsx",
       "domain/chat-user-bubble.tsx",

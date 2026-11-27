@@ -1,3 +1,4 @@
+import type { StatusMessageKey } from "./tools/types";
 /**
  * What goes into the agent loop and what comes out (ADR-128 section 4.5). The loop returns codes and keys,
  * never sentences: the words a customer reads are in `en.json` under `ai`, and the endpoint (P4-T04) turns
@@ -63,7 +64,8 @@ export type AgentEvent =
   /** Tools are about to run. `tools` names the known tools asked for, for the status and the usage row. */
   | {
       readonly type: "status";
-      readonly messageKey: typeof AGENT_MESSAGE_KEYS.searching;
+      /** The status line to show (ADR-217): chosen from the tools, or a step a tool reported while it ran. */
+      readonly messageKey: StatusMessageKey;
       readonly tools: readonly string[];
     }
   /** A piece of the answer. Only the round that ends the turn is ever passed on. */
