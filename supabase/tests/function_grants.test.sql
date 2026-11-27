@@ -22,7 +22,7 @@ $$;
 
 select is(
   pg_temp.who_runs('anon'),
-  'agent_listings, blog_body_text, city_key, home_developers, home_properties, listed_cities, listing_is_public, listing_label, project_is_live, '
+  'agent_listings, ai_web_search_on, blog_body_text, city_key, home_developers, home_properties, listed_cities, listing_is_public, listing_label, project_is_live, '
   || 'public_agents, public_project, public_project_form, public_property, search_blog_posts, '
   || 'search_faqs, search_job_postings, sitemap_entries',
   'visitors can run only the public read helpers and the searches'
@@ -30,11 +30,11 @@ select is(
 
 select is(
   pg_temp.who_runs('authenticated'),
-  'admin_builder_overview, admin_builders, admin_crm_integrations, admin_feedback_counts, '
+  'admin_ai_assistant_overview, admin_builder_overview, admin_builders, admin_crm_integrations, admin_feedback_counts, '
   || 'admin_feedback_list, admin_forms, admin_listing_counts, '
   || 'admin_listing_localities, admin_listing_queue, admin_overview, admin_places_usage, admin_project_overview, '
   || 'admin_projects, '
-  || 'admin_properties, admin_set_feedback_reviewed, admin_sponsor_report, adopt_verified_email_as_contact, agent_contact, agent_listings, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
+  || 'admin_properties, admin_set_feedback_reviewed, admin_sponsor_report, adopt_verified_email_as_contact, agent_contact, agent_listings, ai_web_search_on, assert_open_listing_room, blog_block_is_valid, blog_body_is_valid, blog_body_text, '
   || 'blog_read_minutes, blog_search_text, blog_tags_are_valid, builder_insights, city_key, close_listing, current_builder_id, '
   || 'has_role, '
   || 'has_verified_email, has_verified_phone, home_developers, home_properties, is_reserved_admin_email, is_super_admin, listed_cities, '

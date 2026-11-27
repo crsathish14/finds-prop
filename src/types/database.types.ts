@@ -23,16 +23,44 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "ai_usage_events": {
+            "ai_assistant_settings": {
                   Row: {
-                    "agent_limit": string | null,"cached_input_tokens": number,"caller": string,"created_at": string,"duration_ms": number,"fallback_reason": string | null,"id": string,"input_tags": (string)[],"input_tokens": number,"limited_by": string | null,"model": string | null,"number_ungrounded": number,"occurred_at": string,"outcome": string,"output_counts": NonNullable<Json>,"output_tags": (string)[],"output_tokens": number,"prompt_version": string,"provider": string | null,"request_id": string,"retried": boolean,"rounds": number,"tool_calls_per_round": (number)[],"tools_ran": (string)[],"user_id": string | null,"visitor_hash": string | null
+                    "credit_bought_usd": number | null,"id": number,"updated_at": string,"updated_by": string | null,"web_search": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller": string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at": string,"outcome": string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version": string,"provider"?: string | null,"request_id": string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null
+                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null,"web_search"?: boolean
                   }
                   Update: {
-                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller"?: string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at"?: string,"outcome"?: string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version"?: string,"provider"?: string | null,"request_id"?: string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null
+                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null,"web_search"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ai_usage_events": {
+                  Row: {
+                    "agent_limit": string | null,"cached_input_tokens": number,"caller": string,"created_at": string,"duration_ms": number,"fallback_reason": string | null,"id": string,"input_tags": (string)[],"input_tokens": number,"limited_by": string | null,"model": string | null,"number_ungrounded": number,"occurred_at": string,"outcome": string,"output_counts": NonNullable<Json>,"output_tags": (string)[],"output_tokens": number,"prompt_version": string,"provider": string | null,"request_id": string,"retried": boolean,"rounds": number,"tool_calls_per_round": (number)[],"tools_ran": (string)[],"user_id": string | null,"visitor_hash": string | null,"web_searches": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller": string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at": string,"outcome": string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version": string,"provider"?: string | null,"request_id": string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null,"web_searches"?: number
+                  }
+                  Update: {
+                    "agent_limit"?: string | null,"cached_input_tokens"?: number,"caller"?: string,"created_at"?: string,"duration_ms"?: number,"fallback_reason"?: string | null,"id"?: string,"input_tags"?: (string)[],"input_tokens"?: number,"limited_by"?: string | null,"model"?: string | null,"number_ungrounded"?: number,"occurred_at"?: string,"outcome"?: string,"output_counts"?: NonNullable<Json>,"output_tags"?: (string)[],"output_tokens"?: number,"prompt_version"?: string,"provider"?: string | null,"request_id"?: string,"retried"?: boolean,"rounds"?: number,"tool_calls_per_round"?: (number)[],"tools_ran"?: (string)[],"user_id"?: string | null,"visitor_hash"?: string | null,"web_searches"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ai_web_answers": {
+                  Row: {
+                    "answer": string,"expires_at": string,"id": string,"last_used_at": string,"query": string,"query_key": string,"searched_at": string,"sources": NonNullable<Json>,"times_used": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer": string,"expires_at": string,"id"?: string,"last_used_at"?: string,"query": string,"query_key": string,"searched_at"?: string,"sources"?: NonNullable<Json>,"times_used"?: number
+                  }
+                  Update: {
+                    "answer"?: string,"expires_at"?: string,"id"?: string,"last_used_at"?: string,"query"?: string,"query_key"?: string,"searched_at"?: string,"sources"?: NonNullable<Json>,"times_used"?: number
                   }
                   Relationships: [
                     
@@ -683,7 +711,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_builder_overview":
+            "admin_ai_assistant_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_builder_overview":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,"contact_person": string,"description": string,"email": string,"established_year": number,"id": string,"invited_at": string,"kind": string,"last_sign_in_at": string,"leads": number,"logo_path": string,"logo_url": string,"name": string,"phone": string,"projects": number,"projects_delivered": number,"tagline": string,"website": string
             }[]
@@ -899,6 +930,9 @@ isOneToOne: false
                            },
 "agent_listings":
 { Args: { "p_id": string }; Returns: Json
+                           },
+"ai_web_search_on":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "apply_featured_dates":
 { Args: Record<PropertyKey, never>; Returns: Json

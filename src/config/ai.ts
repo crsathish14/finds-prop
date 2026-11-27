@@ -7,6 +7,8 @@
  * `maxDuration`). The daily budget is set (task AI-P8-T03, from measured cost).
  */
 
+import { MAX_WEB_SEARCH_CALLS_PER_MESSAGE } from "./web-search";
+
 /** What the assistant calls the product in every piece of its own text. Lowercase on purpose (ADR-128, D11). */
 export const ASSISTANT_BRAND_NAME = "findsprop";
 
@@ -131,9 +133,13 @@ export const MAX_CONTENT_TOOL_CALLS_PER_MESSAGE = 2;
 
 /**
  * The tool groups that have a cap of their own inside the message's total (a tool names its group with `callGroup`).
- * A call past its group's cap is refused with `content_limit`; the other tools keep their own calls.
+ * A call past its group's cap is refused with `content_limit` (`web_limit` for the web search); the other tools keep
+ * their own calls. The web search has 1 of the 6 calls (owner, 27 Nov 2026, ADR-218).
  */
-export const AI_TOOL_GROUP_CALL_LIMITS = { content: MAX_CONTENT_TOOL_CALLS_PER_MESSAGE } as const;
+export const AI_TOOL_GROUP_CALL_LIMITS = {
+  content: MAX_CONTENT_TOOL_CALLS_PER_MESSAGE,
+  web: MAX_WEB_SEARCH_CALLS_PER_MESSAGE,
+} as const;
 
 /** The most articles and questions one `search_content` call returns ("at most 5", ADR-143 6.2). */
 export const MAX_CONTENT_SEARCH_ITEMS = 5;

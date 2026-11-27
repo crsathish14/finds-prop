@@ -66,7 +66,7 @@ function raceTimeout(
  * `budget` is how many more calls this customer message may make. In call order: a propose tool that shares its
  * round gets `call_alone`; a call that repeats an earlier one shares that one's result; past
  * `MAX_PARALLEL_READ_CALLS` the call gets `too_many_calls`; past the budget it gets `call_limit`; past its tool group's cap
- * (`groupUsed` is what the earlier rounds spent) it gets `content_limit`. The rest run
+ * (`groupUsed` is what the earlier rounds spent) it gets `content_limit` (`web_limit` for the web search). The rest run
  * together, each raced against its time (`TOOL_TIMEOUT_MS` unless the tool sets its own), and one that fails or times out affects only its own result.
  */
 export async function runRoundCalls(options: {
@@ -105,7 +105,9 @@ export async function runRoundCalls(options: {
       (options.groupUsed?.[tool.callGroup] ?? 0) + (groupAttempts[tool.callGroup] ?? 0) >=
         AI_TOOL_GROUP_CALL_LIMITS[tool.callGroup]
     ) {
-      slots.push(Promise.resolve(toolError("content_limit")));
+      slots.push(
+        Promise.resolve(toolError(tool.callGroup === "web" ? "web_limit" : "content_limit")),
+      );
     } else {
       attempted += 1;
       if (tool?.callGroup !== undefined) {

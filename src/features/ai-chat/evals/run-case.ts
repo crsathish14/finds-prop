@@ -57,6 +57,8 @@ export interface RunOptions {
   readonly tools: readonly AnyAiChatTool[];
   /** True when `tools` hold the place-aware search, so the prompt carries the rules for places (ADR-142). */
   readonly placeSearch?: boolean;
+  /** The web search tool, for a case that offers it (ADR-218): served as the endpoint serves it, with the switch on. */
+  readonly webSearchTool?: AnyAiChatTool;
   /** Milliseconds; the real limits by default. The offline run passes shorter ones. */
   readonly timing?: { readonly timeLimitMs: number; readonly hardStopMs: number };
 }
@@ -88,7 +90,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
   });
 
   const toolCalls: ObservedToolCall[] = [];
-  const instrumented = options.tools.map((tool): AnyAiChatTool => ({
+  const instrument = (tool: AnyAiChatTool): AnyAiChatTool => ({
     ...tool,
     async run(input, context) {
       try {
@@ -100,7 +102,8 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
         throw error;
       }
     },
-  }));
+  });
+  const instrumented = options.tools.map(instrument);
 
   const modelCalls: AiCall[] = [];
   const recording: AiProvider = {
@@ -120,6 +123,9 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     createProvider: () => recording,
     tools: instrumented,
     ...(options.placeSearch === true ? { placeSearch: true } : {}),
+    ...(options.webSearchTool === undefined
+      ? {}
+      : { webSearch: { tool: instrument(options.webSearchTool), isOn: async () => true } }),
     translate: TOOL_CONTEXT.translate,
     recordUsage: async (record) => void usageRows.push(record),
     // The ticked homes are checked against the made-up world, as the real reads check them against what is listed.

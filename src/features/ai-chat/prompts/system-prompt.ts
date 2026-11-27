@@ -18,6 +18,7 @@ import {
   FACTS_SECTION,
   GUEST_SECTION,
   LANGUAGE_SECTION,
+  WEB_SECTION,
   OFF_TOPIC_SECTION,
   PLACE_SECTION,
   PROMPT_MESSAGE_KEYS,
@@ -47,6 +48,11 @@ export interface SystemPromptOptions {
    * messages. Absent or false leaves the prompt as it was, apart from its version line.
    */
   readonly guest?: boolean;
+  /**
+   * True when the assistant is offered the web search on this message (ADR-218: a signed-in customer while the admin's
+   * switch is on): the prompt then carries the rules for it. Absent or false leaves the prompt as it was.
+   */
+  readonly webSearch?: boolean;
   /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
   readonly pageContext?: Parameters<typeof contextSection>[0];
   /** The requirements state the browser sent back, checked by its signature (ADR-206); absent or null means none. */
@@ -72,6 +78,7 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     SITE_LINKS_SECTION,
     ...(options.placeSearch === true ? [PLACE_SECTION] : []),
     ...(options.guest === true ? [GUEST_SECTION] : []),
+    ...(options.webSearch === true ? [WEB_SECTION] : []),
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,
   ];

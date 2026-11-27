@@ -35,7 +35,8 @@ import type {
  *   conformance run against the real API passes the parallel cases (the owner's manual run).
  * - Rule 4: stateless. `store: false`, no stored responses and no conversation id; the whole conversation is
  *   sent on every call.
- * - Rule 5: no provider-hosted tools; only our function tools.
+ * - Rule 5: no provider-hosted tools; only our function tools. (The web search is a call of its own,
+ *   `web-search.ts`, never part of a chat round: ADR-218.)
  * - Rule 6: the model id and key are given by the caller (from `src/server/env.ts`); no model name is written here.
  * - Errors: every failure ends the stream with `stop: error` and one of our own failures; no provider message
  *   is kept, logged or passed on. The key is never copied into an event.

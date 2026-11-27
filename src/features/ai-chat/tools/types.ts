@@ -37,6 +37,24 @@ export interface ToolContext {
    * widening steps of a home search. Absent means nobody is listening (a test, an eval, Show more).
    */
   readonly status?: (messageKey: StatusMessageKey) => void;
+  /**
+   * The tools that gave a result (not an error) in an earlier round of this customer message, each once (ADR-218): the web
+   * search runs only after a lookup on our own site. Absent means none.
+   */
+  readonly earlierResults?: readonly string[];
+  /**
+   * Adds what a tool spent on a paid call of its own (the web search, ADR-218) to the message's usage row: the tokens of
+   * that call and the web searches it ran. Absent means nobody is counting (a test, an eval).
+   */
+  readonly spend?: (spend: ToolSpend) => void;
+}
+
+/** What a tool's own paid call spent (ADR-218), added to the message's usage. */
+export interface ToolSpend {
+  readonly inputTokens: number;
+  readonly cachedInputTokens: number;
+  readonly outputTokens: number;
+  readonly webSearches: number;
 }
 
 /**
@@ -166,7 +184,7 @@ export interface ToolRun<Output> {
 export type ToolKind = "read" | "propose";
 
 /** The groups of tools that share a cap of calls per customer message (`AI_TOOL_GROUP_CALL_LIMITS`). */
-export type ToolCallGroup = "content";
+export type ToolCallGroup = "content" | "web";
 
 export interface AiChatTool<Input, Output> {
   /** Lowercase letters, digits and underscores (`search_properties`): the name the model asks for. */
@@ -219,6 +237,10 @@ export type AnyAiChatTool = AiChatTool<unknown, unknown>;
  * - `call_limit`: the calls for this customer message are used up.
  * - `call_alone`: a propose tool was mixed with other calls; ask for it alone in the next round.
  * - `content_limit`: the content calls of this message (2 of the 6) are used up; the other tools still work.
+ * - `web_limit`: the web search of this message (1 of the 6, ADR-218) is used up; the other tools still work.
+ *
+ * And one the web search throws on purpose (ADR-218):
+ * - `site_first`: no lookup on our own site gave a result earlier in this message; look there first.
  */
 export const TOOL_ERROR_CODES = [
   "unknown_tool",
@@ -233,6 +255,8 @@ export const TOOL_ERROR_CODES = [
   "call_limit",
   "call_alone",
   "content_limit",
+  "web_limit",
+  "site_first",
 ] as const;
 export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
 
@@ -254,6 +278,10 @@ export const TOOL_ERROR_HINTS: Partial<Record<ToolErrorCode, string>> = {
   call_alone: "This tool must be called alone. Call it again next round with no other call.",
   content_limit:
     "No more articles or questions can be looked up for this message. Answer from what you already have; the other tools still work.",
+  web_limit:
+    "The web search of this message is used up. Answer from what you already have; the other tools still work.",
+  site_first:
+    "Search the web only after a lookup on findsprop (the articles and questions, or the builder, project or home) gave its result for this message and did not answer the question. Look there first.",
 };
 
 /**

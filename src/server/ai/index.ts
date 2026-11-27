@@ -4,6 +4,7 @@ import { env } from "../env";
 import { createFakeAiProvider, type FakeTurn } from "./fake";
 import { createOpenAiProvider, type OpenAiProviderOptions } from "./openai";
 import { AI_PROVIDER_NAMES, type AiProvider } from "./types";
+import { createOpenAiWebSearch, type WebSearcher } from "./web-search";
 
 /**
  * The one way features get a model provider (ADR-128 section 4.4, R-BE-09): they import from here and never
@@ -39,6 +40,17 @@ export {
   toPortableJsonSchema,
 } from "./portable-schema";
 export { AI_ERROR_KINDS, AI_PROVIDER_NAMES } from "./types";
+export {
+  buildWebSearchRequest,
+  createFakeWebSearch,
+  createOpenAiWebSearch,
+  readWebSearchOutput,
+  type OpenAiWebSearchOptions,
+  type WebSearcher,
+  type WebSearchResult,
+  type WebSearchSpend,
+  type WebSource,
+} from "./web-search";
 export type {
   AiCall,
   AiErrorKind,
@@ -92,4 +104,17 @@ export function chooseAiProvider(name: string, options: AiProviderOptions = {}):
     "INTERNAL",
     known ? `The AI provider "${name}" is not wired yet` : `Unknown AI provider "${name}"`,
   );
+}
+
+/**
+ * The web search for a provider name (ADR-218): only OpenAI has one. Any other name, or OpenAI without its key or model,
+ * gives none, and the assistant is then never offered the web search (it is a side road of an answer, never a reason to
+ * refuse a message).
+ */
+export function chooseWebSearch(name: string): WebSearcher | null {
+  if (name !== "openai") return null;
+  const apiKey = env.OPENAI_API_KEY;
+  const model = env.AI_MODEL;
+  if (apiKey === undefined || apiKey === "" || model === undefined || model === "") return null;
+  return createOpenAiWebSearch({ apiKey, model });
 }

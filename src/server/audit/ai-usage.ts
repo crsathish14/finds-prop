@@ -33,10 +33,15 @@ export interface AiUsageEvent {
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly cachedInputTokens: number;
+  /** Paid web searches the message ran (ADR-218); 0 to 20 in the table. */
+  readonly webSearches: number;
   readonly agentLimit: string | null;
   readonly fallbackReason: string | null;
   readonly durationMs: number;
 }
+
+/** The most web searches the table takes for one message (its own check); a higher report is stored as this. */
+const WEB_SEARCHES_MAX = 20;
 
 /** A count the database accepts: a whole number, never negative (a bad number is stored as 0, not refused). */
 function count(value: number): number {
@@ -82,6 +87,7 @@ export async function writeAiUsage(event: AiUsageEvent): Promise<void> {
     input_tokens: count(event.inputTokens),
     output_tokens: count(event.outputTokens),
     cached_input_tokens: count(event.cachedInputTokens),
+    web_searches: Math.min(WEB_SEARCHES_MAX, count(event.webSearches)),
     agent_limit: event.agentLimit,
     fallback_reason: event.fallbackReason,
     duration_ms: count(event.durationMs),

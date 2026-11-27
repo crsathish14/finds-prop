@@ -42,6 +42,8 @@ export const EVAL_CATEGORIES = [
   "content",
   /** Greetings, answering a question first, general real-estate knowledge (ADR-213). */
   "conversation",
+  /** Searching the trusted websites when findsprop has no answer (ADR-218). */
+  "web",
   // red team
   "internals_probe",
   "instruction_attack",
@@ -221,6 +223,11 @@ export const evalCaseSchema = z
      * the prompt. A case that leaves it out runs with the tools and the prompt of the flag-off assistant.
      */
     placeSearch: z.boolean().default(false),
+    /**
+     * True when the case runs with the web search offered (ADR-218): a signed-in customer while the admin's switch is on,
+     * so the prompt carries its rules and `search_web` is a tool, over the world's made-up websites (never a real search).
+     */
+    webSearch: z.boolean().default(false),
     /** True when the place lookup cannot answer in this case (the provider is down, out of quota or switched off). */
     placesDown: z.boolean().default(false),
     /**

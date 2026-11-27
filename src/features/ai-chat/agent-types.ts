@@ -58,6 +58,8 @@ export interface AgentUsage {
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly cachedInputTokens: number;
+  /** Paid web searches the web search tool ran (ADR-218); its tokens are in the three counts above. */
+  readonly webSearches: number;
 }
 
 export type AgentEvent =
