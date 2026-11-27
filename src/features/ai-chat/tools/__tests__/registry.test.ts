@@ -37,6 +37,7 @@ const ownsHome = vi.fn();
 const searchContent = vi.fn();
 const readContentItem = vi.fn();
 const searchJobs = vi.fn();
+const researchBuilder = vi.fn();
 
 vi.mock("@/server/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 // The propose tools sign with the secret the rate limiter holds, and read who is asking from the session.
@@ -100,6 +101,10 @@ vi.mock("../../queries", () => ({
   ownsHome,
 }));
 // The job tools take the work modes and types from the Careers feature (ADR-143 section 6).
+vi.mock("@/features/builder-research", async () => {
+  const { QUESTION_TOPICS } = await import("@/features/builder-research/topics");
+  return { QUESTION_TOPICS, researchBuilder };
+});
 vi.mock("@/features/careers", async () => {
   const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
   return { EMPLOYMENT_TYPES, WORK_MODES };
@@ -284,6 +289,7 @@ const VALID_INPUTS: Record<string, unknown> = {
   },
   get_project: { slug: "kadal-vista" },
   get_builder: { builderId: null, name: "Kadal Homes" },
+  research_builder: { builderId: "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34", topic: "general" },
   compare_properties: { homeIds: ["k3x9a2bd", "m4y8b3ce", "n5z7c4dh"] },
   compare_projects: { slugs: ["kadal-vista", "vana-heights"] },
   calculate_emi: {
@@ -507,12 +513,22 @@ beforeEach(() => {
     projectCount: 15,
     firstProjectAt: "2026-03-14",
   });
+  // Five pages of the builder's website, each written to steer the assistant, with fields a result does not give.
+  researchBuilder.mockResolvedValue({
+    ok: true,
+    pages: Array.from({ length: 5 }, (_, index) => ({
+      url: `https://kadalhomes.example.test/page-${index}`,
+      title: injected("page title"),
+      text: injected("page text").repeat(40),
+      ...PRIVATE,
+    })),
+  });
 });
 
 // ---------------------------------------------------------------- the tests
 
 describe("UT-ai-tools-registry: the list", () => {
-  it("holds the twelve read tools and the three propose tools", () => {
+  it("holds the thirteen read tools and the three propose tools", () => {
     const names = AI_CHAT_TOOLS.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
@@ -522,6 +538,7 @@ describe("UT-ai-tools-registry: the list", () => {
         "search_projects",
         "get_project",
         "get_builder",
+        "research_builder",
         "compare_properties",
         "compare_projects",
         "calculate_emi",
@@ -533,7 +550,7 @@ describe("UT-ai-tools-registry: the list", () => {
         "propose_site_visit",
       ]),
     );
-    expect(names).toHaveLength(15);
+    expect(names).toHaveLength(16);
   });
 
   it("serves the search tool that has always existed while place search is off, and the place-aware one only with a lookup (ADR-142)", () => {
@@ -551,14 +568,14 @@ describe("UT-ai-tools-registry: the list", () => {
     const oldShape =
       (searchPropertiesTool.input as { shape?: Record<string, unknown> }).shape ?? {};
     expect(Object.keys(oldShape)).not.toContain("place");
-    // The same fourteen tools, every other one untouched.
+    // The same fifteen tools, every other one untouched.
     expect(withPlaces.slice(1)).toEqual(AI_CHAT_TOOLS.slice(1));
   });
 
-  it("gives every tool a kind: twelve read tools the loop may run in parallel, and three propose tools that run alone", () => {
+  it("gives every tool a kind: thirteen read tools the loop may run in parallel, and three propose tools that run alone", () => {
     for (const tool of AI_CHAT_TOOLS) expect(["read", "propose"], tool.name).toContain(tool.kind);
     expect(AI_CHAT_TOOLS.map((tool) => tool.kind)).toEqual([
-      ...Array<string>(12).fill("read"),
+      ...Array<string>(13).fill("read"),
       "propose",
       "propose",
       "propose",
@@ -795,8 +812,8 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
     const lists = outcomes.flatMap(({ outcome }) =>
       recordLists(outcome.status === "ok" ? outcome.output : null),
     );
-    // Homes and projects (one page of 6 each, ADR-206), localities, unit sizes and builder projects (10 each), the compared homes (3) and projects (2), the seven content hits and the seven open jobs, each cut to 5.
-    expect(lists.map((list) => list.length)).toEqual([6, 10, 6, 10, 10, 3, 2, 5, 5]);
+    // Homes and projects (one page of 6 each, ADR-206), localities, unit sizes and builder projects (10 each), the builder's web pages (5), the compared homes (3) and projects (2), the seven content hits and the seven open jobs, each cut to 5.
+    expect(lists.map((list) => list.length)).toEqual([6, 10, 6, 10, 10, 5, 3, 2, 5, 5]);
   });
 
   it("holds the months of price per sq ft as short lines, at most twelve, not as ten records", async () => {
@@ -863,6 +880,7 @@ describe("UT-ai-tools-registry: results are small (ADR-128 section 5)", () => {
       search_projects: ["project"],
       get_project: ["project"],
       get_builder: ["project"],
+      research_builder: [],
       compare_properties: ["home"],
       compare_projects: ["project"],
       calculate_emi: [],

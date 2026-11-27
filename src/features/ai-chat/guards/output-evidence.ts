@@ -6,8 +6,12 @@
  * Contacts are taken by key, as `public-contacts.ts` promises: a phone only from a `contactPhone` field, a web
  * address only from a `website` field, and never from inside `untrustedText`, because a number in a description
  * is something a stranger typed and not a contact the platform gave.
+ *
+ * A page of a builder's website that `research_builder` read (ADR-211) is a third kind: its `sourceUrl` may be
+ * repeated only when the customer asked for a link or where the answer came from (`askedForLink`, ADR-209).
  */
 import { AI_LINK_TLDS, AI_PROMPT_COPY_RUN_WORDS } from "@/config/ai";
+import { askedForLink } from "../endpoint/link-request";
 import type { ToolReference } from "../tools/types";
 import { UNTRUSTED_TEXT_KEY } from "../tools/untrusted";
 import { groundingFigures } from "./number-grounding";
@@ -120,10 +124,18 @@ export function findAddresses(text: string): string[] {
   return found;
 }
 
-/** Walks a parsed tool result for the two contact keys, leaving `untrustedText` alone. */
-function collectContacts(node: unknown, phones: Set<string>, addresses: Set<string>): void {
+/**
+ * Walks a parsed tool result for the two contact keys, leaving `untrustedText` alone. A page's `sourceUrl` counts
+ * as an address only when `withSources` is true (the customer asked for a link or the source).
+ */
+function collectContacts(
+  node: unknown,
+  phones: Set<string>,
+  addresses: Set<string>,
+  withSources: boolean,
+): void {
   if (Array.isArray(node)) {
-    for (const item of node) collectContacts(item, phones, addresses);
+    for (const item of node) collectContacts(item, phones, addresses, withSources);
     return;
   }
   if (node === null || typeof node !== "object") return;
@@ -132,11 +144,14 @@ function collectContacts(node: unknown, phones: Set<string>, addresses: Set<stri
     if (key === "contactPhone" && typeof value === "string") {
       const digits = phoneDigits(value);
       if (digits !== "") phones.add(digits);
-    } else if (key === "website" && typeof value === "string") {
+    } else if (
+      (key === "website" || (key === "sourceUrl" && withSources)) &&
+      typeof value === "string"
+    ) {
       const address = normalizeAddress(value);
       if (address !== "") addresses.add(address);
     } else {
-      collectContacts(value, phones, addresses);
+      collectContacts(value, phones, addresses, withSources);
     }
   }
 }
@@ -154,11 +169,12 @@ export function buildEvidence(input: OutputEvidenceInput): OutputEvidence {
   const phones = new Set<string>();
   const addresses = new Set<string>();
   const figures = new Set<string>(groundingFigures(input.customerMessage));
+  const withSources = askedForLink(input.customerMessage);
 
   for (const result of input.toolResults) {
     for (const figure of groundingFigures(result)) figures.add(figure);
     try {
-      collectContacts(JSON.parse(result), phones, addresses);
+      collectContacts(JSON.parse(result), phones, addresses, withSources);
     } catch {
       // A result that is not JSON holds no contact the check may allow; its figures still count.
     }

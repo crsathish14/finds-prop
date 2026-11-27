@@ -23,6 +23,16 @@ export const MAX_PARALLEL_READ_CALLS = 3;
 export const TOOL_TIMEOUT_MS = 3000;
 
 /**
+ * How long `research_builder` may take (ADR-211): reading a builder's website the first time is up to three steps of
+ * at most 5 seconds each (robots.txt and the sitemap, then the home page and the builder's pages, then the pages
+ * picked for the question). A page read in the last days comes from its saved copy and takes no time on the network.
+ */
+export const RESEARCH_TOOL_TIMEOUT_MS = 16_000;
+
+/** The most text of one builder web page `research_builder` hands the model, in characters (ADR-211). */
+export const RESEARCH_PAGE_MAX_CHARACTERS = 2500;
+
+/**
  * How long a provider call may stay silent, in milliseconds: no response yet, or no new event in the stream.
  * Every event restarts the clock, so a long answer that keeps streaming is never cut, and a call that goes
  * quiet is. An engineering limit; the time for the whole message is the endpoint's deadline, set separately.
@@ -417,7 +427,7 @@ export const AI_LINK_TLDS: readonly string[] = [
  */
 export const AI_INTERNALS_LEAK_PATTERNS: readonly RegExp[] = [
   // The tools by name.
-  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|list_localities|calculate_emi|propose_enquiry|propose_project_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
+  /\b(search_properties|get_property|compare_properties|search_projects|get_project|get_builder|research_builder|list_localities|calculate_emi|propose_enquiry|propose_project_enquiry|propose_site_visit|search_content|get_content_item|search_jobs)\b/u,
   // The stack and the provider.
   /\b(supabase|postgres|postgresql|postgis|vercel|next\.?js|tailwind|typescript|langchain|openai|anthropic|chat ?gpt|gpt-?[0-9][a-z0-9.-]*)\b/u,
   /\b(large language model|language model|llm)\b/u,

@@ -42,11 +42,18 @@ function canonical(value: unknown): string {
   return JSON.stringify(value) ?? "undefined";
 }
 
-/** The tool's result, or a `timeout` result when it takes longer than `TOOL_TIMEOUT_MS` or the caller stops. */
-function raceTimeout(work: Promise<ToolOutcome>, signal?: AbortSignal): Promise<ToolOutcome> {
+/**
+ * The tool's result, or a `timeout` result when it takes longer than its time (the tool's own `timeoutMs`, else
+ * `TOOL_TIMEOUT_MS`) or the caller stops.
+ */
+function raceTimeout(
+  work: Promise<ToolOutcome>,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<ToolOutcome> {
   return new Promise((resolve, reject) => {
     const timedOut = () => resolve(toolError("timeout"));
-    const timer = setTimeout(timedOut, TOOL_TIMEOUT_MS);
+    const timer = setTimeout(timedOut, timeoutMs);
     signal?.addEventListener("abort", timedOut, { once: true });
     work.then(resolve, reject).finally(() => {
       clearTimeout(timer);
@@ -60,7 +67,7 @@ function raceTimeout(work: Promise<ToolOutcome>, signal?: AbortSignal): Promise<
  * round gets `call_alone`; a call that repeats an earlier one shares that one's result; past
  * `MAX_PARALLEL_READ_CALLS` the call gets `too_many_calls`; past the budget it gets `call_limit`; past its tool group's cap
  * (`groupUsed` is what the earlier rounds spent) it gets `content_limit`. The rest run
- * together, each raced against `TOOL_TIMEOUT_MS`, and one that fails or times out affects only its own result.
+ * together, each raced against its time (`TOOL_TIMEOUT_MS` unless the tool sets its own), and one that fails or times out affects only its own result.
  */
 export async function runRoundCalls(options: {
   tools: readonly AnyAiChatTool[];
@@ -105,7 +112,9 @@ export async function runRoundCalls(options: {
         groupAttempts[tool.callGroup] = (groupAttempts[tool.callGroup] ?? 0) + 1;
       }
       if (tool !== undefined) ranNames.add(tool.name);
-      slots.push(raceTimeout(runTool(tools, call, context), signal));
+      slots.push(
+        raceTimeout(runTool(tools, call, context), tool?.timeoutMs ?? TOOL_TIMEOUT_MS, signal),
+      );
     }
   });
 

@@ -157,6 +157,8 @@ export interface AiChatTool<Input, Output> {
    * content tools share 2 of the 6 calls (ADR-143 section 6.3). Absent for a tool with no cap of its own.
    */
   readonly callGroup?: ToolCallGroup;
+  /** How long the loop waits for this tool, in milliseconds; absent is `TOOL_TIMEOUT_MS`. Only a tool that reads the web needs longer. */
+  readonly timeoutMs?: number;
   /** What the tool is for and how to read its result, written for the model. Never shown to a customer. */
   readonly description: string;
   /** What the tool takes. It must stay inside the portable subset (`toPortableJsonSchema`), and name no person. */
