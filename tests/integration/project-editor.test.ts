@@ -355,7 +355,7 @@ describe("IT-project-editor: the project form's saves and reads against a real d
           areaMinSqft: "1200",
           areaMaxSqft: "2400.5",
           bhkOptions: [3],
-          offerType: "rent",
+          // A residential project may be for rent now (ADR-214), but only priced per month: this plot is for sale.
           possessionDate: "2028-12",
         }),
       );
@@ -410,6 +410,46 @@ describe("IT-project-editor: the project form's saves and reads against a real d
         areaMaxSqft: 2500,
         possessionDate: "2028-12-01",
         reraNotApplicableReason: null,
+      });
+    });
+
+    it("saves a residential project for rent per month with its deposit and maintenance, and clears them for sale (ADR-214)", async () => {
+      const made = await makeMine("rent");
+      const input = (extra: Record<string, unknown>) =>
+        updateMyProjectSchema.parse({
+          ...COMPLETE,
+          projectId: made.projectId,
+          name: `Rent ${RUN}`,
+          slug: slug("rent"),
+          locality: "Integration Test Locality",
+          ...extra,
+        });
+      await saveProject(
+        asBuilder(),
+        input({
+          offerType: "rent",
+          priceType: "rent_per_month",
+          price: "28000",
+          securityDeposit: "150000",
+          maintenancePerMonth: "2500",
+        }),
+      );
+      expect(await row(made.projectId)).toMatchObject({
+        project_type: "residential",
+        offer_type: "rent",
+        price: 28000,
+        price_type: "rent_per_month",
+        security_deposit: 150000,
+        maintenance_per_month: 2500,
+      });
+
+      await saveProject(
+        asBuilder(),
+        input({ offerType: "sale", securityDeposit: "150000", maintenancePerMonth: "2500" }),
+      );
+      expect(await row(made.projectId)).toMatchObject({
+        security_deposit: null,
+        maintenance_per_month: null,
       });
     });
 
