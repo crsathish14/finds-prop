@@ -66,6 +66,10 @@ vi.mock("../../queries", () => ({
   getBuilderProfile: vi.fn(),
   ownsHome: vi.fn(),
 }));
+vi.mock("@/features/builder-research", async () => {
+  const { QUESTION_TOPICS } = await import("@/features/builder-research/topics");
+  return { QUESTION_TOPICS, researchBuilder: vi.fn() };
+});
 vi.mock("@/features/careers", async () => {
   const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
   return { EMPLOYMENT_TYPES, WORK_MODES };
@@ -103,8 +107,8 @@ const toolListCharacters = JSON.stringify(definitions).length;
 const promptCharacters = buildSystemPrompt({ translate }).length;
 
 describe("UT-ai-fixed-cost: what every model call carries", () => {
-  it("serves the fifteen tools, three of them the content tools", () => {
-    expect(definitions).toHaveLength(15);
+  it("serves the sixteen tools, three of them the content tools", () => {
+    expect(definitions).toHaveLength(16);
     for (const name of CONTENT_TOOL_NAMES) {
       expect(definitions.map((definition) => definition.name)).toContain(name);
     }

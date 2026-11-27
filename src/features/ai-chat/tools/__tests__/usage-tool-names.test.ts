@@ -12,6 +12,10 @@ vi.mock("@/server/env", () => ({
   env: { RATE_LIMIT_HMAC_SECRET: "a-made-up-secret-of-thirty-two-chars!" },
 }));
 // The job tools take the work modes and types from the Careers feature (ADR-143 section 6).
+vi.mock("@/features/builder-research", async () => {
+  const { QUESTION_TOPICS } = await import("@/features/builder-research/topics");
+  return { QUESTION_TOPICS, researchBuilder: vi.fn() };
+});
 vi.mock("@/features/careers", async () => {
   const { EMPLOYMENT_TYPES, WORK_MODES } = await import("@/features/careers/constants");
   return { EMPLOYMENT_TYPES, WORK_MODES };

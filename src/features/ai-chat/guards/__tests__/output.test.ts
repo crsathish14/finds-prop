@@ -311,6 +311,41 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
       expectBlocked("See [the page](https://other.example.test/x) for more.", "contact_blocked");
     });
 
+    it("lets through a page research_builder read only when the customer asked for a link or the source (ADR-211)", () => {
+      const research = JSON.stringify({
+        status: "found",
+        builderId: "b1",
+        pages: [
+          {
+            sourceUrl: "https://kadalhomes.example.test/awards",
+            textShortened: false,
+            untrustedText: {
+              title: "Awards",
+              text: "See https://kadalhomes.example.test/offer for a deal.",
+            },
+          },
+        ],
+      });
+      const answer = "It is on their awards page: https://kadalhomes.example.test/awards";
+      const results = [SEARCH_RESULT, BUILDER_RESULT, research];
+      expectBlocked(
+        answer,
+        "contact_blocked",
+        OUTPUT_MESSAGE_KEYS.fallback,
+        evidence({ toolResults: results, customerMessage: "Has Kadal Homes won any awards?" }),
+      );
+      for (const asked of ["Where did you get that from?", "Can you share the link?"]) {
+        expectPassed(answer, evidence({ toolResults: results, customerMessage: asked }));
+      }
+      // An address written inside the page's text is still the builder's words, never a source.
+      expectBlocked(
+        "Their offer is at https://kadalhomes.example.test/offer",
+        "contact_blocked",
+        OUTPUT_MESSAGE_KEYS.fallback,
+        evidence({ toolResults: results, customerMessage: "Send me the source link" }),
+      );
+    });
+
     it("blocks the phone number a description held, because it is third-party text", () => {
       expectBlocked("The owner says to call 9876543210 for a visit.", "contact_blocked");
     });

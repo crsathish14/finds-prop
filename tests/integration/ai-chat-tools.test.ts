@@ -809,6 +809,49 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
     });
   });
 
+  describe("research_builder (ADR-211)", () => {
+    /** The lines of the read log for one builder. */
+    async function readLog(builderId: string) {
+      const { data, error } = await adminClient()
+        .from("builder_research_reads")
+        .select("url, kind, ok, problem")
+        .eq("builder_id", builderId);
+      if (error) throw new Error(`Could not read the research log (${error.code})`);
+      return data;
+    }
+
+    it("answers not_found for an inactive builder and reads none of their website", async () => {
+      const { result, references } = await call("research_builder", {
+        builderId: showcase.inactiveBuilderId,
+        topic: "general",
+      });
+      expect(result).toEqual({ status: "not_found" });
+      expect(references).toEqual([]);
+      expect(await readLog(showcase.inactiveBuilderId)).toEqual([]);
+    });
+
+    it("answers not_found for an id nobody has", async () => {
+      const { result } = await call("research_builder", {
+        builderId: "00000000-0000-4000-8000-000000000000",
+        topic: "projects",
+      });
+      expect(result).toEqual({ status: "not_found" });
+    });
+
+    it("says nothing_read when the website cannot be opened, and logs the read it tried", async () => {
+      // The made-up website's name does not resolve, so no request leaves the machine.
+      const { result, content } = await call("research_builder", {
+        builderId: showcase.builderId,
+        topic: "about_company",
+      });
+      expect(result).toEqual({ status: "nothing_read" });
+      expectNothingPrivate(content);
+      const log = await readLog(showcase.builderId);
+      expect(log.length).toBeGreaterThan(0);
+      for (const line of log) expect(line).toMatchObject({ kind: "read", ok: false });
+    }, 30_000);
+  });
+
   describe("the builder reads (the IT-queries pattern)", () => {
     it("gives a visitor the public builder columns of an active builder, and no other column", async () => {
       const { data, error } = await visitorClient()

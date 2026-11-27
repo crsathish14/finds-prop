@@ -14,3 +14,7 @@ export { getBuilderResearchPanel, getMyResearchPanel } from "./queries";
 export { ResearchPagesPanel } from "./research-pages.client";
 export type { ResearchPagesActions } from "./research-pages.client";
 export type { ResearchPanelView } from "./panel-service";
+export { researchBuilder } from "./research.server";
+export type { ResearchedPage, ResearchResult } from "./research.server";
+export { QUESTION_TOPICS } from "./topics";
+export type { QuestionTopic } from "./topics";
