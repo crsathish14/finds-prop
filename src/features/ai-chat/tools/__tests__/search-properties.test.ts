@@ -11,6 +11,8 @@ const getHomeExtras = vi.fn();
 
 // The ranking's own reads (ADR-205): the homes' amenities and furnishing, stood in for here.
 vi.mock("../../ranking/reads.server", () => ({
+  // ADR-216: no locality centre is known in these tests, so nothing is widened.
+  getLocalityCentre: vi.fn(async () => null),
   getHomeExtras,
   getProjectExtras: vi.fn(),
   getPromotionLists: vi.fn(),
@@ -414,7 +416,7 @@ describe("UT-ai-tool-search: the result", () => {
       status: "ok",
       output: { total: 0, homes: [] },
       references: [],
-      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"shownSoFar":0,"homes":[],"projects":[],"order":[],"slightlyAboveBudget":null}`,
+      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"shownSoFar":0,"homes":[],"projects":[],"order":[],"widened":null,"alternative":null,"priceRange":null,"slightlyAboveBudget":null}`,
     });
   });
 

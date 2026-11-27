@@ -24,6 +24,11 @@ export interface RunAllOptions {
    */
   readonly placeTools?: readonly AnyAiChatTool[];
   readonly providerFor: (evalCase: EvalCase, tools: readonly AnyAiChatTool[]) => AiProvider;
+  /**
+   * Makes the web search tool for a case that offers it (ADR-218), new for each case so its 7-day memory starts empty.
+   * The provider of that case is asked with the tools plus this one.
+   */
+  readonly webToolFor?: () => AnyAiChatTool;
   /** Called after each case, so a long real-model run can show where it is. */
   readonly onScore?: (score: CaseScore, position: number, total: number) => void;
 }
@@ -38,10 +43,14 @@ export async function runAll(
     if (placeSearch && options.placeTools === undefined)
       throw new Error(`${evalCase.id} needs the place-aware tools and none were given`);
     const tools = placeSearch ? (options.placeTools ?? options.tools) : options.tools;
+    if (evalCase.webSearch && options.webToolFor === undefined)
+      throw new Error(`${evalCase.id} needs the web search tool and none was given`);
+    const webTool = evalCase.webSearch ? options.webToolFor?.() : undefined;
     const observed = await runCase(evalCase, {
-      provider: options.providerFor(evalCase, tools),
+      provider: options.providerFor(evalCase, webTool === undefined ? tools : [...tools, webTool]),
       tools,
       placeSearch,
+      ...(webTool === undefined ? {} : { webSearchTool: webTool }),
     });
     const score = scoreCase(evalCase, observed, options.mode);
     scores.push(score);

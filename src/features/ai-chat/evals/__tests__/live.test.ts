@@ -62,21 +62,21 @@ describe.runIf(ready)(
       "runs the cases, writes the report, and meets the real-model rule when the whole set ran",
       async () => {
         const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
-        const { worldPlaceLookup } = await import("../world");
+        const { createWorldWebSearch, worldPlaceLookup } = await import("../world");
+        const { createSearchWebTool } = await import("../../tools/search-web");
         const { chooseAiProvider } = await import("@/server/ai");
         const { checkToolNames, loadCases } = await import("../cases");
         const { runAndReport } = await import("../live-run");
 
         const cases = loadCases();
-        checkToolNames(
-          cases.all,
-          AI_CHAT_TOOLS.map((tool) => tool.name),
-        );
+        checkToolNames(cases.all, [...AI_CHAT_TOOLS.map((tool) => tool.name), "search_web"]);
         const provider = chooseAiProvider("openai");
         const result = await runAndReport({
           cases: cases.all,
           tools: AI_CHAT_TOOLS,
           placeTools: createAiChatTools(worldPlaceLookup),
+          // The web search reads the made-up websites only: a live run never pays for a real search.
+          webToolFor: () => createSearchWebTool(createWorldWebSearch()),
           providerFor: () => provider,
           model: env.AI_MODEL ?? "unknown",
           promptVersion: SYSTEM_PROMPT_VERSION,

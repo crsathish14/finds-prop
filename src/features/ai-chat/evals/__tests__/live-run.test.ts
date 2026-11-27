@@ -24,7 +24,8 @@ vi.mock("@/server/env", () => ({
 }));
 
 const { AI_CHAT_TOOLS, createAiChatTools } = await import("../../tools/registry");
-const { worldPlaceLookup } = await import("../world");
+const { createWorldWebSearch, worldPlaceLookup } = await import("../world");
+const { createSearchWebTool } = await import("../../tools/search-web");
 const { loadCases } = await import("../cases");
 const { scriptedProvider } = await import("../eval-run");
 const { runAndReport } = await import("../live-run");
@@ -38,6 +39,7 @@ const run = (selection: Parameters<typeof runAndReport>[0]["selection"]) =>
     cases: cases.all,
     tools: AI_CHAT_TOOLS,
     placeTools: createAiChatTools(worldPlaceLookup),
+    webToolFor: () => createSearchWebTool(createWorldWebSearch()),
     providerFor: (evalCase, tools) => scriptedProvider(evalCase, tools),
     model: "fake",
     promptVersion: "test-version",

@@ -17,7 +17,7 @@ A customer who asked for "2 BHK to buy in Porur" got homes only; the projects in
 3. **When.** For a signed-in customer only (a guest sees homes only, ADR-200), and only when the customer asked for no order of their own and no home label (Prime, budget, featured are home labels). A search around a place lists homes only: the projects list holds no position. When the projects cannot be read, the homes still answer.
 4. **The result** adds `projects` (as `search_projects` gives them) and `order` (the page as `home:<homeId>` and `project:<slug>`); `total` counts both. The cards follow the same order.
 5. **Featured in the chat** (changes ADR-206): a featured home keeps its Featured badge on its card in the chat, and a project carries Featured when its tier is a paid one: a sponsored builder or project, featured in moderation, or a Spotlight builder. The Top developers page is the admin's own pick: it still ranks, with no label. The model is still never told a tier and still never calls anything sponsored, featured or promoted (ADR-205 point 6).
-6. **Show more** on a page that holds homes and projects says "Here are # more matches for your search ({shown} of {total} shown so far)." (`ai.more.matches`, **new words awaiting the owner's approval**). A page of homes only or of projects only keeps its approved line.
+6. **Show more** on a page that holds homes and projects says "Here are # more matches for your search ({shown} of {total} shown so far)." (`ai.more.matches`, **words approved by the owner on 27 Nov 2026**). A page of homes only or of projects only keeps its approved line.
 
 ## Consequences
 

@@ -40,6 +40,8 @@ export interface ChatUsageRecord {
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly cachedInputTokens: number;
+  /** Paid web searches this message ran (ADR-218), for the estimated spend. A number only. */
+  readonly webSearches: number;
   readonly agentLimit: AgentLimit | null;
   readonly fallbackReason: AgentFallbackReason | null;
   readonly durationMs: number;
@@ -63,6 +65,15 @@ export interface ChatDeps {
   /** The model provider; throws when it is not configured. Called before any limit is spent. */
   createProvider(): AiProvider;
   readonly tools: readonly AnyAiChatTool[];
+  /**
+   * The web search (ADR-218): its tool, offered to a signed-in customer only while `isOn` says the admin's Web search
+   * switch is on. `isOn` is asked on every message, so a change shows at once; when it fails the search is off. Absent
+   * means there is no web search (the fake provider, tests).
+   */
+  readonly webSearch?: {
+    readonly tool: AnyAiChatTool;
+    isOn(): Promise<boolean>;
+  };
   /**
    * True when `tools` holds the place-aware search (`FLAG_AI_PLACE_SEARCH` with `FLAG_AI_SEARCH`, ADR-142), so the
    * system prompt carries the rules for places. Absent or false: the prompt and the tool are as they were before.

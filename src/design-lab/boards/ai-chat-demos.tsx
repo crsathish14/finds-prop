@@ -74,9 +74,20 @@ export function ChatMessagesDemo() {
           </ChatUserBubble>
         </ChatThread>
       </Specimen>
-      <Specimen label="Searching: the one fixed status line, for every tool" className={WIDE}>
+      <Specimen
+        label="Searching: the plain status line, for a tool with no line of its own"
+        className={WIDE}
+      >
         <ChatThread className="w-full">
           <ChatAssistantMessage status={<ChatStatusLine />} />
+        </ChatThread>
+      </Specimen>
+      <Specimen
+        label="A step: the line the server sent for what the assistant is doing (ADR-217), replaced in place"
+        className={WIDE}
+      >
+        <ChatThread className="w-full">
+          <ChatAssistantMessage status={<ChatStatusLine text={translate("status.nearby")} />} />
         </ChatThread>
       </Specimen>
       <Specimen

@@ -54,6 +54,7 @@ function usageRow(change: Partial<ChatUsageRecord> = {}): ChatUsageRecord {
     inputTokens: 0,
     outputTokens: 0,
     cachedInputTokens: 0,
+    webSearches: 0,
     agentLimit: null,
     fallbackReason: null,
     durationMs: 1,

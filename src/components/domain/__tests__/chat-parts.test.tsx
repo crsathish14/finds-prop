@@ -21,6 +21,17 @@ import { ChatRemovedToken, ChatUserBubble } from "../chat-user-bubble";
 const words = messages.ai;
 const enquiryWords = messages.domain.enquiry;
 
+describe("ChatStatusLine: the step the assistant has reached (ADR-217)", () => {
+  it("shows the line it is given, as one polite status, and Searching without one", () => {
+    const { unmount } = renderWithMessages(<ChatStatusLine text={words.status.nearby} />);
+    expect(screen.getByRole("status")).toHaveTextContent(words.status.nearby);
+    unmount();
+    renderWithMessages(<ChatStatusLine />);
+    expect(screen.getByRole("status")).toHaveTextContent(words.searching);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+  });
+});
+
 describe("the chat thread, the bubble and the assistant's message (AI-P5-T01)", () => {
   it("labels the conversation and says who spoke in each message", () => {
     renderWithMessages(
