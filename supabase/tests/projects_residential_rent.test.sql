@@ -1,7 +1,7 @@
 -- ADR-214 residential projects for rent. Tests: DB-CON-projects-residential-rent, DB-FN-public-project-rent.
 -- Fictional data only.
 begin;
-select plan(11);
+select plan(12);
 
 insert into auth.users (id, email, email_confirmed_at)
 values ('00000000-0000-4000-8000-0000000000b1', 'builder1@example.test', now());
@@ -68,10 +68,16 @@ select is(
   '150000/2500',
   'public_project gives the security deposit and the maintenance per month'
 );
-set local role anon;
+set local role authenticated;
 select lives_ok(
-  $$select security_deposit, maintenance_per_month from public.projects$$,
-  'a visitor can read the security deposit and the maintenance per month'
+  $select security_deposit, maintenance_per_month from public.projects$,
+  'a signed-in visitor can read the security deposit and the maintenance per month'
+);
+reset role;
+set local role anon;
+select throws_ok(
+  $select security_deposit, maintenance_per_month from public.projects$,
+  '42501', null, 'a visitor who is not signed in cannot read them (the login wall, ADR-171)'
 );
 reset role;
 

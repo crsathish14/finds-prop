@@ -16,7 +16,7 @@ Builders and agents also let residential projects (a block of flats, a row of vi
 2. **Rent per month only** for a residential project for rent: its only price type is `rent_per_month` (a commercial one keeps rent per sq ft per month too).
 3. **Two optional amounts, a project for rent only:** "Security deposit" and "Maintenance per month" (owner-approved words), whole rupees above zero (`security_deposit`, `maintenance_per_month`, both `bigint`). A project for sale has neither; the service clears them and the database refuses them.
 4. **The project page** shows "Deposit {amount}" and "Maintenance {amount} per month" (owner-approved words) on the line under the price, only when given. The assistant's `get_project` gives the same two lines as text.
-5. **Database rules:** `projects_offer_type_commercial` becomes `projects_offer_type_fits` (a commercial project still says sale or rent); `projects_residential_rent_per_month`; `projects_security_deposit_positive`, `projects_maintenance_positive`, `projects_rent_amounts_for_rent`. The form guard treats the two amounts as form columns. `public_project()` returns the two amounts. Public read grants, builder and admin write grants.
+5. **Database rules:** `projects_offer_type_commercial` becomes `projects_offer_type_fits` (a commercial project still says sale or rent); `projects_residential_rent_per_month`; `projects_security_deposit_positive`, `projects_maintenance_positive`, `projects_rent_amounts_for_rent`. The form guard treats the two amounts as form columns. `public_project()` returns the two amounts. Read grants for signed-in visitors only (the login wall, ADR-171), builder and admin write grants.
 
 ## Consequences
 
