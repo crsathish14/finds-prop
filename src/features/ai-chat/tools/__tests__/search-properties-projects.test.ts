@@ -17,6 +17,8 @@ const NO_PROMOTIONS = {
 };
 
 vi.mock("../../ranking/reads.server", () => ({
+  // ADR-216: no locality centre is known in these tests, so nothing is widened.
+  getLocalityCentre: vi.fn(async () => null),
   getPromotionLists,
   getProjectExtras,
   getPrimeRules: vi.fn(async () => ({

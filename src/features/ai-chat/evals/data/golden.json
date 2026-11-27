@@ -3688,6 +3688,66 @@
     }
   },
   {
+    "id": "G-fallback-01",
+    "set": "golden",
+    "category": "near_miss",
+    "language": "en",
+    "title": "no 3 BHK in Porur within the budget: the same call gives the nearest other bedroom count, shown as an alternative with its card (ADR-216)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "3 BHK to buy in Porur under 70 lakh"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_properties",
+            "input": {
+              "listingType": "sale",
+              "propertyType": null,
+              "bhk": 3,
+              "minPrice": null,
+              "maxPrice": 7000000,
+              "city": null,
+              "locality": "Porur",
+              "keyword": null,
+              "label": null,
+              "preferLocalities": null,
+              "preferAmenities": null,
+              "preferFurnishing": null,
+              "sort": null,
+              "page": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "There is no 3 BHK in Porur within ₹70 L, but there is one home with 2 BHK: a flat for ₹64.5 L, 1,020 sq ft. Would a 2 BHK work for you?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_properties",
+            "args": {
+              "bhk": 3
+            }
+          }
+        ]
+      },
+      "visible": {
+        "cards": ["home:t2e6h9jq"],
+        "showsCards": ["home:t2e6h9jq"],
+        "mustContain": [["2 BHK"]]
+      }
+    }
+  },
+  {
     "id": "G-cards-01",
     "set": "golden",
     "category": "search",
@@ -6706,7 +6766,7 @@
     "set": "golden",
     "category": "near_miss",
     "language": "en",
-    "title": "nothing matches: suggests widening and offers to search again",
+    "title": "nothing matches: offers the nearest other bedroom count with its card, and a nearby locality (ADR-216)",
     "messages": [
       {
         "role": "user",
@@ -6728,7 +6788,7 @@
         ]
       },
       {
-        "text": "I did not find a 4 BHK home in Velachery. Shall I try a nearby locality or a different type of home?"
+        "text": "I did not find a 4 BHK home in Velachery, but there is a 3 BHK there. Would that work, or shall I try a nearby locality?"
       }
     ],
     "expect": {
@@ -6743,7 +6803,7 @@
       },
       "visible": {
         "mustContain": [["nearby", "different", "budget"]],
-        "cards": [],
+        "cards": ["home:k3x9a2bd"],
         "mustNotMatch": [
           "hurry",
           "only \\d+ left",

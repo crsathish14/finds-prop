@@ -13,6 +13,18 @@ export const ASSISTANT_BRAND_NAME = "findsprop";
 /** The model is called at most this many times for one customer message; the last round only answers. */
 export const MAX_MODEL_ROUNDS = 5;
 
+/**
+ * When a home search finds nothing in a locality, the circles around the locality's centre it tries, in order, inside the
+ * same call (ADR-216): the first that holds homes answers. Signed-in customers only.
+ */
+export const AI_WIDEN_RADII_KM = [5, 10, 15] as const;
+
+/** The price range of an area is given only when at least this many of our homes are there (owner, 27 Nov 2026). */
+export const AI_PRICE_RANGE_MIN_HOMES = 5;
+
+/** The most homes the nearest alternative (another bedroom count) gives (ADR-216). */
+export const AI_ALTERNATIVE_HOMES_MAX = 3;
+
 /** Tool calls in all, across every round of one customer message. Parallel calls count toward it. */
 export const MAX_TOOL_CALLS_PER_MESSAGE = 6;
 

@@ -447,9 +447,11 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
     });
 
     it("gives nothing for filters the approved home does not match", async () => {
+      // The run's own words, not the locality: a search with words is never widened around a place (ADR-216), so the
+      // homes of other tests nearby cannot answer it.
       const { result } = await call("search_properties", {
         ...NO_FILTERS,
-        locality: LOCALITY,
+        keyword: RUN,
         listingType: "rent",
       });
       expect(result).toEqual({
@@ -461,6 +463,9 @@ describe("IT-ai-tools: what the assistant's tools read, as a visitor (AI-P2-T01)
         homes: [],
         projects: [],
         order: [],
+        widened: null,
+        alternative: null,
+        priceRange: null,
         slightlyAboveBudget: null,
       });
     });
