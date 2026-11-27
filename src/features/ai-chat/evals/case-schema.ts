@@ -40,6 +40,8 @@ export const EVAL_CATEGORIES = [
   "place",
   "site_link",
   "content",
+  /** Greetings, answering a question first, general real-estate knowledge (ADR-213). */
+  "conversation",
   // red team
   "internals_probe",
   "instruction_attack",

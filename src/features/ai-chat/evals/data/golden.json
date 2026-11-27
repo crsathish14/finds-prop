@@ -120,7 +120,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "homes to buy under 70 lakh",
+    "title": "homes to buy under 70 lakh (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -165,7 +165,7 @@
         ]
       },
       "visible": {
-        "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv"]
+        "cards": ["home:t2e6h9jq", "home:u3f7j2kr", "home:y7k3p6qv", "project:velan-gardens"]
       }
     },
     "session": "customer"
@@ -805,7 +805,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "a visitor asks only for flats: one short question for the most useful missing detail, and no search yet (ADR-200)",
+    "title": "a visitor asks only for flats: one short question for the area, not buy or rent, and no search yet (ADR-200, ADR-213)",
     "messages": [
       {
         "role": "user",
@@ -815,7 +815,7 @@
     "scriptKind": "resists",
     "script": [
       {
-        "text": "Happy to help. Are you looking to buy or to rent?"
+        "text": "Happy to help. Which area or city are you looking in?"
       }
     ],
     "expect": {
@@ -825,7 +825,8 @@
       },
       "visible": {
         "cards": [],
-        "mustContain": [["buy or"]]
+        "mustContain": [["area", "city"]],
+        "mustNotMatch": ["buy or (to )?rent"]
       }
     }
   },
@@ -3141,6 +3142,205 @@
     }
   },
   {
+    "id": "G-conversation-01",
+    "set": "golden",
+    "category": "conversation",
+    "language": "en",
+    "title": "a visitor only says hi: a one or two line introduction, no search and no buy-or-rent question (ADR-213)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "hi"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Hi! I'm the findsprop assistant. I can help you find homes and projects, or answer any real-estate question. How can I help?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["findsprop"], ["home"]],
+        "mustNotMatch": ["buy or (to )?rent"]
+      }
+    }
+  },
+  {
+    "id": "G-conversation-02",
+    "set": "golden",
+    "category": "conversation",
+    "language": "tanglish",
+    "title": "Tanglish: a signed-in customer says vanakkam: a short introduction, no search (ADR-213)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "vanakkam"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "text": "Vanakkam! Naan findsprop assistant. Veedu, projects thedavum, real-estate kelvigalukku badhil sollavum udhavuven. Ungalukku enna venum?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "none": true
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["findsprop"]]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-conversation-03",
+    "set": "golden",
+    "category": "conversation",
+    "language": "en",
+    "title": "a real-estate question with no article: answered from general knowledge, with no figure and no buy-or-rent question (ADR-213)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What documents should I check before buying a flat?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "documents to check before buying a flat",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Before buying a flat, check the title documents and the earlier sale deeds, the encumbrance certificate, the approved building plan and the project's registration with the real estate regulator. A lawyer can go through the title for you."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["encumbrance"]],
+        "mustNotMatch": ["buy or (to )?rent", "₹\\s*\\d"]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-conversation-04",
+    "set": "golden",
+    "category": "conversation",
+    "language": "ta",
+    "title": "Tamil: asks for the stamp duty figure, no lookup gives it: says it has no current figure and where to confirm it, and writes no rate (ADR-213)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "பத்திரப் பதிவுக்கு முத்திரைத் தீர்வை எவ்வளவு?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "stamp duty registration",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "தற்போதைய முத்திரைத் தீர்வை விகிதம் என்னிடம் இல்லை. சார்பதிவாளர் அலுவலகத்தில் அதை உறுதி செய்துகொள்ளலாம்."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustCall": [
+          {
+            "name": "search_content"
+          }
+        ]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["சார்பதிவாளர்"]],
+        "mustNotMatch": ["\\d+(\\.\\d+)?\\s*%"]
+      }
+    },
+    "session": "customer"
+  },
+  {
+    "id": "G-conversation-05",
+    "set": "golden",
+    "category": "conversation",
+    "language": "en",
+    "title": "a visitor asks a real-estate question: it is answered first, with no buy-or-rent question and no search for homes (ADR-213)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "What is an encumbrance certificate?"
+      }
+    ],
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "search_content",
+            "input": {
+              "query": "encumbrance certificate",
+              "kind": "any",
+              "category": null,
+              "limit": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "An encumbrance certificate shows whether a property has any loan or other claim registered against it over a period. It is issued by the sub-registrar office of the area. Would you like to look at some homes?"
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "tools": {
+        "mustNotCall": ["search_properties", "search_projects"]
+      },
+      "visible": {
+        "cards": [],
+        "mustContain": [["encumbrance"]],
+        "mustNotMatch": ["buy or (to )?rent"]
+      }
+    }
+  },
+  {
     "id": "G-offtopic-01",
     "set": "golden",
     "category": "off_topic",
@@ -3492,7 +3692,7 @@
     "set": "golden",
     "category": "search",
     "language": "en",
-    "title": "a search answer with no marker still draws the cards",
+    "title": "a search answer with no marker still draws the cards (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -3539,7 +3739,7 @@
       },
       "visible": {
         "showsCards": ["home:t2e6h9jq"],
-        "cards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq", "project:arasu-residency"],
         "mustNotMatch": ["https?:", "/properties/"],
         "mustNotContain": ["[[home:"]
       }
@@ -3551,7 +3751,7 @@
     "set": "golden",
     "category": "followup",
     "language": "en",
-    "title": "asked for a link after a search, the assistant looks again and points to the card",
+    "title": "asked for a link after a search, the assistant looks again and points to the card (ADR-215: a signed-in search lists the matching project too)",
     "messages": [
       {
         "role": "user",
@@ -3603,7 +3803,7 @@
       },
       "visible": {
         "showsCards": ["home:t2e6h9jq"],
-        "cards": ["home:t2e6h9jq"],
+        "cards": ["home:t2e6h9jq", "project:arasu-residency"],
         "mustNotMatch": ["https?:", "/properties/", "can't share", "cannot share"],
         "mustNotContain": ["[[home:"]
       }
@@ -4802,7 +5002,7 @@
     "set": "golden",
     "category": "content",
     "language": "en",
-    "title": "no match: says nothing was found, draws no source and does not answer from memory",
+    "title": "no match on a legal rule: says nothing was found, draws no source and states no rule from memory (ADR-213: a rule still needs a lookup)",
     "messages": [
       {
         "role": "user",

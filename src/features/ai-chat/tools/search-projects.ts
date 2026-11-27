@@ -86,7 +86,7 @@ export const searchProjectsInputSchema = z.object({
 });
 export type SearchProjectsInput = z.infer<typeof searchProjectsInputSchema>;
 
-const projectSummarySchema = z.object({
+export const projectSummarySchema = z.object({
   /** The project's id: the slug, the same text the page address ends in. */
   slug: z.string().min(1),
   status: z.enum(PROJECT_STATUSES).nullable(),
@@ -164,7 +164,7 @@ function completenessOf(project: ProjectListItem, extra: ProjectExtras | undefin
   return parts.filter(Boolean).length / parts.length;
 }
 
-function projectFeatures(
+export function projectFeatures(
   project: ProjectListItem,
   extras: ReadonlyMap<string, ProjectExtras>,
   promotions: PromotionLists,
@@ -190,7 +190,7 @@ function projectFeatures(
 }
 
 /** What the ranking says about one project. */
-interface ProjectAssessment {
+export interface ProjectAssessment {
   readonly matchReasons: string[];
   readonly missedPreferences: string[];
   readonly lowestPriceOfMatches: boolean;
@@ -202,7 +202,7 @@ const NOT_ASSESSED: ProjectAssessment = {
   lowestPriceOfMatches: false,
 };
 
-function toProjectSummary(
+export function toProjectSummary(
   project: ProjectListItem,
   context: ToolContext,
   primeRules: ProjectPrimeRules,

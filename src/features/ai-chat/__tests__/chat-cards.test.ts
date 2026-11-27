@@ -65,7 +65,7 @@ describe("the cards under an answer (AI-P5-T02)", () => {
     expect(cards).toHaveLength(1);
   });
 
-  it("shows no Featured badge in the chat, on a home or a project (ADR-206)", async () => {
+  it("shows Featured on a featured home and a promoted project, and not on any other (ADR-215, changing ADR-206)", async () => {
     reads.property.mockResolvedValue({
       status: "found",
       property: propertyData({ shortId: "k3x9a2bd", slug: "two-bhk", label: "featured" }),
@@ -80,8 +80,15 @@ describe("the cards under an answer (AI-P5-T02)", () => {
       { kind: "home", homeId: "k3x9a2bd", slug: "two-bhk" },
       { kind: "project", slug: "kadal-vista" },
     ]);
-    expect(home?.kind === "home" && home.card.label).toBeNull();
-    expect(project?.kind === "project" && project.card.featured).toBe(false);
+    expect(home?.kind === "home" && home.card.label).toBe("featured");
+    expect(project?.kind === "project" && project.card.featured).toBe(true);
+    reads.project.mockResolvedValue({
+      status: "found",
+      project: projectData({ slug: "plain-project", featured: false }),
+      readAt: "2026-11-14T00:00:00.000Z",
+    });
+    const [plain] = await readChatCards([{ kind: "project", slug: "plain-project" }]);
+    expect(plain?.kind === "project" && plain.card.featured).toBe(false);
   });
 
   it("keeps a home's Prime or budget label", async () => {

@@ -214,6 +214,9 @@ describe("UT-ai-system-prompt: the rules it carries", () => {
       "do not answer it, even when it is easy or the customer insists",
     );
     expect(LOWER_PROMPT).toContain("decline politely in one short sentence of your own");
+    // ADR-213: a real-estate question is never off topic; general knowledge outside real estate still is.
+    expect(LOWER_PROMPT).toContain("nothing to do with real estate or homes");
+    expect(LOWER_PROMPT).toContain("real-estate questions, and the articles");
   });
 
   it("refuses other property portals without naming any, and offers findsprop instead", () => {
@@ -419,7 +422,10 @@ describe("UT-ai-system-prompt: the rules for a guest's two free messages (ADR-20
   it("tells the model to search when it can, ask one question at most, and read near as the area", () => {
     expect(LOWER_FOR_GUEST).toContain("search at once and ask nothing before it");
     expect(LOWER_FOR_GUEST).toContain("exactly one short question");
-    expect(LOWER_FOR_GUEST).toContain("buy or rent, then the area, then bedrooms, then the budget");
+    // ADR-213: the area comes first; buy or rent only when the search really needs it.
+    expect(LOWER_FOR_GUEST).toContain("the area first, then bedrooms or the budget");
+    expect(LOWER_FOR_GUEST).toContain("ask buy or rent only when the search really needs it");
+    expect(LOWER_FOR_GUEST).not.toContain("in this order: buy or rent");
     expect(LOWER_FOR_GUEST).toContain("never put two questions in one message");
     expect(LOWER_FOR_GUEST).toContain("read it as that area");
     expect(LOWER_FOR_GUEST).toContain("never give the place input");
@@ -473,9 +479,18 @@ describe("UT-ai-system-prompt: the articles, questions and open jobs (ADR-143 se
   it("says to look up first, to answer only from the result, and to say when nothing matches", () => {
     expect(LOWER_SECTION).toContain("search the articles and the frequently asked questions first");
     expect(LOWER_SECTION).toContain("at most two such lookups");
-    expect(LOWER_SECTION).toContain("answer only from what they return");
-    expect(LOWER_SECTION).toContain("if nothing matches, say so plainly");
-    expect(LOWER_SECTION).toContain("never answer these questions from memory");
+    expect(LOWER_SECTION).toContain("when they return a match, answer from it");
+    expect(LOWER_SECTION).toContain("say so plainly when nothing matches");
+  });
+
+  it("answers a real-estate question from general knowledge when nothing matches, but never a figure without a lookup (ADR-213)", () => {
+    expect(LOWER_SECTION).toContain("answer it yourself from general knowledge");
+    expect(LOWER_SECTION).toContain("keep it general");
+    expect(LOWER_SECTION).toContain(
+      "or a legal rule stated as today's fact must come from a lookup",
+    );
+    expect(LOWER_SECTION).toContain("you do not have a current figure");
+    expect(LOWER_SECTION).toContain("never make one up");
   });
 
   it("asks for the date on prices, rates, rules and the market, and calls it information and not advice", () => {
@@ -548,6 +563,14 @@ describe("UT-ai-system-prompt: talking with the customer and offering an enquiry
     expect(LOWER_SECTION).toContain("never ask again for something the customer already said");
   });
 
+  it("introduces itself on a greeting and answers a question before asking buy or rent (ADR-213)", () => {
+    expect(LOWER_SECTION).toContain("only greets you");
+    expect(LOWER_SECTION).toContain("introduce yourself in one or two short lines of your own");
+    expect(LOWER_SECTION).toContain("answer it first, before you ask anything of your own");
+    expect(LOWER_SECTION).toContain("only when a search really needs it");
+    expect(LOWER_SECTION).toContain("never as a routine first question");
+  });
+
   it("never offers an enquiry after a list, only on interest in one home or project, once, and prepares it only on a yes (ADR-204)", () => {
     expect(LOWER_SECTION).toContain(
       "after a list of homes or projects, do not offer an enquiry or a site visit",
@@ -596,6 +619,9 @@ describe("UT-ai-system-prompt: talking with the customer and offering an enquiry
       "Which area and what budget do you have in mind? And is it to buy or to rent?",
       "Would you like to book a site visit at Kadal Vista? Tell me the day that suits you.",
       "Nothing matched that budget. Shall I try nearby localities or a higher budget?",
+      // ADR-213: the greeting, and a general answer with no figure.
+      "Hi! I'm the findsprop assistant. I can help you find homes and projects, or answer any real-estate question. How can I help?",
+      "A sale deed is registered at the sub-registrar office of the area. I don't have the current stamp duty figure, so please confirm it with the office or a qualified lawyer.",
     ];
     for (const answer of answers) {
       const result = checkOutput(answer, evidence());

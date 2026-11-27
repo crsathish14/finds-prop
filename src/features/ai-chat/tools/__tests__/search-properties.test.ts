@@ -18,6 +18,10 @@ vi.mock("../../ranking/reads.server", () => ({
 
 vi.mock("@/server/logger", () => ({ logger: { error, warn: vi.fn() } }));
 // The search feature is stood in for by its read (a stand-in) and its real defaults.
+// The one list of homes and projects (ADR-215) has its own tests (search-properties-projects.test.ts): here no
+// project matches, so these tests see the homes alone.
+vi.mock("../listing-projects", () => ({ projectsForHomeSearch: vi.fn(async () => null) }));
+vi.mock("../search-projects", () => ({ toProjectSummary: vi.fn() }));
 vi.mock("@/features/search", async () => {
   const { DEFAULT_RADIUS_KM, DEFAULT_SORT, DEFAULT_VIEW } =
     await import("@/features/search/schemas");
@@ -410,7 +414,7 @@ describe("UT-ai-tool-search: the result", () => {
       status: "ok",
       output: { total: 0, homes: [] },
       references: [],
-      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"shownSoFar":0,"homes":[],"slightlyAboveBudget":null}`,
+      content: `{"asOf":"${AS_OF_TEXT}","total":0,"ranked":true,"rankedAll":true,"shownSoFar":0,"homes":[],"projects":[],"order":[],"slightlyAboveBudget":null}`,
     });
   });
 
