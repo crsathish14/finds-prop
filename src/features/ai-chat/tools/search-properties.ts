@@ -110,7 +110,7 @@ const baseInputShape = {
   ),
   locality: shortText(
     LOCALITY_MAX_CHARACTERS,
-    "Part or all of a locality (neighbourhood) name as listed, such as Velachery, or null. A city is not a locality: put a city in `city`. Take the spelling from list_localities when unsure. At most 80 characters.",
+    "Part or all of a locality (neighbourhood) name as it is listed, such as Velachery, or null. A city such as Chennai or Coimbatore is not a locality: put a city in `city`. Take the spelling from list_localities when unsure. At most 80 characters.",
   ),
   keyword: shortText(
     KEYWORD_MAX_CHARACTERS,
