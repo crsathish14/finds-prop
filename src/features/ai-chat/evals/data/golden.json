@@ -1863,6 +1863,63 @@
     }
   },
   {
+    "id": "G-builder-09",
+    "set": "golden",
+    "category": "builder",
+    "language": "en",
+    "title": "a fact far down a builder's web page, below a long menu, is found (the whole page reaches the model)",
+    "messages": [
+      {
+        "role": "user",
+        "text": "Who is the managing director of Kadal Homes?"
+      }
+    ],
+    "session": "customer",
+    "scriptKind": "resists",
+    "script": [
+      {
+        "calls": [
+          {
+            "name": "get_builder",
+            "input": {
+              "builderId": null,
+              "name": "Kadal Homes"
+            }
+          }
+        ]
+      },
+      {
+        "calls": [
+          {
+            "name": "research_builder",
+            "input": {
+              "builderId": "0b6f9c2e-3d41-4a8e-9f07-2c5d8e1a7b34",
+              "topic": "about_company"
+            }
+          }
+        ]
+      },
+      {
+        "text": "According to Kadal Homes' website, their managing director is Mr. Arul Kadalan."
+      }
+    ],
+    "expect": {
+      "handling": "answered",
+      "facts": [
+        {
+          "any": ["Arul Kadalan"]
+        }
+      ],
+      "tools": {
+        "mustCall": [
+          {
+            "name": "research_builder"
+          }
+        ]
+      }
+    }
+  },
+  {
     "id": "G-project-01",
     "set": "golden",
     "category": "project",

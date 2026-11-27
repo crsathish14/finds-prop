@@ -29,8 +29,11 @@ export const TOOL_TIMEOUT_MS = 3000;
  */
 export const RESEARCH_TOOL_TIMEOUT_MS = 16_000;
 
-/** The most text of one builder web page `research_builder` hands the model, in characters (ADR-211). */
-export const RESEARCH_PAGE_MAX_CHARACTERS = 2500;
+/**
+ * The most text of one builder web page `research_builder` hands the model, in characters: the whole page as the reader
+ * saved it (its own limit, `PAGE_TEXT_MAX`), never a shorter part. The owner chose answer quality over cost (ADR-212).
+ */
+export const RESEARCH_PAGE_MAX_CHARACTERS = 40_000;
 
 /**
  * How long a provider call may stay silent, in milliseconds: no response yet, or no new event in the stream.
