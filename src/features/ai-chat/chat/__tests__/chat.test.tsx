@@ -1055,3 +1055,59 @@ describe("the requirements state and Show more (ADR-206)", () => {
     expect(screen.queryByRole("link", { name: "See all" })).not.toBeInTheDocument();
   });
 });
+
+describe("the phone keyboard after a send (owner, 28 Nov 2026)", () => {
+  function pointer(touch: boolean) {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: touch && query === "(pointer: coarse)",
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+  }
+
+  it("takes the cursor out of the box on a touch screen, so the keyboard closes", async () => {
+    pointer(true);
+    fetchMock.mockResolvedValueOnce(answered("I found two homes in Velachery."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    expect(box()).toHaveFocus();
+    await user.click(sendButton());
+
+    expect(await screen.findByText("I found two homes in Velachery.")).toBeVisible();
+    expect(box()).toHaveValue("");
+    expect(box()).not.toHaveFocus();
+  });
+
+  it("does not open the keyboard when a reply button or Show more is pressed on a touch screen", async () => {
+    pointer(true);
+    fetchMock
+      .mockResolvedValueOnce(
+        answered("Six homes.", [
+          { type: "replies", items: [{ key: "showMore", text: words.replies.showMore }] },
+        ]),
+      )
+      .mockResolvedValueOnce(answered("Six more."));
+    renderWithMessages(<ChatIsland signedIn={true} controls={controls} />);
+    await ready();
+    const user = await type("2 BHK homes");
+    await user.click(sendButton());
+    await user.click(await screen.findByRole("button", { name: words.replies.showMore }));
+
+    expect(await screen.findByText("Six more.")).toBeVisible();
+    expect(box()).not.toHaveFocus();
+  });
+
+  it("keeps the cursor in the box on a laptop (a mouse and a keyboard)", async () => {
+    pointer(false);
+    fetchMock.mockResolvedValueOnce(answered("I found two homes in Velachery."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+
+    expect(await screen.findByText("I found two homes in Velachery.")).toBeVisible();
+    expect(box()).toHaveFocus();
+  });
+});
