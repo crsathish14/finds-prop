@@ -117,7 +117,7 @@ function AiCardsPage({
           {leading ? <div className="lg:hidden">{leading}</div> : null}
           {showAnswers ? (
             <div className="flex items-center gap-3" data-slot="ai-cards-answers">
-              <span className="text-caption font-bold text-muted">
+              <span className="text-caption font-bold text-muted max-lg:sr-only">
                 {translate("answerOf", { number: answers.current + 1, total: answers.count })}
               </span>
               <ul className="flex items-center">
