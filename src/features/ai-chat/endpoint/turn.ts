@@ -224,7 +224,14 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       return { outcome: "fallback", agent, output };
     }
     for (const event of checked) {
-      if (event.type === "source" && event.reference.kind !== "job" && !linkAsked) continue;
+      if (
+        event.type === "source" &&
+        event.reference.kind !== "job" &&
+        event.reference.kind !== "web" &&
+        !linkAsked
+      ) {
+        continue;
+      }
       yield toStreamEvent(event, translate);
       if (event.type === "replace") {
         blocked = true;

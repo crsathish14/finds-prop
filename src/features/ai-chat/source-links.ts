@@ -9,6 +9,7 @@
  */
 import { AI_MAX_SOURCES_PER_ANSWER } from "@/config/ai";
 import type { SourceReference, ToolReference } from "./tools/types";
+import { webSourceHref } from "./trusted-sites";
 
 /** A word of an address as the database writes it: lower case words joined by single hyphens. */
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -33,11 +34,14 @@ export function sourceHref(reference: SourceReference): string | null {
       return UUID.test(reference.id) ? `/faq#faq-${reference.id}` : null;
     case "job":
       return isSlug(reference.slug) ? `/careers/${reference.slug}` : null;
+    case "web":
+      return webSourceHref(reference.url);
   }
 }
 
 /** Whether an address is one `sourceHref` can build: the only addresses the chat draws as a source. */
 export function isSourcePath(path: string): boolean {
+  if (path.startsWith("https://")) return webSourceHref(path) !== null;
   if (path.startsWith("/blog/")) return isSlug(path.slice("/blog/".length));
   if (path.startsWith("/careers/")) return isSlug(path.slice("/careers/".length));
   if (path.startsWith("/faq#faq-")) return UUID.test(path.slice("/faq#faq-".length));
@@ -46,6 +50,14 @@ export function isSourcePath(path: string): boolean {
 
 export function isSourceReference(reference: ToolReference): reference is SourceReference {
   return reference.kind === "article" || reference.kind === "faq" || reference.kind === "job";
+}
+
+/** The web pages a web answer drew on (ADR-218): drawn under every web answer, whether or not a link was asked for. */
+export function webSourcesToShow(references: readonly ToolReference[]): SourceReference[] {
+  return references
+    .filter((reference): reference is SourceReference => reference.kind === "web")
+    .filter((one) => sourceHref(one) !== null)
+    .slice(0, AI_MAX_SOURCES_PER_ANSWER);
 }
 
 /**

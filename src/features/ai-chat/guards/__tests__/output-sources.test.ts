@@ -206,3 +206,26 @@ describe("UT-ai-output-sources: an article that tries to steer the model (ADR-14
     expect(sourcesOf(events)).toEqual([ARTICLE]);
   });
 });
+
+describe("UT-ai-output-web-sources: the websites of a web answer (ADR-218, owner 28 Nov 2026)", () => {
+  const CHECKER: SourceReference = {
+    kind: "web",
+    url: "https://www.realestatechecker.in/builder/chennai/dac-developers",
+    title: "realestatechecker.in",
+    opened: false,
+  };
+  const STRANGER: SourceReference = {
+    kind: "web",
+    url: "https://example.test/page",
+    title: "example.test",
+    opened: false,
+  };
+
+  it("draws a trusted website's page as a source on every web answer, asked for or not, and never another site", () => {
+    const { events } = checkOutput(
+      "DAC Developers has about 13 projects registered with Tamil Nadu RERA.",
+      evidence([CHECKER, STRANGER], { customerMessage: "RERA number for DAC Developers" }),
+    );
+    expect(sourcesOf(events)).toEqual([CHECKER]);
+  });
+});

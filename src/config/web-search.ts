@@ -104,6 +104,13 @@ export const WEB_SEARCH_USER_LOCATION = {
 export const WEB_SEARCH_TIMEOUT_MS = 22_000;
 export const WEB_SEARCH_REQUEST_TIMEOUT_MS = WEB_SEARCH_TIMEOUT_MS - 1000;
 
+/**
+ * The form of the web answers the memory keeps, written before each search's words in its key. A change to what a web
+ * answer holds changes it, so the answers kept in the old form are never given again (they expire on their own). v2
+ * (28 Nov 2026): the fuller answers (the overall picture, the main items, not one line).
+ */
+export const WEB_ANSWER_FORMAT = "v2";
+
 /** How long a web answer is kept and given again to anyone who asks the same thing (owner, 27 Nov 2026: 7 days). */
 export const WEB_ANSWER_MEMORY_DAYS = 7;
 

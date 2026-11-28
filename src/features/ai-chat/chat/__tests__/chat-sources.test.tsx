@@ -231,3 +231,34 @@ describe("UT-ai-chat-sources: the Sources row", () => {
     expect(document.querySelector("[data-slot='chat-sources']")).toBeNull();
   });
 });
+
+describe("UT-ai-chat-web-links: the websites of a web answer (ADR-218, owner 28 Nov 2026)", () => {
+  it("draws a web source as a link that opens in a new tab, and a trusted home address in the text as a link", async () => {
+    fetchMock.mockResolvedValueOnce(
+      stream([
+        { type: "start", requestId: "r" },
+        { type: "text", text: "Registration is paid at the sub-registrar office." },
+        { type: "text", text: "\n\nPlease confirm it on rera.tn.gov.in." },
+        {
+          type: "source",
+          kind: "web",
+          title: "realestatechecker.in",
+          href: "https://www.realestatechecker.in/builder/chennai/dac-developers",
+        },
+        { type: "source", kind: "web", title: "example.test", href: "https://example.test/x" },
+        { type: "done", outcome: "answered" },
+      ]),
+    );
+    await ask();
+    const site = await screen.findByRole("link", { name: /realestatechecker\.in/ });
+    expect(site).toHaveAttribute(
+      "href",
+      "https://www.realestatechecker.in/builder/chennai/dac-developers",
+    );
+    expect(site).toHaveAttribute("target", "_blank");
+    expect(screen.queryByRole("link", { name: /example\.test/ })).toBeNull();
+    const home = screen.getByRole("link", { name: /rera\.tn\.gov\.in/ });
+    expect(home).toHaveAttribute("href", "https://rera.tn.gov.in");
+    expect(home).toHaveAttribute("target", "_blank");
+  });
+});

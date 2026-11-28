@@ -31,9 +31,9 @@ const referenceSchema = z.discriminatedUnion("kind", [
 
 /** A page the answer drew on: an article, a question of the FAQ or a job, with the address the server built for it. */
 const sourceSchema = z.object({
-  kind: z.enum(["article", "faq", "job"]),
+  kind: z.enum(["article", "faq", "job", "web"]),
   title: z.string().max(200),
-  href: z.string().max(200),
+  href: z.string().max(300),
 });
 
 const userEntrySchema = z.object({
