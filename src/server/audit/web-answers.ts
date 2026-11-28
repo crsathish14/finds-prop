@@ -26,8 +26,6 @@ export interface KeptAnswer {
 }
 
 export interface WebAnswerStore {
-  /** Whether the admin's Web search switch is on now. False when it cannot be read. */
-  webSearchOn(): Promise<boolean>;
   /** The answer kept for these search words (by their key), fresh or not, or null. */
   find(queryKey: string): Promise<KeptAnswer | null>;
   /** Counts one more use of a kept answer. */
@@ -69,20 +67,6 @@ function sourcesOf(value: Json): KeptSource[] {
 }
 
 export const SERVER_WEB_ANSWER_STORE: WebAnswerStore = {
-  async webSearchOn() {
-    try {
-      const { data, error } = await createAdminSupabase().rpc("ai_web_search_on");
-      if (error) {
-        warn("ai web search switch read failed");
-        return false;
-      }
-      return data === true;
-    } catch (error) {
-      warn("ai web search switch read failed", error);
-      return false;
-    }
-  },
-
   async find(queryKey) {
     try {
       const { data, error } = await createAdminSupabase()

@@ -153,9 +153,10 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
 
     // 6 to 9: the agent loop, the output check, the stream, usage
     const pageContext = await readPageContext(deps, parsed.request.context, session !== null);
-    const webSearch = session !== null && (await webSearchOn(deps));
-    const tools =
-      webSearch && deps.webSearch !== undefined ? [...deps.tools, deps.webSearch.tool] : deps.tools;
+    // The web search (ADR-218): for a signed-in customer only, when the server has it (FLAG_AI_WEB_SEARCH).
+    const webTool = session === null ? undefined : deps.webSearch?.tool;
+    const webSearch = webTool !== undefined;
+    const tools = webTool === undefined ? deps.tools : [...deps.tools, webTool];
     const system = buildSystemPrompt({
       translate: deps.translate,
       addInjectionReminder: latest.addReminder,
@@ -211,19 +212,6 @@ async function readPageContext(
   } catch (error) {
     logger.error("ai chat page context could not be read", { error });
     return null;
-  }
-}
-
-// ---------------------------------------------------------------- web search
-
-/** Whether the web search is offered for this message (ADR-218); off when there is none or the switch cannot be read. */
-async function webSearchOn(deps: ChatDeps): Promise<boolean> {
-  if (deps.webSearch === undefined) return false;
-  try {
-    return await deps.webSearch.isOn();
-  } catch (error) {
-    logger.error("ai chat web search switch could not be read", { error });
-    return false;
   }
 }
 

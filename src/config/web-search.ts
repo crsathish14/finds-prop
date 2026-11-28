@@ -2,8 +2,8 @@
  * The numbers and names of the assistant's web search (ADR-218, owner decisions of 27 Nov 2026, `ai-chat-next-plan.md`
  * piece 5), in one file. Nothing about the web search is written anywhere else.
  *
- * Web search ships switched off: the admin's Web search switch (`ai_assistant_settings`, read on every message) stays off
- * until the owner has sent the final list of trusted sites and it is written below.
+ * Web search ships switched off: the server setting `FLAG_AI_WEB_SEARCH` stays `0` until the owner has sent the final list
+ * of trusted sites and it is written below (ADR-218, amended 28 Nov 2026).
  */
 
 /**

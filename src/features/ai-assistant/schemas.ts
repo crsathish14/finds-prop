@@ -22,9 +22,11 @@ const creditInput = z.preprocess(
     .nullable(),
 );
 
-/** The admin AI assistant page's save: the Web search switch and the credit bought. */
+/**
+ * The admin AI assistant page's save: the credit bought. Web search is switched on and off by the server setting
+ * FLAG_AI_WEB_SEARCH (ADR-218, amended 28 Nov 2026), not here.
+ */
 export const aiAssistantInputSchema = z.object({
-  webSearch: z.boolean({ error: "validation.invalid" }),
   creditBoughtUsd: creditInput,
 });
 export type AiAssistantInput = z.infer<typeof aiAssistantInputSchema>;

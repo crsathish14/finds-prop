@@ -72,17 +72,16 @@ describe("UT-ai-assistant-estimate: the spend from our own records", () => {
 
 describe("UT-ai-assistant-input: the save's input", () => {
   it("reads an empty credit as none, and drops a dollar sign, commas and spaces", () => {
-    expect(aiAssistantInputSchema.parse({ webSearch: true, creditBoughtUsd: "" })).toEqual({
-      webSearch: true,
+    expect(aiAssistantInputSchema.parse({ creditBoughtUsd: "" })).toEqual({
       creditBoughtUsd: null,
     });
-    expect(
-      aiAssistantInputSchema.parse({ webSearch: false, creditBoughtUsd: " $1,020.50 " }),
-    ).toEqual({ webSearch: false, creditBoughtUsd: 1020.5 });
+    expect(aiAssistantInputSchema.parse({ creditBoughtUsd: " $1,020.50 " })).toEqual({
+      creditBoughtUsd: 1020.5,
+    });
   });
 
   it.each(["abc", "-5", "1.234", "100000000"])("refuses %s with the number words", (typed) => {
-    const parsed = aiAssistantInputSchema.safeParse({ webSearch: false, creditBoughtUsd: typed });
+    const parsed = aiAssistantInputSchema.safeParse({ creditBoughtUsd: typed });
     expect(parsed.success).toBe(false);
     expect(parsed.error?.issues[0]).toMatchObject({
       path: ["creditBoughtUsd"],
@@ -90,22 +89,22 @@ describe("UT-ai-assistant-input: the save's input", () => {
     });
   });
 
-  it("needs the switch as a yes or no", () => {
-    expect(aiAssistantInputSchema.safeParse({ webSearch: "on", creditBoughtUsd: "" }).success).toBe(
-      false,
-    );
+  it("takes no web search switch: FLAG_AI_WEB_SEARCH decides (ADR-218)", () => {
+    expect(aiAssistantInputSchema.parse({ webSearch: true, creditBoughtUsd: "" })).toEqual({
+      creditBoughtUsd: null,
+    });
   });
 });
 
-describe("AiAssistantForm: the switch, the figures and the save", () => {
-  const initial = { webSearch: false, creditBoughtUsd: "20.00" };
+describe("AiAssistantForm: the figures and the save", () => {
+  const initial = { creditBoughtUsd: "20.00" };
 
-  it("shows the approved words, the switch off and the estimates", () => {
+  it("shows the approved words and the estimates, and no web search switch", () => {
     renderWithMessages(
       <AiAssistantForm initial={initial} spendUsd={3.48} locale="en" save={vi.fn()} />,
     );
     expect(screen.getByRole("heading", { level: 1, name: "AI assistant" })).toBeInTheDocument();
-    expect(screen.getByRole("switch", { name: "Web search" })).not.toBeChecked();
+    expect(screen.queryByRole("switch")).toBeNull();
     expect(screen.getByText("Estimated spend this month")).toBeInTheDocument();
     expect(screen.getByText("$3.48")).toBeInTheDocument();
     expect(screen.getByLabelText(/Credit bought/u)).toHaveValue("20.00");
@@ -117,18 +116,17 @@ describe("AiAssistantForm: the switch, the figures and the save", () => {
     ).toBeInTheDocument();
   });
 
-  it("follows the typed credit, and sends the switch and the credit as typed", async () => {
+  it("follows the typed credit, and sends the credit as typed", async () => {
     const save = vi.fn().mockResolvedValue({ ok: true, data: {} });
     renderWithMessages(
       <AiAssistantForm initial={initial} spendUsd={3.48} locale="en" save={save} />,
     );
-    await userEvent.click(screen.getByRole("switch", { name: "Web search" }));
     const credit = screen.getByLabelText(/Credit bought/u);
     await userEvent.clear(credit);
     await userEvent.type(credit, "50");
     expect(screen.getByText("$46.52")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
-    expect(save).toHaveBeenCalledWith({ webSearch: true, creditBoughtUsd: "50" });
+    expect(save).toHaveBeenCalledWith({ creditBoughtUsd: "50" });
   });
 
   it("shows the server's problem on the credit box", async () => {

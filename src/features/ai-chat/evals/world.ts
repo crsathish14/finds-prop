@@ -1486,7 +1486,6 @@ export function createWorldWebSearch(): { searcher: WebSearcher; store: WebAnswe
       },
     },
     store: {
-      webSearchOn: async () => true,
       find: async (key) => kept.get(key) ?? null,
       markUsed: async () => undefined,
       save: async (entry) => {

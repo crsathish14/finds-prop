@@ -4,10 +4,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // `FLAG_AI_SEARCH` and `FLAG_AI_PLACE_SEARCH` are on. With the place flag off, or with the chat itself off, the tool
 // is the one that has always existed and the lookup is never made. Everything the real deps reach is a stand-in.
 
-const envFake = { FLAG_AI_SEARCH: true, FLAG_AI_PLACE_SEARCH: true, AI_PROVIDER: "openai" };
+const envFake = {
+  FLAG_AI_SEARCH: true,
+  FLAG_AI_PLACE_SEARCH: true,
+  FLAG_AI_WEB_SEARCH: true,
+  AI_PROVIDER: "openai",
+};
 const createRealPlaceLookup = vi.fn();
 const chooseWebSearch = vi.fn();
-const webSearchOn = vi.fn();
 
 vi.mock("next/server", () => ({ after: (work: unknown) => void work }));
 vi.mock("@/features/site", () => ({
@@ -17,7 +21,7 @@ vi.mock("@/server/env", () => ({ env: envFake }));
 vi.mock("@/server/ai", () => ({ chooseAiProvider: vi.fn(), chooseWebSearch }));
 vi.mock("@/server/audit/ai-usage", () => ({ writeAiUsage: vi.fn() }));
 vi.mock("@/server/audit/web-answers", () => ({
-  SERVER_WEB_ANSWER_STORE: { webSearchOn, find: vi.fn(), markUsed: vi.fn(), save: vi.fn() },
+  SERVER_WEB_ANSWER_STORE: { find: vi.fn(), markUsed: vi.fn(), save: vi.fn() },
 }));
 vi.mock("@/server/auth/get-session-view", () => ({ getSessionView: vi.fn() }));
 vi.mock("@/server/logger", () => ({ logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }));
@@ -59,6 +63,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   createRealPlaceLookup.mockReturnValue(lookup);
   chooseWebSearch.mockReturnValue(null);
+  envFake.FLAG_AI_WEB_SEARCH = true;
   envFake.FLAG_AI_SEARCH = true;
   envFake.FLAG_AI_PLACE_SEARCH = true;
 });
@@ -104,8 +109,8 @@ describe("UT-ai-endpoint-deps: which search tool is served", () => {
   });
 });
 
-// UT-ai-endpoint-deps-web (ADR-218): the web search is served only when the provider has one (OpenAI), apart from the
-// fixed tools, and whether it is offered on a message is the admin switch, read through the store each time.
+// UT-ai-endpoint-deps-web (ADR-218): the web search is served only while FLAG_AI_WEB_SEARCH is on and the provider has
+// one (OpenAI), apart from the fixed tools; nothing is read from the database to know.
 describe("UT-ai-endpoint-deps-web: the web search", () => {
   it("is absent when the provider has no web search", async () => {
     const { createChatDeps } = await import("../deps");
@@ -113,15 +118,19 @@ describe("UT-ai-endpoint-deps-web: the web search", () => {
     expect(chooseWebSearch).toHaveBeenCalledWith("openai");
   });
 
-  it("serves search_web apart from the fixed tools, and asks the switch on every call", async () => {
+  it("serves search_web apart from the fixed tools while the flag is on", async () => {
     chooseWebSearch.mockReturnValue({ search: vi.fn() });
-    webSearchOn.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     const { createChatDeps } = await import("../deps");
     const deps = createChatDeps();
     expect(deps.webSearch?.tool.name).toBe("search_web");
     expect(deps.tools.map((tool) => tool.name)).not.toContain("search_web");
-    expect(await deps.webSearch?.isOn()).toBe(false);
-    expect(await deps.webSearch?.isOn()).toBe(true);
-    expect(webSearchOn).toHaveBeenCalledTimes(2);
+  });
+
+  it("is absent, and the provider is not even asked, while FLAG_AI_WEB_SEARCH is off", async () => {
+    envFake.FLAG_AI_WEB_SEARCH = false;
+    chooseWebSearch.mockReturnValue({ search: vi.fn() });
+    const { createChatDeps } = await import("../deps");
+    expect(createChatDeps().webSearch).toBeUndefined();
+    expect(chooseWebSearch).not.toHaveBeenCalled();
   });
 });

@@ -2695,18 +2695,12 @@
     "aiAssistant": {
       "metaTitle": "AI assistant",
       "title": "AI assistant",
-      "webSearch": {
-        "label": "Web search",
-        "hint": "When on, the assistant may search trusted websites when findsprop has no answer. Each search costs about 1 US cent."
-      },
       "spend": "Estimated spend this month",
       "credit": "Credit bought",
       "creditLeft": "Estimated credit left",
       "estimateNote": "An estimate from findsprop's own records. Check your OpenAI billing page for the exact balance.",
-      "saveNote": "The assistant reads these settings on every message.",
       "saved": {
-        "title": "AI assistant saved",
-        "text": "The assistant uses these settings from its next message."
+        "title": "AI assistant saved"
       },
       "answers": {
         "title": "Questions answered from the web",

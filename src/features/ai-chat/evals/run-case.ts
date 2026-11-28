@@ -125,7 +125,7 @@ export async function runCase(evalCase: EvalCase, options: RunOptions): Promise<
     ...(options.placeSearch === true ? { placeSearch: true } : {}),
     ...(options.webSearchTool === undefined
       ? {}
-      : { webSearch: { tool: instrument(options.webSearchTool), isOn: async () => true } }),
+      : { webSearch: { tool: instrument(options.webSearchTool) } }),
     translate: TOOL_CONTEXT.translate,
     recordUsage: async (record) => void usageRows.push(record),
     // The ticked homes are checked against the made-up world, as the real reads check them against what is listed.

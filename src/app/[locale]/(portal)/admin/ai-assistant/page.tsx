@@ -16,8 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The super admin's AI assistant page (ADR-218, piece 7): the Web search switch, this month's estimated spend, the
- * credit bought and the estimated credit left, then the questions most often answered from the web. Read as the
+ * The super admin's AI assistant page (ADR-218, piece 7): this month's estimated spend, the credit bought and the estimated credit left, then the questions most often answered from the web. Read as the
  * signed-in admin and never cached; the role gate in the layout has already sent anyone else away, and the database
  * function refuses anyone else too.
  */
@@ -28,7 +27,6 @@ export default async function AiAssistantPage() {
     getLocale(),
   ]);
   const initial = {
-    webSearch: overview.webSearch,
     creditBoughtUsd: overview.creditBoughtUsd === null ? "" : overview.creditBoughtUsd.toFixed(2),
   };
   return (
