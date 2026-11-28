@@ -1,4 +1,5 @@
 import type { LabEntry } from "../types";
+import { AiCardsPageDemo } from "./ai-cards-page-demos";
 import {
   ChatComposerDemo,
   ChatConfirmCardDemo,
@@ -26,6 +27,14 @@ export const AI_CHAT: LabEntry[] = [
       "domain/chat-note-line.tsx",
     ],
     Demo: ChatMessagesDemo,
+  },
+  {
+    id: "cards-page",
+    name: "AI cards page",
+    description:
+      'The page of compact cards beside the chat: the cards of the answer being read, up to six on one screen with no scrolling; dots and "Answer 2 of 4" to move between answers, numbers for the pages Show more adds, and the slide-and-fade (a newer page from below, an older one from above) when the page changes.',
+    sources: ["domain/ai-cards-page.client.tsx"],
+    Demo: AiCardsPageDemo,
   },
   {
     id: "composer",

@@ -4542,6 +4542,11 @@
     }
   },
   "ai": {
+    "cardsPage": {
+      "answerOf": "Answer {number} of {total}",
+      "answerDot": "Show the cards for answer {number}",
+      "pageOf": "Page {number} of {total}"
+    },
     "askHome": "Ask about this home",
     "askProject": "Ask about this project",
     "askCompare": "Ask about these homes",

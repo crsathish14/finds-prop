@@ -1,0 +1,72 @@
+/* The cards page of the AI chat (ADR-220): the slide-and-fade when the page changes to another answer's cards.
+   A newer page enters from below and the old one leaves upward; an older page enters from above and the old one
+   leaves downward. Only transform and opacity move. The duration matches SLIDE_MS in src/lib/use-slide-swap.ts, which
+   keeps the leaving page on screen for that long. With prefers-reduced-motion the hook keeps no leaving page, so the
+   swap is plain (globals.css also shortens every animation then).
+
+   Tune here: --ai-page-shift (how far a page travels) and --ai-page-dur. */
+
+[data-slot="ai-cards-page"] {
+  --ai-page-shift: 24px;
+  --ai-page-dur: 250ms;
+}
+
+@keyframes ai-page-in-from-below {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--ai-page-shift), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ai-page-in-from-above {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--ai-page-shift) * -1), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ai-page-out-upward {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--ai-page-shift) * -1), 0);
+  }
+}
+
+@keyframes ai-page-out-downward {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, var(--ai-page-shift), 0);
+  }
+}
+
+[data-ai-page="enter"][data-direction="from-below"] {
+  animation: ai-page-in-from-below var(--ai-page-dur) ease-out both;
+}
+
+[data-ai-page="enter"][data-direction="from-above"] {
+  animation: ai-page-in-from-above var(--ai-page-dur) ease-out both;
+}
+
+[data-ai-page="leave"][data-direction="from-below"] {
+  animation: ai-page-out-upward var(--ai-page-dur) ease-in both;
+}
+
+[data-ai-page="leave"][data-direction="from-above"] {
+  animation: ai-page-out-downward var(--ai-page-dur) ease-in both;
+}
