@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { AiCardsPage, AiCardsPageList } from "@/components/domain/ai-cards-page.client";
 import { ProjectCard, ProjectCardSkeleton } from "@/components/domain/project-card";
 import { PropertyCard, PropertyCardSkeleton } from "@/components/domain/property-card";
@@ -13,34 +14,39 @@ import type { ChatReference } from "./chat-model";
 function PageCards({
   references,
   controls,
+  mini,
 }: {
   references: readonly ChatReference[];
   controls: ChatCardControls;
+  /** Small cards, two to a row (a phone or tablet), instead of one compact row each. */
+  mini: boolean;
 }) {
+  const layout = mini ? "mini" : "compact";
+  const grid = mini ? "grid" : "list";
   const { cards } = useChatCards(references);
   const { Save, Compare } = controls;
   const shown = references.slice(0, AI_MAX_CARDS_PER_ANSWER);
   // Until the facts arrive each card has its box already (its kind is known from the reference), so nothing pops in.
   if (cards.length === 0) {
     return (
-      <AiCardsPageList>
+      <AiCardsPageList layout={grid}>
         {shown.map((reference, index) =>
           reference.kind === "home" ? (
-            <PropertyCardSkeleton key={index} layout="compact" />
+            <PropertyCardSkeleton key={index} layout={layout} />
           ) : (
-            <ProjectCardSkeleton key={index} layout="compact" />
+            <ProjectCardSkeleton key={index} layout={layout} />
           ),
         )}
       </AiCardsPageList>
     );
   }
   return (
-    <AiCardsPageList>
+    <AiCardsPageList layout={grid}>
       {cards.map((entry, index) =>
         entry.kind === "home" ? (
           <PropertyCard
             key={entry.key}
-            layout="compact"
+            layout={layout}
             property={entry.card}
             priority={index === 0}
             save={<Save shortId={entry.shortId} />}
@@ -55,7 +61,7 @@ function PageCards({
         ) : (
           <ProjectCard
             key={entry.key}
-            layout="compact"
+            layout={layout}
             project={entry.card}
             priority={index === 0}
           />
@@ -75,10 +81,16 @@ export function ChatCardsPane({
   activeAnswerId,
   controls,
   onShowAnswer,
+  mini,
+  leading,
 }: {
   groups: readonly AnswerGroup[];
   activeAnswerId: string | null;
   controls: ChatCardControls;
+  /** Below lg: the cards are small cards two to a row. */
+  mini: boolean;
+  /** Below lg: the control at the start of the indicator row (the way back to the chat). */
+  leading?: ReactNode;
   /** Brings an answer of the chat into view (and so its cards onto the page). */
   onShowAnswer: (answerId: string) => void;
 }) {
@@ -87,9 +99,12 @@ export function ChatCardsPane({
   const group = groups[groupIndex];
   if (group === undefined || activeAnswerId === null) {
     return (
-      <p className="max-w-[40ch] text-small text-muted" data-slot="ai-cards-empty">
-        {translate("empty")}
-      </p>
+      <div className="flex flex-col gap-3">
+        {leading ? <div className="lg:hidden">{leading}</div> : null}
+        <p className="max-w-[40ch] text-small text-muted" data-slot="ai-cards-empty">
+          {translate("empty")}
+        </p>
+      </div>
     );
   }
   const pageIndex = Math.max(0, pageIndexOfAnswer(group, activeAnswerId));
@@ -101,11 +116,14 @@ export function ChatCardsPane({
   return (
     <AiCardsPage
       pageKey={pageKey}
+      leading={leading}
       order={before + pageIndex}
       renderPage={(key) => {
         const at = groups.find((entry) => entry.answerIds.includes(key));
         const references = at?.pages[at.answerIds.indexOf(key)];
-        return references ? <PageCards references={references} controls={controls} /> : null;
+        return references ? (
+          <PageCards references={references} controls={controls} mini={mini} />
+        ) : null;
       }}
       answers={{
         count: groups.length,

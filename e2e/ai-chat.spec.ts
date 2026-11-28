@@ -271,7 +271,7 @@ if (flagOn) {
         await expect(line).toBeVisible();
         await expect(pager).toHaveAttribute("data-pane", "chat");
         await expect(cardsPane).toHaveAttribute("inert", "");
-        // The page does not scroll: the chat scrolls inside its own box and the message box stays under both panes.
+        // The page does not scroll: the chat scrolls inside its own box and the message box sits under it.
         expect(
           await page.evaluate(
             () => document.documentElement.scrollHeight <= window.innerHeight + 1,
@@ -280,16 +280,18 @@ if (flagOn) {
         await expect(box).toBeInViewport();
         await expectNoSeriousAccessibilityViolations(page);
 
-        // The line slides the cards in; the message box is still there; the back button returns to the chat.
+        // The line slides the cards in; the back button returns to the chat.
         await line.click();
         await expect(pager).toHaveAttribute("data-pane", "cards");
         const card = page.getByRole("link", { name: /3 BHK apartment/ });
         await expect(card).toBeInViewport();
-        await expect(box).toBeInViewport();
+        // There is nothing to type to on the cards pane, so the message box gives its height to the cards.
+        await expect(page.getByRole("textbox")).toHaveCount(0);
         await expectNoSeriousAccessibilityViolations(page);
         await page.getByRole("button", { name: words.pager.back }).click();
         await expect(pager).toHaveAttribute("data-pane", "chat");
         await expect(line).toBeInViewport();
+        await expect(box).toBeInViewport();
       });
     });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { AiCardsPage, AiCardsPageList } from "@/components/domain/ai-cards-page.client";
 import { AiChatPager, type AiChatPane } from "@/components/domain/ai-chat-pager.client";
@@ -9,32 +10,46 @@ import { ChatComposer } from "@/components/domain/chat-composer.client";
 import { ChatThread } from "@/components/domain/chat-thread";
 import { ChatUserBubble } from "@/components/domain/chat-user-bubble";
 import { ProjectCard } from "@/components/domain/project-card";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Specimen } from "../frame";
 import { InteractiveCard, RENT_PRIME, SALE_BUDGET, SALE_FEATURED } from "./domain-demos";
 import { PROJECT_FEATURED, PROJECT_READY } from "./domain-demos-places";
 
-/** A frame the height of a phone's screen between the header and the bottom bar: the pager is as tall as its box. */
-const FRAME = "h-160 md:h-160 w-full max-w-sm rounded-xl border border-line bg-canvas";
+/** A frame the height of a phone's screen under the header: the pager is as tall as its box. */
+const FRAME = "h-160 w-full max-w-sm rounded-xl border border-line bg-canvas";
 
 const NOTHING = () => undefined;
 
-function Cards() {
+function Cards({ onBack }: { onBack: () => void }) {
   return (
     <AiCardsPage
       pageKey="answer-1"
       order={0}
       renderPage={() => (
-        <AiCardsPageList>
+        <AiCardsPageList layout="grid">
           {[
-            <InteractiveCard key="a" property={SALE_FEATURED} layout="compact" />,
-            <ProjectCard key="b" project={PROJECT_FEATURED} layout="compact" priority />,
-            <InteractiveCard key="c" property={RENT_PRIME} layout="compact" />,
-            <ProjectCard key="d" project={PROJECT_READY} layout="compact" priority />,
-            <InteractiveCard key="e" property={SALE_BUDGET} layout="compact" />,
+            <InteractiveCard key="a" property={SALE_FEATURED} layout="mini" />,
+            <ProjectCard key="b" project={PROJECT_FEATURED} layout="mini" priority />,
+            <InteractiveCard key="c" property={RENT_PRIME} layout="mini" />,
+            <ProjectCard key="d" project={PROJECT_READY} layout="mini" priority />,
+            <InteractiveCard key="e" property={SALE_BUDGET} layout="mini" />,
           ]}
         </AiCardsPageList>
       )}
       answers={{ count: 2, current: 0, onSelect: NOTHING }}
+      leading={
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconStart={<Icon icon={ArrowLeft} />}
+          onClick={onBack}
+          className="-ml-4"
+        >
+          Back to the chat
+        </Button>
+      }
     />
   );
 }
@@ -69,9 +84,17 @@ function Playground({ start = 0, mode = "swipe" }: { start?: AiChatPane; mode?: 
       wide={false}
       cardsLabel="Homes and projects from the conversation"
       chat={<Conversation mode={mode} onShow={() => setPane(1)} />}
-      cards={<Cards />}
+      cards={<Cards onBack={() => setPane(0)} />}
       footer={
-        <ChatComposer docked value={draft} onChange={setDraft} onSend={NOTHING} maxLength={2000} />
+        pane === 1 ? null : (
+          <ChatComposer
+            docked
+            value={draft}
+            onChange={setDraft}
+            onSend={NOTHING}
+            maxLength={2000}
+          />
+        )
       }
     />
   );
@@ -80,13 +103,13 @@ function Playground({ start = 0, mode = "swipe" }: { start?: AiChatPane; mode?: 
 export function AiChatPagerDemo() {
   return (
     <div className="flex flex-wrap items-start gap-x-8 gap-y-10">
-      <Specimen label="Below lg, the chat pane: the hint under the answer says to swipe (before the first swipe); swipe left or press the line to reach the cards; the message box stays under both panes">
+      <Specimen label="Below lg, the chat pane: the hint under the answer says to swipe (before the first swipe); swipe left or press the line to reach the cards; the message box stays under the chat">
         <Playground />
       </Specimen>
       <Specimen label="After the first swipe the line only says to see the cards (the visitor has learned to swipe)">
         <Playground mode="see" />
       </Specimen>
-      <Specimen label="Below lg, the cards pane: the page of the answer last in view, with a way back to the chat (from lg the same two panes are columns and there is no back button)">
+      <Specimen label="Below lg, the cards pane: mini cards two to a row, the way back and the answer dots in one row above them, and no message box (from lg the same two panes are columns and there is no back button)">
         <Playground start={1} />
       </Specimen>
     </div>

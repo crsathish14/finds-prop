@@ -53,6 +53,31 @@ describe("AiCardsPage: the page of compact cards beside the chat (ADR-220)", () 
     expect(within(list).getAllByRole("listitem")).toHaveLength(2);
   });
 
+  it("draws a grid of two when asked, and the leading control in the first row", () => {
+    const view = renderWithMessages(
+      <AiCardsPage
+        pageKey="a1"
+        order={0}
+        renderPage={(key) => (
+          <AiCardsPageList layout="grid">
+            {[<p key="1">{key}</p>, <p key="2">two</p>]}
+          </AiCardsPageList>
+        )}
+        answers={{ count: 2, current: 0, onSelect: vi.fn() }}
+        leading={<button type="button">Back to the chat</button>}
+      />,
+    );
+    expect(document.querySelector("[data-slot=ai-cards-list]")).toHaveClass("grid-cols-2");
+    const back = screen.getByRole("button", { name: "Back to the chat" });
+    expect(back.parentElement).toHaveClass("lg:hidden");
+    // The row that holds it also holds the dots, and sits above the cards below lg.
+    expect(back.parentElement?.parentElement).toContainElement(
+      screen.getByRole("button", { name: "Show the cards for answer 2" }),
+    );
+    expect(back.parentElement?.parentElement).toHaveClass("max-lg:order-first");
+    view.unmount();
+  });
+
   it("says which answer it is on and marks that answer's dot", () => {
     draw({ answers: { count: 3, current: 1, onSelect: vi.fn() } });
     expect(screen.getByText("Answer 2 of 3")).toBeInTheDocument();

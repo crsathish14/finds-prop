@@ -11,9 +11,12 @@
  *   page shown and for the page that is leaving; lay them out with AiCardsPageList), answers (count, current,
  *   onSelect: the answers that brought cards; shown as dots with "Answer 2 of 4" when there are two or more),
  *   pages (count, current, onSelect: the pages of one answer when Show more added some; shown as numbers when there
- *   are two or more), className.
+ *   are two or more), leading (a control for the start of the indicator row, drawn below lg only: the phone pager's
+ *   "Back to the chat"), className. AiCardsPageList takes layout ("list" one card under another, default | "grid"
+ *   two mini cards to a row, for a phone or tablet).
  * Responsive: it fills the height it is given and never scrolls itself; up to six compact cards fit one screen. The
- *   box around it (a column at lg and up, a pane of the phone pager) decides the width.
+ *   box around it (a column at lg and up, a pane of the phone pager) decides the width. The indicator row is under
+ *   the cards from lg and above them below lg, in one row with `leading`, so the cards get the height.
  * Accessibility: a labelled region is not needed (the chat names it); the dots and the page numbers are real buttons
  *   with names, the current one is `aria-current`. The page that is leaving is `aria-hidden` and `inert`. With reduced
  *   motion the swap is plain (no leaving page).
@@ -41,13 +44,23 @@ type AiCardsPageProps = {
   renderPage: (key: string) => ReactNode;
   answers: Position;
   pages?: Position | undefined;
+  leading?: ReactNode;
   className?: string;
 };
 
-/** The cards of one page, one under the other. Pass each compact card (or its skeleton) as a child. */
-function AiCardsPageList({ children }: { children: ReactNode[] }) {
+/** The cards of one page: one under the other, or two to a row. Pass each card (or its skeleton) as a child. */
+function AiCardsPageList({
+  children,
+  layout = "list",
+}: {
+  children: ReactNode[];
+  layout?: "list" | "grid";
+}) {
   return (
-    <ul className="flex flex-col gap-2" data-slot="ai-cards-list">
+    <ul
+      className={cn(layout === "grid" ? "grid grid-cols-2 gap-2" : "flex flex-col gap-2")}
+      data-slot="ai-cards-list"
+    >
       {children.map((child, index) => (
         <li key={index}>{child}</li>
       ))}
@@ -55,7 +68,15 @@ function AiCardsPageList({ children }: { children: ReactNode[] }) {
   );
 }
 
-function AiCardsPage({ pageKey, order, renderPage, answers, pages, className }: AiCardsPageProps) {
+function AiCardsPage({
+  pageKey,
+  order,
+  renderPage,
+  answers,
+  pages,
+  leading,
+  className,
+}: AiCardsPageProps) {
   const translate = useTranslations("ai.cardsPage");
   const { leavingKey, direction } = useSlideSwap(pageKey, order);
   const showPages = pages !== undefined && pages.count > 1;
@@ -86,11 +107,17 @@ function AiCardsPage({ pageKey, order, renderPage, answers, pages, className }: 
           {renderPage(pageKey)}
         </div>
       </div>
-      {showAnswers || showPages ? (
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      {showAnswers || showPages || leading ? (
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 max-lg:order-first",
+            !(showAnswers || showPages) && "lg:hidden",
+          )}
+        >
+          {leading ? <div className="lg:hidden">{leading}</div> : null}
           {showAnswers ? (
             <div className="flex items-center gap-3" data-slot="ai-cards-answers">
-              <span className="text-caption font-bold text-muted">
+              <span className="text-caption font-bold text-muted max-lg:sr-only">
                 {translate("answerOf", { number: answers.current + 1, total: answers.count })}
               </span>
               <ul className="flex items-center">

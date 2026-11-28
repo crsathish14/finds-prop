@@ -265,6 +265,43 @@ describe("PropertyCardSkeleton", () => {
   });
 });
 
+describe("PropertyCard, mini layout (the AI chat's cards page on a phone or tablet)", () => {
+  it("shows the same facts as the compact card, with the badge and the heart on the picture", () => {
+    renderWithMessages(
+      <PropertyCard
+        property={home}
+        layout="mini"
+        save={<SaveButton saved={false} onToggle={vi.fn()} />}
+        compare={<CompareToggle compared={false} onToggle={vi.fn()} />}
+      />,
+    );
+    expect(document.querySelector("[data-slot=property-card]")).toHaveAttribute(
+      "data-layout",
+      "mini",
+    );
+    expect(screen.getByText("₹92 L")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: home.title })).toBeInTheDocument();
+    expect(screen.getByText("2 BHK")).toBeInTheDocument();
+    expect(screen.getByText("1,080 sq.ft")).toBeInTheDocument();
+    expect(screen.getByText("Adyar")).toBeInTheDocument();
+    expect(screen.queryByText("2 days ago")).not.toBeInTheDocument();
+    expect(screen.queryByText("Apartment")).not.toBeInTheDocument();
+    expect([...document.querySelectorAll("[data-slot=badge]")]).toHaveLength(1);
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: words.save })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: words.compare })).toBeInTheDocument();
+  });
+
+  it("holds its box while loading", () => {
+    const { container } = renderWithMessages(<PropertyCardSkeleton layout="mini" />);
+    expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelector("[data-slot=property-card-skeleton]")).toHaveAttribute(
+      "data-layout",
+      "mini",
+    );
+  });
+});
+
 describe("PropertyCardSkeleton, compact", () => {
   it("is hidden from screen readers and holds the compact card's box", () => {
     const { container } = renderWithMessages(<PropertyCardSkeleton layout="compact" />);
