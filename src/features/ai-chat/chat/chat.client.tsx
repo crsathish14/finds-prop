@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/patterns/alert";
+import { AiChatPager, type AiChatPane } from "@/components/domain/ai-chat-pager.client";
 import { ChatAssistantMessage, ChatStreamCaret } from "@/components/domain/chat-assistant-message";
 import { ChatCardsLine } from "@/components/domain/chat-cards-line.client";
 import { ChatComposer } from "@/components/domain/chat-composer.client";
@@ -31,7 +32,7 @@ import { useMediaQuery } from "@/lib/use-media-query";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ChatContext } from "../context/page-context";
 import type { ConfirmCard } from "../confirm/confirm-card";
-import { AnswerCards, type ChatCardControls } from "./answer-cards.client";
+import type { ChatCardControls } from "./answer-cards.client";
 import { ChatCardsPane } from "./cards-pane.client";
 import { buildAnswerGroups, describeCards } from "./chat-pages";
 import { useActiveAnswer } from "./use-active-answer";
@@ -195,10 +196,9 @@ function answerParts(
   filtersLabel: string,
   sourcesLabel: string,
   streaming: boolean,
-  controls: ChatCardControls,
   keepMessage: (message: string) => void,
-  /** At lg and up the cards are on the cards page: the chat keeps one line that brings them forward (ADR-220). */
-  cardsBeside: { show: (answerId: string) => void } | null,
+  /** The cards are on the cards page, not in the chat: the chat keeps one line that brings them forward (ADR-220). */
+  cardsBeside: { show: (answerId: string) => void },
 ) {
   const href = safeHref(entry.href);
   return {
@@ -227,13 +227,7 @@ function answerParts(
     cards:
       entry.references.length > 0 || entry.confirm !== undefined ? (
         <>
-          {entry.references.length > 0 && cardsBeside === null ? (
-            <AnswerCards
-              references={entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER)}
-              controls={controls}
-            />
-          ) : null}
-          {entry.references.length > 0 && cardsBeside !== null && !streaming ? (
+          {entry.references.length > 0 && !streaming ? (
             <div className="@xl:col-span-2">
               <ChatCardsLine
                 {...describeCards(entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER))}
@@ -302,7 +296,9 @@ export function ChatIsland({
   const chatState = useRef<string | undefined>(undefined);
   const problemRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  // Which pane of the pager shows below lg: the chat (0) or the cards page (1). From lg both are always shown.
+  const [pane, setPane] = useState<AiChatPane>(0);
   const composerId = useId();
   const fieldId = `${COMPOSER_ID}-${composerId.replaceAll(":", "")}`;
 
@@ -381,21 +377,27 @@ export function ChatIsland({
   const keyboardWatch = useRef<(() => void) | null>(null);
   useEffect(() => () => keyboardWatch.current?.(), []);
 
-  // Keep the newest words in view above the composer. The page scrolls (the composer is sticky), so the end of the
-  // conversation is brought up to just above the composer, not to the bottom edge where the composer would cover it.
+  // Keep the newest words in view above the composer. From lg the page scrolls (the composer is sticky), so the end of
+  // the conversation is brought up to just above the composer, not to the bottom edge where the composer would cover
+  // it. Below lg the chat pane scrolls inside its own box (the composer is under it), so the box is scrolled instead.
   const scrollToNewest = useCallback((smooth: boolean) => {
     const end = endRef.current;
-    const root = rootRef.current;
-    if (!end || !root) return;
-    const composer = root.querySelector('[data-slot="chat-composer"]');
+    if (!end) return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const behavior = smooth && !reduced ? "smooth" : "auto";
+    const box = chatRef.current;
+    if (box && !(window.matchMedia?.(DESKTOP_QUERY).matches ?? false)) {
+      const distance =
+        end.getBoundingClientRect().bottom -
+        (box.getBoundingClientRect().bottom - NEWEST_BREATHING_ROOM);
+      if (distance > 0) box.scrollBy?.({ top: distance, behavior });
+      return;
+    }
+    const composer = document.querySelector('[data-slot="chat-composer"]');
     const limit = composer ? composer.getBoundingClientRect().top : window.innerHeight;
     const distance = end.getBoundingClientRect().bottom - (limit - NEWEST_BREATHING_ROOM);
     if (distance <= 0) return;
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    document.documentElement.scrollBy?.({
-      top: distance,
-      behavior: smooth && !reduced ? "smooth" : "auto",
-    });
+    document.documentElement.scrollBy?.({ top: distance, behavior });
   }, []);
 
   // A new message (the visitor's or the finished answer) glides into view. The first run only restores a
@@ -456,13 +458,31 @@ export function ChatIsland({
     (answerId: string) => {
       chooseAnswer(answerId);
       const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-      document
-        .querySelector(`[data-answer-id="${answerId}"]`)
-        ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      const behavior = reduced ? "auto" : "smooth";
+      const answer = document.querySelector(`[data-answer-id="${answerId}"]`);
+      const box = chatRef.current;
+      if (answer && box && !desktop) {
+        // Below lg the answer is scrolled to inside the chat pane's own box. `scrollIntoView` would also move the
+        // pager's hidden overflow, so the box is scrolled by hand.
+        const top =
+          answer.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+        box.scrollTo?.({ top: Math.max(0, top - NEWEST_BREATHING_ROOM), behavior });
+        return;
+      }
+      answer?.scrollIntoView?.({ behavior, block: "start" });
     },
-    [chooseAnswer],
+    [chooseAnswer, desktop],
   );
-  const cardsBeside = desktop ? { show: showAnswer } : null;
+  // The line under an answer brings its cards forward: onto the page beside the chat from lg, onto the cards pane below.
+  const cardsBeside = useMemo(
+    () => ({
+      show: (answerId: string) => {
+        showAnswer(answerId);
+        if (!desktop) setPane(1);
+      },
+    }),
+    [showAnswer, desktop],
+  );
 
   const run = useCallback(
     async (text: string, before: readonly ChatEntry[], userId: string, more = false) => {
@@ -635,6 +655,8 @@ export function ChatIsland({
     setEntries([...before, { id: userId, role: "user", text, masked: false, at: sentAt() }]);
     if (!keepDraft) setDraft("");
     setReturned(false);
+    // A message sent from the cards pane brings the visitor back to the chat, where the answer will be written.
+    setPane(0);
     if (isTouchScreen()) {
       // On a phone the cursor leaves the box, so the keyboard closes by itself (owner, 28 Nov 2026). When the screen
       // has grown back, the newest words are brought into view again. It also covers the reply buttons and Show more,
@@ -700,175 +722,14 @@ export function ChatIsland({
     : undefined;
 
   return (
-    <div className="mx-auto flex w-full max-w-205 flex-1 lg:max-w-(--container-mid) lg:gap-10 lg:px-gutter">
-      <div
-        ref={rootRef}
-        className="flex min-w-0 flex-1 flex-col gap-6 px-gutter py-6 md:py-10 lg:w-128 lg:flex-none lg:px-0 xl:w-144"
-      >
-        {ready && hasMessages ? (
-          <div className="flex items-center gap-3 border-b border-line pb-4">
-            <span
-              aria-hidden="true"
-              className="grid size-9 shrink-0 place-items-center rounded-pill bg-cta-tint text-cta-text"
-            >
-              <Icon icon={Sparkles} />
-            </span>
-            <Heading as="h1" size="3">
-              {translate("assistantName")}
-            </Heading>
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            <Heading as="h1" size="1">
-              {translate("heading")}
-            </Heading>
-            <Text variant="lead" tone="muted" className="max-w-[60ch]">
-              {translate("intro")}
-            </Text>
-            {ready ? (
-              <div className="mt-2 grid gap-3">
-                <div>
-                  <Text variant="overline" tone="muted">
-                    {translate("examples.label")}
-                  </Text>
-                  <Text variant="small" tone="muted">
-                    {translate("examples.help")}
-                  </Text>
-                </div>
-                <ul className="flex flex-wrap gap-2">
-                  {examples.map((example) => (
-                    <li key={example}>
-                      <Chip
-                        type="button"
-                        disabled={composerOff}
-                        className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
-                        onClick={() => pickExample(example)}
-                      >
-                        {example}
-                      </Chip>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {disclaimer !== "" ? (
-              <p
-                data-slot="ai-search-disclaimer"
-                className="mt-2 text-small whitespace-pre-line text-muted"
-              >
-                {disclaimer}
-              </p>
-            ) : null}
-          </div>
-        )}
-
-        {returned ? (
-          <Alert tone="success" title={translate("returnedTitle")}>
-            {translate("returnedBody")}
-          </Alert>
-        ) : null}
-
-        {hasMessages ? (
-          <ChatThread>
-            {[
-              ...entries.map((entry) =>
-                entry.role === "user" ? (
-                  <ChatUserBubble
-                    key={entry.id}
-                    {...(entry.at === undefined ? {} : { time: messageTime(entry.at) })}
-                    notice={
-                      entry.masked ? (
-                        <ChatNoteLine align="user" live>
-                          {translate("maskedNotice")}
-                        </ChatNoteLine>
-                      ) : undefined
-                    }
-                  >
-                    {entry.text}
-                  </ChatUserBubble>
-                ) : (
-                  <Answer
-                    key={entry.id}
-                    answer={entry}
-                    filtersLabel={translate("notice.useFilters")}
-                    sourcesLabel={translate("sources.label")}
-                    controls={controls}
-                    keepMessage={keepMessage}
-                    cardsBeside={cardsBeside}
-                  />
-                ),
-              ),
-              // The answer in flight has the key it will keep, so its cards (a confirm card among them) stay in place.
-              ...(live
-                ? [
-                    <Answer
-                      key={live.id}
-                      answer={live}
-                      streaming
-                      filtersLabel={translate("notice.useFilters")}
-                      sourcesLabel={translate("sources.label")}
-                      controls={controls}
-                      keepMessage={keepMessage}
-                      cardsBeside={cardsBeside}
-                    />,
-                  ]
-                : []),
-            ]}
-          </ChatThread>
-        ) : null}
-
-        {replies.length > 0 ? (
-          <ul
-            aria-label={translate("replies.label")}
-            className="flex flex-wrap gap-2"
-            data-slot="chat-replies"
-          >
-            {replies.map((reply) => (
-              <li key={reply.key}>
-                <Chip
-                  type="button"
-                  className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
-                  onClick={() => sendText(reply.text, true, reply.key === "showMore")}
-                >
-                  {reply.text}
-                </Chip>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        <div ref={endRef} />
-
-        {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
-        <div aria-hidden="true" className="flex-1" />
-
-        {problem?.kind === "error" ? (
-          <div ref={problemRef} tabIndex={-1} className="outline-none">
-            <ChatNotice kind="error" onRetry={retry} />
-          </div>
-        ) : null}
-        {problem?.kind === "too_many_messages" ? (
-          <ChatNotice
-            kind="too_many_messages"
-            seconds={problem.seconds}
-            filtersHref={FILTERS_HREF}
-          />
-        ) : null}
-        {problem?.kind === "daily_limit" ? (
-          <ChatNotice kind="daily_limit" filtersHref={FILTERS_HREF} />
-        ) : null}
-        {problem?.kind === "unavailable" ? (
-          <ChatNotice kind="unavailable" filtersHref={FILTERS_HREF} />
-        ) : null}
-
-        {gate ? (
-          <ChatGate
-            freeMessages={AI_TRIAL_MESSAGES}
-            {...(draft === "" ? {} : { draft })}
-            signInHref={SIGN_IN_HREF}
-            focusHeading={gateFocus}
-          />
-        ) : (
+    <AiChatPager
+      pane={pane}
+      onPaneChange={setPane}
+      wide={desktop}
+      cardsLabel={translate("cardsPage.label")}
+      chatRef={chatRef}
+      footer={
+        gate ? null : (
           <>
             {controls.CompareBar ? <controls.CompareBar onIds={reportTicked} /> : null}
             <ChatComposer
@@ -883,26 +744,183 @@ export function ChatIsland({
               {...(offReason ? { disabledReason: offReason } : {})}
             />
           </>
-        )}
-      </div>
-      <aside
-        aria-label={translate("cardsPage.label")}
-        data-slot="ai-cards-aside"
-        className="hidden min-w-0 flex-1 lg:block"
-      >
-        {/* The page stays in view while the chat scrolls, between the header and the composer; it does not scroll itself. */}
-        <div className="sticky top-(--header-h) h-[calc(100dvh-var(--header-h))] pt-10 pb-24">
-          {desktop ? (
-            <ChatCardsPane
-              groups={groups}
-              activeAnswerId={activeAnswer}
-              controls={controls}
-              onShowAnswer={showAnswer}
+        )
+      }
+      cards={
+        <ChatCardsPane
+          groups={groups}
+          activeAnswerId={activeAnswer}
+          controls={controls}
+          onShowAnswer={showAnswer}
+        />
+      }
+      chat={
+        <div className="flex min-h-full min-w-0 flex-col gap-6 px-gutter py-6 md:py-10 lg:px-0">
+          {ready && hasMessages ? (
+            <div className="flex items-center gap-3 border-b border-line pb-4">
+              <span
+                aria-hidden="true"
+                className="grid size-9 shrink-0 place-items-center rounded-pill bg-cta-tint text-cta-text"
+              >
+                <Icon icon={Sparkles} />
+              </span>
+              <Heading as="h1" size="3">
+                {translate("assistantName")}
+              </Heading>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              <Heading as="h1" size="1">
+                {translate("heading")}
+              </Heading>
+              <Text variant="lead" tone="muted" className="max-w-[60ch]">
+                {translate("intro")}
+              </Text>
+              {ready ? (
+                <div className="mt-2 grid gap-3">
+                  <div>
+                    <Text variant="overline" tone="muted">
+                      {translate("examples.label")}
+                    </Text>
+                    <Text variant="small" tone="muted">
+                      {translate("examples.help")}
+                    </Text>
+                  </div>
+                  <ul className="flex flex-wrap gap-2">
+                    {examples.map((example) => (
+                      <li key={example}>
+                        <Chip
+                          type="button"
+                          disabled={composerOff}
+                          className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
+                          onClick={() => pickExample(example)}
+                        >
+                          {example}
+                        </Chip>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {disclaimer !== "" ? (
+                <p
+                  data-slot="ai-search-disclaimer"
+                  className="mt-2 text-small whitespace-pre-line text-muted"
+                >
+                  {disclaimer}
+                </p>
+              ) : null}
+            </div>
+          )}
+
+          {returned ? (
+            <Alert tone="success" title={translate("returnedTitle")}>
+              {translate("returnedBody")}
+            </Alert>
+          ) : null}
+
+          {hasMessages ? (
+            <ChatThread>
+              {[
+                ...entries.map((entry) =>
+                  entry.role === "user" ? (
+                    <ChatUserBubble
+                      key={entry.id}
+                      {...(entry.at === undefined ? {} : { time: messageTime(entry.at) })}
+                      notice={
+                        entry.masked ? (
+                          <ChatNoteLine align="user" live>
+                            {translate("maskedNotice")}
+                          </ChatNoteLine>
+                        ) : undefined
+                      }
+                    >
+                      {entry.text}
+                    </ChatUserBubble>
+                  ) : (
+                    <Answer
+                      key={entry.id}
+                      answer={entry}
+                      filtersLabel={translate("notice.useFilters")}
+                      sourcesLabel={translate("sources.label")}
+                      keepMessage={keepMessage}
+                      cardsBeside={cardsBeside}
+                    />
+                  ),
+                ),
+                // The answer in flight has the key it will keep, so its cards (a confirm card among them) stay in place.
+                ...(live
+                  ? [
+                      <Answer
+                        key={live.id}
+                        answer={live}
+                        streaming
+                        filtersLabel={translate("notice.useFilters")}
+                        sourcesLabel={translate("sources.label")}
+                        keepMessage={keepMessage}
+                        cardsBeside={cardsBeside}
+                      />,
+                    ]
+                  : []),
+              ]}
+            </ChatThread>
+          ) : null}
+
+          {replies.length > 0 ? (
+            <ul
+              aria-label={translate("replies.label")}
+              className="flex flex-wrap gap-2"
+              data-slot="chat-replies"
+            >
+              {replies.map((reply) => (
+                <li key={reply.key}>
+                  <Chip
+                    type="button"
+                    className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
+                    onClick={() => sendText(reply.text, true, reply.key === "showMore")}
+                  >
+                    {reply.text}
+                  </Chip>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div ref={endRef} />
+
+          {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
+          <div aria-hidden="true" className="flex-1" />
+
+          {problem?.kind === "error" ? (
+            <div ref={problemRef} tabIndex={-1} className="outline-none">
+              <ChatNotice kind="error" onRetry={retry} />
+            </div>
+          ) : null}
+          {problem?.kind === "too_many_messages" ? (
+            <ChatNotice
+              kind="too_many_messages"
+              seconds={problem.seconds}
+              filtersHref={FILTERS_HREF}
+            />
+          ) : null}
+          {problem?.kind === "daily_limit" ? (
+            <ChatNotice kind="daily_limit" filtersHref={FILTERS_HREF} />
+          ) : null}
+          {problem?.kind === "unavailable" ? (
+            <ChatNotice kind="unavailable" filtersHref={FILTERS_HREF} />
+          ) : null}
+
+          {gate ? (
+            <ChatGate
+              freeMessages={AI_TRIAL_MESSAGES}
+              {...(draft === "" ? {} : { draft })}
+              signInHref={SIGN_IN_HREF}
+              focusHeading={gateFocus}
             />
           ) : null}
         </div>
-      </aside>
-    </div>
+      }
+    />
   );
 }
 
@@ -912,7 +930,6 @@ function Answer({
   streaming = false,
   filtersLabel,
   sourcesLabel,
-  controls,
   keepMessage,
   cardsBeside,
 }: {
@@ -920,16 +937,14 @@ function Answer({
   streaming?: boolean;
   filtersLabel: string;
   sourcesLabel: string;
-  controls: ChatCardControls;
   keepMessage: (message: string) => void;
-  cardsBeside: { show: (answerId: string) => void } | null;
+  cardsBeside: { show: (answerId: string) => void };
 }) {
   const parts = answerParts(
     answer,
     filtersLabel,
     sourcesLabel,
     streaming,
-    controls,
     keepMessage,
     cardsBeside,
   );

@@ -155,9 +155,9 @@ export const CONVERSATION_SECTION = [
 
 export const CARDS_SECTION = [
   "Showing a home or project:",
-  "- The cards of the homes and projects a lookup returned for the customer's latest message are drawn for the customer below your answer, by the website, without you doing anything. Keep your own text short, because the cards carry the details. Cards are not drawn for a money sum.",
+  "- The cards of the homes and projects a lookup returned for the customer's latest message are drawn for the customer beside your answer, by the website, without you doing anything. Keep your own text short, because the cards carry the details. Cards are not drawn for a money sum.",
   `- When you point to one particular home or project, write ${CARD_MARKER_HOME} straight after the sentence that names a home, where ID is that home's homeId from the result, or ${CARD_MARKER_PROJECT} for a project, where SLUG is its slug. Copy the id or slug exactly, and only for a record a lookup returned for the latest message. Never invent, shorten or change one. The marker is removed from your text, so the sentence must read well without it.`,
-  "- When the customer asks for a link, a page, a card or more about a home or project shown earlier, look it up again (a home by its homeId if you have it, else search again with the same filters), say briefly that its card is under your answer, and write the marker of the one they asked about so its card comes first. Never say you cannot share a link, and never say you sent anything.",
+  "- When the customer asks for a link, a page, a card or more about a home or project shown earlier, look it up again (a home by its homeId if you have it, else search again with the same filters), say briefly that its card is beside your answer, and write the marker of the one they asked about so its card comes first. Never say you cannot share a link, and never say you sent anything.",
   "- Never write a web address, a page path or a link to a home or project. The card carries the link.",
   '- When you say how many homes you found, write the number as a word or numeral followed by the word homes or projects (for example "two homes"), and never put it directly before a bedroom count such as 2 BHK.',
 ].join("\n");

@@ -1175,7 +1175,7 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     expect(cards.read).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the cards in the chat below lg, with no line", async () => {
+  it("below lg puts the cards on their own pane of the pager, with the line in the chat that moves there", async () => {
     desktop(false);
     cards.read.mockResolvedValue({ ok: true, data: [home("aaaaaaaa", "Two bedroom flat")] });
     fetchMock.mockResolvedValueOnce(
@@ -1188,8 +1188,45 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     const user = await type("show me");
     await user.click(sendButton());
     const thread = screen.getByRole("list", { name: words.thread.label });
-    expect(await within(thread).findByRole("link", { name: /Two bedroom flat/ })).toBeVisible();
-    expect(screen.queryByText("1 home on the right")).toBeNull();
+    // The chat keeps the words and the line; the card is on the cards pane, which is not shown yet.
+    const line = await within(thread).findByRole("button", { name: "1 home on the right" });
+    expect(within(thread).queryByRole("link", { name: /Two bedroom flat/ })).toBeNull();
+    const aside = document.querySelector('[data-slot="ai-cards-aside"]') as HTMLElement;
+    expect(within(aside).getByRole("link", { name: /Two bedroom flat/ })).toBeInTheDocument();
+    const pager = document.querySelector('[data-slot="ai-chat-pager"]') as HTMLElement;
+    expect(pager).toHaveAttribute("data-pane", "chat");
+    expect(aside).toHaveAttribute("inert");
+    expect(document.querySelector('[data-slot="ai-chat-pane"]')).not.toHaveAttribute("inert");
+    // The composer is outside both panes, so it stays on screen on either.
+    expect(aside).not.toContainElement(box());
+    expect(document.querySelector('[data-slot="ai-chat-pane"]')).not.toContainElement(box());
+
+    // The line brings the cards pane forward; the back button and a new message bring the chat back.
+    await user.click(line);
+    expect(pager).toHaveAttribute("data-pane", "cards");
+    expect(aside).not.toHaveAttribute("inert");
+    expect(document.querySelector('[data-slot="ai-chat-pane"]')).toHaveAttribute("inert");
+    await user.click(within(aside).getByRole("button", { name: words.pager.back }));
+    expect(pager).toHaveAttribute("data-pane", "chat");
+    await user.click(line);
+    expect(pager).toHaveAttribute("data-pane", "cards");
+    fetchMock.mockResolvedValueOnce(answered("Anything else?"));
+    await user.type(box(), "and in Adyar");
+    await user.click(sendButton());
+    expect(pager).toHaveAttribute("data-pane", "chat");
+    await screen.findByText("Anything else?");
+  });
+
+  it("does not inert either pane from lg, where both are shown", async () => {
+    desktop(true);
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    expect(document.querySelector('[data-slot="ai-cards-aside"]')).not.toHaveAttribute("inert");
+    expect(document.querySelector('[data-slot="ai-chat-pane"]')).not.toHaveAttribute("inert");
+    // The back button is only for the pager below lg.
+    expect(screen.getByRole("button", { name: words.pager.back }).parentElement).toHaveClass(
+      "lg:hidden",
+    );
   });
 
   it("marks a Show more answer as the continuation of the answer before it", async () => {

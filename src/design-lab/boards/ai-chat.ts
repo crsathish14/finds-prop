@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { AiCardsPageDemo } from "./ai-cards-page-demos";
+import { AiChatPagerDemo } from "./ai-chat-pager-demos";
 import {
   ChatComposerDemo,
   ChatConfirmCardDemo,
@@ -35,6 +36,14 @@ export const AI_CHAT: LabEntry[] = [
       'The page of compact cards beside the chat: the cards of the answer being read, up to six on one screen with no scrolling; dots and "Answer 2 of 4" to move between answers, numbers for the pages Show more adds, and the slide-and-fade (a newer page from below, an older one from above) when the page changes.',
     sources: ["domain/ai-cards-page.client.tsx", "domain/chat-cards-line.client.tsx"],
     Demo: AiCardsPageDemo,
+  },
+  {
+    id: "chat-pager",
+    name: "AI chat pager",
+    description:
+      "The frame of the chat page on phones and tablets: the chat and the cards page as two full-width panes that snap (swipe sideways, a flick or a drag past about a third changes pane), the chat scrolling inside its own box, the message box under both panes, the pane out of sight inert, and a Back to the chat button on the cards pane. From lg the same two panes are columns.",
+    sources: ["domain/ai-chat-pager.client.tsx"],
+    Demo: AiChatPagerDemo,
   },
   {
     id: "composer",

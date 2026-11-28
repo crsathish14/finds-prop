@@ -220,6 +220,79 @@ if (flagOn) {
       expect(actions[0]).toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
     });
 
+    test.describe("on a phone", () => {
+      test.use({ viewport: { width: 390, height: 844 } });
+
+      // ADR-220: below lg the chat and the cards page are two panes of a pager. The page itself does not scroll.
+      test("the cards sit on their own pane, reached by the line, left by the back button", async ({
+        page,
+      }) => {
+        await stubEndpoint(page, [
+          {
+            stream: lines([
+              { type: "start", requestId: "e2e" },
+              { type: "text", text: "I found one home in Velachery." },
+              {
+                type: "card",
+                reference: { kind: "home", homeId: "ab12cd34", slug: "3-bhk-velachery" },
+              },
+              { type: "done", outcome: "answered" },
+            ]),
+          },
+        ]);
+        await stubConfirmAction(page, {
+          ok: true,
+          data: [
+            {
+              kind: "home",
+              key: "home:ab12cd34",
+              shortId: "ab12cd34",
+              card: {
+                href: "/properties/ab12cd34",
+                title: "3 BHK apartment",
+                locality: "Velachery",
+                city: "Chennai",
+                rupees: 12500000,
+                listingType: "sale",
+                cover: null,
+              },
+            },
+          ],
+        });
+        await page.goto("/ai-search");
+        const pager = page.locator('[data-slot="ai-chat-pager"]');
+        const cardsPane = page.locator('[data-slot="ai-cards-aside"]');
+        const box = page.getByRole("textbox", { name: words.composer.label });
+        await box.fill("3 BHK in Velachery");
+        await page.getByRole("button", { name: words.composer.send }).click();
+
+        // The chat holds the words and the line; the card is on the other pane, out of reach.
+        const line = page.getByRole("button", { name: "1 home on the right" });
+        await expect(line).toBeVisible();
+        await expect(pager).toHaveAttribute("data-pane", "chat");
+        await expect(cardsPane).toHaveAttribute("inert", "");
+        // The page does not scroll: the chat scrolls inside its own box and the message box stays under both panes.
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollHeight <= window.innerHeight + 1,
+          ),
+        ).toBe(true);
+        await expect(box).toBeInViewport();
+        await expectNoSeriousAccessibilityViolations(page);
+
+        // The line slides the cards in; the message box is still there; the back button returns to the chat.
+        await line.click();
+        await expect(pager).toHaveAttribute("data-pane", "cards");
+        const card = page.getByRole("link", { name: /3 BHK apartment/ });
+        await expect(card).toBeInViewport();
+        await expect(box).toBeInViewport();
+        await expectNoSeriousAccessibilityViolations(page);
+        await page.getByRole("button", { name: words.pager.back }).click();
+        await expect(pager).toHaveAttribute("data-pane", "chat");
+        await expect(line).toBeInViewport();
+      });
+    });
+
     test("when the session has ended, the card says so, and the message comes back after signing in", async ({
       page,
     }) => {

@@ -70,3 +70,9 @@
 [data-ai-page="leave"][data-direction="from-above"] {
   animation: ai-page-out-downward var(--ai-page-dur) ease-in both;
 }
+
+/* The room the chat column keeps under its last line from lg, where the message box floats over its foot. The chat
+   pager measures the real box and sets this; until it has, the usual height of the box is assumed. */
+[data-slot="ai-chat-pager"] {
+  --ai-composer-h: 9rem;
+}
