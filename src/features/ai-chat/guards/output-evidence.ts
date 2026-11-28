@@ -7,8 +7,10 @@
  * address only from a `website` field, and never from inside `untrustedText`, because a number in a description
  * is something a stranger typed and not a contact the platform gave.
  *
- * A page of a builder's website that `research_builder` read (ADR-211) is a third kind: its `sourceUrl` may be
- * repeated only when the customer asked for a link or where the answer came from (`askedForLink`, ADR-209).
+ * A page of a builder's website that `research_builder` read (ADR-211), or of a trusted website `search_web` read
+ * (ADR-218), is a third kind: its `sourceUrl` may be repeated only when the customer asked for a link or where the
+ * answer came from (`askedForLink`, ADR-209). The bare website of a web answer (`sourceSite`, built by code from the
+ * address) may always be named: every web answer says where it came from (owner, 28 Nov 2026).
  */
 import { AI_LINK_TLDS, AI_PROMPT_COPY_RUN_WORDS } from "@/config/ai";
 import { askedForLink } from "../endpoint/link-request";
@@ -145,7 +147,7 @@ function collectContacts(
       const digits = phoneDigits(value);
       if (digits !== "") phones.add(digits);
     } else if (
-      (key === "website" || (key === "sourceUrl" && withSources)) &&
+      (key === "website" || key === "sourceSite" || (key === "sourceUrl" && withSources)) &&
       typeof value === "string"
     ) {
       const address = normalizeAddress(value);
