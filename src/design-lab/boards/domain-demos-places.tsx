@@ -21,7 +21,7 @@ const ARTWORK = {
   residency: `${PICTURES}/home-c.svg`,
 };
 
-const PROJECT_FEATURED: ProjectCardData = {
+export const PROJECT_FEATURED: ProjectCardData = {
   href: "#project-1",
   name: "Kadal Vista",
   developerName: "Kadal Homes",
@@ -35,7 +35,7 @@ const PROJECT_FEATURED: ProjectCardData = {
   cover: { src: ARTWORK.vista, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const PROJECT_LAUNCH: ProjectCardData = {
+export const PROJECT_LAUNCH: ProjectCardData = {
   href: "#project-2",
   name: "Nila Grove",
   developerName: "Nila Habitats",
@@ -48,7 +48,7 @@ const PROJECT_LAUNCH: ProjectCardData = {
   cover: { src: ARTWORK.grove, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const PROJECT_READY: ProjectCardData = {
+export const PROJECT_READY: ProjectCardData = {
   href: "#project-3",
   name: "Thendral Residency",
   developerName: "Thendral Estates",
@@ -61,7 +61,7 @@ const PROJECT_READY: ProjectCardData = {
   cover: { src: ARTWORK.residency, alt: "Drawn placeholder: a house with a pitched roof" },
 };
 
-const PROJECT_NO_PICTURE: ProjectCardData = {
+export const PROJECT_NO_PICTURE: ProjectCardData = {
   href: "#project-4",
   name: "Arivu Heights",
   developerName: "Arivu Constructions",
@@ -74,14 +74,14 @@ const PROJECT_NO_PICTURE: ProjectCardData = {
   featured: true,
 };
 
-const PROJECT_NOTHING_BUT_NAME: ProjectCardData = {
+export const PROJECT_NOTHING_BUT_NAME: ProjectCardData = {
   href: "#project-5",
   name: "Details to follow",
   locality: "Madurai",
   city: "Madurai",
 };
 
-const PROJECT_LONG: ProjectCardData = {
+export const PROJECT_LONG: ProjectCardData = {
   ...PROJECT_FEATURED,
   href: "#project-6",
   name: "Kadal Vista Grand Residences and Club, Phase Two Towers with Sea Views",

@@ -138,11 +138,82 @@ describe("ProjectCard: one project in a grid (S4-T01)", () => {
   });
 });
 
+describe("ProjectCard, compact layout (the AI chat's cards page)", () => {
+  it("shows the price, name, BHK sizes and locality, and leaves out the developer and the city", () => {
+    renderWithMessages(<ProjectCard project={project} layout="compact" />);
+    expect(document.querySelector("[data-slot=project-card]")).toHaveAttribute(
+      "data-layout",
+      "compact",
+    );
+    expect(screen.getByText("₹78 L basic price")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Kadal Vista" })).toBeInTheDocument();
+    const sizes = within(screen.getByRole("list")).getAllByRole("listitem");
+    expect(sizes.map((item) => item.textContent)).toEqual(["2 BHK", "3 BHK"]);
+    expect(screen.getByText("OMR Navalur")).toBeInTheDocument();
+    expect(screen.queryByText("Kadal Homes")).not.toBeInTheDocument();
+    expect(screen.queryByText("OMR Navalur, Chennai")).not.toBeInTheDocument();
+  });
+
+  it("shows one badge, the strongest of Featured, Prime, the status and the offer", () => {
+    const badges = () =>
+      [...document.querySelectorAll("[data-slot=badge]")].map((badge) => badge.textContent);
+    const first = renderWithMessages(
+      <ProjectCard project={{ ...project, prime: true }} layout="compact" />,
+    );
+    expect(badges()).toEqual([words.featured]);
+    first.unmount();
+    const second = renderWithMessages(
+      <ProjectCard project={{ ...project, featured: false, prime: true }} layout="compact" />,
+    );
+    expect(badges()).toEqual([words.prime]);
+    second.unmount();
+    const third = renderWithMessages(
+      <ProjectCard project={{ ...project, featured: false }} layout="compact" />,
+    );
+    expect(badges()).toEqual([words.status.underConstruction]);
+    third.unmount();
+    const fourth = renderWithMessages(
+      <ProjectCard
+        project={{ ...project, featured: false, status: null, offerType: "rent" }}
+        layout="compact"
+      />,
+    );
+    expect(badges()).toEqual([words.offer.rent]);
+    fourth.unmount();
+    renderWithMessages(
+      <ProjectCard project={{ ...project, featured: false, status: null }} layout="compact" />,
+    );
+    expect(badges()).toEqual([]);
+  });
+
+  it("is one link target and handles a project with nothing but its name and place", () => {
+    renderWithMessages(
+      <ProjectCard
+        project={{ href: "/projects/x", name: "Details to follow", locality: "Madurai", city: "" }}
+        layout="compact"
+      />,
+    );
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(screen.queryByText(/₹/)).not.toBeInTheDocument();
+    expect(document.querySelector("[data-slot=card-cover-fallback]")).toBeInTheDocument();
+  });
+});
+
 describe("ProjectCardSkeleton", () => {
   it("is hidden from screen readers and holds the card's box", () => {
     const { container } = renderWithMessages(<ProjectCardSkeleton />);
     expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     expect(container.querySelector(".aspect-16\\/10")).toBeInTheDocument();
+  });
+});
+
+describe("ProjectCardSkeleton, compact", () => {
+  it("is hidden from screen readers and holds the compact card's box", () => {
+    const { container } = renderWithMessages(<ProjectCardSkeleton layout="compact" />);
+    expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(container.firstElementChild).toHaveAttribute("data-layout", "compact");
+    expect(container.querySelector(".aspect-16\\/10")).not.toBeInTheDocument();
   });
 });
