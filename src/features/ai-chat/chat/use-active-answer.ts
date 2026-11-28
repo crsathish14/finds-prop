@@ -34,12 +34,13 @@ export function pickMostInView(
  * cards of the one before it. A restored chat, or one nothing has scrolled yet, starts on its last answer with cards.
  *
  * It watches the elements marked with `data-answer-id` that are in the page, so the thread only has to mark them.
- * Returns the id of an answer with cards, or null while there are none.
+ * Returns the id of an answer with cards (or null while there are none) and `choose`, which makes an answer the one in
+ * view at once, for a press on "6 homes on the right" or on a dot, until the scroll moves on.
  */
 export function useActiveAnswer(
   answers: readonly AnswerMarker[],
   inFlightId: string | null = null,
-): string | null {
+): { active: string | null; choose: (answerId: string) => void } {
   const [viewed, setViewed] = useState<string | null>(null);
   // The effect restarts only when the list of answers changes, not on every render.
   const key = answers.map((answer) => answer.id).join(",");
@@ -68,5 +69,8 @@ export function useActiveAnswer(
 
   // While an answer is being written it is the one the page follows.
   const writing = inFlightId !== null && answers.some((answer) => answer.id === inFlightId);
-  return resolveCardsAnswer(answers, writing ? inFlightId : viewed);
+  return {
+    active: resolveCardsAnswer(answers, writing ? inFlightId : viewed),
+    choose: setViewed,
+  };
 }

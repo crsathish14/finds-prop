@@ -7,8 +7,9 @@
  * Props: children (the answer text as paragraphs), streaming (the answer is still being written: the text is
  *   marked busy; put a ChatStreamCaret at the end of the last paragraph), status (a ChatStatusLine while the
  *   assistant searches, shown instead of text), cards (up to three PropertyCard or ProjectCard, one
- *   per row on a phone and two per row when the column is 36 rem wide), notes (ChatNoteLine items under the answer),
- *   className.
+ *   per row on a phone and two per row when the column is 36 rem wide; at lg and up the AI chat draws them on its cards
+ *   page instead, ADR-220), notes (ChatNoteLine items under the answer), answerId (marks the answer for the cards page, which
+ *   follows the answer most in view and scrolls back to it), className.
  * Responsive: the text is at most 68 characters wide; the card grid is one column, then two columns
  *   when the column is 36 rem wide (a container query; the UX drew it at 640 px).
  * Accessibility: a list item with a text label (sparkle disc plus the assistant's name; the icon is
@@ -32,6 +33,7 @@ type ChatAssistantMessageProps = {
   status?: ReactNode;
   cards?: ReactNode;
   notes?: ReactNode;
+  answerId?: string;
   className?: string;
 };
 
@@ -51,11 +53,16 @@ function ChatAssistantMessage({
   status,
   cards,
   notes,
+  answerId,
   className,
 }: ChatAssistantMessageProps) {
   const translate = useTranslations("ai");
   return (
-    <li data-slot="chat-assistant-message" className={cn("flex flex-col gap-3", className)}>
+    <li
+      data-slot="chat-assistant-message"
+      {...(answerId === undefined ? {} : { "data-answer-id": answerId })}
+      className={cn("flex scroll-mt-24 flex-col gap-3", className)}
+    >
       <div className="flex items-center gap-2 text-caption font-bold text-muted">
         <span
           aria-hidden="true"

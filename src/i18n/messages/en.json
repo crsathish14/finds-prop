@@ -4542,7 +4542,10 @@
     }
   },
   "ai": {
+    "cardsOnRight": "{count, plural, one {# {kind, select, homes {home} projects {project} other {property}}} other {# {kind, select, homes {homes} projects {projects} other {properties}}}} on the right",
     "cardsPage": {
+      "label": "Homes and projects from the conversation",
+      "empty": "Homes and projects you ask about appear here.",
       "answerOf": "Answer {number} of {total}",
       "answerDot": "Show the cards for answer {number}",
       "pageOf": "Page {number} of {total}"
