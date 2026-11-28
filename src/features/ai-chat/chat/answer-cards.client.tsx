@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, type ComponentType } from "react";
-import { ProjectCard } from "@/components/domain/project-card";
-import { PropertyCard } from "@/components/domain/property-card";
 import { AI_MAX_CARDS_PER_ANSWER } from "@/config/ai";
 import { readChatCardsAction } from "../actions";
 import type { ChatCardView } from "../chat-cards";
@@ -85,39 +83,4 @@ export function useChatCards(references: readonly ChatReference[]): {
   return state.wanted === wanted
     ? { cards: state.cards, failed: state.failed }
     : { cards: [], failed: false };
-}
-
-/** The approved property and project cards, with their heart and Compare controls, unchanged (UX addendum decision 5). */
-export function AnswerCards({
-  references,
-  controls,
-}: {
-  references: readonly ChatReference[];
-  controls: ChatCardControls;
-}) {
-  const { cards } = useChatCards(references);
-  const { Save, Compare } = controls;
-  return (
-    <>
-      {cards.map((entry, index) =>
-        entry.kind === "home" ? (
-          <PropertyCard
-            key={entry.key}
-            property={entry.card}
-            priority={index === 0}
-            save={<Save shortId={entry.shortId} />}
-            compare={
-              <Compare
-                shortId={entry.shortId}
-                title={entry.card.title}
-                cover={entry.card.cover?.src ?? null}
-              />
-            }
-          />
-        ) : (
-          <ProjectCard key={entry.key} project={entry.card} priority={index === 0} />
-        ),
-      )}
-    </>
-  );
 }
