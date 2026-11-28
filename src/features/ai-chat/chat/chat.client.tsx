@@ -2,9 +2,10 @@
 
 import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/patterns/alert";
 import { ChatAssistantMessage, ChatStreamCaret } from "@/components/domain/chat-assistant-message";
+import { ChatCardsLine } from "@/components/domain/chat-cards-line.client";
 import { ChatComposer } from "@/components/domain/chat-composer.client";
 import { ChatGate } from "@/components/domain/chat-gate.client";
 import { ChatNoteLine } from "@/components/domain/chat-note-line";
@@ -26,10 +27,14 @@ import {
   MAX_INPUT_CHARACTERS,
 } from "@/config/ai";
 import { saveDraft } from "@/lib/form-draft";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ChatContext } from "../context/page-context";
 import type { ConfirmCard } from "../confirm/confirm-card";
 import { AnswerCards, type ChatCardControls } from "./answer-cards.client";
+import { ChatCardsPane } from "./cards-pane.client";
+import { buildAnswerGroups, describeCards } from "./chat-pages";
+import { useActiveAnswer } from "./use-active-answer";
 import {
   browserStorage,
   EMPTY_CHAT,
@@ -64,6 +69,9 @@ const COMPOSER_ID = "ai-chat-message";
 
 /** The space kept between the newest words and the composer when the page scrolls to them, in pixels. */
 const NEWEST_BREATHING_ROOM = 16;
+
+/** From this width the cards sit on their own page beside the chat (the `lg` breakpoint, ADR-220). */
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 /** The name the unsent message of a confirm card is kept under while the customer signs in (the way forms keep theirs). */
 const CONFIRM_DRAFT_NAME = "ai-chat-confirm";
@@ -117,6 +125,11 @@ let counter = 0;
 function newId(): string {
   counter += 1;
   return `m${Date.now().toString(36)}${counter}`;
+}
+
+/** The answer a Show more answer continues: the first answer of the newest group of cards in the conversation. */
+function headOfNewestCards(entries: readonly ChatEntry[]): string | undefined {
+  return buildAnswerGroups(entries).at(-1)?.id;
 }
 
 function paragraphs(text: string): string[] {
@@ -177,13 +190,15 @@ function sourceRow(sources: readonly ChatSource[], label: string) {
 function answerParts(
   entry: Pick<
     AssistantEntry,
-    "text" | "notes" | "references" | "links" | "sources" | "replaced" | "href" | "confirm"
+    "id" | "text" | "notes" | "references" | "links" | "sources" | "replaced" | "href" | "confirm"
   > & { seeAll?: { text: string; href: string } | undefined },
   filtersLabel: string,
   sourcesLabel: string,
   streaming: boolean,
   controls: ChatCardControls,
   keepMessage: (message: string) => void,
+  /** At lg and up the cards are on the cards page: the chat keeps one line that brings them forward (ADR-220). */
+  cardsBeside: { show: (answerId: string) => void } | null,
 ) {
   const href = safeHref(entry.href);
   return {
@@ -212,11 +227,19 @@ function answerParts(
     cards:
       entry.references.length > 0 || entry.confirm !== undefined ? (
         <>
-          {entry.references.length > 0 ? (
+          {entry.references.length > 0 && cardsBeside === null ? (
             <AnswerCards
               references={entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER)}
               controls={controls}
             />
+          ) : null}
+          {entry.references.length > 0 && cardsBeside !== null && !streaming ? (
+            <div className="@xl:col-span-2">
+              <ChatCardsLine
+                {...describeCards(entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER))}
+                onShow={() => cardsBeside.show(entry.id)}
+              />
+            </div>
           ) : null}
           {entry.seeAll !== undefined && isSeeAllPath(entry.seeAll.href) ? (
             <p className="@xl:col-span-2" data-slot="chat-see-all">
@@ -414,11 +437,40 @@ export function ChatIsland({
     problem?.kind === "daily_limit" ||
     problem?.kind === "unavailable";
 
+  // The cards page (ADR-220): from lg the cards of the answer the visitor is on sit beside the chat, not in it.
+  const desktop = useMediaQuery(DESKTOP_QUERY);
+  const groups = useMemo(() => buildAnswerGroups(entries), [entries]);
+  const { active: activeAnswer, choose: chooseAnswer } = useActiveAnswer(
+    [
+      ...entries.flatMap((entry) =>
+        entry.role === "assistant"
+          ? [{ id: entry.id, hasCards: !entry.replaced && entry.references.length > 0 }]
+          : [],
+      ),
+      // The answer being written has no cards yet: the page keeps the cards before it until it is whole.
+      ...(live ? [{ id: live.id, hasCards: false }] : []),
+    ],
+    live?.id ?? null,
+  );
+  const showAnswer = useCallback(
+    (answerId: string) => {
+      chooseAnswer(answerId);
+      const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      document
+        .querySelector(`[data-answer-id="${answerId}"]`)
+        ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    },
+    [chooseAnswer],
+  );
+  const cardsBeside = desktop ? { show: showAnswer } : null;
+
   const run = useCallback(
     async (text: string, before: readonly ChatEntry[], userId: string, more = false) => {
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
+      // Show more continues the answer whose cards it adds to, so the cards page shows it as that answer's next page.
+      const moreOf = more ? headOfNewestCards(before) : undefined;
       const answer: LiveAnswer = {
         ...NO_ANSWER,
         id: newId(),
@@ -540,6 +592,7 @@ export function ChatIsland({
             ...(answer.replies.length === 0 ? {} : { replies: answer.replies }),
             ...(answer.seeAll === undefined ? {} : { seeAll: answer.seeAll }),
             ...(answer.confirm === undefined ? {} : { confirm: answer.confirm }),
+            ...(moreOf === undefined ? {} : { moreOf }),
             replaced: answer.replaced,
             ...(answer.href === undefined ? {} : { href: answer.href }),
           },
@@ -647,183 +700,208 @@ export function ChatIsland({
     : undefined;
 
   return (
-    <div
-      ref={rootRef}
-      className="mx-auto flex w-full max-w-205 flex-1 flex-col gap-6 px-gutter py-6 md:py-10"
-    >
-      {ready && hasMessages ? (
-        <div className="flex items-center gap-3 border-b border-line pb-4">
-          <span
-            aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-pill bg-cta-tint text-cta-text"
-          >
-            <Icon icon={Sparkles} />
-          </span>
-          <Heading as="h1" size="3">
-            {translate("assistantName")}
-          </Heading>
-        </div>
-      ) : (
-        <div className="grid gap-3">
-          <Heading as="h1" size="1">
-            {translate("heading")}
-          </Heading>
-          <Text variant="lead" tone="muted" className="max-w-[60ch]">
-            {translate("intro")}
-          </Text>
-          {ready ? (
-            <div className="mt-2 grid gap-3">
-              <div>
-                <Text variant="overline" tone="muted">
-                  {translate("examples.label")}
-                </Text>
-                <Text variant="small" tone="muted">
-                  {translate("examples.help")}
-                </Text>
-              </div>
-              <ul className="flex flex-wrap gap-2">
-                {examples.map((example) => (
-                  <li key={example}>
-                    <Chip
-                      type="button"
-                      disabled={composerOff}
-                      className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
-                      onClick={() => pickExample(example)}
-                    >
-                      {example}
-                    </Chip>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {disclaimer !== "" ? (
-            <p
-              data-slot="ai-search-disclaimer"
-              className="mt-2 text-small whitespace-pre-line text-muted"
+    <div className="mx-auto flex w-full max-w-205 flex-1 lg:max-w-(--container-mid) lg:gap-10 lg:px-gutter">
+      <div
+        ref={rootRef}
+        className="flex min-w-0 flex-1 flex-col gap-6 px-gutter py-6 md:py-10 lg:w-128 lg:flex-none lg:px-0 xl:w-144"
+      >
+        {ready && hasMessages ? (
+          <div className="flex items-center gap-3 border-b border-line pb-4">
+            <span
+              aria-hidden="true"
+              className="grid size-9 shrink-0 place-items-center rounded-pill bg-cta-tint text-cta-text"
             >
-              {disclaimer}
-            </p>
-          ) : null}
-        </div>
-      )}
+              <Icon icon={Sparkles} />
+            </span>
+            <Heading as="h1" size="3">
+              {translate("assistantName")}
+            </Heading>
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            <Heading as="h1" size="1">
+              {translate("heading")}
+            </Heading>
+            <Text variant="lead" tone="muted" className="max-w-[60ch]">
+              {translate("intro")}
+            </Text>
+            {ready ? (
+              <div className="mt-2 grid gap-3">
+                <div>
+                  <Text variant="overline" tone="muted">
+                    {translate("examples.label")}
+                  </Text>
+                  <Text variant="small" tone="muted">
+                    {translate("examples.help")}
+                  </Text>
+                </div>
+                <ul className="flex flex-wrap gap-2">
+                  {examples.map((example) => (
+                    <li key={example}>
+                      <Chip
+                        type="button"
+                        disabled={composerOff}
+                        className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
+                        onClick={() => pickExample(example)}
+                      >
+                        {example}
+                      </Chip>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {disclaimer !== "" ? (
+              <p
+                data-slot="ai-search-disclaimer"
+                className="mt-2 text-small whitespace-pre-line text-muted"
+              >
+                {disclaimer}
+              </p>
+            ) : null}
+          </div>
+        )}
 
-      {returned ? (
-        <Alert tone="success" title={translate("returnedTitle")}>
-          {translate("returnedBody")}
-        </Alert>
-      ) : null}
+        {returned ? (
+          <Alert tone="success" title={translate("returnedTitle")}>
+            {translate("returnedBody")}
+          </Alert>
+        ) : null}
 
-      {hasMessages ? (
-        <ChatThread>
-          {[
-            ...entries.map((entry) =>
-              entry.role === "user" ? (
-                <ChatUserBubble
-                  key={entry.id}
-                  {...(entry.at === undefined ? {} : { time: messageTime(entry.at) })}
-                  notice={
-                    entry.masked ? (
-                      <ChatNoteLine align="user" live>
-                        {translate("maskedNotice")}
-                      </ChatNoteLine>
-                    ) : undefined
-                  }
-                >
-                  {entry.text}
-                </ChatUserBubble>
-              ) : (
-                <Answer
-                  key={entry.id}
-                  answer={entry}
-                  filtersLabel={translate("notice.useFilters")}
-                  sourcesLabel={translate("sources.label")}
-                  controls={controls}
-                  keepMessage={keepMessage}
-                />
-              ),
-            ),
-            // The answer in flight has the key it will keep, so its cards (a confirm card among them) stay in place.
-            ...(live
-              ? [
+        {hasMessages ? (
+          <ChatThread>
+            {[
+              ...entries.map((entry) =>
+                entry.role === "user" ? (
+                  <ChatUserBubble
+                    key={entry.id}
+                    {...(entry.at === undefined ? {} : { time: messageTime(entry.at) })}
+                    notice={
+                      entry.masked ? (
+                        <ChatNoteLine align="user" live>
+                          {translate("maskedNotice")}
+                        </ChatNoteLine>
+                      ) : undefined
+                    }
+                  >
+                    {entry.text}
+                  </ChatUserBubble>
+                ) : (
                   <Answer
-                    key={live.id}
-                    answer={live}
-                    streaming
+                    key={entry.id}
+                    answer={entry}
                     filtersLabel={translate("notice.useFilters")}
                     sourcesLabel={translate("sources.label")}
                     controls={controls}
                     keepMessage={keepMessage}
-                  />,
-                ]
-              : []),
-          ]}
-        </ChatThread>
-      ) : null}
+                    cardsBeside={cardsBeside}
+                  />
+                ),
+              ),
+              // The answer in flight has the key it will keep, so its cards (a confirm card among them) stay in place.
+              ...(live
+                ? [
+                    <Answer
+                      key={live.id}
+                      answer={live}
+                      streaming
+                      filtersLabel={translate("notice.useFilters")}
+                      sourcesLabel={translate("sources.label")}
+                      controls={controls}
+                      keepMessage={keepMessage}
+                      cardsBeside={cardsBeside}
+                    />,
+                  ]
+                : []),
+            ]}
+          </ChatThread>
+        ) : null}
 
-      {replies.length > 0 ? (
-        <ul
-          aria-label={translate("replies.label")}
-          className="flex flex-wrap gap-2"
-          data-slot="chat-replies"
-        >
-          {replies.map((reply) => (
-            <li key={reply.key}>
-              <Chip
-                type="button"
-                className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
-                onClick={() => sendText(reply.text, true, reply.key === "showMore")}
-              >
-                {reply.text}
-              </Chip>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+        {replies.length > 0 ? (
+          <ul
+            aria-label={translate("replies.label")}
+            className="flex flex-wrap gap-2"
+            data-slot="chat-replies"
+          >
+            {replies.map((reply) => (
+              <li key={reply.key}>
+                <Chip
+                  type="button"
+                  className="h-auto min-h-(--size-chip) py-2 text-left whitespace-normal"
+                  onClick={() => sendText(reply.text, true, reply.key === "showMore")}
+                >
+                  {reply.text}
+                </Chip>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-      <div ref={endRef} />
+        <div ref={endRef} />
 
-      {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
-      <div aria-hidden="true" className="flex-1" />
+        {/* Takes the free height, so the composer rests at the bottom of the page even while the chat is empty. */}
+        <div aria-hidden="true" className="flex-1" />
 
-      {problem?.kind === "error" ? (
-        <div ref={problemRef} tabIndex={-1} className="outline-none">
-          <ChatNotice kind="error" onRetry={retry} />
-        </div>
-      ) : null}
-      {problem?.kind === "too_many_messages" ? (
-        <ChatNotice kind="too_many_messages" seconds={problem.seconds} filtersHref={FILTERS_HREF} />
-      ) : null}
-      {problem?.kind === "daily_limit" ? (
-        <ChatNotice kind="daily_limit" filtersHref={FILTERS_HREF} />
-      ) : null}
-      {problem?.kind === "unavailable" ? (
-        <ChatNotice kind="unavailable" filtersHref={FILTERS_HREF} />
-      ) : null}
-
-      {gate ? (
-        <ChatGate
-          freeMessages={AI_TRIAL_MESSAGES}
-          {...(draft === "" ? {} : { draft })}
-          signInHref={SIGN_IN_HREF}
-          focusHeading={gateFocus}
-        />
-      ) : (
-        <>
-          {controls.CompareBar ? <controls.CompareBar onIds={reportTicked} /> : null}
-          <ChatComposer
-            id={fieldId}
-            docked
-            value={draft}
-            onChange={setDraft}
-            onSend={send}
-            maxLength={MAX_INPUT_CHARACTERS}
-            busy={busy}
-            disabled={composerOff || !ready}
-            {...(offReason ? { disabledReason: offReason } : {})}
+        {problem?.kind === "error" ? (
+          <div ref={problemRef} tabIndex={-1} className="outline-none">
+            <ChatNotice kind="error" onRetry={retry} />
+          </div>
+        ) : null}
+        {problem?.kind === "too_many_messages" ? (
+          <ChatNotice
+            kind="too_many_messages"
+            seconds={problem.seconds}
+            filtersHref={FILTERS_HREF}
           />
-        </>
-      )}
+        ) : null}
+        {problem?.kind === "daily_limit" ? (
+          <ChatNotice kind="daily_limit" filtersHref={FILTERS_HREF} />
+        ) : null}
+        {problem?.kind === "unavailable" ? (
+          <ChatNotice kind="unavailable" filtersHref={FILTERS_HREF} />
+        ) : null}
+
+        {gate ? (
+          <ChatGate
+            freeMessages={AI_TRIAL_MESSAGES}
+            {...(draft === "" ? {} : { draft })}
+            signInHref={SIGN_IN_HREF}
+            focusHeading={gateFocus}
+          />
+        ) : (
+          <>
+            {controls.CompareBar ? <controls.CompareBar onIds={reportTicked} /> : null}
+            <ChatComposer
+              id={fieldId}
+              docked
+              value={draft}
+              onChange={setDraft}
+              onSend={send}
+              maxLength={MAX_INPUT_CHARACTERS}
+              busy={busy}
+              disabled={composerOff || !ready}
+              {...(offReason ? { disabledReason: offReason } : {})}
+            />
+          </>
+        )}
+      </div>
+      <aside
+        aria-label={translate("cardsPage.label")}
+        data-slot="ai-cards-aside"
+        className="hidden min-w-0 flex-1 lg:block"
+      >
+        {/* The page stays in view while the chat scrolls, between the header and the composer; it does not scroll itself. */}
+        <div className="sticky top-(--header-h) h-[calc(100dvh-var(--header-h))] pt-10 pb-24">
+          {desktop ? (
+            <ChatCardsPane
+              groups={groups}
+              activeAnswerId={activeAnswer}
+              controls={controls}
+              onShowAnswer={showAnswer}
+            />
+          ) : null}
+        </div>
+      </aside>
     </div>
   );
 }
@@ -836,6 +914,7 @@ function Answer({
   sourcesLabel,
   controls,
   keepMessage,
+  cardsBeside,
 }: {
   answer: AssistantEntry | LiveAnswer;
   streaming?: boolean;
@@ -843,11 +922,21 @@ function Answer({
   sourcesLabel: string;
   controls: ChatCardControls;
   keepMessage: (message: string) => void;
+  cardsBeside: { show: (answerId: string) => void } | null;
 }) {
-  const parts = answerParts(answer, filtersLabel, sourcesLabel, streaming, controls, keepMessage);
+  const parts = answerParts(
+    answer,
+    filtersLabel,
+    sourcesLabel,
+    streaming,
+    controls,
+    keepMessage,
+    cardsBeside,
+  );
   const searching = streaming && answer.text === "" && answer.references.length === 0;
   return (
     <ChatAssistantMessage
+      answerId={answer.id}
       {...(streaming ? { streaming: true } : {})}
       {...(searching
         ? {

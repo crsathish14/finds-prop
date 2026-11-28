@@ -2,6 +2,10 @@
 
 import { useState, type ReactNode } from "react";
 import { AiCardsPage, AiCardsPageList } from "@/components/domain/ai-cards-page.client";
+import { ChatAssistantMessage } from "@/components/domain/chat-assistant-message";
+import { ChatCardsLine } from "@/components/domain/chat-cards-line.client";
+import { ChatThread } from "@/components/domain/chat-thread";
+import { ChatUserBubble } from "@/components/domain/chat-user-bubble";
 import { ProjectCard } from "@/components/domain/project-card";
 import { Specimen } from "../frame";
 import { InteractiveCard, RENT_PRIME, SALE_BUDGET, SALE_FEATURED } from "./domain-demos";
@@ -78,9 +82,46 @@ function Playground({ start = 0 }: { start?: number }) {
   );
 }
 
+/** The chat with the cards page beside it, as at lg and up: text and one line in the chat, the cards on the right. */
+function BesideTheChat() {
+  return (
+    <div className="flex w-full flex-col gap-6 lg:flex-row lg:gap-10">
+      <div className="min-w-0 lg:w-128 lg:flex-none xl:w-144">
+        <ChatThread>
+          <ChatUserBubble>Show me 2 and 3 BHK homes near OMR under 1.3 crore</ChatUserBubble>
+          <ChatAssistantMessage answerId="answer-1">
+            <p>Here are six that fit. The first two are the closest to OMR.</p>
+            <div className="mt-3">
+              <ChatCardsLine count={6} kind="properties" onShow={() => undefined} />
+            </div>
+          </ChatAssistantMessage>
+          <ChatUserBubble>Any with a swimming pool?</ChatUserBubble>
+          <ChatAssistantMessage answerId="answer-2">
+            <p>Two of them have a pool. I have put them on the right.</p>
+            <div className="mt-3">
+              <ChatCardsLine count={2} kind="homes" onShow={() => undefined} />
+            </div>
+          </ChatAssistantMessage>
+        </ChatThread>
+      </div>
+      <div className="h-160 min-w-0 flex-1 rounded-xl border border-line bg-canvas p-3">
+        <AiCardsPage
+          pageKey="answer-2"
+          order={1}
+          renderPage={renderPage}
+          answers={{ count: 2, current: 1, onSelect: () => undefined }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function AiCardsPageDemo() {
   return (
     <div className="flex flex-col gap-10">
+      <Specimen label="Beside the chat, from lg: the answers keep their words and one line, the cards of the answer being read are on the right">
+        <BesideTheChat />
+      </Specimen>
       <Specimen label="Six cards of the first answer, on one screen with no scrolling; press a dot to move to another answer (a newer one slides in from below, an older one from above)">
         <Playground />
       </Specimen>

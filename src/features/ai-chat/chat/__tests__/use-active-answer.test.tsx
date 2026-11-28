@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { ANSWER_ID_ATTRIBUTE, pickMostInView, useActiveAnswer } from "../use-active-answer";
 
@@ -76,13 +76,16 @@ const ANSWERS = [
 ];
 
 function Probe({ inFlight = null }: { inFlight?: string | null }) {
-  const active = useActiveAnswer(ANSWERS, inFlight);
+  const { active, choose } = useActiveAnswer(ANSWERS, inFlight);
   return (
     <>
       {ANSWERS.map((answer) => (
         <div key={answer.id} {...{ [ANSWER_ID_ATTRIBUTE]: answer.id }} />
       ))}
       <output>{active ?? "none"}</output>
+      <button type="button" onClick={() => choose("a1")}>
+        choose a1
+      </button>
     </>
   );
 }
@@ -113,6 +116,12 @@ describe("useActiveAnswer: the answer the cards page follows", () => {
     report("a1", 0.9);
     rerender(<Probe inFlight="a3" />);
     expect(screen.getByRole("status")).toHaveTextContent("a3");
+  });
+
+  it("shows the answer that was chosen at once", () => {
+    render(<Probe />);
+    fireEvent.click(screen.getByRole("button", { name: "choose a1" }));
+    expect(screen.getByRole("status")).toHaveTextContent("a1");
   });
 
   it("stops watching when it is taken away", () => {

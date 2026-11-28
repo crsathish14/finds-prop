@@ -3,7 +3,7 @@
 /**
  * AiCardsPage: the "page" of cards beside the AI chat (ADR-220), the cards of the answer the visitor is reading.
  * Purpose: the chat keeps only text; the cards of an answer sit here, one screen of compact cards that does not
- *   scroll. When the visitor moves to another answer the page changes with a slide-and-fade. Owner: design system.
+ *   scroll (a screen too short for six cards scrolls the cards inside the page rather than cutting them off). When the visitor moves to another answer the page changes with a slide-and-fade. Owner: design system.
  *   It draws and animates; it fetches nothing and holds no conversation: the chat island says which page to show
  *   and draws the cards of any page it is asked for (`renderPage`).
  * Props: pageKey (the page being shown; a new key swaps the page), order (the page's place in the conversation: a
@@ -65,7 +65,7 @@ function AiCardsPage({ pageKey, order, renderPage, answers, pages, className }: 
       data-slot="ai-cards-page"
       className={cn("flex h-full min-h-0 flex-col gap-3", className)}
     >
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
         {leavingKey !== null ? (
           <div
             key={leavingKey}

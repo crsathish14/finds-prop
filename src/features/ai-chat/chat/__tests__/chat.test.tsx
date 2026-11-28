@@ -1111,3 +1111,115 @@ describe("the phone keyboard after a send (owner, 28 Nov 2026)", () => {
     expect(box()).toHaveFocus();
   });
 });
+
+describe("the cards page beside the chat, from lg (ADR-220)", () => {
+  const home = (id: string, title: string) => ({
+    kind: "home" as const,
+    key: `home:${id}`,
+    shortId: id,
+    card: {
+      href: `/properties/${id}`,
+      title,
+      locality: "Velachery",
+      city: "Chennai",
+      rupees: 12500000,
+      listingType: "sale" as const,
+      cover: null,
+    },
+  });
+
+  function desktop(on: boolean) {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: on && query.includes("min-width: 1024px"),
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+  }
+
+  it("shows one quiet line on the right before any cards exist", async () => {
+    desktop(true);
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    expect(await screen.findByText(words.cardsPage.empty)).toBeVisible();
+  });
+
+  it("draws the cards on the page, not in the chat, with one line under the answer", async () => {
+    desktop(true);
+    cards.read.mockResolvedValue({
+      ok: true,
+      data: [home("aaaaaaaa", "Two bedroom flat in Velachery"), home("bbbbbbbb", "Bright flat")],
+    });
+    fetchMock.mockResolvedValueOnce(
+      answered("Here are two.", [
+        { type: "card", reference: { kind: "home", homeId: "aaaaaaaa", slug: "two-bhk" } },
+        { type: "card", reference: { kind: "home", homeId: "bbbbbbbb", slug: "bright" } },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("show me");
+    await user.click(sendButton());
+    const aside = await screen.findByRole("complementary", { name: words.cardsPage.label });
+    const link = await within(aside).findByRole("link", { name: /Two bedroom flat in Velachery/ });
+    expect(link).toHaveAttribute("href", "/properties/aaaaaaaa");
+    expect(within(aside).getByText("Bright flat")).toBeVisible();
+    // The chat holds the text and the line only: each card is drawn once, on the page.
+    expect(screen.getAllByRole("link", { name: /Two bedroom flat in Velachery/ })).toHaveLength(1);
+    const thread = screen.getByRole("list", { name: words.thread.label });
+    expect(within(thread).queryByRole("link", { name: /Velachery/ })).toBeNull();
+    expect(
+      await within(thread).findByRole("button", { name: "2 homes on the right" }),
+    ).toBeVisible();
+    // The cards are read once, though the page and the line both ask for them.
+    expect(cards.read).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the cards in the chat below lg, with no line", async () => {
+    desktop(false);
+    cards.read.mockResolvedValue({ ok: true, data: [home("aaaaaaaa", "Two bedroom flat")] });
+    fetchMock.mockResolvedValueOnce(
+      answered("Here is one.", [
+        { type: "card", reference: { kind: "home", homeId: "aaaaaaaa", slug: "two-bhk" } },
+      ]),
+    );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("show me");
+    await user.click(sendButton());
+    const thread = screen.getByRole("list", { name: words.thread.label });
+    expect(await within(thread).findByRole("link", { name: /Two bedroom flat/ })).toBeVisible();
+    expect(screen.queryByText("1 home on the right")).toBeNull();
+  });
+
+  it("marks a Show more answer as the continuation of the answer before it", async () => {
+    desktop(true);
+    cards.read.mockResolvedValue({ ok: true, data: [] });
+    fetchMock
+      .mockResolvedValueOnce(
+        answered("Here is one.", [
+          { type: "card", reference: { kind: "home", homeId: "aaaaaaaa", slug: "a" } },
+          {
+            type: "replies",
+            items: [{ key: "showMore", text: "Show more" }],
+          },
+        ]),
+      )
+      .mockResolvedValueOnce(
+        answered("Here is another.", [
+          { type: "card", reference: { kind: "home", homeId: "bbbbbbbb", slug: "b" } },
+        ]),
+      );
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    const user = await type("show me");
+    await user.click(sendButton());
+    await user.click(await screen.findByRole("button", { name: "Show more" }));
+    await screen.findByText("Here is another.");
+    await waitFor(() => {
+      const kept = stored()?.entries.filter((entry) => entry.role === "assistant");
+      expect(kept).toHaveLength(2);
+      expect(kept?.[1]).toMatchObject({ moreOf: kept?.[0]?.id });
+    });
+  });
+});
