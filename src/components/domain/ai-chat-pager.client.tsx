@@ -24,7 +24,8 @@
  * Responsive: below lg the frame is as tall as the screen between the header and the bottom bar (from md, the header
  *   and the bottom of the screen) and does not scroll itself: the chat pane scrolls inside its own box, and the
  *   message box is under both panes. From lg the page scrolls as before, the message box sticks to the bottom of the
- *   chat column, and the cards page is sticky between the header and the message box.
+ *   chat column, and the cards page is sticky between the header and the message box. From xl the chat is centred and
+ *   the cards page is at the right edge, with the left kept free (owner, 28 Nov 2026).
  * Accessibility: the pane that is not shown is `inert` (no focus, hidden from a screen reader), so a visitor never
  *   tabs into a pane they cannot see. The cards pane has a "Back to the chat" button (below lg only) and is named by
  *   `cardsLabel`. Pressing it, swiping and the chat's "on the right" line all go through `pane`.
@@ -191,7 +192,9 @@ function AiChatPager({
         "mx-auto flex w-full max-w-205 flex-col",
         // Below lg: exactly the screen between the header and the bottom bar, so the page itself never scrolls.
         "h-[calc(100dvh-var(--header-h)-var(--bottombar-h))] md:h-[calc(100dvh-var(--header-h))]",
-        "lg:grid lg:h-auto lg:max-w-(--container-mid) lg:flex-1 lg:grid-cols-[32rem_minmax(0,1fr)] lg:gap-x-10 lg:px-gutter xl:grid-cols-[36rem_minmax(0,1fr)]",
+        "lg:grid lg:h-auto lg:max-w-(--container-mid) lg:flex-1 lg:grid-cols-[32rem_minmax(0,1fr)] lg:gap-x-10 lg:px-gutter",
+        // From xl the chat is centred on the page, the cards sit at the right edge and the left is kept free (for an ad later).
+        "xl:max-w-(--container) xl:grid-cols-[minmax(0,1fr)_32rem_minmax(0,1fr)]",
         className,
       )}
     >
@@ -203,7 +206,7 @@ function AiChatPager({
             inert={!wide && pane !== 0}
             className={cn(
               "h-full min-w-0 flex-[0_0_100%] overflow-y-auto overscroll-y-contain",
-              "lg:col-start-1 lg:row-start-1 lg:h-auto lg:overflow-visible lg:pb-(--ai-composer-h)",
+              "lg:col-start-1 lg:row-start-1 lg:h-auto lg:overflow-visible lg:pb-(--ai-composer-h) xl:col-start-2",
             )}
           >
             {chat}
@@ -212,7 +215,7 @@ function AiChatPager({
             aria-label={cardsLabel}
             data-slot="ai-cards-aside"
             inert={!wide && pane !== 1}
-            className="h-full min-w-0 flex-[0_0_100%] lg:col-start-2 lg:row-start-1 lg:h-auto"
+            className="h-full min-w-0 flex-[0_0_100%] lg:col-start-2 lg:row-start-1 lg:h-auto xl:col-start-3 xl:w-full xl:max-w-sm xl:justify-self-end"
           >
             {/* From lg the page stays in view while the chat scrolls, between the header and the foot; it does not scroll itself. */}
             <div className="flex h-full flex-col gap-3 px-gutter py-4 md:py-6 lg:sticky lg:top-(--header-h) lg:h-[calc(100dvh-var(--header-h))] lg:px-0 lg:pt-10 lg:pb-24">
@@ -237,7 +240,7 @@ function AiChatPager({
         <div
           ref={footerRef}
           data-slot="ai-chat-footer"
-          className="shrink-0 bg-canvas px-gutter lg:sticky lg:bottom-0 lg:z-sticky lg:col-start-1 lg:row-start-1 lg:self-end lg:px-0"
+          className="shrink-0 bg-canvas px-gutter lg:sticky lg:bottom-0 lg:z-sticky lg:col-start-1 lg:row-start-1 lg:self-end lg:px-0 xl:col-start-2"
         >
           {footer}
         </div>
