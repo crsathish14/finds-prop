@@ -39,7 +39,9 @@ function Cards() {
   );
 }
 
-function Conversation({ onShow }: { onShow: () => void }) {
+type LineMode = "swipe" | "see";
+
+function Conversation({ onShow, mode }: { onShow: () => void; mode: LineMode }) {
   return (
     <div className="flex min-h-full flex-col gap-6 px-gutter py-6 lg:px-0">
       <ChatThread>
@@ -47,7 +49,7 @@ function Conversation({ onShow }: { onShow: () => void }) {
         <ChatAssistantMessage answerId="answer-1">
           <p>Here are five that fit. The first two are the closest to OMR.</p>
           <div className="mt-3">
-            <ChatCardsLine count={5} kind="properties" onShow={onShow} />
+            <ChatCardsLine count={5} kind="properties" mode={mode} onShow={onShow} />
           </div>
         </ChatAssistantMessage>
       </ChatThread>
@@ -56,7 +58,7 @@ function Conversation({ onShow }: { onShow: () => void }) {
 }
 
 /** The pager the visitor can swipe (a touch screen, or the mouse dragging sideways) and the line and the back button drive. */
-function Playground({ start = 0 }: { start?: AiChatPane }) {
+function Playground({ start = 0, mode = "swipe" }: { start?: AiChatPane; mode?: LineMode }) {
   const [pane, setPane] = useState<AiChatPane>(start);
   const [draft, setDraft] = useState("");
   return (
@@ -66,7 +68,7 @@ function Playground({ start = 0 }: { start?: AiChatPane }) {
       onPaneChange={setPane}
       wide={false}
       cardsLabel="Homes and projects from the conversation"
-      chat={<Conversation onShow={() => setPane(1)} />}
+      chat={<Conversation mode={mode} onShow={() => setPane(1)} />}
       cards={<Cards />}
       footer={
         <ChatComposer docked value={draft} onChange={setDraft} onSend={NOTHING} maxLength={2000} />
@@ -78,8 +80,11 @@ function Playground({ start = 0 }: { start?: AiChatPane }) {
 export function AiChatPagerDemo() {
   return (
     <div className="flex flex-wrap items-start gap-x-8 gap-y-10">
-      <Specimen label="Below lg, the chat pane: swipe left (or press the line) to reach the cards; the message box stays under both panes">
+      <Specimen label="Below lg, the chat pane: the hint under the answer says to swipe (before the first swipe); swipe left or press the line to reach the cards; the message box stays under both panes">
         <Playground />
+      </Specimen>
+      <Specimen label="After the first swipe the line only says to see the cards (the visitor has learned to swipe)">
+        <Playground mode="see" />
       </Specimen>
       <Specimen label="Below lg, the cards pane: the page of the answer last in view, with a way back to the chat (from lg the same two panes are columns and there is no back button)">
         <Playground start={1} />

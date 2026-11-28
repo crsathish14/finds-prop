@@ -32,7 +32,7 @@ import { useMediaQuery } from "@/lib/use-media-query";
 import { useRestoredDraft, useRestoredNotice } from "@/lib/use-restored-draft";
 import type { ChatContext } from "../context/page-context";
 import type { ConfirmCard } from "../confirm/confirm-card";
-import type { ChatCardControls } from "./answer-cards.client";
+import { useChatCards, type ChatCardControls } from "./answer-cards.client";
 import { ChatCardsPane } from "./cards-pane.client";
 import { buildAnswerGroups, describeCards } from "./chat-pages";
 import { useActiveAnswer } from "./use-active-answer";
@@ -59,6 +59,7 @@ import { readChatEvents, readChatFailure } from "./chat-stream";
 import { ChatConfirm } from "./confirm-card.client";
 import { takeHomeQuestion } from "./home-question";
 import { afterKeyboardCloses, isTouchScreen } from "./keyboard";
+import { useSwiped } from "./swiped";
 
 /** Where the sign-in gate leads: the phone sign-in, asked to come back to this page (ADR-128 section 10). */
 const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
@@ -95,6 +96,12 @@ type LiveAnswer = {
   href: string | undefined;
   /** The latest status line the server sent (ADR-217), shown until the answer starts. */
   status?: string | undefined;
+};
+
+/** How the line under an answer brings its cards forward, and what it says (ADR-220): on the right, or the swipe hint. */
+type CardsBeside = {
+  show: (answerId: string) => void;
+  mode: "right" | "swipe" | "see";
 };
 
 /** What went wrong with the last message, so the notice and the composer can say it. */
@@ -198,7 +205,7 @@ function answerParts(
   streaming: boolean,
   keepMessage: (message: string) => void,
   /** The cards are on the cards page, not in the chat: the chat keeps one line that brings them forward (ADR-220). */
-  cardsBeside: { show: (answerId: string) => void },
+  cardsBeside: CardsBeside,
 ) {
   const href = safeHref(entry.href);
   return {
@@ -231,6 +238,7 @@ function answerParts(
             <div className="@xl:col-span-2">
               <ChatCardsLine
                 {...describeCards(entry.references.slice(0, AI_MAX_CARDS_PER_ANSWER))}
+                mode={cardsBeside.mode}
                 onShow={() => cardsBeside.show(entry.id)}
               />
             </div>
@@ -299,6 +307,13 @@ export function ChatIsland({
   const chatRef = useRef<HTMLDivElement>(null);
   // Which pane of the pager shows below lg: the chat (0) or the cards page (1). From lg both are always shown.
   const [pane, setPane] = useState<AiChatPane>(0);
+  // Whether the visitor has swiped to the cards before (kept in this browser), and the answer that just finished with
+  // cards and may be hinted at with a nudge (owner decisions A7 and A9).
+  const { swiped, markSwiped } = useSwiped();
+  const [nudgeFor, setNudgeFor] = useState<{
+    id: string;
+    references: readonly ChatReference[];
+  } | null>(null);
   const composerId = useId();
   const fieldId = `${COMPOSER_ID}-${composerId.replaceAll(":", "")}`;
 
@@ -474,15 +489,35 @@ export function ChatIsland({
     [chooseAnswer, desktop],
   );
   // The line under an answer brings its cards forward: onto the page beside the chat from lg, onto the cards pane below.
-  const cardsBeside = useMemo(
+  const changePane = useCallback((next: AiChatPane) => {
+    setPane(next);
+    // On the cards pane the visitor has found the cards: the screen needs no hint for this answer.
+    if (next === 1) setNudgeFor(null);
+  }, []);
+  const cardsBeside = useMemo<CardsBeside>(
     () => ({
       show: (answerId: string) => {
         showAnswer(answerId);
-        if (!desktop) setPane(1);
+        if (!desktop) changePane(1);
       },
+      mode: desktop ? "right" : swiped ? "see" : "swipe",
     }),
-    [showAnswer, desktop],
+    [showAnswer, changePane, desktop, swiped],
   );
+  // The nudge (owner decision A9): once for an answer that has just finished with cards, when its cards have loaded,
+  // while the chat pane is shown and the visitor is neither typing nor waiting for an answer. Below lg only, and not
+  // once they have swiped. The pager adds the rest (not while a finger is down, never under reduced motion).
+  const { cards: nudgeCards } = useChatCards(nudgeFor?.references ?? []);
+  const nudgeId =
+    nudgeFor !== null &&
+    nudgeCards.length > 0 &&
+    !desktop &&
+    !swiped &&
+    pane === 0 &&
+    live === null &&
+    draft === ""
+      ? nudgeFor.id
+      : null;
 
   const run = useCallback(
     async (text: string, before: readonly ChatEntry[], userId: string, more = false) => {
@@ -618,6 +653,11 @@ export function ChatIsland({
           },
         ]);
         setLive(null);
+        setNudgeFor(
+          answer.references.length > 0 && !answer.replaced
+            ? { id: answer.id, references: answer.references.slice(0, AI_MAX_CARDS_PER_ANSWER) }
+            : null,
+        );
       } catch {
         if (controller.signal.aborted) return;
         refused({ state: "error" });
@@ -657,6 +697,7 @@ export function ChatIsland({
     setReturned(false);
     // A message sent from the cards pane brings the visitor back to the chat, where the answer will be written.
     setPane(0);
+    setNudgeFor(null);
     if (isTouchScreen()) {
       // On a phone the cursor leaves the box, so the keyboard closes by itself (owner, 28 Nov 2026). When the screen
       // has grown back, the newest words are brought into view again. It also covers the reply buttons and Show more,
@@ -724,7 +765,9 @@ export function ChatIsland({
   return (
     <AiChatPager
       pane={pane}
-      onPaneChange={setPane}
+      onPaneChange={changePane}
+      onSwipe={markSwiped}
+      nudge={nudgeId}
       wide={desktop}
       cardsLabel={translate("cardsPage.label")}
       chatRef={chatRef}
@@ -938,7 +981,7 @@ function Answer({
   filtersLabel: string;
   sourcesLabel: string;
   keepMessage: (message: string) => void;
-  cardsBeside: { show: (answerId: string) => void };
+  cardsBeside: CardsBeside;
 }) {
   const parts = answerParts(
     answer,

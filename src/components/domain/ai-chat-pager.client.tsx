@@ -11,11 +11,16 @@
  * Props: chat (the chat column: the conversation, notices and the sign-in gate), cards (the cards page), footer (the
  *   compare bar and the message box, or nothing), pane (0 the chat, 1 the cards; the pager follows it), onPaneChange
  *   (called with the pane the visitor swiped or went back to), wide (true from lg, where both panes are shown and
- *   neither is `inert`), cardsLabel (already-translated name of the cards pane), chatRef (the chat pane's own scroll box, so the island can scroll the
+ *   neither is `inert`), onSwipe (called when the visitor's own drag lands on the cards pane, so the chat can remember
+ *   that they know how to swipe), nudge (the id of the answer whose cards the screen should hint at, or null: it plays once
+ *   for each new id; see Nudge), cardsLabel (already-translated name of the cards pane), chatRef (the chat pane's own scroll box, so the island can scroll the
  *   newest words into view), className.
  * Movement: an Embla carousel with two full-width slides, no free scrolling: a flick or a drag past about a third of
  *   the width changes pane, otherwise the pane springs back. Only sideways drags are the pager's; up and down is left
  *   to the browser, so the chat scrolls as usual (`touch-action: pan-y`). Instant under prefers-reduced-motion.
+ * Nudge: the whole row moves about 48 px to the left and springs back in 600 ms, once for each new `nudge` id, to show
+ *   there is something on the right. It uses the CSS `translate` property (Embla owns `transform`, so the two do not
+ *   fight), never plays while a finger is on the row or under reduced motion, and a touch cancels it.
  * Responsive: below lg the frame is as tall as the screen between the header and the bottom bar (from md, the header
  *   and the bottom of the screen) and does not scroll itself: the chat pane scrolls inside its own box, and the
  *   message box is under both panes. From lg the page scrolls as before, the message box sticks to the bottom of the
@@ -45,6 +50,8 @@ type AiChatPagerProps = {
   footer?: ReactNode;
   pane: AiChatPane;
   onPaneChange: (pane: AiChatPane) => void;
+  onSwipe?: () => void;
+  nudge?: string | null;
   wide: boolean;
   cardsLabel: string;
   chatRef?: Ref<HTMLDivElement>;
@@ -57,12 +64,18 @@ const WIDE = "(min-width: 1024px)";
 /** Embla's own default easing time; 0 when the visitor asks for less motion. */
 const GLIDE_DURATION = 25;
 
+/** How far the nudge moves the row, in pixels, and how long it takes, in milliseconds (owner decision A9). */
+const NUDGE_DISTANCE = 48;
+const NUDGE_DURATION = 600;
+
 function AiChatPager({
   chat,
   cards,
   footer,
   pane,
   onPaneChange,
+  onSwipe,
+  nudge = null,
   wide,
   cardsLabel,
   chatRef,
@@ -83,17 +96,42 @@ function AiChatPager({
   const footerRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const placed = useRef(false);
+  // True from the moment a finger or the mouse goes down on the row until the pane has settled, so a move to the cards
+  // pane that the visitor made themself can be told from one the chat made (the line, the back button).
+  const gesture = useRef(false);
+  const nudging = useRef<Animation | null>(null);
+  const nudged = useRef<string | null>(null);
+  const onSwipeRef = useRef(onSwipe);
+  useEffect(() => {
+    onSwipeRef.current = onSwipe;
+  }, [onSwipe]);
 
   // The visitor's swipe tells the island which pane is shown.
   useEffect(() => {
     if (!carousel) return;
     const api = carousel;
     function selected() {
+      const next = api.selectedScrollSnap() === 1 ? 1 : 0;
+      if (next === 1 && gesture.current) onSwipeRef.current?.();
+      onPaneChange(next);
+    }
+    function reset() {
       onPaneChange(api.selectedScrollSnap() === 1 ? 1 : 0);
     }
-    api.on("select", selected).on("reInit", selected);
+    function touched() {
+      gesture.current = true;
+      nudging.current?.cancel();
+    }
+    function settled() {
+      gesture.current = false;
+    }
+    api.on("select", selected).on("reInit", reset).on("pointerDown", touched).on("settle", settled);
     return () => {
-      api.off("select", selected).off("reInit", selected);
+      api
+        .off("select", selected)
+        .off("reInit", reset)
+        .off("pointerDown", touched)
+        .off("settle", settled);
     };
   }, [carousel, onPaneChange]);
 
@@ -101,13 +139,33 @@ function AiChatPager({
   useEffect(() => {
     if (!carousel || wide) return;
     // The first placement is instant, so a pager that starts on the cards pane does not slide to it.
-    if (carousel.selectedScrollSnap() !== pane)
+    if (carousel.selectedScrollSnap() !== pane) {
+      gesture.current = false;
       carousel.scrollTo(pane, reducedMotion || !placed.current);
+    }
     placed.current = true;
   }, [carousel, pane, wide, reducedMotion]);
 
   // From lg the message box floats over the foot of the chat column (it sticks to the bottom of the screen), so the
   // chat column keeps as much room under its last line as the box is tall.
+  // The small hint of movement: only below lg, never under reduced motion, never while the row is being dragged.
+  useEffect(() => {
+    if (nudge === null || nudge === nudged.current || wide || reducedMotion || !carousel) return;
+    if (carousel.internalEngine().dragHandler.pointerDown()) return;
+    nudged.current = nudge;
+    const container = carousel.containerNode();
+    if (typeof container.animate !== "function") return;
+    nudging.current?.cancel();
+    nudging.current = container.animate(
+      [
+        { translate: "0px" },
+        { translate: `-${NUDGE_DISTANCE}px`, offset: 0.4 },
+        { translate: "0px" },
+      ],
+      { duration: NUDGE_DURATION, easing: "ease-in-out" },
+    );
+  }, [nudge, wide, reducedMotion, carousel]);
+
   const hasFooter = Boolean(footer);
   useEffect(() => {
     const box = footerRef.current;
