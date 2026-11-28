@@ -21,6 +21,8 @@ A release without migrations skips step 2 and needs no click.
 
 ## The first run (look only)
 
+Done on 26 Nov 2026 (run 45759641518 succeeded). Since then every merge into `main` releases by itself: you only approve the `production` step when the release has new migrations. This section stays for a new production project.
+
 Until one run has shown the dry run (step "Show the migrations prod is missing" passed in an earlier run), every run prints the migrations prod is missing and then stops on purpose, so production is not deployed yet. A run that failed before the dry run does not count. Read the list:
 
 - **Empty, or a few recent files**: start the workflow by hand: Actions → "Release to production" → Run workflow → branch `main`, **untick `dry_run`** → approve. It backs up, applies, and deploys.
