@@ -21,7 +21,7 @@ Builders and agents also let residential projects (a block of flats, a row of vi
 ## Consequences
 
 - No existing row changes. Residential cards and pages look as they did unless a builder picks rent.
-- The production database change is run by the owner, as before (rollback script `supabase/rollbacks/20261128090000.sql`, which refuses while a residential project is for rent).
+- The production database change is applied by the release workflow when `develop` is released to `main`, after the owner approves the `production` step (ADR-201); nobody runs it by hand (rollback script `supabase/rollbacks/20261128090000.sql`, which refuses while a residential project is for rent).
 - The assistant's rent search reads projects for rent in piece 2 of the same plan.
 
 ## Tests
