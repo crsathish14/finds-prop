@@ -384,6 +384,21 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
       );
     });
 
+    it("lets through the home address of a trusted website, never a page of it the tools did not give", () => {
+      // The 28 Nov 2026 case: the search answer said the TN RERA site is www.rera.tn.gov.in, but the pages it read were
+      // other sites, so the address came only from a page's text.
+      for (const answer of [
+        "The Tamil Nadu RERA website is www.rera.tn.gov.in.",
+        "Search the project on https://rera.tn.gov.in/ by its name.",
+        "Home loan rates are on sbi.bank.in.",
+      ]) {
+        expectPassed(answer);
+      }
+      expectBlocked("Search it at https://rera.tn.gov.in/project-search.", "contact_blocked");
+      expectBlocked("See rera.tn.gov.in.example.test for it.", "contact_blocked");
+      expectBlocked("Check fakerera.in instead.", "contact_blocked");
+    });
+
     it("blocks the phone number a description held, because it is third-party text", () => {
       expectBlocked("The owner says to call 9876543210 for a visit.", "contact_blocked");
     });

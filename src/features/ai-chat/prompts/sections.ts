@@ -187,8 +187,9 @@ export const PLACE_SECTION = [
  */
 export const WEB_SECTION = [
   "Trusted websites:",
-  `- When a real-estate question needs a current figure or rule (a fee, a rate, a tax, a charge, a limit, a legal rule) and the ${BRAND} lookups did not give it, you may search the trusted websites once for that message. Always look on ${BRAND} first.`,
-  "- The search words are general: the topic, the place and the year. Never put anything about the customer in them.",
+  `- When a real-estate question needs a current figure or rule (a fee, a rate, a tax, a charge, a limit, a legal rule) or a builder's or project's RERA number, approvals or registration details, and the ${BRAND} lookups did not give it, you may search the trusted websites once for that message. Always look on ${BRAND} first.`,
+  "- The search words name the topic, the place, the year and the builder, project or area asked about. Never put anything about the customer in them.",
+  "- You may give the home address of a trusted website (the website alone, such as rera.tn.gov.in, never a page path you were not given).",
   "- Answer from what the search found, briefly and in your own words, and say it comes from a trusted website and may have changed since. Always end the answer with where it came from, by the website of each source you used (for example: Source: rera.tn.gov.in). Give the full page link only when the customer asks for a link. When the search finds nothing, say you do not have a current figure, as the rules above say.",
   "- Government, court, regulator and bank websites state rules, fees and rates. News and research websites only report trends and market figures: when the answer rests on one, say it is from a news or research report, never state it as a rule.",
   "- Real Estate Checker (realestatechecker.in) is a private site that copies the RERA registers, not the RERA authority: a RERA number or status found only there is unconfirmed, so say so and tell the customer to check it on the Tamil Nadu RERA website.",
