@@ -658,6 +658,11 @@
       "backHome": "Home",
       "backProperties": "Back to Properties"
     },
+    "rentProjects": {
+      "title": "Projects for rent",
+      "titleIn": "Projects for rent in {place}",
+      "seeAll": "See all projects"
+    },
     "loadingTitle": "Loading homes"
   },
   "projects": {

@@ -4,11 +4,13 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { PropertyCard } from "@/components/domain/property-card";
 import { FeaturedProjectCard } from "@/components/domain/featured-project-card";
+import { ProjectCard } from "@/components/domain/project-card";
 import { SponsorTracker } from "@/components/layout/sponsor-tracker.client";
 import { getSelectedCity } from "@/features/cities";
 import { CompareCardToggle } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
 import { toPropertyCard } from "@/features/home";
+import { getRentProjects, PROJECTS_PATH, toProjectCard } from "@/features/projects";
 import {
   canonicalRedirect,
   canonicalSearchHref,
@@ -67,7 +69,8 @@ const PRIORITY_CARDS = 3;
  * makes the page dynamic, so `loading.tsx` stands in while it is on its way. With a place and fewer
  * than NEARBY_THRESHOLD homes in its circle, the same filters are read once more in the 15 km circle,
  * nearest first, for the "Also near" section (ADR-137); the headline count and the list stay the
- * circle's own (FR-GEO-03).
+ * circle's own (FR-GEO-03). A rent search also shows up to six residential projects for rent of the selected city
+ * under the homes (ADR-219); they change neither the count nor the pages.
  */
 export default async function PropertiesPage({ searchParams }: PageProps) {
   const raw = await searchParams;
@@ -87,7 +90,12 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
     );
   }
 
-  const [results, translate] = await Promise.all([getSearchResults(params), getTranslate()]);
+  const city = await getSelectedCity();
+  const [results, translate, rentProjects] = await Promise.all([
+    getSearchResults(params),
+    getTranslate(),
+    getRentProjects(params, city.key),
+  ]);
   const flags = getFeatureFlags();
   const context = { translate, supabaseUrl: publicEnv.NEXT_PUBLIC_SUPABASE_URL };
   const homes = results.status === "ok" ? results.homes : [];
@@ -96,7 +104,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   const featured =
     homes.length >= RESULTS_SPONSOR_AFTER
       ? await getFeaturedProject({
-          cityKey: (await getSelectedCity()).key,
+          cityKey: city.key,
           area: params.locality ?? params.place,
         })
       : null;
@@ -158,6 +166,23 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
         regionName={settings.region.name}
         describeHref={flags.aiSearch ? "/ai-search" : undefined}
         cards={withBanner(homes.map((home, index) => card(home, index < PRIORITY_CARDS)))}
+        rentProjects={
+          rentProjects.length === 0
+            ? undefined
+            : {
+                seeAllHref: PROJECTS_PATH,
+                cards: rentProjects.map((project) => (
+                  <ProjectCard
+                    key={project.slug}
+                    project={toProjectCard(
+                      project,
+                      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+                      settings.project_prime,
+                    )}
+                  />
+                )),
+              }
+        }
         nearby={
           nearbyHomes.length === 0
             ? undefined

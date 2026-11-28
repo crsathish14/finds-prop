@@ -26,6 +26,12 @@ vi.mock("@/features/sponsored", () => ({ getFeaturedProject: async () => null })
 vi.mock("@/features/cities", () => ({ getSelectedCity: async () => ({ key: "chennai" }) }));
 vi.mock("@/features/compare", () => ({ CompareCardToggle: () => null }));
 vi.mock("@/features/home", () => ({ toPropertyCard: () => ({}) }));
+vi.mock("@/components/domain/project-card", () => ({ ProjectCard: () => null }));
+vi.mock("@/features/projects", () => ({
+  getRentProjects: rentProjects,
+  PROJECTS_PATH: "/projects",
+  toProjectCard: () => ({}),
+}));
 
 const wall = vi.hoisted(() => ({ href: null as string | null }));
 vi.mock("@/features/login-wall", () => ({
@@ -36,6 +42,7 @@ vi.mock("@/features/login-wall", () => ({
 
 const searchResults = vi.hoisted(() => vi.fn());
 const screenProps = vi.hoisted(() => vi.fn());
+const rentProjects = vi.hoisted(() => vi.fn(async () => [] as unknown[]));
 vi.mock("@/features/search", async () => {
   const params = await vi.importActual<Record<string, unknown>>("@/features/search/params");
   const view = await vi.importActual<Record<string, unknown>>("@/features/search/results-view");
@@ -198,5 +205,45 @@ describe("the results page's Also near read (ADR-137, FR-GEO-03)", () => {
     const props = await render(PLACE);
     expect(props.total).toBe(0);
     expect(props.nearby).toMatchObject({ count: 4 });
+  });
+});
+
+describe("the results page's projects for rent (ADR-219)", () => {
+  const ok = { status: "ok", homes: [], total: 0 };
+  const project = (slug: string) => ({ slug, name: slug, locality: "Adyar" });
+
+  async function render(raw: Record<string, string>) {
+    const element = await PropertiesPage(search(raw));
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    renderToStaticMarkup(createElement(() => element));
+    return screenProps.mock.calls.at(-1)?.[0] as {
+      total: number;
+      rentProjects?: { cards: unknown[]; seeAllHref: string };
+    };
+  }
+
+  beforeEach(() => {
+    searchResults.mockReset();
+    screenProps.mockReset();
+    rentProjects.mockReset();
+    searchResults.mockResolvedValue(ok);
+  });
+
+  it("asks for them with the search and the selected city, and gives one card each", async () => {
+    rentProjects.mockResolvedValue([project("kadal-rentals"), project("adyar-heights")]);
+    const props = await render({ listingType: "rent", locality: "Adyar" });
+    expect(rentProjects).toHaveBeenCalledWith(
+      expect.objectContaining({ listingType: "rent", locality: "Adyar" }),
+      "chennai",
+    );
+    expect(props.rentProjects?.cards).toHaveLength(2);
+    expect(props.rentProjects?.seeAllHref).toBe("/projects");
+    // The headline count stays the homes' own.
+    expect(props.total).toBe(0);
+  });
+
+  it("gives no section when none fits", async () => {
+    rentProjects.mockResolvedValue([]);
+    expect((await render({ listingType: "rent" })).rentProjects).toBeUndefined();
   });
 });
