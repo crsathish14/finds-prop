@@ -1,7 +1,7 @@
 -- AI chat web search (ADR-218). Tests: DB-RLS-ai-web-answers-denied, DB-CHK-ai-web-answers, DB-RLS-ai-assistant-settings,
--- DB-FN-ai_web_search_on, DB-FN-admin_ai_assistant_overview, DB-CHK-ai-usage-web-searches. Fictional data only.
+-- DB-SCH-no-web-search-switch, DB-FN-admin_ai_assistant_overview, DB-CHK-ai-usage-web-searches. Fictional data only.
 begin;
-select plan(20);
+select plan(19);
 
 -- ad is the reserved admin, c1 a customer.
 insert into auth.users (id, email, email_confirmed_at)
@@ -68,29 +68,32 @@ select throws_ok(
 -- DB-CHK-ai-usage-web-searches
 select col_default_is('public', 'ai_usage_events', 'web_searches', '0', 'a message made no web search unless it says so');
 
--- DB-FN-ai_web_search_on and DB-RLS-ai-assistant-settings
-select is(public.ai_web_search_on(), false, 'web search ships switched off');
+-- DB-SCH-no-web-search-switch and DB-RLS-ai-assistant-settings. The switch is the server setting FLAG_AI_WEB_SEARCH
+-- since 28 Nov 2026 (ADR-218), so the database holds none.
+select hasnt_function('public', 'ai_web_search_on', 'the database has no web search switch any more');
+select hasnt_column('public', 'ai_assistant_settings', 'web_search', 'the settings row has no web search switch');
 set local role anon;
-select is(public.ai_web_search_on(), false, 'a visitor may ask whether it is on, and hears no');
-select throws_ok($$select web_search from public.ai_assistant_settings$$, '42501', null, 'a visitor cannot read the settings');
+select throws_ok($$select credit_bought_usd from public.ai_assistant_settings$$, '42501', null, 'a visitor cannot read the settings');
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000c1", "role": "authenticated"}', true);
 select is((select count(*)::int from public.ai_assistant_settings), 0, 'a customer sees no settings row');
-update public.ai_assistant_settings set web_search = true;
-select is(public.ai_web_search_on(), false, 'a customer cannot switch web search on');
+update public.ai_assistant_settings set credit_bought_usd = 99;
 select throws_ok(
   $$select public.admin_ai_assistant_overview()$$, '42501', null, 'a customer cannot read the overview'
 );
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-4000-8000-0000000000ad", "role": "authenticated"}', true);
-update public.ai_assistant_settings set web_search = true, credit_bought_usd = 20;
-select is(public.ai_web_search_on(), true, 'the admin switches web search on, and it is read at once');
+select is(
+  (select credit_bought_usd from public.ai_assistant_settings where id = 1), null::numeric,
+  'a customer cannot change the credit bought'
+);
+update public.ai_assistant_settings set credit_bought_usd = 20;
 
 -- DB-FN-admin_ai_assistant_overview
 select is(
   public.admin_ai_assistant_overview() -> 'settings',
-  '{"webSearch": true, "creditBoughtUsd": 20.00}'::jsonb,
-  'the overview gives the switch and the credit bought'
+  '{"creditBoughtUsd": 20.00}'::jsonb,
+  'the overview gives the credit bought'
 );
 select is(
   public.admin_ai_assistant_overview() -> 'answers' -> 0 ->> 'query',
