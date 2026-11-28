@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { CompareCardToggle, CompareChatBar } from "@/features/compare";
 import { SaveHomeButton } from "@/features/saved";
+import { getSiteSettings } from "@/features/site";
 import { getSessionView } from "@/server/auth/get-session-view";
 import { realContextReads } from "./context/reads";
 import { readContextParams } from "./context/page-context";
@@ -17,10 +18,16 @@ export type AiChatScreenProps = {
  * the verified token) and passed as one boolean, so the island can tell a visitor who has come back from signing in.
  * It reads cookies, so the page puts it under Suspense. The island never decides who may chat: the endpoint does.
  * It also hands the island the heart and Compare controls of the answer cards, because the island may not import the
- * features that own them (their indexes hold server code).
+ * features that own them (their indexes hold server code). The disclaimer the super admin wrote for this page
+ * (ADR-152) is read here from the cached site content and handed to the island, which draws it under the example
+ * questions until the visitor starts chatting.
  */
 export async function AiChatScreen({ searchParams }: AiChatScreenProps) {
-  const [session, params] = await Promise.all([getSessionView(), searchParams]);
+  const [session, params, settings] = await Promise.all([
+    getSessionView(),
+    searchParams,
+    getSiteSettings(),
+  ]);
   // The page the chat was opened from (AI-P7-T01): checked here against what is listed now, so a bad or stale link
   // simply opens the chat with no context. A read that fails does the same. Only ids go on to the island.
   const context = await resolveContext(readContextParams(params), realContextReads).catch(
@@ -30,6 +37,7 @@ export async function AiChatScreen({ searchParams }: AiChatScreenProps) {
     <ChatIsland
       signedIn={session !== null}
       context={context}
+      disclaimer={settings.disclaimers.aiSearch ?? ""}
       controls={{ Save: SaveHomeButton, Compare: CompareCardToggle, CompareBar: CompareChatBar }}
     />
   );

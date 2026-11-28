@@ -249,8 +249,11 @@ export function ChatIsland({
   signedIn,
   controls,
   context = null,
+  disclaimer = "",
 }: {
   signedIn: boolean;
+  /** The super admin's disclaimer for this page (ADR-152): shown under the example questions, gone once chatting starts. */
+  disclaimer?: string;
   /** The page the chat was opened from, as the server checked it: public ids only. Sent with each message. */
   context?: ChatContext | null;
   controls: ChatCardControls;
@@ -679,6 +682,14 @@ export function ChatIsland({
                 ))}
               </ul>
             </div>
+          ) : null}
+          {disclaimer !== "" ? (
+            <p
+              data-slot="ai-search-disclaimer"
+              className="mt-2 text-small whitespace-pre-line text-muted"
+            >
+              {disclaimer}
+            </p>
           ) : null}
         </div>
       )}
