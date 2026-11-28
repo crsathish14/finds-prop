@@ -41,7 +41,7 @@ export const AI_CHAT: LabEntry[] = [
     id: "chat-pager",
     name: "AI chat pager",
     description:
-      "The frame of the chat page on phones and tablets: the chat and the cards page as two full-width panes that snap (swipe sideways, a flick or a drag past about a third changes pane), the chat scrolling inside its own box, the message box under both panes, the pane out of sight inert, and a Back to the chat button on the cards pane. From lg the same two panes are columns.",
+      "The frame of the chat page on phones and tablets: the chat and the cards page as two full-width panes that snap (swipe sideways, a flick or a drag past about a third changes pane), the chat scrolling inside its own box, the message box under the chat pane (the cards pane gives its height to the cards), the pane out of sight inert, and a first row on the cards pane with Back to the chat and the answer dots over mini cards, two to a row. From lg the same two panes are columns.",
     sources: ["domain/ai-chat-pager.client.tsx"],
     Demo: AiChatPagerDemo,
   },

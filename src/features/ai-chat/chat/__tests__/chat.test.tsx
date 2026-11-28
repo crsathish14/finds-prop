@@ -1198,7 +1198,13 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     expect(pager).toHaveAttribute("data-pane", "chat");
     expect(aside).toHaveAttribute("inert");
     expect(document.querySelector('[data-slot="ai-chat-pane"]')).not.toHaveAttribute("inert");
-    // The composer is outside both panes, so it stays on screen on either.
+    // The cards are small cards, two to a row.
+    expect(
+      within(aside)
+        .getByRole("link", { name: /Two bedroom flat/ })
+        .closest("[data-layout]"),
+    ).toHaveAttribute("data-layout", "mini");
+    // The composer is outside both panes, so it stays on screen with the chat.
     expect(aside).not.toContainElement(box());
     expect(document.querySelector('[data-slot="ai-chat-pane"]')).not.toContainElement(box());
 
@@ -1207,15 +1213,11 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     expect(pager).toHaveAttribute("data-pane", "cards");
     expect(aside).not.toHaveAttribute("inert");
     expect(document.querySelector('[data-slot="ai-chat-pane"]')).toHaveAttribute("inert");
+    // There is nothing to type to on the cards pane, so the message box gives its height to the cards.
+    expect(screen.queryByRole("textbox", { name: words.composer.label })).toBeNull();
     await user.click(within(aside).getByRole("button", { name: words.pager.back }));
     expect(pager).toHaveAttribute("data-pane", "chat");
-    await user.click(line);
-    expect(pager).toHaveAttribute("data-pane", "cards");
-    fetchMock.mockResolvedValueOnce(answered("Anything else?"));
-    await user.type(box(), "and in Adyar");
-    await user.click(sendButton());
-    expect(pager).toHaveAttribute("data-pane", "chat");
-    await screen.findByText("Anything else?");
+    expect(box()).toBeVisible();
   });
 
   it("does not inert either pane from lg, where both are shown", async () => {

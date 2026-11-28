@@ -21,25 +21,21 @@
  * Nudge: the whole row moves about 48 px to the left and springs back in 600 ms, once for each new `nudge` id, to show
  *   there is something on the right. It uses the CSS `translate` property (Embla owns `transform`, so the two do not
  *   fight), never plays while a finger is on the row or under reduced motion, and a touch cancels it.
- * Responsive: below lg the frame is as tall as the screen between the header and the bottom bar (from md, the header
- *   and the bottom of the screen) and does not scroll itself: the chat pane scrolls inside its own box, and the
+ * Responsive: below lg the frame is as tall as the screen under the header (the chat page has no bottom bar) and
+ *   does not scroll itself: the chat pane scrolls inside its own box, and the
  *   message box is under both panes. From lg the page scrolls as before, the message box sticks to the bottom of the
  *   chat column, and the cards page is sticky between the header and the message box. From xl the chat is centred and
  *   the cards page is at the right edge, with the left kept free (owner, 28 Nov 2026).
  * Accessibility: the pane that is not shown is `inert` (no focus, hidden from a screen reader), so a visitor never
- *   tabs into a pane they cannot see. The cards pane has a "Back to the chat" button (below lg only) and is named by
- *   `cardsLabel`. Pressing it, swiping and the chat's "on the right" line all go through `pane`.
+ *   tabs into a pane they cannot see. The cards pane is named by `cardsLabel` (the way back to the chat is a control the chat puts in the
+ *   cards page's first row). Pressing it, swiping and the chat's "on the right" line all go through `pane`.
  * States: chat shown, cards shown, dragging, from lg (two columns, pager off).
- * Dependencies: embla-carousel-react, Button, Icon, usePrefersReducedMotion, next-intl, cn.
+ * Dependencies: embla-carousel-react, usePrefersReducedMotion, cn.
  * Tests: ai-chat-pager.test.tsx; Design Lab "AI chat pager".
  * UX reference: none yet (owner decisions of 28 Nov 2026, AI_SEARCH_UI_CARDS_NOTES.md, A7 and A8).
  */
 import useEmblaCarousel from "embla-carousel-react";
-import { ArrowLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useEffect, useRef, type ReactNode, type Ref } from "react";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
@@ -82,7 +78,6 @@ function AiChatPager({
   chatRef,
   className,
 }: AiChatPagerProps) {
-  const translate = useTranslations("ai.pager");
   const reducedMotion = usePrefersReducedMotion();
   const [viewport, carousel] = useEmblaCarousel({
     axis: "x",
@@ -190,8 +185,8 @@ function AiChatPager({
       data-pane={pane === 1 ? "cards" : "chat"}
       className={cn(
         "mx-auto flex w-full max-w-205 flex-col",
-        // Below lg: exactly the screen between the header and the bottom bar, so the page itself never scrolls.
-        "h-[calc(100dvh-var(--header-h)-var(--bottombar-h))] md:h-[calc(100dvh-var(--header-h))]",
+        // Below lg: exactly the screen under the header (the page has no bottom bar), so the page itself never scrolls.
+        "h-[calc(100dvh-var(--header-h))]",
         "lg:grid lg:h-auto lg:max-w-(--container-mid) lg:flex-1 lg:grid-cols-[32rem_minmax(0,1fr)] lg:gap-x-10 lg:px-gutter",
         // From xl the chat is centred on the page, the cards sit at the right edge and the left is kept free (for an ad later).
         "xl:max-w-(--container) xl:grid-cols-[minmax(0,1fr)_32rem_minmax(0,1fr)]",
@@ -218,19 +213,7 @@ function AiChatPager({
             className="h-full min-w-0 flex-[0_0_100%] lg:col-start-2 lg:row-start-1 lg:h-auto xl:col-start-3 xl:w-full xl:max-w-sm xl:justify-self-end"
           >
             {/* From lg the page stays in view while the chat scrolls, between the header and the foot; it does not scroll itself. */}
-            <div className="flex h-full flex-col gap-3 px-gutter py-4 md:py-6 lg:sticky lg:top-(--header-h) lg:h-[calc(100dvh-var(--header-h))] lg:px-0 lg:pt-10 lg:pb-24">
-              <div className="lg:hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  iconStart={<Icon icon={ArrowLeft} />}
-                  onClick={() => onPaneChange(0)}
-                  className="-ml-4"
-                >
-                  {translate("back")}
-                </Button>
-              </div>
+            <div className="flex h-full flex-col gap-3 px-gutter py-2 md:py-4 lg:sticky lg:top-(--header-h) lg:h-[calc(100dvh-var(--header-h))] lg:px-0 lg:pt-10 lg:pb-24">
               <div className="min-h-0 flex-1">{cards}</div>
             </div>
           </aside>

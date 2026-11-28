@@ -63,6 +63,20 @@ export function CompactCardsDemo() {
           <PropertyCardSkeleton layout="compact" />
         </div>
       </Specimen>
+      <Specimen label="Mini cards, for the cards page on a phone or tablet: two to a row, a picture with the badge and the heart, then the price, the title on one line, the facts, the place and Compare">
+        <div className="grid w-full max-w-sm grid-cols-2 gap-2">
+          <InteractiveCard property={SALE_FEATURED} layout="mini" />
+          <ProjectCard project={PROJECT_FEATURED} layout="mini" priority />
+          <InteractiveCard property={RENT_PRIME} layout="mini" startSaved />
+          <ProjectCard project={PROJECT_LAUNCH} layout="mini" priority />
+          <InteractiveCard property={SALE_BUDGET} layout="mini" startCompared />
+          <ProjectCard project={PROJECT_READY} layout="mini" priority />
+          <InteractiveCard property={LONG_TITLE} layout="mini" />
+          <ProjectCard project={PROJECT_NO_PICTURE} layout="mini" />
+          <PropertyCardSkeleton layout="mini" />
+          <ProjectCardSkeleton layout="mini" />
+        </div>
+      </Specimen>
       <div className="flex flex-col gap-3">
         <Text variant="overline">One cards page: six cards, one screen, no scrolling</Text>
         <div className="flex w-full max-w-md flex-col gap-2">

@@ -3,6 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { Alert } from "@/components/patterns/alert";
 import { AiChatPager, type AiChatPane } from "@/components/domain/ai-chat-pager.client";
 import { ChatAssistantMessage, ChatStreamCaret } from "@/components/domain/chat-assistant-message";
@@ -14,6 +15,7 @@ import { ChatNotice } from "@/components/domain/chat-notice";
 import { ChatStatusLine } from "@/components/domain/chat-status-line";
 import { ChatThread } from "@/components/domain/chat-thread";
 import { ChatUserBubble } from "@/components/domain/chat-user-bubble";
+import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
@@ -775,17 +777,20 @@ export function ChatIsland({
         gate ? null : (
           <>
             {controls.CompareBar ? <controls.CompareBar onIds={reportTicked} /> : null}
-            <ChatComposer
-              id={fieldId}
-              docked
-              value={draft}
-              onChange={setDraft}
-              onSend={send}
-              maxLength={MAX_INPUT_CHARACTERS}
-              busy={busy}
-              disabled={composerOff || !ready}
-              {...(offReason ? { disabledReason: offReason } : {})}
-            />
+            {/* On the cards pane there is nothing to type to, so the box gives its height to the cards (sending from the chat brings it back). */}
+            {!desktop && pane === 1 ? null : (
+              <ChatComposer
+                id={fieldId}
+                docked
+                value={draft}
+                onChange={setDraft}
+                onSend={send}
+                maxLength={MAX_INPUT_CHARACTERS}
+                busy={busy}
+                disabled={composerOff || !ready}
+                {...(offReason ? { disabledReason: offReason } : {})}
+              />
+            )}
           </>
         )
       }
@@ -795,6 +800,19 @@ export function ChatIsland({
           activeAnswerId={activeAnswer}
           controls={controls}
           onShowAnswer={showAnswer}
+          mini={!desktop}
+          leading={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconStart={<Icon icon={ArrowLeft} />}
+              onClick={() => changePane(0)}
+              className="-ml-4"
+            >
+              {translate("pager.back")}
+            </Button>
+          }
         />
       }
       chat={

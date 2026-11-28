@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import { createRef, type ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -83,11 +82,9 @@ describe("AiChatPager", () => {
     expect(cardsPane()).not.toHaveAttribute("inert");
   });
 
-  it("names the cards pane and goes back to the chat from its button", async () => {
-    const { onPaneChange } = draw({ pane: 1 });
+  it("names the cards pane", () => {
+    draw({ pane: 1 });
     expect(screen.getByRole("complementary", { name: words.cardsPage.label })).toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole("button", { name: words.pager.back }));
-    expect(onPaneChange).toHaveBeenCalledWith(0);
   });
 
   it("keeps the footer outside both panes, so it stays on screen on either", () => {
