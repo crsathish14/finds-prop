@@ -110,6 +110,34 @@ describe("the chat page's first screen (AI-P5-T02)", () => {
   });
 });
 
+describe("the page's disclaimer sits under the example questions (ADR-152)", () => {
+  const disclaimer = "Please check price and RERA details with the builder.";
+
+  it("shows it under the examples and draws nothing when it is empty", async () => {
+    const { unmount } = renderWithMessages(
+      <ChatIsland signedIn={false} controls={controls} disclaimer={disclaimer} />,
+    );
+    await ready();
+    const text = screen.getByText(disclaimer);
+    const example = screen.getByRole("button", { name: words.examples.emi });
+    expect(example.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    unmount();
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+    await ready();
+    expect(screen.queryByText(disclaimer)).toBeNull();
+  });
+
+  it("is gone once the visitor sends a message", async () => {
+    fetchMock.mockResolvedValueOnce(answered("I found one home."));
+    renderWithMessages(<ChatIsland signedIn={false} controls={controls} disclaimer={disclaimer} />);
+    await ready();
+    const user = await type("3 BHK in Velachery");
+    await user.click(sendButton());
+    await screen.findByText("I found one home.");
+    expect(screen.queryByText(disclaimer)).toBeNull();
+  });
+});
+
 describe("the time of the visitor's message is shown beside it (ADR-185)", () => {
   it("shows the time under the visitor's message and none inside the assistant's answer", async () => {
     fetchMock.mockResolvedValueOnce(answered("I found one home."));
