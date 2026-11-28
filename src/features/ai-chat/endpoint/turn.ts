@@ -64,6 +64,8 @@ export interface TurnInput {
    * answer hands the next state on in a `state` event. Absent means no state (the tests of the older parts).
    */
   readonly memory?: TurnMemory;
+  /** The city the customer chose in the site's header; the searches with no city of their own look there. */
+  readonly chosenCity?: string;
 }
 
 /** What the usage step needs after the turn. `agent` is null only if the loop ended without its `done` event. */
@@ -164,6 +166,7 @@ export async function* runTurn(input: TurnInput): AsyncGenerator<ChatStreamEvent
       locale: "en",
       signedIn: input.signedIn,
       ...(input.memory === undefined ? {} : { search: input.memory }),
+      ...(input.chosenCity === undefined ? {} : { chosenCity: input.chosenCity }),
     },
     signal: input.signal,
     timeLimit: input.timeLimit,

@@ -153,6 +153,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
 
     // 6 to 9: the agent loop, the output check, the stream, usage
     const pageContext = await readPageContext(deps, parsed.request.context, session !== null);
+    const city = await readChosenCity(deps);
     // The web search (ADR-218): for a signed-in customer only, when the server has it (FLAG_AI_WEB_SEARCH).
     const webTool = session === null ? undefined : deps.webSearch?.tool;
     const webSearch = webTool !== undefined;
@@ -164,6 +165,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
       ...(session === null ? { guest: true } : {}),
       ...(webSearch ? { webSearch: true } : {}),
       ...(pageContext === null ? {} : { pageContext }),
+      ...(city === null ? {} : { city }),
       requirements: state,
     });
     const memory = createTurnMemory(state);
@@ -183,6 +185,7 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
         stop,
         session,
         memory,
+        chosenCity: city?.name,
       }),
     );
   } catch (error) {
@@ -194,6 +197,21 @@ async function handle(request: Request, deps: ChatDeps, requestId: string): Prom
     }
     await usage("error");
     return serverErrorResponse(requestId, deps.translate);
+  }
+}
+
+// ---------------------------------------------------------------- the chosen city
+
+/** The city the customer chose in the header and the other listed cities; null when it cannot be read (never an error). */
+async function readChosenCity(
+  deps: ChatDeps,
+): Promise<{ readonly name: string; readonly others: readonly string[] } | null> {
+  if (deps.chosenCity === undefined) return null;
+  try {
+    return await deps.chosenCity();
+  } catch (error) {
+    logger.warn("ai chat chosen city could not be read", { error });
+    return null;
   }
 }
 
@@ -324,6 +342,8 @@ interface AnswerInput {
   readonly session: SessionView | null;
   /** The requirements state of this message (ADR-206). */
   readonly memory: TurnMemory;
+  /** The city the customer chose in the site's header, when it is known. */
+  readonly chosenCity: string | undefined;
 }
 
 /** The confirm card for an offer; a failure gives no card (the answer stands alone) and never an error. */
@@ -372,6 +392,7 @@ async function* answerEvents(input: AnswerInput): AsyncGenerator<ChatStreamEvent
       customerMessage: latest.text,
       signedIn: input.session !== null,
       memory: input.memory,
+      ...(input.chosenCity === undefined ? {} : { chosenCity: input.chosenCity }),
       signal,
       timeLimit,
       ...(deps.confirmCard === undefined

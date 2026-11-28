@@ -78,6 +78,11 @@ export interface ChatDeps {
    * system prompt carries the rules for places. Absent or false: the prompt and the tool are as they were before.
    */
   readonly placeSearch?: boolean;
+  /**
+   * The city the customer chose in the site's header and the other cities findsprop lists (display names). Absent, or
+   * null, means none is known (tests): the searches then use only the cities the customer names.
+   */
+  chosenCity?(): Promise<{ readonly name: string; readonly others: readonly string[] } | null>;
   readonly translate: Translate;
   /**
    * Builds the confirm card for a propose tool's offer, for the caller of this request (AI-P6-T02). Absent in tests

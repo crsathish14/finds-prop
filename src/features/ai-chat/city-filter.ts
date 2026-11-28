@@ -20,3 +20,17 @@ export function cityFilterOf(typed: string | null): string | null {
   const key = trimmed.toLowerCase().replace(/[^a-z0-9]/gu, "");
   return key === "" ? null : key;
 }
+
+/**
+ * The filters of a home or project search with the city the customer chose in the site's header filled in when the
+ * customer named none (owner, 28 Nov 2026: a visitor on Chennai who asks for KK Nagar wants KK Nagar, Chennai, not
+ * Madurai's). A city the customer named always wins: "homes in Coimbatore" searches Coimbatore only. No chosen city
+ * (a test, an eval) leaves the filters as they are.
+ */
+export function withChosenCity<Filters extends { readonly city: string | null }>(
+  filters: Filters,
+  chosenCity: string | undefined,
+): Filters {
+  if (chosenCity === undefined || cityFilterOf(filters.city) !== null) return filters;
+  return { ...filters, city: chosenCity };
+}

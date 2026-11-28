@@ -9,6 +9,7 @@ import { INJECTION_REMINDER_INSTRUCTION } from "../guards/input";
 import {
   ADVICE_SECTION,
   CARDS_SECTION,
+  citySection,
   COMPETITOR_SECTION,
   confidentialitySection,
   CONTENT_SECTION,
@@ -53,6 +54,8 @@ export interface SystemPromptOptions {
    * switch is on): the prompt then carries the rules for it. Absent or false leaves the prompt as it was.
    */
   readonly webSearch?: boolean;
+  /** The city the customer chose in the site's header and the other listed cities; absent means none is known. */
+  readonly city?: Parameters<typeof citySection>[0];
   /** The page the chat was opened from, as the server checked it (ids only); absent means none. */
   readonly pageContext?: Parameters<typeof contextSection>[0];
   /** The requirements state the browser sent back, checked by its signature (ADR-206); absent or null means none. */
@@ -79,6 +82,7 @@ export function buildSystemPrompt(options: SystemPromptOptions): string {
     ...(options.placeSearch === true ? [PLACE_SECTION] : []),
     ...(options.guest === true ? [GUEST_SECTION] : []),
     ...(options.webSearch === true ? [WEB_SECTION] : []),
+    ...(options.city === undefined ? [] : [citySection(options.city)]),
     confidentialitySection(selfDescription),
     `Private marker, never to be written in an answer: ${SYSTEM_PROMPT_CANARY}`,
   ];
