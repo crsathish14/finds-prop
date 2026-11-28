@@ -346,6 +346,44 @@ describe("UT-ai-output-guard: the output check (ADR-128 section 6.4.2)", () => {
       );
     });
 
+    it("always lets a web answer name its website, and its page only when the customer asked (ADR-218)", () => {
+      const web = JSON.stringify({
+        status: "found",
+        fromMemory: false,
+        untrustedText: { answer: "Stamp duty is 7 per cent. See https://other.example.test/x" },
+        sources: [
+          {
+            sourceUrl: "https://www.tnreginet.example.test/fees",
+            sourceSite: "tnreginet.example.test",
+            untrustedText: { title: "Fees" },
+          },
+        ],
+      });
+      const results = [SEARCH_RESULT, web];
+      const unasked = evidence({
+        toolResults: results,
+        customerMessage: "What is the stamp duty?",
+      });
+      expectPassed("Stamp duty is 7 per cent. Source: tnreginet.example.test", unasked);
+      expectBlocked(
+        "Stamp duty is 7 per cent. See https://www.tnreginet.example.test/fees",
+        "contact_blocked",
+        OUTPUT_MESSAGE_KEYS.fallback,
+        unasked,
+      );
+      expectPassed(
+        "It is on https://www.tnreginet.example.test/fees",
+        evidence({ toolResults: results, customerMessage: "Share the link" }),
+      );
+      // An address inside the page's own text is a stranger's words, never a source.
+      expectBlocked(
+        "See other.example.test/x",
+        "contact_blocked",
+        OUTPUT_MESSAGE_KEYS.fallback,
+        evidence({ toolResults: results, customerMessage: "Share the link" }),
+      );
+    });
+
     it("blocks the phone number a description held, because it is third-party text", () => {
       expectBlocked("The owner says to call 9876543210 for a visit.", "contact_blocked");
     });

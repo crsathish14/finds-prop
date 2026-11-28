@@ -144,6 +144,7 @@ describe("UT-ai-tool-search-web: the search and the 7-day memory", () => {
       sources: [
         {
           sourceUrl: "https://tnreginet.example.test/fees",
+          sourceSite: "tnreginet.example.test",
           untrustedText: { title: "Fees | Registration Department" },
         },
       ],
