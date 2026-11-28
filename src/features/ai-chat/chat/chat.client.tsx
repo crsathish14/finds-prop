@@ -52,6 +52,7 @@ import {
 import { readChatEvents, readChatFailure } from "./chat-stream";
 import { ChatConfirm } from "./confirm-card.client";
 import { takeHomeQuestion } from "./home-question";
+import { afterKeyboardCloses, isTouchScreen } from "./keyboard";
 
 /** Where the sign-in gate leads: the phone sign-in, asked to come back to this page (ADR-128 section 10). */
 const SIGN_IN_HREF = "/auth?redirect=%2Fai-search";
@@ -350,6 +351,10 @@ export function ChatIsland({
 
   useEffect(() => () => abort.current?.abort(), []);
 
+  // The watch that scrolls to the newest words once a phone's keyboard has closed (see `keyboard.ts`).
+  const keyboardWatch = useRef<(() => void) | null>(null);
+  useEffect(() => () => keyboardWatch.current?.(), []);
+
   // Keep the newest words in view above the composer. The page scrolls (the composer is sticky), so the end of the
   // conversation is brought up to just above the composer, not to the bottom edge where the composer would cover it.
   const scrollToNewest = useCallback((smooth: boolean) => {
@@ -574,8 +579,17 @@ export function ChatIsland({
     setEntries([...before, { id: userId, role: "user", text, masked: false, at: sentAt() }]);
     if (!keepDraft) setDraft("");
     setReturned(false);
-    // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
-    focusComposer();
+    if (isTouchScreen()) {
+      // On a phone the cursor leaves the box, so the keyboard closes by itself (owner, 28 Nov 2026). When the screen
+      // has grown back, the newest words are brought into view again. It also covers the reply buttons and Show more,
+      // which used to open the keyboard.
+      (document.activeElement as HTMLElement | null)?.blur();
+      keyboardWatch.current?.();
+      keyboardWatch.current = afterKeyboardCloses(() => scrollToNewest(false));
+    } else {
+      // Pressing the Send button must not leave focus on a button that turns off (handoff section 6).
+      focusComposer();
+    }
     void run(text, before, userId, more);
   }
 
