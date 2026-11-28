@@ -496,3 +496,44 @@ describe("ResultsScreen: the Also near section (ADR-137, FR-GEO-03)", () => {
     expect(screen.queryByRole("region", { name: /Also near/ })).not.toBeInTheDocument();
   });
 });
+
+describe("ResultsScreen: projects for rent (ADR-219)", () => {
+  const RENT = parseSearchParams({ listingType: "rent", locality: "Adyar" });
+
+  it("draws the section under the homes, named by the area, with a link to the projects page", () => {
+    renderScreen({
+      params: RENT,
+      rentProjects: {
+        cards: [card("kadal-rentals"), card("adyar-heights")],
+        seeAllHref: "/projects",
+      },
+    });
+    const section = screen.getByRole("region", { name: "Projects for rent in Adyar" });
+    expect(within(section).getByRole("link", { name: "kadal-rentals" })).toBeVisible();
+    expect(within(section).getByRole("link", { name: /See all projects/ })).toHaveAttribute(
+      "href",
+      "/projects",
+    );
+    // The headline still counts homes only.
+    expect(screen.getByText("48 homes")).toBeVisible();
+  });
+
+  it("says Projects for rent when no area is searched", () => {
+    renderScreen({
+      params: parseSearchParams({ listingType: "rent" }),
+      rentProjects: { cards: [card("kadal-rentals")], seeAllHref: "/projects" },
+    });
+    expect(screen.getByRole("region", { name: "Projects for rent" })).toBeVisible();
+  });
+
+  it("draws nothing without projects, or when the read failed", () => {
+    renderScreen({ params: RENT, rentProjects: { cards: [], seeAllHref: "/projects" } });
+    expect(screen.queryByRole("region", { name: /Projects for rent/ })).toBeNull();
+    renderScreen({
+      params: RENT,
+      status: "failed",
+      rentProjects: { cards: [card("kadal-rentals")], seeAllHref: "/projects" },
+    });
+    expect(screen.queryByRole("region", { name: /Projects for rent/ })).toBeNull();
+  });
+});

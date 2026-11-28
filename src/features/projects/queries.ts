@@ -124,6 +124,49 @@ export function parseProjectListItems(rows: unknown, section: string): ProjectLi
   return items;
 }
 
+/** What kind a listed project is: residential or commercial, and its property type (ADR-219). */
+export type ProjectKind = { projectType: string | null; propertyType: string | null };
+
+const projectKindRowSchema = z.object({
+  slug: z.string().min(1),
+  project_type: z.string().nullable().catch(null),
+  property_type: z.string().nullable().catch(null),
+});
+
+/**
+ * The kind of each listed project, by slug, for the results page's projects for rent (ADR-219): the list itself
+ * does not carry it. The slugs come from `live_project_list()`; the read is the signed-in visitor's own, of
+ * columns visitors may read. A failed read gives nothing, so no project is shown rather than a wrong one.
+ */
+export async function getProjectKinds(slugs: readonly string[]): Promise<Map<string, ProjectKind>> {
+  const kinds = new Map<string, ProjectKind>();
+  if (slugs.length === 0) return kinds;
+  try {
+    const { data, error } = await (
+      await createServerSupabase()
+    )
+      .from("projects")
+      .select("slug, project_type, property_type")
+      .in("slug", [...slugs]);
+    if (error) {
+      logger.warn("project kinds could not be read", { errorCode: error.code });
+      return kinds;
+    }
+    for (const row of data ?? []) {
+      const parsed = projectKindRowSchema.safeParse(row);
+      if (!parsed.success) continue;
+      kinds.set(parsed.data.slug, {
+        projectType: parsed.data.project_type,
+        propertyType: parsed.data.property_type,
+      });
+    }
+  } catch (error) {
+    unstable_rethrow(error);
+    logger.warn("project kinds could not be read", {});
+  }
+  return kinds;
+}
+
 /** The public projects (of one city when a key is given), or a failure with no detail (the page offers Try again). */
 export async function getProjects(cityKey?: string): Promise<ProjectList> {
   try {

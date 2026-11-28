@@ -8,14 +8,18 @@ export {
 export { toProjectCard } from "./cards";
 export {
   getProject,
+  getProjectKinds,
   getProjects,
   parseProjectListItems,
   PROJECT_LIST_LIMIT,
   PROJECTS_TAG,
+  type ProjectKind,
   type ProjectList,
   type ProjectResult,
 } from "./queries";
 export { submitProjectLead } from "./actions";
+export { RENT_PROJECTS_MAX } from "./rent-projects";
+export { getRentProjects } from "./rent-projects.server";
 export { indiaToday, visitDateProblem } from "./lead-view";
 export { OFFER_TYPES, PRICE_TYPES, PROJECT_STATUSES } from "./schemas";
 export type {
