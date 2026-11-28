@@ -67,6 +67,11 @@ const assistantEntrySchema = z.object({
     .array(z.object({ key: z.string().max(40), text: z.string().max(80) }))
     .max(3)
     .optional(),
+  /**
+   * Set on the answer to Show more: the id of the answer whose cards it continues, so the cards page shows it as the
+   * next page of that answer (ADR-220). Older kept chats have none, and then each answer is a page group of its own.
+   */
+  moreOf: z.string().max(60).optional(),
   /** A fixed line replaced the answer; `href` is where the search page is when the line offers it. */
   replaced: z.boolean(),
   href: z.string().max(200).optional(),
@@ -135,6 +140,7 @@ function withoutConfirmCard(entry: AssistantEntry): AssistantEntry {
     ...(entry.seeAll === undefined ? {} : { seeAll: entry.seeAll }),
     ...(entry.sources === undefined ? {} : { sources: entry.sources }),
     ...(entry.replies === undefined ? {} : { replies: entry.replies }),
+    ...(entry.moreOf === undefined ? {} : { moreOf: entry.moreOf }),
     replaced: entry.replaced,
     ...(entry.href === undefined ? {} : { href: entry.href }),
   };

@@ -348,3 +348,27 @@ describe("UT-ai-chat-context-field: the context sent with a message", () => {
     });
   });
 });
+
+describe("UT-ai-chat-more-of: the answer a Show more answer continues", () => {
+  const more: ChatEntry = {
+    id: "a2",
+    role: "assistant",
+    text: "Words",
+    notes: [],
+    references: [{ kind: "project", slug: "kadal-vista" }],
+    moreOf: "a1",
+    replaced: false,
+  };
+
+  it("is kept in the tab and read back", () => {
+    const storage = memoryStorage();
+    saveChat(storage, { ...EMPTY_CHAT, entries: [user("u1", "Show more"), more] });
+    expect(loadChat(storage).entries.at(-1)).toMatchObject({ id: "a2", moreOf: "a1" });
+  });
+
+  it("is optional, so a chat kept before it existed still loads", () => {
+    const storage = memoryStorage();
+    saveChat(storage, { ...EMPTY_CHAT, entries: [user("u1", "Hello"), assistant("a1", "Hi")] });
+    expect(loadChat(storage).entries).toHaveLength(2);
+  });
+});
