@@ -157,11 +157,11 @@ function ProjectCard({
           {price ? (
             <p className="truncate text-small font-bold text-ink lining-nums">{price}</p>
           ) : null}
-          <h3 className="truncate text-small font-bold text-primary" data-slot="project-card-name">
+          <h3 className="text-small font-bold text-primary" data-slot="project-card-name">
             <Link
               href={project.href}
               data-stretched=""
-              className="rounded-xs font-bold text-primary no-underline outline-none after:absolute after:inset-0 after:z-10 after:content-['']"
+              className="block min-h-6 truncate rounded-xs font-bold leading-6 text-primary no-underline outline-none after:absolute after:inset-0 after:z-10 after:content-['']"
             >
               {project.name}
             </Link>

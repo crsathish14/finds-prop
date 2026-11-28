@@ -148,14 +148,11 @@ function PropertyCard({
               listingType={property.listingType}
               className="truncate pr-10"
             />
-            <h3
-              className="truncate pr-10 text-small font-bold text-ink"
-              data-slot="property-card-title"
-            >
+            <h3 className="pr-10 text-small font-bold text-ink" data-slot="property-card-title">
               <Link
                 href={property.href}
                 data-stretched=""
-                className="rounded-xs font-bold text-ink no-underline outline-none after:absolute after:inset-0 after:z-10 after:content-['']"
+                className="block min-h-6 truncate rounded-xs font-bold leading-6 text-ink no-underline outline-none after:absolute after:inset-0 after:z-10 after:content-['']"
               >
                 {property.title}
               </Link>
