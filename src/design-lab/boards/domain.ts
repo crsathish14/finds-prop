@@ -56,7 +56,7 @@ export const DOMAIN: LabEntry[] = [
     id: "compact-cards",
     name: "Compact cards",
     description:
-      "The home and project cards as one row about 5.5 rem tall, for the AI chat's cards page: a 5 rem picture, price, title, BHK and area, locality, one badge, the heart and Compare. Saved, chosen, no picture, long text, six on one screen and loading.",
+      "The home and project cards as one row about 5.5 rem tall, for the AI chat's cards page: a 5 rem picture, price, title, BHK and area, locality, one badge, the heart and Compare. Saved, chosen, no picture, long text, six on one screen and loading. Also the mini cards (two to a row) of the phone and tablet cards page.",
     sources: [],
     Demo: CompactCardsDemo,
   },

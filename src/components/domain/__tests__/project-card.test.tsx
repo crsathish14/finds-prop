@@ -209,6 +209,31 @@ describe("ProjectCardSkeleton", () => {
   });
 });
 
+describe("ProjectCard, mini layout (the AI chat's cards page on a phone or tablet)", () => {
+  it("shows the price, name, BHK sizes, place and one badge, and leaves out the developer", () => {
+    renderWithMessages(<ProjectCard project={project} layout="mini" />);
+    expect(document.querySelector("[data-slot=project-card]")).toHaveAttribute(
+      "data-layout",
+      "mini",
+    );
+    expect(screen.getByText("₹78 L basic price")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Kadal Vista" })).toBeInTheDocument();
+    expect(screen.getByText("2 BHK")).toBeInTheDocument();
+    expect(screen.getByText("OMR Navalur")).toBeInTheDocument();
+    expect(screen.queryByText("Kadal Homes")).not.toBeInTheDocument();
+    expect([...document.querySelectorAll("[data-slot=badge]")]).toHaveLength(1);
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("holds its box while loading", () => {
+    renderWithMessages(<ProjectCardSkeleton layout="mini" />);
+    expect(document.querySelector("[data-slot=project-card-skeleton]")).toHaveAttribute(
+      "data-layout",
+      "mini",
+    );
+  });
+});
+
 describe("ProjectCardSkeleton, compact", () => {
   it("is hidden from screen readers and holds the compact card's box", () => {
     const { container } = renderWithMessages(<ProjectCardSkeleton layout="compact" />);

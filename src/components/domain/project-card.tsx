@@ -8,13 +8,15 @@
  *   offerType ("sale" | "rent", a commercial project), bedrooms (the BHK sizes on offer, such as
  *   [2, 3]), status "new_launch" | "under_construction" | "ready_to_move", featured, prime (the
  *   admin's Prime amounts, worked out by the page, ADR-208), cover { src,
- *   alt }), layout ("grid" default | "compact"), sizes (next/image `sizes` for this card's column),
+ *   alt }), layout ("grid" default | "compact" | "mini"), sizes (next/image `sizes` for this card's column),
  *   priority (first cards on the page), className. Missing facts are left out, never shown blank or as zero. The one price is shown with
  *   what it means ("₹8,500 per sq ft"); a price with no known type is shown alone.
  * Responsive: a column of picture over text at every width; the grid around it sets the columns.
  *   The compact layout (the AI chat's cards page, ADR-220) is one row about 5.5 rem tall: a 5 rem
  *   square picture, the price, the name, the BHK sizes and the locality, and one badge (Featured, else
  *   Prime, else the status, else For sale or For rent). It leaves out the developer's name and the city.
+ *   The mini layout (the AI chat's cards page on a phone or tablet, two to a row) is a small card: a 3:2 picture with
+ *   the badge, then the price, the name on one line, the BHK sizes and the locality.
  * Accessibility: the whole card is one link target: the project name link is stretched over the
  *   card. A keyboard ring is drawn around the card when that link has focus. The picture has the
  *   project's alt text. The place is "locality, city", or the locality alone when no city is given.
@@ -58,7 +60,7 @@ type ProjectCardData = {
   cover?: { src: string; alt: string } | null | undefined;
 };
 
-type ProjectCardLayout = "grid" | "compact";
+type ProjectCardLayout = "grid" | "compact" | "mini";
 
 type ProjectCardProps = {
   project: ProjectCardData;
@@ -90,6 +92,8 @@ const OFFER_KEYS = {
 const DEFAULT_SIZES = "(min-width: 1100px) 33vw, (min-width: 640px) 50vw, 100vw";
 /** The compact card's picture is a fixed 5 rem square (80 px), whatever the screen. */
 const COMPACT_SIZES = "80px";
+/** The mini card is half the screen wide on a phone, and at most a column of the cards page on a tablet. */
+const MINI_SIZES = "(min-width: 768px) 25vw, 50vw";
 
 function ProjectCard({
   project,
@@ -112,7 +116,7 @@ function ProjectCard({
       : amount;
   }
 
-  if (layout === "compact") {
+  if (layout === "compact" || layout === "mini") {
     // One badge: the strongest of Featured, Prime, the status and For sale or For rent.
     const badge = project.featured ? (
       <Badge tone="featured" className="h-5 px-2">
@@ -131,6 +135,57 @@ function ProjectCard({
         {translate(OFFER_KEYS[project.offerType])}
       </Badge>
     ) : null;
+    if (layout === "mini") {
+      return (
+        <article
+          data-slot="project-card"
+          data-layout="mini"
+          className={cn(
+            "group/project group/card relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface",
+            "transition-[box-shadow,border-color] duration-(--dur) hover:border-line-strong hover:shadow-hover",
+            "has-[a[data-stretched]:focus-visible]:outline-3 has-[a[data-stretched]:focus-visible]:outline-offset-3 has-[a[data-stretched]:focus-visible]:outline-primary",
+            className,
+          )}
+        >
+          <div className="relative aspect-3/2 shrink-0 overflow-hidden bg-canvas-sunken">
+            <CardCover
+              src={project.cover?.src}
+              alt={project.cover?.alt}
+              sizes={MINI_SIZES}
+              priority={priority}
+            />
+            {badge ? (
+              <div className="pointer-events-none absolute bottom-1 left-1 z-10">{badge}</div>
+            ) : null}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col px-2 pt-2 pb-2">
+            {price ? (
+              <p className="truncate text-small font-bold text-ink lining-nums">{price}</p>
+            ) : null}
+            <h3 className="text-small font-bold text-primary" data-slot="project-card-name">
+              <Link
+                href={project.href}
+                data-stretched=""
+                className="block min-h-6 truncate rounded-xs font-bold leading-6 text-primary no-underline outline-none after:absolute after:inset-0 after:z-10 after:content-['']"
+              >
+                {project.name}
+              </Link>
+            </h3>
+            {sizesOnOffer.length > 0 ? (
+              <ul className="flex gap-x-1 overflow-hidden text-caption font-semibold whitespace-nowrap text-ink [&>li+li]:before:mr-1 [&>li+li]:before:text-muted [&>li+li]:before:content-['·']">
+                {sizesOnOffer.map((size) => (
+                  <li key={size}>{translate("property.bhk", { count: size })}</li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="flex items-center gap-1 text-caption text-muted">
+              <Icon icon={MapPin} size="sm" className="shrink-0 text-primary" />
+              <span className="truncate">{project.locality}</span>
+            </p>
+          </div>
+        </article>
+      );
+    }
     return (
       <article
         data-slot="project-card"
@@ -266,6 +321,26 @@ function ProjectCardSkeleton({
   layout?: ProjectCardLayout;
   className?: string;
 }) {
+  if (layout === "mini") {
+    return (
+      <div
+        data-slot="project-card-skeleton"
+        data-layout="mini"
+        aria-hidden="true"
+        className={cn(
+          "flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface",
+          className,
+        )}
+      >
+        <Skeleton className="aspect-3/2 w-full rounded-none" />
+        <div className="flex flex-col gap-2 p-2">
+          <Skeleton shape="text" className="w-2/5" />
+          <Skeleton shape="text" className="w-4/5" />
+          <Skeleton shape="text" className="w-3/5" />
+        </div>
+      </div>
+    );
+  }
   if (layout === "compact") {
     return (
       <div
