@@ -1,3 +1,4 @@
+-- destructive: drops ai_web_search_on() and ai_assistant_settings.web_search, an off-by-default switch nothing reads any more (owner decision 28 Nov 2026, ADR-218); no stored data of value is lost.
 -- ADR-218 amended (owner decision, 28 Nov 2026): the web search is switched on and off by the server setting
 -- FLAG_AI_WEB_SEARCH, not by an admin switch in the database, so the chat no longer reads the database on every
 -- message to know.
