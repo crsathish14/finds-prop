@@ -6,8 +6,8 @@ import { WEB_SEARCH_MAX_DOMAINS, WEB_SEARCH_TRUSTED_DOMAINS } from "../web-searc
 const domains = WEB_SEARCH_TRUSTED_DOMAINS;
 
 describe("the trusted websites of the web search", () => {
-  it("are the owner's 63 domains, within OpenAI's limit", () => {
-    expect(domains).toHaveLength(63);
+  it("are the owner's 64 domains, within OpenAI's limit", () => {
+    expect(domains).toHaveLength(64);
     expect(domains.length).toBeLessThanOrEqual(WEB_SEARCH_MAX_DOMAINS);
   });
 

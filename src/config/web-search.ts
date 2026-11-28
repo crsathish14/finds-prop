@@ -82,6 +82,8 @@ export const WEB_SEARCH_TRUSTED_DOMAINS: readonly string[] = [
   "bcn.in",
   "jll.co.in",
   "cbre.co.in",
+  // A private RERA lookup site (owner, 28 Nov 2026): it copies the RERA registers, not an official source
+  "realestatechecker.in",
 ];
 
 /** The most domains OpenAI's `allowed_domains` takes. */
