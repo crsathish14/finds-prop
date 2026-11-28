@@ -1,5 +1,6 @@
 import type { LabEntry } from "../types";
 import { PropertyCardDemo, PropertyCardListDemo } from "./domain-demos";
+import { CompactCardsDemo } from "./domain-demos-compact";
 import { AgentCardDemo } from "./domain-demos-agents";
 import { DeveloperCardDemo, LocalityTileDemo, ProjectCardDemo } from "./domain-demos-places";
 import {
@@ -50,6 +51,14 @@ export const DOMAIN: LabEntry[] = [
       "The list layout puts the picture beside the text when the card's own box is wide enough (a container query) and stacks below that.",
     sources: [],
     Demo: PropertyCardListDemo,
+  },
+  {
+    id: "compact-cards",
+    name: "Compact cards",
+    description:
+      "The home and project cards as one row about 5.5 rem tall, for the AI chat's cards page: a 5 rem picture, price, title, BHK and area, locality, one badge, the heart and Compare. Saved, chosen, no picture, long text, six on one screen and loading.",
+    sources: [],
+    Demo: CompactCardsDemo,
   },
   {
     id: "project-card",

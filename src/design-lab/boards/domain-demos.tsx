@@ -6,6 +6,7 @@ import {
   PropertyCard,
   PropertyCardSkeleton,
   type PropertyCardData,
+  type PropertyCardLayout,
 } from "@/components/domain/property-card";
 import { Text } from "@/components/ui/text";
 import { Column, Specimen } from "../frame";
@@ -76,7 +77,7 @@ export const PLOT_NO_PICTURE: PropertyCardData = {
   summary: "Plot in Sholinganallur. Listed 4 days ago.",
 };
 
-const NOTHING_BUT_PRICE: PropertyCardData = {
+export const NOTHING_BUT_PRICE: PropertyCardData = {
   href: "#property-5",
   title: "Independent house, details to follow",
   locality: "Madurai",
@@ -85,7 +86,7 @@ const NOTHING_BUT_PRICE: PropertyCardData = {
   listingType: "rent",
 };
 
-const LONG_TITLE: PropertyCardData = {
+export const LONG_TITLE: PropertyCardData = {
   ...SALE_FEATURED,
   href: "#property-6",
   title:
@@ -103,7 +104,7 @@ export function InteractiveCard({
   compareDisabled = false,
 }: {
   property: PropertyCardData;
-  layout?: "grid" | "list";
+  layout?: PropertyCardLayout;
   startSaved?: boolean;
   startCompared?: boolean;
   compareDisabled?: boolean;
