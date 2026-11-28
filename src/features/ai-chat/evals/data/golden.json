@@ -7194,7 +7194,7 @@
     "set": "golden",
     "category": "web",
     "language": "en",
-    "title": "a current fee findsprop does not hold: the articles first, then one search of the trusted websites, the website named as the source, no link unasked",
+    "title": "a current fee findsprop does not hold: the articles first, then one search of the trusted websites, the websites drawn as sources under the answer, a follow-up question, no page link unasked",
     "messages": [
       {
         "role": "user",
@@ -7229,7 +7229,7 @@
         ]
       },
       {
-        "text": "A trusted website says the stamp duty is 7 per cent and the registration fee is 2 per cent of the guideline value, as of 2026. These may have changed since. Source: tnreginet.example.test"
+        "text": "A trusted website says the stamp duty is 7 per cent and the registration fee is 2 per cent of the guideline value, as of 2026. These may have changed since. Would you like me to work out the fees for a particular price?"
       }
     ],
     "expect": {
@@ -7250,7 +7250,7 @@
         ]
       },
       "visible": {
-        "mustContain": [["trusted website"], ["tnreginet.example.test"]],
+        "mustContain": [["trusted website"], ["?"]],
         "mustNotContain": ["https://", "/fees"]
       }
     }

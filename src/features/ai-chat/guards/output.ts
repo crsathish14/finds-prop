@@ -51,7 +51,7 @@ import {
 } from "@/config/ai";
 import { logger } from "@/server/logger";
 import { isSiteLinkKey, MAX_SITE_LINKS_PER_ANSWER, type SiteLinkKey } from "../site-links";
-import { sourceHref, sourcesToShow } from "../source-links";
+import { sourceHref, sourcesToShow, webSourcesToShow } from "../source-links";
 import {
   referenceKey,
   type CardReference,
@@ -559,6 +559,12 @@ export function createOutputGuard(input: OutputGuardInput): OutputGuard {
       }
       if (!blockedNow && input.automaticSources === true) {
         for (const reference of sourcesToShow(input.references)) {
+          events.push(...sendSource(reference));
+        }
+      }
+      if (!blockedNow) {
+        // The websites a web answer came from are always drawn (owner, 28 Nov 2026), built by code from the search.
+        for (const reference of webSourcesToShow(input.references)) {
           events.push(...sendSource(reference));
         }
       }

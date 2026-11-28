@@ -20,9 +20,9 @@ const eventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("card"), reference: referenceSchema }),
   z.object({
     type: z.literal("source"),
-    kind: z.enum(["article", "faq", "job"]),
+    kind: z.enum(["article", "faq", "job", "web"]),
     title: z.string().max(200),
-    href: z.string().max(200),
+    href: z.string().max(300),
   }),
   z.object({
     type: z.literal("link"),

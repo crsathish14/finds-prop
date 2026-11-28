@@ -2,7 +2,16 @@
 
 import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Alert } from "@/components/patterns/alert";
 import { AiChatPager, type AiChatPane } from "@/components/domain/ai-chat-pager.client";
 import { ChatAssistantMessage, ChatStreamCaret } from "@/components/domain/chat-assistant-message";
@@ -20,6 +29,7 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { isSiteLinkPath } from "../site-links";
 import { isSourcePath } from "../source-links";
+import { findTrustedHomes } from "../trusted-sites";
 import { Text } from "@/components/ui/text";
 import {
   AI_MAX_CARDS_PER_ANSWER,
@@ -144,6 +154,39 @@ function paragraphs(text: string): string[] {
   return text.split(/\n{2,}/).filter((paragraph) => paragraph.trim() !== "");
 }
 
+/** A link to another website, opening in a new tab, with the new-tab notice for screen readers. */
+function NewTabLink({ href, children }: { href: string; children: ReactNode }) {
+  const common = useTranslations("common");
+  return (
+    <Link href={href} external newTabLabel={common("opensInNewTab")}>
+      {children}
+    </Link>
+  );
+}
+
+/**
+ * A piece of answer text with every trusted website's home address in it (`rera.tn.gov.in`) drawn as a link to that
+ * website (owner, 28 Nov 2026). Only the trusted websites of the web search, and only the website alone, never a page
+ * path; anything else stays text.
+ */
+function withTrustedLinks(text: string): ReactNode {
+  const homes = findTrustedHomes(text);
+  if (homes.length === 0) return text;
+  const pieces: ReactNode[] = [];
+  let at = 0;
+  for (const home of homes) {
+    if (home.start > at) pieces.push(text.slice(at, home.start));
+    pieces.push(
+      <NewTabLink key={home.start} href={home.href}>
+        {home.text}
+      </NewTabLink>,
+    );
+    at = home.end;
+  }
+  if (at < text.length) pieces.push(text.slice(at));
+  return pieces;
+}
+
 function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) {
   const parts = paragraphs(text);
   return (
@@ -153,10 +196,10 @@ function AnswerText({ text, caret = false }: { text: string; caret?: boolean }) 
           {sentenceParts(paragraph.trim()).map((part, position) =>
             part.question ? (
               <strong key={position} className="font-bold">
-                {part.text}
+                {withTrustedLinks(part.text)}
               </strong>
             ) : (
-              part.text
+              <Fragment key={position}>{withTrustedLinks(part.text)}</Fragment>
             ),
           )}
           {caret && index === parts.length - 1 ? <ChatStreamCaret /> : null}
@@ -184,9 +227,14 @@ function sourceRow(sources: readonly ChatSource[], label: string) {
       <ul className="mt-1 flex flex-col gap-1">
         {shown.map((source) => (
           <li key={source.href}>
-            <Link href={source.href} variant="arrow">
-              {source.title}
-            </Link>
+            {source.kind === "web" ? (
+              // A page of a trusted website (ADR-218): another site, so it opens in a new tab.
+              <NewTabLink href={source.href}>{source.title}</NewTabLink>
+            ) : (
+              <Link href={source.href} variant="arrow">
+                {source.title}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

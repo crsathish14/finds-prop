@@ -118,6 +118,25 @@ describe("UT-ai-tool-search-web: the rules the server keeps", () => {
 });
 
 describe("UT-ai-tool-search-web: the search and the 7-day memory", () => {
+  it("keys the memory by the answer form, so answers kept in an older form are searched again (v2, 28 Nov 2026)", () => {
+    expect(queryKeyOf("DAC Developers RERA")).toBe("v2 dac developers rera");
+    expect(queryKeyOf("x".repeat(250))).toHaveLength(200);
+  });
+
+  it("names the cited pages as the answer's web sources, one per website, by the website", async () => {
+    const { search } = setUp();
+    const outcome = await search({ query: "Registration fee flat Chennai 2026" });
+    if (outcome.status !== "ok") throw new Error("the search failed");
+    expect(outcome.references).toEqual([
+      {
+        kind: "web",
+        url: "https://tnreginet.example.test/fees",
+        title: "tnreginet.example.test",
+        opened: false,
+      },
+    ]);
+  });
+
   it("searches, reports what the search spent, and keeps the words, the answer and its sources for 7 days", async () => {
     const { search, searcher, memory, spent } = setUp();
     const outcome = await search({ query: "  Registration   fee flat\u0007 Chennai 2026 " });
@@ -126,7 +145,7 @@ describe("UT-ai-tool-search-web: the search and the 7-day memory", () => {
     expect(spent).toEqual([SPEND]);
     expect(memory.saved).toEqual([
       {
-        queryKey: "registration fee flat chennai 2026",
+        queryKey: "v2 registration fee flat chennai 2026",
         query: "Registration fee flat Chennai 2026",
         answer: ANSWER,
         sources: [

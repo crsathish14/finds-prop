@@ -158,6 +158,17 @@ export type SourceReference =
       readonly slug: string;
       readonly title: string;
       readonly opened: boolean;
+    }
+  | {
+      /**
+       * A page of a trusted website the web search used (`search_web`, ADR-218): drawn under every web answer as a link
+       * that opens in a new tab (owner, 28 Nov 2026). `title` is the website (`realestatechecker.in`), never the page's
+       * own title, which a stranger wrote.
+       */
+      readonly kind: "web";
+      readonly url: string;
+      readonly title: string;
+      readonly opened: boolean;
     };
 
 /** What names a reference once in a set: its kind and its id (a home's public id, a project's slug, an article's id). */
@@ -172,6 +183,8 @@ export function referenceKey(reference: ToolReference): string {
       return `${reference.kind}:${reference.id}`;
     case "job":
       return `job:${reference.slug}`;
+    case "web":
+      return `web:${reference.url}`;
   }
 }
 

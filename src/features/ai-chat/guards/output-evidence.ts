@@ -13,7 +13,6 @@
  * address) may always be named: every web answer says where it came from (owner, 28 Nov 2026).
  */
 import { AI_LINK_TLDS, AI_PROMPT_COPY_RUN_WORDS } from "@/config/ai";
-import { WEB_SEARCH_TRUSTED_DOMAINS } from "@/config/web-search";
 import { askedForLink } from "../endpoint/link-request";
 import type { ToolReference } from "../tools/types";
 import { UNTRUSTED_TEXT_KEY } from "../tools/untrusted";
@@ -105,18 +104,7 @@ export function normalizeAddress(written: string): string {
     .replace(/\/+$/u, "");
 }
 
-/**
- * Whether a written address (as `normalizeAddress` writes it) is the home address of a trusted website of the web search
- * (owner, 28 Nov 2026): the website alone, such as `rera.tn.gov.in` or `sbi.bank.in`, with no path, query or anchor,
- * on a trusted domain or one of its subdomains. A page path is never let through this way, because the model could
- * make one up; a page's address comes only from a tool result.
- */
-export function isTrustedSiteHome(normalized: string): boolean {
-  if (normalized === "" || /[/?#:@\s]/u.test(normalized)) return false;
-  return WEB_SEARCH_TRUSTED_DOMAINS.some(
-    (domain) => normalized === domain || normalized.endsWith(`.${domain}`),
-  );
-}
+export { isTrustedSiteHome } from "../trusted-sites";
 
 const TLD_ALTERNATIVES = AI_LINK_TLDS.join("|");
 
