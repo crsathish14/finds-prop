@@ -9,7 +9,7 @@ import {
   PROJECT_STATUSES,
   type ProjectListItem,
 } from "@/features/projects";
-import { cityFilterOf, CITY_MAX_CHARACTERS } from "../city-filter";
+import { cityFilterOf, CITY_MAX_CHARACTERS, withChosenCity } from "../city-filter";
 import { localityKey } from "../localities";
 import { isPrimeProject, type ProjectPrimeRules } from "@/lib/project-prime";
 import {
@@ -239,7 +239,7 @@ export const searchProjectsTool: AiChatTool<SearchProjectsInput, SearchProjectsO
   output: searchProjectsOutputSchema,
   async run(input, context) {
     requireSignIn(context);
-    const city = cityFilterOf(input.city);
+    const city = cityFilterOf(withChosenCity(input, context.chosenCity).city);
     const [list, primeRules] = await Promise.all([
       city === null ? getProjects() : getProjects(city),
       getPrimeRules(),

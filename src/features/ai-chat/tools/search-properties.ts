@@ -26,7 +26,7 @@ import {
   type ListingRow,
   type SearchParams,
 } from "@/features/search";
-import { cityFilterOf, CITY_MAX_CHARACTERS } from "../city-filter";
+import { cityFilterOf, CITY_MAX_CHARACTERS, withChosenCity } from "../city-filter";
 import { localityKey } from "../localities";
 import { getHomeExtras, getLocalityCentre, type HomeExtras } from "../ranking/reads.server";
 import { homeTier } from "../ranking/promotions";
@@ -116,7 +116,7 @@ const baseInputShape = {
   ),
   city: shortText(
     CITY_MAX_CHARACTERS,
-    "A city such as Chennai, or null (at most 80 characters); a neighbourhood goes in `locality`.",
+    "The city the customer named, such as Coimbatore, or null when they named none: null searches the city they chose on the site (at most 80 characters); a neighbourhood goes in `locality`.",
   ),
   locality: shortText(
     LOCALITY_MAX_CHARACTERS,
@@ -779,7 +779,9 @@ async function assessTogether(
  * otherwise the first. `remember` records the page once the result is built, so the homes of this page are not
  * counted as seen before in their own result.
  */
-async function homesPage(input: SearchPropertiesInput, context: ToolContext) {
+async function homesPage(asked: SearchPropertiesInput, context: ToolContext) {
+  // The header's city when the customer named none; the page is remembered with it, so Show more keeps it.
+  const input = withChosenCity(asked, context.chosenCity);
   // The project code is loaded only for a search that lists projects (ADR-215): a signed-in customer, no order of
   // their own, no home label.
   const withProjects = context.signedIn && input.sort === null && input.label === null;
@@ -1102,7 +1104,7 @@ export function createSearchPropertiesTool(
       }
       const found = await placeLookup(place);
       if (found.status !== "found") return noPlaceOutput(found.status, context);
-      return searchAround(input, found, context);
+      return searchAround(withChosenCity(input, context.chosenCity), found, context);
     },
   };
 }

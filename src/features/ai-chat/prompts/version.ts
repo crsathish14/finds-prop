@@ -8,7 +8,7 @@
  * in the same pull request that changes any prompt file, so a usage row, an eval run and a bug report can say which
  * wording was in use. It is part of the prompt text, so a test that reads the prompt can see it.
  */
-export const SYSTEM_PROMPT_VERSION = "2026-11-28.4";
+export const SYSTEM_PROMPT_VERSION = "2026-11-28.5";
 
 /**
  * A random string placed in the system prompt, with the order never to write it. It means nothing and guards

@@ -163,6 +163,25 @@ export const CARDS_SECTION = [
 ].join("\n");
 
 /**
+ * The city the customer chose in the site's header (owner, 28 Nov 2026). A search with no city of its own looks only
+ * there (the tools fill it in); a city the customer names always wins. Included only when the city is known. It adds no
+ * words the customer sees.
+ */
+export function citySection(city: {
+  readonly name: string;
+  readonly others: readonly string[];
+}): string {
+  const others =
+    city.others.length === 0 ? "" : ` Other cities on ${BRAND}: ${city.others.join(", ")}.`;
+  return [
+    "City:",
+    `- The customer chose ${city.name} on the site. A home or project search with no city given looks only in ${city.name}; leave the city empty for it.`,
+    "- When the customer names a city (for example Coimbatore), put that city in the search: it searches that city only.",
+    `- When nothing is found in ${city.name}, say so with the city (for example: none in KK Nagar, ${city.name}) and ask whether to look in another city.${others}`,
+  ].join("\n");
+}
+
+/**
  * Looking for homes near a place (ADR-142). Included only while `FLAG_AI_PLACE_SEARCH` is on: with it off the assistant has
  * no way to search around a place and the section is not in the prompt. It names no tool and says nothing about how a
  * place is found, and it never asks the model to write, guess or repeat where a place is: the model is not told. It is

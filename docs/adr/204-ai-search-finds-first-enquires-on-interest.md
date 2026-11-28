@@ -33,3 +33,7 @@ The owner found that the AI search behaved like a chatbot: it showed three or fo
 - Fewer enquiry offers in the chat; enquiries now come from customers who looked at one home or project.
 - A project beyond the 120th is still not searched; the ranking phase of the plan replaces this read with a search that has no such limit.
 - The results still come back newest first, not best first, and Show more still repeats: the ranking and paging phases of the plan fix both.
+
+## Amendment, 28 Nov 2026: the city chosen in the header
+
+The owner found that "homes in KK Nagar" on a visitor set to Chennai listed Madurai's KK Nagar: the chat searched every city unless the customer typed one. Now the endpoint reads the city chosen in the site's header (`getSelectedCity`, the default city when none was chosen) and the other listed cities (`ChatDeps.chosenCity`). A home or project search with no city of its own looks only in the chosen city (`withChosenCity` in `city-filter.ts`, used by `search_properties`, its place search and `search_projects`; the page is remembered with the city, so Show more and See all keep it). A city the customer names always wins: "homes in Coimbatore" searches Coimbatore only. The prompt's city section (prompt `2026-11-28.5`) says so, and tells the assistant to say when nothing is found in the chosen city and offer the other listed cities. Test `UT-ai-chosen-city`.

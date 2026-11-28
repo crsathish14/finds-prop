@@ -43,6 +43,12 @@ export interface ToolContext {
    */
   readonly earlierResults?: readonly string[];
   /**
+   * The city the customer chose in the site's header (its display name, such as Chennai). A home or project search
+   * with no city of its own looks only there; a city the customer named wins (`withChosenCity`). Absent means none (a
+   * test, an eval, Show more, which repeats the filters the first page ran with).
+   */
+  readonly chosenCity?: string;
+  /**
    * Adds what a tool spent on a paid call of its own (the web search, ADR-218) to the message's usage row: the tokens of
    * that call and the web searches it ran. Absent means nobody is counting (a test, an eval).
    */

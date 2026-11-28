@@ -2,6 +2,7 @@ import "server-only";
 import { createTranslator } from "next-intl";
 import { after } from "next/server";
 import { AI_MESSAGE_HARD_STOP_MS, AI_MESSAGE_TIME_LIMIT_MS } from "@/config/ai";
+import { getListedCities, getSelectedCity } from "@/features/cities";
 import { getFeatureFlags } from "@/features/site";
 import messages from "@/i18n/messages/en.json";
 import type { Translate } from "@/lib/format";
@@ -63,6 +64,13 @@ export function createChatDeps(): ChatDeps {
       : {
           webSearch: { tool: createSearchWebTool({ searcher, store: SERVER_WEB_ANSWER_STORE }) },
         }),
+    chosenCity: async () => {
+      const [chosen, listed] = await Promise.all([getSelectedCity(), getListedCities()]);
+      return {
+        name: chosen.name,
+        others: listed.filter((city) => city.key !== chosen.key).map((city) => city.name),
+      };
+    },
     translate,
     confirmCard: (offer, session) =>
       buildConfirmCard(offer, session, realConfirmCardDeps(translate)),

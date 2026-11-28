@@ -174,6 +174,20 @@ describe("UT-ai-tool-projects-search: the input", () => {
 });
 
 describe("UT-ai-tool-projects-search: the filters", () => {
+  it("searches the city chosen in the header when none is named, and a named city wins (owner, 28 Nov 2026)", async () => {
+    const run = (filters: Record<string, unknown>) =>
+      runTool(
+        [searchProjectsTool],
+        { name: "search_projects", input: { ...NO_FILTERS, ...filters } },
+        { ...TOOL_CONTEXT, chosenCity: "Chennai" },
+      );
+    getProjects.mockClear();
+    await run({});
+    expect(getProjects).toHaveBeenLastCalledWith("chennai");
+    await run({ city: "Coimbatore" });
+    expect(getProjects).toHaveBeenLastCalledWith("coimbatore");
+  });
+
   it("gives every project when nothing is asked for, best match first (ADR-205)", async () => {
     // All four are featured, so the order is the relevance (the one with no price is the least complete), then the slug.
     expect(await slugsFor({})).toEqual([
