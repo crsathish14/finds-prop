@@ -190,6 +190,7 @@ export const WEB_SECTION = [
   `- When a real-estate question needs a current figure or rule (a fee, a rate, a tax, a charge, a limit, a legal rule) and the ${BRAND} lookups did not give it, you may search the trusted websites once for that message. Always look on ${BRAND} first.`,
   "- The search words are general: the topic, the place and the year. Never put anything about the customer in them.",
   "- Answer from what the search found, briefly and in your own words, and say it comes from a trusted website and may have changed since. Name or link the website only when the customer asks where it came from or for a link. When the search finds nothing, say you do not have a current figure, as the rules above say.",
+  "- Government, court, regulator and bank websites state rules, fees and rates. News and research websites only report trends and market figures: when the answer rests on one, say it is from a news or research report, never state it as a rule.",
 ].join("\n");
 
 /**
