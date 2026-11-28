@@ -21,6 +21,22 @@ describe("ChatCardsLine: where the answer's cards went (ADR-220)", () => {
     }
   });
 
+  it("says to swipe before the first swipe, and just to see them after it", () => {
+    for (const [mode, count, kind, text] of [
+      ["swipe", 3, "homes", "Swipe to see the 3 homes"],
+      ["swipe", 1, "projects", "Swipe to see the 1 project"],
+      ["swipe", 4, "properties", "Swipe to see the 4 properties"],
+      ["see", 6, "homes", "See the 6 homes"],
+      ["see", 1, "properties", "See the 1 property"],
+    ] as const) {
+      const view = renderWithMessages(
+        <ChatCardsLine count={count} kind={kind} mode={mode} onShow={vi.fn()} />,
+      );
+      expect(screen.getByRole("button", { name: text })).toBeVisible();
+      view.unmount();
+    }
+  });
+
   it("brings the cards forward when pressed", async () => {
     const onShow = vi.fn();
     renderWithMessages(<ChatCardsLine count={2} kind="homes" onShow={onShow} />);

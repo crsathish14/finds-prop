@@ -8,6 +8,7 @@ import { encodeChatEvent, type ChatStreamEvent } from "../../endpoint/events";
 import { limitResponse, serverErrorResponse } from "../../endpoint/responses";
 import { STORAGE_KEY, type StoredChat } from "../chat-model";
 import { HOME_QUESTION_KEY } from "../home-question";
+import { resetSwipedForTests, SWIPED_KEY } from "../swiped";
 
 const cards = vi.hoisted(() => ({ read: vi.fn(), confirm: vi.fn() }));
 vi.mock("../../actions", () => ({
@@ -1189,7 +1190,7 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     await user.click(sendButton());
     const thread = screen.getByRole("list", { name: words.thread.label });
     // The chat keeps the words and the line; the card is on the cards pane, which is not shown yet.
-    const line = await within(thread).findByRole("button", { name: "1 home on the right" });
+    const line = await within(thread).findByRole("button", { name: "Swipe to see the 1 home" });
     expect(within(thread).queryByRole("link", { name: /Two bedroom flat/ })).toBeNull();
     const aside = document.querySelector('[data-slot="ai-cards-aside"]') as HTMLElement;
     expect(within(aside).getByRole("link", { name: /Two bedroom flat/ })).toBeInTheDocument();
@@ -1227,6 +1228,86 @@ describe("the cards page beside the chat, from lg (ADR-220)", () => {
     expect(screen.getByRole("button", { name: words.pager.back }).parentElement).toHaveClass(
       "lg:hidden",
     );
+  });
+
+  describe("the swipe hint and the nudge below lg", () => {
+    const animate = vi.fn().mockReturnValue({ cancel: vi.fn() });
+
+    beforeEach(() => {
+      window.localStorage.clear();
+      resetSwipedForTests();
+      animate.mockClear();
+      Object.defineProperty(HTMLElement.prototype, "animate", {
+        value: animate,
+        configurable: true,
+      });
+      cards.read.mockResolvedValue({ ok: true, data: [home("aaaaaaaa", "Two bedroom flat")] });
+      fetchMock.mockResolvedValueOnce(
+        answered("Here is one.", [
+          { type: "card", reference: { kind: "home", homeId: "aaaaaaaa", slug: "two-bhk" } },
+        ]),
+      );
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(HTMLElement.prototype, "animate");
+    });
+
+    async function askAndWait() {
+      renderWithMessages(<ChatIsland signedIn={false} controls={controls} />);
+      await ready();
+      const user = await type("show me");
+      await user.click(sendButton());
+      await screen.findByText("Here is one.");
+      return user;
+    }
+
+    it("tells the visitor to swipe, with the count, until they have swiped", async () => {
+      desktop(false);
+      await askAndWait();
+      expect(await screen.findByRole("button", { name: "Swipe to see the 1 home" })).toBeVisible();
+      expect(screen.queryByText("1 home on the right")).toBeNull();
+    });
+
+    it("says only to see the cards once the visitor has swiped (kept in this browser)", async () => {
+      desktop(false);
+      window.localStorage.setItem(SWIPED_KEY, "1");
+      await askAndWait();
+      expect(await screen.findByRole("button", { name: "See the 1 home" })).toBeVisible();
+      expect(screen.queryByText(/Swipe to see/)).toBeNull();
+    });
+
+    it("still says on the right from lg", async () => {
+      desktop(true);
+      await askAndWait();
+      expect(await screen.findByRole("button", { name: "1 home on the right" })).toBeVisible();
+    });
+
+    it("nudges once, after the answer has finished and its cards have loaded", async () => {
+      desktop(false);
+      await askAndWait();
+      await waitFor(() => expect(animate).toHaveBeenCalledTimes(1));
+      expect(animate.mock.calls[0]?.[0]).toEqual([
+        { translate: "0px" },
+        { translate: "-48px", offset: 0.4 },
+        { translate: "0px" },
+      ]);
+    });
+
+    it("does not nudge once the visitor has swiped", async () => {
+      desktop(false);
+      window.localStorage.setItem(SWIPED_KEY, "1");
+      await askAndWait();
+      await screen.findByRole("button", { name: "See the 1 home" });
+      expect(animate).not.toHaveBeenCalled();
+    });
+
+    it("does not nudge from lg", async () => {
+      desktop(true);
+      await askAndWait();
+      await screen.findByRole("button", { name: "1 home on the right" });
+      expect(animate).not.toHaveBeenCalled();
+    });
   });
 
   it("marks a Show more answer as the continuation of the answer before it", async () => {

@@ -4543,6 +4543,8 @@
   },
   "ai": {
     "cardsOnRight": "{count, plural, one {# {kind, select, homes {home} projects {project} other {property}}} other {# {kind, select, homes {homes} projects {projects} other {properties}}}} on the right",
+    "cardsSwipe": "Swipe to see the {count, plural, one {# {kind, select, homes {home} projects {project} other {property}}} other {# {kind, select, homes {homes} projects {projects} other {properties}}}}",
+    "cardsSee": "See the {count, plural, one {# {kind, select, homes {home} projects {project} other {property}}} other {# {kind, select, homes {homes} projects {projects} other {properties}}}}",
     "cardsPage": {
       "label": "Homes and projects from the conversation",
       "empty": "Homes and projects you ask about appear here.",
