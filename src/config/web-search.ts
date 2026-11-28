@@ -97,11 +97,11 @@ export const WEB_SEARCH_USER_LOCATION = {
 } as const;
 
 /**
- * How long `search_web` may take, in milliseconds (owner, 27 Nov 2026: "about 15 s, like builder research"), so a slow
- * search cannot use up the 40 s of the message. The search itself is stopped a second earlier, so the tool can still
- * report what was spent.
+ * How long `search_web` may take, in milliseconds. It was 15 s for one quick lookup (owner, 27 Nov 2026); with up to
+ * `WEB_SEARCH_MAX_ACTIONS` searches or page opens (owner, 28 Nov 2026) it is 22 s, still well inside the 40 s of the
+ * message. The search itself is stopped a second earlier, so the tool can still report what was spent.
  */
-export const WEB_SEARCH_TIMEOUT_MS = 15_000;
+export const WEB_SEARCH_TIMEOUT_MS = 22_000;
 export const WEB_SEARCH_REQUEST_TIMEOUT_MS = WEB_SEARCH_TIMEOUT_MS - 1000;
 
 /** How long a web answer is kept and given again to anyone who asks the same thing (owner, 27 Nov 2026: 7 days). */
@@ -109,6 +109,13 @@ export const WEB_ANSWER_MEMORY_DAYS = 7;
 
 /** Web searches per customer message (owner, 27 Nov 2026: at most 1). No daily cap: the message limits bound it. */
 export const MAX_WEB_SEARCH_CALLS_PER_MESSAGE = 1;
+
+/**
+ * The most actions one web search may take at OpenAI (`max_tool_calls`): a search, a second search or a page opened
+ * (owner, 28 Nov 2026: up to 3, so a builder's RERA number on a page can be read; about 3 US cents at most instead of
+ * 1). Each action is billed and counted as a web search in the usage row.
+ */
+export const WEB_SEARCH_MAX_ACTIONS = 3;
 
 /** The longest search words the assistant may write, in characters (the memory's own limit is 200). */
 export const WEB_SEARCH_QUERY_MAX_CHARACTERS = 200;

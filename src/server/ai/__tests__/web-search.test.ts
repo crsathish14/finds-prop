@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WEB_SEARCH_TRUSTED_DOMAINS } from "@/config/web-search";
+import { WEB_SEARCH_MAX_ACTIONS, WEB_SEARCH_TRUSTED_DOMAINS } from "@/config/web-search";
 import { buildWebSearchRequest, createOpenAiWebSearch } from "../index";
 import {
   createMockOpenAi,
@@ -77,13 +77,13 @@ function searcher(replies: MockReply[], timeoutMs?: number) {
 }
 
 describe("UT-ai-web-search: the request", () => {
-  it("sends only the search words, to the web_search tool on the trusted sites, in Tamil Nadu, stateless, one search", () => {
+  it("sends only the search words, to the web_search tool on the trusted sites, in Tamil Nadu, stateless, at most 3 steps", () => {
     const request = buildWebSearchRequest("stamp duty Chennai 2026", TEST_MODEL);
     expect(request).toMatchObject({
       model: TEST_MODEL,
       store: false,
       stream: false,
-      max_tool_calls: 1,
+      max_tool_calls: 3,
       input: [{ role: "user", content: "Search words: stamp duty Chennai 2026" }],
       tools: [
         {
@@ -93,6 +93,7 @@ describe("UT-ai-web-search: the request", () => {
         },
       ],
     });
+    expect(WEB_SEARCH_MAX_ACTIONS).toBe(3);
     // Never the preview tool, which costs more (checked 27 Nov 2026).
     expect(JSON.stringify(request)).not.toContain("web_search_preview");
   });
@@ -102,11 +103,33 @@ describe("UT-ai-web-search: the request", () => {
     await web.search("stamp duty Chennai 2026");
     expect(mock.requests).toHaveLength(1);
     expect(mock.requests[0]?.url).toContain("/responses");
-    expect(mock.requests[0]?.body).toMatchObject({ store: false, max_tool_calls: 1 });
+    expect(mock.requests[0]?.body).toMatchObject({ store: false, max_tool_calls: 3 });
   });
 });
 
 describe("UT-ai-web-search: the result", () => {
+  it("takes OpenAI's tracking tags out of the addresses and keeps one source per page", async () => {
+    const { web } = searcher([
+      responseReply([
+        searchCall([
+          "https://tnhb.example.test/note.pdf",
+          "https://tnhb.example.test/a?page=2&utm_medium=x",
+        ]),
+        message("The portal lists registered projects.", [
+          { title: "Policy note", url: "https://tnhb.example.test/note.pdf?utm_source=openai" },
+        ]),
+      ]),
+    ]);
+    const result = await web.search("TN RERA project search");
+    expect(result).toMatchObject({
+      ok: true,
+      sources: [
+        { title: "Policy note", url: "https://tnhb.example.test/note.pdf" },
+        { title: "", url: "https://tnhb.example.test/a?page=2" },
+      ],
+    });
+  });
+
   it("gives the answer, the cited pages first, and counts every web search the response reports", async () => {
     const { web } = searcher([
       responseReply([

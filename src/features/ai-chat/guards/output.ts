@@ -63,6 +63,7 @@ import {
   buildEvidence,
   compactText,
   findAddresses,
+  isTrustedSiteHome,
   normalizeAddress,
   phoneIsGiven,
   wordRuns,
@@ -350,7 +351,10 @@ function contactsAllowed(checkable: string, evidence: OutputEvidence): boolean {
   }
   // Take the emails out before looking for addresses, so that "a@b.com" is not read as the address "b.com".
   for (const contact of findContacts(checkable)) rest = rest.split(contact.value).join(" ");
-  return findAddresses(rest).every((address) => evidence.addresses.has(normalizeAddress(address)));
+  return findAddresses(rest).every((address) => {
+    const normalized = normalizeAddress(address);
+    return evidence.addresses.has(normalized) || isTrustedSiteHome(normalized);
+  });
 }
 
 function checkSegment(
