@@ -26,6 +26,18 @@ function sessionFor(userId: string): SessionView {
   return { userId, roles: ["customer"], phoneVerified: true, builderId: null };
 }
 
+/**
+ * The counter counts in fixed blocks of its window (`rate_limit_hit` rounds the clock down to the window), so a burst
+ * that straddles the end of a block is counted in two blocks and passes the limit by chance. A test that fills a short
+ * window first waits, when less than `marginMs` of the current block is left, for the next block to begin. The limit
+ * itself is unchanged. The database runs on the same machine, so its clock is the test's clock.
+ */
+async function freshWindow(windowSeconds: number, marginMs = 3000): Promise<void> {
+  const windowMs = windowSeconds * 1000;
+  const left = windowMs - (Date.now() % windowMs);
+  if (left < marginMs) await new Promise((resolve) => setTimeout(resolve, left + 100));
+}
+
 async function refusal(attempt: Promise<void>): Promise<ActionError> {
   const error = await attempt.then(
     () => null,
@@ -116,6 +128,7 @@ describe("IT-rate-limit: the rules of a scope", () => {
 describe("IT-rate-limit: the action step (hashes from the request, secret from the environment)", () => {
   it("counts one visitor, told apart by browser, and leaves other visitors alone", async () => {
     request.userAgent = `it-browser-${randomUUID()}`;
+    await freshWindow(60);
     for (let attempt = 1; attempt <= 30; attempt += 1) {
       await enforceActionRateLimit({
         scope: "project_event",
@@ -179,6 +192,7 @@ describe("IT-rate-limit-places: place suggestions against a real database (ADR-1
 
   it("IT-places-burst: one address that changes its browser every call is stopped after 30 in 10 seconds, with a retry time", async () => {
     const network = `it-network-${randomUUID()}`;
+    await freshWindow(10);
     for (let attempt = 1; attempt <= 30; attempt += 1) {
       await enforceRateLimit({ counter, scope: "places", caller: anonymous(network) });
     }
@@ -192,6 +206,7 @@ describe("IT-rate-limit-places: place suggestions against a real database (ADR-1
 
   it("IT-places-burst-isolated: a visitor on another address is never counted with it", async () => {
     const busy = `it-network-${randomUUID()}`;
+    await freshWindow(10);
     for (let attempt = 1; attempt <= 30; attempt += 1) {
       await enforceRateLimit({ counter, scope: "places", caller: anonymous(busy) });
     }
@@ -211,6 +226,7 @@ describe("IT-rate-limit-places: place suggestions against a real database (ADR-1
       subjects.push(network);
       return { ...caller, network: () => network };
     };
+    await freshWindow(60);
     for (let attempt = 1; attempt <= 60; attempt += 1) {
       await enforceRateLimit({ counter, scope: "places", caller: sameVisitor() });
     }
