@@ -472,11 +472,11 @@ insert into exp_write (label, who, stmt, expected) values
   ('site_settings: a visitor cannot', 'anon', $q$update public.site_settings set value = '{"matrix": 2}' where key = 'matrix_probe'$q$, 'no'),
   ('site_settings: the admin adds a setting', 'ad', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'yes'),
   ('site_settings: a builder cannot add one', 'ba', $q$insert into public.site_settings (key, value) values ('matrix_new', '{}')$q$, 'no'),
-  -- ai_assistant_settings (ADR-218): the admin alone reads and changes the Web search switch and the credit
-  ('ai_assistant_settings: the admin turns web search on', 'ad', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'yes'),
-  ('ai_assistant_settings: a customer cannot', 'ca', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
-  ('ai_assistant_settings: a builder cannot', 'ba', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
-  ('ai_assistant_settings: a visitor cannot', 'anon', $q$update public.ai_assistant_settings set web_search = true where id = 1$q$, 'no'),
+  -- ai_assistant_settings (ADR-218): the admin alone reads and changes the credit bought
+  ('ai_assistant_settings: the admin changes the credit bought', 'ad', $q$update public.ai_assistant_settings set credit_bought_usd = 30 where id = 1$q$, 'yes'),
+  ('ai_assistant_settings: a customer cannot', 'ca', $q$update public.ai_assistant_settings set credit_bought_usd = 30 where id = 1$q$, 'no'),
+  ('ai_assistant_settings: a builder cannot', 'ba', $q$update public.ai_assistant_settings set credit_bought_usd = 30 where id = 1$q$, 'no'),
+  ('ai_assistant_settings: a visitor cannot', 'anon', $q$update public.ai_assistant_settings set credit_bought_usd = 30 where id = 1$q$, 'no'),
   -- ai_web_answers (ADR-218): only the server keeps the web search memory
   ('ai_web_answers: the admin cannot plant an answer', 'ad', $q$insert into public.ai_web_answers (query_key, query, answer, expires_at) values ('planted', 'planted', 'x', now() + interval '1 day')$q$, 'no'),
   ('ai_web_answers: a customer cannot change one', 'ca', $q$update public.ai_web_answers set answer = 'x' where query_key = 'matrix probe'$q$, 'no'),

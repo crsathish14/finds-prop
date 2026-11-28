@@ -9,8 +9,6 @@ import { FormField } from "@/components/patterns/form-field";
 import { StatTile } from "@/components/patterns/stat-tile";
 import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { failureText, fieldErrorText, type Translator } from "@/i18n/failure-text";
 import { formatUsd } from "@/lib/format";
 import { notify } from "@/lib/notify";
@@ -19,7 +17,6 @@ import { estimateCreditLeftUsd } from "./estimate";
 import { CREDIT_BOUGHT_MAX_USD } from "./schemas";
 
 export type AiAssistantFormValues = {
-  webSearch: boolean;
   /** The credit bought as typed: US dollars as text, empty when none is set. */
   creditBoughtUsd: string;
 };
@@ -45,8 +42,7 @@ function typedCredit(typed: string): number | null {
 }
 
 /**
- * The super admin's AI assistant page (ADR-218, piece 7, the approved layout): the Web search switch, the estimated
- * spend this month, the credit bought and the estimated credit left, the note that these are estimates, and one Save.
+ * The super admin's AI assistant page (ADR-218, piece 7, the approved layout): the estimated spend this month, the credit bought and the estimated credit left, the note that these are estimates, and one Save.
  * The credit left follows what is typed. The server checks the values; a problem shows on its box, and Discard puts
  * back what was loaded.
  */
@@ -72,7 +68,7 @@ export function AiAssistantForm({ initial, spendUsd, locale, save }: AiAssistant
     try {
       const result = await save({ ...values });
       if (result.ok) {
-        notify.success(translate("saved.title"), { description: translate("saved.text") });
+        notify.success(translate("saved.title"));
         setProblems(NO_PROBLEMS);
         router.refresh();
         return;
@@ -111,22 +107,6 @@ export function AiAssistantForm({ initial, spendUsd, locale, save }: AiAssistant
       ) : null}
 
       <div className="flex max-w-3xl flex-col gap-6">
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-line bg-surface px-5 py-4">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="ai-web-search">{translate("webSearch.label")}</Label>
-            <p id="ai-web-search-hint" className="text-small text-muted">
-              {translate("webSearch.hint")}
-            </p>
-          </div>
-          <Switch
-            id="ai-web-search"
-            aria-describedby="ai-web-search-hint"
-            checked={values.webSearch}
-            disabled={saving}
-            onCheckedChange={(webSearch) => setValues({ ...values, webSearch })}
-          />
-        </div>
-
         <div className="grid gap-4 md:grid-cols-3">
           <StatTile label={translate("spend")} value={formatUsd(locale, spendUsd)} />
           <FormField
@@ -152,7 +132,7 @@ export function AiAssistantForm({ initial, spendUsd, locale, save }: AiAssistant
       </div>
 
       <ProjectSaveBar
-        note={translate("saveNote")}
+        note=""
         words={{
           cancel: shared("save.cancel"),
           save: shared("save.save"),

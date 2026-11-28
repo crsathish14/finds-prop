@@ -13,16 +13,13 @@ export interface WebAnswerRow {
 }
 
 export interface AiAssistantOverview {
-  readonly webSearch: boolean;
   readonly creditBoughtUsd: number | null;
   readonly month: MonthUse;
   readonly answers: readonly WebAnswerRow[];
 }
 
 const overviewSchema = z.object({
-  settings: z
-    .object({ webSearch: z.boolean(), creditBoughtUsd: z.coerce.number().nullable() })
-    .nullable(),
+  settings: z.object({ creditBoughtUsd: z.coerce.number().nullable() }).nullable(),
   month: z.object({
     messages: z.coerce.number(),
     inputTokens: z.coerce.number(),
@@ -37,7 +34,7 @@ const overviewSchema = z.object({
 
 /**
  * The admin AI assistant page's numbers (ADR-218, piece 7), read as the signed-in super admin through
- * `admin_ai_assistant_overview()`, which refuses anyone else: the switch, the credit bought, this month's use in India
+ * `admin_ai_assistant_overview()`, which refuses anyone else: the credit bought, this month's use in India
  * time and the 50 web answers used most. Never cached. A failed or unexpected read is logged by its code and thrown, so
  * the page shows its error state instead of a spend of zero.
  */
@@ -55,7 +52,6 @@ export async function getAiAssistantOverview(): Promise<AiAssistantOverview> {
     throw new Error("The AI assistant overview had an unexpected shape");
   }
   return {
-    webSearch: parsed.data.settings?.webSearch ?? false,
     creditBoughtUsd: parsed.data.settings?.creditBoughtUsd ?? null,
     month: parsed.data.month,
     answers: parsed.data.answers,

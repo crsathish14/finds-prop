@@ -66,13 +66,12 @@ export interface ChatDeps {
   createProvider(): AiProvider;
   readonly tools: readonly AnyAiChatTool[];
   /**
-   * The web search (ADR-218): its tool, offered to a signed-in customer only while `isOn` says the admin's Web search
-   * switch is on. `isOn` is asked on every message, so a change shows at once; when it fails the search is off. Absent
-   * means there is no web search (the fake provider, tests).
+   * The web search (ADR-218): its tool, offered to a signed-in customer only. Present only while the server setting
+   * `FLAG_AI_WEB_SEARCH` is on (read once at boot, so no database read per message) and the provider can search.
+   * Absent means there is no web search (the flag is off, the fake provider, tests).
    */
   readonly webSearch?: {
     readonly tool: AnyAiChatTool;
-    isOn(): Promise<boolean>;
   };
   /**
    * True when `tools` holds the place-aware search (`FLAG_AI_PLACE_SEARCH` with `FLAG_AI_SEARCH`, ADR-142), so the

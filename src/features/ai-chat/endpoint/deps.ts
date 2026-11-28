@@ -45,12 +45,12 @@ const translate = createTranslator({ locale: "en", messages }) as unknown as Tra
  * The real dependencies of the endpoint. With `FLAG_AI_PLACE_SEARCH` on (and the chat itself on) the search tool takes a
  * place and the system prompt carries the rules for places (ADR-142); with it off nothing about a place reaches the
  * model, and the tool is the one that always existed. With the OpenAI provider the web search is added on a message
- * whose customer is signed in while the admin's Web search switch is on (ADR-218). Made for one request, so the place lookup's memory is one message long.
+ * whose customer is signed in while the server setting `FLAG_AI_WEB_SEARCH` is on (ADR-218). Made for one request, so the place lookup's memory is one message long.
  */
 export function createChatDeps(): ChatDeps {
   const placeSearch = env.FLAG_AI_SEARCH && env.FLAG_AI_PLACE_SEARCH;
-  // The web search (ADR-218): only with the OpenAI provider; offered on a message only while the admin switch is on.
-  const searcher = chooseWebSearch(env.AI_PROVIDER ?? "");
+  // The web search (ADR-218): only with FLAG_AI_WEB_SEARCH on and the OpenAI provider; no database read per message.
+  const searcher = env.FLAG_AI_WEB_SEARCH ? chooseWebSearch(env.AI_PROVIDER ?? "") : null;
   return {
     isEnabled: () => getFeatureFlags().aiSearch,
     getSession: getSessionView,
@@ -61,10 +61,7 @@ export function createChatDeps(): ChatDeps {
     ...(searcher === null
       ? {}
       : {
-          webSearch: {
-            tool: createSearchWebTool({ searcher, store: SERVER_WEB_ANSWER_STORE }),
-            isOn: () => SERVER_WEB_ANSWER_STORE.webSearchOn(),
-          },
+          webSearch: { tool: createSearchWebTool({ searcher, store: SERVER_WEB_ANSWER_STORE }) },
         }),
     translate,
     confirmCard: (offer, session) =>

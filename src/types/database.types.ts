@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "ai_assistant_settings": {
                   Row: {
-                    "credit_bought_usd": number | null,"id": number,"updated_at": string,"updated_by": string | null,"web_search": boolean
+                    "credit_bought_usd": number | null,"id": number,"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null,"web_search"?: boolean
+                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null,"web_search"?: boolean
+                    "credit_bought_usd"?: number | null,"id"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     
@@ -932,9 +932,6 @@ isOneToOne: false
                            },
 "agent_listings":
 { Args: { "p_id": string }; Returns: Json
-                           },
-"ai_web_search_on":
-{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "apply_featured_dates":
 { Args: Record<PropertyKey, never>; Returns: Json

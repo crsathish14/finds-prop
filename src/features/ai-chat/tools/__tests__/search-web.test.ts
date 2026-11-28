@@ -24,12 +24,11 @@ const SPEND = { inputTokens: 5200, cachedInputTokens: 0, outputTokens: 90, webSe
 const ANSWER = "The registration fee is 1 per cent of the property value (made-up page, 2026).";
 
 /** A memory held in a map, recording every write. */
-function memoryStore(initial: Record<string, KeptAnswer> = {}, switchOn = true) {
+function memoryStore(initial: Record<string, KeptAnswer> = {}) {
   const rows = new Map(Object.entries(initial));
   const saved: Parameters<WebAnswerStore["save"]>[0][] = [];
   const used: [string, number][] = [];
   const store: WebAnswerStore = {
-    webSearchOn: () => Promise.resolve(switchOn),
     find: (key) => Promise.resolve(rows.get(key) ?? null),
     markUsed: (key, before) => {
       used.push([key, before]);
